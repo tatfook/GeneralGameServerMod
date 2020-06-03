@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- paracraft server configuration file -->
+<ParacraftServer>
+    <!--which ip and port this server listens to. As well as the nid of itself.-->
+    <config 
+        compress_incoming = "true" 
+        host="0.0.0.0" 
+        port="9000" 
+        nid="1001" 
+        debug = "true" 
+        public_files="config/NPLPublicFiles.xml" 
+        log_level="DEBUG">
+  </config>
+</ParacraftServer>
