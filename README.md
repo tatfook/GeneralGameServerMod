@@ -15,7 +15,7 @@ Paracraft 长连接服务器, 主要用于客户端消息的推送, 以便完成
 
 ### 用户认证
 
-- cmd = "auth"
+- cmd = "authenticate"
 - data = 用户token
 
 ### 用户位置信息上报

@@ -18,11 +18,17 @@ function Agent:GetId()
     return self.id;
 end
 
+-- 获取激活地址
+function Agent:GetActivateAddr(msg) 
+    local peername = msg.tid or msg.nid
+    local filename = msg.interface_file or "interface.lua";
+    return peername .. ":" .. filename;
+end
+
 -- 响应客户端数据
 function Agent:Reply(msg) 
-    local interface_file = msg.interface_file or "interface.lua";
-    local addr = self.GetId();
-    NPL.activate(string.format("%s:%s", addr, interface_file), msg);
+    local addr = self:GetActivateAddr(msg);
+    NPL.activate(addr, msg);
 end
 
 function Agent:SetPosition(msg)
@@ -38,9 +44,9 @@ function Agent:SetPosition(msg)
         if (agent:GetId() == self:GetId()) then return end
 
         agent:Reply({
-            cmd: "set-agent-position",
-            interface_file: data.interface_file,
-            data: msg.data,
+            cmd = "set-agent-position",
+            interface_file = data.interface_file,
+            data = msg.data,
         });
     end)
 end

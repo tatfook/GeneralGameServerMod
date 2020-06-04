@@ -1,5 +1,6 @@
 
 NPL.load("(gl)script/ide/commonlib.lua"); -- many sub dependency included
+NPL.load("(gl)script/ide/System/os/GetUrl.lua");
 
 local ParacraftServer = commonlib.gettable("ParacraftServer");
 
@@ -42,9 +43,10 @@ function ParacraftServer:Start()
     -- 暴露通信文件
     self:AddPublicFiles();
 
+    -- 启动服务
     NPL.StartNetServer(self.config.host, self.config.port);
 
-    LOG.std(nil, "info", "ParacraftServer", "start paracraft server");
+    LOG.std(nil, "info", "ParacraftServer", "服务器启动");
 end
 
 
@@ -60,3 +62,21 @@ end
 
 
 NPL.this(activate)
+
+--local function authenticate(token) 
+    --local err, msg, data = System.os.GetUrl({
+        --url = "https://api.keepwork.com/core/v0/user/authenticated",
+        --json = true,
+        --form = {
+            --token = token,
+        --},
+        --method = "POST",
+    --});
+    --LOG.std(nil, "info", "test", err);
+    --LOG.std(nil, "info", "test", msg);
+    --LOG.std(nil, "info", "test", data);
+--end
+
+--authenticate("eyJhbGciOiJIUzEiLCJ0eXAiOiJKV1QifQ.eyJ1c2VySWQiOjMsInJvbGVJZCI6MCwidXNlcm5hbWUiOiJ4aWFveWFvIiwiZXhwIjoxNTkzNzcwMDAyLjI2MX0.T1hqbXJRRTVXSHQrMVFQV3V0WHp2OHIzdmRJPQ");
+
+

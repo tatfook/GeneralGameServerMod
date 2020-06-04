@@ -1,12 +1,21 @@
 
 NPL.load("(gl)script/ide/STL.lua");
 
+NPL.load("./agent.lua");
+
 local Agent = commonlib.gettable("ParacraftServer.Agent");
 local AgentManager = commonlib.gettable("ParacraftServer.AgentManager");
 
 local tid_agent_map = {};
 local nid_agent_map = {};
 local next_id = 0;
+
+function AgentManager:New(o) 
+	o = o or {}  
+	setmetatable(o, self)
+	self.__index = self
+	return o
+end
 
 -- 获取唯一ID
 function AgentManager:GetNextID() 
