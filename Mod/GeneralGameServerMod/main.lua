@@ -8,17 +8,17 @@ end
 -- virtual function get mod name
 
 function GeneralGameServerMod:GetName()
-	return "HelloWorld"
+	return "GeneralGameServerMod"
 end
 
 -- virtual function get mod description 
 
 function GeneralGameServerMod:GetDesc()
-	return "HelloWorld is a plugin in paracraft"
+	return "GeneralGameServerMod is a plugin in paracraft"
 end
 
 function GeneralGameServerMod:init()
-	LOG.std(nil, "info", "HelloWorld", "plugin initialized");
+	LOG.std(nil, "info", "GeneralGameServerMod", "plugin initialized");
 end
 
 function GeneralGameServerMod:OnLogin()
