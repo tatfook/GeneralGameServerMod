@@ -15,10 +15,10 @@ WorldManager.GetSingleton();
 NPL.load("Mod/GeneralGameServerMod/Server/World.lua");
 
 -- 对象获取
-local World = commonlib.gettable("GeneralGameServerMod.Server.World");
+local World = commonlib.gettable("Mod.GeneralGameServerMod.Server.World");
 
 -- 对象定义
-local WorldManager = commonlib.inherit(nil, commonlib.gettable("GeneralGameServerMod.Server.WorldManager"));
+local WorldManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Server.WorldManager"));
 
 -- 世界管理对象
 function WorldManager:ctor()

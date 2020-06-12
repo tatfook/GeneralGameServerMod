@@ -15,13 +15,14 @@ local PlayerManager = commonlib.gettable("GeneralGameServerMod.Server.PlayerMana
 NPL.load("Mod/GeneralGameServerMod/Server/Player.lua");
 
 -- 对象获取
-local Player = commonlib.gettable("GeneralGameServerMod.Server.Player");
+local Player = commonlib.gettable("Mod.GeneralGameServerMod.Server.Player");
 
 -- 对象定义
-local PlayerManager = commonlib.inherit(nil, commonlib.gettable("GeneralGameServerMod.Server.PlayerManager"));
+local PlayerManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Server.PlayerManager"));
 
 
 function PlayerManager:ctor()
+    self.playerId = 0;
     self.playerList = commonlib.UnorderedArraySet:new();
 end
 
@@ -31,10 +32,15 @@ function PlayerManager:Init(world)
     return self;
 end
 
+function PlayerManager:GetNextPlayerId()
+    self.playerId = self.playerId + 1;
+    return self.playerId;
+end
+
 -- 创建用户 若用户已存在则踢出系统
 function PlayerManager:CreatePlayer(username, netHandler)
     local duplicated_players;
-    local username_lower_cased = string.lower(username);
+    local username_lower_cased = string.lower(username or "");
     for i = 1, #(self.playerList) do
         local player = self.playerList[i];
         if (string.lower(player:GetUserName() or "") == username_lower_cased) then
@@ -50,7 +56,7 @@ function PlayerManager:CreatePlayer(username, netHandler)
 		end
 	end
     
-    local player = Player:new():Init(username);
+    local player = Player:new():Init(self:GetNextPlayerId(), username);
     player:SetNetHandler(netHandler);
 
     return player;
@@ -64,3 +70,22 @@ function PlayerManager:RemovePlayer(player)
     self.playerList:removeByValue(player);
 end
 
+function PlayerManager:GetPlayerList() 
+    return self.playerList;
+end
+
+function PlayerManager:SendPacketToAllPlayers(packet)
+    for i = 1, #(self.playerList) do 
+        local player = self.playerList[i];
+        player:SendPacketToPlayer(packet);
+    end
+end
+
+function PlayerManager:SendPacketToAllPlayersExcept(packet, excludedPlayer)
+    for i = 1, #(self.playerList) do 
+        local player = self.playerList[i];
+        if excludedPlayer ~= player then
+            player:SendPacketToPlayer(packet);
+        end
+    end
+end

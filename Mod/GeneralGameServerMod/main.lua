@@ -1,4 +1,20 @@
+--[[
+Title: GeneralGameServerMod
+Author(s):  wxa
+Date: 2020-06-12
+Desc: 多人世界模块入口文件
+use the lib:
+------------------------------------------------------------
+NPL.load("Mod/GeneralGameServerMod/main.lua");
+local GeneralGameServerMod = commonlib.gettable("Mod.GeneralGameServerMod");
 
+GeneralGameServerMod:init();
+------------------------------------------------------------
+]]
+
+NPL.load("Mod/GeneralGameServerMod/GGSCommand.lua");
+
+local GGSCommand = commonlib.gettable("Mod.GeneralGameServerMod.GGSCommand");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.GeneralGameServerMod"));
 
 
@@ -19,6 +35,8 @@ end
 
 function GeneralGameServerMod:init()
 	LOG.std(nil, "info", "GeneralGameServerMod", "plugin initialized");
+
+	GGSCommand:init();
 end
 
 function GeneralGameServerMod:OnLogin()

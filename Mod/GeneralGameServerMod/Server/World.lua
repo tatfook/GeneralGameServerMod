@@ -4,9 +4,10 @@ NPL.load("Mod/GeneralGameServerMod/Server/PlayerManager.lua");
 
 local TexturePackage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.TexturePackage");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
-local PlayerManager = commonlib.gettable("GeneralGameServerMod.Server.PlayerManager");
 
-local World = commonlib.inherit(nil, commonlib.gettable("GeneralGameServerMod.Server.World"));
+local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Server.PlayerManager");
+
+local World = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Server.World"));
 
 -- 一个世界对象, 应该包含世界的所有数据
 function World:ctor()

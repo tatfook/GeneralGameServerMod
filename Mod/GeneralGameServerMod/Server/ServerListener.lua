@@ -1,7 +1,7 @@
 --[[
 Title: ServerListener
-Author(s): LiXizhi
-Date: 2014/6/26
+Author(s): wxa
+Date: 2020/6/12
 Desc: accept incoming connections. this is a singleton class
 use the lib:
 -------------------------------------------------------
@@ -9,25 +9,17 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ServerListener.lua");
 local ServerListener = commonlib.gettable("MyCompany.Aries.Game.Network.ServerListener");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetLoginHandler.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
-local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
-local NetLoginHandler = commonlib.gettable("MyCompany.Aries.Game.Network.NetLoginHandler");
-local NPLReturnCode = commonlib.gettable("NPLReturnCode");
 
-local ServerListener = commonlib.gettable("MyCompany.Aries.Game.Network.ServerListener");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ServerListener.lua");
 
--- number of times we have accepted new connections. 
-ServerListener.connectionCounter = 0;
--- active pending connection count
-ServerListener.pendingConnectionCount = 0;
--- max pending connections. 
-ServerListener.max_pending_connection = 1000;
--- list of all pending connections
-ServerListener.pendingConnections = {};
+NPL.load("Mod/GeneralGameServerMod/Server/NetServerHandler.lua");
+
+local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Server.NetServerHandler");
+
+local ServerListener = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.ServerListener"), commonlib.gettable("Mod.GeneralGameServerMod.Server.ServerListener"));
 
 -- whenever an unknown pending message is received. 
-function ServerListener:OnAcceptIncomingConnection(msg, tunnelClient)
+function ServerListener:OnAcceptIncomingConnection(msg)
 	local tid;
 	if(msg and msg.tid) then
 		tid = msg.tid;
@@ -37,34 +29,7 @@ function ServerListener:OnAcceptIncomingConnection(msg, tunnelClient)
 			LOG.std(nil, "info", "ServerListener", "max pending connection reached ignored connection %s", tid);
 		end
 		self.connectionCounter = self.connectionCounter + 1;
-		local login_handler = NetLoginHandler:new():Init(tid, tunnelClient);
-		self:AddPendingConnection(tid, login_handler);
+		local net_handler = NetServerHandler:new():Init(tid);
+		self:AddPendingConnection(tid, net_handler);
 	end
-end
-
--- this function is called periodically to remove any timed-out pending connections
-function ServerListener:ProcessPendingConnections()
-	local finished_connections;
-	local pendingConnections = self.pendingConnections;
-	local count=0;
-	for tid, login_handler in pairs(pendingConnections) do
-		login_handler:Tick();
-		if(login_handler:IsFinishedProcessing()) then
-			-- either authenticated or forcibily closed
-			finished_connections = finished_connections or {};
-			finished_connections[#finished_connections+1] = tid;
-		else
-			count = count + 1;
-		end
-	end
-	self.pendingConnectionCount = count;
-	if(finished_connections) then
-		for i=1, #finished_connections do 
-			pendingConnections[finished_connections[i]] = nil;
-		end
-	end
-end
-
-function ServerListener:AddPendingConnection(tid, login_handler)
-	self.pendingConnections[tid] = login_handler;
 end

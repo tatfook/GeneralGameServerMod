@@ -12,18 +12,15 @@ Player:new():Init()
 ]]
 
 -- 对象定义
-local Player = commonlib.inherit(nil, commonlib.gettable("GeneralGameServerMod.Server.Player"));
-
-local nid = 0;
+local Player = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Server.Player"));
 
 -- 构造函数
 function Player:ctor() 
-    nid = nid + 1;
-    self.playerId = nid;  -- 标识唯一玩家
 end
 
-function Player:Init(username)
-    self.username = username or self.playerId;
+function Player:Init(playerId, username)
+    self.playerId = playerId;
+    self.username = username or tostring(playerId);
 
     return self;
 end
@@ -38,4 +35,8 @@ end
 
 function Player:KickPlayerFromServer(reason)
     return self.playerNetHandler and self.playerNetHandler:KickPlayerFromServer(reason);
+end
+
+function Player:SendPacketToPlayer(packet)
+    self.playerNetHandler:SendPacketToPlayer(packet);
 end

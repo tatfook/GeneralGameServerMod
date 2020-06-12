@@ -1,4 +1,8 @@
-local GeneralGameServer = commonlib.gettable("GeneralGameServerMod.Server.GeneralGameServer");
+
+NPL.load("Mod/GeneralGameServerMod/Common/Packets.lua");
+
+local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
+local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.GeneralGameServer");
 
 GeneralGameServer.config = {
     host = "0.0.0.0",
@@ -7,6 +11,7 @@ GeneralGameServer.config = {
 }
 
 function GeneralGameServer:ctor() 
+    self.inited = false;
     self.isStart = false;
 end
 
@@ -27,20 +32,24 @@ function GeneralGameServer:LoadNetworkSettings()
 	__rts__:SetMsgQueueSize(5000);
 end
 
-function GeneralGameServer:init() 
-    self:LoadNetworkSettings();
+function GeneralGameServer:Init() 
+    if (self.inited) then return end;
     
+    -- 设置系统属性
+    self:LoadNetworkSettings();
+
+    -- Connections:Init();
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
+    local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
+	Connections:Init();
+
     -- 初始化网络包
-    NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Packets/Packet_Types.lua");
-	local Packet_Types = commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet_Types");
-	Packet_Types:StaticInit();
+	Packets:StaticInit();
 
     -- 暴露接口文件
-    NPL.AddPublicFile("script/apps/Aries/Creator/Game/Network/ConnectionBase.lua", 201);
+    NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 201);
     
-    -- 启动Server前重写网络处理逻辑
-    NPL.load("Mod/GeneralGameServerMod/Server/NetServerHandler.lua");
-
+    self.inited = true;
     return self;
 end
 
@@ -70,7 +79,7 @@ function GeneralGameServer:Start()
     if (self.isStart) then return end;
 
     -- 初始化
-    self:init();
+    self:Init();
 
     -- 加载配置
     -- self:load_config(ParaEngine.GetAppCommandLineByParam("config_file", "config.xml"));

@@ -1,40 +1,20 @@
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ConnectionTCP.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ServerListener.lua");
 
+NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Server/WorldManager.lua");
 
-local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
-local ConnectionTCP = commonlib.gettable("MyCompany.Aries.Game.Network.ConnectionTCP");
-local ServerListener = commonlib.gettable("MyCompany.Aries.Game.Network.ServerListener");
-
-local WorldManager = commonlib.gettable("GeneralGameServerMod.Server.WorldManager");
-local NetServerHandler = commonlib.inherit(nil, commonlib.gettable("GeneralGameServerMod.Server.NetServerHandler"));
-
--- 重写或改写ServerListener类  仅生效在服务端
--- whenever an unknown pending message is received. 
-function ServerListener:OnAcceptIncomingConnection(msg, tunnelClient)
-	local tid;
-	if(msg and msg.tid) then
-		tid = msg.tid;
-	end
-	if(tid) then
-		if(self.pendingConnectionCount > self.max_pending_connection) then
-			LOG.std(nil, "info", "ServerListener", "max pending connection reached ignored connection %s", tid);
-		end
-		self.connectionCounter = self.connectionCounter + 1;
-		local login_handler = NetServerHandler:new():Init(tid, tunnelClient);
-		self:AddPendingConnection(tid, login_handler);
-	end
-end
+local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
+local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
+local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Server.WorldManager");
+local NetServerHandler = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Server.NetServerHandler"));
 
 function NetServerHandler:ctor()
 	self.isAuthenticated = nil;
 end
 
 -- @param tid: this is temporary identifier of the socket connnection
-function NetServerHandler:Init(tid, tunnelClient)
-	self.playerConnection = ConnectionTCP:new():Init(tid, nil, self, tunnelClient);
+function NetServerHandler:Init(tid)
+	self.playerConnection = Connection:new():Init(tid, self);
 	return self;
 end
 
@@ -67,9 +47,10 @@ function NetServerHandler:IsFinishedProcessing()
 end
 
 function NetServerHandler:SendPacketToPlayer(packet)
-    LOG.debug(packet);
     return self.playerConnection:AddPacketToSendQueue(packet);
 end
+
+
 
 -- called periodically by ServerListener:ProcessPendingConnections()
 function NetServerHandler:Tick()
@@ -102,7 +83,6 @@ function NetServerHandler:handleAuthUser(packet_AuthUser)
 	self.clientPassword = packet_AuthUser.password;
 
     -- TODO 认证逻辑
-    LOG.debug("----------------auth user-------------------");
     
     -- 认证通过
     self:SetAuthenticated();
@@ -126,9 +106,21 @@ function NetServerHandler:handleLoginClient(packet_loginclient)
 
     -- 设置出生地点
     self:SendPacketToPlayer(self:GetWorld():GetPacketSpawnPosition());
+
     -- 设置世界环境
     self:SendPacketToPlayer(self:GetWorld():GetPacketUpdateEnv());
+
+    -- 通知玩家登录
+    self:SendPacketToPlayer(Packets.PacketPlayerLogin:new():Init(self.player));
 end
+
+-- 处理生成玩家包
+function NetServerHandler:handleEntityPlayerSpawn(packetEntityPlayerSpawn)
+    LOG.debug("-------------------------------------");
+    LOG.debug(packetEntityPlayerSpawn);
+    self:GetPlayerManager():SendPacketToAllPlayersExcept(packetEntityPlayerSpawn, self.player);
+end
+
 
 function NetServerHandler:KickPlayerFromServer(reason)
     if (not self.connectionClosed) then
