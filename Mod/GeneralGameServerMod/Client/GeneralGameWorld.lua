@@ -59,6 +59,8 @@ function GeneralGameWorld:Login(params)
 
 	-- 连接服务器
 	self.net_handler = NetClientHandler:new():Init(ip, port, username, password, self);
+	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
+	
 end
 
 function GeneralGameWorld:OnExit()
@@ -68,7 +70,13 @@ function GeneralGameWorld:OnExit()
 		self.net_handler:Cleanup();
 	end
 
+	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
+
 	return self;
+end
+
+function GeneralGameWorld:OnFrameMove() 
+	-- LOG.debug("-----------------------OnFrameMove()------------------------");
 end
 
 

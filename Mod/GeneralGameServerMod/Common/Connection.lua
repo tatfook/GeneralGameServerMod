@@ -38,9 +38,11 @@ local function activate()
 	local msg = msg;
 	local id = msg.nid or msg.tid;
 
-	LOG.debug("---------------------recv packet--------------------");
-	LOG.debug(msg);
-	
+	if (msg.id ~= 13 and msg.id ~= 32) then 
+		LOG.debug("---------------------recv packet--------------------");
+		LOG.debug(msg);
+	end
+
 	if(id) then
 		local connection = Connections:GetConnection(id);
 		if(connection) then

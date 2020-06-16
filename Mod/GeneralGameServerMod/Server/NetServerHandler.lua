@@ -28,6 +28,11 @@ function NetServerHandler:GetWorld()
     return self.world;
 end
 
+-- 获取链接对应的玩家
+function NetServerHandler:GetPlayer()
+    return self.player;
+end
+
 -- 获取世界玩家管理器
 function NetServerHandler:GetPlayerManager() 
     return self:GetWorld():GetPlayerManager();
@@ -115,10 +120,15 @@ function NetServerHandler:handleLoginClient(packet_loginclient)
 end
 
 -- 处理生成玩家包
-function NetServerHandler:handleEntityPlayerSpawn(packetEntityPlayerSpawn)
-    LOG.debug("-------------------------------------");
-    LOG.debug(packetEntityPlayerSpawn);
-    self:GetPlayerManager():SendPacketToAllPlayersExcept(packetEntityPlayerSpawn, self.player);
+function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
+    -- 设置当前玩家实体信息
+    local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
+    -- 新玩家通知所有旧玩家
+    self:GetPlayerManager():SendPacketToAllPlayersExcept(packetPlayerEntityInfo, self:GetPlayer());
+    -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
+    if (isNew) then 
+        self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerManager():GetPlayerEntityInfoList()));
+    end
 end
 
 
@@ -128,4 +138,13 @@ function NetServerHandler:KickPlayerFromServer(reason)
         self.playerConnection:ServerShutdown();
         self.connectionClosed = true;
     end
+end
+
+-- 玩家退出
+function NetServerHandler:handleErrorMessage(text, data)
+    local player = self:GetPlayer();
+    LOG.std(nil, "info", "NetServerHandler", "%s lost connections %s", player.username, text or "");
+    self:GetPlayerManager():RemovePlayer(player);
+    self:GetPlayerManager():SendPacketToAllPlayersExcept(Packets.PacketPlayerLogout:new():Init(player), player);
+    self.connectionClosed = true;
 end

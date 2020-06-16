@@ -11,22 +11,44 @@ Player:new():Init()
 -------------------------------------------------------
 ]]
 
+local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 -- 对象定义
 local Player = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Server.Player"));
 
 -- 构造函数
 function Player:ctor() 
+    self.packetPlayerEntityInfo = nil;
 end
 
-function Player:Init(playerId, username)
-    self.playerId = playerId;
-    self.username = username or tostring(playerId);
+function Player:Init(entityId, username)
+    self.entityId = entityId;
+    self.username = username or tostring(entityId);
 
     return self;
 end
 
 function Player:GetUserName() 
     return self.username;
+end
+
+function Player:SetPlayerEntityInfo(entityInfo)
+    local isNew = false;
+    if not self.packetPlayerEntityInfo then
+        self.packetPlayerEntityInfo = Packets.PacketPlayerEntityInfo:new():Init();
+        isNew = true;
+    end
+
+    for key, val in pairs(entityInfo) do
+        if (val ~= nil and key ~= "id" and key ~= "cmd") then
+            self.packetPlayerEntityInfo[key] = entityInfo[key];
+        end
+    end
+
+    return isNew;
+end
+
+function Player:GetPlayerEntityInfo()
+    return self.packetPlayerEntityInfo;
 end
 
 function Player:SetNetHandler(netHandler)

@@ -21,4 +21,13 @@ function Packets:StaticInit()
 
     NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerLogin.lua");
     Packet_Types:AddIdClassMapping(100, false, true, Packets.PacketPlayerLogin);
+
+    NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerLogout.lua");
+    Packet_Types:AddIdClassMapping(101, false, true, Packets.PacketPlayerLogout);
+
+    NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerEntityInfo.lua");
+    Packet_Types:AddIdClassMapping(102, false, true, Packets.PacketPlayerEntityInfo);
+
+    NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerEntityInfoList.lua");
+    Packet_Types:AddIdClassMapping(103, false, true, Packets.PacketPlayerEntityInfoList);
 end

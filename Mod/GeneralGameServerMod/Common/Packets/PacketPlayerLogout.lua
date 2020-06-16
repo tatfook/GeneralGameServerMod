@@ -11,21 +11,21 @@ local packet = Packets.PacketLogin:new():Init(username, password);
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Packets/Packet.lua");
-local PacketPlayerLogin = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerLogin"));
+local PacketPlayerLogout = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerLogout"));
 
-function PacketPlayerLogin:ctor()
+function PacketPlayerLogout:ctor()
 end
 
-function PacketPlayerLogin:Init(player)
+function PacketPlayerLogout:Init(player)
 	self.entityId = player.entityId;
 	self.username =	player.username;
 	return self;
 end
 
 -- Passes this Packet on to the NetHandler for processing.
-function PacketPlayerLogin:ProcessPacket(net_handler)
-	if(net_handler.handlePlayerLogin) then
-		net_handler:handlePlayerLogin(self);
+function PacketPlayerLogout:ProcessPacket(net_handler)
+	if(net_handler.handlePlayerLogout) then
+		net_handler:handlePlayerLogout(self);
 	end
 end
 

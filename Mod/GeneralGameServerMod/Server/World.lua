@@ -11,6 +11,9 @@ local World = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMo
 
 -- 一个世界对象, 应该包含世界的所有数据
 function World:ctor()
+    -- 实体ID 所有需要同步的实体都需从此分配
+    self.nextEntityId = 0;
+
     -- 玩家管理器
     self.playerManager = PlayerManager:new():Init(self);
     
@@ -43,6 +46,11 @@ end
 
 function World:Init()
     return self;
+end
+
+function World:GetNextEntityId()
+    self.nextEntityId = self.nextEntityId + 1;
+    return self.nextEntityId;
 end
 
 -- 获取世界的玩家管理器

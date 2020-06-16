@@ -22,7 +22,6 @@ local PlayerManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGame
 
 
 function PlayerManager:ctor()
-    self.playerId = 0;
     self.playerList = commonlib.UnorderedArraySet:new();
 end
 
@@ -32,9 +31,8 @@ function PlayerManager:Init(world)
     return self;
 end
 
-function PlayerManager:GetNextPlayerId()
-    self.playerId = self.playerId + 1;
-    return self.playerId;
+function PlayerManager:GetNextEntityId()
+    return self.world:GetNextEntityId();
 end
 
 -- 创建用户 若用户已存在则踢出系统
@@ -56,7 +54,7 @@ function PlayerManager:CreatePlayer(username, netHandler)
 		end
 	end
     
-    local player = Player:new():Init(self:GetNextPlayerId(), username);
+    local player = Player:new():Init(self:GetNextEntityId(), username);
     player:SetNetHandler(netHandler);
 
     return player;
@@ -88,4 +86,13 @@ function PlayerManager:SendPacketToAllPlayersExcept(packet, excludedPlayer)
             player:SendPacketToPlayer(packet);
         end
     end
+end
+
+function PlayerManager:GetPlayerEntityInfoList()
+    local playerEntityInfoList = {};
+    for i = 1, #(self.playerList) do 
+        local player = self.playerList[i];
+        playerEntityInfoList[i] = player:GetPlayerEntityInfo();
+    end
+    return playerEntityInfoList;
 end
