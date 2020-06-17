@@ -62,5 +62,5 @@ function GeneralGameClient:LoadWorld(ip, port, worldId)
     self.world = GeneralGameWorld:new():Init();
 
     -- 登录世界
-    self.world:Login({ip, port, worldId});
+    self.world:Login({ip = ip, port = port, worldId = worldId});
 end
