@@ -34,7 +34,7 @@ function GeneralGameClient.GetSingleton()
 end
 
 function GeneralGameClient:Init() 
-    if (self.inited) then return end;
+    if (self.inited) then return self end;
 
     NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
     local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
@@ -62,5 +62,5 @@ function GeneralGameClient:LoadWorld(ip, port, worldId)
     self.world = GeneralGameWorld:new():Init();
 
     -- 登录世界
-    self.world:Login({});
+    self.world:Login({ip, port, worldId});
 end

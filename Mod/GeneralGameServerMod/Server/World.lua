@@ -1,12 +1,13 @@
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Materials/TexturePackage.lua");
 NPL.load("Mod/GeneralGameServerMod/Server/PlayerManager.lua");
+NPL.load("Mod/GeneralGameServerMod/Server/BlockManager.lua"
 
 local TexturePackage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.TexturePackage");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Server.PlayerManager");
-
+local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Server.BlockManager");
 local World = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Server.World"));
 
 -- 一个世界对象, 应该包含世界的所有数据
@@ -17,6 +18,9 @@ function World:ctor()
     -- 玩家管理器
     self.playerManager = PlayerManager:new():Init(self);
     
+    -- 方块管理器
+    self.blockManager = BlockManager:new();
+
     -- 默认世界环境信息
     self.env = {
         texturePack = {
@@ -56,6 +60,11 @@ end
 -- 获取世界的玩家管理器
 function World:GetPlayerManager()
     return self.playerManager;
+end
+
+-- 获取方块管理器
+function World:GetBlockManager() 
+    return self.blockManager;
 end
 
 -- 获取出生地点数据包

@@ -30,4 +30,8 @@ function Packets:StaticInit()
 
     NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerEntityInfoList.lua");
     Packet_Types:AddIdClassMapping(103, false, true, Packets.PacketPlayerEntityInfoList);
+
+    NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketBlockInfoList.lua");
+    Packet_Types:AddIdClassMapping(104, false, true, Packets.PacketBlockInfoList);
+
 end

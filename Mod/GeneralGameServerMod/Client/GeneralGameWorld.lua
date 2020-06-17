@@ -12,17 +12,37 @@ local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.Gen
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/NetClientHandler.lua");
-
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
+local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler");
 local GeneralGameWorld = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.World.World"), commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld"));
+
+local rshift = mathlib.bit.rshift;
+local lshift = mathlib.bit.lshift;
+local band = mathlib.bit.band;
+local bor = mathlib.bit.bor;
 
 function GeneralGameWorld:ctor() 
 end
 
 function GeneralGameWorld:Init(name)  
+	self:PrepareNetWorkWorld();
+
 	self._super.Init(self);
 	
+	self.markBlockIndexList = commonlib.UnorderedArraySet:new();
+
 	return self;
+end
+
+-- create empty local disk path. 
+function GeneralGameWorld:PrepareNetWorkWorld()
+	-- create a new empty world here, we will never save the world
+	local worldpath = "temp/clientworld";
+	ParaIO.DeleteFile(worldpath.."/");
+	ParaIO.CreateDirectory(worldpath.."/");
+	ParaWorld.NewEmptyWorld("temp/clientworld", 533.3333, 64);
+	self.worldpath = worldpath;
 end
 
 function GeneralGameWorld:ReplaceWorld(oldWorld)
@@ -39,6 +59,46 @@ end
 function GeneralGameWorld:GetName(name)
 	return self.name;
 end
+
+function GeneralGameWorld:MarkBlockForUpdate(x, y, z)
+	if (not self.enableBlockMark) then return end
+
+	local index = BlockEngine:GetSparseIndex(x, y, z);
+	local xx, yy, zz = BlockEngine.FromSparseIndex(index);
+	LOG.debug("MarkBlockForUpdate: xx = %d, yy = %d, zz = %d", xx, yy, zz);
+	self.markBlockIndexList.add(BlockEngine:GetSparseIndex(x, y, z));
+end
+
+function GeneralGameWorld:SetEnableBlockMark(enable)
+	self.enableBlockMark = enable;
+end
+
+function GeneralGameWorld:OnFrameMove() 
+	if (self.markBlockIndexList:empty()) then
+		return;
+	end
+	-- 30 fps
+	self.tickBlockInfoUpdateCount = (self.tickBlockInfoUpdateCount or 0) + 1;
+	if (self.tickBlockInfoUpdateCount < 30) then
+		return;
+	end
+
+	-- 发送方块更新
+	local blockInfoList = {};
+	for i = 1, #(self.markBlockIndexList) do 
+		local blockIndex = self.markBlockIndexList[i];
+		local x, y, z = BlockEngine:FromSparseIndex(blockIndex);
+		local blockId = BlockEngine:GetBlockId(x,y,z);
+		local blockData = BlockEngine:GetBlockData(x,y,z);
+		blockInfoList[i] = {blockIndex = blockIndex, blockId = blockId, blockData = blockData}; 
+	end
+
+	self.net_handler:AddToSendQueue(Packets.PacketBlockInfoList:new():Init(blockInfoList));
+
+	self.markBlockIndexList:clear();
+	self.tickBlockInfoUpdateCount = 0;
+end
+
 
 function GeneralGameWorld:Login(params) 
 	local ip = params.ip or "127.0.0.1";
@@ -59,8 +119,8 @@ function GeneralGameWorld:Login(params)
 
 	-- 连接服务器
 	self.net_handler = NetClientHandler:new():Init(ip, port, username, password, self);
-	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
 	
+	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
 end
 
 function GeneralGameWorld:OnExit()
@@ -73,10 +133,6 @@ function GeneralGameWorld:OnExit()
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
 
 	return self;
-end
-
-function GeneralGameWorld:OnFrameMove() 
-	-- LOG.debug("-----------------------OnFrameMove()------------------------");
 end
 
 

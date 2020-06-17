@@ -59,9 +59,9 @@ function EntityMainPlayer:SendMotionUpdates()
         hasMovedOrForceTick = hasMovedOrForceTick and (distSqMoved > 2 or self.motionUpdateTickCount >= maxMotionUpdateTickCount);
 	end
 
-    -- 忽略 hasHeadRotation 影响
-    if (hasMovedOrForceTick or hasRotation or hasMetaDataChange) then
-        LOG.debug("entity info change, hasMovedOrForceTick: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", hasMovedOrForceTick, hasRotation, hasHeadRotation, hasMovedOrForceTick);
+    -- 忽略 hasHeadRotation or hasRotation 影响
+    if (hasMovedOrForceTick or hasMetaDataChange) then
+        LOG.debug("entity info change, hasMovedOrForceTick: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", hasMovedOrForceTick, hasRotation, hasHeadRotation, hasMetaDataChange);
         self:AddToSendQueue(Packets.PacketPlayerEntityInfo:new():Init({
             entityId = self.entityId, 
             x = self.x, 

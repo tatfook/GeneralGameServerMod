@@ -38,6 +38,10 @@ function NetServerHandler:GetPlayerManager()
     return self:GetWorld():GetPlayerManager();
 end
 
+function NetServerHandler:GetBlockManager() 
+    return self:GetWorld():GetBlockManager();
+end
+
 function NetServerHandler:SetAuthenticated()
 	self.isAuthenticated = true;
 end
@@ -54,8 +58,6 @@ end
 function NetServerHandler:SendPacketToPlayer(packet)
     return self.playerConnection:AddPacketToSendQueue(packet);
 end
-
-
 
 -- called periodically by ServerListener:ProcessPendingConnections()
 function NetServerHandler:Tick()
@@ -131,6 +133,13 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     end
 end
 
+-- 处理块信息更新
+function NetServerHandler:handleBlockInfoList(packetBlockInfoList)
+    self:GetBlockManager():AddBlockList(packetBlockInfoList.blockInfoList);
+
+     -- 同步到其它玩家
+     self:GetPlayerManager():SendPacketToAllPlayersExcept(packetBlockInfoList, self:GetPlayer());
+end
 
 function NetServerHandler:KickPlayerFromServer(reason)
     if (not self.connectionClosed) then

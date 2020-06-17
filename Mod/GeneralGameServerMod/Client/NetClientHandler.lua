@@ -181,3 +181,55 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
         self:handlePlayerEntityInfo(playerEntityInfoList[i]);
     end
 end
+
+
+-- 处理块信息更新
+function NetClientHandler:handleBlockInfoList(packetBlockInfoList)
+    local blockInfoList = packetBlockInfoList.blockInfoList;
+
+    -- 禁用标记
+    self:GetWorld():SetEnableBlockMark(false);
+    -- 更新世界块
+    for i = 1, #(blockInfoList) do
+        local block = blockInfoList[i];
+        local x, y, z = BlockEngine:FromSparseIndex(block.blockIndex);
+		BlockEngine:SetBlock(x, y, z, block.blockId, block.blockData);
+    end
+    -- 启用标记
+    self:GetWorld():SetEnableBlockMark(true);
+end
+
+function NetClientHandler:handleErrorMessage(text)
+	LOG.std(nil, "info", "NetClientHandler", "client connection error %s", text or "");
+
+	if(text == "ConnectionNotEstablished") then
+		BroadcastHelper.PushLabel({id="NetClientHandler", label = L"无法链接到这个服务器", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+		_guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
+	else --if(text == "OnConnectionLost") then
+		if(GameLogic.GetWorld() == self.worldClient) then
+			BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+			NetworkMain.isClient = false;
+			NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/ServerPage.lua");
+			local ServerPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.ServerPage");
+			ServerPage.ResetClientInfo()
+			local player = EntityManager.GetPlayer()
+			if(player) then
+				player:SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(format('<pe:mcml><div style="background-color:red;margin-left:-50px;margin-top:-20">%s</div></pe:mcml>', L"与服务器的连接断开了"))})
+			end
+			_guihelper.MessageBox(L"已与服务器断开连接,可能服务器已关闭或有其他用户使用该帐号登录.点击\"确定\"返回本地世界",function (result)
+--				NPL.load("(gl)script/apps/Aries/Creator/Game/Login/InternetLoadWorld.lua");
+--				local InternetLoadWorld = commonlib.gettable("MyCompany.Aries.Creator.Game.Login.InternetLoadWorld");
+--				InternetLoadWorld.EnterWorld()
+				--if(result == _guihelper.DialogResult.Yes) then
+				--end
+			end,_guihelper.MessageBoxButtons.OK);
+			--local player = self.worldClient:GetPlayer();
+			--if(player) then
+				--player:UpdateDisplayName("oops! ConnectionLost!");
+			--end
+		else
+			-- _guihelper.MessageBox(L"服务器返回错误信息"..(text or ""));
+		end
+	end
+	self:Cleanup();
+end

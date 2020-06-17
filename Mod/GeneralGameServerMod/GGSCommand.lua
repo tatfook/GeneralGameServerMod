@@ -7,6 +7,7 @@ use the lib:
 ------------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/GGSCommand.lua");
 local GGSCommand = commonlib.gettable("Mod.GeneralGameServerMod.GGSCommand");
+GGSCommand:init();
 ------------------------------------------------------------
 ]]
 
@@ -28,8 +29,8 @@ end
 function GGSCommand:InstallCommand()
 	Commands["connectGGS"] = {
 		name="connectGGS", 
-		quick_ref="/connectGGS ip port ", 
-		desc="多人世界", 
+		quick_ref="/connectGGS ip port", 
+		desc="connect mutilclient world", 
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
 			LOG.debug("-----------connectGGS------------");
 			LOG.debug(cmd_name);
@@ -40,7 +41,7 @@ function GGSCommand:InstallCommand()
 			port, cmd_text = CmdParser.ParseInt(cmd_text);
 
 			local client = GeneralGameClient:new():Init();
-			client:LoadWorld(ip or "127.0.0.1",  port or 9000, 12348);
+			client:LoadWorld(ip or "127.0.0.1",  port or 9000, 0);
 		end,
 	};
 end
