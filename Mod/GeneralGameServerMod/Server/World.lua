@@ -1,7 +1,7 @@
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Materials/TexturePackage.lua");
 NPL.load("Mod/GeneralGameServerMod/Server/PlayerManager.lua");
-NPL.load("Mod/GeneralGameServerMod/Server/BlockManager.lua"
+NPL.load("Mod/GeneralGameServerMod/Server/BlockManager.lua");
 
 local TexturePackage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.TexturePackage");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");

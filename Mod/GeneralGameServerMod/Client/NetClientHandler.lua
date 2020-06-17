@@ -4,7 +4,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/EntityMainPlayer.lua");
-
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
@@ -208,7 +208,6 @@ function NetClientHandler:handleErrorMessage(text)
 	else --if(text == "OnConnectionLost") then
 		if(GameLogic.GetWorld() == self.worldClient) then
 			BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-			NetworkMain.isClient = false;
 			NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/ServerPage.lua");
 			local ServerPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.ServerPage");
 			ServerPage.ResetClientInfo()

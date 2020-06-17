@@ -32,6 +32,7 @@ function GeneralGameWorld:Init(name)
 	
 	self.markBlockIndexList = commonlib.UnorderedArraySet:new();
 
+	self.enableBlockMark = true;
 	return self;
 end
 
@@ -63,10 +64,7 @@ end
 function GeneralGameWorld:MarkBlockForUpdate(x, y, z)
 	if (not self.enableBlockMark) then return end
 
-	local index = BlockEngine:GetSparseIndex(x, y, z);
-	local xx, yy, zz = BlockEngine.FromSparseIndex(index);
-	LOG.debug("MarkBlockForUpdate: xx = %d, yy = %d, zz = %d", xx, yy, zz);
-	self.markBlockIndexList.add(BlockEngine:GetSparseIndex(x, y, z));
+	self.markBlockIndexList:add(BlockEngine:GetSparseIndex(x, y, z));
 end
 
 function GeneralGameWorld:SetEnableBlockMark(enable)
