@@ -47,7 +47,7 @@ function GeneralGameServer:Init()
 	Packets:StaticInit();
 
     -- 暴露接口文件
-    NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 201);
+    NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 401);
     
     self.inited = true;
     return self;

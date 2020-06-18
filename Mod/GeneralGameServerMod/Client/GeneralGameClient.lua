@@ -44,7 +44,7 @@ function GeneralGameClient:Init()
     Packets:StaticInit();
 
     -- 初始化网络
-    NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 201);
+    NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 401);
     NPL.StartNetServer("127.0.0.1", "0");
 	
     self.inited = true;
