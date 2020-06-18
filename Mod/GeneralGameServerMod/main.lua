@@ -7,12 +7,11 @@ use the lib:
 ------------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/main.lua");
 local GeneralGameServerMod = commonlib.gettable("Mod.GeneralGameServerMod");
-
 GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/Client/GGSCommand.lua");
+NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameCommand.lua");
 
 local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameCommand");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.GeneralGameServerMod"));
@@ -36,7 +35,7 @@ end
 function GeneralGameServerMod:init()
 	LOG.std(nil, "info", "GeneralGameServerMod", "plugin initialized");
 
-	GGSCommand:init();
+	GeneralGameCommand:init();
 end
 
 function GeneralGameServerMod:OnLogin()

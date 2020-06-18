@@ -106,9 +106,6 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     -- 标记登录完成
     self.finishedProcessing = true;
 
-    -- 设置出生地点
-    -- self:SendPacketToPlayer(self:GetWorld():GetPacketSpawnPosition());
-
     -- 设置世界环境
     -- self:SendPacketToPlayer(self:GetWorld():GetPacketUpdateEnv());
 

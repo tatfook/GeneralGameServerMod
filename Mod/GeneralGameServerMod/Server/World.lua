@@ -39,13 +39,6 @@ function World:ctor()
             },
         }
     }
-
-    -- 默认出生地点
-    self.spawnPosition = {
-        x = 20000,
-        y = -128,
-        z = 20000,
-    }
 end
 
 function World:Init()
@@ -65,11 +58,6 @@ end
 -- 获取方块管理器
 function World:GetBlockManager() 
     return self.blockManager;
-end
-
--- 获取出生地点数据包
-function World:GetPacketSpawnPosition() 
-    return Packets.PacketSpawnPosition:new():Init(self.spawnPosition.x, self.spawnPosition.y, self.spawnPosition.z);
 end
 
 -- 获取世界环境更新包
