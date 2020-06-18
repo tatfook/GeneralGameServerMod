@@ -10,15 +10,23 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.Pack
 local packet = Packets.PacketLogin:new():Init(username, password);
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Packets/Packet.lua");
-local PacketPlayerLogin = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerLogin"));
+
+NPL.load("Mod/GeneralGameServerMod/Common/Packets/Packet.lua");
+local PacketPlayerLogin = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerLogin"));
 
 function PacketPlayerLogin:ctor()
 end
 
-function PacketPlayerLogin:Init(player)
-	self.entityId = player.entityId;
-	self.username =	player.username;
+function PacketPlayerLogin:Init(packet)
+	-- 响应包体
+	self.result = packet.result;      -- 请求结果
+	self.entityId = packet.entityId;  -- 玩家实体ID
+	self.errmsg = packet.errmsg;      -- 错误信息
+	-- 请求包体
+	self.username =	packet.username;  -- 用户名
+	self.password = packet.password;  -- 密码
+	self.worldId = packet.worldId;    -- 世界ID
+	
 	return self;
 end
 

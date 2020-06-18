@@ -1,19 +1,48 @@
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetClientHandler.lua");
+-- NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetClientHandler.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/EntityMainPlayer.lua");
+NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameWorld.lua");
+
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
+
+local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityMainPlayer");
-local NetClientHandler = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.NetClientHandler"), commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler"));
+-- local NetClientHandler = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.NetClientHandler"), commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler"));
+local NetClientHandler = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.NetHandler"), commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler"));
+
+local next_nid = 100;
 
 function NetClientHandler:ctor() 
+end
+
+ -- Adds the packet to the send queue
+ function NetClientHandler:AddToSendQueue(packet)
+    if (not self.disconnected and self.connection) then
+        return self.connection:AddPacketToSendQueue(packet);
+    end
+end
+
+-- clean up connection. 
+function NetClientHandler:Cleanup()
+    if (self.connection) then
+        self.connection:NetworkShutdown();
+    end
+    self.connection = nil;
+	if(self.worldClient) then
+	end
+end
+
+function NetClientHandler:GetUserName()
+	return self.last_username or "";
 end
 
 function NetClientHandler:GetWorld()
@@ -32,18 +61,25 @@ function NetClientHandler:GetPlayer()
     return self.player or EntityManager.GetPlayer();
 end
 
-function NetClientHandler:Init(ip, port, username, password, worldClient)
-    self.worldClient = worldClient;
+function NetClientHandler:GetNid(ip, port)
+    next_nid = next_nid + 1;
+    local nid = tostring(next_nid);
+    NPL.AddNPLRuntimeAddress({host = tostring(ip), port = tostring(port), nid = nid});
+    return nid;
+end
 
-	local nid = self:CheckGetNidFromIPAddress(ip, port);
+-- create a tcp connection to server. 
+function NetClientHandler:Init(ip, port, worldId, username, password, worldClient)
+    self.worldId = worldId;
+    self.worldClient = worldClient;
 	
 	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", ip, port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-	self.connection = Connection:new():Init(nid, self);
+    self.connection = Connection:new():Init(self:GetNid(ip, port), self);
 	self.connection:Connect(5, function(bSucceed)
 		-- try authenticate
 		if(bSucceed) then
 			BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"成功建立链接:%s:%s", ip, port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-			self:SendLoginPacket(username, password);
+            self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init({worldId = worldId, username = username, password = password}));
 		end
     end);
     
@@ -64,17 +100,21 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     return;
 end
 
---[[
-client => PacketAuthUser 
-server => PacketAuthUser
-client => PacketClientLogin
-server => PacketLogin
-client => PacketEntityPlayerSpawn
-server => PacketEntityPlayerSpawn
-]]
+
 function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
+    local result = packetPlayerLogin.result;
+    local errmsg = packetPlayerLogin.errmsg or "";
     local username = packetPlayerLogin.username;
     local entityId = packetPlayerLogin.entityId;
+
+    -- 登录失败
+    if (result ~= "ok") then
+        local text = "登录失败, 无权限或世界人数已满 ".. errmsg;
+		BroadcastHelper.PushLabel({id="NetClientHandler", label = text, max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+		return self:Cleanup();
+    end
+
+    -- 登录成功
 
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_login"));
@@ -145,6 +185,7 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     local mainPlayer = self:GetPlayer();
     local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
     if (isNew) then
+        entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
         entityPlayer:Attach();
     end
 

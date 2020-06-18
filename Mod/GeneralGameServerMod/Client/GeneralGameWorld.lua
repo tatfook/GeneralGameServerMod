@@ -26,24 +26,12 @@ function GeneralGameWorld:ctor()
 end
 
 function GeneralGameWorld:Init(name)  
-	self:PrepareNetWorkWorld();
-
 	self._super.Init(self);
 	
 	self.markBlockIndexList = commonlib.UnorderedArraySet:new();
 
 	self.enableBlockMark = true;
 	return self;
-end
-
--- create empty local disk path. 
-function GeneralGameWorld:PrepareNetWorkWorld()
-	-- create a new empty world here, we will never save the world
-	local worldpath = "temp/clientworld";
-	ParaIO.DeleteFile(worldpath.."/");
-	ParaIO.CreateDirectory(worldpath.."/");
-	ParaWorld.NewEmptyWorld("temp/clientworld", 533.3333, 64);
-	self.worldpath = worldpath;
 end
 
 function GeneralGameWorld:ReplaceWorld(oldWorld)
@@ -76,10 +64,10 @@ function GeneralGameWorld:OnFrameMove()
 		return;
 	end
 	-- 30 fps
-	self.tickBlockInfoUpdateCount = (self.tickBlockInfoUpdateCount or 0) + 1;
-	if (self.tickBlockInfoUpdateCount < 30) then
-		return;
-	end
+	-- self.tickBlockInfoUpdateCount = (self.tickBlockInfoUpdateCount or 0) + 1;
+	-- if (self.tickBlockInfoUpdateCount < 30) then
+	-- 	return;
+	-- end
 
 	-- 发送方块更新
 	local blockInfoList = {};
@@ -94,7 +82,7 @@ function GeneralGameWorld:OnFrameMove()
 	self.net_handler:AddToSendQueue(Packets.PacketBlockInfoList:new():Init(blockInfoList));
 
 	self.markBlockIndexList:clear();
-	self.tickBlockInfoUpdateCount = 0;
+	-- self.tickBlockInfoUpdateCount = 0;
 end
 
 
@@ -105,6 +93,7 @@ function GeneralGameWorld:Login(params)
 	local username = params.username;
 	local password = params.password;
 	local thread = params.thread or "gl";
+
 	LOG.std(nil, "info", "GeneralGameWorld", "Start login %s %s as username:%s", ip, port, username);
 	
 	self.username = username;
@@ -116,7 +105,7 @@ function GeneralGameWorld:Login(params)
 	end
 
 	-- 连接服务器
-	self.net_handler = NetClientHandler:new():Init(ip, port, username, password, self);
+	self.net_handler = NetClientHandler:new():Init(ip, port, worldId, username, password, self);
 	
 	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
 end

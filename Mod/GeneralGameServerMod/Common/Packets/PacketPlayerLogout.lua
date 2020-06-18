@@ -10,8 +10,9 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.Pack
 local packet = Packets.PacketLogin:new():Init(username, password);
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Packets/Packet.lua");
-local PacketPlayerLogout = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerLogout"));
+
+NPL.load("Mod/GeneralGameServerMod/Common/Packets/Packet.lua");
+local PacketPlayerLogout = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerLogout"));
 
 function PacketPlayerLogout:ctor()
 end

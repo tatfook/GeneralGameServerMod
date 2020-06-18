@@ -11,12 +11,12 @@ local ConnectionBase = commonlib.gettable("Mod.GeneralGameServerMod.Common.Conne
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ConnectionBase.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
-
 NPL.load("Mod/GeneralGameServerMod/Server/ServerListener.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Packets/ConnectionBase.lua");
 
+local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketTypes");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local ServerListener = commonlib.gettable("Mod.GeneralGameServerMod.Server.ServerListener");
-
 local Connection = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.ConnectionBase"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection"));
 
 Connection.default_neuron_file = "Mod/GeneralGameServerMod/Common/Connection.lua";
@@ -29,19 +29,27 @@ end
 
 
 function Connection:AddPacketToSendQueue(packet)
-	LOG.debug("---------------------send packet: %d--------------------", packet:GetPacketId());
-	LOG.debug(packet);
+	-- LOG.debug("---------------------send packet: %d--------------------", packet:GetPacketId());
+	-- LOG.debug(packet);
 	return self._super.AddPacketToSendQueue(self, packet);
+end
+
+function Connection:OnNetReceive(msg)
+	local packet = PacketTypes:GetNewPacket(msg.id);
+	if(packet) then
+		packet:ReadPacket(msg);
+		packet:ProcessPacket(self.net_handler);
+	else
+		self.net_handler:handleMsg(msg);
+	end
 end
 
 local function activate()
 	local msg = msg;
 	local id = msg.nid or msg.tid;
 
-	if (msg.id ~= 13 and msg.id ~= 32) then 
-		LOG.debug("---------------------recv packet--------------------");
-		LOG.debug(msg);
-	end
+	-- LOG.debug("---------------------recv packet--------------------");
+	-- LOG.debug(msg);
 
 	if(id) then
 		local connection = Connections:GetConnection(id);
@@ -53,4 +61,5 @@ local function activate()
 		end
 	end
 end
+
 NPL.this(activate);

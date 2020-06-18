@@ -22,12 +22,7 @@ local WorldManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameS
 
 -- 世界管理对象
 function WorldManager:ctor()
-    -- 世界环境信息
-    self.env = {
-        texturePack = nil,
-	    weather = nil,
-	    customBlocks = nil,
-    }
+    self.worldMap = {};
 end
 
 -- 单列模式
@@ -52,4 +47,16 @@ function WorldManager:GetDefaultWorld()
     end
 end
 
+-- 获取指定世界
+function WorldManager:GetWorldById(worldId)
+    if (not self.worldMap[worldId]) then
+        self.worldMap[worldId] = World:new();
+    end
 
+    return self.worldMap[worldId];
+end
+
+-- 获取指定世界
+function WorldManager:GetWorld(worldId)
+    return worldId and self:GetWorldById(worldId) or self:GetDefaultWorld();
+end

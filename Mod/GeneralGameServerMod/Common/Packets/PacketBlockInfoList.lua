@@ -11,8 +11,9 @@ local packet = Packets.PacketBlockInfoList:new():Init();
 -------------------------------------------------------
 ]]
 
-NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
-local PacketBlockInfoList = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketBlockInfoList"));
+NPL.load("Mod/GeneralGameServerMod/Common/Packets/Packet.lua");
+
+local PacketBlockInfoList = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketBlockInfoList"));
 
 function PacketBlockInfoList:ctor()
 end

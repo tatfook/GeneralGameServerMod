@@ -10,8 +10,9 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.Pack
 local packet = Packets.PacketPlayerEntityInfoList:new():Init();
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Packets/Packet.lua");
-local PacketPlayerEntityInfoList = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerEntityInfoList"));
+
+NPL.load("Mod/GeneralGameServerMod/Common/Packets/Packet.lua");
+local PacketPlayerEntityInfoList = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerEntityInfoList"));
 
 function PacketPlayerEntityInfoList:ctor()
 end

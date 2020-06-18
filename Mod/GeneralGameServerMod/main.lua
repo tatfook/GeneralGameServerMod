@@ -12,9 +12,9 @@ GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/GGSCommand.lua");
+NPL.load("Mod/GeneralGameServerMod/Client/GGSCommand.lua");
 
-local GGSCommand = commonlib.gettable("Mod.GeneralGameServerMod.GGSCommand");
+local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameCommand");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.GeneralGameServerMod"));
 
 
@@ -54,8 +54,4 @@ function GeneralGameServerMod:OnDestroy()
 end
 
 function GeneralGameServerMod:handleKeyEvent(event)
-	if(event.keyname == "DIK_SPACE") then
-		LOG.std(nil, "info", "DemoEntity", "OnWorldLoad");
-		return true;
-	end
 end

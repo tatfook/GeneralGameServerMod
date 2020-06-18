@@ -23,6 +23,10 @@ function NetServerHandler:GetWorldManager()
     return WorldManager.GetSingleton();
 end
 
+-- 设置玩家世界
+function NetServerHandler:SetWorld(world) 
+    self.world = world;
+end
 -- 获取玩家世界
 function NetServerHandler:GetWorld() 
     return self.world;
@@ -83,42 +87,33 @@ function NetServerHandler:GetUsernameAndAddress()
 	end
 end
 
-function NetServerHandler:handleAuthUser(packet_AuthUser)
-    if(packet_AuthUser.username and packet_AuthUser.username ~= "") then
-		self.clientUsername = packet_AuthUser.username;
-	end
-	self.clientPassword = packet_AuthUser.password;
-
+function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
+    local username = packetPlayerLogin.username;
+    local password = packetPlayerLogin.password;
+    local worldId = packetPlayerLogin.worldId;
     -- TODO 认证逻辑
-    
+
     -- 认证通过
     self:SetAuthenticated();
-    if(self:IsAuthenticated()) then
-        self:SendPacketToPlayer(Packets.PacketAuthUser:new():Init(self.clientUsername, nil, "ok", info));
-    end
-end
 
-function NetServerHandler:handleLoginClient(packet_loginclient)
-    if (not self:IsAuthenticated()) then
-        return;
-    end
-    -- 获取世界
-    self.world = self:GetWorldManager():GetDefaultWorld();
+    -- 获取并设置世界
+    self:SetWorld(self:GetWorldManager():GetWorld(worldId));
+
     -- 将玩家加入世界
-    self.player = self:GetPlayerManager():CreatePlayer(self.clientUsername, self);
+    self.player = self:GetPlayerManager():CreatePlayer(username, self);
     self:GetPlayerManager():AddPlayer(self.player);
 
     -- 标记登录完成
     self.finishedProcessing = true;
 
     -- 设置出生地点
-    self:SendPacketToPlayer(self:GetWorld():GetPacketSpawnPosition());
+    -- self:SendPacketToPlayer(self:GetWorld():GetPacketSpawnPosition());
 
     -- 设置世界环境
-    self:SendPacketToPlayer(self:GetWorld():GetPacketUpdateEnv());
+    -- self:SendPacketToPlayer(self:GetWorld():GetPacketUpdateEnv());
 
     -- 通知玩家登录
-    self:SendPacketToPlayer(Packets.PacketPlayerLogin:new():Init(self.player));
+    self:SendPacketToPlayer(Packets.PacketPlayerLogin:new():Init({entityId = self.player.entityId, username = self.player.username, result = "ok"}));
 end
 
 -- 处理生成玩家包
@@ -152,7 +147,10 @@ end
 -- 玩家退出
 function NetServerHandler:handleErrorMessage(text, data)
     local player = self:GetPlayer();
-    LOG.std(nil, "info", "NetServerHandler", "%s lost connections %s", player.username, text or "");
+    LOG.std(nil, "info", "NetServerHandler", "%s lost connections %s", player and player.username, text or "");
+    
+    if (not player) then return end
+
     self:GetPlayerManager():RemovePlayer(player);
     self:GetPlayerManager():SendPacketToAllPlayersExcept(Packets.PacketPlayerLogout:new():Init(player), player);
     self.connectionClosed = true;

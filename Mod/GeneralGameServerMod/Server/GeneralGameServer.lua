@@ -1,7 +1,7 @@
 
-NPL.load("Mod/GeneralGameServerMod/Common/Packets.lua");
 
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
+NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketTypes.lua");
+local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketTypes");
 local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.GeneralGameServer");
 
 GeneralGameServer.config = {
@@ -44,10 +44,10 @@ function GeneralGameServer:Init()
 	Connections:Init();
 
     -- 初始化网络包
-	Packets:StaticInit();
+	PacketTypes:StaticInit();
 
     -- 暴露接口文件
-    NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 201);
+    NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 401);
     
     self.inited = true;
     return self;
