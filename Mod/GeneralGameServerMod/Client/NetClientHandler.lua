@@ -1,12 +1,12 @@
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
--- NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetClientHandler.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameWorld.lua");
-
+NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
@@ -16,7 +16,6 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityMainPlayer");
--- local NetClientHandler = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.NetClientHandler"), commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler"));
 local NetClientHandler = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.NetHandler"), commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler"));
 
 local next_nid = 100;
@@ -36,17 +35,31 @@ function NetClientHandler:Cleanup()
     if (self.connection) then
         self.connection:NetworkShutdown();
     end
+
+    local player = self:GetPlayer()
+    if(player) then
+        player:SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(format('<pe:mcml><div style="background-color:red;margin-left:-50px;margin-top:-20">%s</div></pe:mcml>', L"与服务器的连接断开了"))})
+    end
+
     self.connection = nil;
-	if(self.worldClient) then
-	end
+	self:SetWorld(nil);
+end
+
+-- 连接是否有效
+function NetClientHandler:IsValidConnection()
+    return self.connection and true or false;
 end
 
 function NetClientHandler:GetUserName()
 	return self.last_username or "";
 end
 
+function NetClientHandler:SetWorld(world)
+    self.world = world;
+end
+
 function NetClientHandler:GetWorld()
-    return self.worldClient;
+    return self.world;
 end
 
 function NetClientHandler:GetEntityByID(id)
@@ -69,9 +82,14 @@ function NetClientHandler:GetNid(ip, port)
 end
 
 -- create a tcp connection to server. 
-function NetClientHandler:Init(ip, port, worldId, username, password, worldClient)
+function NetClientHandler:Init(ip, port, worldId, username, password, world)
+    self.ip = ip;
+    self.port = port;
     self.worldId = worldId;
-    self.worldClient = worldClient;
+    self.username = username;
+    self.password = password;
+
+    self:SetWorld(world);
 	
 	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", ip, port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
     self.connection = Connection:new():Init(self:GetNid(ip, port), self);
@@ -109,9 +127,10 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
 
     -- 登录失败
     if (result ~= "ok") then
-        local text = "登录失败, 无权限或世界人数已满 ".. errmsg;
+        local text = "登录失败! " .. errmsg;
+        Log:Info(text);
 		BroadcastHelper.PushLabel({id="NetClientHandler", label = text, max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-		return self:Cleanup();
+		return self:GetWorld():Logout();
     end
 
     -- 登录成功
@@ -150,6 +169,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         facing = math.floor(entityPlayer.rotationYaw or entityPlayer.facing or 0),
         pitch = math.floor(entityPlayer.rotationPitch or 0),
         data = metadata and DataWatcher.WriteObjectsInListToData(metadata, nil),
+        mainAssetPath = entityPlayer:GetMainAssetPath(),
     }));
 end
 
@@ -201,6 +221,11 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
         end
     end
 
+    -- 同步玩家模型
+    if (packetPlayerEntityInfo.mainAssetPath) then
+        entityPlayer:SetMainAssetPath(packetPlayerEntityInfo.mainAssetPath);
+    end
+    
     -- 更新位置信息
     -- entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
     if (entityId == mainPlayer.entityId) then
@@ -241,35 +266,17 @@ function NetClientHandler:handleBlockInfoList(packetBlockInfoList)
 end
 
 function NetClientHandler:handleErrorMessage(text)
-	LOG.std(nil, "info", "NetClientHandler", "client connection error %s", text or "");
+    -- 连接已清说已做过错误处理
+    if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
+	Log:Info("client connection error %s and nid: %d", text or "", self.connection:GetNid());
 
 	if(text == "ConnectionNotEstablished") then
 		BroadcastHelper.PushLabel({id="NetClientHandler", label = L"无法链接到这个服务器", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
 		_guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
-	else --if(text == "OnConnectionLost") then
-		if(GameLogic.GetWorld() == self.worldClient) then
-			BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-			NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/ServerPage.lua");
-			local ServerPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.ServerPage");
-			ServerPage.ResetClientInfo()
-			local player = EntityManager.GetPlayer()
-			if(player) then
-				player:SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(format('<pe:mcml><div style="background-color:red;margin-left:-50px;margin-top:-20">%s</div></pe:mcml>', L"与服务器的连接断开了"))})
-			end
-			_guihelper.MessageBox(L"已与服务器断开连接,可能服务器已关闭或有其他用户使用该帐号登录.点击\"确定\"返回本地世界",function (result)
---				NPL.load("(gl)script/apps/Aries/Creator/Game/Login/InternetLoadWorld.lua");
---				local InternetLoadWorld = commonlib.gettable("MyCompany.Aries.Creator.Game.Login.InternetLoadWorld");
---				InternetLoadWorld.EnterWorld()
-				--if(result == _guihelper.DialogResult.Yes) then
-				--end
-			end,_guihelper.MessageBoxButtons.OK);
-			--local player = self.worldClient:GetPlayer();
-			--if(player) then
-				--player:UpdateDisplayName("oops! ConnectionLost!");
-			--end
-		else
-			-- _guihelper.MessageBox(L"服务器返回错误信息"..(text or ""));
-		end
-	end
-	self:Cleanup();
+    else 
+        BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+    end
+    
+    -- 登出世界
+    self:GetWorld():Logout();
 end

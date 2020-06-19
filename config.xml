@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- paracraft server configuration file -->
+<GeneralGameServer>
+  <!--which ip and port this server listens to. As well as the nid of itself.-->
+  <Server 
+    ip="0.0.0.0" 
+    port="9000">
+  </Server>
+  <Limit
+    maxWorldCount=200
+    maxWorldClientCount=100
+    maxClientCount=8000>
+  </Limit>
+  <Log level="INFO">
+    <Module name="test" enable=true>
+    <Module name="test" enable=true>
+  </Log>
+</GeneralGameServer>

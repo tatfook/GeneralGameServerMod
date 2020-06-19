@@ -12,6 +12,10 @@ GeneralGameCommand:init();
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameClient.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local SlashCommand = commonlib.gettable("MyCompany.Aries.SlashCommand.SlashCommand");
 local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
 local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
@@ -19,7 +23,6 @@ local CmdParser = commonlib.gettable("MyCompany.Aries.Game.CmdParser");
 local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameClient");
 local GeneralGameCommand = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameCommand"));
 
-local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 
 function GeneralGameCommand:ctor()
 end
@@ -32,24 +35,28 @@ end
 function GeneralGameCommand:InstallCommand()
 	local connectGGSCmd = {
 		name="connectGGS", 
-		quick_ref="/connectGGS worldId username", 
-		desc="进入联机世界, worldId 为世界ID (默认: 0)", 
-		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
-			LOG.debug("-----------connectGGS------------");
-			local ip = IsDevEnv and "127.0.0.1" or "120.132.120.175";
-			local port = 9000;
-			
+		quick_ref="/connectGGS [worldId] [username]", 
+		desc=[[进入联机世界 
+worldId 为世界ID(未指定或为0则联机当前世界或默认世界)
+username 联机世界里显示的用户名称, 未指定由系统随机生成用户名
+示例:
+connectGGS                        # 联机进入当前世界或默认世界
+connectGGS 145                    # 联机进入世界ID为145的世界
+connectGGS 145 xiaoyao            # 联机进入世界ID为145的世界, 并取名为 xiaoyao
+]], 
+		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)			
 			worldId, cmd_text = CmdParser.ParseInt(cmd_text);
 			username, cmd_text = CmdParser.ParseString(cmd_text);
 			password, cmd_text = CmdParser.ParseString(cmd_text);
-			
-			local client = GeneralGameClient:new():Init();
-			client:LoadWorld(ip,  port, worldId, username, password);
+			-- 隐藏参数
+			ip, cmd_text = CmdParser.ParseString(cmd_text);
+			port, cmd_text = CmdParser.ParseString(cmd_text);
+			GeneralGameClient.GetSingleton():LoadWorld(ip, port, worldId, username, password);
 		end,
 	};
 
 	-- 开发环境手动加入 方便调试
-	if (IsDevEnv) then
+	if (Config.IsDevEnv) then
 		SlashCommand.GetSingleton():RegisterSlashCommand(connectGGSCmd);
 	end
 	Commands["connectGGS"] = connectGGSCmd;

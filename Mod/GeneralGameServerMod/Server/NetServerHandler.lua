@@ -2,7 +2,10 @@
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Server/WorldManager.lua");
-
+NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Server.WorldManager");
@@ -30,6 +33,11 @@ end
 -- 获取玩家世界
 function NetServerHandler:GetWorld() 
     return self.world;
+end
+
+-- 设置当前玩家
+function NetServerHandler:SetPlayer(player)
+    self.player = player;
 end
 
 -- 获取链接对应的玩家
@@ -73,24 +81,34 @@ end
 
 --  Disconnects the user with the given reason.
 function NetServerHandler:KickUser(reason)
-    LOG.std(nil, "info", "NetLoginHandler", "Disconnecting %s, reason: %s", self:GetUsernameAndAddress(), tostring(reason));
     self.playerConnection:AddPacketToSendQueue(Packets.PacketKickDisconnect:new():Init(reason));
     self.playerConnection:ServerShutdown();
     self.finishedProcessing = true;
 end
 
-function NetServerHandler:GetUsernameAndAddress()
-	if(self.clientUsername) then
-		return format("%s (%s)", self.clientUsername, tostring(self.playerConnection:GetRemoteAddress()));
-	else
-		return tostring(self.playerConnection:GetRemoteAddress());
-	end
+-- 服务器是否已达到峰值
+function NetServerHandler:IsAllowLoginWorld(worldId)
+    local totalClientCount = self:GetWorldManager():GetClientCount();
+    if (totalClientCount >= Config.maxClientCount) then
+        return false;
+    end
+    -- local worldCount = self:GetWorldManager():GetWorldCount();
+    return true;
 end
 
 function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local username = packetPlayerLogin.username;
     local password = packetPlayerLogin.password;
-    local worldId = packetPlayerLogin.worldId;
+    local worldId = tostring(packetPlayerLogin.worldId);
+
+    -- 检测是否达到最大处理量
+    if (not self:IsAllowLoginWorld(worldId)) then
+        Log:Warn("服务器连接数已到上限");
+        packetPlayerLogin.result = "failed";
+        packetPlayerLogin.errmsg = "服务器连接数已到上限";
+        return self:SendPacketToPlayer(packetPlayerLogin);
+    end
+
     -- TODO 认证逻辑
 
     -- 认证通过
@@ -98,10 +116,13 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
 
     -- 获取并设置世界
     self:SetWorld(self:GetWorldManager():GetWorld(worldId));
+    self:GetWorld():SetWorldId(worldId);
 
     -- 将玩家加入世界
-    self.player = self:GetPlayerManager():CreatePlayer(username, self);
-    self:GetPlayerManager():AddPlayer(self.player);
+    self:SetPlayer(self:GetPlayerManager():CreatePlayer(username, self));
+    self:GetPlayerManager():AddPlayer(self:GetPlayer());
+
+    Log:Info("player login; username : %s, worldId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldId());
 
     -- 标记登录完成
     self.finishedProcessing = true;
@@ -110,7 +131,9 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     -- self:SendPacketToPlayer(self:GetWorld():GetPacketUpdateEnv());
 
     -- 通知玩家登录
-    self:SendPacketToPlayer(Packets.PacketPlayerLogin:new():Init({entityId = self.player.entityId, username = self.player.username, result = "ok"}));
+    packetPlayerLogin.entityId = self:GetPlayer().entityId;
+    packetPlayerLogin.result = "ok";
+    self:SendPacketToPlayer(packetPlayerLogin);
 end
 
 -- 处理生成玩家包
@@ -143,12 +166,11 @@ end
 
 -- 玩家退出
 function NetServerHandler:handleErrorMessage(text, data)
-    local player = self:GetPlayer();
-    LOG.std(nil, "info", "NetServerHandler", "%s lost connections %s", player and player.username, text or "");
+    if (not self:GetPlayer()) then return end
     
-    if (not player) then return end
+    Log:Info("player logout; username : %s, worldId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldId());
 
-    self:GetPlayerManager():RemovePlayer(player);
-    self:GetPlayerManager():SendPacketToAllPlayersExcept(Packets.PacketPlayerLogout:new():Init(player), player);
+    self:GetPlayerManager():RemovePlayer(self:GetPlayer());
+    self:GetPlayerManager():SendPacketToAllPlayersExcept(Packets.PacketPlayerLogout:new():Init(self:GetPlayer()), self:GetPlayer());
     self.connectionClosed = true;
 end

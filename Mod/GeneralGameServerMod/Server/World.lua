@@ -45,9 +45,22 @@ function World:Init()
     return self;
 end
 
+function World:SetWorldId(worldId)
+    self.worldId = worldId;
+end
+
+function World:GetWorldId()
+    return self.worldId;
+end
+
 function World:GetNextEntityId()
     self.nextEntityId = self.nextEntityId + 1;
     return self.nextEntityId;
+end
+
+-- 获取世界用户数
+function World:GetClientCount() 
+    return self:GetPlayerManager():GetPlayerCount();
 end
 
 -- 获取世界的玩家管理器
@@ -64,3 +77,4 @@ end
 function World:GetPacketUpdateEnv()
     return Packets.PacketUpdateEnv:new():Init(self.env.texturePack, self.env.weather, self.env.customBlocks);
 end
+

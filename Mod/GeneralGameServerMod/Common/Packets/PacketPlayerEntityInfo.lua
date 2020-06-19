@@ -31,6 +31,9 @@ function PacketPlayerEntityInfo:Init(entityInfo)
     self.entityId = entityInfo.entityId;
     self.name = entityInfo.name;
 
+    -- 玩家模型
+    self.mainAssetPath = entityInfo.mainAssetPath;
+
     -- 实体数据
     self.data = entityInfo.data;
     

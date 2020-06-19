@@ -25,9 +25,11 @@ local bor = mathlib.bit.bor;
 function GeneralGameWorld:ctor() 
 end
 
-function GeneralGameWorld:Init(name)  
+function GeneralGameWorld:Init(worldId)  
 	self._super.Init(self);
 	
+	self.worldId = worldId;
+
 	self.markBlockIndexList = commonlib.UnorderedArraySet:new();
 
 	self.enableBlockMark = true;
@@ -89,13 +91,11 @@ end
 function GeneralGameWorld:Login(params) 
 	local ip = params.ip or "127.0.0.1";
 	local port = params.port or "9000";
-	-- a random username
+	local worldId = params.worldId;
 	local username = params.username;
 	local password = params.password;
 	local thread = params.thread or "gl";
 
-	LOG.std(nil, "info", "GeneralGameWorld", "Start login %s %s as username:%s", ip, port, username);
-	
 	self.username = username;
 	self.password = password;
 
@@ -108,25 +108,27 @@ function GeneralGameWorld:Login(params)
 	self.net_handler = NetClientHandler:new():Init(ip, port, worldId, username, password, self);
 	
 	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
+
+	self.isLogin = true;
 end
 
-function GeneralGameWorld:OnExit()
-	self._super.OnExit(self);
-
+function GeneralGameWorld:Logout() 
 	if(self.net_handler) then
 		self.net_handler:Cleanup();
 	end
 
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
 
-	return self;
+	self.worldId = nil;
+	self.isLogin = false;
 end
 
+function GeneralGameWorld:OnExit()
+	self._super.OnExit(self);
 
-function GeneralGameWorld:AddPlayerEntity(entity)
-	
+	self:Logout();
 end
 
-function GeneralGameWorld:RemovePlayerEntity(entity)
-	
+function GeneralGameWorld:IsLogin()
+	return self.isLogin;
 end

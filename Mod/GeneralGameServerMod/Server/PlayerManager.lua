@@ -96,3 +96,7 @@ function PlayerManager:GetPlayerEntityInfoList()
     end
     return playerEntityInfoList;
 end
+
+function PlayerManager:GetPlayerCount()
+    return self.playerList:size();
+end

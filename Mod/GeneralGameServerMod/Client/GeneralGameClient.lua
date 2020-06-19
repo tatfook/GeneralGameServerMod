@@ -11,10 +11,12 @@ local client = GeneralGameClient.GetSingleton();
 client.LoadWorld("127.0.0.1", "9000", 12348);
 ------------------------------------------------------------
 ]]
-NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketTypes.lua");
-NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameWorld.lua");
 
-local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketTypes");
+NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameWorld.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
+local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld");
 local GeneralGameClient = commonlib.inherit(nil,commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameClient"));
 
@@ -35,18 +37,12 @@ end
 
 function GeneralGameClient:Init() 
     if (self.inited) then return self end;
-
-    NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
-    local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
-	Connections:Init();
-
-    -- 初始化网络包
-    PacketTypes:StaticInit();
-
-    -- 初始化网络
-    NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 401);
+    -- 禁用服务器 指定为客户端
     NPL.StartNetServer("127.0.0.1", "0");
-    
+
+    -- 初始化
+    Common:Init(false);
+
     -- 监听世界加载完成事件
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
 
@@ -61,24 +57,30 @@ end
 function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
     -- 初始化
     self:Init();
+    
+    -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
+    if (not worldId) then
+        local currentWorldInfo = Mod.WorldShare.Store:Get('world/currentWorld');
+        if (currentWorldInfo and currentWorldInfo.kpProjectId) then
+            worldId = currentWorldInfo.kpProjectId
+        end
+    end
 
-    local defaultWorldId = 12348;
-    worldId = worldId == nil and defaultWorldId or worldId; 
-
-    self.newIp = ip;
-    self.newPort = port;
-    self.newWorldId = worldId;
+    self.newIp = ip or Config.ip;
+    self.newPort = port or Config.port;
+    self.newWorldId = worldId  or Config.defaultWorldId;
     self.newUsername = username;
     self.newPassword = password;
 
     -- 与当前世界相同则不处理
-    if (self.worldId == worldId) then return end;
+    if (self.world and self.world.worldId == self.newWorldId and self.world:IsLogin()) then return end;
 
     -- 退出旧世界
     if (self.world) then self.world:OnExit(); end
     
     self.IsReplaceWorld = true;
 
+    -- 以只读方式重新进入
     GameLogic.RunCommand(string.format("/loadworld %d", self.newWorldId));    
 end
 
@@ -95,7 +97,7 @@ function GeneralGameClient:OnWorldLoaded()
     self.password = self.newPassword;
 
     -- 更新当前世界ID
-    self.world = GeneralGameWorld:new():Init();
+    self.world = GeneralGameWorld:new():Init(self.worldId);
     GameLogic.ReplaceWorld(self.world);
 
     -- 登录世界

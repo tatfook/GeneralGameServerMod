@@ -60,3 +60,26 @@ end
 function WorldManager:GetWorld(worldId)
     return worldId and self:GetWorldById(worldId) or self:GetDefaultWorld();
 end
+
+-- 世界是否存在
+function WorldManager:IsExistWorld(worldId)
+    return self.worldMap[worldId] and true or false;
+end
+
+-- 获取世界数
+function WorldManager:GetWorldCount()
+    local count = 0;
+    for key, val in pairs(self.worldMap) do 
+        count = count + 1;
+    end
+    return count;
+end
+
+-- 获取总用户数
+function WorldManager:GetClientCount() 
+    local count = 0;
+    for worldId, world in pairs(self.worldMap) do 
+        count = count + world:GetClientCount();
+    end
+    return count;
+end
