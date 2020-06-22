@@ -15,9 +15,14 @@ client.LoadWorld("127.0.0.1", "9000", 12348);
 NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
+local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld");
+local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local GeneralGameClient = commonlib.inherit(nil,commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameClient"));
 
 function GeneralGameClient:ctor() 
@@ -66,8 +71,8 @@ function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
         end
     end
 
-    self.newIp = ip or Config.ip;
-    self.newPort = port or Config.port;
+    self.newIp = ip;
+    self.newPort = port;
     self.newWorldId = worldId  or Config.defaultWorldId;
     self.newUsername = username;
     self.newPassword = password;
@@ -101,7 +106,37 @@ function GeneralGameClient:OnWorldLoaded()
     GameLogic.ReplaceWorld(self.world);
 
     -- 登录世界
-    self.world:Login({ip = self.ip, port = self.port, worldId = self.worldId, username = self.username, password = self.password});
+    if (self.ip and self.port) then
+        self.world:Login({ip = self.ip, port = self.port, worldId = self.worldId, username = self.username, password = self.password});
+    else
+        self:ConnectControlServer(self.worldId); -- 连接控制器服务, 获取世界服务
+    end
+end
+--  正确流程: 登录成功 => 加载打开世界 => 替换世界
+
+
+-- 连接控制服务器
+function GeneralGameClient:ConnectControlServer(worldId)
+    self.controlServerConnection = Connection:new():InitByIpPort(Config.ip, Config.port, self);
+    self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Server/ControlServer.lua");
+    self.controlServerConnection:Connect(5, function(success)
+        if (not success) then
+            return Log:Info("无法连接控制器服务器");
+        end
+
+        self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({worldId = worldId}));
+    end);
 end
 
---  正确流程: 登录成功 => 加载打开世界 => 替换世界
+-- 发送获取世界服务器
+function GeneralGameClient:handleWorldServer(packetWorldServer)
+    local ip = packetWorldServer.ip;
+    local port = packetWorldServer.port;
+    if (not ip or not port) then
+        Log:Info("服务器繁忙, 暂无合适的世界服务器提供");
+        return;
+    end
+
+    -- 登录世界
+    self.world:Login({ip = ip, port = port, worldId = self.worldId, username = self.username, password = self.password});
+end

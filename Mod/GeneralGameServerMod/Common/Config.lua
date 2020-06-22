@@ -47,7 +47,7 @@ function Config:Init(isServer)
 
     -- 服务器配置
     self.maxWorldCount = 200;        -- 服务器最大世界数为200
-    self.maxWorldClientCount = 100;  -- 每个世界限定100用户   
+    self.worldMaxClientCount = 100;  -- 每个世界限定100用户   
     self.maxClientCount = 8000;      -- 服务器最大连接数为8000
 
     -- 服务端才需要配置文件, 加载配置
@@ -55,8 +55,6 @@ function Config:Init(isServer)
         self:LoadConfig(self.ConfigFile);
     end 
 
-    self.log = self.log or {};
-    
     -- 正式环境禁用网络包日志
     if (not IsDevEnv) then
         Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Common.Connection", false);
@@ -75,27 +73,52 @@ function Config:LoadConfig(filename)
 		return Log:Error("failed loading paracraft server config file %s", filename);
     end
 
-    local ServerCfg = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Server")[1];
-    if (ServerCfg and ServerCfg.attr) then 
-        commonlib.partialcopy(self, ServerCfg.attr);
+    -- 服务器配置
+    self.Server = self.Server or {};
+    local Server = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Server")[1];
+    if (Server and Server.attr) then 
+        local ServerAttr = Server.attr;
+        commonlib.partialcopy(self.Server, ServerAttr);
+        self.ip = ServerAttr.ip or self.ip;
+        self.port = ServerAttr.port or self.port;
+        self.Server.maxClientCount = tonumber(ServerAttr.maxClientCount) or self.maxClientCount;
+        self.Server.maxWorldCount = tonumber(ServerAttr.maxWorldCount) or self.maxWorldCount;
+        self.Server.isControlServer = ServerAttr.isControlServer == "true" and true or false;
+        self.Server.isWorkerServer = ServerAttr.isWorkerServer == "true" and true or false;
     end
-
+    
+    -- 日志配置
+    self.Log = self.Log or {};
     local LogCfg = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Log")[1];
     if (LogCfg and LogCfg.attr) then
-        commonlib.partialcopy(self, LogCfg.attr);
+        commonlib.partialcopy(self.Log, LogCfg.attr);
     end
 
-    local LogModulesCfg = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Log/Module");
-    for i, module in ipairs(LogModulesCfg) do 
-        Log:SetModuleLogEnable(module.name, module.enable == "true" and true or false);
+    local LogModules = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Log/Module");
+    for i, module in ipairs(LogModules) do 
+        Log:SetModuleLogEnable(module.name, module.attr.enable == "true" and true or false);
     end
 
-    local LimitCfg = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Limit")[1];
-    if (LimitCfg) then
-        for key, val in pairs(LimitCfg.attr) do
-            self[key] = tonumber(val) or self[key];
-        end
+    -- 世界配置
+    self.World = self.World or {};
+    local World = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/World")[1];
+    if (World and World.attr) then
+        commonlib.partialcopy(self.World, World.attr);
     end
-
+    self.World.maxClientCount = tonumber(World.maxClientCount) or self.worldMaxClientCount;
     -- Log:Info(self);
+
+    -- 控制器服务配置
+    self.ControlServer = self.ControlServer or {};
+    local ControlServer = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Server/ControlServer")[1];
+    if (ControlServer and ControlServer.attr) then
+        commonlib.partialcopy(self.ControlServer, ControlServer.attr);
+    end
+
+    -- 工作服务配置
+    self.WorkerServer = self.WorkerServer or {};
+    local WorkerServer = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Server/WorkerServer")[1];
+    if (WorkerServer and WorkerServer.attr) then
+        commonlib.partialcopy(self.WorkerServer, WorkerServer.attr);
+    end
 end

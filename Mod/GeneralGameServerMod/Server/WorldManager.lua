@@ -6,7 +6,7 @@ Desc: 管理所有世界对象
 use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Server/WorldManager.lua");
-local WorldManager = commonlib.gettable("GeneralGameServerMod.Server.WorldManager");
+local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Server.WorldManager");
 WorldManager.GetSingleton();
 -------------------------------------------------------
 ]]
@@ -82,4 +82,16 @@ function WorldManager:GetClientCount()
         count = count + world:GetClientCount();
     end
     return count;
+end
+
+-- 获取世界和用户数
+function WorldManager:GetWorldClientCount()
+    local totalWorldCount, totalClientCount, totalWorldClientCounts = 0, 0, {};
+    for worldId, world in pairs(self.worldMap) do 
+        local count = world:GetClientCount();
+        totalWorldClientCounts[worldId] = count;
+        totalWorldCount = totalWorldCount + 1;
+        totalClientCount = totalClientCount + count;
+    end
+    return totalWorldCount, totalClientCount, totalWorldClientCounts;
 end

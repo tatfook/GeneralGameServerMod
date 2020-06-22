@@ -4,6 +4,8 @@ NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Server/WorldManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Server/WorkerServer.lua");
+local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.WorkerServer");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
@@ -19,6 +21,11 @@ end
 function NetServerHandler:Init(tid)
 	self.playerConnection = Connection:new():Init(tid, self);
 	return self;
+end
+
+-- 获取WorkerServer
+function NetServerHandler:GetWorkerServer()
+    return WorkerServer.GetSingleton();
 end
 
 -- 获取世界管理器
@@ -134,6 +141,8 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     packetPlayerLogin.entityId = self:GetPlayer().entityId;
     packetPlayerLogin.result = "ok";
     self:SendPacketToPlayer(packetPlayerLogin);
+
+    self:SendServerInfo();
 end
 
 -- 处理生成玩家包
@@ -173,4 +182,11 @@ function NetServerHandler:handleErrorMessage(text, data)
     self:GetPlayerManager():RemovePlayer(self:GetPlayer());
     self:GetPlayerManager():SendPacketToAllPlayersExcept(Packets.PacketPlayerLogout:new():Init(self:GetPlayer()), self:GetPlayer());
     self.connectionClosed = true;
+
+    self:SendServerInfo();
+end
+
+-- 发送服务器负载给控制器服务
+function NetServerHandler:SendServerInfo()
+    self:GetWorkerServer():SendServerInfo();
 end

@@ -1,18 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- paracraft server configuration file -->
 <GeneralGameServer>
+
   <!--which ip and port this server listens to. As well as the nid of itself.-->
   <Server 
     ip="0.0.0.0" 
-    port="9000">
-  </Server>
-  <Limit
+    port="9000"
+    isControlServer=true
+    isWorkerServer=true
+    maxClientCount=100
     maxWorldCount=200
-    maxWorldClientCount=100
-    maxClientCount=8000>
-  </Limit>
+    innerIp="0.0.0.0"
+    innerPort="9000"
+    outerIp="0.0.0.0"
+    outerPort="9000">
+    <!-- 内网Ip和Port用于服务端互联, 外网Ip和Port将会返回给客户端, 供其连接 -->
+    <ControlServer
+      innerIp="127.0.0.1"
+      innerPort="9000"
+      outerIp="120.132.120.175"
+      outerPort="9000">
+    </ControlServer>
+    
+    <!--outerIp="120.132.120.175"-->
+    <WorkerServer
+      innerIp="127.0.0.1"
+      innerPort="9000"
+      outerIp="127.0.0.1"
+      outerPort="9000">
+    </WorkerServer>
+  </Server>
+
+  <World 
+    maxClientCount=200>
+  </World>
   <Log level="INFO">
-    <Module name="test" enable=true>
-    <Module name="test" enable=true>
+    <Module name="test" enable=true></Module>
+    <Module name="test" enable=true></Module>
   </Log>
 </GeneralGameServer>

@@ -18,8 +18,6 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connectio
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityMainPlayer");
 local NetClientHandler = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.NetHandler"), commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler"));
 
-local next_nid = 100;
-
 function NetClientHandler:ctor() 
 end
 
@@ -74,13 +72,6 @@ function NetClientHandler:GetPlayer()
     return self.player or EntityManager.GetPlayer();
 end
 
-function NetClientHandler:GetNid(ip, port)
-    next_nid = next_nid + 1;
-    local nid = tostring(next_nid);
-    NPL.AddNPLRuntimeAddress({host = tostring(ip), port = tostring(port), nid = nid});
-    return nid;
-end
-
 -- create a tcp connection to server. 
 function NetClientHandler:Init(ip, port, worldId, username, password, world)
     self.ip = ip;
@@ -92,7 +83,7 @@ function NetClientHandler:Init(ip, port, worldId, username, password, world)
     self:SetWorld(world);
 	
 	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", ip, port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-    self.connection = Connection:new():Init(self:GetNid(ip, port), self);
+    self.connection = Connection:new():InitByIpPort(ip, port, self);
 	self.connection:Connect(5, function(bSucceed)
 		-- try authenticate
 		if(bSucceed) then
