@@ -84,6 +84,8 @@ function Config:LoadConfig(filename)
     local LogCfg = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Log")[1];
     local LogAttr = LogCfg and (LogCfg.attr or {});
     commonlib.partialcopy(self.Log, LogAttr);
+    -- 设置日志级别
+    Log:SetLevel(self.Log.level or "INFO");
 
     local LogModules = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Log/Module");
     for i, module in ipairs(LogModules) do 

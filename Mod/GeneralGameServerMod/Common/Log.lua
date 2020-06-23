@@ -11,7 +11,6 @@ local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 -------------------------------------------------------
 ]]
 
-local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local log = commonlib.logging.GetLogger("GeneralGameServerMod");
 local Log = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Common.Log"));
 
@@ -21,7 +20,7 @@ end
 
 function Log:Init(level, defaultModuleName)
     self:SetDefaultModuleName(defaultModuleName);
-    self:SetLevel(level or (IsDevEnv and "DEBUG" or "INFO"));
+    self:SetLevel(level or "INFO");
     return self;
 end
 

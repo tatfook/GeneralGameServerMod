@@ -42,7 +42,7 @@ pm2 start npm npl --name "GGS" --  isDevEnv="true" servermode="true" bootstrappe
 
 ## 客户端部署
 
-- 下载客户端模块的ZIP包, 下载地址: https://github.com/tatfook/GeneralGameServerMod
+- 下载客户端模块的ZIP包, 下载地址: <https://github.com/tatfook/GeneralGameServerMod>
 - 将下载好的zip包放在Paracraft安装目录的Mod文件夹里
 - 启动Paracraft, 在登录页面, 点登录框下面的MOD加载, 再在弹出的Mod对话框中找到刚放入的zip包模块, 并勾选
 - 登录进入世界, 执行 `connectGGS worldId` 命令进入多人世界, 或按F12执行如下代码:
