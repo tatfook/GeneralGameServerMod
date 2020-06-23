@@ -108,8 +108,8 @@
   <World 
     maxClientCount=200>
   </World>
-  <Log level="INFO">
-    <Module name="Mod.GeneralGameServerMod.Common.Connection" enable=false></Module>
-    <Module name="Mod.GeneralGameServerMod.Client.EntityMainPlayer" enable=false></Module>
+  <Log level="DEBUG">
+    <Module name="Mod.GeneralGameServerMod.Common.Connection" enable=true></Module>
+    <Module name="Mod.GeneralGameServerMod.Client.EntityMainPlayer" enable=true></Module>
   </Log>
 </GeneralGameServerTest>

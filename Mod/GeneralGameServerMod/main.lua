@@ -39,7 +39,7 @@ function GeneralGameServerMod:init()
 		-- server
 		NPL.load("Mod/GeneralGameServerMod/Server/GeneralGameServer.lua");
 		local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.GeneralGameServer");
-		return GeneralGameServer:Start();
+		GeneralGameServer:Start();
 	else
 		-- client
 		NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameCommand.lua");
