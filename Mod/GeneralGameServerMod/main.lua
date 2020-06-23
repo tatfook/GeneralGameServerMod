@@ -8,6 +8,8 @@ use the lib:
 NPL.load("Mod/GeneralGameServerMod/main.lua");
 local GeneralGameServerMod = commonlib.gettable("Mod.GeneralGameServerMod");
 GeneralGameServerMod:init();
+-- client
+GameLogic.RunCommand("/connectGGS -test");    
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/System.lua");

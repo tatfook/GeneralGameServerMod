@@ -156,7 +156,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         x = math.floor(entityPlayer.x or 20000),
         y = math.floor(entityPlayer.y or -128),
         z = math.floor(entityPlayer.z or 20000),
-        name = username,
+        name = username or tostring(entityId),
         facing = math.floor(entityPlayer.rotationYaw or entityPlayer.facing or 0),
         pitch = math.floor(entityPlayer.rotationPitch or 0),
         data = metadata and DataWatcher.WriteObjectsInListToData(metadata, nil),
