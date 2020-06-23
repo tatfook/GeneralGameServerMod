@@ -11,7 +11,8 @@ GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/System.lua");
-
+NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
+local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.GeneralGameServerMod"));
 
 local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
@@ -34,6 +35,7 @@ end
 function GeneralGameServerMod:init()
 	LOG.info("GeneralGameServerMod plugin initialized");
 
+	Common:Init(servermode);
 	-- 启动插件
 	if (servermode) then
 		-- server

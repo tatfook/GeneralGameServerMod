@@ -13,14 +13,14 @@ client.LoadWorld("127.0.0.1", "9000", 12348);
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameWorld.lua");
-NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
+local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
-local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local GeneralGameClient = commonlib.inherit(nil,commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameClient"));
@@ -42,11 +42,11 @@ end
 
 function GeneralGameClient:Init() 
     if (self.inited) then return self end;
+    
+    Common:Init(false);
+
     -- 禁用服务器 指定为客户端
     NPL.StartNetServer("127.0.0.1", "0");
-
-    -- 初始化
-    Common:Init(false);
 
     -- 监听世界加载完成事件
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
@@ -78,7 +78,7 @@ function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
     self.newPassword = password;
 
     -- 与当前世界相同则不处理
-    if (self.world and self.world.worldId == self.newWorldId and self.world:IsLogin()) then return end;
+    -- if (self.world and self.world.worldId == self.newWorldId and self.world:IsLogin()) then return end;
 
     -- 退出旧世界
     if (self.world) then self.world:OnExit(); end
@@ -117,6 +117,7 @@ end
 
 -- 连接控制服务器
 function GeneralGameClient:ConnectControlServer(worldId)
+    Log:Debug("ServerIp: %s, ServerPort: %s", Config.serverIp, Config.serverPort);
     self.controlServerConnection = Connection:new():InitByIpPort(Config.serverIp, Config.serverPort, self);
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)

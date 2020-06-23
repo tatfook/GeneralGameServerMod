@@ -15,12 +15,12 @@ GeneralGameServer.Start();
 NPL.load("(gl)script/ide/System/System.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
-NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Server/WorkerServer.lua");
 NPL.load("Mod/GeneralGameServerMod/Server/ControlServer.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
+local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 local ControlServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.ControlServer");
 local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.WorkerServer");
-local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.GeneralGameServer");
@@ -50,9 +50,8 @@ end
 function GeneralGameServer:Start() 
 	if (self.isStart) then return end;
 	
-	-- 通用初始化
 	Common:Init(true);
-
+	
     -- 设置系统属性
     self:LoadNetworkSettings();
 

@@ -33,6 +33,7 @@ function GeneralGameCommand:init()
 end
 
 function GeneralGameCommand:InstallCommand()
+	Log:Info("InstallCommand");
 	local connectGGSCmd = {
 		name="connectGGS", 
 		quick_ref="/connectGGS [worldId] [username]", 
@@ -44,13 +45,21 @@ connectGGS                        # 联机进入当前世界或默认世界
 connectGGS 145                    # 联机进入世界ID为145的世界
 connectGGS 145 xiaoyao            # 联机进入世界ID为145的世界, 并取名为 xiaoyao
 ]], 
-		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)			
+		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)		
+			Log:Info("run cmd: %s %s", cmd_name, cmd_text);
+			local options = {};
+			options, cmd_text = CmdParser.ParseOptions(cmd_text);	
 			worldId, cmd_text = CmdParser.ParseInt(cmd_text);
 			username, cmd_text = CmdParser.ParseString(cmd_text);
 			password, cmd_text = CmdParser.ParseString(cmd_text);
 			-- 隐藏参数
 			ip, cmd_text = CmdParser.ParseString(cmd_text);
 			port, cmd_text = CmdParser.ParseString(cmd_text);
+
+			Log:Info(options);
+			if (options.dev) then Config:SetEnv("dev"); end
+			if (options.test) then Config:SetEnv("test"); end
+
 			GeneralGameClient.GetSingleton():LoadWorld(ip, port, worldId, username, password);
 		end,
 	};

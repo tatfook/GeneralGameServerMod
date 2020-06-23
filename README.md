@@ -45,13 +45,13 @@ pm2 start npm npl --name "GGS" --  isDevEnv="true" servermode="true" bootstrappe
 - 下载客户端模块的ZIP包, 下载地址: <https://github.com/tatfook/GeneralGameServerMod>
 - 将下载好的zip包放在Paracraft安装目录的Mod文件夹里
 - 启动Paracraft, 在登录页面, 点登录框下面的MOD加载, 再在弹出的Mod对话框中找到刚放入的zip包模块, 并勾选
-- 登录进入世界, 执行 `connectGGS worldId` 命令进入多人世界, 或按F12执行如下代码:
+- 登录进入世界, 执行 `connectGGS worldId`(`connectGGS -test worldId` 选择测试服务器) 命令进入多人世界, 或按F12执行如下代码:
 
 ```lua
 NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameClient.lua");
 local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameClient");
 local client = GeneralGameClient.GetSingleton();
-client.LoadWorld("127.0.0.1", "9000", 0);
+client.LoadWorld("ggs.keepwork.com", "9001");
 ```
 
 ### 问题

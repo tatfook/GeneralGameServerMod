@@ -19,6 +19,25 @@ Config.IsTestEnv = ParaEngine.GetAppCommandLineByParam("IsTestEnv","false") == "
 Config.ConfigFile = ParaEngine.GetAppCommandLineByParam("ConfigFile", nil);
 
 
+function Config:SetEnv(env)
+    if (env == "test") then
+        self.IsTestEnv = true;
+        self.serverIp = "ggs.keepwork.com";
+        self.serverPort = "9001";
+        Log:Info("切换到测试环境");
+    elseif (env == "dev") then
+        self.IsDevEnv = true;
+        self.serverIp = "127.0.0.1";
+        self.serverPort = "9000";
+        Log:Info("切换到开发环境");
+    else 
+        self.IsDevEnv, self.IsTestEnv = false, false;
+        self.serverIp = "ggs.keepwork.com";
+        self.serverPort = "9000";
+        Log:Info("切换到正式环境");
+    end
+end
+
 -- 初始化
 function Config:Init(isServer)
     if (self.inited) then return end;
@@ -52,6 +71,8 @@ function Config:Init(isServer)
         Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Common.Connection", false);
         Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Client.EntityMainPlayer", false);
     end
+
+    Log:Info(self);
 end
 
 
