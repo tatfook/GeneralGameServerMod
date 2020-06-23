@@ -56,10 +56,13 @@ connectGGS 145 xiaoyao            # 联机进入世界ID为145的世界, 并取�
 			ip, cmd_text = CmdParser.ParseString(cmd_text);
 			port, cmd_text = CmdParser.ParseString(cmd_text);
 
-			Log:Info(options);
-			if (options.dev) then Config:SetEnv("dev"); end
-			if (options.test) then Config:SetEnv("test"); end
-
+			if (options.dev) then 
+				Config:SetEnv("dev"); 
+			elseif (options.test) then
+				Config:SetEnv("test");
+			else
+				Config:SetEnv("prod");
+			end
 			GeneralGameClient.GetSingleton():LoadWorld(ip, port, worldId, username, password);
 		end,
 	};
