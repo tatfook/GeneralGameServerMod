@@ -10,11 +10,11 @@ local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 -------------------------------------------------------
 ]]
 
-
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketTypes.lua");
+
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketTypes");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");

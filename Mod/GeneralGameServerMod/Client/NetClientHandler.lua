@@ -10,9 +10,9 @@ local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
+local Desktop = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop");
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
-
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityMainPlayer");
@@ -270,4 +270,10 @@ function NetClientHandler:handleErrorMessage(text)
     
     -- 登出世界
     self:GetWorld():Logout();
+end
+
+-- 聊天信息
+function NetClientHandler:handleChat(packetChat)
+    LOG.std(nil, "debug", "NetClientHandler.handleChat", "%s", packetChat.text);
+	Desktop.GetChatGUI():PrintChatMessage(packetChat:ToChatMessage())
 end

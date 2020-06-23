@@ -10,7 +10,8 @@ local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.
 PacketTypes:StaticInit();
 -------------------------------------------------------
 ]]
-
+NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Packets/Packet_Types.lua");
+local Packet_Types = commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet_Types");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local PacketTypes = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketTypes"));
 
@@ -18,6 +19,8 @@ PacketTypes.packetIdToClassMap = {}
 PacketTypes.packetClassToIdMap = {}
 
 function PacketTypes:StaticInit()
+    Packet_Types:StaticInit();
+
     NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerLogin.lua");
     self:AddIdClassMapping(100, Packets.PacketPlayerLogin);
 
@@ -56,13 +59,13 @@ function PacketTypes:AddIdClassMapping(packet_id, packet_class)
 end
 
 function PacketTypes:GetPacketId(packet_class)
-    return self.packetClassToIdMap[packet_class];
+    return self.packetClassToIdMap[packet_class] or Packet_Types:GetPacketId(packet_class);
 end
 
 -- Create/Get a new instance of the specified Packet class.
 -- it may create a new intance or a singleton is returned depending on packet type. 
 function PacketTypes:GetNewPacket(packet_id)
-    local packet_class = self.packetIdToClassMap[packet_id];
+    local packet_class = self.packetIdToClassMap[packet_id] or Packet_Types:GetNewPacket(packet_id);
 	if(packet_class) then
 		return packet_class:GetInstance();
     end

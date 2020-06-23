@@ -24,7 +24,6 @@ function Config:Init(isServer)
     if (self.inited) then return end;
 
     self.inited = true;
-    
     Log:Info("---------------------%s init config----------------", isServer and "server" or "client");
 
     self.isServer = isServer;

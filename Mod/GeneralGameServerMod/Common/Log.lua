@@ -20,7 +20,7 @@ end
 
 function Log:Init(level, defaultModuleName)
     self:SetDefaultModuleName(defaultModuleName);
-    self:SetLevel(level or "INFO");
+    self:SetLevel(level or "DEBUG");
     return self;
 end
 
@@ -73,13 +73,8 @@ end
 
 function Log:SetLevel(level)
     self = GetSelf(self);
-    if(level) then
-		level = string.lower(level);
-		if(level~=log.level) then
-			log.level = level;
-			log.std(nil, "info", "Log", "log level is set to %s", log.level);
-		end
-	end
+    log:setLevel(level);
+    self:Info("Log level is set to %s", level);
 end
 
 function StdLog(self, depth, threadOrWord, level, moduleName, input, ...)
@@ -101,6 +96,7 @@ function StdLog(self, depth, threadOrWord, level, moduleName, input, ...)
 
     -- 日志输出
     log.std(threadOrWord, level, moduleName, input, ...);
+    -- LOG.std(threadOrWord, level, moduleName, input, ...);
 end
 
 -- 当需要明确指定模块名时使用此函数输出日志

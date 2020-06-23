@@ -195,3 +195,8 @@ end
 function NetServerHandler:SendServerInfo()
     self:GetWorkerServer():SendServerInfo();
 end
+
+-- 转发聊天消息
+function NetServerHandler:handleChat(packetChat)
+    self:GetPlayerManager():SendPacketToAllPlayersExcept(packetChat, self:GetPlayer());
+end

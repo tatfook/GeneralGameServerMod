@@ -48,8 +48,8 @@ end
 
 -- 启动服务
 function GeneralGameServer:Start() 
-    if (self.isStart) then return end;
-
+	if (self.isStart) then return end;
+	
 	-- 通用初始化
 	Common:Init(true);
 
