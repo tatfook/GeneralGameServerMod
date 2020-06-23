@@ -74,3 +74,42 @@
     <Module name="Mod.GeneralGameServerMod.Client.EntityMainPlayer" enable=true></Module>
   </Log>
 </GeneralGameServerDev>
+
+<!--测试环境配置-->
+<GeneralGameServerTest>
+<!--which ip and port this server listens to. As well as the nid of itself.-->
+  <Server 
+    listenIp="0.0.0.0" 
+    listenPort="9001"
+    isControlServer=true
+    isWorkerServer=true
+    maxClientCount=100
+    maxWorldCount=200
+    innerIp="10.28.18.2"
+    innerPort="9001"
+    outerIp="120.132.120.175"
+    outerPort="9001">
+    <!-- 内网Ip和Port用于服务端互联, 外网Ip和Port将会返回给客户端, 供其连接 -->
+     <ControlServer
+      innerIp="10.28.18.2"
+      innerPort="9001"
+      outerIp="120.132.120.175"
+      outerPort="9001">
+    </ControlServer>   
+    <!-- 工作主机配置 -->
+    <WorkerServer
+      innerIp="10.28.18.2"
+      innerPort="9001"
+      outerIp="120.132.120.175"
+      outerPort="9001">
+    </WorkerServer>
+  </Server>
+  <!-- 世界相关信息配置 -->
+  <World 
+    maxClientCount=200>
+  </World>
+  <Log level="INFO">
+    <Module name="Mod.GeneralGameServerMod.Common.Connection" enable=false></Module>
+    <Module name="Mod.GeneralGameServerMod.Client.EntityMainPlayer" enable=false></Module>
+  </Log>
+</GeneralGameServerTest>

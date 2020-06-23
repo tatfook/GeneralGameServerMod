@@ -15,6 +15,7 @@ NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 Config.IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
+Config.IsTestEnv = ParaEngine.GetAppCommandLineByParam("IsTestEnv","false") == "true";
 Config.ConfigFile = ParaEngine.GetAppCommandLineByParam("ConfigFile", nil);
 
 
@@ -61,7 +62,7 @@ function Config:LoadConfig(filename)
 
     -- 加载配置文件
     local xmlRoot = ParaXML.LuaXML_ParseFile(filename);
-    local pathPrefix = self.IsDevEnv and "/GeneralGameServerDev" or "/GeneralGameServer";
+    local pathPrefix = self.IsDevEnv and "/GeneralGameServerDev" or (self.IsTestEnv and "/GeneralGameServerTest" or "/GeneralGameServer");
     if (not xmlRoot) then
 		return Log:Error("failed loading paracraft server config file %s", filename);
     end
