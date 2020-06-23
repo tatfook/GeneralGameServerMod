@@ -5,8 +5,8 @@ Date: 2020/6/12
 Desc: base connection
 use the lib:
 -------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/Common/ConnectionBase.lua");
-local ConnectionBase = commonlib.gettable("Mod.GeneralGameServerMod.Common.ConnectionBase");
+NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
+local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ConnectionBase.lua");

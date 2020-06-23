@@ -44,7 +44,7 @@ function ControlServer:handleServerInfo(packetServerInfo)
     server.innerPort = packetServerInfo.innerPort or server.innerPort;             -- 内网Port
     server.outerIp = packetServerInfo.outerIp or server.outerPort;                 -- 外网IP
     server.outerPort = packetServerInfo.outerPort or server.outerPort;             -- 外网Port 
-
+    server.lastTick = ParaGlobal.timeGetTime();                                    -- 上次发送时间
     servers[connectionId] = server;
 end
 
@@ -55,29 +55,22 @@ function ControlServer:handleWorldServer(packetWorldServer)
     -- 其次选择客户端最少的服务器
     -- 最后选择控制服务器
     local server, controlServer = nil, nil; -- 设置最大值
-    local workerServerMaxClientCount = tonumber(Config.Server.maxClientCount) or Config.maxClientCount;
-    local controlServerMaxClientCount = tonumber(Config.Server.maxClientCount) or Config.maxClientCount;
+    local serverMaxClientCount = tonumber(Config.Server.maxClientCount) or Config.maxClientCount;
     local worldMaxClientCount = tonumber(Config.World.maxClientCount) or Config.worldMaxClientCount;
+    local curTick, aliveDuration = ParaGlobal.timeGetTime(), 1000 * 60 * 5;
     for key, svr in pairs(servers) do
-        if (svr.totalWorldClientCounts[worldId]) then
-            if (svr.totalWorldClientCounts[worldId] < worldMaxClientCount) then
+        local isAlive = (curTick - svr.lastTick) < aliveDuration; 
+        -- 忽略已挂服务器或超负荷服务器
+        if (isAlive and svr.totalClientCount < serverMaxClientCount) then 
+            -- 优先找已存在的世界 且世界人数未满
+            if (svr.totalWorldClientCounts[worldId] and svr.totalWorldClientCounts[worldId] < worldMaxClientCount) then
                 server = svr;
-            else
-                server, controlServer = nil, nil;  -- 单世界人数太多
+                break; -- 找到退出循环
             end
-            break;
-        end
-        if (svr.isWorkerServer and svr.maxClientCount < workerServerMaxClientCount) then
-            server = server or svr;
-            if (server.totalClientCount > svr.totalClientCount) then
-                server = svr;
-            end
-        end
-        if (svr.isControlServer and svr.maxClientCount < controlServerMaxClientCount) then
-            controlServer = controlServer or svr;
-            if (controlServer.totalClientCount > svr.totalClientCount) then 
-                controlServer = svr;
-            end
+            -- 工作主机 
+            server = (svr.isWorkerServer and (not server or server.totalClientCount > svr.totalClientCount)) and svr or server;
+            -- 控制主机
+            controlServer = (svr.isControlServer and (not controlServer or controlServer.totalClientCount > svr.totalClientCount)) and svr or controlServer;
         end
     end
     server = server or controlServer;

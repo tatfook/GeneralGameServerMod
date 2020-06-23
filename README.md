@@ -14,7 +14,7 @@ GeneralGameServerMod 是基于 Paracraft 的一个多人联机的模块, 包含�
 
 ### 客户端程序流程
 
-- 执行命令: `connectGGS ip port worldId` 进入联机世界 worldId(keepwork项目Id)
+- 执行命令: `connectGGS worldId` 进入联机世界 worldId(keepwork项目Id)
 - 如 worldId 为 0, 则进入默认空世界, 否则加载并打开 worldId 对应的世界
 - 与服务器建立TCP链接, 并登陆服务端对应的 worldId 世界中
 - 接受服务端 worldId 世界更新数据并应用数据到客户端世界

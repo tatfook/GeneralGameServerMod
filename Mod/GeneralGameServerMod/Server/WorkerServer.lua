@@ -51,6 +51,11 @@ function WorkerServer:Init(server)
     if (self.inited) then return; end
     self.inited = true;
 
+    -- 定时上报服务器信息
+    self.SendServerInfoTimer = commonlib.Timer:new({callbackFunc = function(timer)
+        self:SendServerInfo();
+    end});
+
     -- 连接控制器
     self.connection = Connection:new():InitByIpPort(self.controlServerIp, self.controlServerPort, self);
     self.connection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Server/ControlServer.lua");
@@ -58,10 +63,13 @@ function WorkerServer:Init(server)
         if (success) then
             Log:Info("成功连接控制服务");
             -- 推送服务器信息到控制器
+            self.SendServerInfoTimer:Change(0, 1000 * 60 * 3); -- 每3分钟上报一次 
         else
             Log:Info("无法连接控制服务");
         end
     end)
+
+    
 end
 
 -- 发送服务器信息

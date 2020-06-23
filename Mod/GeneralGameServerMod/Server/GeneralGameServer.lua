@@ -57,11 +57,10 @@ function GeneralGameServer:Start()
     self:LoadNetworkSettings();
 
     -- 启动服务
-    NPL.StartNetServer(Config.ip, tostring(Config.port));
+    NPL.StartNetServer(Config.Server.listenIp, tostring(Config.Server.listenPort));
 
     Log:Info("服务器启动");
 
-	Log:Debug(Config);
 	-- 控制服务
 	if (Config.Server.isControlServer) then
 		-- ControlServer.GetSingleton():Init();

@@ -29,20 +29,12 @@ function Config:Init(isServer)
     self.isServer = isServer;
     -- 客户端默认世界ID
     self.defaultWorldId = 12706;
-    -- ip, port 设置
-    if (isServer) then
-        -- 服务端监听Ip和Port
-        self.ip = "0.0.0.0";
-        self.port = 9000;
+    if (self.IsDevEnv) then 
+        self.serverIp = "127.0.0.1";
+        self.serverPort = "9000";
     else
-        -- 客户端连接的Ip和Port
-        if (self.IsDevEnv) then
-            self.ip = "127.0.0.1";
-            self.port = 9000;
-        else 
-            self.ip = "120.132.120.175";
-            self.port = 9000;
-        end    
+        self.serverIp = "ggs.keepwork.com";
+        self.serverPort = "9000";
     end
 
     -- 服务器配置
@@ -56,7 +48,7 @@ function Config:Init(isServer)
     end 
 
     -- 正式环境禁用网络包日志
-    if (not IsDevEnv) then
+    if (not self.IsDevEnv) then
         Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Common.Connection", false);
         Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Client.EntityMainPlayer", false);
     end
@@ -69,56 +61,51 @@ function Config:LoadConfig(filename)
 
     -- 加载配置文件
     local xmlRoot = ParaXML.LuaXML_ParseFile(filename);
+    local pathPrefix = self.IsDevEnv and "/GeneralGameServerDev" or "/GeneralGameServer";
     if (not xmlRoot) then
 		return Log:Error("failed loading paracraft server config file %s", filename);
     end
 
     -- 服务器配置
     self.Server = self.Server or {};
-    local Server = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Server")[1];
-    if (Server and Server.attr) then 
-        local ServerAttr = Server.attr;
-        commonlib.partialcopy(self.Server, ServerAttr);
-        self.ip = ServerAttr.ip or self.ip;
-        self.port = ServerAttr.port or self.port;
-        self.Server.maxClientCount = tonumber(ServerAttr.maxClientCount) or self.maxClientCount;
-        self.Server.maxWorldCount = tonumber(ServerAttr.maxWorldCount) or self.maxWorldCount;
-        self.Server.isControlServer = ServerAttr.isControlServer == "true" and true or false;
-        self.Server.isWorkerServer = ServerAttr.isWorkerServer == "true" and true or false;
-    end
-    
+    local Server = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Server")[1];
+    local ServerAttr = Server and (Server.attr or {});
+    commonlib.partialcopy(self.Server, ServerAttr);
+    self.ip = ServerAttr.ip or self.ip;
+    self.port = ServerAttr.port or self.port;
+    self.Server.maxClientCount = tonumber(ServerAttr.maxClientCount) or self.maxClientCount;
+    self.Server.maxWorldCount = tonumber(ServerAttr.maxWorldCount) or self.maxWorldCount;
+    self.Server.isControlServer = ServerAttr.isControlServer == "true" and true or false;
+    self.Server.isWorkerServer = ServerAttr.isWorkerServer == "true" and true or false;
+
     -- 日志配置
     self.Log = self.Log or {};
-    local LogCfg = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Log")[1];
-    if (LogCfg and LogCfg.attr) then
-        commonlib.partialcopy(self.Log, LogCfg.attr);
-    end
+    local LogCfg = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Log")[1];
+    local LogAttr = LogCfg and (LogCfg.attr or {});
+    commonlib.partialcopy(self.Log, LogAttr);
 
-    local LogModules = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Log/Module");
+    local LogModules = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Log/Module");
     for i, module in ipairs(LogModules) do 
         Log:SetModuleLogEnable(module.name, module.attr.enable == "true" and true or false);
     end
 
     -- 世界配置
     self.World = self.World or {};
-    local World = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/World")[1];
-    if (World and World.attr) then
-        commonlib.partialcopy(self.World, World.attr);
-    end
-    self.World.maxClientCount = tonumber(World.maxClientCount) or self.worldMaxClientCount;
+    local World = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/World")[1];
+    local WorldAttr = World and (World.attr or {});
+    commonlib.partialcopy(self.World, WorldAttr);
+    self.World.maxClientCount = tonumber(WorldAttr.maxClientCount) or self.worldMaxClientCount;
     -- Log:Info(self);
 
     -- 控制器服务配置
     self.ControlServer = self.ControlServer or {};
-    local ControlServer = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Server/ControlServer")[1];
-    if (ControlServer and ControlServer.attr) then
-        commonlib.partialcopy(self.ControlServer, ControlServer.attr);
-    end
+    local ControlServer = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Server/ControlServer")[1];
+    local ControlServerAttr = ControlServer and (ControlServer.attr or {});
+    commonlib.partialcopy(self.ControlServer, ControlServerAttr);
 
     -- 工作服务配置
     self.WorkerServer = self.WorkerServer or {};
-    local WorkerServer = commonlib.XPath.selectNodes(xmlRoot, "/GeneralGameServer/Server/WorkerServer")[1];
-    if (WorkerServer and WorkerServer.attr) then
-        commonlib.partialcopy(self.WorkerServer, WorkerServer.attr);
-    end
+    local WorkerServer = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Server/WorkerServer")[1];
+    local WorkerServerAttr = WorkerServer and (WorkerServer.attr or {});
+    commonlib.partialcopy(self.WorkerServer, WorkerServerAttr);
 end

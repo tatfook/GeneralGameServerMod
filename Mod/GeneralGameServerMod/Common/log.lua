@@ -7,7 +7,7 @@ Desc: log file, 添加模块日志使能效果
 use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log"):GetSingleton();
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 -------------------------------------------------------
 ]]
 

@@ -96,10 +96,13 @@ end
 -- 服务器是否已达到峰值
 function NetServerHandler:IsAllowLoginWorld(worldId)
     local totalClientCount = self:GetWorldManager():GetClientCount();
-    if (totalClientCount >= Config.maxClientCount) then
+    local worldClientCount = self:GetWorld() and self:GetWorld():GetClientCount() or 0;
+    if (totalClientCount >= Config.Server.maxClientCount) then
         return false;
     end
-    -- local worldCount = self:GetWorldManager():GetWorldCount();
+    if (worldClientCount >= Config.World.maxClientCount) then
+        return false;
+    end
     return true;
 end
 
@@ -122,7 +125,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     self:SetAuthenticated();
 
     -- 获取并设置世界
-    self:SetWorld(self:GetWorldManager():GetWorld(worldId));
+    self:SetWorld(self:GetWorldManager():GetWorldById(worldId, true));
     self:GetWorld():SetWorldId(worldId);
 
     -- 将玩家加入世界
@@ -184,6 +187,8 @@ function NetServerHandler:handleErrorMessage(text, data)
     self.connectionClosed = true;
 
     self:SendServerInfo();
+
+    self:GetWorldManager():TryRemoveWorld(self:GetWorld():GetWorldId()); 
 end
 
 -- 发送服务器负载给控制器服务

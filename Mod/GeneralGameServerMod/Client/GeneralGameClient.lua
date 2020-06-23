@@ -117,7 +117,7 @@ end
 
 -- 连接控制服务器
 function GeneralGameClient:ConnectControlServer(worldId)
-    self.controlServerConnection = Connection:new():InitByIpPort(Config.ip, Config.port, self);
+    self.controlServerConnection = Connection:new():InitByIpPort(Config.serverIp, Config.serverPort, self);
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
@@ -139,4 +139,7 @@ function GeneralGameClient:handleWorldServer(packetWorldServer)
 
     -- 登录世界
     self.world:Login({ip = ip, port = port, worldId = self.worldId, username = self.username, password = self.password});
+
+    -- 关闭控制服务器的链接
+    self.controlServerConnection:CloseConnection();
 end
