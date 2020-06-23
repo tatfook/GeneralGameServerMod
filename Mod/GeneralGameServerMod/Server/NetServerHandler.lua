@@ -145,7 +145,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     packetPlayerLogin.result = "ok";
     self:SendPacketToPlayer(packetPlayerLogin);
 
-    self:SendServerInfo();
+    -- self:SendServerInfo();
 end
 
 -- 处理生成玩家包
@@ -186,7 +186,7 @@ function NetServerHandler:handleErrorMessage(text, data)
     self:GetPlayerManager():SendPacketToAllPlayersExcept(Packets.PacketPlayerLogout:new():Init(self:GetPlayer()), self:GetPlayer());
     self.connectionClosed = true;
 
-    self:SendServerInfo();
+    -- self:SendServerInfo();
 
     self:GetWorldManager():TryRemoveWorld(self:GetWorld():GetWorldId()); 
 end
