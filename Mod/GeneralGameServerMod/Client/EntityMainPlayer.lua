@@ -21,32 +21,20 @@ local moduleName = "Mod.GeneralGameServerMod.Client.EntityMainPlayer";
 
 -- Send updated motion and position information to the server
 function EntityMainPlayer:SendMotionUpdates()
-	local obj = self:GetInnerObject();
+    local obj = self:GetInnerObject();
 	if(not obj) then
 		return;
 	end
 	if(not self:IsNearbyChunkLoaded()) then
 		return;
 	end
-	-- send animation and action
-	-- the channel 0 of the animation is always the Entity action. channel 1,2,3,... are for PacketAnimation
-    local curAnimID = obj:GetField("AnimID", 0);
-	self:SetAnimId(curAnimID);
-
+    if(not self:GetInnerObject() or not self:IsNearbyChunkLoaded()) then return end
+    
     local hasMetaDataChange = self.dataWatcher:HasChanges();
-    local metadata = hasMetaDataChange and self.dataWatcher:UnwatchAndReturnAllWatched() or nil;
-    local data = metadata and DataWatcher.WriteObjectsInListToData(metadata, nil);
-
-
 	-- send head rotation if any 
 	local dHeadRot = self.rotationHeadYaw - self.oldRotHeadYaw;
     local dHeadPitch = self.rotationHeadPitch - self.oldRotHeadPitch;
     local hasHeadRotation = dHeadRot~=0 or dHeadPitch~=0;
-	if (hasHeadRotation) then
-		self.oldRotHeadYaw = self.rotationHeadYaw;
-		self.oldRotHeadPitch = self.rotationHeadPitch;
-	end
-
     -- send movement and body facing. 
     local maxMotionUpdateTickCount = 33; -- 1s
     local dx = self.x - self.oldPosX;
@@ -57,36 +45,30 @@ function EntityMainPlayer:SendMotionUpdates()
     local dRotY = self.facing - self.oldRotationYaw;
     local dRotPitch = self.rotationPitch - self.oldRotationPitch;
     local hasRotation = dRotY ~= 0 or dRotPitch ~= 0;
+    local force = self:IsRiding() and (moveDistance > 2) or (moveDistance > 0.1);
     local forceTick = self.motionUpdateTickCount >= maxMotionUpdateTickCount;
-    local force = moveDistance > 1;
-    if (self:IsRiding()) then
-		-- make riding entity send movement update less frequently, such as when moving one meter. 
-        force = moveDistance > 5;
-    end
 
     -- tick 自增
     self.motionUpdateTickCount = self.motionUpdateTickCount + 1;
 
     -- 位置实时同步, 其它 hasMetaDataChange, hasHeadRotation, hasRotation 配合 Tick 同步
-    if (not force and not (forceTick and (hasMetaDataChange or hasHeadRotation or hasRotation or hasMetaDataChange))) then
+    if (not hasMetaDataChange and not force and not (forceTick and (hasMoved or hasHeadRotation or hasRotation))) then
         return;
     end
-    Log:Std("DEBUG", moduleName, "-----------------------------------------------");
-    Log:Std("DEBUG", moduleName, "force: %s, moveDistance: %s", force, moveDistance);
-    Log:Std("DEBUG", moduleName, "motionUpdateTickCount: %d, hasMoved: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", self.motionUpdateTickCount, hasMoved, hasRotation, hasHeadRotation, hasMetaDataChange);
-    self:AddToSendQueue(Packets.PacketPlayerEntityInfo:new():Init({
-        entityId = self.entityId, 
-        x = self.x, 
-        y = self.y, 
-        stance = self.y, 
-        z = self.z, 
-        facing = self.facing, 
-        pitch = self.rotationPitch, 
-        onground = self.onGround,
-        headYaw = hasHeadRotation and self.rotationHeadYaw or nil,
-        HeadPitch = hasHeadRotation and self.rotationHeadPitch or nil,
-        data = data,
-    }));
+
+    -- Log:Std("DEBUG", moduleName, "-----------------------------------------------");
+    -- Log:Std("DEBUG", moduleName, "force: %s, moveDistance: %s, ", force, moveDistance);
+    -- Log:Std("DEBUG", moduleName, "motionUpdateTickCount: %d, hasMoved: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", self.motionUpdateTickCount, hasMoved, hasRotation, hasHeadRotation, hasMetaDataChange);
+    local packet = Packets.PacketPlayerEntityInfo:new():Init({entityId = self.entityId}, self.dataWatcher, false);
+    if (hasMoved or hasRotation) then
+        packet.x, packet.y, packet.z = self.x, self.y, self.z; 
+        packet.facing, packet.pitch = self.facing, self.rotationPitch;
+    end
+    if (hasHeadRotation) then
+        packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
+    end
+  
+    self:AddToSendQueue(packet);
 
     self.oldPosX = self.x;
     self.oldMinY = self.y;
@@ -94,5 +76,7 @@ function EntityMainPlayer:SendMotionUpdates()
     self.oldPosZ = self.z;
     self.oldRotationYaw = self.facing;
     self.oldRotationPitch = self.rotationPitch;
+    self.oldRotHeadYaw = self.rotationHeadYaw;
+	self.oldRotHeadPitch = self.rotationHeadPitch;
     self.motionUpdateTickCount = 0; 
 end

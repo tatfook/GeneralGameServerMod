@@ -14,6 +14,8 @@ local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local log = commonlib.logging.GetLogger("GeneralGameServerMod");
 local Log = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Common.Log"));
 
+local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
+
 function Log:ctor()
     self.moduleLogEnableMap = {};   -- 实例属性
 end

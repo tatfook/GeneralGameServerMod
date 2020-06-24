@@ -5,7 +5,7 @@ Date: 2020/6/15
 Desc: 玩家实体包
 use the lib:
 -------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerLogin.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerEntityInfo.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketPlayerEntityInfo");
 local packet = Packets.PacketPlayerEntityInfo:new():Init();
 -------------------------------------------------------
@@ -20,10 +20,18 @@ local PacketPlayerEntityInfo = commonlib.inherit(commonlib.gettable("Mod.General
 function PacketPlayerEntityInfo:ctor()
 end
 
-function PacketPlayerEntityInfo:Init(entityInfo)
+function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
+    -- 实体数据
+    if (isAllObject) then
+        self.metadata = dataWatcher and dataWatcher:GetAllObjectList();
+    else
+        self.metadata = dataWatcher and dataWatcher:UnwatchAndReturnAllWatched();
+    end
+
     if (not entityInfo) then 
         return self;
     end
+
     -- 命令
     self.cmd = "";
 
@@ -34,9 +42,6 @@ function PacketPlayerEntityInfo:Init(entityInfo)
     -- 玩家模型
     self.mainAssetPath = entityInfo.mainAssetPath;
 
-    -- 实体数据
-    self.data = entityInfo.data;
-    
     -- 位置信息
     self.x = entityInfo.x;
     self.y = entityInfo.y;
@@ -48,12 +53,39 @@ function PacketPlayerEntityInfo:Init(entityInfo)
     self.headYaw = entityInfo.headYaw;
     self.headPitch = entityInfo.headPitch;
 
+    self.asset = entityInfo.asset; -- 外貌
+    self.skip = entityInfo.skin; -- 皮肤
+    self.animId = entityInfo.animId; -- 动画
     -- 移动信息
     -- self.stance = entityInfo.stance;
     -- self.onground = entityInfo.onground;
     -- self.moving = entityInfo.moving;
 
 	return self;
+end
+
+-- virtual: read packet from network msg data
+function PacketPlayerEntityInfo:ReadPacket(msg)
+    self._super.ReadPacket(self, msg);
+    if (self.data) then
+        self.metadata = DataWatcher.ReadWatchebleObjects(self.data);
+        self.data = nil;
+    end
+end
+
+-- the list of watcheble objects
+function PacketPlayerEntityInfo:GetMetadata()
+    return self.metadata;
+end
+
+-- virtual: By default, the packet itself is used as the raw message. 
+-- @return a packet to be send. 
+function PacketPlayerEntityInfo:WritePacket()
+	if(self.metadata) then
+		self.data = DataWatcher.WriteObjectsInListToData(self.metadata, nil);
+		self.metadata = nil;
+	end
+	return self._super.WritePacket(self);
 end
 
 -- Passes this Packet on to the NetHandler for processing.

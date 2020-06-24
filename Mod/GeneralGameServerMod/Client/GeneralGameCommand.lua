@@ -33,9 +33,10 @@ function GeneralGameCommand:init()
 end
 
 function GeneralGameCommand:InstallCommand()
-	Log:Info("InstallCommand");
+	Log:Info("InstallCommand1");
 	local connectGGSCmd = {
-		name="connectGGS", 
+		mode_deny = "",  -- 暂时支持任意模式联机
+		name="connectGGS",  -- /connectGGS -test 
 		quick_ref="/connectGGS [worldId] [username]", 
 		desc=[[进入联机世界 
 worldId 为世界ID(未指定或为0则联机当前世界或默认世界)

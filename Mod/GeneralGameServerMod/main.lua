@@ -9,7 +9,7 @@ NPL.load("Mod/GeneralGameServerMod/main.lua");
 local GeneralGameServerMod = commonlib.gettable("Mod.GeneralGameServerMod");
 GeneralGameServerMod:init();
 -- client
-GameLogic.RunCommand("/connectGGS -test");    
+GameLogic.RunCommand("/connectGGS -dev");    
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/System.lua");

@@ -51,6 +51,9 @@ function GeneralGameClient:Init()
     -- 监听世界加载完成事件
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
 
+    -- 禁用点击继续
+    GameLogic.options:SetClickToContinue(false);
+
     self.inited = true;
     return self;
 end
@@ -62,20 +65,22 @@ end
 function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
     -- 初始化
     self:Init();
-    
     -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
+    local isReloadWorld = true; -- 进当前世界且只读则不重新加载世界
     if (not worldId) then
         local currentWorldInfo = Mod.WorldShare.Store:Get('world/currentWorld');
         if (currentWorldInfo and currentWorldInfo.kpProjectId) then
             worldId = currentWorldInfo.kpProjectId
+            isReloadWorld = not GameLogic.IsReadOnly();
+            Log:Info('GameLogic.IsReadOnly(): %s', GameLogic.IsReadOnly());
         end
     end
 
-    self.newIp = ip;
-    self.newPort = port;
-    self.newWorldId = worldId  or Config.defaultWorldId;
-    self.newUsername = username;
-    self.newPassword = password;
+    self.ip = ip;
+    self.port = port;
+    self.worldId = worldId  or Config.defaultWorldId;
+    self.username = username;
+    self.password = password;
 
     -- 与当前世界相同则不处理
     -- if (self.world and self.world.worldId == self.newWorldId and self.world:IsLogin()) then return end;
@@ -83,10 +88,18 @@ function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
     -- 退出旧世界
     if (self.world) then self.world:OnExit(); end
     
+    if (not isReloadWorld) then
+    end
+
+    -- 标识替换, 其它方式loadworld不替换
     self.IsReplaceWorld = true;
 
     -- 以只读方式重新进入
-    GameLogic.RunCommand(string.format("/loadworld %d", self.newWorldId));    
+    if (isReloadWorld) then
+        GameLogic.RunCommand(string.format("/loadworld %d", self.worldId));    
+    else
+        self:OnWorldLoaded();
+    end
 end
 
 -- 世界加载
@@ -94,12 +107,6 @@ function GeneralGameClient:OnWorldLoaded()
     -- 是否需要替换世界
     if (not self.IsReplaceWorld) then return end
     self.IsReplaceWorld = false;
-
-    self.ip = self.newIp;
-    self.port = self.newPort;
-    self.worldId = self.newWorldId;
-    self.username = self.newUsername;
-    self.password = self.newPassword;
 
     -- 更新当前世界ID
     self.world = GeneralGameWorld:new():Init(self.worldId);

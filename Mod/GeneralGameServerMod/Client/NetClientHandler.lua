@@ -119,7 +119,6 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 登录失败
     if (result ~= "ok") then
         local text = "登录失败! " .. errmsg;
-        Log:Info(text);
 		BroadcastHelper.PushLabel({id="NetClientHandler", label = text, max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
 		return self:GetWorld():Logout();
     end
@@ -139,7 +138,8 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetMainAssetPath(oldEntityPlayer:GetMainAssetPath());
         entityPlayer:SetSkin(oldEntityPlayer:GetSkin());
         entityPlayer:SetGravity(oldEntityPlayer:GetGravity());
-        -- entityPlayer:SetPosition(oldEntityPlayer:GetPosition());
+        -- entityPlayer:AutoFindPosition(true);
+        entityPlayer:SetPosition(oldEntityPlayer:GetPosition());
         if(entityPlayer:IsShowHeadOnDisplay() and System.ShowHeadOnDisplay) then
             System.ShowHeadOnDisplay(true, entityPlayer:GetInnerObject(), entityPlayer:GetDisplayName(), GameLogic.options.PlayerHeadOnTextColor);	
         end
@@ -149,8 +149,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     self:SetPlayer(entityPlayer);
 
     -- 上报玩家实体信息
-    local dataWatcher  = entityPlayer:GetDataWatcher();
-    local metadata = dataWatcher and dataWatcher:GetAllObjectList();
+    local dataWatcher = entityPlayer:GetDataWatcher();
     self:AddToSendQueue(Packets.PacketPlayerEntityInfo:new():Init({
         entityId = entityId,
         x = math.floor(entityPlayer.x or 20000),
@@ -159,9 +158,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         name = username or tostring(entityId),
         facing = math.floor(entityPlayer.rotationYaw or entityPlayer.facing or 0),
         pitch = math.floor(entityPlayer.rotationPitch or 0),
-        data = metadata and DataWatcher.WriteObjectsInListToData(metadata, nil),
-        mainAssetPath = entityPlayer:GetMainAssetPath(),
-    }));
+    }, dataWatcher, true));
 end
 
 -- 获取玩家实体
@@ -190,7 +187,6 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     local z = packetPlayerEntityInfo.z;
     local facing = packetPlayerEntityInfo.facing;
     local pitch = packetPlayerEntityInfo.pitch;
-    local data = packetPlayerEntityInfo.data;
     local username = packetPlayerEntityInfo.name;
 
     local mainPlayer = self:GetPlayer();
@@ -203,28 +199,22 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     -- 更新实体元数据
     if (isNew or entityId ~= mainPlayer.entityId) then
         local watcher = entityPlayer:GetDataWatcher();
-        local metadata = data and DataWatcher.ReadWatchebleObjects(data);
+        local metadata = packetPlayerEntityInfo:GetMetadata();
         if (watcher and metadata) then 
             watcher:UpdateWatchedObjectsFromList(metadata); 
         end    
-        if (entityPlayer:IsDummy()) then
-            entityPlayer:FrameMove(0);
-        end
     end
 
-    -- 同步玩家模型
-    if (packetPlayerEntityInfo.mainAssetPath) then
-        entityPlayer:SetMainAssetPath(packetPlayerEntityInfo.mainAssetPath);
-    end
-    
     -- 更新位置信息
-    -- entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
-    if (entityId == mainPlayer.entityId) then
-        entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
-    else 
-        entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, 3);
+    if (x or y or z or facing or pitch) then
+        if (entityId == mainPlayer.entityId) then
+            entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
+        else 
+            entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, 5);
+        end    
     end
 
+    -- 头部信息
     local headYaw = packetPlayerEntityInfo.headYaw;
     local headPitch = packetPlayerEntityInfo.headPitch;
     if (entityPlayer.SetTargetHeadRotation and headYaw ~= nil and headPitch ~= nil) then
@@ -238,7 +228,6 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
         self:handlePlayerEntityInfo(playerEntityInfoList[i]);
     end
 end
-
 
 -- 处理块信息更新
 function NetClientHandler:handleBlockInfoList(packetBlockInfoList)
