@@ -79,7 +79,7 @@ function NetClientHandler:Init(ip, port, worldId, username, password, world)
     self.worldId = worldId;
     self.username = username;
     self.password = password;
-
+    
     self:SetWorld(world);
 	
 	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", ip, port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});

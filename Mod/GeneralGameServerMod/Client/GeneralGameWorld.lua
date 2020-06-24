@@ -92,7 +92,7 @@ function GeneralGameWorld:Login(params)
 	local ip = params.ip or "127.0.0.1";
 	local port = params.port or "9000";
 	local worldId = params.worldId;
-	local username = params.username;
+	local username = params.username or System.User.keepworkUsername;  -- 若不存在使用 keepwork 的用户名
 	local password = params.password;
 	local thread = params.thread or "gl";
 
