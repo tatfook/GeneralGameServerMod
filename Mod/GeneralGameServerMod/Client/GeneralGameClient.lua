@@ -66,19 +66,16 @@ function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
     -- 初始化
     self:Init();
     -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
-    local isReloadWorld = true; -- 进当前世界且只读则不重新加载世界
-    if (not worldId) then
-        local currentWorldInfo = Mod.WorldShare.Store:Get('world/currentWorld');
-        if (currentWorldInfo and currentWorldInfo.kpProjectId) then
-            worldId = currentWorldInfo.kpProjectId
-            isReloadWorld = not GameLogic.IsReadOnly();
-            Log:Info('GameLogic.IsReadOnly(): %s', GameLogic.IsReadOnly());
-        end
-    end
+    local curWorldId = GameLogic.options:GetProjectId();
 
+    worldId = worldId or curWorldId;
+    
+    -- only reload world if world id does not match
+    local isReloadWorld = worldId ~= curWorldId; 
+    
     self.ip = ip;
     self.port = port;
-    self.worldId = worldId  or Config.defaultWorldId;
+    self.worldId = worldId or Config.defaultWorldId;
     self.username = username;
     self.password = password;
 
@@ -88,8 +85,6 @@ function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
     -- 退出旧世界
     if (self.world) then self.world:OnExit(); end
     
-    if (not isReloadWorld) then
-    end
 
     -- 标识替换, 其它方式loadworld不替换
     self.IsReplaceWorld = true;
