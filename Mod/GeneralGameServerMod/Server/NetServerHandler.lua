@@ -75,6 +75,10 @@ function NetServerHandler:IsFinishedProcessing()
 end
 
 function NetServerHandler:SendPacketToPlayer(packet)
+    if (not self.playerConnection) then
+        return;
+    end
+
     return self.playerConnection:AddPacketToSendQueue(packet);
 end
 
@@ -168,27 +172,45 @@ function NetServerHandler:handleBlockInfoList(packetBlockInfoList)
      self:GetPlayerManager():SendPacketToAllPlayersExcept(packetBlockInfoList, self:GetPlayer());
 end
 
-function NetServerHandler:KickPlayerFromServer(reason)
-    if (not self.connectionClosed) then
-        self:SendPacketToPlayer(Packets.PacketKickDisconnect:new():Init(reason));
-        self.playerConnection:ServerShutdown();
-        self.connectionClosed = true;
-    end
+-- 处理玩家退出
+function NetServerHandler:handlePlayerLogout(packetPlayerLogout)
+    if (not self.playerConnection or not self:GetPlayer()) then return end
+    Log:Info("player logout; username : %s, worldId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldId());
+    self:GetPlayerManager():RemovePlayer(self:GetPlayer());
+    self:GetPlayerManager():SendPacketToAllPlayers(Packets.PacketPlayerLogout:new():Init(self:GetPlayer()), self:GetPlayer());
+    self:GetWorldManager():TryRemoveWorld(self:GetWorld():GetWorldId()); 
+    
+    self.playerConnection:CloseConnection();
+    self.playerConnection = nil;
 end
 
--- 玩家退出
+-- 链接出错 玩家退出
 function NetServerHandler:handleErrorMessage(text, data)
-    if (not self:GetPlayer()) then return end
+    -- 发送用户退出
+    self:handlePlayerLogout();  
     
-    Log:Info("player logout; username : %s, worldId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldId());
-
-    self:GetPlayerManager():RemovePlayer(self:GetPlayer());
-    self:GetPlayerManager():SendPacketToAllPlayersExcept(Packets.PacketPlayerLogout:new():Init(self:GetPlayer()), self:GetPlayer());
-    self.connectionClosed = true;
-
+    -- 更新服务器信息
     -- self:SendServerInfo();
 
-    self:GetWorldManager():TryRemoveWorld(self:GetWorld():GetWorldId()); 
+    -- 链接出错 置空
+    self.playerConnection = nil;
+end
+
+-- 服务强制退出玩家 
+function NetServerHandler:KickPlayerFromServer(reason)
+    local player = self:GetPlayer();
+    if (not player) then return end
+
+    self:handlePlayerLogout(Packets.PacketPlayerLogout:new():Init({
+        entityId = player.entityId,
+        username = player.username,
+        reason = reason;
+    }));
+end
+
+-- 玩家
+function NetServerHandler:handleTick()
+    self:GetPlayer():UpdateTick();
 end
 
 -- 发送服务器负载给控制器服务

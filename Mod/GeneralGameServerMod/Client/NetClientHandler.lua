@@ -1,4 +1,5 @@
 
+
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
@@ -23,7 +24,7 @@ end
 
  -- Adds the packet to the send queue
  function NetClientHandler:AddToSendQueue(packet)
-    if (not self.disconnected and self.connection) then
+    if (self.connection) then
         return self.connection:AddPacketToSendQueue(packet);
     end
 end
@@ -265,4 +266,9 @@ end
 function NetClientHandler:handleChat(packetChat)
     LOG.std(nil, "debug", "NetClientHandler.handleChat", "%s", packetChat.text);
 	Desktop.GetChatGUI():PrintChatMessage(packetChat:ToChatMessage())
+end
+
+-- 保持连接活跃
+function NetClientHandler:SendTick()
+    self:AddToSendQueue(Packets.PacketTick:new():Init());
 end

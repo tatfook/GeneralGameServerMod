@@ -78,3 +78,8 @@ function World:GetPacketUpdateEnv()
     return Packets.PacketUpdateEnv:new():Init(self.env.texturePack, self.env.weather, self.env.customBlocks);
 end
 
+-- 移除断开链接的用户
+function World:RemoveInvalidPlayer()
+    self:GetPlayerManager():RemoveInvalidPlayer();
+end
+

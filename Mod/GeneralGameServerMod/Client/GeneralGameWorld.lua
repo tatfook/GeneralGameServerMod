@@ -9,10 +9,12 @@ NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameWorld.lua");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld");
 ------------------------------------------------------------
 ]]
-
+NPL.load("(gl)script/ide/timer.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/NetClientHandler.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler");
 local GeneralGameWorld = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.World.World"), commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld"));
@@ -32,7 +34,16 @@ function GeneralGameWorld:Init(worldId)
 
 	self.markBlockIndexList = commonlib.UnorderedArraySet:new();
 
-	self.enableBlockMark = true;
+	self.enableBlockMark = Config.isSyncBlock;
+
+	-- 定时器
+	local tickDuration = 1000 * 60 * 2;  -- 2 min
+	-- local tickDuration = 1000 * 20;   -- debug
+	self.timer = commonlib.Timer:new({callbackFunc = function(timer)
+		self:Tick();
+	end});
+	self.timer:Change(tickDuration, tickDuration); -- 两分钟触发一次
+
 	return self;
 end
 
@@ -81,12 +92,16 @@ function GeneralGameWorld:OnFrameMove()
 		blockInfoList[i] = {blockIndex = blockIndex, blockId = blockId, blockData = blockData}; 
 	end
 
-	self.net_handler:AddToSendQueue(Packets.PacketBlockInfoList:new():Init(blockInfoList));
+	self.netHandler:AddToSendQueue(Packets.PacketBlockInfoList:new():Init(blockInfoList));
 
 	self.markBlockIndexList:clear();
 	-- self.tickBlockInfoUpdateCount = 0;
 end
 
+-- 维持用户在线
+function GeneralGameWorld:Tick() 
+	self.netHandler:SendTick();
+end
 
 function GeneralGameWorld:Login(params) 
 	local ip = params.ip or "127.0.0.1";
@@ -100,12 +115,12 @@ function GeneralGameWorld:Login(params)
 	self.password = password;
 
 	-- 清理旧连接
-	if (self.net_handler) then
-		 self.net_handler:Cleanup();
+	if (self.netHandler) then
+		 self.netHandler:Cleanup();
 	end
 
 	-- 连接服务器
-	self.net_handler = NetClientHandler:new():Init(ip, port, worldId, username, password, self);
+	self.netHandler = NetClientHandler:new():Init(ip, port, worldId, username, password, self);
 	
 	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
 
@@ -113,11 +128,14 @@ function GeneralGameWorld:Login(params)
 end
 
 function GeneralGameWorld:Logout() 
-	if(self.net_handler) then
-		self.net_handler:Cleanup();
+	if(self.netHandler) then
+		self.netHandler:Cleanup();
 	end
 
+	-- 解除链接关系
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
+	-- 清除定时任务
+	self.timer:Change();
 
 	self.worldId = nil;
 	self.isLogin = false;

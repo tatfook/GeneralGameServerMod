@@ -88,3 +88,10 @@ function WorldManager:TryRemoveWorld(worldId)
     self.worldMap[worldId] = nil;
     return true;
 end
+
+-- timer function
+function WorldManager:Tick()
+    for worldId, world in pairs(self.worldMap) do 
+        world:RemoveInvalidPlayer();
+    end  
+end

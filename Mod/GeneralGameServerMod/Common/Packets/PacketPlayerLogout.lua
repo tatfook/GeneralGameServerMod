@@ -17,9 +17,13 @@ local PacketPlayerLogout = commonlib.inherit(commonlib.gettable("Mod.GeneralGame
 function PacketPlayerLogout:ctor()
 end
 
-function PacketPlayerLogout:Init(player)
-	self.entityId = player.entityId;
-	self.username =	player.username;
+function PacketPlayerLogout:Init(packet)
+	self.entityId = packet.entityId;
+	self.username =	packet.username;
+
+	-- 退出原因
+	self.reason = packet.reason;
+	
 	return self;
 end
 

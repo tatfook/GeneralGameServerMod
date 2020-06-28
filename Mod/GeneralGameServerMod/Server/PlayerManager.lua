@@ -100,3 +100,18 @@ end
 function PlayerManager:GetPlayerCount()
     return self.playerList:size();
 end
+
+function PlayerManager:RemoveInvalidPlayer()
+    local list = {};
+    for i = 1, #(self.playerList) do 
+        local player = self.playerList[i];
+        if (not player:IsAlive()) then
+            list[#list + 1] = player;
+        end
+    end
+
+    for i = 1, #list do
+        local player = list[i];
+        player:KickPlayerFromServer("remove inactive users");
+    end
+end

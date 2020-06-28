@@ -65,6 +65,7 @@ end
 function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
     -- 初始化
     self:Init();
+    
     -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
     local curWorldId = GameLogic.options:GetProjectId();
 
@@ -80,7 +81,7 @@ function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
     self.password = password;
 
     -- 与当前世界相同则不处理
-    -- if (self.world and self.world.worldId == self.newWorldId and self.world:IsLogin()) then return end;
+    -- if (self.world and self.world.worldId == self.worldId and self.world:IsLogin()) then return end;
 
     -- 退出旧世界
     if (self.world) then self.world:OnExit(); end

@@ -48,6 +48,7 @@ function Config:Init(isServer)
     self.isServer = isServer;
     -- 客户端默认世界ID
     self.defaultWorldId = 12706;
+    self.isSyncBlock = false;   -- 默认不同步 Block 信息
     if (self.IsDevEnv) then 
         self.serverIp = "127.0.0.1";
         self.serverPort = "9000";

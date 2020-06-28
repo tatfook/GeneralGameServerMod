@@ -20,6 +20,8 @@ local Player = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerM
 function Player:ctor() 
     self.entityInfo = nil;
     self.dataWatcher = DataWatcher:new();
+    self.loginTick = ParaGlobal.timeGetTime();
+    self.lastTick = ParaGlobal.timeGetTime();
 end
 
 function Player:Init(entityId, username)
@@ -42,9 +44,11 @@ function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
 
     -- 元数据为监控对象列表
     local metadata = packetPlayerEntityInfo:GetMetadata();
-    for i = 1, #(metadata or {}) do
-        local obj = metadata[i];
-        self.dataWatcher:AddField(obj:GetId(), obj:GetObject());
+    if (metadata) then
+        for i = 1, #metadata do
+            local obj = metadata[i];
+            self.dataWatcher:AddField(obj:GetId(), obj:GetObject());
+        end
     end
     
     for key, val in pairs(packetPlayerEntityInfo) do
@@ -70,4 +74,19 @@ end
 
 function Player:SendPacketToPlayer(packet)
     self.playerNetHandler:SendPacketToPlayer(packet);
+end
+
+function Player:UpdateTick() 
+    self.lastTick = ParaGlobal.timeGetTime();
+end
+
+function Player:IsAlive()
+    local aliveDuration = 1000 * 60 * 3; 
+    -- local aliveDuration = 30000;  -- debug
+    local curTime = ParaGlobal.timeGetTime();
+    if ((curTime - self.lastTick) > aliveDuration) then
+        return  false;
+    end
+
+    return true;
 end
