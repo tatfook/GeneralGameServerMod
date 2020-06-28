@@ -54,14 +54,6 @@ local client = GeneralGameClient.GetSingleton();
 client.LoadWorld("ggs.keepwork.com", "9001");
 ```
 
-### 问题
-
-- 世界数据同步?  实时同步世界所有数据,  同步可视数据
-- 链接的断开与链接   fixed
-- 世界重复打开       fixed
-- 客户端只能选择服务器
-- 世界打开失败
-
 ### 版本
 
 ### 集群实现方式
@@ -89,4 +81,8 @@ client.LoadWorld("ggs.keepwork.com", "9001");
 
 ### TODO
 
-- 用户名默认用keepwork用户名
+[] 当世界人数到达上限? 新接入用户是丢弃还是进入新的虚拟世界
+[] 世界数据同步?  实时同步世界所有数据,  同步可视数据
+[x] 链接的断开与链接   fixed
+[x] 世界重复打开       fixed
+[x] 世界打开失败       /loadworld 未处理世界打开失败情况,  本模块无法处理

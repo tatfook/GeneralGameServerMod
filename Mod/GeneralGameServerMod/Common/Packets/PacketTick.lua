@@ -7,7 +7,7 @@ use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketTick.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketTick");
-local packet = Packets.PacketWorldServer:new():Init();
+local packet = Packets.PacketTick:new():Init();
 -------------------------------------------------------
 ]]
 

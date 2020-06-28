@@ -134,6 +134,7 @@ function GeneralGameWorld:Logout()
 
 	-- 解除链接关系
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
+	
 	-- 清除定时任务
 	self.timer:Change();
 
