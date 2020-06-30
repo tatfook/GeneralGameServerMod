@@ -88,3 +88,4 @@ end
 function GeneralGameServer:Tick() 
 	WorldManager.GetSingleton():Tick();
 end
+

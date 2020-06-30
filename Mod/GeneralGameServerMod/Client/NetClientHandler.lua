@@ -5,6 +5,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/EntityMainPlayer.lua");
+NPL.load("Mod/GeneralGameServerMod/Client/EntityOtherPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
@@ -17,6 +18,7 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameWorld");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityMainPlayer");
+local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityOtherPlayer");
 local NetClientHandler = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.NetHandler"), commonlib.gettable("Mod.GeneralGameServerMod.Client.NetClientHandler"));
 
 function NetClientHandler:ctor() 
@@ -37,7 +39,7 @@ function NetClientHandler:Cleanup()
 
     local player = self:GetPlayer()
     if(player) then
-        player:SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(format('<pe:mcml><div style="background-color:red;margin-left:-50px;margin-top:-20">%s</div></pe:mcml>', L"与服务器的连接断开了"))})
+        player:SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format('<pe:mcml><div style="background-color:red;margin-left:-50px;margin-top:-20">%s</div></pe:mcml>', L"与服务器的连接断开了"))})
     end
 
     self.connection = nil;
@@ -61,35 +63,37 @@ function NetClientHandler:GetWorld()
     return self.world;
 end
 
-function NetClientHandler:GetEntityByID(id)
-    return self:GetWorld():GetEntityByID(id);
-end
-
 function NetClientHandler:SetPlayer(player)
+    -- 设置当前玩家
     self.player = player;
 end
 
-function NetClientHandler:GetPlayer() 
+function NetClientHandler:GetPlayer(entityId) 
+    -- 获取指定玩家
+    if (entityId) then
+        return self:GetWorld():GetEntityByID(entityId)
+    end
+    -- 获取当前玩家
     return self.player or EntityManager.GetPlayer();
 end
 
+-- 是否是当前玩家
+function NetClientHandler:IsCurrentPlayer(entityId)
+    return self:GetPlayer().entityId == entityId;
+end
+
 -- create a tcp connection to server. 
-function NetClientHandler:Init(ip, port, worldId, username, password, world)
-    self.ip = ip;
-    self.port = port;
-    self.worldId = worldId;
-    self.username = username;
-    self.password = password;
-    
+function NetClientHandler:Init(options, world)
+    self.options = options;
     self:SetWorld(world);
 	
-	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", ip, port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-    self.connection = Connection:new():InitByIpPort(ip, port, self);
+	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", options.ip, options.port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+    self.connection = Connection:new():InitByIpPort(options.ip, options.port, self);
 	self.connection:Connect(5, function(bSucceed)
 		-- try authenticate
 		if(bSucceed) then
-			BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"成功建立链接:%s:%s", ip, port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-            self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init({worldId = worldId, username = username, password = password}));
+			BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"成功建立链接:%s:%s", options.ip, options.port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+            self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init(options));
 		end
     end);
     
@@ -103,9 +107,18 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_logout"));
 
-    -- 销毁玩家
-    local entityPlayer = self:GetEntityPlayer(entityId, username);
-    entityPlayer:Destroy();
+    -- 玩家退出
+    if (self:GetPlayer().entityId == entityId) then
+        -- 当前玩家
+        self:GetWorld():Logout();
+    else 
+        -- 其它玩家 销毁玩家
+        local player = self:GetPlayer(entityId);
+        if (player) then
+            player:Destroy();
+            self:GetWorld():RemoveEntity(player);
+        end
+    end
 
     return;
 end
@@ -125,30 +138,34 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     end
 
     -- 登录成功
+    self.options.worldId = packetPlayerLogin.worldId;                       -- 世界ID
+    self.options.parallelWorldName = packetPlayerLogin.parallelWorldName;   -- 平行世界名  可能被客户端改掉
 
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_login"));
 
     -- 获取旧当前玩家
     local oldEntityPlayer = self:GetPlayer();
-    -- 销毁旧当前玩家
-    -- if (oldEntityPlayer) then oldEntityPlayer:Destroy(); end
     -- 创建当前玩家
     local entityPlayer = EntityMainPlayer:new():init(self:GetWorld(), self, entityId);
     if(oldEntityPlayer) then
         entityPlayer:SetMainAssetPath(oldEntityPlayer:GetMainAssetPath());
         entityPlayer:SetSkin(oldEntityPlayer:GetSkin());
         entityPlayer:SetGravity(oldEntityPlayer:GetGravity());
-        -- entityPlayer:AutoFindPosition(true);
-        entityPlayer:SetPosition(oldEntityPlayer:GetPosition());
+        local x, y, z = oldEntityPlayer:GetPosition();
+        local randomRange = 10;
+        entityPlayer:SetPosition(x + math.random(-randomRange, randomRange), y, z + math.random(-randomRange, randomRange));
         if(entityPlayer:IsShowHeadOnDisplay() and System.ShowHeadOnDisplay) then
             System.ShowHeadOnDisplay(true, entityPlayer:GetInnerObject(), entityPlayer:GetDisplayName(), GameLogic.options.PlayerHeadOnTextColor);	
         end
     end
     entityPlayer:Attach();
-    GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);
+    GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
     self:SetPlayer(entityPlayer);
-
+    
+    -- 设置玩家信息
+    entityPlayer:SetPlayerInfo({state = "online", username = username});
+    
     -- 上报玩家实体信息
     local dataWatcher = entityPlayer:GetDataWatcher();
     self:AddToSendQueue(Packets.PacketPlayerEntityInfo:new():Init({
@@ -164,19 +181,19 @@ end
 
 -- 获取玩家实体
 function NetClientHandler:GetEntityPlayer(entityId, username)
-    local entityPlayer = self:GetPlayer();
-    local clientMP = self:GetEntityByID(entityId);
+    local mainPlayer = self:GetPlayer();
+    local otherPlayer = self:GetPlayer(entityId);
     local world = self:GetWorld();
 
-    if (entityId == entityPlayer.entityId) then
-        return entityPlayer, false;
+    if (entityId == mainPlayer.entityId) then
+        return mainPlayer, false;
     end
     
-    if (not clientMP or not clientMP:isa(EntityManager.EntityPlayerMPOther)) then 
-        return EntityManager.EntityPlayerMPOther:new():init(world, username or "", entityId), true;
+    if (not otherPlayer or not otherPlayer:isa(EntityOtherPlayer)) then 
+        return EntityOtherPlayer:new():init(world, username or "", entityId), true;
     end
 
-    return clientMP, false;
+    return otherPlayer, false;
 end
 
 function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
@@ -195,6 +212,7 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     if (isNew) then
         entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
         entityPlayer:Attach();
+        self:GetWorld():AddEntity(entityPlayer);
     end
 
     -- 更新实体元数据
@@ -220,6 +238,11 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     local headPitch = packetPlayerEntityInfo.headPitch;
     if (entityPlayer.SetTargetHeadRotation and headYaw ~= nil and headPitch ~= nil) then
         entityPlayer:SetTargetHeadRotation(headYaw, headPitch, 3);
+    end
+
+    -- 设置玩家信息
+    if (packetPlayerEntityInfo.playerInfo) then
+        entityPlayer:SetPlayerInfo(packetPlayerEntityInfo.playerInfo);
     end
 end
 
@@ -271,4 +294,11 @@ end
 -- 保持连接活跃
 function NetClientHandler:SendTick()
     self:AddToSendQueue(Packets.PacketTick:new():Init());
+end
+
+-- 处理玩家信息更新
+function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
+    local entityId = packetPlayerInfo.entityId;
+    local entityPlayer = self:GetPlayer(entityId);
+    entityPlayer:SetPlayerInfo(packetPlayerInfo);
 end

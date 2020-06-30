@@ -75,10 +75,7 @@ function NetServerHandler:IsFinishedProcessing()
 end
 
 function NetServerHandler:SendPacketToPlayer(packet)
-    if (not self.playerConnection) then
-        return;
-    end
-
+    if (not self.playerConnection) then return end
     return self.playerConnection:AddPacketToSendQueue(packet);
 end
 
@@ -114,6 +111,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local username = packetPlayerLogin.username;
     local password = packetPlayerLogin.password;
     local worldId = tostring(packetPlayerLogin.worldId);
+    local parallelWorldName = packetPlayerLogin.parallelWorldName or "";
 
     -- 检测是否达到最大处理量
     if (not self:IsAllowLoginWorld(worldId)) then
@@ -127,16 +125,16 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
 
     -- 认证通过
     self:SetAuthenticated();
-
     -- 获取并设置世界
-    self:SetWorld(self:GetWorldManager():GetWorldById(worldId, true));
-    self:GetWorld():SetWorldId(worldId);
-
-    -- 将玩家加入世界
-    self:SetPlayer(self:GetPlayerManager():CreatePlayer(username, self));
+    self:SetWorld(self:GetWorldManager():GetWorld(worldId, parallelWorldName, true));
+    -- 获取并设置玩家
+    self:SetPlayer(self:GetPlayerManager():CreatePlayer(username, self));   -- 创建玩家
+    -- 将玩家加入管理
     self:GetPlayerManager():AddPlayer(self:GetPlayer());
-
-    Log:Info("player login; username : %s, worldId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldId());
+    -- 玩家登录
+    self:GetPlayer():Login();
+    -- 打印日志
+    Log:Info("player login; username : %s, worldkey: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey());
 
     -- 标记登录完成
     self.finishedProcessing = true;
@@ -147,8 +145,8 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     -- 通知玩家登录
     packetPlayerLogin.entityId = self:GetPlayer().entityId;
     packetPlayerLogin.result = "ok";
+    packetPlayerLogin.parallelWorldName = self:GetWorld():GetParallelWorldName();
     self:SendPacketToPlayer(packetPlayerLogin);
-
     -- self:SendServerInfo();
 end
 
@@ -168,17 +166,20 @@ end
 function NetServerHandler:handleBlockInfoList(packetBlockInfoList)
     self:GetBlockManager():AddBlockList(packetBlockInfoList.blockInfoList);
 
-     -- 同步到其它玩家
-     self:GetPlayerManager():SendPacketToAllPlayersExcept(packetBlockInfoList, self:GetPlayer());
+    -- 同步到其它玩家
+    self:GetPlayerManager():SendPacketToAllPlayersExcept(packetBlockInfoList, self:GetPlayer());
 end
 
 -- 处理玩家退出
 function NetServerHandler:handlePlayerLogout(packetPlayerLogout)
     if (not self.playerConnection or not self:GetPlayer()) then return end
-    Log:Info("player logout; username : %s, worldId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldId());
-    self:GetPlayerManager():RemovePlayer(self:GetPlayer());
-    self:GetPlayerManager():SendPacketToAllPlayers(Packets.PacketPlayerLogout:new():Init(self:GetPlayer()), self:GetPlayer());
-    self:GetWorldManager():TryRemoveWorld(self:GetWorld():GetWorldId()); 
+    Log:Info("player logout; username : %s, worldkey: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey());
+    -- 玩家退出
+    self:GetPlayer():Logout();
+    -- 从管理器中移除
+    self:GetPlayerManager():RemovePlayer(self:GetPlayer());  -- 移除玩家内部通知其它玩家
+    -- 尝试删除世界
+    self:GetWorldManager():TryRemoveWorld(self:GetWorld()); 
     
     self.playerConnection:CloseConnection();
     self.playerConnection = nil;
@@ -191,9 +192,6 @@ function NetServerHandler:handleErrorMessage(text, data)
     
     -- 更新服务器信息
     -- self:SendServerInfo();
-
-    -- 链接出错 置空
-    self.playerConnection = nil;
 end
 
 -- 服务强制退出玩家 

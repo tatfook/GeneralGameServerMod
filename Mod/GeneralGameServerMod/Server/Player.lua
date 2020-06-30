@@ -12,16 +12,21 @@ Player:new():Init()
 ]]
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local Player = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Server.Player"));
 
 -- 构造函数
 function Player:ctor() 
-    self.entityInfo = nil;
+    self.entityInfo = nil;  -- 实体信息 UI信息
+    self.playerInfo = {};   -- 玩家信息 数据信息
     self.dataWatcher = DataWatcher:new();
     self.loginTick = ParaGlobal.timeGetTime();
     self.lastTick = ParaGlobal.timeGetTime();
+    self.aliveTime = 0;
+    self.state = "online";
 end
 
 function Player:Init(entityId, username)
@@ -51,17 +56,32 @@ function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
         end
     end
     
-    for key, val in pairs(packetPlayerEntityInfo) do
-        if (val ~= nil and key ~= "id" and key ~= "cmd" and key ~= "data") then
-            self.entityInfo[key] = packetPlayerEntityInfo[key];
-        end
+    -- 设置玩家信息
+    if (packetPlayerEntityInfo.playerInfo) then
+        self:SetPlayerInfo(packetPlayerEntityInfo.playerInfo)
     end
+
+    -- 设置实体信息
+    commonlib.partialcopy(self.entityInfo, packetPlayerEntityInfo);
+    self.entityInfo.id = nil;
+    self.entityInfo.metadata = nil;
 
     return isNew;
 end
 
 function Player:GetPlayerEntityInfo()
+    self.entityInfo.playerInfo = self:GetPlayerInfo();
     return Packets.PacketPlayerEntityInfo:new():Init(self.entityInfo, self.dataWatcher, true);
+end
+
+function Player:GetPlayerInfo()
+    self.playerInfo.entityId = self.entityId; 
+    self.playerInfo.state = self.state;
+    return self.playerInfo;
+end
+
+function Player:SetPlayerInfo(info)
+    commonlib.partialcopy(self.playerInfo, info);
 end
 
 function Player:SetNetHandler(netHandler)
@@ -78,10 +98,14 @@ end
 
 function Player:UpdateTick() 
     self.lastTick = ParaGlobal.timeGetTime();
+    self.aliveTime = self.lastTick - self.loginTick;
 end
 
 function Player:IsAlive()
-    local aliveDuration = 1000 * 60 * 3; 
+    if (self.state == "offline") then return false; end
+    
+    -- 不能直接使用tick 可能刚登录就退出, 这种tick检测不出
+    local aliveDuration = Config.Player.aliveDuration; 
     -- local aliveDuration = 30000;  -- debug
     local curTime = ParaGlobal.timeGetTime();
     if ((curTime - self.lastTick) > aliveDuration) then
@@ -89,4 +113,17 @@ function Player:IsAlive()
     end
 
     return true;
+end
+
+-- 玩家登录
+function Player:Login()
+    self.loginTick = ParaGlobal.timeGetTime();
+    self.state = "online";
+end
+
+-- 玩家退出
+function Player:Logout() 
+    self.logoutTick = ParaGlobal.timeGetTime();
+    self.aliveTime = self.logoutTick - self.loginTick;  -- 本次活跃时间
+    self.state = "offline";                             -- 状态置为下线
 end

@@ -24,10 +24,11 @@ function Test:Init()
     LOG.debug(self.name);
 end   
 
-local Test2 = commonlib.inherit(Test, commonlib.gettable("Test.Test2"))
+Test:new();
+-- local Test2 = commonlib.inherit(Test, commonlib.gettable("Test.Test2"))
 
-function Test2:Init()
-    LOG.debug(self._super == Base);
-end
+-- function Test2:Init()
+--     LOG.debug(self._super == Base);
+-- end
 
-Test2:new():Init();
+-- Test2:new():Init();

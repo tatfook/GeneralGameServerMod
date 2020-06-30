@@ -26,6 +26,7 @@ function PacketPlayerLogin:Init(packet)
 	self.username =	packet.username;  -- 用户名
 	self.password = packet.password;  -- 密码
 	self.worldId = packet.worldId;    -- 世界ID
+	self.parallelWorldName = packet.parallelWorldName; -- 平行世界名
 	
 	return self;
 end

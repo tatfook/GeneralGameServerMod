@@ -62,30 +62,23 @@ function GeneralGameClient:Exit()
     GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "DisconnectOne");
 end
 
-function GeneralGameClient:LoadWorld(ip, port, worldId, username, password)
+function GeneralGameClient:LoadWorld(options)
     -- 初始化
     self:Init();
+    -- 保存选项
+    self.options = options;
     
     -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
     local curWorldId = GameLogic.options:GetProjectId();
 
-    worldId = worldId or curWorldId;
+    -- 确定世界ID
+    options.worldId = options.worldId or curWorldId or Config.defaultWorldId;
     
     -- only reload world if world id does not match
-    local isReloadWorld = worldId ~= curWorldId; 
-    
-    self.ip = ip;
-    self.port = port;
-    self.worldId = worldId or Config.defaultWorldId;
-    self.username = username;
-    self.password = password;
-
-    -- 与当前世界相同则不处理
-    -- if (self.world and self.world.worldId == self.worldId and self.world:IsLogin()) then return end;
+    local isReloadWorld = options.worldId ~= curWorldId; 
 
     -- 退出旧世界
     if (self.world) then self.world:OnExit(); end
-    
 
     -- 标识替换, 其它方式loadworld不替换
     self.IsReplaceWorld = true;
@@ -105,21 +98,21 @@ function GeneralGameClient:OnWorldLoaded()
     self.IsReplaceWorld = false;
 
     -- 更新当前世界ID
-    self.world = GeneralGameWorld:new():Init(self.worldId);
+    self.world = GeneralGameWorld:new():Init(self.options.worldId);
     GameLogic.ReplaceWorld(self.world);
 
     -- 登录世界
-    if (self.ip and self.port) then
-        self.world:Login({ip = self.ip, port = self.port, worldId = self.worldId, username = self.username, password = self.password});
+    if (self.options.ip and self.options.port) then
+        self.world:Login(self.options);
     else
-        self:ConnectControlServer(self.worldId); -- 连接控制器服务, 获取世界服务
+        self:ConnectControlServer(self.options); -- 连接控制器服务, 获取世界服务
     end
 end
 --  正确流程: 登录成功 => 加载打开世界 => 替换世界
 
 
 -- 连接控制服务器
-function GeneralGameClient:ConnectControlServer(worldId)
+function GeneralGameClient:ConnectControlServer(options)
     Log:Debug("ServerIp: %s, ServerPort: %s", Config.serverIp, Config.serverPort);
     self.controlServerConnection = Connection:new():InitByIpPort(Config.serverIp, Config.serverPort, self);
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Server/ControlServer.lua");
@@ -128,21 +121,25 @@ function GeneralGameClient:ConnectControlServer(worldId)
             return Log:Info("无法连接控制器服务器");
         end
 
-        self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({worldId = worldId}));
+        self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({
+            worldId = worldId,
+            parallelWorldName = options.parallelWorldName,
+        }));
     end);
 end
 
 -- 发送获取世界服务器
 function GeneralGameClient:handleWorldServer(packetWorldServer)
-    local ip = packetWorldServer.ip;
-    local port = packetWorldServer.port;
-    if (not ip or not port) then
+    local options = self.options;
+    options.ip = packetWorldServer.ip;
+    options.port = packetWorldServer.port;
+    if (not options.ip or not options.port) then
         Log:Info("服务器繁忙, 暂无合适的世界服务器提供");
         return;
     end
 
     -- 登录世界
-    self.world:Login({ip = ip, port = port, worldId = self.worldId, username = self.username, password = self.password});
+    self.world:Login(options);
 
     -- 关闭控制服务器的链接
     self.controlServerConnection:CloseConnection();

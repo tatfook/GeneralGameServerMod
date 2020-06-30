@@ -44,6 +44,9 @@ function PacketTypes:StaticInit()
 
     NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketTick.lua");
     self:AddIdClassMapping(107, Packets.PacketTick);
+
+    NPL.load("Mod/GeneralGameServerMod/Common/Packets/PacketPlayerInfo.lua");
+    self:AddIdClassMapping(108, Packets.PacketPlayerInfo);
 end
 
 -- Adds a two way mapping between the packet ID and packet class. and assign the packet id. 

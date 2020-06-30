@@ -7,7 +7,7 @@
     listenPort="9000"
     isControlServer=true
     isWorkerServer=true
-    maxClientCount=100
+    maxClientCount=8000
     maxWorldCount=200
     innerIp="10.28.18.2"
     innerPort="9000"
@@ -28,10 +28,19 @@
       outerPort="9000">
     </WorkerServer>
   </Server>
-  <!-- 世界相关信息配置 -->
+  <!-- 世界相关信息配置
+  minClientCount: 最少玩家数 当玩家数量小于此值会保留离线玩家
+  maxClientCount: 最大玩家数 当玩家数量大于此值,此世界不再接受玩家进入
+  -->
   <World 
+    minClientCount=50 
     maxClientCount=200>
   </World>
+  <!--玩家配置-->
+  <Player>
+    <!--最小存活时间-->
+    <MinAliveTime>60000</MinAliveTime>
+  </Player>
   <Log level="INFO">
     <Module name="Mod.GeneralGameServerMod.Common.Connection" enable=false></Module>
     <Module name="Mod.GeneralGameServerMod.Client.EntityMainPlayer" enable=false></Module>
@@ -65,10 +74,14 @@
       outerPort="9000">
     </WorkerServer>
   </Server>
-
   <World 
+    minClientCount=3 
     maxClientCount=200>
   </World>
+  <Player>
+    <!--最小存活时间-->
+    <MinAliveTime>0</MinAliveTime>
+  </Player>
   <Log level="DEBUG">
     <Module name="Mod.GeneralGameServerMod.Common.Connection" enable=true></Module>
     <Module name="Mod.GeneralGameServerMod.Client.EntityMainPlayer" enable=true></Module>
@@ -106,8 +119,13 @@
   </Server>
   <!-- 世界相关信息配置 -->
   <World 
+    minClientCount=50 
     maxClientCount=200>
   </World>
+  <Player>
+    <!--最小存活时间-->
+    <MinAliveTime>60000</MinAliveTime>
+  </Player>
   <Log level="DEBUG">
     <Module name="Mod.GeneralGameServerMod.Common.Connection" enable=true></Module>
     <Module name="Mod.GeneralGameServerMod.Client.EntityMainPlayer" enable=true></Module>

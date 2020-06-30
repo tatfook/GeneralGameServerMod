@@ -5,19 +5,25 @@ Date: 2020/6/15
 Desc: the main player entity on the client side. 
 use the lib:
 ------------------------------------------------------------
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityPlayerMPClient.lua");
+NPL.load("Mod/GeneralGameServerMod/Client/EntityMainPlayer.lua");
+local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityMainPlayer");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityPlayerMPClient.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
-
+NPL.load("Mod/GeneralGameServerMod/Client/EntityPlayerHelper.lua");
+local EntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityPlayerHelper");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityPlayerMPClient"), commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityMainPlayer"));
 
 local moduleName = "Mod.GeneralGameServerMod.Client.EntityMainPlayer";
+
+function EntityMainPlayer:ctor()
+    self.entityPlayerHelper = EntityPlayerHelper:new():Init(self, true);
+end
 
 -- Send updated motion and position information to the server
 function EntityMainPlayer:SendMotionUpdates()
@@ -79,4 +85,13 @@ function EntityMainPlayer:SendMotionUpdates()
     self.oldRotHeadYaw = self.rotationHeadYaw;
 	self.oldRotHeadPitch = self.rotationHeadPitch;
     self.motionUpdateTickCount = 0; 
+end
+
+function EntityMainPlayer:SetPlayerInfo(playerInfo)
+    self.entityPlayerHelper:SetPlayerInfo(playerInfo);
+end
+
+-- @param chatmsg: ChatMessage or string. 
+function EntityMainPlayer:SendChatMsg(chatmsg, chatdata)
+    return false;
 end

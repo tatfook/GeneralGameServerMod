@@ -13,7 +13,8 @@ local ControlServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.Contro
 NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");NPL.load("Mod/GeneralGameServerMod/Server/WorldManager.lua");
+local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Server.WorldManager");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
@@ -23,11 +24,16 @@ local ControlServer = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGame
 local servers = {};  -- 服务器信息集
 
 function ControlServer:ctor()
+    WorldManager.GetSingleton();
     
 end
 
 function ControlServer:Init(nid)
     self.connection = Connection:new():Init(nid, self);
+end
+
+function ControlServer:GetWorldManager()
+    return WorldManager.GetSingleton();
 end
 
 -- 处理服务器信息上报
@@ -51,6 +57,8 @@ end
 -- 处理客户端请求连接世界的服务器
 function ControlServer:handleWorldServer(packetWorldServer)
     local worldId = packetWorldServer.worldId;
+    local parallelWorldName = packetWorldServer.parallelWorldName;
+    local worldKey = self:GetWorldManager():GenerateWorldKey(worldKey, parallelWorldName);
     -- 优先选择已存在世界的服务器
     -- 其次选择客户端最少的服务器
     -- 最后选择控制服务器
@@ -63,7 +71,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
         -- 忽略已挂服务器或超负荷服务器
         if (isAlive and svr.totalClientCount < serverMaxClientCount) then 
             -- 优先找已存在的世界 且世界人数未满
-            if (svr.totalWorldClientCounts[worldId] and svr.totalWorldClientCounts[worldId] < worldMaxClientCount) then
+            if (svr.totalWorldClientCounts[worldKey] and svr.totalWorldClientCounts[worldKey] < worldMaxClientCount) then
                 server = svr;
                 break; -- 找到退出循环
             end
@@ -78,7 +86,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
         packetWorldServer.ip = server.outerIp;
         packetWorldServer.port = server.outerPort;
     else 
-        Log:Warn("世界ID: %d 无可用服务", worldId);
+        Log:Warn("世界key: %d 无可用服务", worldKey);
     end
 
     self.connection:AddPacketToSendQueue(packetWorldServer);

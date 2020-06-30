@@ -36,6 +36,8 @@ function GeneralGameWorld:Init(worldId)
 
 	self.enableBlockMark = Config.isSyncBlock;
 
+	self.entityList = commonlib.UnorderedArraySet:new();
+
 	-- 定时器
 	local tickDuration = 1000 * 60 * 2;  -- 2 min
 	-- local tickDuration = 1000 * 20;   -- debug
@@ -107,6 +109,7 @@ function GeneralGameWorld:Login(params)
 	local ip = params.ip or "127.0.0.1";
 	local port = params.port or "9000";
 	local worldId = params.worldId;
+	local parallelWorldName = params.parallelWorldName;
 	local username = params.username or System.User.keepworkUsername;  -- 若不存在使用 keepwork 的用户名
 	local password = params.password;
 	local thread = params.thread or "gl";
@@ -120,7 +123,14 @@ function GeneralGameWorld:Login(params)
 	end
 
 	-- 连接服务器
-	self.netHandler = NetClientHandler:new():Init(ip, port, worldId, username, password, self);
+	self.netHandler = NetClientHandler:new():Init({
+		ip = ip, 
+		port = port, 
+		worldId = worldId, 
+		username = username, 
+		password = password,
+		parallelWorldName = parallelWorldName,
+	}, self);
 	
 	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
 
@@ -131,6 +141,12 @@ function GeneralGameWorld:Logout()
 	if(self.netHandler) then
 		self.netHandler:Cleanup();
 	end
+
+	-- 清空并删除实体
+	for i = 1, #self.entityList do
+		self.entityList[i]:Destroy();
+	end
+	self.entityList:clear();
 
 	-- 解除链接关系
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
@@ -150,4 +166,12 @@ end
 
 function GeneralGameWorld:IsLogin()
 	return self.isLogin;
+end
+
+function GeneralGameWorld:AddEntity(entity)
+	self.entityList:add(entity);
+end
+
+function GeneralGameWorld:RemoveEntity(entity)
+	self.entityList.removeByValue(entity);
 end

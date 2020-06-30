@@ -31,10 +31,7 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
     if (not entityInfo) then 
         return self;
     end
-
-    -- 命令
-    self.cmd = "";
-
+    
     -- 实体基础属性
     self.entityId = entityInfo.entityId;
     self.name = entityInfo.name;
@@ -60,6 +57,9 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
     -- self.stance = entityInfo.stance;
     -- self.onground = entityInfo.onground;
     -- self.moving = entityInfo.moving;
+
+    -- 实体对应的玩家信息
+    self.playerInfo = entityInfo.playerInfo;
 
 	return self;
 end

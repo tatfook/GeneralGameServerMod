@@ -47,8 +47,8 @@ function Config:Init(isServer)
 
     self.isServer = isServer;
     -- 客户端默认世界ID
-    self.defaultWorldId = 12706;
-    self.isSyncBlock = false;   -- 默认不同步 Block 信息
+    self.defaultWorldId = 10373;  --  新手岛世界ID
+    self.isSyncBlock = false;     -- 默认不同步 Block 信息
     if (self.IsDevEnv) then 
         self.serverIp = "127.0.0.1";
         self.serverPort = "9000";
@@ -62,6 +62,39 @@ function Config:Init(isServer)
     self.worldMaxClientCount = 100;  -- 每个世界限定100用户   
     self.maxClientCount = 8000;      -- 服务器最大连接数为8000
 
+    -- 服务配置
+    self.Server = {
+        listenIp="0.0.0.0", 
+        listenPort="9000",
+        isControlServer=true,
+        isWorkerServer=true,
+        maxClientCount=8000,
+        maxWorldCount=200,
+        innerIp="10.28.18.2",
+        innerPort="9000",
+        outerIp="120.132.120.175",
+        outerPort="9000",
+    }
+    self.ControlServer = {
+        innerIp="10.28.18.2",
+        innerPort="9000",
+        outerIp="120.132.120.175",
+        outerPort="9000",
+    }
+    self.WorkerServer = {
+        innerIp="10.28.18.2",
+        innerPort="9000",
+        outerIp="120.132.120.175",
+        outerPort="9000",
+    }
+    self.World = {
+        minClientCount=50, 
+        maxClientCount=200,
+    }
+    self.Player = {
+        minAliveTime = 60000,
+    }
+    
     -- 服务端才需要配置文件, 加载配置
     if (isServer) then
         self:LoadConfig(self.ConfigFile);
@@ -119,6 +152,7 @@ function Config:LoadConfig(filename)
     local WorldAttr = World and (World.attr or {});
     commonlib.partialcopy(self.World, WorldAttr);
     self.World.maxClientCount = tonumber(WorldAttr.maxClientCount) or self.worldMaxClientCount;
+    self.World.minClientCount = tonumber(WorldAttr.minClientCount) or 50;
     -- Log:Info(self);
 
     -- 控制器服务配置
@@ -132,4 +166,11 @@ function Config:LoadConfig(filename)
     local WorkerServer = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Server/WorkerServer")[1];
     local WorkerServerAttr = WorkerServer and (WorkerServer.attr or {});
     commonlib.partialcopy(self.WorkerServer, WorkerServerAttr);
+
+    -- 玩家配置
+    self.Player = self.Player or {};
+    -- 最小存活时间
+    local MinAliveTime = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Player/MinAliveTime")[1];
+    self.Player.minAliveTime = tonumber(MinAliveTime and MinAliveTime[1] or 120000);
+    self.Player.aliveDuration = 3 * 60 * 1000; -- 心跳间隔
 end

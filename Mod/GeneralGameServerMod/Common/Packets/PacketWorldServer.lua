@@ -21,6 +21,7 @@ end
 function PacketWorldServer:Init(packet)
 	-- client
 	self.worldId = packet.worldId;
+	self.parallelWorldName = packet.parallelWorldName;
 
 	-- server
 	self.ip = packet.ip;
