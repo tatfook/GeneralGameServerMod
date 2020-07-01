@@ -9,9 +9,51 @@
 <pe:mcml>
 <script refresh="false" type="text/npl" src="UserInfo.lua">
 <![CDATA[
+local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo"):GetSingleton();
+UserInfo:Test();
+
+function GetUserName()
+    return L"逍遥";
+end
 ]]>
 </script>
-<div style="background-color: red;">
+<style type="text/mcss">
+{
+    container = {
+        width = 850,
+        height = 650,
+        background = "Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8",
+    },
+    header2 = {
+        height = 32,
+        ["margin-top"] = 5,
+        ["margin-left"] = 5,
+        ["margin-bottom"] = 0,
+        ["margin-right"] = 200,
+    },
+}
+</style>
+<div class="container">
+    <div class="header2" width="100%">
+        <input onclick="close()"
+               style="margin-top:0px ;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px"
+               type="button"
+               align="right" />
+    </div>
+    <!-- <div style="height:2px;" width="100%" class="mc_line"></div>
+    <div>
+        <div>
+            <div>
+                <pe:mc_player name="MyPlayer" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px;height:256px;" isinteractive="false" />
+            </div>
+            <div style="color:white;">
+                <%= GetUserName() %>
+            </div>
+        </div>
+        <div>
+
+        </div>
+    </div> -->
 </div>
 </pe:mcml>
 </body>

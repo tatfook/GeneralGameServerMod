@@ -45,9 +45,9 @@ end
 
 -- 显示页面
 function View:Show(params)
-    -- if (params.isShowTitleBar == nil) then params.isShowTitleBar = false end
+    if (params.isShowTitleBar == nil) then params.isShowTitleBar = false end
     if (params.isShow == nil) then params.isShow = true end;
-    -- if (params.style == nil) then params.style = CommonCtrl.WindowFrame.ContainerStyle end
+    if (params.style == nil) then params.style = CommonCtrl.WindowFrame.ContainerStyle end
     if (params.DestroyOnClose == nil) then params.DestroyOnClose = true end
     if (params.zorder == nil) then params.zorder = 0 end
     if (params.allowDrag == nil) then params.allowDrag = true end

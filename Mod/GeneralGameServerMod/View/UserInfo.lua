@@ -10,10 +10,11 @@ local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo");
 UserInfo:GetSingleton():Show();
 -------------------------------------------------------
 ]]
+
 NPL.load("Mod/GeneralGameServerMod/View/View.lua");
-
+NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local UserInfo = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.View.View"), commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo"));
-
 
 function UserInfo:ctor() 
 end
@@ -34,3 +35,7 @@ function UserInfo:Show()
     });
 end
 
+
+function UserInfo:Test() 
+    Log:Info("hello world1");
+end

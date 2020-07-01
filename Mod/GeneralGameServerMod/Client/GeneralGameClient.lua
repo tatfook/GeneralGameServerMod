@@ -76,6 +76,7 @@ function GeneralGameClient:LoadWorld(options)
     
     -- only reload world if world id does not match
     local isReloadWorld = options.worldId ~= curWorldId; 
+    local worldId = options.worldId;
 
     -- 退出旧世界
     if (self.world) then self.world:OnExit(); end
@@ -85,7 +86,7 @@ function GeneralGameClient:LoadWorld(options)
 
     -- 以只读方式重新进入
     if (isReloadWorld) then
-        GameLogic.RunCommand(string.format("/loadworld %d", self.worldId));    
+        GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
     else
         self:OnWorldLoaded();
     end
