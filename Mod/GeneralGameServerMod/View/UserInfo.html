@@ -133,6 +133,10 @@ function ClickFollow()
     end
     GetUserInfo():Refresh();
 end
+
+function Close() 
+    GetUserInfo():Close();
+end
 ]]>
 </script>
 <style type="text/mcss">
@@ -140,7 +144,7 @@ end
 <div style="width: 590px; height: 318px; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
     <div style="margin:5px; margin-bottom: 0px; height:26px">
         <div style="float: left; padding-left:10px; color:#ffffff; ">用户信息</div>
-        <input align="right" type="button"onclick="GetUserInfo():Close()" style="background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px"/>
+        <input align="right" type="button"onclick="Close()" style="background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px"/>
     </div>
     <div style="height:2px;" width="100%" class="mc_line"></div>
     <div> 
