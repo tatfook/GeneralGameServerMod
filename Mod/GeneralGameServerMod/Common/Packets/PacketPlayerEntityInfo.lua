@@ -50,9 +50,9 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
     self.headYaw = entityInfo.headYaw;
     self.headPitch = entityInfo.headPitch;
 
-    self.asset = entityInfo.asset; -- 外貌
-    self.skip = entityInfo.skin; -- 皮肤
-    self.animId = entityInfo.animId; -- 动画
+    -- self.asset = entityInfo.asset; -- 外貌
+    -- self.skip = entityInfo.skin; -- 皮肤
+    -- self.animId = entityInfo.animId; -- 动画
     -- 移动信息
     -- self.stance = entityInfo.stance;
     -- self.onground = entityInfo.onground;

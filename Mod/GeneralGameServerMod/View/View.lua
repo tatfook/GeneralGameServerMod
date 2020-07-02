@@ -11,6 +11,7 @@ local View = commonlib.gettable("Mod.GeneralGameServerMod.View.View");
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Api/KeepworkApi.lua");
+local KeepworkServiceSession = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/Session.lua")
 local KeepworkApi = commonlib.gettable("Mod.GeneralGameServerMod.Api.KeepworkApi");
 local View = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.View.View"));
 
@@ -39,9 +40,6 @@ end
 
 -- 获取页面
 function View:GetPage() 
-    if (not self.page) then
-        self.page = document:GetPageCtrl();
-    end
     return self.page;
 end
 
@@ -67,6 +65,12 @@ function View:Show(params)
 
     System.App.Commands.Call("File.MCMLWindowFrame", params);
 
+    -- 监听关闭事件
+    params._page.OnClose = function() 
+        self:SetPage(nil);
+    end
+
+    -- 设置页面
     self:SetPage(params._page);
 
 end
@@ -74,4 +78,15 @@ end
 -- 关闭页面
 function View:Close()
     self:GetPage():CloseWindow();
+end
+
+-- 刷新页面
+function View:Refresh(delta)
+    if(not self:GetPage()) then return end
+    self:GetPage():Refresh(delta or 0.01);
+end
+
+-- 是否认证
+function View:IsSignedIn() 
+    KeepworkServiceSession:IsSignedIn();
 end

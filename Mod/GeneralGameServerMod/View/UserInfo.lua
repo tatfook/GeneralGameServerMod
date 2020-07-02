@@ -6,8 +6,8 @@ Desc: 用户信息详情页
 use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/View/UserInfo.lua");
-local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo");
-UserInfo:GetSingleton():Show();
+local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo"):GetSingleton();
+UserInfo:Show();
 -------------------------------------------------------
 ]]
 
@@ -25,10 +25,30 @@ function UserInfo:Init()
     return self;
 end
 
--- -- 加载用户信息
--- function UserInfo:LoadUserInfo(username)
---     KeepworkApi:GetUserDetail
--- end
+-- 加载用户信息
+function UserInfo:LoadUserInfo(username)
+    local Api = UserInfo:GetApi();
+    local status, response, data = Api:GetUserDetail(username);
+    if (status ~= 200) then
+        echo("获取用户详情失败...");
+        return false;
+    end
+    self.UserDetail = data;
+    -- 获取用户ID
+    local userId = self.UserDetail.id;
+    status, response, data = Api:GetUserProjects(userId);
+    if (status ~= 200) then
+        echo("获取用户项目列表失败");
+        return false;
+    end
+    self.ProjectList = data;
+
+    -- 是否关注判断
+    status, _, data = Api:IsFollow(userId);
+    self.isFollow = status == 200 and data;
+
+    return true;
+end
 
 -- 获取用户名
 function UserInfo:GetUserName() 
@@ -37,8 +57,11 @@ end
 
 -- 显示页面
 function UserInfo:Show(username)
+    if (not username) then return end;
+
     self.username = username;
 
+    -- 先显示页面
     self._super:Show({
         url = "Mod/GeneralGameServerMod/View/UserInfo.html",
         name = "Mod.GeneralGameServerMod.View.UserInfo",
@@ -46,9 +69,14 @@ function UserInfo:Show(username)
         height = 650,
         title = "用户信息",
     });
+
+    -- 加载数据
+    if (not self:LoadUserInfo(username)) then
+        return self:Close();   -- 加载数据失败关闭页面
+    end
+
+    -- 刷新页面
+    self:Refresh();
 end
 
 
-function UserInfo:Test() 
-    Log:Info("hello world1");
-end

@@ -10,6 +10,8 @@ local EntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.Client.E
 -------------------------------------------------------
 ]]
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+NPL.load("Mod/GeneralGameServerMod/View/UserInfo.lua");
+local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local EntityPlayerHelper = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityPlayerHelper"));
 
@@ -23,6 +25,10 @@ end
 
 function EntityPlayerHelper:GetEntityPlayer()
     return self.entityPlayer;
+end
+
+function EntityPlayerHelper:GetUserInfoPage()
+    return UserInfo::GetSingleton();
 end
 
 function EntityPlayerHelper:SetPlayerInfo(playerInfo)
@@ -39,7 +45,15 @@ function EntityPlayerHelper:SetPlayerInfo(playerInfo)
     end
 end
 
+function EntityPlayerHelper:GetUserName() 
+    return self.playerInfo.username;
+end
+
 -- virtual function:
 function EntityPlayerHelper:OnClick(x,y,z, mouse_button,entity,side)
     Log:Info("我被点击了");
+
+    if (self.isMainPlayer) then return end;
+
+    self:GetUserInfoPage:Show(self:GetUserName());
 end

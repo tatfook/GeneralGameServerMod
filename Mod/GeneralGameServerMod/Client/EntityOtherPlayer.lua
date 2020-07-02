@@ -13,6 +13,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityPlayerMPOther.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/EntityPlayerHelper.lua");
+
 local EntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.Client.EntityPlayerHelper");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
@@ -32,4 +33,5 @@ end
 -- virtual function:
 function EntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
     Log:Info("我被点击了");
+    self.entityPlayerHelper:OnClick(x,y,z, mouse_button,entity,side);
 end
