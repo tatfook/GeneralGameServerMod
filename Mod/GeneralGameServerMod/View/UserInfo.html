@@ -11,13 +11,31 @@
 <![CDATA[
 local UniString = commonlib.gettable("System.Core.UniString")
 local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo"):GetSingleton();
-UserInfo:Test();
+
+local global_type = type;
+local UserDetail = {rank = {fans = 0, follow = 0}};
+local ProjectList = {};
 
 function GetUserName()
-    return L"逍遥";
+    return UserInfo:GetUserName() or "xiaoyao";
 end
 
-function GetWorksList()
+function LoadUserInfo() 
+    local Api = UserInfo:GetApi();
+    local status, response, data = Api:GetUserDetail(GetUserName());
+    if (status ~= 200) then
+        return echo("获取用户详情失败...");
+    end
+    UserDetail = data;
+    -- 获取用户ID
+    local userId = UserDetail.id;
+    status, response, data = Api:GetUserProjects(userId);
+    if (status ~= 200) then
+        return echo("获取用户项目列表失败");
+    end
+    ProjectList = data;
+end
+function GetWorksListFake()
     return {
         {
             id = 1,
@@ -95,7 +113,7 @@ function Close()
 end
 
 function getWorldText(text)
-    if type(text) ~= 'string' then
+    if global_type(text) ~= 'string' then
         return ''
     end
 
@@ -114,6 +132,37 @@ end
 function GetImageStyle(cover)
     return string.format("width: 120px; height: 68px; background: url(%s);", cover or "");
 end
+
+function GetCreateTime(datetime)
+    local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
+    return tostring(year) .. "年" .. tostring(month) .. "月" .. tostring(day) .. "日";
+end
+
+function GetUpdatedTime(datetime)
+    local year,month,day,hour,min,sec = string.match(datetime, "(%d+)%D(%d+)%D(%d+)%D+(%d+)%D(%d+)%D(%d+)");
+    local data_time = string.format("%s-%s-%s %s:%s:%s", year,month,day,hour,min,sec);
+    echo (data_time);
+    echo(commonlib.GetMillisecond_Date(data_time));
+    local date, time = commonlib.timehelp.GetLocalTime();
+    local curDateTime = string.format("%s %s", date, string.gsub(time, "-", ":"));
+    echo (curDateTime);
+    return "";
+end
+
+function GetWorksList()
+    return ProjectList or {};
+end
+
+function GetUserDetail()
+    return UserDetail;
+end
+
+function Init() 
+    LoadUserInfo();
+    echo("----------userinfo-----------");
+end
+
+Init();
 ]]>
 </script>
 <style type="text/mcss">
@@ -131,8 +180,8 @@ end
             <div style="color:white; text-align: center;"><%= GetUserName() %></div>
             <div style="margin-top:10px; text-align: center; font-size: 8px;"><%= GetRegisterTime() %></div>
             <div style="margin-top: 10px; margin: 10px; font-size: 12px; color: white">
-                <div style="float: left; width: 68px; text-align: center;">关注 12</div>
-                <div style="float: left; width: 68px; text-align: center;">粉丝 68</div>
+                <div style="float: left; width: 68px; text-align: center;">关注 <%= GetUserDetail().rank.follow %></div>
+                <div style="float: left; width: 68px; text-align: center;">粉丝 <%= GetUserDetail().rank.fans %></div>
             </div>
             <input align="center" type="button" value="关注" style="width: 100px; height: 18px; spacing: 20px; font-weight: bold; font-size: 12px;" class="mc_light_grey_button_with_fillet"/>
         </div>
@@ -145,8 +194,8 @@ end
                     <div style="width: 130px; height: 150px; background-color: #2a2a2a; color:white;">
                         <div style="<%=GetImageStyle(Eval('cover'))%>"></div>
                         <div style="font-weight:bold;font-size:12px;base-font-size:12px;"><%=getWorldText(Eval("name"))%></div>
-                        <div style="font-weight:bold;font-size:8px;base-font-size:8px;">创建时间: 2020年07月09日</div>
-                        <div style="font-weight:bold;font-size:8px;base-font-size:8px;">上次更新: 15天前</div>
+                        <div style="font-weight:bold;font-size:8px;base-font-size:8px;">创建时间: <%=GetCreateTime(Eval("createdAt"))%></div>
+                        <div style="font-weight:bold;font-size:8px;base-font-size:8px;">上次更新: <%=GetUpdatedTime(Eval("updatedAt"))%></div>
                         <input type="button" style="margin-left: 73px; width: 52px; height: 14px; font-size: 8px;" class="mc_light_grey_button_with_fillet" value="访问世界" />
                     </div>
                 </Columns>

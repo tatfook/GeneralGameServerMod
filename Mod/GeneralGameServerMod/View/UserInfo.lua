@@ -13,6 +13,7 @@ UserInfo:GetSingleton():Show();
 
 NPL.load("Mod/GeneralGameServerMod/View/View.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local UserInfo = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.View.View"), commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo"));
 
@@ -24,8 +25,20 @@ function UserInfo:Init()
     return self;
 end
 
+-- -- 加载用户信息
+-- function UserInfo:LoadUserInfo(username)
+--     KeepworkApi:GetUserDetail
+-- end
+
+-- 获取用户名
+function UserInfo:GetUserName() 
+    return self.username;
+end
+
 -- 显示页面
-function UserInfo:Show()
+function UserInfo:Show(username)
+    self.username = username;
+
     self._super:Show({
         url = "Mod/GeneralGameServerMod/View/UserInfo.html",
         name = "Mod.GeneralGameServerMod.View.UserInfo",

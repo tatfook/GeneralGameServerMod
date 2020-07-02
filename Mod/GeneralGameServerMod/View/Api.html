@@ -1,0 +1,42 @@
+<!-- "Mod/GeneralGameServerMod/View/UserInfo.html" -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+</head>
+<body>
+<pe:mcml>
+<script refresh="false" type="text/npl" src="Api.lua">
+<![CDATA[
+local Encoding = commonlib.gettable("System.Encoding");
+local KeepworkApi = commonlib.gettable("Mod.GeneralGameServerMod.Api.KeepworkApi");
+
+function KeepworkApi:GetUserProjects(userId, callback) 
+    local url = self:GetBaseUrl() .. "/core/v0/projects";
+    return System.os.GetUrl({
+        url = url,
+        method = "GET",
+        qs = {
+            userId = userId,
+        },
+    },  callback);
+end
+local status, response, data = KeepworkApi:GetUserProjects(3);
+echo (status);
+echo (data);
+]]>
+</script>
+<style type="text/mcss">
+</style>
+<div style="width: 590px; height: 318px; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
+</div>
+</pe:mcml>
+</body>
+</html>
+<!-- 
+    background-color: #ff0000;  不支持文本颜色 red
+    height: 100% 不支持
+    float: right 不支持
+    margin: 不支持分开简写(10px 20px)
+ -->

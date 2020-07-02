@@ -10,6 +10,8 @@ local View = commonlib.gettable("Mod.GeneralGameServerMod.View.View");
 -------------------------------------------------------
 ]]
 
+NPL.load("Mod/GeneralGameServerMod/Api/KeepworkApi.lua");
+local KeepworkApi = commonlib.gettable("Mod.GeneralGameServerMod.Api.KeepworkApi");
 local View = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.View.View"));
 
 -- 单列模式
@@ -28,6 +30,11 @@ end
 -- 初始化函数
 function View:Init()
     return self;
+end
+
+-- 获取API
+function View:GetApi()
+    return KeepworkApi;
 end
 
 -- 获取页面
