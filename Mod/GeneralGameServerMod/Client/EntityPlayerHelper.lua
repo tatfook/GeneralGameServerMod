@@ -28,7 +28,7 @@ function EntityPlayerHelper:GetEntityPlayer()
 end
 
 function EntityPlayerHelper:GetUserInfoPage()
-    return UserInfo::GetSingleton();
+    return UserInfo:GetSingleton();
 end
 
 function EntityPlayerHelper:SetPlayerInfo(playerInfo)
@@ -55,5 +55,5 @@ function EntityPlayerHelper:OnClick(x,y,z, mouse_button,entity,side)
 
     if (self.isMainPlayer) then return end;
 
-    self:GetUserInfoPage:Show(self:GetUserName());
+    self:GetUserInfoPage():Show(self:GetUserName());
 end
