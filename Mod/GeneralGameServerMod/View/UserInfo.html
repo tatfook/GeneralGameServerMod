@@ -9,52 +9,165 @@
 <pe:mcml>
 <script refresh="false" type="text/npl" src="UserInfo.lua">
 <![CDATA[
+local UniString = commonlib.gettable("System.Core.UniString")
 local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.View.UserInfo"):GetSingleton();
 UserInfo:Test();
 
 function GetUserName()
     return L"逍遥";
 end
+
+function GetWorksList()
+    return {
+        {
+            id = 1,
+            cover = "https://qiniu.keepwork.com/138647-69d23c49-640e-4224-9cf6-a766f1c72747.jpg?e=4743747774&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:zBqFZ2tkIFpC7BOj6wM7O0FU6xA=",
+            name = "尽头的承诺",
+            username = "xiaoyao",
+            downloaded = true,
+            favorite = true,
+        },
+        {
+            id = 1,
+            cover = "https://qiniu.keepwork.com/138647-69d23c49-640e-4224-9cf6-a766f1c72747.jpg?e=4743747774&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:zBqFZ2tkIFpC7BOj6wM7O0FU6xA=",
+            name = "尽头的承诺",
+            username = "xiaoyao",
+            downloaded = true,
+            favorite = true,
+        },
+        {
+            id = 1,
+            cover = "https://qiniu.keepwork.com/138647-69d23c49-640e-4224-9cf6-a766f1c72747.jpg?e=4743747774&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:zBqFZ2tkIFpC7BOj6wM7O0FU6xA=",
+            name = "尽头的承诺",
+            username = "xiaoyao",
+            downloaded = true,
+            favorite = true,
+        },
+        {
+            id = 1,
+            cover = "https://qiniu.keepwork.com/138647-69d23c49-640e-4224-9cf6-a766f1c72747.jpg?e=4743747774&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:zBqFZ2tkIFpC7BOj6wM7O0FU6xA=",
+            name = "尽头的承诺",
+            username = "xiaoyao",
+            downloaded = true,
+            favorite = true,
+        },
+        {
+            id = 1,
+            cover = "https://qiniu.keepwork.com/138647-69d23c49-640e-4224-9cf6-a766f1c72747.jpg?e=4743747774&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:zBqFZ2tkIFpC7BOj6wM7O0FU6xA=",
+            name = "尽头的承诺",
+            username = "xiaoyao",
+            downloaded = true,
+            favorite = true,
+        },
+        {
+            id = 1,
+            cover = "https://qiniu.keepwork.com/138647-69d23c49-640e-4224-9cf6-a766f1c72747.jpg?e=4743747774&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:zBqFZ2tkIFpC7BOj6wM7O0FU6xA=",
+            name = "尽头的承诺",
+            username = "xiaoyao",
+            downloaded = true,
+            favorite = true,
+        },
+        {
+            id = 1,
+            cover = "https://qiniu.keepwork.com/138647-69d23c49-640e-4224-9cf6-a766f1c72747.jpg?e=4743747774&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:zBqFZ2tkIFpC7BOj6wM7O0FU6xA=",
+            name = "尽头的承诺",
+            username = "xiaoyao",
+            downloaded = true,
+            favorite = true,
+        },
+        {
+            id = 1,
+            cover = "https://qiniu.keepwork.com/138647-69d23c49-640e-4224-9cf6-a766f1c72747.jpg?e=4743747774&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:zBqFZ2tkIFpC7BOj6wM7O0FU6xA=",
+            name = "尽头的承诺",
+            username = "xiaoyao",
+            downloaded = true,
+            favorite = true,
+        }
+    }
+end
+
+function GetRegisterTime()
+    return L"2020年12月12日加入帕拉卡";
+end
+
+function Close() 
+    UserInfo:Close();
+end
+
+function getWorldText(text)
+    if type(text) ~= 'string' then
+        return ''
+    end
+
+    local utf8Text = UniString:new(text)
+
+    if _guihelper.GetTextWidth(text) > 112 then
+        return utf8Text:sub(1, 8).text .. '...'
+    else
+        return text
+    end
+end
+
+function getProjectUrl(id)
+    -- return format("%s/pbl/project/%d/", KeepworkService:GetKeepworkUrl(), id or 0)
+end
+function GetImageStyle(cover)
+    return string.format("width: 120px; height: 68px; background: url(%s);", cover or "");
+end
 ]]>
 </script>
 <style type="text/mcss">
-{
-    container = {
-        width = 850,
-        height = 650,
-        background = "Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8",
-    },
-    header2 = {
-        height = 32,
-        ["margin-top"] = 5,
-        ["margin-left"] = 5,
-        ["margin-bottom"] = 0,
-        ["margin-right"] = 200,
-    },
-}
 </style>
-<div class="container">
-    <div class="header2" width="100%">
-        <input onclick="close()"
-               style="margin-top:0px ;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px"
-               type="button"
-               align="right" />
+<div style="width: 590px; height: 318px; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
+    <div style="margin:5px; margin-bottom: 0px; height:26px">
+        <div style="float: left; padding-left:10px; color:#ffffff; ">用户信息</div>
+        <input align="right" type="button"onclick="Close()" style="background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px"/>
     </div>
-    <!-- <div style="height:2px;" width="100%" class="mc_line"></div>
-    <div>
-        <div>
-            <div>
-                <pe:mc_player name="MyPlayer" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px;height:256px;" isinteractive="false" />
+    <div style="height:2px;" width="100%" class="mc_line"></div>
+    <div> 
+        <!-- 左侧用户信息 -->
+        <div style="float: left; width: 156px; color: white; font-size: 12px;">
+            <div><pe:mc_player name="MyPlayer" miniscenegraphname="AvatarMyselfTabCharacter" style="width:156px;height:156px;" isinteractive="false" /></div>
+            <div style="color:white; text-align: center;"><%= GetUserName() %></div>
+            <div style="margin-top:10px; text-align: center; font-size: 8px;"><%= GetRegisterTime() %></div>
+            <div style="margin-top: 10px; margin: 10px; font-size: 12px; color: white">
+                <div style="float: left; width: 68px; text-align: center;">关注 12</div>
+                <div style="float: left; width: 68px; text-align: center;">粉丝 68</div>
             </div>
-            <div style="color:white;">
-                <%= GetUserName() %>
-            </div>
+            <input align="center" type="button" value="关注" style="width: 100px; height: 18px; spacing: 20px; font-weight: bold; font-size: 12px;" class="mc_light_grey_button_with_fillet"/>
         </div>
-        <div>
-
+        <!-- 中间线 -->
+        <div style="float: left; width: 2px; height: 284px; margin-left: 0px; margin-top: 0px; background-color: #b7b2b2b;"></div>
+        <!-- 右侧项目列表 -->
+        <div style="float: left; height: 290px;">
+            <pe:gridview  style="margin: 0px; width: 435px; height: 280px;" CellPadding="5" DataSource="<%= GetWorksList() %>" RememberScrollPos="true" DefaultNodeHeight="150" ItemsPerLine="3" AllowPaging="false">
+                <Columns>
+                    <div style="width: 130px; height: 150px; background-color: #2a2a2a; color:white;">
+                        <div style="<%=GetImageStyle(Eval('cover'))%>"></div>
+                        <div style="font-weight:bold;font-size:12px;base-font-size:12px;"><%=getWorldText(Eval("name"))%></div>
+                        <div style="font-weight:bold;font-size:8px;base-font-size:8px;">创建时间: 2020年07月09日</div>
+                        <div style="font-weight:bold;font-size:8px;base-font-size:8px;">上次更新: 15天前</div>
+                        <input type="button" style="margin-left: 73px; width: 52px; height: 14px; font-size: 8px;" class="mc_light_grey_button_with_fillet" value="访问世界" />
+                    </div>
+                </Columns>
+                <!-- <PagerSettings Position="Bottom" height="1" />
+                <PagerTemplate AutoHidePager="true">
+                    <form>
+                        <label name="page" style="height:18px;margin-left:59px;margin-top:-95px;color:#ffffff;" />
+                        <input type="button" name="pre"  invisibleondisabled="false" zorder=2 animstyle="23" tooltip='<%=L"上一页"%>' style="margin-left:35px;margin-top:-93px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;224 167 13 15" />
+                        <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip='<%=L"下一页"%>' style="margin-left:40px;margin-top:-93px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#249 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 167 13 15" />
+                    </form>
+                </PagerTemplate> -->
+            </pe:gridview>
         </div>
-    </div> -->
+    </div>
 </div>
 </pe:mcml>
 </body>
 </html>
+<!-- 
+    background-color: #ff0000;  不支持文本颜色 red
+    height: 100% 不支持
+    float: right 不支持
+    margin: 不支持分开简写(10px 20px)
+ -->

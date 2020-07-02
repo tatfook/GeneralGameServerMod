@@ -64,3 +64,7 @@ function View:Show(params)
 
 end
 
+-- 关闭页面
+function View:Close()
+    self:GetPage():CloseWindow();
+end

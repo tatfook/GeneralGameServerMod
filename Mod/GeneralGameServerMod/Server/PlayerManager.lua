@@ -64,10 +64,29 @@ function PlayerManager:CreatePlayer(username, netHandler)
     return player;
 end
 
+-- 从离线列表中移除玩家
+function PlayerManager:RemoveOfflinePlayer(username)
+    for i = self.offlinePlayerQueue.first, self.offlinePlayerQueue.last do
+        local offlinePlayer = self.offlinePlayerQueue[i];
+        if (username and offlinePlayer.username == username) then
+            for j = i, self.offlinePlayerQueue.last do
+                self.offlinePlayerQueue[j] = self.offlinePlayerQueue[j + 1];
+            end
+            self.offlinePlayerQueue.last = self.offlinePlayerQueue.last - 1;
+            self.playerList:removeByValue(offlinePlayer);
+            self:SendPacketPlayerLogout(offlinePlayer);
+            break;
+        end
+    end
+end
+
 -- 添加玩家
 function PlayerManager:AddPlayer(player)
     -- 添加至玩家列表
     self.playerList:add(player);
+
+    -- 新上线的玩家在离线列表, 先简单移除, 后续直接使用上次状态
+    self:RemoveOfflinePlayer(player.username);
 
     -- 当前玩家数过多时移除玩家
     if (#self.playerList > self.minPlayerCount) then 

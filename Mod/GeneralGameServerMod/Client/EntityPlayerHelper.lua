@@ -27,9 +27,10 @@ end
 
 function EntityPlayerHelper:SetPlayerInfo(playerInfo)
     local curPlayerInfo = self.playerInfo;
-    if (curPlayerInfo.state ~= playerInfo.state or curPlayerInfo.username ~= playerInfo.username) then
+    if (playerInfo.state and playerInfo.username and (curPlayerInfo.state ~= playerInfo.state or curPlayerInfo.username ~= playerInfo.username)) then
         curPlayerInfo.username = playerInfo.username or curPlayerInfo.username or self:GetEntityPlayer():GetDisplayName() or "";
         curPlayerInfo.state = playerInfo.state or curPlayerInfo.state;
+        Log:Info("username: %s, state: %s", curPlayerInfo.username, curPlayerInfo.state);
         local color = curPlayerInfo.state == "online" and (self.isMainPlayer and "12 5 245" or "12 245 5") or "200 200 200";
         local displayName = curPlayerInfo.username;
         if(self:GetEntityPlayer():IsShowHeadOnDisplay() and System.ShowHeadOnDisplay) then

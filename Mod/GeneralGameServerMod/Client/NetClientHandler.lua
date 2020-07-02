@@ -69,12 +69,12 @@ function NetClientHandler:SetPlayer(player)
 end
 
 function NetClientHandler:GetPlayer(entityId) 
-    -- 获取指定玩家
-    if (entityId) then
-        return self:GetWorld():GetEntityByID(entityId)
+    if (not entityId or (self.player and self.player.entityId == entityId)) then
+        -- 获取当前玩家
+        return self.player;
     end
-    -- 获取当前玩家
-    return self.player or EntityManager.GetPlayer();
+    -- 获取指定玩家
+    return self:GetWorld():GetEntityByID(entityId)
 end
 
 -- 是否是当前玩家
@@ -107,17 +107,19 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_logout"));
 
+    local player = self:GetPlayer(entityId);
+    -- 玩家不存在 直接忽视 
+    if (not player) then return end;
+
     -- 玩家退出
-    if (self:GetPlayer().entityId == entityId) then
+    if (self:GetPlayer() == player) then
         -- 当前玩家
         self:GetWorld():Logout();
+        Log:Info("main player logout");
     else 
-        -- 其它玩家 销毁玩家
-        local player = self:GetPlayer(entityId);
-        if (player) then
-            player:Destroy();
-            self:GetWorld():RemoveEntity(player);
-        end
+        player:Destroy();
+        self:GetWorld():RemoveEntity(player);
+        Log:Info("other player logout");
     end
 
     return;
@@ -145,7 +147,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     GameLogic:event(System.Core.Event:new():init("ps_client_login"));
 
     -- 获取旧当前玩家
-    local oldEntityPlayer = self:GetPlayer();
+    local oldEntityPlayer = EntityManager.GetPlayer();
     -- 创建当前玩家
     local entityPlayer = EntityMainPlayer:new():init(self:GetWorld(), self, entityId);
     if(oldEntityPlayer) then
@@ -161,6 +163,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     end
     entityPlayer:Attach();
     GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
+    oldEntityPlayer:Destroy(); -- 手动销毁旧玩家
     self:SetPlayer(entityPlayer);
     
     -- 设置玩家信息

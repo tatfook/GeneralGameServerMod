@@ -173,5 +173,5 @@ function GeneralGameWorld:AddEntity(entity)
 end
 
 function GeneralGameWorld:RemoveEntity(entity)
-	self.entityList.removeByValue(entity);
+	self.entityList:removeByValue(entity);
 end

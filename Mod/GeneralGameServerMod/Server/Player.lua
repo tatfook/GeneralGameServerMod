@@ -13,6 +13,8 @@ Player:new():Init()
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
@@ -70,6 +72,7 @@ function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
 end
 
 function Player:GetPlayerEntityInfo()
+    -- Log:Info(self);
     self.entityInfo.playerInfo = self:GetPlayerInfo();
     return Packets.PacketPlayerEntityInfo:new():Init(self.entityInfo, self.dataWatcher, true);
 end
@@ -77,6 +80,7 @@ end
 function Player:GetPlayerInfo()
     self.playerInfo.entityId = self.entityId; 
     self.playerInfo.state = self.state;
+    self.playerInfo.username = self.username;
     return self.playerInfo;
 end
 
