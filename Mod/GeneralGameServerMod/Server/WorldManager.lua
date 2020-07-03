@@ -114,7 +114,7 @@ function WorldManager:TryRemoveWorld(world)
         return false; 
     end
 
-    self.worldMap[world:GetKey()] = nil;
+    self.worldMap[world:GetWorldKey()] = nil;
     
     return true;
 end

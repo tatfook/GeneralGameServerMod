@@ -24,8 +24,10 @@ local Common = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerM
 
 function Common:Init(isServer)
     if (self.inited) then return end
-    self.inited = true;
-
+	self.inited = true;
+	-- 设置随机种子
+	math.randomseed(ParaGlobal.timeGetTime());
+	
     -- 设置日志默认模块名
     Log:SetDefaultModuleName("GeneralGameServerMod");
 	-- 初始化网络包

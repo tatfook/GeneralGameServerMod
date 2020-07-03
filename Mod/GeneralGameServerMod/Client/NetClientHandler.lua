@@ -155,7 +155,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetSkin(oldEntityPlayer:GetSkin());
         entityPlayer:SetGravity(oldEntityPlayer:GetGravity());
         local x, y, z = oldEntityPlayer:GetPosition();
-        local randomRange = 10;
+        local randomRange = 5;
         entityPlayer:SetPosition(x + math.random(-randomRange, randomRange), y, z + math.random(-randomRange, randomRange));
         if(entityPlayer:IsShowHeadOnDisplay() and System.ShowHeadOnDisplay) then
             System.ShowHeadOnDisplay(true, entityPlayer:GetInnerObject(), entityPlayer:GetDisplayName(), GameLogic.options.PlayerHeadOnTextColor);	
@@ -213,6 +213,7 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     local mainPlayer = self:GetPlayer();
     local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
     if (isNew) then
+        entityPlayer:SetSkipPicking(false);
         entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
         entityPlayer:Attach();
         self:GetWorld():AddEntity(entityPlayer);
