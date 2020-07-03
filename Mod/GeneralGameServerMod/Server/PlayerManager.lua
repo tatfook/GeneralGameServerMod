@@ -80,6 +80,18 @@ function PlayerManager:RemoveOfflinePlayer(username)
     end
 end
 
+-- 用户是否存在于离线玩家列表
+function PlayerManager:IsExistOfflinePlayerList(username)
+    for i = self.offlinePlayerQueue.first, self.offlinePlayerQueue.last do
+        local offlinePlayer = self.offlinePlayerQueue[i];
+        if (username and offlinePlayer.username == username) then
+            return true;
+        end
+    end
+
+    return false;
+end
+
 -- 添加玩家
 function PlayerManager:AddPlayer(player)
     -- 添加至玩家列表
@@ -92,7 +104,6 @@ function PlayerManager:AddPlayer(player)
     if (#self.playerList > self.minPlayerCount) then 
         local logoutPlayer = self.offlinePlayerQueue:popleft();
         if (logoutPlayer) then
-            self.playerList:removeByValue(logoutPlayer);
             self:SendPacketPlayerLogout(logoutPlayer);
         end
     end
@@ -102,7 +113,7 @@ end
 function PlayerManager:RemovePlayer(player)
     -- 存活时间小于指定时间时不做留存直接删除
     if (player.aliveTime < self.minAliveTime) then
-        return self.playerList:removeByValue(player);
+        return self:SendPacketPlayerLogout(player);
     end
 
     -- 留存策略采用队列模式, 留存最新玩家
@@ -117,7 +128,6 @@ function PlayerManager:RemovePlayer(player)
     -- 当前玩家数较多时移除最旧玩家(下线时间最早)
     local logoutPlayer = self.offlinePlayerQueue:popleft();
     if (logoutPlayer) then
-        self.playerList:removeByValue(logoutPlayer);
         self:SendPacketPlayerLogout(logoutPlayer);
     end
 end
@@ -129,6 +139,7 @@ end
 
 -- 发送玩家退出
 function PlayerManager:SendPacketPlayerLogout(player)
+    self.playerList:removeByValue(player);  -- 玩家登出世界, 从玩家列表中移除
     self:SendPacketToAllPlayers(Packets.PacketPlayerLogout:new():Init(player));
 end
 

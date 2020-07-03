@@ -304,5 +304,6 @@ end
 function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
     local entityId = packetPlayerInfo.entityId;
     local entityPlayer = self:GetPlayer(entityId);
+    if (not entityPlayer) then return end;
     entityPlayer:SetPlayerInfo(packetPlayerInfo);
 end
