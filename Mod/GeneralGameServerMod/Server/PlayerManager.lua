@@ -14,6 +14,8 @@ local PlayerManager = commonlib.gettable("GeneralGameServerMod.Server.PlayerMana
 -- 文件加载
 NPL.load("Mod/GeneralGameServerMod/Server/Player.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
 -- 对象获取
@@ -33,6 +35,10 @@ end
 function PlayerManager:Init(world)
     self.world = world;  -- 所属世界
     return self;
+end
+
+function PlayerManager:GetWorld() 
+    return self.world;
 end
 
 function PlayerManager:GetNextEntityId()
@@ -58,8 +64,11 @@ function PlayerManager:CreatePlayer(username, netHandler)
 		end
 	end
     
-    local player = Player:new():Init(self:GetNextEntityId(), username);
-    player:SetNetHandler(netHandler);
+    -- 创建玩家
+    local player = Player:new():Init({
+        entityId = self:GetNextEntityId(),
+        username = username,
+    }, self, netHandler);
 
     return player;
 end
@@ -118,7 +127,6 @@ function PlayerManager:RemovePlayer(player)
 
     -- 留存策略采用队列模式, 留存最新玩家
     self.offlinePlayerQueue:pushright(player);  
-
     -- 发送玩家信息  通知玩家下线   player.state = "offline"
     self:SendPacketPlayerInfo(player);
 
@@ -141,10 +149,13 @@ end
 function PlayerManager:SendPacketPlayerLogout(player)
     self.playerList:removeByValue(player);  -- 玩家登出世界, 从玩家列表中移除
     self:SendPacketToAllPlayers(Packets.PacketPlayerLogout:new():Init(player));
+
+    Log:Info("player logout; username : %s, worldkey: %s", player:GetUserName(), self:GetWorld():GetWorldKey());
 end
 
 -- 发送玩家信息
 function PlayerManager:SendPacketPlayerInfo(player)
+    Log:Info("player offline; username : %s, worldkey: %s", player:GetUserName(), self:GetWorld():GetWorldKey());
     self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()));
 end
 

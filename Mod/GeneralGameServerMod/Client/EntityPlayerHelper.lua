@@ -53,7 +53,9 @@ end
 function EntityPlayerHelper:OnClick(x,y,z, mouse_button,entity,side)
     Log:Info("我被点击了");
 
-    if (self.isMainPlayer) then return end;
+    if (self.isMainPlayer) then return true end;
 
     self:GetUserInfoPage():Show(self:GetUserName());
+
+    return true;
 end

@@ -31,15 +31,25 @@ function Player:ctor()
     self.state = "online";
 end
 
-function Player:Init(entityId, username)
-    self.entityId = entityId;
-    self.username = username or tostring(entityId);
+function Player:Init(player, playerManager, netHandler)
+    self.entityId = player.entityId;
+    self.username = player.username or tostring(player.entityId);
+    self.playerManager = playerManager;
+    self.playerNetHandler = netHandler;
 
     return self;
 end
 
 function Player:GetUserName() 
     return self.username;
+end
+
+function Player:GetPlayerManager()
+    return self.playerManager;
+end
+
+function Player:GetWorld()
+    return self:GetPlayerManager():GetWorld();
 end
 
 function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
@@ -88,12 +98,9 @@ function Player:SetPlayerInfo(info)
     commonlib.partialcopy(self.playerInfo, info);
 end
 
-function Player:SetNetHandler(netHandler)
-    self.playerNetHandler = netHandler;
-end
-
 function Player:KickPlayerFromServer(reason)
-    return self.playerNetHandler and self.playerNetHandler:KickPlayerFromServer(reason);
+    Log:Info("player logout; username : %s, worldkey: %s", self:GetUserName(), self:GetWorld():GetWorldKey());
+    return self.playerNetHandler:KickPlayerFromServer(reason);
 end
 
 function Player:SendPacketToPlayer(packet)

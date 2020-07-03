@@ -173,7 +173,6 @@ end
 -- 处理玩家退出
 function NetServerHandler:handlePlayerLogout(packetPlayerLogout)
     if (not self.playerConnection or not self:GetPlayer()) then return end
-    Log:Info("player logout; username : %s, worldkey: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey());
     -- 玩家退出
     self:GetPlayer():Logout();
     -- 从管理器中移除
