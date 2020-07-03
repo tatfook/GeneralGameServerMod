@@ -116,10 +116,12 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
         -- 当前玩家
         self:GetWorld():Logout();
         Log:Info("main player logout");
-    else 
+    elseif (player:isa(EntityOtherPlayer)) then
         player:Destroy();
         self:GetWorld():RemoveEntity(player);
         Log:Info("other player logout, entityId: %s", player.entityId);
+    else
+        -- Log:Info("invalid player entityId: %s", player.entityId);
     end
 
     return;
