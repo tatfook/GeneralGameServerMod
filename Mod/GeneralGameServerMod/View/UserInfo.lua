@@ -68,8 +68,8 @@ function UserInfo:Show(username)
     self._super:Show({
         url = "Mod/GeneralGameServerMod/View/UserInfo.html",
         name = "Mod.GeneralGameServerMod.View.UserInfo",
-        width = 870,
-        height = 650,
+        width = 590,
+        height = 320,
         title = "用户信息",
     });
 
