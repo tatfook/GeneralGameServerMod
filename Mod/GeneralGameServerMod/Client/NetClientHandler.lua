@@ -119,7 +119,7 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     else 
         player:Destroy();
         self:GetWorld():RemoveEntity(player);
-        Log:Info("other player logout");
+        Log:Info("other player logout, entityId: %s", player.entityId);
     end
 
     return;
@@ -160,10 +160,13 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         if(entityPlayer:IsShowHeadOnDisplay() and System.ShowHeadOnDisplay) then
             System.ShowHeadOnDisplay(true, entityPlayer:GetInnerObject(), entityPlayer:GetDisplayName(), GameLogic.options.PlayerHeadOnTextColor);	
         end
+        oldEntityPlayer:Destroy(); -- 手动销毁旧玩家
+        Log:Info("destroy old player entityId: %d", oldEntityPlayer.entityId);
+    else 
+        Log:Info("old player no exist!!!");
     end
     entityPlayer:Attach();
     GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
-    oldEntityPlayer:Destroy(); -- 手动销毁旧玩家
     self:SetPlayer(entityPlayer);
     
     -- 设置玩家信息

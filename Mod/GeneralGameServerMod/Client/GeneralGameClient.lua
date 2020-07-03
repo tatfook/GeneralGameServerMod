@@ -17,6 +17,7 @@ NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
+
 local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection");
@@ -65,6 +66,7 @@ end
 function GeneralGameClient:LoadWorld(options)
     -- 初始化
     self:Init();
+    
     -- 保存选项
     self.options = options;
     

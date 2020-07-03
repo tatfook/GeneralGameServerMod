@@ -13,6 +13,8 @@ NPL.load("(gl)script/ide/timer.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets");
@@ -138,12 +140,15 @@ function GeneralGameWorld:Login(params)
 end
 
 function GeneralGameWorld:Logout() 
+	Log:Info("logout world");
+
 	if(self.netHandler) then
 		self.netHandler:Cleanup();
 	end
 
 	-- 清空并删除实体
 	for i = 1, #self.entityList do
+		Log:Debug("destroy entiry:", self.entityList[i].entityId);
 		self.entityList[i]:Destroy();
 	end
 	self.entityList:clear();
