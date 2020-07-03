@@ -33,5 +33,5 @@ end
 -- virtual function:
 function EntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
     Log:Info("我被点击了");
-    self.entityPlayerHelper():OnClick(x,y,z, mouse_button,entity,side);
+    self.entityPlayerHelper:OnClick(x,y,z, mouse_button,entity,side);
 end

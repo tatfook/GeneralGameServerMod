@@ -27,13 +27,6 @@ end
 
 -- Send updated motion and position information to the server
 function EntityMainPlayer:SendMotionUpdates()
-    local obj = self:GetInnerObject();
-	if(not obj) then
-		return;
-	end
-	if(not self:IsNearbyChunkLoaded()) then
-		return;
-	end
     if(not self:GetInnerObject() or not self:IsNearbyChunkLoaded()) then return end
     
     local hasMetaDataChange = self.dataWatcher:HasChanges();

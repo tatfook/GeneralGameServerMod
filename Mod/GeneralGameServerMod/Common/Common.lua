@@ -25,6 +25,7 @@ local Common = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerM
 function Common:Init(isServer)
     if (self.inited) then return end
 	self.inited = true;
+
 	-- 设置随机种子
 	math.randomseed(ParaGlobal.timeGetTime());
 	
@@ -38,6 +39,13 @@ function Common:Init(isServer)
     NPL.AddPublicFile("Mod/GeneralGameServerMod/Common/Connection.lua", 401);
 	-- 初始化插件配置
 	Config:Init(isServer);
+
+	-- 设置日志等级
+	if (Config.IsDevEnv or Config.IsTestEnv) then
+		Log:SetLevel("DEBUG");
+	else 
+		Log:SetLevel("INFO");
+	end
 end
 
 function Common:GetConfig() 
