@@ -47,6 +47,9 @@ function UserInfo:LoadUserInfo(username)
     status, _, data = Api:IsFollow(userId);
     self.isFollow = status == 200 and data;
 
+    Log:Debug(self.UserDetail);
+    Log:Debug(self.ProjectList);
+    Log:Debug(self.isFollow);
     return true;
 end
 
