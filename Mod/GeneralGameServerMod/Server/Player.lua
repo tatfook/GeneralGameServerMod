@@ -99,7 +99,7 @@ function Player:SetPlayerInfo(info)
 end
 
 function Player:KickPlayerFromServer(reason)
-    Log:Info("player logout; username : %s, worldkey: %s", self:GetUserName(), self:GetWorld():GetWorldKey());
+    Log:Info("player kick; username : %s, worldkey: %s", self:GetUserName(), self:GetWorld():GetWorldKey());
     return self.playerNetHandler:KickPlayerFromServer(reason);
 end
 

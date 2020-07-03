@@ -75,7 +75,7 @@ function NetServerHandler:IsFinishedProcessing()
 end
 
 function NetServerHandler:SendPacketToPlayer(packet)
-    if (not self.playerConnection) then return end
+    if (not self.playerConnection  or self.disconnection) then return end
     return self.playerConnection:AddPacketToSendQueue(packet);
 end
 
@@ -172,23 +172,28 @@ end
 
 -- 处理玩家退出
 function NetServerHandler:handlePlayerLogout(packetPlayerLogout)
-    if (not self.playerConnection or not self:GetPlayer()) then return end
+    if (self.disconnection or not self:GetPlayer()) then return end
+
     -- 玩家退出
     self:GetPlayer():Logout();
     -- 从管理器中移除
     self:GetPlayerManager():RemovePlayer(self:GetPlayer());  -- 移除玩家内部通知其它玩家
     -- 尝试删除世界
     self:GetWorldManager():TryRemoveWorld(self:GetWorld()); 
+
+     -- 表记断开, 不主动断开, 让客户端自行断开,   服务服务器主动断开表明服务器重启, 客户端尝试重连
+    self.disconnection = true; 
     
-    self.playerConnection:CloseConnection();
-    self.playerConnection = nil;
 end
 
 -- 链接出错 玩家退出
 function NetServerHandler:handleErrorMessage(text, data)
     -- 发送用户退出
     self:handlePlayerLogout();  
-    
+
+    self.playerConnection:CloseConnection();
+    self.playerConnection = nil;
+
     -- 更新服务器信息
     -- self:SendServerInfo();
 end

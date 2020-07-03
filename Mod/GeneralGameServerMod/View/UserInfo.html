@@ -95,6 +95,7 @@ end
 
 function IsFollow() 
     local isFollow = GetUserInfo().isFollow;
+    echo(isFollow);
     if (global_type(isFollow) == "stirng") then
         return isFollow == "true";
     end

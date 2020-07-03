@@ -68,6 +68,9 @@ function ControlServer:handleWorldServer(packetWorldServer)
     local curTick, aliveDuration = ParaGlobal.timeGetTime(), 1000 * 60 * 5;
     for key, svr in pairs(servers) do
         local isAlive = (curTick - svr.lastTick) < aliveDuration; 
+        if (not isAlive) then
+            Log:Warn("服务不可用: ip = %s, port = %s", svr.outerIp, svr.outerPort);
+        end
         -- 忽略已挂服务器或超负荷服务器
         if (isAlive and svr.totalClientCount < serverMaxClientCount) then 
             -- 优先找已存在的世界 且世界人数未满
@@ -86,7 +89,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
         packetWorldServer.ip = server.outerIp;
         packetWorldServer.port = server.outerPort;
     else 
-        Log:Warn("世界key: %d 无可用服务", worldKey);
+        Log:Warn("世界key: %s 无可用服务", worldKey);
     end
 
     self.connection:AddPacketToSendQueue(packetWorldServer);

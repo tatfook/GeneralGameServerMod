@@ -31,6 +31,10 @@ end
     end
 end
 
+function NetClientHandler:GetUserName()
+    return self.options.username;
+end
+
 -- clean up connection. 
 function NetClientHandler:Cleanup()
     if (self.connection) then
@@ -43,16 +47,6 @@ function NetClientHandler:Cleanup()
     end
 
     self.connection = nil;
-	self:SetWorld(nil);
-end
-
--- 连接是否有效
-function NetClientHandler:IsValidConnection()
-    return self.connection and true or false;
-end
-
-function NetClientHandler:GetUserName()
-	return self.last_username or "";
 end
 
 function NetClientHandler:SetWorld(world)
@@ -70,21 +64,22 @@ end
 
 function NetClientHandler:GetPlayer(entityId) 
     if (not entityId or (self.player and self.player.entityId == entityId)) then
-        -- 获取当前玩家
-        return self.player;
+        return self.player; -- 获取当前玩家
     end
     -- 获取指定玩家
     return self:GetWorld():GetEntityByID(entityId)
 end
 
 -- 是否是当前玩家
-function NetClientHandler:IsCurrentPlayer(entityId)
-    return self:GetPlayer().entityId == entityId;
+function NetClientHandler:IsMainPlayer(entityId)
+    local player = self:GetPlayer();
+    return player and player.entityId == entityId;
 end
 
 -- create a tcp connection to server. 
-function NetClientHandler:Init(options, world)
+function NetClientHandler:Init(options, world, isReconnection)
     self.options = options;
+    self.isReconnection = isReconnection;
     self:SetWorld(world);
 	
 	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", options.ip, options.port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
@@ -94,6 +89,8 @@ function NetClientHandler:Init(options, world)
 		if(bSucceed) then
 			BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"成功建立链接:%s:%s", options.ip, options.port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
             self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init(options));
+        else 
+			-- BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"无法建立链接:%s:%s", options.ip, options.port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
 		end
     end);
     
@@ -158,11 +155,11 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetGravity(oldEntityPlayer:GetGravity());
         local x, y, z = oldEntityPlayer:GetPosition();
         local randomRange = 5;
-        entityPlayer:SetPosition(x + math.random(-randomRange, randomRange), y, z + math.random(-randomRange, randomRange));
-        if(entityPlayer:IsShowHeadOnDisplay() and System.ShowHeadOnDisplay) then
-            System.ShowHeadOnDisplay(true, entityPlayer:GetInnerObject(), entityPlayer:GetDisplayName(), GameLogic.options.PlayerHeadOnTextColor);	
+        if (self.isReconnection) then
+            entityPlayer:SetPosition(x, y, z);
+        else 
+            entityPlayer:SetPosition(x + math.random(-randomRange, randomRange), y, z + math.random(-randomRange, randomRange));
         end
-        oldEntityPlayer:Destroy(); -- 手动销毁旧玩家
         Log:Info("destroy old player entityId: %d", oldEntityPlayer.entityId);
     else 
         Log:Info("old player no exist!!!");
@@ -255,10 +252,31 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     end
 end
 
+-- 处理世界玩家列表
 function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     local playerEntityInfoList = packetPlayerEntityInfoList.playerEntityInfoList;
-    for i = 1, #playerEntityInfoList do 
+    local entityIdList = {};
+    -- 创建玩家
+    for i = 1, #playerEntityInfoList do
+        entityIdList[i] = playerEntityInfoList[i].entityId; 
         self:handlePlayerEntityInfo(playerEntityInfoList[i]);
+    end
+    -- 同步玩家
+    local entityList = self:GetWorld():GetEntityList();
+    for i = 1, #entityList do
+        local entity = entityList[i];
+        if (entity:isa(EntityOtherPlayer)) then
+            local isExist = false;
+            for j = 1, #entityIdList do
+                if (entityIdList[j] == entity.entityId) then
+                    isExist = true;
+                    break;
+                end
+            end
+            if (not isExist) then
+                entity:Destroy();
+            end
+        end
     end
 end
 
@@ -286,12 +304,19 @@ function NetClientHandler:handleErrorMessage(text)
 	if(text == "ConnectionNotEstablished") then
 		BroadcastHelper.PushLabel({id="NetClientHandler", label = L"无法链接到这个服务器", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
 		_guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
+    
+        -- 登出世界
+        self:GetWorld():Logout();
     else 
-        BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+        -- 服务器断开链接 极可能是服务器重启更新
+        BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了, 3 秒后尝试重新连接...", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+        -- 重连
+        commonlib.Timer:new({callbackFunc = function(timer)
+            self:Init(self.options, self:GetWorld(), true);
+        end}):Change(3000, nil);
     end
     
-    -- 登出世界
-    self:GetWorld():Logout();
+    
 end
 
 -- 聊天信息
@@ -308,6 +333,14 @@ end
 -- 处理玩家信息更新
 function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
     local entityId = packetPlayerInfo.entityId;
+    local state = packetPlayerInfo.state;
+
+    -- 主要下线  被同账号挤下线
+    if (self:IsMainPlayer(entityId)) then
+        _guihelper.MessageBox(L"账号在其它地方登陆, 若非本人操作请及时修改密码");
+        return self:GetWorld():Logout();
+    end
+
     local entityPlayer = self:GetPlayer(entityId);
     if (not entityPlayer) then return end;
     entityPlayer:SetPlayerInfo(packetPlayerInfo);

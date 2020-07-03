@@ -11,15 +11,13 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Common.Connectio
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ConnectionBase.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
-NPL.load("Mod/GeneralGameServerMod/Server/ServerListener.lua");
-NPL.load("Mod/GeneralGameServerMod/Common/Packets/ConnectionBase.lua");
+NPL.load("Mod/GeneralGameServerMod/Server/NetServerHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
 local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Common.Packets.PacketTypes");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
-local ServerListener = commonlib.gettable("Mod.GeneralGameServerMod.Server.ServerListener");
+local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Server.NetServerHandler");
 local Connection = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.ConnectionBase"), commonlib.gettable("Mod.GeneralGameServerMod.Common.Connection"));
-
 local defaultNeuronFile = "Mod/GeneralGameServerMod/Common/Connection.lua";
 local moduleName = "Mod.GeneralGameServerMod.Common.Connection";
 local nextNid = 100;
@@ -72,7 +70,12 @@ function Connection:OnNetReceive(msg)
 		packet:ReadPacket(msg);
 		packet:ProcessPacket(self.net_handler);
 	else
-		self.net_handler:handleMsg(msg);
+		if (self.net_handler.handleMsg) then
+			self.net_handler:handleMsg(msg);
+		else 
+			Log:Info("invalid msg");
+			Log:Info(msg);
+		end
 	end
 end
 
@@ -80,14 +83,11 @@ local function activate()
 	local msg = msg;
 	local id = msg.nid or msg.tid;
 
-	if(id) then
-		local connection = Connections:GetConnection(id);
-		if(connection) then
-			connection:OnNetReceive(msg);
-		elseif(msg.tid) then
-			-- this is an incoming connection. let the server listener to handle it. 
-			ServerListener:OnAcceptIncomingConnection(msg);
-		end
+	local connection = Connections:GetConnection(id);
+	if (connection) then
+		connection:OnNetReceive(msg);
+	else 
+		NetServerHandler:new():Init(id);
 	end
 end
 

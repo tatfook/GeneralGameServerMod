@@ -76,6 +76,7 @@ function KeepworkApi:GetUserProjects(userId, callback)
         method = "GET",
         qs = {
             userId = userId,
+            type = 1,               -- 取世界项目
             ["x-per-page"] = 1000,  -- 先取全部后续优化
         },
     },  callback);

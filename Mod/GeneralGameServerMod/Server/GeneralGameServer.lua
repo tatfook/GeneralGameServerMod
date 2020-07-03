@@ -34,7 +34,7 @@ end
 function GeneralGameServer:LoadNetworkSettings()
 	local att = NPL.GetAttributeObject();
 	att:SetField("TCPKeepAlive", true);
-	att:SetField("KeepAlive", false);
+	att:SetField("KeepAlive", true);
 	att:SetField("IdleTimeout", false);
 	att:SetField("IdleTimeoutPeriod", 1200000);
 	NPL.SetUseCompression(true, true);

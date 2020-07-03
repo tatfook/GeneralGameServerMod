@@ -104,7 +104,9 @@ end
 
 -- 维持用户在线
 function GeneralGameWorld:Tick() 
-	self.netHandler:SendTick();
+	if (self.netHandler) then
+		self.netHandler:SendTick();
+	end
 end
 
 function GeneralGameWorld:Login(params) 
@@ -179,4 +181,8 @@ end
 
 function GeneralGameWorld:RemoveEntity(entity)
 	self.entityList:removeByValue(entity);
+end
+
+function GeneralGameWorld:GetEntityList()
+	return self.entityList;
 end
