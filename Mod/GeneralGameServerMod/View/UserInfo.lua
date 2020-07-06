@@ -61,17 +61,23 @@ end
 -- 显示页面
 function UserInfo:Show(username)
     if (not username) then return end;
+    -- 重复点击相同的用户关闭页面
+    if (self.username == username and self:IsShow()) then
+        return self:Close();
+    end
 
     self.username = username;
-
-    -- 先显示页面
-    self._super:Show({
-        url = "Mod/GeneralGameServerMod/View/UserInfo.html",
-        name = "Mod.GeneralGameServerMod.View.UserInfo",
-        width = 590,
-        height = 320,
-        title = "用户信息",
-    });
+    
+    -- 当窗口没有打开时打开窗口
+    if (not self:IsShow()) then 
+        self._super.Show(self, {
+            url = "Mod/GeneralGameServerMod/View/UserInfo.html",
+            name = "Mod.GeneralGameServerMod.View.UserInfo",
+            width = 590,
+            height = 320,
+            title = "用户信息",
+        });
+    end
 
     -- 加载数据
     if (not self:LoadUserInfo(username)) then

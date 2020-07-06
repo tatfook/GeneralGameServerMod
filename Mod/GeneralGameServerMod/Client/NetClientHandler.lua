@@ -169,7 +169,12 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     self:SetPlayer(entityPlayer);
     
     -- 设置玩家信息
-    entityPlayer:SetPlayerInfo({state = "online", username = username});
+    local playerInfo = {
+        state = "online",
+        username = username,
+        userType = Mod.WorldShare.Store:Get('user/userType'),
+    }
+    entityPlayer:SetPlayerInfo(playerInfo);
     
     -- 上报玩家实体信息
     local dataWatcher = entityPlayer:GetDataWatcher();
@@ -181,6 +186,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         name = username or tostring(entityId),
         facing = math.floor(entityPlayer.rotationYaw or entityPlayer.facing or 0),
         pitch = math.floor(entityPlayer.rotationPitch or 0),
+        playerInfo = playerInfo,
     }, dataWatcher, true));
 end
 
@@ -337,7 +343,7 @@ function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
 
     -- 主要下线  被同账号挤下线
     if (self:IsMainPlayer(entityId)) then
-        _guihelper.MessageBox(L"账号在其它地方登陆, 若非本人操作请及时修改密码");
+        -- _guihelper.MessageBox(L"账号在其它地方登陆, 若非本人操作请及时修改密码");
         return self:GetWorld():Logout();
     end
 

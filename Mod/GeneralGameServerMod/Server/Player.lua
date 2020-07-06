@@ -95,6 +95,8 @@ function Player:GetPlayerInfo()
 end
 
 function Player:SetPlayerInfo(info)
+    info.state = nil;
+    info.username = nil;
     commonlib.partialcopy(self.playerInfo, info);
 end
 

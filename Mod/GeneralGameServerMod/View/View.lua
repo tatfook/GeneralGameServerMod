@@ -26,6 +26,7 @@ function View:GetSingleton()
 end
 -- 构造函数
 function View:ctor()
+    self.isShow = false;
 end
 
 -- 初始化函数
@@ -65,14 +66,23 @@ function View:Show(params)
 
     System.App.Commands.Call("File.MCMLWindowFrame", params);
 
+    -- 标记页面打开
+    self.isShow = true;
+
     -- 监听关闭事件
     params._page.OnClose = function() 
+        self.isShow = false;
         self:SetPage(nil);
     end
 
     -- 设置页面
     self:SetPage(params._page);
 
+end
+
+-- 是否显示
+function View:IsShow() 
+    return self.isShow;
 end
 
 -- 关闭页面
@@ -88,5 +98,5 @@ end
 
 -- 是否认证
 function View:IsSignedIn() 
-    KeepworkServiceSession:IsSignedIn();
+    return KeepworkServiceSession:IsSignedIn();
 end

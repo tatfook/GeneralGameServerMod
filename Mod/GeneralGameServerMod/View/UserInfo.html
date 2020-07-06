@@ -42,7 +42,7 @@ function getProjectUrl(id)
 end
 
 function GetImageStyle(extra)
-    local url = extra and extra.imageUrl or ""; 
+    local url = extra and extra.imageUrl or "https://keepwork.com/public/img/pbl_default_cover.1af54afd.png"; 
     return string.format("width: 120px; height: 68px; background: url(%s);", url or "");
 end
 
@@ -75,10 +75,12 @@ function GetProjectList()
     return GetUserInfo().ProjectList or {};
 end
 
+-- 获取用户详情
 function GetUserDetail()
     return UserInfo.UserDetail or {username = "", rank = {fans = 0, follow = 0}};
 end
 
+-- 注册时间
 function GetRegisterTime()
     local datetime = GetUserDetail().createdAt;
     local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
@@ -93,6 +95,7 @@ function GetWorksListDS(index)
     end
 end
 
+-- 是否关注
 function IsFollow() 
     local isFollow = GetUserInfo().isFollow;
     if (global_type(isFollow) == "string") then
@@ -101,14 +104,17 @@ function IsFollow()
     return isFollow;
 end
 
+-- 点击打开世界
 function ClickOpenWorld(worldId)
     GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
 end
 
+-- 点击关注
 function ClickFollow() 
     local Api = GetUserInfo():GetApi();
     -- if (not GetUserInfo():IsSignedIn()) then  return echo("未登录"); end
     local userId = GetUserDetail().id;
+    local fansCount = GetFansCount();
     if (IsFollow()) then
         Api:HttpRequest({
             url = "/core/v0/favorites",
@@ -119,6 +125,7 @@ function ClickFollow()
             },
         });
         GetUserInfo().isFollow = false;
+        SetFansCount(fansCount - 1);
     else
         Api:HttpRequest({
             url = "/core/v0/favorites",
@@ -130,13 +137,31 @@ function ClickFollow()
             json = true,
         });
         GetUserInfo().isFollow = true;
+        SetFansCount(fansCount + 1);
     end
     GetUserInfo():Refresh();
 end
 
+-- 获取粉丝数
+function GetFansCount()
+    return GetUserDetail().rank.fans;
+end
+
+-- 设置粉丝数
+function SetFansCount(count)
+    GetUserDetail().rank.fans = count;
+end
+
+-- 是否登录
+function IsSignedIn() 
+    return GetUserInfo():IsSignedIn();
+end
+
+-- 是否关闭
 function Close() 
     GetUserInfo():Close();
 end
+
 ]]>
 </script>
 <style type="text/mcss">
@@ -151,13 +176,13 @@ end
         <!-- 左侧用户信息 -->
         <div style="float: left; width: 156px; color: white; font-size: 12px;">
             <div><pe:mc_player name="MyPlayer" miniscenegraphname="AvatarMyselfTabCharacter" style="width:156px;height:156px;" isinteractive="false" /></div>
-            <div style="color:white; text-align: center;"><%= GetUserDetail().username %></div>
+            <div style="color:white; text-align: center; font-size: 14px;"><%= GetUserDetail().username %></div>
             <div style="margin-top:10px; text-align: center; font-size: 8px;"><%= GetRegisterTime() %></div>
             <div style="margin-top: 10px; margin: 10px; font-size: 12px; color: white">
                 <div style="float: left; width: 68px; text-align: center;">关注 <%= GetUserDetail().rank.follow %></div>
                 <div style="float: left; width: 68px; text-align: center;">粉丝 <%= GetUserDetail().rank.fans %></div>
             </div>
-            <input onclick="ClickFollow" align="center" type="button" value="<%=  IsFollow() and '已关注' or '关注' %>" style="width: 100px; height: 18px; spacing: 20px; font-weight: bold; font-size: 12px;" class="mc_light_grey_button_with_fillet"/>
+            <input enabled="<%= IsSignedIn() %>" onclick="ClickFollow" align="center" type="button" value="<%=  IsFollow() and '已关注' or '关注' %>" style="width: 100px; height: 18px; spacing: 20px; font-weight: bold; font-size: 12px;" class="mc_light_grey_button_with_fillet"/>
         </div>
         <!-- 中间线 -->
         <div style="float: left; width: 2px; height: 284px; margin-left: 0px; margin-top: 0px; background-color: #b7b2b2b;"></div>
@@ -167,10 +192,10 @@ end
                 <Columns>
                     <div style="width: 130px; height: 150px; background-color: #2a2a2a; color:white;">
                         <div style="<%=GetImageStyle(Eval('extra'))%>"></div>
-                        <div style="font-weight:bold;font-size:12px;base-font-size:12px;"><%=getProjectName(Eval("name"))%></div>
-                        <div style="font-weight:bold;font-size:8px;base-font-size:8px;">创建时间: <%=GetCreateTime(Eval("createdAt"))%></div>
-                        <div style="font-weight:bold;font-size:8px;base-font-size:8px;">上次更新: <%=GetUpdatedTime(Eval("updatedAt"))%></div>
-                        <input name="<%= Eval('id') %>" onclick="ClickOpenWorld" type="button" style="margin-left: 73px; width: 52px; height: 14px; font-size: 8px;" class="mc_light_grey_button_with_fillet" value="访问世界" />
+                        <div style="font-weight:bold;font-size:12px;"><%=getProjectName(Eval("name"))%></div>
+                        <div style="font-size:8px;">创建时间: <%=GetCreateTime(Eval("createdAt"))%></div>
+                        <div style="font-size:8px;">上次更新: <%=GetUpdatedTime(Eval("updatedAt"))%></div>
+                        <input name="<%= Eval('id') %>" onclick="ClickOpenWorld" type="button" style="margin-top: 4px; margin-left: 73px; width: 52px; height: 14px; font-size: 8px;" class="mc_light_grey_button_with_fillet" value="访问世界" />
                     </div>
                 </Columns>
                 <!-- <PagerSettings Position="Bottom" height="1" />

@@ -9,27 +9,37 @@
 <pe:mcml>
 <script refresh="false" type="text/npl" src="Api.lua">
 <![CDATA[
-local Encoding = commonlib.gettable("System.Encoding");
-local KeepworkApi = commonlib.gettable("Mod.GeneralGameServerMod.Api.KeepworkApi");
 
-function KeepworkApi:GetUserProjects(userId, callback) 
-    local url = self:GetBaseUrl() .. "/core/v0/projects";
-    return System.os.GetUrl({
-        url = url,
-        method = "GET",
-        qs = {
-            userId = userId,
-        },
-    },  callback);
+-- 用户名
+function username()
+    local iconList = {
+        vip = "textures/worldshare_32bits.png#256 311 18 18",
+        teacher = "textures/worldshare_32bits.png#285 311 18 18";
+    }
+    local username = "xiaoyao";
+    local userType = "vip";
+    local textWidth = _guihelper.GetTextWidth(username)
+
+    if userType == 'teacher' then
+        local left = (140 - 23 - 2 - textWidth) / 2
+
+        return '<img tooltip="<%= L\'动画编程导师\' %>" style="margin-top: 4px;margin-left:' .. left .. 'px;margin-right: 2px;width: 16px;height: 16px;background:url(' .. iconList['teacher'] .. ')" />' .. username
+    elseif userType == 'vip' then
+        local left = (140 - 16 - 2 - textWidth) / 2
+
+        return '<img tooltip="<%= L\'VIP用户\' %>" style="margin-top: 4px;margin-left:' .. left .. 'px;margin-right: 2px;width: 16px;height: 16px;background:url(' .. iconList['vip'] .. ')" />' .. username
+    else
+        return '<div style="text-align: center">' .. username .. '</div>'
+    end
 end
-local status, response, data = KeepworkApi:GetUserProjects(3);
-echo (status);
-echo (data);
+    
 ]]>
 </script>
 <style type="text/mcss">
 </style>
-<div style="width: 590px; height: 318px; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
+<div style="width: 300px; height: 300px;">
+    <div style="float:left;width:16px;height:16px;background:url(textures/worldshare_32bits.png#256 311 18 18);"></div>
+    <div style="float:left; margin-left: 2px; margin-top: -5px; color: #ffffff; font-size: 16px;">xiaoyao</div>
 </div>
 </pe:mcml>
 </body>
@@ -39,4 +49,9 @@ echo (data);
     height: 100% 不支持
     float: right 不支持
     margin: 不支持分开简写(10px 20px)
+    26 22 38 28
+
+    NPL.load("Mod/GeneralGameServerMod/View/Api.lua");
+local Api = commonlib.gettable("Mod.GeneralGameServerMod.View.Api");
+Api:GetSingleton():Show();
  -->
