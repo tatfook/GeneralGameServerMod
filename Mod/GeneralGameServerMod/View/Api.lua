@@ -30,8 +30,8 @@ function Api:Show()
     self._super:Show({
         url = "Mod/GeneralGameServerMod/View/Api.html",
         name = "Mod.GeneralGameServerMod.View.Api",
-        width = 870,
-        height = 650,
+        width = 300,
+        height = 300,
         title = "API 测试",
     });
 end

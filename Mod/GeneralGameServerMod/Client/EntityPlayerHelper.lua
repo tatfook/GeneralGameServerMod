@@ -34,18 +34,14 @@ function EntityPlayerHelper:GetUserInfoPage()
 end
 
 function EntityPlayerHelper:SetPlayerInfo(playerInfo)
-    local curPlayerInfo = self.playerInfo;
-    if (playerInfo.state and playerInfo.username and (curPlayerInfo.state ~= playerInfo.state or curPlayerInfo.username ~= playerInfo.username)) then
-        curPlayerInfo.username = playerInfo.username or curPlayerInfo.username or self:GetEntityPlayer():GetDisplayName() or "";
-        curPlayerInfo.state = playerInfo.state or curPlayerInfo.state;
-        self:SetHeadOnDisplay();
-        -- Log:Info("username: %s, state: %s", curPlayerInfo.username, curPlayerInfo.state);
-        -- local color = curPlayerInfo.state == "online" and (self.isMainPlayer and "255 255 255" or "12 245 5") or "200 200 200";
-        -- local displayName = curPlayerInfo.username;
-        -- if(self:GetEntityPlayer():IsShowHeadOnDisplay() and System.ShowHeadOnDisplay) then
-        --     System.ShowHeadOnDisplay(true, self:GetEntityPlayer():GetInnerObject(), displayName, color);	
-        -- end
-    end
+    -- 显示信息是否更改
+    local isSetHeadOnDisplay = playerInfo.state and playerInfo.username and (self.playerInfo.state ~= playerInfo.state or self.playerInfo.username ~= playerInfo.username);
+    
+    -- 拷贝数据
+    commonlib.partialcopy(self.playerInfo, playerInfo);
+
+    -- 设置显示
+    if (isSetHeadOnDisplay) then self:SetHeadOnDisplay(); end
 end
 
 -- 设置头顶信息
@@ -53,12 +49,10 @@ function EntityPlayerHelper:SetHeadOnDisplay()
     local player = self.entityPlayer;
     local username = self.playerInfo.username;
     local state = self.playerInfo.state;
-    local userType = self.playerInfo.userType;
-    Log:Info("username: %s, state: %s", username, state);
+    local isVip = self.playerInfo.isVip;
+    Log:Info("username: %s, state: %s, vip: %s", username, state, isVip);
     local color = state == "online" and (self.isMainPlayer and "#ffffff" or "#0cff05") or "#6d6d6b";
     local textWidth = _guihelper.GetTextWidth(username, System.DefaultLargeFontString);
-    local isVip = userType == "vip";
-    -- local vipIconUrl = Config.isDevEnv and "Texture/Aries/Creator/keepwork/LearningDailyCheck/vip_big_32bits.png#0 0 28 28" or "textures/worldshare_32bits.png#256 311 18 18";
     local vipIconUrl = "Texture/Aries/Creator/keepwork/LearningDailyCheck/vip_big_32bits.png#0 0 28 28";
     local mcml = string.format([[
 <pe:mcml>

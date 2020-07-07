@@ -32,7 +32,7 @@ function username()
         return '<div style="text-align: center">' .. username .. '</div>'
     end
 end
-    
+    echo(Mod.WorldShare.Store:Get('user/userType'));
 ]]>
 </script>
 <style type="text/mcss">
@@ -51,7 +51,7 @@ end
     margin: 不支持分开简写(10px 20px)
     26 22 38 28
 
-    NPL.load("Mod/GeneralGameServerMod/View/Api.lua");
+NPL.load("Mod/GeneralGameServerMod/View/Api.lua");
 local Api = commonlib.gettable("Mod.GeneralGameServerMod.View.Api");
 Api:GetSingleton():Show();
  -->

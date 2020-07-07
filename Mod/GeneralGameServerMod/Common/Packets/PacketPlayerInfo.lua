@@ -22,7 +22,7 @@ function PacketPlayerInfo:Init(packet)
     self.entityId = packet.entityId;  -- 玩家实体ID
     self.username = packet.username;  -- 玩家用户名
     self.state = packet.state         -- 玩家在线状态
-    self.userType = packet.userType;  -- teacher vip
+    self.isVip = packet.isVip;        -- 是否是Vip
 	return self;
 end
 

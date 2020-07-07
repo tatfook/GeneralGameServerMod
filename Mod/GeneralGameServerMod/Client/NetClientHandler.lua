@@ -172,7 +172,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     local playerInfo = {
         state = "online",
         username = username,
-        userType = Mod.WorldShare.Store:Get('user/userType'),
+        isVip = System.User.isVip,
     }
     entityPlayer:SetPlayerInfo(playerInfo);
     
