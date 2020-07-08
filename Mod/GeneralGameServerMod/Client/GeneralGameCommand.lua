@@ -24,7 +24,7 @@ local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Client.Ge
 local GeneralGameCommand = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameCommand"));
 
 function ParseOption(cmd_text)
-	local value, cmd_text_remain = cmd_text:match("^%s*%-([%w_=]+)%s*(.*)$");
+	local value, cmd_text_remain = cmd_text:match("^%s*%-([%w_=%.]+)%s*(.*)$");
 	if(value) then
 		return value, cmd_text_remain;
 	end
@@ -37,7 +37,7 @@ function ParseOptions(cmd_text)
 	while(cmd_text_remain) do
 		option, cmd_text_remain = ParseOption(cmd_text_remain);
 		if(option) then
-			key, value = option:match("([%w_]+)=?([%w_]*)");
+			key, value = option:match("([%w_%.]+)=?([%w_%.]*)");
 			options[key] = value;
 		else
 			break;

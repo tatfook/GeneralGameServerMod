@@ -55,12 +55,23 @@ function GeneralGameClient:Init()
     -- 禁用点击继续
     GameLogic.options:SetClickToContinue(false);
 
+    GameLogic.GetFilters():add_filter("OnKeepWorkLogin", GeneralGameClient.OnKeepWorkLogin_Callback);
+    GameLogic.GetFilters():add_filter("OnKeepWorkLogout", GeneralGameClient.OnKeepWorkLogout_Callback)
+    
     self.inited = true;
     return self;
 end
 
 function GeneralGameClient:Exit()
     GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "DisconnectOne");
+end
+
+function GeneralGameClient:OnKeepWorkLogin_Callback()
+    Log:Info("----------------------------------OnKeepWorkLogin_Callback");
+end
+
+function GeneralGameClient:OnKeepWorkLogout_Callback() 
+    Log:Info("----------------------------------OnKeepWorkLogout_Callback");
 end
 
 function GeneralGameClient:LoadWorld(options)

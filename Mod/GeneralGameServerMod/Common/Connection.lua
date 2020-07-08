@@ -56,6 +56,7 @@ end
 function Connection:AddPacketToSendQueue(packet)
 	Log:Std("DEBUG", moduleName, "---------------------send packet: %d--------------------", packet:GetPacketId());
 	Log:Std("DEBUG", moduleName, packet);
+
 	return self._super.AddPacketToSendQueue(self, packet);
 end
 

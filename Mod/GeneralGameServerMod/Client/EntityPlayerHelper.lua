@@ -25,6 +25,10 @@ function EntityPlayerHelper:Init(entityPlayer, isMainPlayer)
     return self;
 end
 
+function EntityPlayerHelper:IsOnline()
+    return self.playerInfo.state == "online";
+end
+
 function EntityPlayerHelper:GetEntityPlayer()
     return self.entityPlayer;
 end
@@ -53,7 +57,7 @@ function EntityPlayerHelper:SetHeadOnDisplay()
     Log:Info("username: %s, state: %s, vip: %s", username, state, isVip);
     local color = state == "online" and (self.isMainPlayer and "#ffffff" or "#0cff05") or "#6d6d6b";
     local textWidth = _guihelper.GetTextWidth(username, System.DefaultLargeFontString);
-    local vipIconUrl = "Texture/Aries/Creator/keepwork/LearningDailyCheck/vip_big_32bits.png#0 0 28 28";
+    local vipIconUrl = "Texture/Aries/Creator/keepwork/chat/vip_32bits.png#0 0 18 18";
     local mcml = string.format([[
 <pe:mcml>
     <div style="margin-left:-%spx;margin-top:-30px">

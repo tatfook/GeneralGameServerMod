@@ -44,7 +44,10 @@ function Common:Init(isServer)
 	if (Config.IsDevEnv or Config.IsTestEnv) then
 		Log:SetLevel("DEBUG");
 	else 
-		Log:SetLevel("INFO");
+		Log:SetLevel(self.Log.level or "INFO");
+		-- 正式环境禁用网络包日志
+		Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Common.Connection", false);
+        Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Client.EntityMainPlayer", false);
 	end
 end
 

@@ -100,12 +100,6 @@ function Config:Init(isServer)
         self:LoadConfig(self.ConfigFile);
     end 
 
-    -- 正式环境禁用网络包日志
-    if (not self.IsDevEnv) then
-        Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Common.Connection", false);
-        Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Client.EntityMainPlayer", false);
-    end
-
     Log:Info(self);
 end
 
@@ -138,9 +132,7 @@ function Config:LoadConfig(filename)
     local LogCfg = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Log")[1];
     local LogAttr = LogCfg and (LogCfg.attr or {});
     commonlib.partialcopy(self.Log, LogAttr);
-    -- 设置日志级别
-    Log:SetLevel(self.Log.level or "INFO");
-
+    
     local LogModules = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Log/Module");
     for i, module in ipairs(LogModules) do 
         Log:SetModuleLogEnable(module.name, module.attr.enable == "true" and true or false);

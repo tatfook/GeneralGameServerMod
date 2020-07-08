@@ -150,7 +150,7 @@ function GeneralGameWorld:Logout()
 
 	-- 清空并删除实体
 	for i = 1, #self.entityList do
-		Log:Debug("destroy entiry:", self.entityList[i].entityId);
+		-- Log:Debug("destroy entity:", self.entityList[i].entityId);
 		self.entityList[i]:Destroy();
 	end
 	self.entityList:clear();
