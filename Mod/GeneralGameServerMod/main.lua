@@ -13,12 +13,12 @@ GameLogic.RunCommand("/connectGGS -dev -u=xiaoyao 0");
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/System.lua");
-NPL.load("Mod/GeneralGameServerMod/Common/Common.lua");
-local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
-local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.GeneralGameServerMod"));
+NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
+local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
+local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
 
 local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
-
+local GeneralGameClients = {};
 function GeneralGameServerMod:ctor()
 end
 
@@ -41,13 +41,13 @@ function GeneralGameServerMod:init()
 	-- 启动插件
 	if (servermode) then
 		-- server
-		NPL.load("Mod/GeneralGameServerMod/Server/GeneralGameServer.lua");
-		local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Server.GeneralGameServer");
+		NPL.load("Mod/GeneralGameServerMod/Core/Server/GeneralGameServer.lua");
+		local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.GeneralGameServer");
 		GeneralGameServer:Start();
 	else
 		-- client
-		NPL.load("Mod/GeneralGameServerMod/Client/GeneralGameCommand.lua");
-		local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Client.GeneralGameCommand");
+		NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameCommand.lua");
+		local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand");
 		GeneralGameCommand:init();
 	end
 end
@@ -69,6 +69,15 @@ end
 function GeneralGameServerMod:handleKeyEvent(event)
 end
 
+-- 注册客户端类
+function GeneralGameServerMod:RegisterClientClass(appName, clientClass)
+	GeneralGameClients[appName] = clientClass;
+end
+
+-- 获取客户端类
+function GeneralGameServerMod:GetClientClass(appName)
+	return GeneralGameClients[appName] or AppGeneralGameClient;
+end
 
 -- 服务端激活函数
 local isActivated = false;
