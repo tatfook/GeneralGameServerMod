@@ -94,7 +94,9 @@ function Config:Init(isServer)
     self.Player = {
         minAliveTime = 60000,
     }
-    
+    self.Log = {
+        level = "INFO",
+    }
     -- 服务端才需要配置文件, 加载配置
     if (isServer) then
         self:LoadConfig(self.ConfigFile);
