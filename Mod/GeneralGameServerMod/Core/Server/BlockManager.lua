@@ -5,7 +5,7 @@ Date: 2020/6/10
 Desc: 方块管理器
 use the lib:
 -------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
 local BlockManager = commonlib.gettable("GeneralGameServerMod.Core.Server.BlockManager");
 
 -------------------------------------------------------

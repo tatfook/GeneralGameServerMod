@@ -1,4 +1,15 @@
 
+--[[
+Title: NetServerHandler
+Author(s): wxa
+Date: 2020/6/10
+Desc: 网络处理程序
+use the lib:
+-------------------------------------------------------
+NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
+local NetClientHandler = commonlib.gettable("GeneralGameServerMod.Core.Client.NetClientHandler");
+-------------------------------------------------------
+]]
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");

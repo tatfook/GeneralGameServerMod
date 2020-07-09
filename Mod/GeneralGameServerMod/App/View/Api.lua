@@ -12,9 +12,9 @@ Api:GetSingleton():Show();
 ]]
 NPL.load("Mod/GeneralGameServerMod/App/Api/KeepworkApi.lua");
 NPL.load("Mod/GeneralGameServerMod/App/View/View.lua");
-NPL.load("Mod/GeneralGameServerMod/Common/Log.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Common.Log");
+local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Api = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.App.View.View"), commonlib.gettable("Mod.GeneralGameServerMod.App.View.Api"));
 
 function Api:ctor() 

@@ -35,6 +35,7 @@ end
 
 function AppEntityPlayerHelper:SetPlayerInfo(playerInfo)
     local oldPlayerInfo = self:GetPlayerInfo();
+    
     -- 显示信息是否更改
     local isSetHeadOnDisplay = playerInfo.state and playerInfo.username and (oldPlayerInfo.state ~= playerInfo.state or oldPlayerInfo.username ~= playerInfo.username);
     

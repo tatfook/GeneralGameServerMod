@@ -35,7 +35,7 @@ function AppEntityMainPlayer:SetPlayerInfo(playerInfo)
     self.appEntityPlayerHelper:SetPlayerInfo(playerInfo);
 end
 
--- 设置父类用户信息
+-- 设置父类玩家信息
 function AppEntityMainPlayer:SetSuperPlayerInfo(playerInfo)
     AppEntityMainPlayer._super.SetPlayerInfo(self, playerInfo);
 end
