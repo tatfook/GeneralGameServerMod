@@ -28,8 +28,8 @@ end
 -- 显示页面
 function Api:Show()
     self._super:Show({
-        url = "Mod/GeneralGameServerMod/View/Api.html",
-        name = "Mod.GeneralGameServerMod.View.Api",
+        url = "Mod/GeneralGameServerMod/App/View/Api.html",
+        name = "Mod.GeneralGameServerMod.App.View.Api",
         width = 300,
         height = 300,
         title = "API 测试",
