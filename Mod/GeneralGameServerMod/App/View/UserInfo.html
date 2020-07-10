@@ -11,7 +11,7 @@
 <![CDATA[
 local UniString = commonlib.gettable("System.Core.UniString")
 local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.App.View.UserInfo");
-local global_type = type;
+global_type = global_type or type;
 
 function GetUserInfo() 
     return UserInfo;
@@ -111,6 +111,7 @@ end
 
 -- 点击关注
 function ClickFollow() 
+    GetUserInfo():GetPage():CallMethod("player", "SetAssetFile", "character/CC/03animals/cow/cow.x");
     local Api = GetUserInfo():GetApi();
     -- if (not GetUserInfo():IsSignedIn()) then  return echo("未登录"); end
     local userId = GetUserDetail().id;
@@ -162,6 +163,8 @@ function Close()
     GetUserInfo():Close();
 end
 
+-- 启动初始化函数
+-- GetUserInfo():Init(document:GetPageCtrl());
 ]]>
 </script>
 <style type="text/mcss">
@@ -175,7 +178,7 @@ end
     <div> 
         <!-- 左侧用户信息 -->
         <div style="float: left; width: 156px; color: white; font-size: 12px;">
-            <div><pe:mc_player name="MyPlayer" miniscenegraphname="AvatarMyselfTabCharacter" style="width:156px;height:156px;" isinteractive="false" /></div>
+            <div><pe:mc_player name="player" miniscenegraphname="AvatarMyselfTabCharacter" style="width:156px;height:156px;" isinteractive="false" /></div>
             <div style="color:white; text-align: center; font-size: 14px;"><%= GetUserDetail().username %></div>
             <div style="margin-top:10px; text-align: center; font-size: 8px;"><%= GetRegisterTime() %></div>
             <div style="margin-top: 10px; margin: 10px; font-size: 12px; color: white">

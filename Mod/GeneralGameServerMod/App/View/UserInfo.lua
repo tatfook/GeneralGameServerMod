@@ -20,9 +20,19 @@ local UserInfo = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.
 function UserInfo:ctor() 
 end
 
-function UserInfo:Init()
-    UserInfo._super:Init();
+-- 入口函数
+function UserInfo:Init(page)
+    -- 初始化基类
+    UserInfo._super:Init(page);
+
     return self;
+end
+
+-- 视图渲染完成
+function UserInfo:OnCreate()
+     -- 设置玩家模型
+     echo(self:GetEntityPlayer():GetMainAssetPath());
+     self:GetPage():CallMethod("player", "SetAssetFile", self:GetEntityPlayer():GetMainAssetPath());
 end
 
 -- 加载用户信息
@@ -58,16 +68,22 @@ function UserInfo:GetUserName()
     return self.username;
 end
 
+-- 获取实体玩家
+function UserInfo:GetEntityPlayer()
+    return self.entityPlayer;
+end
+
 -- 显示页面
-function UserInfo:Show(username)
-    if (not username) then return end;
+function UserInfo:Show(entityPlayer)
+    local username = entityPlayer:GetUserName();
     -- 重复点击相同的用户关闭页面
     if (self.username == username and self:IsShow()) then
         return self:Close();
     end
 
     self.username = username;
-    
+    self.entityPlayer = entityPlayer;
+
     -- 当窗口没有打开时打开窗口
     if (not self:IsShow()) then 
         UserInfo._super.Show(self, {
@@ -83,9 +99,11 @@ function UserInfo:Show(username)
     if (not self:LoadUserInfo(username)) then
         return self:Close();   -- 加载数据失败关闭页面
     end
-
+    
     -- 刷新页面
     self:Refresh();
+
+   
 end
 
 

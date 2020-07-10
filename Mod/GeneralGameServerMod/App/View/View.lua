@@ -21,7 +21,8 @@ function View:ctor()
 end
 
 -- 初始化函数
-function View:Init()
+function View:Init(page)
+    self:SetPage(page);
     return self;
 end
 
@@ -57,8 +58,21 @@ function View:Show(params)
 
     System.App.Commands.Call("File.MCMLWindowFrame", params);
 
-    -- 标记页面打开
-    self.isShow = true;
+    -- 安装回调钩子, 页面刷新也会调用此函数
+    local page = params._page;
+    local oldOnCreate = page.OnCreate;
+    page.OnCreate = function() 
+        if (oldOnCreate) then
+            oldOnCreate(page);
+        end
+        self:OnCreate();
+    end
+
+    -- 设置页面
+    self:SetPage(params._page);
+    
+    -- 标记页面是否打开
+    self.isShow = params.isShow;
 
     -- 监听关闭事件
     params._page.OnClose = function() 
@@ -66,9 +80,11 @@ function View:Show(params)
         self:SetPage(nil);
     end
 
-    -- 设置页面
-    self:SetPage(params._page);
+    
+end
 
+-- 视图被成功创建
+function View:OnCreate()
 end
 
 -- 是否显示

@@ -25,7 +25,7 @@ end
 
 -- 玩家被点击
 function AppEntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
-    UserInfo:Show(self:GetUserName());
+    UserInfo:Show(self);
     -- 阻止默认行为     
     return true;
 end
