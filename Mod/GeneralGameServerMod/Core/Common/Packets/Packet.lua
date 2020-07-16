@@ -30,3 +30,8 @@ function Packet:WritePacket()
     msg.id = self:GetPacketId();   -- 增加包Id字段
     return msg;
 end
+
+-- 获取包ID
+-- function Packet:GetPacketIdByMsg(msg)
+--     return msg.__id__ or msg.id;
+-- end

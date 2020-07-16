@@ -12,7 +12,7 @@ local packet = Packets.PacketBlockInfoList:new():Init();
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/Packet.lua");
-
+local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
 local PacketBlock = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketBlock"));
 
 function PacketBlock:ctor()
@@ -31,7 +31,8 @@ function PacketBlock:WritePacket()
 	local msg = PacketBlock._super.WritePacket(self);
 
 	if (msg.blockEntityPacket) then
-		msg.blockEntityPacketData = msg.blockEntityPacket:WritePacket();
+		msg.blockEntityPacketData = msg.blockEntityPacket:WritePacket();   -- 旧数据包这里不会包含Id
+		msg.blockEntityPacketData.id = msg.blockEntityPacket:GetPacketId();
 		msg.blockEntityPacket = nil;
 	end
 
@@ -44,7 +45,9 @@ function PacketBlock:ReadPacket(msg)
 
 	if (self.blockEntityPacketData) then
 		local packet = PacketTypes:GetNewPacket(self.blockEntityPacketData.id);
-		packet:ReadPacket(self.blockEntityPacketData);
+		if (packet) then 
+			packet:ReadPacket(self.blockEntityPacketData);
+		end
 		self.blockEntityPacket = packet;
 		self.blockEntityPacketData = nil;
 	end
