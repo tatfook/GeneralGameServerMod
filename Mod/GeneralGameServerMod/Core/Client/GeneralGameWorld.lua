@@ -117,7 +117,7 @@ function GeneralGameWorld:IsSyncBlockData(blockId)
 	end
 
 	-- 忽略指定 blockId
-	return notSyncBlockIdMap(blockId);
+	return notSyncBlockIdMap[blockId];
 end
 
 -- 定时发送

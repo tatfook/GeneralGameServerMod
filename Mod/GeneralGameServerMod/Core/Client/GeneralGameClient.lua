@@ -10,7 +10,6 @@ local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 GeneralGameClient:LoadWorld({ip = "127.0.0.1", port = "9000", worldId = "12348"});
 ------------------------------------------------------------
 ]]
-NPL.load("Mod/GeneralGameServerMod/Core/Client/OverWrite.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");

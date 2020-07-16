@@ -210,6 +210,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         action = "PlayerOptions",
         data = {
             isSyncBlock = self:GetClient():IsSyncBlock(),
+            isSyncCmd = self:GetClient():IsSyncCmd(),
         }
     }));
 end
