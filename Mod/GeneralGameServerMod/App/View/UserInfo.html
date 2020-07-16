@@ -111,9 +111,8 @@ end
 
 -- 点击关注
 function ClickFollow() 
-    GetUserInfo():GetPage():CallMethod("player", "SetAssetFile", "character/CC/03animals/cow/cow.x");
     local Api = GetUserInfo():GetApi();
-    -- if (not GetUserInfo():IsSignedIn()) then  return echo("未登录"); end
+    if (not GetUserInfo():IsSignedIn()) then  return echo("未登录"); end
     local userId = GetUserDetail().id;
     local fansCount = GetFansCount();
     if (IsFollow()) then

@@ -14,6 +14,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/World/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
+local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
@@ -25,6 +26,24 @@ local rshift = mathlib.bit.rshift;
 local lshift = mathlib.bit.lshift;
 local band = mathlib.bit.band;
 local bor = mathlib.bit.bor;
+
+local notSyncBlockIdMap = {
+	[228] = true, -- 电影方块
+	[219] = true, -- 代码方块
+	[189] = true, -- 导线
+	[199] = true, -- 电灯
+	[103] = true, -- 铁轨
+	[250] = true, -- 动力铁轨
+	[251] = true, -- 探测铁轨
+	[192] = true, -- 反向电灯
+	[197] = true, -- 中继器
+	[105] = true, -- 按钮
+	[190] = true, -- 拉杆
+	[201] = true, -- 木压力板
+	[200] = true, -- 石压力板
+	[221] = true, -- 含羞草
+	[227] = true, -- 含羞草石
+}
 
 function GeneralGameWorld:ctor() 
 end
@@ -85,40 +104,29 @@ end
 
 -- 是否同步方块的BlockData
 function GeneralGameWorld:IsSyncBlockData(blockId)
-	local notSyncBlockIdList = {
-		228, -- 电影方块
-		219, -- 代码方块
-		189, -- 导线
-		199, -- 电灯
-		103, -- 铁轨
-		250, -- 动力铁轨
-		251, -- 探测铁轨
-		197, -- 中继器
-		105, -- 按钮
-		190, -- 拉杆
-		201, -- 木压力板
-		200, -- 石压力板
-		221, -- 含羞草
-		227, -- 含羞草石
-	}
-	for i = 1, #notSyncBlockIdList do 
-		if (notSyncBlockIdList[i] == blockId) then 
-			return false;
-		end
+	local block = blockId and block_types.get(blockId);
+
+	-- 忽略含有 toggle_blockId
+	if (block and block.toggle_blockid) then 
+		return false; 
 	end
 
-	return true;
+	-- 忽略含有 hasAction
+	if (block and block.hasAction) then
+		return false;
+	end
+
+	-- 忽略指定 blockId
+	return notSyncBlockIdMap(blockId);
 end
 
 -- 定时发送
 function GeneralGameWorld:OnFrameMove() 
 	if (self.markBlockIndexList:empty()) then return end
 
-	-- 30 fps
-	-- self.tickBlockInfoUpdateCount = (self.tickBlockInfoUpdateCount or 0) + 1;
-	-- if (self.tickBlockInfoUpdateCount < 30) then
-	-- 	return;
-	-- end
+	-- 30 fps  0.3s 同步一次
+	self.tickBlockInfoUpdateCount = (self.tickBlockInfoUpdateCount or 0) + 1;
+	if (self.tickBlockInfoUpdateCount < 10) then return end
 
 	-- 发送方块更新
 	local packets = {};
@@ -129,15 +137,15 @@ function GeneralGameWorld:OnFrameMove()
 		local blockData = BlockEngine:GetBlockData(x,y,z);
 		local blockEntity = BlockEngine:GetBlockEntity(x,y,z);
 		local blockEntityPacket = (blockEntity and blockEntity:IsBlockEntity()) and blockEntity:GetDescriptionPacket();
-		
+		local block = blockId and block_types.get(blockId);
 		-- 不存在则先构建
 		if (not self.allMarkForUpdateBlocks[blockIndex]) then self.allMarkForUpdateBlocks[blockIndex] = {} end
 		local oldBlock = self.allMarkForUpdateBlocks[blockIndex];
-		local isBlockIdChange = oldBlock.blockId ~= blockId;
+		local isBlockIdChange = if_else((block and block:IsAssociatedBlockID(oldBlock.blockId)), false, oldBlock.blockId ~= blockId);
 		local isBlockDataChange = self:IsSyncBlockData(blockId) and oldBlock.blockData ~= blockData;
 		local isBlockEntityPacketChange = commonlib.serialize_compact(oldBlock.blockEntityPacket) ~= commonlib.serialize_compact(blockEntityPacket);
 
-		-- 块数据出现不同 TODO: 需过滤部分方块数据的传递
+		-- 块数据出现不同 
 		if (isBlockIdChange or isBlockDataChange or isBlockEntityPacketChange) then
 			oldBlock.blockId = blockId;
 			oldBlock.blockData = blockData;
@@ -156,7 +164,7 @@ function GeneralGameWorld:OnFrameMove()
 	if (#packets > 0) then self.netHandler:AddToSendQueue(Packets.PacketMultiple:new():Init(packets, "SyncBlock")); end
 
 	self.markBlockIndexList:clear();
-	-- self.tickBlockInfoUpdateCount = 0;
+	self.tickBlockInfoUpdateCount = 0;
 end
 
 -- 世界中的方块被点击
