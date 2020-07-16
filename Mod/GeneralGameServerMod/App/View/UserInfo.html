@@ -43,7 +43,7 @@ end
 
 function GetImageStyle(extra)
     local url = extra and extra.imageUrl or "https://keepwork.com/public/img/project_default_cover_new.af774e7d.png"; 
-    return string.format("width: 120px; height: 68px; background: url(%s);", url or "");
+    return string.format("width: 170px; height: 104px; background: url(%s);", url or "");
 end
 
 function GetCreateTime(datetime)
@@ -169,36 +169,44 @@ end
 </script>
 <style type="text/mcss">
 </style>
-<div style="width: 590px; height: 318px; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
-    <div style="margin:5px; margin-bottom: 0px; height:26px">
-        <div style="float: left; padding-left:10px; color:#ffffff; ">用户信息</div>
-        <input align="right" type="button"onclick="Close()" style="background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px"/>
+<div style="width: 880px; height: 584px; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
+    <div style="padding-left:18px; padding-top: 8px; padding-right:8px; height:36px">
+        <div style="float: left; color:#ffffff; font-size: 16px; width: 100px;">用户信息</div>
+        <input align="right" type="button" onclick="Close()" style="background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px;"/>
     </div>
     <div style="height:2px;" width="100%" class="mc_line"></div>
-    <div> 
+    <div style="height: 546px;"> 
         <!-- 左侧用户信息 -->
-        <div style="float: left; width: 156px; color: white; font-size: 12px;">
-            <div><pe:mc_player name="player" miniscenegraphname="AvatarMyselfTabCharacter" style="width:156px;height:156px;" isinteractive="false" /></div>
-            <div style="color:white; text-align: center; font-size: 14px;"><%= GetUserDetail().username %></div>
-            <div style="margin-top:10px; text-align: center; font-size: 8px;"><%= GetRegisterTime() %></div>
-            <div style="margin-top: 10px; margin: 10px; font-size: 12px; color: white">
-                <div style="float: left; width: 68px; text-align: center;">关注 <%= GetUserDetail().rank.follow %></div>
-                <div style="float: left; width: 68px; text-align: center;">粉丝 <%= GetUserDetail().rank.fans %></div>
+        <div style="float: left; width: 234px; color: white;">
+            <div style="margin: -11px;">
+                <pe:mc_player name="player" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" isinteractive="false" />
             </div>
-            <input enabled="<%= IsSignedIn() %>" onclick="ClickFollow" align="center" type="button" value="<%=  IsFollow() and '已关注' or '关注' %>" style="width: 100px; height: 18px; spacing: 20px; font-weight: bold; font-size: 12px;" class="mc_light_grey_button_with_fillet"/>
+            <div style="color:white; text-align: center; font-size: 24px;"><%= GetUserDetail().username %></div>
+            <div style="margin-top:16px; text-align: center; font-size: 16px; color: #969696;"><%= GetRegisterTime() %></div>
+            <div style="margin-top: 60px; margin: 25px; ">
+                <div style="float: left; width: 68px; text-align: center; width: 92px;">
+                    <div style="font-size: 18px; color: #236dd7;"><%= GetUserDetail().rank.follow %></div>
+                    <div style="font-size: 14px; color: #3d649b;">关注</div>
+                </div>
+                <div style="float: left; width: 68px; text-align: center; width: 92px;">
+                    <div style="font-size: 18px; color: #236dd7;"><%= GetUserDetail().rank.fans %></div>
+                    <div style="font-size: 14px; color: #3d649b;">粉丝</div>
+                </div>
+            </div>
+            <input enabled="<%= IsSignedIn() %>" onclick="ClickFollow" align="center" type="button" value="<%=  IsFollow() and '已关注' or '关注' %>" style="margin-top: 37px; width: 184px; height: 40px; spacing: 20px; font-weight: bold; font-size: 18px;" class="mc_light_grey_button_with_fillet"/>
         </div>
         <!-- 中间线 -->
-        <div style="float: left; width: 2px; height: 284px; margin-left: 0px; margin-top: 0px; background-color: #b7b2b2b;"></div>
+        <div style="float: left; width: 2px; height: 546px; margin-left: 0px; margin-top: 0px; background-color: #b7b2b2b;"></div>
         <!-- 右侧项目列表 -->
-        <div style="float: left; height: 290px;">
-            <pe:gridview  style="margin: 0px; width: 435px; height: 280px;" CellPadding="5" DataSource="<%= GetWorksListDS %>" RememberScrollPos="true" DefaultNodeHeight="150" ItemsPerLine="3" AllowPaging="false">
+        <div style="float: left;">
+            <pe:gridview  style="width: 644px; height: 546px;" CellPadding="10" DataSource="<%= GetWorksListDS %>" RememberScrollPos="true" DefaultNodeHeight="244" ItemsPerLine="3" AllowPaging="false">
                 <Columns>
-                    <div style="width: 130px; height: 150px; background-color: #2a2a2a; color:white;">
+                    <div style="padding: 10px; width: 190px; height: 244px; background-color: #2c2f32; color:white;">
                         <div style="<%=GetImageStyle(Eval('extra'))%>"></div>
-                        <div style="font-weight:bold;font-size:12px;"><%=getProjectName(Eval("name"))%></div>
-                        <div style="font-size:8px;">创建时间: <%=GetCreateTime(Eval("createdAt"))%></div>
-                        <div style="font-size:8px;">上次更新: <%=GetUpdatedTime(Eval("updatedAt"))%></div>
-                        <input name="<%= Eval('id') %>" onclick="ClickOpenWorld" type="button" style="margin-top: 4px; margin-left: 73px; width: 52px; height: 14px; font-size: 8px;" class="mc_light_grey_button_with_fillet" value="访问世界" />
+                        <div style="font-weight:bold; font-size:14px; margin-top: 12px;"><%=getProjectName(Eval("name"))%></div>
+                        <div style="font-size:12px; color: #717171;margin-top: 5px;">创建时间: <%=GetCreateTime(Eval("createdAt"))%></div>
+                        <div style="font-size:12px; color: #717171;margin-top: 5px;">上次更新: <%=GetUpdatedTime(Eval("updatedAt"))%></div>
+                        <input name="<%= Eval('id') %>" onclick="ClickOpenWorld" type="button" style="margin-top: 12px; width: 170px; height: 25px; font-size: 8px;" class="mc_light_grey_button_with_fillet" value="访问世界" />
                     </div>
                 </Columns>
                 <!-- <PagerSettings Position="Bottom" height="1" />

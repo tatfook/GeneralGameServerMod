@@ -33,8 +33,8 @@ function PacketTypes:StaticInit()
     NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketPlayerEntityInfoList.lua");
     self:AddIdClassMapping(103, Packets.PacketPlayerEntityInfoList);
 
-    NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketBlockInfoList.lua");
-    self:AddIdClassMapping(104, Packets.PacketBlockInfoList);
+    NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketBlock.lua");
+    self:AddIdClassMapping(104, Packets.PacketBlock);
 
     NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketServerInfo.lua");
     self:AddIdClassMapping(105, Packets.PacketServerInfo);
@@ -47,6 +47,12 @@ function PacketTypes:StaticInit()
 
     NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketPlayerInfo.lua");
     self:AddIdClassMapping(108, Packets.PacketPlayerInfo);
+
+    NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketMultiple.lua");
+    self:AddIdClassMapping(109, Packets.PacketMultiple);
+
+    NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketGeneral.lua");
+    self:AddIdClassMapping(110, Packets.PacketGeneral);
 end
 
 -- Adds a two way mapping between the packet ID and packet class. and assign the packet id. 

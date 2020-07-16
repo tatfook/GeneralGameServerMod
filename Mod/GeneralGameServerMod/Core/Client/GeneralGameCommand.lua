@@ -39,7 +39,7 @@ function ParseOptions(cmd_text)
 		option, cmd_text_remain = ParseOption(cmd_text_remain);
 		if(option) then
 			key, value = option:match("([%w_]+)=?(%S*)");
-			options[key] = value;
+			options[key] = key == option and true or value;
 		else
 			break;
 		end
@@ -61,7 +61,7 @@ function GeneralGameCommand:InstallCommand()
 	local connectGGSCmd = {
 		mode_deny = "",  -- 暂时支持任意模式联机
 		name="connectGGS",  -- /connectGGS -test 
-		quick_ref="/connectGGS [worldId] [parallelWorldName]", 
+		quick_ref="/connectGGS [options] [worldId] [parallelWorldName]", 
 		desc=[[进入联机世界 
 worldId 为世界ID(未指定或为0则联机当前世界或默认世界)
 parallelWorldName 平行世界名, 可选. 指定世界的副本世界
@@ -69,6 +69,10 @@ parallelWorldName 平行世界名, 可选. 指定世界的副本世界
 connectGGS                        # 联机进入当前世界或默认世界
 connectGGS 145                    # 联机进入世界ID为145的世界
 connectGGS 145 parallel           # 联机进入世界ID为145的平行世界 parallel
+
+options:
+-isSyncBlock 同步方块信息
+-isSyncCmd   同步命令
 ]], 
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)		
 			Log:Info("run cmd: %s %s", cmd_name, cmd_text);
@@ -84,24 +88,48 @@ connectGGS 145 parallel           # 联机进入世界ID为145的平行世界 pa
 			else
 				Config:SetEnv("prod");
 			end
-			Log:Info(options);
-			local GeneralGameClientClass = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
-			GeneralGameClientClass:LoadWorld({
-				worldId = (worldId and worldId ~= 0) and worldId or nil,
-				parallelWorldName = parallelWorldName,
-				ip = (options.host and options.host ~= "") and options.host or nil,
-				port = (options.port and options.port ~= "") and options.port or nil,
-				username = (options.u and options.u ~= "") and options.u or nil,
-				password = (options.p and options.p ~= "") and options.p or nil,
-			});
+			
+			options.worldId = (worldId and worldId ~= 0) and worldId or nil;
+			options.parallelWorldName = parallelWorldName;
+			options.ip = (options.host and options.host ~= "") and options.host or nil;
+			options.port = (options.port and options.port ~= "") and options.port or nil;
+			options.username = (options.u and options.u ~= "") and options.u or nil;
+			options.password = (options.p and options.p ~= "") and options.p or nil;
+
+			self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
+			self.generalGameClient:LoadWorld(options);
 		end,
 	};
+
+	local ggscmd = {
+		mode_deny = "",
+		name = "ggscmd",
+		quick_ref = "/ggscmd cmdname cmdtext",
+		desc = [[
+联机命令: 命令将会在联机世界的所有玩家客户端执行.
+示例:
+ggscmd tip hello world   # 联机执行 /tip hello wrold 命令
+ggscmd activate          # 联机执行 /activate 命令
+		]],
+		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
+			if (not cmd_text) then return end;
+			-- 本机执行 
+			CommandManager:RunCommand(cmd_text);
+			-- 网络执行
+			if (self.generalGameClient) then
+				self.generalGameClient:RunNetCommand(cmd_text);
+			end
+		end
+	}
 
 	-- 开发环境手动加入 方便调试
 	if (Config.IsDevEnv) then
 		SlashCommand.GetSingleton():RegisterSlashCommand(connectGGSCmd);
+		SlashCommand.GetSingleton():RegisterSlashCommand(ggscmd);
 	end
+
 	Commands["connectGGS"] = connectGGSCmd;
+	Commands["ggscmd"] = ggscmd;
 	-- GameLogic.GetFilters():add_filters("register_command", function() 
 	-- 	Commands["connectGGS"] = connectGGSCmd;
 	-- end);

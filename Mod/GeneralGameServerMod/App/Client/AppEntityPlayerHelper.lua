@@ -9,6 +9,7 @@ NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityPlayerHelper.lua");
 local AppEntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityPlayerHelper");
 -------------------------------------------------------
 ]]
+NPL.load("(gl)script/ide/headon_speech.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
@@ -38,12 +39,20 @@ function AppEntityPlayerHelper:SetPlayerInfo(playerInfo)
     
     -- 显示信息是否更改
     local isSetHeadOnDisplay = playerInfo.state and playerInfo.username and (oldPlayerInfo.state ~= playerInfo.state or oldPlayerInfo.username ~= playerInfo.username);
-    
+    if (not isSetHeadOnDisplay) then
+        Log:Info({
+            oldPlayerInfo, 
+            playerInfo,
+        });
+    end
+
     -- 设置玩家信息
     self:GetEntityPlayer():SetSuperPlayerInfo(playerInfo);
 
     -- 设置显示
-    if (isSetHeadOnDisplay) then self:SetHeadOnDisplay(); end
+    if (isSetHeadOnDisplay) then 
+        self:SetHeadOnDisplay(); 
+    end
 end
 
 -- 设置头顶信息
@@ -55,17 +64,15 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     local state = playerInfo.state;
     local isVip = userinfo.isVip;
     Log:Info("username: %s, state: %s, vip: %s", username, state, isVip);
-    local color = state == "online" and (self.isMainPlayer and "#ffffff" or "#0cff05") or "#6d6d6b";
-    local textWidth = _guihelper.GetTextWidth(username, System.DefaultLargeFontString);
-    local vipIconUrl = "Texture/Aries/Creator/keepwork/chat/vip_32bits.png#0 0 18 18";
+    local color = state == "online" and (self.isMainPlayer and "#ffffff" or "#0cff05") or "#b1b1b1";
+    local vipIconUrl = state == "online" and "Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18" or "Texture/Aries/Creator/keepwork/UserInfo/V_gray_32bits.png#0 0 18 18";
+    local playerUsernameStyle = state == "online" and "" or "shadow-quality:8; shadow-color:#2b2b2b;text-shadow:true;";
     local mcml = string.format([[
-<pe:mcml>
-    <div style="margin-left:-%spx;margin-top:-30px">
+    <div>
         <pe:if condition="%s"><div style="float:left;width:16px;height:16px;background:url(%s);"></div></pe:if>
-        <div style="float:left; margin-left: 2px; margin-top: -3px; color: %s; font-size: 16px;">%s</div>
+        <div style="float:left; margin-left: 2px; margin-top: -5px; font-weight:bold; font-size: 16px; color: %s; %s">%s</div>
     </div>
-</pe:mcml>
-    ]], (textWidth + 2) / 2 + (isVip and 8 or 0), isVip and "true" or "false", vipIconUrl, color, username);
-    player:SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(mcml)});
+    ]], isVip and "true" or "false", vipIconUrl, color, playerUsernameStyle, username);
+    headon_speech.Speak(player:GetInnerObject(), mcml, -1, nil, true, nil, -100, nil, 0);
 end
 

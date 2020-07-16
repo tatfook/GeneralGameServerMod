@@ -204,6 +204,14 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         pitch = math.floor(entityPlayer.rotationPitch or 0),
         playerInfo = playerInfo,
     }, dataWatcher, true));
+
+    -- 上报玩家选项信息, 定制相关功能的使用
+    self:AddToSendQueue(Packets.PacketGeneral:new():Init({
+        action = "PlayerOptions",
+        data = {
+            isSyncBlock = self:GetClient():IsSyncBlock(),
+        }
+    }));
 end
 
 -- 获取玩家实体
@@ -301,22 +309,7 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     end
 end
 
--- 处理块信息更新
-function NetClientHandler:handleBlockInfoList(packetBlockInfoList)
-    local blockInfoList = packetBlockInfoList.blockInfoList;
-
-    -- 禁用标记
-    self:GetWorld():SetEnableBlockMark(false);
-    -- 更新世界块
-    for i = 1, #(blockInfoList) do
-        local block = blockInfoList[i];
-        local x, y, z = BlockEngine:FromSparseIndex(block.blockIndex);
-		BlockEngine:SetBlock(x, y, z, block.blockId, block.blockData);
-    end
-    -- 启用标记
-    self:GetWorld():SetEnableBlockMark(true);
-end
-
+-- 处理错误信息
 function NetClientHandler:handleErrorMessage(text)
     -- 连接已清说已做过错误处理
     if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
@@ -365,4 +358,45 @@ function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
     local entityPlayer = self:GetPlayer(entityId);
     if (not entityPlayer) then return end;
     entityPlayer:SetPlayerInfo(packetPlayerInfo);
+end
+
+-- 处理方块点击
+function NetClientHandler:handleGeneral(packetGeneral)
+    local packetData = packetGeneral.data;
+    local action = packetGeneral.action;
+    if (action == "ClickBlock") then
+        local entity = self:GetWorld():GetEntityByID(packetData.entityId);
+        self:GetClient():GetPlayerController():SuperOnClickBlock(packetData.blockId, packetData.bx, packetData.by, packetData.bz, packetData.mouseButton, entity, packetData.side);
+    elseif (action == "SyncCmd") then 
+        GameLogic.RunCommand(packetData);
+    end
+end
+
+-- 方块数据同步
+function NetClientHandler:handleUpdateEntitySign(packet_UpdateEntitySign)
+	local blockEntity = EntityManager.GetBlockEntity(packet_UpdateEntitySign.x, packet_UpdateEntitySign.y, packet_UpdateEntitySign.z)
+	if(blockEntity) then blockEntity:OnUpdateFromPacket(packet_UpdateEntitySign); end
+end
+-- 方块数据同步
+function NetClientHandler:handleUpdateEntityBlock(packet_UpdateEntityBlock)
+    local blockEntity = EntityManager.GetBlockEntity(packet_UpdateEntityBlock.x, packet_UpdateEntityBlock.y, packet_UpdateEntityBlock.z)
+	if(blockEntity) then blockEntity:OnUpdateFromPacket(packet_UpdateEntityBlock); end
+end
+
+-- 处理块信息更新
+function NetClientHandler:handleBlock(packetBlock)
+    -- 未开启直接跳出
+    if (not self:GetClient():IsSyncBlock()) then return end;
+
+    local x, y, z = BlockEngine:FromSparseIndex(packetBlock.blockIndex);
+    -- 禁用标记
+    self:GetWorld():SetEnableBlockMark(false);
+    -- 更新块
+    BlockEngine:SetBlock(x, y, z, packetBlock.blockId, packetBlock.blockData);
+    -- 更新块实体
+    if (packetBlock.blockEntityPacket) then
+        packetBlock.blockEntityPacket:ProcessPacket(self);
+    end
+    -- 启用标记
+    self:GetWorld():SetEnableBlockMark(true);
 end

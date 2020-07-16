@@ -160,10 +160,12 @@ function PlayerManager:SendPacketPlayerInfo(player)
 end
 
 -- 发数据给所有玩家
-function PlayerManager:SendPacketToAllPlayers(packet)
+function PlayerManager:SendPacketToAllPlayers(packet, filterFunc)
     for i = 1, #(self.playerList) do 
         local player = self.playerList[i];
-        player:SendPacketToPlayer(packet);
+        if (not filterFunc or filterFunc(player)) then
+            player:SendPacketToPlayer(packet);
+        end
     end
 end
 
@@ -175,6 +177,20 @@ function PlayerManager:SendPacketToAllPlayersExcept(packet, excludedPlayer)
             player:SendPacketToPlayer(packet);
         end
     end
+end
+
+-- 发送给同步方块的玩家
+function PlayerManager:SendPacketToSyncBlockPlayers(packet, excludedPlayer)
+    self:SendPacketToAllPlayers(packet, function(player)
+        return player ~= excludedPlayer and player:IsSyncBlock();
+    end);
+end
+
+-- 发送给同步命令的玩家
+function PlayerManager:SendPacketToSyncCmdPlayers(packet, excludedPlayer)
+    self:SendPacketToAllPlayers(packet, function(player) 
+        return player ~= excludedPlayer and player:IsSyncCmd();
+    end);
 end
 
 -- 获取所有玩家实体信息列表

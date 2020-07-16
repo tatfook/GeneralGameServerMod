@@ -55,7 +55,7 @@ end
 
 function Connection:AddPacketToSendQueue(packet)
 	Log:Std("DEBUG", moduleName, "---------------------send packet: %d--------------------", packet:GetPacketId());
-	Log:Std("DEBUG", moduleName, packet);
+	Log:Std("DEBUG", moduleName, packet:WritePacket());
 
 	return Connection._super.AddPacketToSendQueue(self, packet);
 end
@@ -64,13 +64,14 @@ end
 function Connection:OnNetReceive(msg)
 	local packet = PacketTypes:GetNewPacket(msg.id);
 	
-	Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet:GetPacketId());
+	Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
 	Log:Std("DEBUG", moduleName, msg);
 
 	if(packet) then
 		packet:ReadPacket(msg);
 		packet:ProcessPacket(self.net_handler);
 	else
+		Log:Info("invalid packet");
 		if (self.net_handler.handleMsg) then
 			self.net_handler:handleMsg(msg);
 		else 

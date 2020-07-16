@@ -75,7 +75,7 @@
     </WorkerServer>
   </Server>
   <World 
-    minClientCount=4 
+    minClientCount=3 
     maxClientCount=200>
   </World>
   <Player>

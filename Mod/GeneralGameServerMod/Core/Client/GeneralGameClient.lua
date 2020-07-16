@@ -10,7 +10,7 @@ local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 GeneralGameClient:LoadWorld({ip = "127.0.0.1", port = "9000", worldId = "12348"});
 ------------------------------------------------------------
 ]]
-
+NPL.load("Mod/GeneralGameServerMod/Core/Client/OverWrite.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
@@ -19,6 +19,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/PlayerController.lua");
+local PlayerController = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.PlayerController");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
@@ -32,6 +34,10 @@ local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.Tool
 
 function GeneralGameClient:ctor() 
     self.inited = false;
+    self.options = {
+        isSyncBlock = if_else(Config.IsDevEnv, true, false),
+        isSyncCmd = true,
+    }
 end
 
 function GeneralGameClient:Init() 
@@ -44,6 +50,7 @@ function GeneralGameClient:Init()
 
     -- 监听世界加载完成事件
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+    GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
 
     -- 禁用点击继续
     GameLogic.options:SetClickToContinue(false);
@@ -83,20 +90,45 @@ end
 function GeneralGameClient:GetEntityOtherPlayerClass()
     return EntityOtherPlayer;
 end
+-- 获取配置
 
+function GeneralGameClient:GetOptions() 
+    return self.options;
+end
+
+function GeneralGameClient:SetOptions(opts)
+    commonlib.partialcopy(self.options, opts);
+end
+
+-- 是否同步方块
+function GeneralGameClient:IsSyncBlock()
+    return if_else(Config.IsDevEnv, true, self:GetOptions().isSyncBlock);
+end
+
+-- 是否同步命令
+function GeneralGameClient:IsSyncCmd()
+    return self:GetOptions().isSyncCmd;
+end
+
+-- 加载世界
 function GeneralGameClient:LoadWorld(options)
     -- 初始化
     self:Init();
     
-    -- 保存选项
-    self.options = options;
-    
+    -- 覆盖默认选项
+    self:SetOptions(options);
+
     -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
     local curWorldId = GameLogic.options:GetProjectId();
 
     -- 确定世界ID
+    options = self:GetOptions();
     options.worldId = options.worldId or curWorldId or Config.defaultWorldId;
     options.username = options.username or self:GetUserInfo().username;
+
+    -- 打印选项值
+    Log:Info(options);
+
     -- only reload world if world id does not match
     local isReloadWorld = options.worldId ~= curWorldId; 
     local worldId = options.worldId;
@@ -115,6 +147,19 @@ function GeneralGameClient:LoadWorld(options)
     end
 end
 
+-- 获取世界
+function GeneralGameClient:GetWorld()
+    return self.world;
+end
+
+-- 获取玩家控制器
+function GeneralGameClient:GetPlayerController()
+    if (not self.playerController) then
+        self.playerController = PlayerController:new():Init(self);
+    end 
+    return self.playerController;
+end
+
 -- 世界加载
 function GeneralGameClient:OnWorldLoaded() 
     -- 是否需要替换世界
@@ -126,6 +171,10 @@ function GeneralGameClient:OnWorldLoaded()
     self.world = GeneralGameWorldClass:new():Init(self);
     GameLogic.ReplaceWorld(self.world);
 
+    -- 替换玩家控制器
+    -- self.oldPlayerController = GameLogic.GetPlayerController();
+    -- GameLogic.playerController = self:GetPlayerController();
+
     -- 登录世界
     if (self.options.ip and self.options.port) then
         self.world:Login(self.options);
@@ -135,6 +184,25 @@ function GeneralGameClient:OnWorldLoaded()
 end
 --  正确流程: 登录成功 => 加载打开世界 => 替换世界
 
+-- 世界退出
+function GeneralGameClient:OnWorldUnloaded()
+    if (self.world) then
+        self.world:OnExit();
+    end
+
+    -- GameLogic.playerController = self.oldPlayerController;
+    self.world = nil;
+end
+-- 执行网络命令
+function GeneralGameClient:RunNetCommand(cmd)
+    local netHandler = self:GetWorld() and self:GetWorld():GetNetHandler();
+    if (not netHandler or not self:IsSyncCmd()) then return end;
+
+    netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({
+        action = "SyncCmd",
+        data = cmd,
+    }));
+end
 
 -- 连接控制服务器
 function GeneralGameClient:ConnectControlServer(options)
@@ -170,6 +238,7 @@ function GeneralGameClient:handleWorldServer(packetWorldServer)
     self.controlServerConnection:CloseConnection();
 end
 
+
 -- 获取当前认证用户信息
 function GeneralGameClient:GetUserInfo()
     -- return {};
@@ -179,7 +248,6 @@ end
 function GeneralGameClient:GetWorldInfo()
     -- return {};
 end
-
 
 -- 初始化成单列模式
 GeneralGameClient:InitSingleton();

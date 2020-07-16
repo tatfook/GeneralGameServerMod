@@ -89,8 +89,8 @@ function UserInfo:Show(entityPlayer)
         UserInfo._super.Show(self, {
             url = "Mod/GeneralGameServerMod/App/View/UserInfo.html",
             name = "Mod.GeneralGameServerMod.App.View.UserInfo",
-            width = 590,
-            height = 320,
+            width = 880,
+            height = 584,
             title = "用户信息",
         });
     end

@@ -29,6 +29,7 @@ function Player:ctor()
     self.lastTick = ParaGlobal.timeGetTime();
     self.aliveTime = 0;
     self.state = "online";
+    self.options = {};
 end
 
 function Player:Init(player, playerManager, netHandler)
@@ -50,6 +51,21 @@ end
 
 function Player:GetWorld()
     return self:GetPlayerManager():GetWorld();
+end
+
+-- 设置玩家选项
+function Player:SetOptions(options)
+    commonlib.partialcopy(self.options, options);
+end
+
+-- 是否同步方块
+function Player:IsSyncBlock()
+    return self.options.isSyncBlock;
+end
+
+-- 是否同步命令
+function Player:IsSyncCmd()
+    return self.options.isSyncCmd;
 end
 
 function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)

@@ -165,19 +165,11 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     -- 设置当前玩家实体信息
     local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
     -- 新玩家通知所有旧玩家
-    self:GetPlayerManager():SendPacketToAllPlayersExcept(packetPlayerEntityInfo, self:GetPlayer());
+    self:GetPlayerManager():SendPacketToAllPlayersExcept(isNew and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo, self:GetPlayer());
     -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
     if (isNew) then 
         self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerManager():GetPlayerEntityInfoList()));
     end
-end
-
--- 处理块信息更新
-function NetServerHandler:handleBlockInfoList(packetBlockInfoList)
-    self:GetBlockManager():AddBlockList(packetBlockInfoList.blockInfoList);
-
-    -- 同步到其它玩家
-    self:GetPlayerManager():SendPacketToAllPlayersExcept(packetBlockInfoList, self:GetPlayer());
 end
 
 -- 处理玩家退出
@@ -233,4 +225,24 @@ end
 -- 转发聊天消息
 function NetServerHandler:handleChat(packetChat)
     self:GetPlayerManager():SendPacketToAllPlayersExcept(packetChat, self:GetPlayer());
+end
+
+-- 通用数据包转发
+function NetServerHandler:handleGeneral(packetGeneral)
+    if (packetGeneral.action == "PlayerOptions") then
+        self:GetPlayer():SetOptions(packetGeneral.data);
+    elseif (packetGeneral.action == "SyncCmd") then
+        self:GetPlayerManager():SendPacketToSyncCmdPlayers(packetGeneral, self:GetPlayer());
+    else
+        self:GetPlayerManager():SendPacketToAllPlayersExcept(packetGeneral, self:GetPlayer());
+    end
+end
+
+-- 数据包列表转发
+function NetServerHandler:handleMultiple(packetMultiple)
+    if (packetMultiple.action == "SyncBlock") then
+        self:GetPlayerManager():SendPacketToSyncBlockPlayers(packetMultiple, self:GetPlayer());
+    else
+        self:GetPlayerManager():SendPacketToAllPlayersExcept(packetMultiple, self:GetPlayer());
+    end
 end

@@ -83,6 +83,32 @@ end
 -- 更改人物外观
 function EntityOtherPlayer:UpdateEntityActionState()
     local dataWatcher = self:GetDataWatcher();
+    -- 模型 character/CC/02human/paperman/boy02.x
+    local  assetsWhiteList = {
+        "character/CC/02human/paperman/boy01.x",
+        "character/CC/02human/paperman/boy02.x",
+        "character/CC/02human/paperman/boy03.x",
+        "character/CC/02human/paperman/boy04.x",
+        "character/CC/02human/paperman/boy05.x",
+        "character/CC/02human/paperman/boy06.x",
+        "character/CC/02human/paperman/boy07.x",
+        "character/CC/02human/paperman/girl01.x",
+        "character/CC/02human/paperman/girl02.x",
+        "character/CC/02human/paperman/girl03.x",
+        "character/CC/02human/paperman/girl04.x",
+        "character/CC/02human/paperman/girl05.x",
+    }
+    local curMainAsset = dataWatcher:GetField(self.dataMainAsset);
+    local assetIndex = math.random(1, #assetsWhiteList);
+    if(curMainAsset~=self:GetMainAssetPath()) then
+        for i = 1, #assetsWhiteList do
+            if (curMainAsset == assetsWhiteList[i]) then
+                assetIndex = i;
+                break;
+            end
+        end
+        self:SetMainAssetPath(assetsWhiteList[assetIndex]);
+	end
     -- 改写大小同步规则
     local curScale = dataWatcher:GetField(self.dataFieldScale);
 	if(curScale and curScale ~= self:GetScaling()) then

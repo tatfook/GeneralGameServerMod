@@ -79,7 +79,8 @@ function EntityMainPlayer:SendMotionUpdates()
     self.motionUpdateTickCount = self.motionUpdateTickCount + 1;
 
     -- 位置实时同步, 其它 hasMetaDataChange, hasHeadRotation, hasRotation 配合 Tick 同步
-    if (not hasMetaDataChange and not force and not (forceTick and (hasMoved or hasHeadRotation or hasRotation))) then
+    -- if (not hasMetaDataChange and not force and not (forceTick and (hasMoved or hasHeadRotation or hasRotation))) then
+    if (not force and not (forceTick and (hasMoved or hasHeadRotation or hasRotation))) then
         return;
     end
 

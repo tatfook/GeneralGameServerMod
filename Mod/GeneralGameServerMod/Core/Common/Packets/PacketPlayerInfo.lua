@@ -21,8 +21,8 @@ function PacketPlayerInfo:Init(packet)
 	-- 响应包体
     self.entityId = packet.entityId;  -- 玩家实体ID
     self.username = packet.username;  -- 玩家用户名
-	self.state = packet.state         -- 玩家在线状态
-	
+	self.state = packet.state;        -- 玩家在线状态
+	self.role = packet.role;          -- 玩家角色  0 -- 访客  1 --  成员 2 -- 管理员 4 -- 超级管理员(创建者)
 	self.userinfo = packet.userinfo;  -- 玩家用户信息 {isVip = 是否是Vip,}
 	return self;
 end

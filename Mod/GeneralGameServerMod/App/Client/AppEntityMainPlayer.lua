@@ -21,6 +21,11 @@ function AppEntityMainPlayer:ctor()
     self.appEntityPlayerHelper = AppEntityPlayerHelper:new():Init(self, true);
 end
 
+-- 禁用默认用户名显示
+function AppEntityMainPlayer:IsShowHeadOnDisplay()
+    return false;
+end
+
 -- 玩家被点击
 function AppEntityMainPlayer:OnClick()
 end

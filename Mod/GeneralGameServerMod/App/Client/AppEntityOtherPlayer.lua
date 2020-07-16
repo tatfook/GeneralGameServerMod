@@ -23,6 +23,11 @@ function AppEntityOtherPlayer:ctor()
     self.appEntityPlayerHelper = AppEntityPlayerHelper:new():Init(self, false);
 end
 
+-- 禁用默认用户名显示
+function AppEntityOtherPlayer:IsShowHeadOnDisplay()
+    return false;
+end
+
 -- 玩家被点击
 function AppEntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
     UserInfo:Show(self);
@@ -49,3 +54,5 @@ end
 function AppEntityOtherPlayer:SetSuperPlayerInfo(playerInfo)
     AppEntityOtherPlayer._super.SetPlayerInfo(self, playerInfo);
 end
+
+

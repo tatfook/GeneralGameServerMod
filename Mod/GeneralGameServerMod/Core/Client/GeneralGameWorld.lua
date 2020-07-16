@@ -34,12 +34,10 @@ function GeneralGameWorld:Init(client)
 	
 	self.client = client;
 
-	self.markBlockIndexList = commonlib.UnorderedArraySet:new();
-
-	self.enableBlockMark = Config.isSyncBlock;
-
+	self.markBlockIndexList = commonlib.UnorderedArraySet:new();          -- 待同步的标记更新块索引
+	self.allMarkForUpdateBlocks = {};                                     -- 所有标记更新块 
 	self.entityList = commonlib.UnorderedArraySet:new();
-
+	self.enableBlockMark = true;                                          -- 默认为true 由 IsSyncBlock 控制
 	-- 定时器
 	local tickDuration = 1000 * 60 * 2;  -- 2 min
 	-- local tickDuration = 1000 * 20;   -- debug
@@ -70,20 +68,52 @@ function GeneralGameWorld:GetName(name)
 	return self.name;
 end
 
-function GeneralGameWorld:MarkBlockForUpdate(x, y, z)
-	if (not self.enableBlockMark) then return end
-
-	self.markBlockIndexList:add(BlockEngine:GetSparseIndex(x, y, z));
-end
-
 function GeneralGameWorld:SetEnableBlockMark(enable)
 	self.enableBlockMark = enable;
 end
 
-function GeneralGameWorld:OnFrameMove() 
-	if (self.markBlockIndexList:empty()) then
-		return;
+function GeneralGameWorld:GetEnableBlockMark()
+	return self.enableBlockMark;
+end
+
+-- 标记更新方块
+function GeneralGameWorld:MarkBlockForUpdate(x, y, z)
+	if (not self:GetEnableBlockMark() or not self:GetClient():IsSyncBlock()) then return end
+
+	self.markBlockIndexList:add(BlockEngine:GetSparseIndex(x, y, z));
+end
+
+-- 是否同步方块的BlockData
+function GeneralGameWorld:IsSyncBlockData(blockId)
+	local notSyncBlockIdList = {
+		228, -- 电影方块
+		219, -- 代码方块
+		189, -- 导线
+		199, -- 电灯
+		103, -- 铁轨
+		250, -- 动力铁轨
+		251, -- 探测铁轨
+		197, -- 中继器
+		105, -- 按钮
+		190, -- 拉杆
+		201, -- 木压力板
+		200, -- 石压力板
+		221, -- 含羞草
+		227, -- 含羞草石
+	}
+	for i = 1, #notSyncBlockIdList do 
+		if (notSyncBlockIdList[i] == blockId) then 
+			return false;
+		end
 	end
+
+	return true;
+end
+
+-- 定时发送
+function GeneralGameWorld:OnFrameMove() 
+	if (self.markBlockIndexList:empty()) then return end
+
 	-- 30 fps
 	-- self.tickBlockInfoUpdateCount = (self.tickBlockInfoUpdateCount or 0) + 1;
 	-- if (self.tickBlockInfoUpdateCount < 30) then
@@ -91,19 +121,58 @@ function GeneralGameWorld:OnFrameMove()
 	-- end
 
 	-- 发送方块更新
-	local blockInfoList = {};
+	local packets = {};
 	for i = 1, #(self.markBlockIndexList) do 
 		local blockIndex = self.markBlockIndexList[i];
 		local x, y, z = BlockEngine:FromSparseIndex(blockIndex);
 		local blockId = BlockEngine:GetBlockId(x,y,z);
 		local blockData = BlockEngine:GetBlockData(x,y,z);
-		blockInfoList[i] = {blockIndex = blockIndex, blockId = blockId, blockData = blockData}; 
+		local blockEntity = BlockEngine:GetBlockEntity(x,y,z);
+		local blockEntityPacket = (blockEntity and blockEntity:IsBlockEntity()) and blockEntity:GetDescriptionPacket();
+		
+		-- 不存在则先构建
+		if (not self.allMarkForUpdateBlocks[blockIndex]) then self.allMarkForUpdateBlocks[blockIndex] = {} end
+		local oldBlock = self.allMarkForUpdateBlocks[blockIndex];
+		local isBlockIdChange = oldBlock.blockId ~= blockId;
+		local isBlockDataChange = self:IsSyncBlockData(blockId) and oldBlock.blockData ~= blockData;
+		local isBlockEntityPacketChange = commonlib.serialize_compact(oldBlock.blockEntityPacket) ~= commonlib.serialize_compact(blockEntityPacket);
+
+		-- 块数据出现不同 TODO: 需过滤部分方块数据的传递
+		if (isBlockIdChange or isBlockDataChange or isBlockEntityPacketChange) then
+			oldBlock.blockId = blockId;
+			oldBlock.blockData = blockData;
+			oldBlock.blockEntityPacket = if_else(isBlockEntityPacketChange, blockEntityPacket, oldBlock.blockEntityPacket);  -- 暂时忽略新旧公用的数据导致不能正确比对的问题
+			oldBlock.mark = true;
+
+			packets[#packets + 1] = Packets.PacketBlock:new():Init({
+				blockIndex = blockIndex, 
+				blockId = blockId, 
+				blockData = blockData, 
+				blockEntityPacket = if_else(isBlockEntityPacketChange, blockEntityPacket, nil),
+			});
+		end
 	end
 
-	self.netHandler:AddToSendQueue(Packets.PacketBlockInfoList:new():Init(blockInfoList));
+	if (#packets > 0) then self.netHandler:AddToSendQueue(Packets.PacketMultiple:new():Init(packets, "SyncBlock")); end
 
 	self.markBlockIndexList:clear();
 	-- self.tickBlockInfoUpdateCount = 0;
+end
+
+-- 世界中的方块被点击
+function GeneralGameWorld:OnClickBlock(blockId, bx, by, bz, mouseButton, entity, side)
+	local blockIndex = BlockEngine:GetSparseIndex(bx, by, bz);
+	if (not self.allMarkForUpdateBlocks[blockIndex]) then
+		local blockEntity = BlockEngine:GetBlockEntity(bx, by, bz);
+		local blockEntityPacket = (blockEntity and blockEntity:IsBlockEntity()) and blockEntity:GetDescriptionPacket();
+		self.allMarkForUpdateBlocks[blockIndex] = {
+			mark = false,
+			blockIndex = blockIndex,
+			blockId = BlockEngine:GetBlockId(bx, by, bz),
+			blockData = BlockEngine:GetBlockData(bx, by, bz),
+			blockEntityPacket = blockEntityPacket,
+		}
+	end
 end
 
 -- 维持用户在线
@@ -173,6 +242,10 @@ function GeneralGameWorld:OnExit()
 	GeneralGameWorld._super.OnExit(self);
 
 	self:Logout();
+end
+
+function GeneralGameWorld:GetNetHandler()
+	return self.netHandler;
 end
 
 function GeneralGameWorld:IsLogin()
