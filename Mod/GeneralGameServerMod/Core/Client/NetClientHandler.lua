@@ -391,7 +391,12 @@ function NetClientHandler:handleBlock(packetBlock)
     self:GetWorld():SetEnableBlockMark(false);
     -- 更新块
     if (packetBlock.blockId) then
-        BlockEngine:SetBlock(x, y, z, packetBlock.blockId, packetBlock.blockData or BlockEngine:GetBlockData(x,y,z));
+        -- 创建或删除都触发相邻块通知事件
+        local flag = if_else(packetBlock.blockId == 0 or BlockEngine:GetBlockId(x,y,z) == 0, 3, 0); 
+        -- 块数据不存在则使用现有值 
+        local blockData = packetBlock.blockData or BlockEngine:GetBlockData(x,y,z);
+        -- 设置方块信息
+        BlockEngine:SetBlock(x, y, z, packetBlock.blockId, blockData, flag);
     end
     -- 更新块实体
     if (packetBlock.blockEntityPacket) then

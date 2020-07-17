@@ -39,6 +39,7 @@ function GeneralGameWorld:Init(client)
 	self.blockManager = BlockManager:new():Init(self);
 
 	self.client = client;
+	
 	self.entityList = commonlib.UnorderedArraySet:new();
 	-- 默认为true 由 IsSyncBlock 控制
 	self.enableBlockMark = true;                                          
