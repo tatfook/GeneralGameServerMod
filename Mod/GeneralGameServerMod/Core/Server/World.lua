@@ -12,10 +12,8 @@ local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
-local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager");
 local World = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
 
 -- 一个世界对象, 应该包含世界的所有数据
@@ -27,7 +25,7 @@ function World:ctor()
     self.playerManager = PlayerManager:new():Init(self);
     
     -- 方块管理器
-    self.blockManager = BlockManager:new();
+    -- self.blockManager = BlockManager:new();
 end
 
 -- 世界初始化

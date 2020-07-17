@@ -365,10 +365,7 @@ end
 function NetClientHandler:handleGeneral(packetGeneral)
     local packetData = packetGeneral.data;
     local action = packetGeneral.action;
-    if (action == "ClickBlock") then
-        local entity = self:GetWorld():GetEntityByID(packetData.entityId);
-        self:GetClient():GetPlayerController():SuperOnClickBlock(packetData.blockId, packetData.bx, packetData.by, packetData.bz, packetData.mouseButton, entity, packetData.side);
-    elseif (action == "SyncCmd") then 
+    if (action == "SyncCmd") then 
         GameLogic.RunCommand(packetData);
     end
 end
@@ -388,12 +385,14 @@ end
 function NetClientHandler:handleBlock(packetBlock)
     -- 未开启直接跳出
     if (not self:GetClient():IsSyncBlock()) then return end;
-
+    -- 获取块坐标
     local x, y, z = BlockEngine:FromSparseIndex(packetBlock.blockIndex);
     -- 禁用标记
     self:GetWorld():SetEnableBlockMark(false);
     -- 更新块
-    BlockEngine:SetBlock(x, y, z, packetBlock.blockId, packetBlock.blockData);
+    if (packetBlock.blockId) then
+        BlockEngine:SetBlock(x, y, z, packetBlock.blockId, packetBlock.blockData or BlockEngine:GetBlockData(x,y,z));
+    end
     -- 更新块实体
     if (packetBlock.blockEntityPacket) then
         packetBlock.blockEntityPacket:ProcessPacket(self);

@@ -7,9 +7,14 @@ use the lib:
 ------------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/main.lua");
 local GeneralGameServerMod = commonlib.gettable("Mod.GeneralGameServerMod");
-GeneralGameServerMod:init();
 -- client
-GameLogic.RunCommand("/connectGGS -dev -u=xiaoyao 0");    
+local ModManager = commonlib.gettable("Mod.ModManager");
+ModManager:AddMod(nil, GeneralGameServerMod);
+-- use
+GameLogic.RunCommand("/connectGGS -dev -u=xiaoyao 0");   
+
+-- server
+GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/System.lua");
@@ -19,6 +24,8 @@ local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase")
 
 local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
 local GeneralGameClients = {};
+local inited = false;
+
 function GeneralGameServerMod:ctor()
 end
 
@@ -35,6 +42,9 @@ function GeneralGameServerMod:GetDesc()
 end
 
 function GeneralGameServerMod:init()
+	if (inited) then return end;
+	inited = true;
+
 	LOG.info("GeneralGameServerMod plugin initialized");
 
 	Common:Init(servermode);
@@ -67,6 +77,14 @@ function GeneralGameServerMod:OnDestroy()
 end
 
 function GeneralGameServerMod:handleKeyEvent(event)
+end
+
+function GeneralGameServerMod:handleMouseEvent(event)
+	local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand");
+	local generalGameClient = GeneralGameCommand:GetGeneralGameClient();
+	if (generalGameClient and generalGameClient.handleMouseEvent) then
+		generalGameClient:handleMouseEvent(event);
+	end
 end
 
 -- 注册客户端类

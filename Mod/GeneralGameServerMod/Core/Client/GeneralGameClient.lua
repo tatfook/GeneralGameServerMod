@@ -18,8 +18,6 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Client/PlayerController.lua");
-local PlayerController = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.PlayerController");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
@@ -151,14 +149,6 @@ function GeneralGameClient:GetWorld()
     return self.world;
 end
 
--- 获取玩家控制器
-function GeneralGameClient:GetPlayerController()
-    if (not self.playerController) then
-        self.playerController = PlayerController:new():Init(self);
-    end 
-    return self.playerController;
-end
-
 -- 世界加载
 function GeneralGameClient:OnWorldLoaded() 
     -- 是否需要替换世界
@@ -169,10 +159,6 @@ function GeneralGameClient:OnWorldLoaded()
     local GeneralGameWorldClass = self:GetGeneralGameWorldClass() or GeneralGameWorld;
     self.world = GeneralGameWorldClass:new():Init(self);
     GameLogic.ReplaceWorld(self.world);
-
-    -- 替换玩家控制器
-    -- self.oldPlayerController = GameLogic.GetPlayerController();
-    -- GameLogic.playerController = self:GetPlayerController();
 
     -- 登录世界
     if (self.options.ip and self.options.port) then
@@ -189,7 +175,6 @@ function GeneralGameClient:OnWorldUnloaded()
         self.world:OnExit();
     end
 
-    -- GameLogic.playerController = self.oldPlayerController;
     self.world = nil;
 end
 -- 执行网络命令
@@ -201,6 +186,12 @@ function GeneralGameClient:RunNetCommand(cmd)
         action = "SyncCmd",
         data = cmd,
     }));
+end
+
+-- 处理鼠标事件
+function GeneralGameClient:handleMouseEvent(event)
+    if (not self:GetWorld()) then return end;
+    self:GetWorld():handleMouseEvent(event);
 end
 
 -- 连接控制服务器

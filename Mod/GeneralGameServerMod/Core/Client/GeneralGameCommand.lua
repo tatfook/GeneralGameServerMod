@@ -56,6 +56,10 @@ function GeneralGameCommand:init()
 	self:InstallCommand();
 end
 
+function GeneralGameCommand:GetGeneralGameClient()
+	return self.generalGameClient;
+end
+
 function GeneralGameCommand:InstallCommand()
 	Log:Info("InstallCommand");
 	local connectGGSCmd = {
