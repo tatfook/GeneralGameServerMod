@@ -203,6 +203,8 @@ end
 
 -- 服务强制退出玩家 
 function NetServerHandler:KickPlayerFromServer(reason)
+    Log:Info("kick player and reason: %s", reason);
+
     local player = self:GetPlayer();
     if (not player) then return end
 
@@ -234,6 +236,14 @@ function NetServerHandler:handleGeneral(packetGeneral)
         self:GetPlayer():SetOptions(packetGeneral.data);
     elseif (packetGeneral.action == "SyncCmd") then
         self:GetPlayerManager():SendPacketToSyncCmdPlayers(packetGeneral, self:GetPlayer());
+    elseif (packetGeneral.action == "SyncBlock_RequestBlockIndexList") then
+        local player = self:GetPlayerManager():GetSyncBlockOldestPlayer();
+        if (player and player ~= self:GetPlayer()) then
+            self:GetPlayerManager():SendPacketToPlayer(packetGeneral, player);
+        else
+            packetGeneral.action = "SyncBlock_ResponseBlockIndexList";
+            self:GetPlayerManager():SendPacketToPlayer(packetGeneral, player);
+        end
     else
         self:GetPlayerManager():SendPacketToAllPlayersExcept(packetGeneral, self:GetPlayer());
     end

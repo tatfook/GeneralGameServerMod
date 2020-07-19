@@ -68,6 +68,10 @@ function NetClientHandler:GetWorld()
     return self.world;
 end
 
+function NetClientHandler:GetBlockManager()
+    return self:GetWorld():GetBlockManager();
+end
+
 function NetClientHandler:SetPlayer(player)
     -- 设置当前玩家
     self.player = player;
@@ -221,6 +225,14 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
             isAnonymousUser = self:GetClient():IsAnonymousUser(),
         }
     }));
+
+    if (self:GetClient():IsSyncBlock()) then
+        -- 请求获取块同步列表
+        self:AddToSendQueue(Packets.PacketGeneral:new():Init({
+            action = "SyncBlock_RequestBlockIndexList",
+        }));
+    end
+
 end
 
 -- 获取玩家实体
@@ -375,6 +387,8 @@ function NetClientHandler:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
     if (action == "SyncCmd") then 
         GameLogic.RunCommand(packetData);
+    elseif (action == "SyncBlock_RequestBlockIndexList") then
+    elseif (action == "SyncBlock_ResponseBlockIndexList") then
     end
 end
 

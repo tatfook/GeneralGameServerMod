@@ -37,7 +37,7 @@ local notSyncBlockIdMap = {
 
 function BlockManager:ctor()
 	self.allMarkForUpdateBlockMap = {};                                   -- 所有标记更新块 
-	self.allMarkForUpdateBlockEntiryMap = {};                             -- 所有标记的块实体
+	-- self.allMarkForUpdateBlockEntiryMap = {};                             -- 所有标记的块实体
 	self.markBlockIndexList = commonlib.UnorderedArraySet:new();          -- 待同步的标记更新块索引
 end
 
@@ -64,7 +64,10 @@ function BlockManager:OnEditEntity(event)
 	local x,y,z = entity:GetBlockPos();
 	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
 
-	self.allMarkForUpdateBlockMap[blockIndex] = self.allMarkForUpdateBlockMap[blockIndex] or {};
+	if (not self.allMarkForUpdateBlockMap[blockIndex]) then
+		self.allMarkForUpdateBlockMap[blockIndex] = {blockIndex = blockIndex};
+	end
+
 	local block = self.allMarkForUpdateBlockMap[blockIndex];
 	local blockEntityPacket = entity:GetDescriptionPacket();
 
@@ -156,3 +159,14 @@ function BlockManager:SyncBlock()
 	self.markBlockIndexList:clear();
 end
 
+
+function BlockManager:GetAllSyncBlockIndexPacket()
+	local blockIndexList = {};
+	for key, val in pairs(self.allMarkForUpdateBlockMap) then
+		blockIndexList[#blockIndexList + 1] = val.blockIndex;
+	end
+	return PacketGeneral:new():Init({
+		action = "SyncBlock_ResponseBlockIndexList",
+		data = blockIndexList,
+	});
+end

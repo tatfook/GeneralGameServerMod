@@ -193,6 +193,37 @@ function PlayerManager:SendPacketToSyncCmdPlayers(packet, excludedPlayer)
     end);
 end
 
+-- 是否是玩家
+function PlayerManager:IsPlayer(player)
+    return type(player) == "table" and player.isa and player:isa(Player);
+end
+
+-- 发送给指定玩家
+function PlayerManager:SendPacketToPlayer(packet, player)
+    player = self:IsPlayer(player) and player or self:GetPlayer(player);
+    if (not player) then
+        player:SendPacketToPlayer(packet);
+    end
+end
+
+-- 获取指定玩家
+function PlayerManager:GetPlayer(id)
+    for i = 1, #(self.playerList) do 
+        local player = self.playerList[i];
+        if (type(id) == "number" and player.entityId == id) then
+            return player;
+        end
+        if (type(id) == "string" and player.username == id) then
+            return player;
+        end
+        if (type(id) == "table" and player == id) then
+            return player;
+        end
+    end
+
+    return id;
+end
+
 -- 获取所有玩家实体信息列表
 function PlayerManager:GetPlayerEntityInfoList()
     local playerEntityInfoList = {};
@@ -222,4 +253,18 @@ function PlayerManager:RemoveInvalidPlayer()
         local player = list[i];
         player:KickPlayerFromServer("remove inactive users");
     end
+end
+
+-- 获取最旧的方块同步玩家
+function PlayerManager:GetSyncBlockOldestPlayer()
+    local oldestPlayer = nil
+    for i = 1, #(self.playerList) do 
+        local player = self.playerList[i];
+        if (player:IsSyncBlock()) then
+            if (not oldestPlayer or oldestPlayer.syncBlockTime > player.syncBlockTime) then
+                oldestPlayer = player;
+            end
+        end
+    end
+    return oldestPlayer;
 end
