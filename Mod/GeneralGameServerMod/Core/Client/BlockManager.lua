@@ -38,7 +38,7 @@ local notSyncBlockIdMap = {
 function BlockManager:ctor()
 	self.allMarkForUpdateBlockMap = {};                                   -- 所有标记更新块 
 	self.allMarkForUpdateBlockEntiryMap = {};                             -- 所有标记的块实体
-    self.markBlockIndexList = commonlib.UnorderedArraySet:new();          -- 待同步的标记更新块索引
+	self.markBlockIndexList = commonlib.UnorderedArraySet:new();          -- 待同步的标记更新块索引
 end
 
 function BlockManager:Init(world)
@@ -121,7 +121,10 @@ function BlockManager:SyncBlock()
 	if (self.markBlockIndexList:empty()) then return end
 
 	local packets = {};
-	for i = 1, #(self.markBlockIndexList) do 
+	-- local markBlockIndexCount = #(self.markBlockIndexList);
+	-- local maxSyncBlockCount = markBlockIndexCount > 4096 and 4096 or markBlockIndexCount;
+	-- for i = 1, maxSyncBlockCount do 
+	for i = 1,  #(self.markBlockIndexList) do 
 		local blockIndex = self.markBlockIndexList[i];
 		local x, y, z = BlockEngine:FromSparseIndex(blockIndex);
 		local blockId = BlockEngine:GetBlockId(x,y,z);
@@ -130,6 +133,10 @@ function BlockManager:SyncBlock()
 		local oldBlock = self.allMarkForUpdateBlockMap[blockIndex];
 		local isBlockIdChange = if_else((block and block:IsAssociatedBlockID(oldBlock.blockId)), false, oldBlock.blockId ~= blockId);
 		local isBlockDataChange = self:IsSyncBlockData(blockId) and oldBlock.blockData ~= blockData;
+
+		-- 从标记列表中移除
+		-- self.markBlockIndexList:removeByValue(blockIndex);
+
 		-- 块数据出现不同 
 		if (isBlockIdChange or isBlockDataChange) then
 			oldBlock.blockData = if_else(isBlockIdChange and oldBlock.blockId == 0 or isBlockDataChange, blockData, oldBlock.blockData);
@@ -139,7 +146,7 @@ function BlockManager:SyncBlock()
 				blockId = oldBlock.blockId;
 				blockData = oldBlock.blockData;
 			});
-			Log:Debug(packets[#packets]);
+			-- Log:Debug(packets[#packets]);
 		end
 	end
 

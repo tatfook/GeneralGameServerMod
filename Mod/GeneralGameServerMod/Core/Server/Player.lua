@@ -55,6 +55,15 @@ end
 
 -- 设置玩家选项
 function Player:SetOptions(options)
+    -- 设置块同步开始时间
+    if (self.options.isSyncBlock ~= options.isSyncBlock) then
+        if (options.isSyncBlock) then
+            self.syncBlockTime = ParaGlobal.timeGetTime();
+        else
+            self.syncBlockTime = nil;
+        end
+    end
+
     commonlib.partialcopy(self.options, options);
 end
 

@@ -31,17 +31,16 @@ end
 -- 视图渲染完成
 function UserInfo:OnCreate()
     -- 设置玩家模型
-    local ctl = self:GetPage():FindControl("player")
-    if(ctl) then
-        local obj_params = ObjEditor.GetObjectParams(self:GetEntityPlayer():GetInnerObject())
-        if(obj_params) then
-            obj_params.name = "mc_player";
-            obj_params.facing = 1.57;
-            -- MESH_USE_LIGHT = 0x1<<7: use block ambient and diffuse lighting for this model. 
-            obj_params.Attribute = 128;
-            obj_params.AssetFile = self:GetEntityPlayer():GetMainAssetPath();
-            ctl:ShowModel(obj_params);    
-        end
+    local ctl = self:GetPage():FindControl("player");
+    local obj_params = ObjEditor.GetObjectParams(self:GetEntityPlayer():GetInnerObject());
+
+    if(ctl and obj_params) then
+        obj_params.name = "mc_player";
+        obj_params.facing = 1.57;
+        -- MESH_USE_LIGHT = 0x1<<7: use block ambient and diffuse lighting for this model. 
+        obj_params.Attribute = 128;
+        obj_params.AssetFile = self:GetEntityPlayer():GetMainAssetPath();
+        ctl:ShowModel(obj_params);    
     else
         self:GetPage():CallMethod("player", "SetAssetFile", self:GetEntityPlayer():GetMainAssetPath());
     end
