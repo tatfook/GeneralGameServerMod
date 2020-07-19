@@ -175,6 +175,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetMainAssetPath(oldEntityPlayer:GetMainAssetPath());
         entityPlayer:SetSkin(oldEntityPlayer:GetSkin());
         entityPlayer:SetGravity(oldEntityPlayer:GetGravity());
+        entityPlayer:SetScaling(oldEntityPlayer:GetScaling());
         local x, y, z = oldEntityPlayer:GetPosition();
         local randomRange = 5;
         if (self.isReconnection) then
