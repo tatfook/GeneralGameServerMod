@@ -120,8 +120,8 @@ end
 
 -- 移除玩家
 function PlayerManager:RemovePlayer(player)
-    -- 存活时间小于指定时间时不做留存直接删除
-    if (player.aliveTime < self.minAliveTime) then
+    -- 匿名玩家或存活时间小于指定时间时不做留存直接删除
+    if (player:IsAnonymousUser() or player.aliveTime < self.minAliveTime) then
         return self:SendPacketPlayerLogout(player);
     end
 

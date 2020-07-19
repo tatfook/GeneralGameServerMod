@@ -156,6 +156,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     packetPlayerLogin.entityId = self:GetPlayer().entityId;
     packetPlayerLogin.result = "ok";
     packetPlayerLogin.parallelWorldName = self:GetWorld():GetParallelWorldName();
+    packetPlayerLogin.username = self:GetPlayer().username;
     self:SendPacketToPlayer(packetPlayerLogin);
     -- self:SendServerInfo();
 end

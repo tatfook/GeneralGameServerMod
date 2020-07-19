@@ -48,5 +48,12 @@ function AppGeneralGameClient:GetUserInfo()
     }
 end
 
+-- 是否是匿名用户
+function AppGeneralGameClient:IsAnonymousUser()
+    if (self:GetConfig().IsDevEnv) then return false end
+    
+    return self:GetOptions().username ~= System.User.keepworkUsername;  -- 匿名用户不支持离线缓存
+end
+
 -- 初始化成单列模式
 AppGeneralGameClient:InitSingleton();

@@ -31,7 +31,6 @@ end
 -- 视图渲染完成
 function UserInfo:OnCreate()
      -- 设置玩家模型
-     echo(self:GetEntityPlayer():GetMainAssetPath());
      self:GetPage():CallMethod("player", "SetAssetFile", self:GetEntityPlayer():GetMainAssetPath());
 end
 

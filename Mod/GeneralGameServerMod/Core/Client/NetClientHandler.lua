@@ -43,7 +43,7 @@ end
 end
 
 function NetClientHandler:GetUserName()
-    return self.options.username;
+    return self:GetClient():GetOptions().username;
 end
 
 -- clean up connection. 
@@ -93,11 +93,15 @@ function NetClientHandler:GetClient()
 end
 
 -- create a tcp connection to server. 
-function NetClientHandler:Init(options, world, isReconnection)
-    self.options = options;
+function NetClientHandler:Init(world, isReconnection)
     self.isReconnection = isReconnection;
     self:SetWorld(world);
-	
+    
+    local options = self:GetClient():GetOptions();
+    options.ip = options.ip or "127.0.0.1";
+	options.port = options.port or "9000";
+    options.thread = options.thread or "gl";
+    
 	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", options.ip, options.port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
     self.connection = Connection:new():InitByIpPort(options.ip, options.port, self);
 	self.connection:Connect(5, function(bSucceed)
@@ -154,8 +158,10 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     end
 
     -- 登录成功
-    self.options.worldId = packetPlayerLogin.worldId;                       -- 世界ID
-    self.options.parallelWorldName = packetPlayerLogin.parallelWorldName;   -- 平行世界名  可能被客户端改掉
+    local options = self:GetClient():GetOptions();
+    options.worldId = packetPlayerLogin.worldId;                       -- 世界ID
+    options.parallelWorldName = packetPlayerLogin.parallelWorldName;   -- 平行世界名  可能被客户端改掉
+    options.username = packetPlayerLogin.username;
 
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_login"));
@@ -211,6 +217,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         data = {
             isSyncBlock = self:GetClient():IsSyncBlock(),
             isSyncCmd = self:GetClient():IsSyncCmd(),
+            isAnonymousUser = self:GetClient():IsAnonymousUser(),
         }
     }));
 end
@@ -327,7 +334,7 @@ function NetClientHandler:handleErrorMessage(text)
         BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了, 3 秒后尝试重新连接...", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
         -- 重连
         commonlib.Timer:new({callbackFunc = function(timer)
-            self:Init(self.options, self:GetWorld(), true);
+            self:Init(self:GetClient():GetOptions(), self:GetWorld(), true);
         end}):Change(3000, nil);
     end
     

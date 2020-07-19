@@ -68,6 +68,11 @@ function Player:IsSyncCmd()
     return self.options.isSyncCmd;
 end
 
+-- 是否是匿名用户
+function Player:IsAnonymousUser()
+    return self.options.isAnonymousUser;
+end
+
 function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
     local isNew = false;
     if not self.entityInfo then

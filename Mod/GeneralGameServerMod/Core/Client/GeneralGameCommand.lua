@@ -99,6 +99,8 @@ options:
 			options.port = (options.port and options.port ~= "") and options.port or nil;
 			options.username = (options.u and options.u ~= "") and options.u or nil;
 			options.password = (options.p and options.p ~= "") and options.p or nil;
+			-- 移除选项值
+			options.u, options.p = nil, nil
 
 			self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
 			self.generalGameClient:LoadWorld(options);

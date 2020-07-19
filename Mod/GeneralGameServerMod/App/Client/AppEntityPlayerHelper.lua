@@ -39,13 +39,7 @@ function AppEntityPlayerHelper:SetPlayerInfo(playerInfo)
     
     -- 显示信息是否更改
     local isSetHeadOnDisplay = playerInfo.state and playerInfo.username and (oldPlayerInfo.state ~= playerInfo.state or oldPlayerInfo.username ~= playerInfo.username);
-    if (not isSetHeadOnDisplay) then
-        Log:Info({
-            oldPlayerInfo, 
-            playerInfo,
-        });
-    end
-
+    
     -- 设置玩家信息
     self:GetEntityPlayer():SetSuperPlayerInfo(playerInfo);
 
@@ -63,7 +57,7 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     local username = playerInfo.username;
     local state = playerInfo.state;
     local isVip = userinfo.isVip;
-    Log:Info("username: %s, state: %s, vip: %s", username, state, isVip);
+    Log:Debug("username: %s, state: %s, vip: %s", username, state, isVip);
     local color = state == "online" and (self.isMainPlayer and "#ffffff" or "#0cff05") or "#b1b1b1";
     local vipIconUrl = state == "online" and "Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18" or "Texture/Aries/Creator/keepwork/UserInfo/V_gray_32bits.png#0 0 18 18";
     local playerUsernameStyle = state == "online" and "" or "shadow-quality:8; shadow-color:#2b2b2b;text-shadow:true;";

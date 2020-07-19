@@ -118,18 +118,7 @@ function GeneralGameWorld:Tick()
 	end
 end
 
-function GeneralGameWorld:Login(params) 
-	local ip = params.ip or "127.0.0.1";
-	local port = params.port or "9000";
-	local worldId = params.worldId;
-	local parallelWorldName = params.parallelWorldName;
-	local username = params.username;  -- 若不存在使用 keepwork 的用户名
-	local password = params.password;
-	local thread = params.thread or "gl";
-
-	self.username = username;
-	self.password = password;
-
+function GeneralGameWorld:Login() 
 	-- 清理旧连接
 	if (self.netHandler) then
 		 self.netHandler:Cleanup();
@@ -137,14 +126,7 @@ function GeneralGameWorld:Login(params)
 
 	-- 连接服务器
 	local NetClientHandlerClass = self:GetClient():GetNetClientHandlerClass() or NetClientHandler;
-	self.netHandler = NetClientHandlerClass:new():Init({
-		ip = ip, 
-		port = port, 
-		worldId = worldId, 
-		username = username, 
-		password = password,
-		parallelWorldName = parallelWorldName,
-	}, self);
+	self.netHandler = NetClientHandlerClass:new():Init(self);
 	
 	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
 

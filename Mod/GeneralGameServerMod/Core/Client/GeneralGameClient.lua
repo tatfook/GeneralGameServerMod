@@ -88,11 +88,14 @@ function GeneralGameClient:GetEntityOtherPlayerClass()
     return EntityOtherPlayer;
 end
 -- 获取配置
-
+function GeneralGameClient:GetConfig()
+    return Config;
+end
+-- 获取客户端选项
 function GeneralGameClient:GetOptions() 
     return self.options;
 end
-
+-- 设置客户端选项
 function GeneralGameClient:SetOptions(opts)
     commonlib.partialcopy(self.options, opts);
 end
@@ -108,20 +111,20 @@ function GeneralGameClient:IsSyncCmd()
 end
 
 -- 加载世界
-function GeneralGameClient:LoadWorld(options)
+function GeneralGameClient:LoadWorld(opts)
     -- 初始化
     self:Init();
     
     -- 覆盖默认选项
-    self:SetOptions(options);
+    self:SetOptions(opts);
 
     -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
     local curWorldId = GameLogic.options:GetProjectId();
 
     -- 确定世界ID
     options = self:GetOptions();
-    options.worldId = options.worldId or curWorldId or Config.defaultWorldId;
-    options.username = options.username or self:GetUserInfo().username;
+    options.worldId = opts.worldId or curWorldId or Config.defaultWorldId;
+    options.username = opts.username or self:GetUserInfo().username;
 
     -- 打印选项值
     Log:Info(options);
@@ -167,7 +170,6 @@ function GeneralGameClient:OnWorldLoaded()
         self:ConnectControlServer(self.options); -- 连接控制器服务, 获取世界服务
     end
 end
---  正确流程: 登录成功 => 加载打开世界 => 替换世界
 
 -- 世界退出
 function GeneralGameClient:OnWorldUnloaded()
@@ -237,6 +239,11 @@ end
 -- 获取当前系统世界信息
 function GeneralGameClient:GetWorldInfo()
     -- return {};
+end
+
+-- 是否是匿名用户
+function GeneralGameClient:IsAnonymousUser()
+    return true;
 end
 
 -- 初始化成单列模式
