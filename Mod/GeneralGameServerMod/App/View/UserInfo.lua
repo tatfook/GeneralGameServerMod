@@ -30,9 +30,20 @@ end
 
 -- 视图渲染完成
 function UserInfo:OnCreate()
-     -- 设置玩家模型
-     echo(self:GetEntityPlayer():GetMainAssetPath());
-     self:GetPage():CallMethod("player", "SetAssetFile", self:GetEntityPlayer():GetMainAssetPath());
+    -- 设置玩家模型
+    local ctl = self:GetPage():FindControl("player")
+    if(ctl) then
+        local obj_params = ObjEditor.GetObjectParams(self:GetEntityPlayer():GetInnerObject())
+        if(obj_params) then
+            obj_params.name = "mc_player";
+            obj_params.facing = 1.57;
+            -- MESH_USE_LIGHT = 0x1<<7: use block ambient and diffuse lighting for this model. 
+            obj_params.Attribute = 128;
+            ctl:ShowModel(obj_params);    
+        else
+            self:GetPage():CallMethod("player", "SetAssetFile", self:GetEntityPlayer():GetMainAssetPath());
+        end
+    end
 end
 
 -- 加载用户信息
