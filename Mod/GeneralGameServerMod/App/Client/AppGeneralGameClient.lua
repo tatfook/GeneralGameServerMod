@@ -50,7 +50,7 @@ end
 
 -- 是否是匿名用户
 function AppGeneralGameClient:IsAnonymousUser()
-    if (self:GetConfig().IsDevEnv) then return false end
+    -- if (self:GetConfig().IsDevEnv) then return false end
     
     return self:GetOptions().username ~= System.User.keepworkUsername;  -- 匿名用户不支持离线缓存
 end

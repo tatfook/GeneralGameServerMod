@@ -233,6 +233,8 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         }));
     end
 
+    -- 链接成功取消重连标记
+    self.isReconnection = false;
 end
 
 -- 获取玩家实体
@@ -342,12 +344,12 @@ function NetClientHandler:handleErrorMessage(text)
     
         -- 登出世界
         self:GetWorld():Logout();
-    else 
+    elseif (not self.isReconnection) then
         -- 服务器断开链接 极可能是服务器重启更新
         BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了, 3 秒后尝试重新连接...", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
         -- 重连
         commonlib.Timer:new({callbackFunc = function(timer)
-            self:Init(self:GetClient():GetOptions(), self:GetWorld(), true);
+            self:Init(self:GetWorld(), true);
         end}):Change(3000, nil);
     end
     
