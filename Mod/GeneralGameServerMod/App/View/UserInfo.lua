@@ -39,10 +39,11 @@ function UserInfo:OnCreate()
             obj_params.facing = 1.57;
             -- MESH_USE_LIGHT = 0x1<<7: use block ambient and diffuse lighting for this model. 
             obj_params.Attribute = 128;
+            obj_params.AssetFile = self:GetEntityPlayer():GetMainAssetPath();
             ctl:ShowModel(obj_params);    
-        else
-            self:GetPage():CallMethod("player", "SetAssetFile", self:GetEntityPlayer():GetMainAssetPath());
         end
+    else
+        self:GetPage():CallMethod("player", "SetAssetFile", self:GetEntityPlayer():GetMainAssetPath());
     end
 end
 
