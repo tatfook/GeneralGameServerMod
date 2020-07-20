@@ -445,7 +445,11 @@ function NetClientHandler:handleBlock(packetBlock)
     end
     -- 更新块实体
     if (packetBlock.blockEntityPacket) then
-        packetBlock.blockEntityPacket:ProcessPacket(self);
+        if (packetBlock.blockEntityPacket.ProcessPacket) then
+            packetBlock.blockEntityPacket:ProcessPacket(self);
+        else
+            Log:Error("无效实体数据包");
+        end
     end
     -- 启用标记
     self:GetWorld():SetEnableBlockMark(true);
