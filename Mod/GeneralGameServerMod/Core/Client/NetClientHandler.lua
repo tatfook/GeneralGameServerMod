@@ -409,7 +409,9 @@ function NetClientHandler:handleGeneral(packetGeneral)
     local packetData = packetGeneral.data;
     local action = packetGeneral.action;
     if (action == "SyncCmd") then 
+        self:GetWorld():SetEnableBlockMark(false);
         GameLogic.RunCommand(packetData);
+        self:GetWorld():SetEnableBlockMark(true);
     elseif (action == "SyncBlock") then
         self:handleGeneral_SyncBlock(packetGeneral);
     end
