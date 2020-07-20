@@ -230,20 +230,37 @@ function NetServerHandler:handleChat(packetChat)
     self:GetPlayerManager():SendPacketToAllPlayersExcept(packetChat, self:GetPlayer());
 end
 
+-- 处理方块同步
+function NetServerHandler:handleGeneral_SyncBlock(packetGeneral)
+    local state = packetGeneral.data.state;       -- 同步状态
+    local playerId = packetGeneral.data.playerId; -- 请求同步玩家ID
+    local player = self:GetPlayerManager():GetPlayer(playerId);
+    if (player and player:IsSyncBlockFinish()) then return end;
+
+    if (state == "SyncBlock_Finish") then
+        self:GetPlayer():SetSyncBlockFinish();
+    elseif (state == "SyncBlock_RequestBlockIndexList" or state == "SyncBlock_RequestSyncBlock") then
+        local player = self:GetPlayerManager():GetSyncBlockOldestPlayer();
+        if (not player or player == self:GetPlayer()) then
+            return self:SendPacketToPlayer(Packets.PacketGeneral:new():Init({action = "SyncBlock", data = {state = "SyncBlock_Finish"}}));
+        else
+            self:GetPlayerManager():SendPacketToPlayer(packetGeneral, player);
+        end
+    elseif (state == "SyncBlock_ResponseBlockIndexList" or state == "SyncBlock_ResponseSyncBlock") then
+        self:GetPlayerManager():SendPacketToPlayer(packetGeneral, player);
+    else
+
+    end
+end
+
 -- 通用数据包转发
 function NetServerHandler:handleGeneral(packetGeneral)
     if (packetGeneral.action == "PlayerOptions") then
         self:GetPlayer():SetOptions(packetGeneral.data);
     elseif (packetGeneral.action == "SyncCmd") then
         self:GetPlayerManager():SendPacketToSyncCmdPlayers(packetGeneral, self:GetPlayer());
-    elseif (packetGeneral.action == "SyncBlock_RequestBlockIndexList") then
-        local player = self:GetPlayerManager():GetSyncBlockOldestPlayer();
-        if (player and player ~= self:GetPlayer()) then
-            self:GetPlayerManager():SendPacketToPlayer(packetGeneral, player);
-        else
-            packetGeneral.action = "SyncBlock_ResponseBlockIndexList";
-            self:GetPlayerManager():SendPacketToPlayer(packetGeneral, player);
-        end
+    elseif (packetGeneral.action == "SyncBlock") then
+        self:handleGeneral_SyncBlock(packetGeneral);
     else
         self:GetPlayerManager():SendPacketToAllPlayersExcept(packetGeneral, self:GetPlayer());
     end

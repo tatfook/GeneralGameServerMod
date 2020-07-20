@@ -37,10 +37,12 @@ function PlayerManager:Init(world)
     return self;
 end
 
+-- 获取世界
 function PlayerManager:GetWorld() 
     return self.world;
 end
 
+-- 获取下一个实体ID
 function PlayerManager:GetNextEntityId()
     return self.world:GetNextEntityId();
 end
@@ -201,9 +203,8 @@ end
 -- 发送给指定玩家
 function PlayerManager:SendPacketToPlayer(packet, player)
     player = self:IsPlayer(player) and player or self:GetPlayer(player);
-    if (not player) then
-        player:SendPacketToPlayer(packet);
-    end
+    if (not player) then return end
+    player:SendPacketToPlayer(packet);
 end
 
 -- 获取指定玩家
@@ -260,7 +261,7 @@ function PlayerManager:GetSyncBlockOldestPlayer()
     local oldestPlayer = nil
     for i = 1, #(self.playerList) do 
         local player = self.playerList[i];
-        if (player:IsSyncBlock()) then
+        if (player:IsSyncBlock() and player:IsSyncBlockFinish()) then
             if (not oldestPlayer or oldestPlayer.syncBlockTime > player.syncBlockTime) then
                 oldestPlayer = player;
             end

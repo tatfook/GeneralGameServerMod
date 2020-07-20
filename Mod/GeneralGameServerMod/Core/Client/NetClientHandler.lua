@@ -85,6 +85,11 @@ function NetClientHandler:GetPlayer(entityId)
     return self:GetWorld():GetEntityByID(entityId)
 end
 
+-- 获取玩家ID
+function NetClientHandler:GetPlayerId()
+    return self:GetPlayer().entityId;
+end
+
 -- 是否是当前玩家
 function NetClientHandler:IsMainPlayer(entityId)
     local player = self:GetPlayer();
@@ -176,7 +181,8 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     local EntityMainPlayerClass = self:GetClient():GetEntityMainPlayerClass() or EntityMainPlayer;
     local entityPlayer = EntityMainPlayerClass:new():init(self:GetWorld(), self, entityId);
     if(oldEntityPlayer) then
-        entityPlayer:SetMainAssetPath(oldEntityPlayer:GetMainAssetPath());
+        local oldMainAssetPath = oldEntityPlayer:GetMainAssetPath();
+        entityPlayer:SetMainAssetPath(if_else(not oldMainAssetPath or oldMainAssetPath == "", "character/CC/02human/paperman/boy01.x", oldMainAssetPath));
         entityPlayer:SetSkin(oldEntityPlayer:GetSkin());
         entityPlayer:SetGravity(oldEntityPlayer:GetGravity());
         entityPlayer:SetScaling(oldEntityPlayer:GetScaling());
@@ -226,11 +232,9 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         }
     }));
 
+    -- 开始块同步
     if (self:GetClient():IsSyncBlock()) then
-        -- 请求获取块同步列表
-        self:AddToSendQueue(Packets.PacketGeneral:new():Init({
-            action = "SyncBlock_RequestBlockIndexList",
-        }));
+       self:GetBlockManager():handleSyncBlock_Begin();
     end
 
     -- 链接成功取消重连标记
@@ -383,14 +387,31 @@ function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
     entityPlayer:SetPlayerInfo(packetPlayerInfo);
 end
 
+-- 处理方块同步
+function NetClientHandler:handleGeneral_SyncBlock(packetGeneral)
+    local state = packetGeneral.data.state;
+    if (state == "SyncBlock_Finish") then
+        self:GetBlockManager():handleSyncBlock_Finish();
+    elseif (state == "SyncBlock_RequestBlockIndexList") then
+        self:GetBlockManager():handleSyncBlock_RequestBlockIndexList(packetGeneral);
+    elseif (state == "SyncBlock_ResponseBlockIndexList") then
+        self:GetBlockManager():handleSyncBlock_ResponseBlockIndexList(packetGeneral);
+    elseif (state == "SyncBlock_RequestSyncBlock") then
+        self:GetBlockManager():handleSyncBlock_RequestSyncBlock(packetGeneral);
+    elseif (state == "SyncBlock_ResponseSyncBlock") then
+        self:GetBlockManager():handleSyncBlock_ResponseSyncBlock(packetGeneral);
+    else
+    end
+end
+
 -- 处理方块点击
 function NetClientHandler:handleGeneral(packetGeneral)
     local packetData = packetGeneral.data;
     local action = packetGeneral.action;
     if (action == "SyncCmd") then 
         GameLogic.RunCommand(packetData);
-    elseif (action == "SyncBlock_RequestBlockIndexList") then
-    elseif (action == "SyncBlock_ResponseBlockIndexList") then
+    elseif (action == "SyncBlock") then
+        self:handleGeneral_SyncBlock(packetGeneral);
     end
 end
 

@@ -125,6 +125,8 @@ function GeneralGameClient:LoadWorld(opts)
     options = self:GetOptions();
     options.worldId = opts.worldId or curWorldId or Config.defaultWorldId;
     options.username = opts.username or self:GetUserInfo().username;
+    options.ip = opts.ip;
+    options.port = opts.port;
 
     -- 打印选项值
     Log:Info(options);

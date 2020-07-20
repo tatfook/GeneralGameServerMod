@@ -18,6 +18,7 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets
 local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityPlayerMPClient"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer"));
 
 local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer";
+local maxMotionUpdateTickCount = 33;
 
 -- 构造函数
 function EntityMainPlayer:ctor()
@@ -63,7 +64,6 @@ function EntityMainPlayer:SendMotionUpdates()
     local dHeadPitch = self.rotationHeadPitch - self.oldRotHeadPitch;
     local hasHeadRotation = dHeadRot~=0 or dHeadPitch~=0;
     -- send movement and body facing. 
-    local maxMotionUpdateTickCount = 33; -- 1s
     local dx = self.x - self.oldPosX;
     local dy = self.y - self.oldPosY;
     local dz = self.z - self.oldPosZ;
@@ -79,11 +79,12 @@ function EntityMainPlayer:SendMotionUpdates()
     self.motionUpdateTickCount = self.motionUpdateTickCount + 1;
 
     -- 位置实时同步, 其它 hasMetaDataChange, hasHeadRotation, hasRotation 配合 Tick 同步
-    -- if (not hasMetaDataChange and not force and not (forceTick and (hasMoved or hasHeadRotation or hasRotation))) then
-    if (not force and not (forceTick and (hasMoved or hasHeadRotation or hasRotation))) then
-        return;
-    end
-
+    if (not force and not (forceTick and (hasMetaDataChange or hasMoved or hasHeadRotation or hasRotation))) then return end
+    if (force) then                   -- 位置变动超标
+        maxMotionUpdateTickCount = 5; -- 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
+    else                              -- 原地操作降低更新频率
+        maxMotionUpdateTickCount = maxMotionUpdateTickCount + maxMotionUpdateTickCount;  -- 5 10 20 40 80 160 320 640
+    end;
     -- Log:Std("DEBUG", moduleName, "-----------------------------------------------");
     -- Log:Std("DEBUG", moduleName, "force: %s, moveDistance: %s, ", force, moveDistance);
     -- Log:Std("DEBUG", moduleName, "motionUpdateTickCount: %d, hasMoved: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", self.motionUpdateTickCount, hasMoved, hasRotation, hasHeadRotation, hasMetaDataChange);

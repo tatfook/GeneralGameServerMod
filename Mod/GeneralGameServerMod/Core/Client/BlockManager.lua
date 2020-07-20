@@ -17,6 +17,7 @@ local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local BlockManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager"));
 
+local MaxSyncBlockCountPerPacket = 4096;  -- 单个数据包最大同步块数
 local notSyncBlockIdMap = {
 	[228] = true, -- 电影方块
 	[219] = true, -- 代码方块
@@ -37,8 +38,9 @@ local notSyncBlockIdMap = {
 
 function BlockManager:ctor()
 	self.allMarkForUpdateBlockMap = {};                                   -- 所有标记更新块 
-	-- self.allMarkForUpdateBlockEntiryMap = {};                             -- 所有标记的块实体
+	-- self.allMarkForUpdateBlockEntiryMap = {};                          -- 所有标记的块实体
 	self.markBlockIndexList = commonlib.UnorderedArraySet:new();          -- 待同步的标记更新块索引
+	self.needSyncBlockIndexList = commonlib.UnorderedArraySet:new();      -- 需要同步的块索引列表
 end
 
 function BlockManager:Init(world)
@@ -56,6 +58,10 @@ end
 
 function BlockManager:GetWorld()
 	return self.world;
+end
+
+function BlockManager:GetPlayerId()
+	return self:GetWorld():GetNetHandler():GetPlayerId();
 end
 
 function BlockManager:OnEditEntity(event)
@@ -78,7 +84,7 @@ function BlockManager:OnEditEntity(event)
 		if (block.isBlockEntityChange) then
 			block.blockEntityPacket = blockEntityPacket;
 			local packet = Packets.PacketBlock:new():Init({blockIndex = blockIndex, blockEntityPacket = blockEntityPacket});
-			self:GetWorld():GetNetHandler():AddToSendQueue(Packets.PacketMultiple:new():Init({packet}, "SyncBlock"));
+			self:AddToSendQueue(Packets.PacketMultiple:new():Init({packet}, "SyncBlock"));
 		end
 	end
 end
@@ -123,11 +129,11 @@ end
 function BlockManager:SyncBlock()
 	if (self.markBlockIndexList:empty()) then return end
 
-	local packets = {};
-	-- local markBlockIndexCount = #(self.markBlockIndexList);
-	-- local maxSyncBlockCount = markBlockIndexCount > 4096 and 4096 or markBlockIndexCount;
-	-- for i = 1, maxSyncBlockCount do 
-	for i = 1,  #(self.markBlockIndexList) do 
+	local packets, syncedBlockIndexList = {}, {};
+	local markBlockIndexCount = #(self.markBlockIndexList);
+	local maxSyncBlockCount = markBlockIndexCount > MaxSyncBlockCountPerPacket and MaxSyncBlockCountPerPacket or markBlockIndexCount;
+	for i = 1, maxSyncBlockCount do 
+	-- for i = 1,  #(self.markBlockIndexList) do 
 		local blockIndex = self.markBlockIndexList[i];
 		local x, y, z = BlockEngine:FromSparseIndex(blockIndex);
 		local blockId = BlockEngine:GetBlockId(x,y,z);
@@ -137,8 +143,7 @@ function BlockManager:SyncBlock()
 		local isBlockIdChange = if_else((block and block:IsAssociatedBlockID(oldBlock.blockId)), false, oldBlock.blockId ~= blockId);
 		local isBlockDataChange = self:IsSyncBlockData(blockId) and oldBlock.blockData ~= blockData;
 
-		-- 从标记列表中移除
-		-- self.markBlockIndexList:removeByValue(blockIndex);
+		syncedBlockIndexList[#syncedBlockIndexList + 1] = blockIndex;
 
 		-- 块数据出现不同 
 		if (isBlockIdChange or isBlockDataChange) then
@@ -154,19 +159,114 @@ function BlockManager:SyncBlock()
 	end
 
 	-- 发送方块更新
-	if (#packets > 0) then self:GetWorld():GetNetHandler():AddToSendQueue(Packets.PacketMultiple:new():Init(packets, "SyncBlock")); end
+	if (#packets > 0) then self:AddToSendQueue(Packets.PacketMultiple:new():Init(packets, "SyncBlock")); end
+	
+	-- 从标记列表中移除
+	for i = 1, #syncedBlockIndexList do
+		self.markBlockIndexList:removeByValue(syncedBlockIndexList[i]);
+	end
 
-	self.markBlockIndexList:clear();
+	-- self.markBlockIndexList:clear();
 end
 
-
-function BlockManager:GetAllSyncBlockIndexPacket()
+-- 处理请求同步块索引列表数
+function BlockManager:handleSyncBlock_RequestBlockIndexList(packetGeneral)
 	local blockIndexList = {};
-	for key, val in pairs(self.allMarkForUpdateBlockMap) then
+	for key, val in pairs(self.allMarkForUpdateBlockMap) do
 		blockIndexList[#blockIndexList + 1] = val.blockIndex;
 	end
-	return PacketGeneral:new():Init({
-		action = "SyncBlock_ResponseBlockIndexList",
-		data = blockIndexList,
-	});
+	self:AddToSendQueue(Packets.PacketGeneral:new():Init({
+		action = "SyncBlock",
+		data = {
+			state = "SyncBlock_ResponseBlockIndexList",
+			playerId = packetGeneral.data.playerId,
+			blockIndexList = blockIndexList,
+		},
+	}));
+end
+
+-- 处理响应同步块索引列表数
+function BlockManager:handleSyncBlock_ResponseBlockIndexList(packetGeneral)
+	local blockIndexList = packetGeneral.data.blockIndexList;
+	-- 设置需要同步的块
+	if (blockIndexList) then
+		for i = 1, #blockIndexList do
+			self.needSyncBlockIndexList:add(blockIndexList[i]);
+		end
+	end
+
+	-- 发送请求块
+	local list = {};
+	for i = 1, #(self.needSyncBlockIndexList) do
+		list[#list + 1] = self.needSyncBlockIndexList[i];
+		if (i == MaxSyncBlockCountPerPacket or i == #(self.needSyncBlockIndexList)) then
+			self:AddToSendQueue(Packets.PacketGeneral:new():Init({
+				action = "SyncBlock",
+				data = {
+					state = "SyncBlock_RequestSyncBlock",
+					blockIndexList = list,
+					playerId = self:GetPlayerId(),
+				},
+			}));
+			list = {};
+		end
+	end
+end
+
+-- 处理块请求
+function BlockManager:handleSyncBlock_RequestSyncBlock(packetGeneral)
+	local blockIndexList = packetGeneral.data.blockIndexList;
+	local blockList = {};
+	for i = 1, #blockIndexList do
+		local blockIndex = blockIndexList[i];
+		local block = self.allMarkForUpdateBlockMap[blockIndex];
+		if (block) then
+			blockList[#blockList + 1] = {
+				blockIndex = blockIndex,
+				blockId = block.blockId,
+				blockData = block.blockData,
+				blockEntityPacket = block.blockEntityPacket,
+			}
+		end
+	end
+	self:AddToSendQueue(Packets.PacketGeneral:new():Init({
+		action = "SyncBlock", 
+		data = {
+			state = "SyncBlock_ResponseSyncBlock", 
+			playerId = packetGeneral.data.playerId,
+			blockList = blockList,
+		},
+	}));
+end
+
+-- 处理块响应
+function BlockManager:handleSyncBlock_ResponseSyncBlock(packetGeneral)
+	local blockList = packetGeneral.data.blockList;
+	for i = 1, #blockList do
+		local block = blockList[i];
+		self:GetWorld():GetNetHandler():handleBlock(Packets.PacketBlock:new():Init(block));
+	end
+end
+
+-- 处理同步开始
+function BlockManager:handleSyncBlock_Begin()
+	-- 请求获取块同步列表
+	self:AddToSendQueue(Packets.PacketGeneral:new():Init({
+		action = "SyncBlock",
+		data = {
+			state = "SyncBlock_RequestBlockIndexList",
+			playerId = self:GetPlayerId(),
+		},
+	}));
+end
+
+-- 处理同步完成
+function BlockManager:handleSyncBlock_Finish()
+	self.needSyncBlockIndexList:clear();
+	self:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "SyncBlock", data = {state = "SyncBlock_Finish", playerId = self:GetPlayerId()}}));  -- 服务器确认完成
+end
+
+-- 发送数据包
+function BlockManager:AddToSendQueue(packet)
+	return self:GetWorld():GetNetHandler():AddToSendQueue(packet);
 end

@@ -44,6 +44,7 @@ end
 function AppGeneralGameClient:GetUserInfo()
     return {
         username = System.User.keepworkUsername,
+        nickname = System.User.NickName,
         isVip = System.User.isVip,
     }
 end
