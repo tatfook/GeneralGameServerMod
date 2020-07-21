@@ -406,15 +406,38 @@ end
 
 -- 处理方块点击
 function NetClientHandler:handleGeneral(packetGeneral)
-    local packetData = packetGeneral.data;
     local action = packetGeneral.action;
     if (action == "SyncCmd") then 
-        self:GetWorld():SetEnableBlockMark(false);
-        GameLogic.RunCommand(packetData);
-        self:GetWorld():SetEnableBlockMark(true);
+        self:handleSyncCmd(packetGeneral);
     elseif (action == "SyncBlock") then
         self:handleGeneral_SyncBlock(packetGeneral);
     end
+end
+
+-- 处理网络命令
+function NetClientHandler:handleSyncCmd(packetGeneral)
+    local cmd = packetGeneral.data.cmd;
+    local opts = packetGeneral.data.opts;
+    -- 已存在忽略
+    if (self:GetClient():GetNetCmdList():contains(cmd)) then 
+        return Log:Info("命令正在执行: " .. cmd); 
+    end
+
+    -- 收到命令是起点, 发送命令是终点, 添加到命令列表
+    self:GetClient():GetNetCmdList():add(cmd);
+    
+    -- 开始执行命令
+    Log:Debug("begin exec net cmd: " .. cmd);
+    self:GetWorld():SetEnableBlockMark(false);
+    GameLogic.RunCommand(cmd);
+    
+    -- 非递归命令
+    if (not opts and not opts.recursive) then
+        Log:Debug("end exec net cmd: " .. cmd);
+        self:GetNetCmdList():removeByValue(cmd);
+    end
+
+    self:GetWorld():SetEnableBlockMark(true);
 end
 
 -- 方块数据同步

@@ -76,6 +76,8 @@ end
 function EntityOtherPlayer:FrameMove(deltaTime)
     if (not self:IsOnline()) then
         EntityOtherPlayer._super.MoveEntity(self, deltaTime);	
+    else
+        self:CheckCollision(deltaTime);
     end
 
     self:OnUpdate();
@@ -99,4 +101,8 @@ function EntityOtherPlayer:UpdateEntityActionState()
     end
     -- 调用基类函数
     EntityOtherPlayer._super.UpdateEntityActionState(self);
+end
+
+function EntityOtherPlayer:doesEntityTriggerPressurePlate()
+    return true;
 end

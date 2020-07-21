@@ -89,8 +89,14 @@ options:
 				Config:SetEnv("dev"); 
 			elseif (options.test) then
 				Config:SetEnv("test");
-			else
+			elseif (options.prod) then
 				Config:SetEnv("prod");
+			else
+				if (Config.IsDevEnv) then
+					Config:SetEnv("dev");
+				else
+					Config:SetEnv("prod");
+				end
 			end
 			
 			options.worldId = (worldId and worldId ~= 0) and worldId or nil;
@@ -110,17 +116,27 @@ options:
 	local ggscmd = {
 		mode_deny = "",
 		name = "ggscmd",
-		quick_ref = "/ggscmd cmdname cmdtext",
+		quick_ref = "/ggscmd [options] cmdname cmdtext",
 		desc = [[
 联机命令: 命令将会在联机世界的所有玩家客户端执行.
 示例:
 ggscmd tip hello world   # 联机执行 /tip hello wrold 命令
 ggscmd activate          # 联机执行 /activate 命令
+
+options:
+-to=all, other, self     # 命令接收者 all 所有人  other 排除发送者的其它人   self 发送者  默认为 other
+-recursive               # 如果命令会引起递归执行, 需加此选项避免递归, 由机关方块触发命令执行的一般会引起递归
 		]],
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
+			local options = nil;
+			options, cmd_text = ParseOptions(cmd_text);	
 			if (not cmd_text) then return end;
+			local to = options.to or "other";
 			-- 本机执行 
-			CommandManager:RunCommand(cmd_text);
+			if (to == "all" or to == "self") then
+				CommandManager:RunCommand(cmd_text);
+			end
+
 			-- 网络执行
 			if (self.generalGameClient) then
 				self.generalGameClient:RunNetCommand(cmd_text);

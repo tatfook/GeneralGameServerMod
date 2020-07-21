@@ -35,6 +35,7 @@ function GeneralGameClient:ctor()
         isSyncBlock = if_else(Config.IsDevEnv, true, false),
         isSyncCmd = true,
     }
+    self.netCmdList = commonlib.UnorderedArraySet:new();  -- 网络命令列表, 禁止命令重复运行 
 end
 
 function GeneralGameClient:Init() 
@@ -181,14 +182,25 @@ function GeneralGameClient:OnWorldUnloaded()
 
     self.world = nil;
 end
+
 -- 执行网络命令
-function GeneralGameClient:RunNetCommand(cmd)
+function GeneralGameClient:RunNetCommand(cmd, opts)
     local netHandler = self:GetWorld() and self:GetWorld():GetNetHandler();
     if (not netHandler or not self:IsSyncCmd()) then return end;
+    -- 命令存在且执行到发包说明命令执行完成, 在收到网络包时加入
+    if (self:GetNetCmdList():contains(cmd)) then
+        Log:Debug("end exec net cmd: " .. cmd);
+        self:GetNetCmdList():removeByValue(cmd);
+        return;
+    end
 
+    Log:Debug("send net cmd: " .. cmd);
     netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({
         action = "SyncCmd",
-        data = cmd,
+        data = {
+            cmd = cmd,
+            opts = opts,
+        },
     }));
 end
 
@@ -246,6 +258,11 @@ end
 -- 是否是匿名用户
 function GeneralGameClient:IsAnonymousUser()
     return true;
+end
+
+-- 获取网络命令
+function GeneralGameClient:GetNetCmdList()
+    return self.netCmdList;
 end
 
 -- 初始化成单列模式

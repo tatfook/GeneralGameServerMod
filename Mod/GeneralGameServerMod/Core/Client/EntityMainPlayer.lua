@@ -114,3 +114,8 @@ end
 function EntityMainPlayer:SendChatMsg(chatmsg, chatdata)
     return false;
 end
+
+-- 是否可以触发压力
+function EntityMainPlayer:doesEntityTriggerPressurePlate()
+    return true;
+end
