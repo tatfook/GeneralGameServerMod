@@ -111,6 +111,11 @@ function GeneralGameClient:IsSyncCmd()
     return self:GetOptions().isSyncCmd;
 end
 
+-- 是否获取可用服务器列表
+function GeneralGameClient:IsShowWorldList()
+    return if_else(Config.IsDevEnv, true, false);
+end
+
 -- 加载世界
 function GeneralGameClient:LoadWorld(opts)
     -- 初始化
@@ -220,11 +225,30 @@ function GeneralGameClient:ConnectControlServer(options)
             return Log:Info("无法连接控制器服务器");
         end
 
-        self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({
-            worldId = worldId,
-            parallelWorldName = options.parallelWorldName,
-        }));
+        self:SelectServerAndWorld();
     end);
+end
+
+-- 选择服务器和世界
+function GeneralGameClient:SelectServerAndWorld()
+    if (self:IsShowWorldList()) then
+        self.controlServerConnection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
+            action = "ServerWorldList"
+        }));
+    else
+        
+    end
+    self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({
+        worldId = worldId,
+        parallelWorldName = options.parallelWorldName,
+    }));
+end
+
+-- 处理通用数据包
+function GeneralGameClient:handleGeneral(packetGeneral)
+    if (packetGeneral.action == "ServerWorldList") then
+        Log:Info(packetGeneral);
+    end
 end
 
 -- 发送获取世界服务器

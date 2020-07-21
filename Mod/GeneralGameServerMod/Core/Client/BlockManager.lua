@@ -221,12 +221,12 @@ function BlockManager:handleSyncBlock_RequestSyncBlock(packetGeneral)
 		local blockIndex = blockIndexList[i];
 		local block = self.allMarkForUpdateBlockMap[blockIndex];
 		if (block) then
-			blockList[#blockList + 1] = {
+			blockList[#blockList + 1] = Packets.PacketBlock:new():Init({
 				blockIndex = blockIndex,
 				blockId = block.blockId,
 				blockData = block.blockData,
 				blockEntityPacket = block.blockEntityPacket,
-			}
+			}):WritePacket();
 		end
 	end
 	self:AddToSendQueue(Packets.PacketGeneral:new():Init({
@@ -244,7 +244,9 @@ function BlockManager:handleSyncBlock_ResponseSyncBlock(packetGeneral)
 	local blockList = packetGeneral.data.blockList;
 	for i = 1, #blockList do
 		local block = blockList[i];
-		self:GetWorld():GetNetHandler():handleBlock(Packets.PacketBlock:new():Init(block));
+		local packet = Packets.PacketBlock:new();
+		packet:ReadPacket(block);
+		self:GetWorld():GetNetHandler():handleBlock(packet);
 	end
 end
 

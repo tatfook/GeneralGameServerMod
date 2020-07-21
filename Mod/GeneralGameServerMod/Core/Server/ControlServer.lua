@@ -22,6 +22,7 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 local ControlServer = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
 
 local servers = {};  -- 服务器信息集
+local ServerAliveDuration = 1000 * 60 * 5;  -- 5s
 
 function ControlServer:ctor()
 end
@@ -63,9 +64,9 @@ function ControlServer:handleWorldServer(packetWorldServer)
     local server, controlServer = nil, nil; -- 设置最大值
     local serverMaxClientCount = tonumber(Config.Server.maxClientCount) or Config.maxClientCount;
     local worldMaxClientCount = tonumber(Config.World.maxClientCount) or Config.worldMaxClientCount;
-    local curTick, aliveDuration = ParaGlobal.timeGetTime(), 1000 * 60 * 5;
+    local curTick = ParaGlobal.timeGetTime();
     for key, svr in pairs(servers) do
-        local isAlive = (curTick - svr.lastTick) < aliveDuration; 
+        local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
         if (not isAlive) then
             Log:Warn("服务不可用: ip = %s, port = %s", svr.outerIp, svr.outerPort);
         end
@@ -91,6 +92,28 @@ function ControlServer:handleWorldServer(packetWorldServer)
     end
 
     self.connection:AddPacketToSendQueue(packetWorldServer);
+end
+
+-- 获取可用的服务器列表
+function ControlServer:GetAliveServers()
+    local curTick, aliveDuration = ParaGlobal.timeGetTime(), 1000 * 60 * 5;
+    local serverList= {};
+    for key, svr in pairs(servers) do
+        local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
+        if (isAlive) then
+            serverList[#serverList + 1] = svr;
+        end
+    end
+    return serverList;
+end
+
+-- 处理通用数据包
+function ControlServer:handleGeneral(packetGeneral)
+    local action = packetGeneral.action;
+    if (action == "ServerWorldList") then 
+        packetGeneral.data = self:GetAliveServers();
+        self.connection:AddPacketToSendQueue(packetGeneral);
+    end
 end
 
 -- 连接丢失
