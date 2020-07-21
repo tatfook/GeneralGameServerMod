@@ -52,7 +52,7 @@ function WorkerServer:Init(server)
         if (success) then
             Log:Info("成功连接控制服务");
             -- 推送服务器信息到控制器
-            self.SendServerInfoTimer:Change(0, 1000 * 60 * 3); -- 每3分钟上报一次 
+            self.SendServerInfoTimer:Change(0, 1000 * 60 * 2); -- 每2分钟上报一次 
         else
             Log:Info("无法连接控制服务");
         end
@@ -73,6 +73,14 @@ function WorkerServer:SendServerInfo()
         outerIp = self.outerIp,                 -- 外网IP
         outerPort = self.outerPort,             -- 外网Port 
     }));
+end
+
+-- 处理通用数据包
+function WorkerServer:handleGeneral(packetGeneral)
+    local action = packetGeneral.action;
+    if (action == "ServerWorldList") then 
+        self.ServerList = packetGeneral.data;
+    end
 end
 
 -- 连接丢失
