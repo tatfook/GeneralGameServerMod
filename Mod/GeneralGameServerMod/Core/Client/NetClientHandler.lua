@@ -199,6 +199,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     entityPlayer:Attach();
     GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
     self:SetPlayer(entityPlayer);
+    self:GetWorld():ClearEntityList();
     
     -- 设置玩家信息
     local playerInfo = {
@@ -320,7 +321,8 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     local entityList = self:GetWorld():GetEntityList();
     for i = 1, #entityList do
         local entity = entityList[i];
-        if (entity:isa(EntityOtherPlayer) or entity:isa(EntityMainPlayer)) then
+        -- 重连这里会混乱 所以要加EntityMainPlayer条件  登录成功直接直接清空实体列表就应该不会混乱
+        if (entity:isa(EntityOtherPlayer) or entity:isa(EntityMainPlayer)) then   
             local isExist = false;
             for j = 1, #entityIdList do
                 if (entityIdList[j] == entity.entityId) then
