@@ -142,12 +142,8 @@ function GeneralGameWorld:Logout()
 
 	self:GetBlockManager():CleanUp();
 
-	-- 清空并删除实体
-	for i = 1, #self.entityList do
-		-- Log:Debug("destroy entity:", self.entityList[i].entityId);
-		self.entityList[i]:Destroy();
-	end
-	self.entityList:clear();
+	-- 清空并删除实体列表
+	self:ClearEntityList();
 
 	-- 解除链接关系
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
@@ -173,13 +169,23 @@ function GeneralGameWorld:IsLogin()
 end
 
 function GeneralGameWorld:AddEntity(entity)
+	entity:Attach();
 	self.entityList:add(entity);
 end
 
 function GeneralGameWorld:RemoveEntity(entity)
+	entity:Destroy();
 	self.entityList:removeByValue(entity);
 end
 
 function GeneralGameWorld:GetEntityList()
 	return self.entityList;
+end
+
+function GeneralGameWorld:ClearEntityList()
+	for i = 1, #self.entityList do
+		-- Log:Debug("destroy entity:", self.entityList[i].entityId);
+		self.entityList[i]:Destroy();
+	end
+	self.entityList:clear();
 end

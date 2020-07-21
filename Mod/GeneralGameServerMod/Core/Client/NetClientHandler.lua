@@ -143,7 +143,6 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
         self:GetWorld():Logout();
         Log:Info("main player logout");
     elseif (player:isa(EntityOtherPlayer)) then
-        player:Destroy();
         self:GetWorld():RemoveEntity(player);
         Log:Info("other player logout, entityId: %s", player.entityId);
     else
@@ -273,7 +272,6 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
     if (isNew) then
         entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
-        entityPlayer:Attach();
         self:GetWorld():AddEntity(entityPlayer);
     end
 
@@ -312,6 +310,7 @@ end
 function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     local playerEntityInfoList = packetPlayerEntityInfoList.playerEntityInfoList;
     local entityIdList = {};
+    local removeEntityList = {};
     -- 创建玩家
     for i = 1, #playerEntityInfoList do
         entityIdList[i] = playerEntityInfoList[i].entityId; 
@@ -321,7 +320,7 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     local entityList = self:GetWorld():GetEntityList();
     for i = 1, #entityList do
         local entity = entityList[i];
-        if (entity:isa(EntityOtherPlayer)) then
+        if (entity:isa(EntityOtherPlayer) or entity:isa(EntityMainPlayer)) then
             local isExist = false;
             for j = 1, #entityIdList do
                 if (entityIdList[j] == entity.entityId) then
@@ -330,9 +329,12 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
                 end
             end
             if (not isExist) then
-                entity:Destroy();
+                removeEntityList[#removeEntityList + 1] = entity;
             end
         end
+    end
+    for i = 1, #removeEntityList do
+        self:GetWorld():RemoveEntity(removeEntityList[i]);
     end
 end
 
