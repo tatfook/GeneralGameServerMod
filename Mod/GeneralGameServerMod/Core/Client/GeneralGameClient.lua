@@ -239,7 +239,7 @@ function GeneralGameClient:SelectServerAndWorld(options)
         
     end
     self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({
-        worldId = worldId,
+        worldId = options.worldId,
         parallelWorldName = options.parallelWorldName,
     }));
 end
