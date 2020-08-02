@@ -57,8 +57,6 @@ function WorkerServer:Init(server)
             Log:Info("无法连接控制服务");
         end
     end)
-
-    
 end
 
 -- 发送服务器信息

@@ -26,6 +26,7 @@ local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == 
 local GeneralGameClients = {};
 local inited = false;
 
+
 function GeneralGameServerMod:ctor()
 end
 
@@ -44,7 +45,6 @@ end
 function GeneralGameServerMod:init()
 	if (inited) then return end;
 	inited = true;
-
 	LOG.info("GeneralGameServerMod plugin initialized");
 
 	Common:Init(servermode);
