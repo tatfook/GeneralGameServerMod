@@ -230,12 +230,12 @@ function GeneralGameClient:ConnectControlServer(options)
             return Log:Info("无法连接控制器服务器");
         end
 
-        self:SelectServerAndWorld();
+        self:SelectServerAndWorld(options);
     end);
 end
 
 -- 选择服务器和世界
-function GeneralGameClient:SelectServerAndWorld()
+function GeneralGameClient:SelectServerAndWorld(options)
     if (self:IsShowWorldList()) then
         self.controlServerConnection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
             action = "ServerWorldList"
@@ -244,7 +244,7 @@ function GeneralGameClient:SelectServerAndWorld()
         
     end
     self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({
-        worldId = worldId,
+        worldId = options.worldId,
         parallelWorldName = options.parallelWorldName,
     }));
 end
