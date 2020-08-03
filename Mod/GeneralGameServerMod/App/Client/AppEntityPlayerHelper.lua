@@ -60,24 +60,17 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     Log:Debug("username: %s, state: %s, vip: %s", username, state, isVip);
     local color = state == "online" and (self.isMainPlayer and "#ffffff" or "#0cff05") or "#b1b1b1";
     local vipIconUrl = state == "online" and "Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18" or "Texture/Aries/Creator/keepwork/UserInfo/V_gray_32bits.png#0 0 18 18";
-    -- local playerUsernameStyle = state == "online" and "" or "shadow-quality:8; shadow-color:#2b2b2b;text-shadow:true;";
-    -- local mcml = string.format([[
-    -- <div>
-    --     <pe:if condition="%s"><div style="float:left;width:16px;height:16px;background:url(%s);"></div></pe:if>
-    --     <div style="float:left; margin-left: 2px; margin-top: -5px; font-weight:bold; font-size: 16px; color: %s; %s">%s</div>
-    -- </div>
-    -- ]], isVip and "true" or "false", vipIconUrl, color, playerUsernameStyle, username);
-    -- headon_speech.Speak(player:GetInnerObject(), mcml, -1, nil, true, nil, -100, nil, 0);
+    -- local playerUsernameStyle = state == "online" and "" or "shadow-quality:8; shadow-color:#2b2b2b;text-shadow:true;"; -- toto test
     local playerUsernameStyle = "";
     local textWidth = _guihelper.GetTextWidth(username) + 6 + (isVip and 16 or 0);
     local mcml = string.format([[
 <pe:mcml>
     <div style="margin-top: -25px; margin-left: -%spx">
-        <pe:if condition="%s"><div style="float:left;width:16px;height:16px;background:url(%s);"></div></pe:if>
-        <div style="float:left; margin-left: 2px; margin-top: -1px; font-weight:bold; font-size: 14px; base-font-size:12px; color: %s; %s">%s</div>
+        <kp:usertag tag="%s" gray="%s", style="float:left;width:18px;height:18px;"/>
+        <div style="float:left; margin-left: 2px; margin-top: -4px; font-weight:bold; font-size: 16px; base-font-size:14px; color: %s; %s">%s</div>
     </div>    
 </pe:mcml>
-    ]], textWidth / 2, isVip and "true" or "false", vipIconUrl, color, playerUsernameStyle, username);
+    ]], textWidth / 2, isVip and "V" or "", state == "online" and "true" or "false", color, playerUsernameStyle, username);
     player:SetHeadOnDisplay({url = ParaXML.LuaXML_ParseString(mcml)});
 end
 

@@ -16,6 +16,7 @@ local AppEntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Cl
 local AppEntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer");
 local AppGeneralGameClient = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient"));
 
+local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local moduleName = "Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient";
 
 -- 构造函数
@@ -42,10 +43,12 @@ end
 -- 获取当前认证用户信息
 -- 此函函数返回用户信息会在各玩家间同步, 所以尽量精简
 function AppGeneralGameClient:GetUserInfo()
+    local userinfo = KeepWorkItemManager.GetProfile();
+    local usertag = KeepWorkItemManager.GetUserTag(userinfo);
     return {
-        username = System.User.keepworkUsername,
-        nickname = System.User.NickName,
-        isVip = System.User.isVip,
+        username = userinfo.username,
+        nickname = userinfo.nickname,
+        isVip = usertag == "VT" or usertag == "V",
     }
 end
 

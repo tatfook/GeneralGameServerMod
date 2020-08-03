@@ -47,7 +47,8 @@ function Config:Init(isServer)
 
     self.isServer = isServer;
     -- 客户端默认世界ID
-    self.defaultWorldId = 10373;  --  新手岛世界ID
+    self.maxEntityId = 100000;    -- 服务器统一分配的最大实体ID数
+    self.defaultWorldId = 10373;  -- 新手岛世界ID
     self.isSyncBlock = false;     -- 默认不同步 Block 信息
     if (self.IsDevEnv) then 
         self.serverIp = "127.0.0.1";

@@ -18,6 +18,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/Entity.lua");
+local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
@@ -42,6 +44,9 @@ function GeneralGameClient:Init()
     if (self.inited) then return self end;
     
     Common:Init(false);
+
+    -- 设置实体ID起始值
+    Entity:SetEntityId(Config.maxEntityId);
 
     -- 禁用服务器 指定为客户端
     NPL.StartNetServer("127.0.0.1", "0");
@@ -247,8 +252,12 @@ end
 -- 处理通用数据包
 function GeneralGameClient:handleGeneral(packetGeneral)
     if (packetGeneral.action == "ServerWorldList") then
-        Log:Info(packetGeneral);
+        self:handleServerWorldList(packetGeneral);
     end
+end
+
+-- 处理服务器推送过来的统计信息
+function GeneralGameClient:handleServerWorldList(packetGeneral)
 end
 
 -- 发送获取世界服务器

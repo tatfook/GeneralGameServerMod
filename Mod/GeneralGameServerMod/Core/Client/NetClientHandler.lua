@@ -415,6 +415,8 @@ function NetClientHandler:handleGeneral(packetGeneral)
         self:handleSyncCmd(packetGeneral);
     elseif (action == "SyncBlock") then
         self:handleGeneral_SyncBlock(packetGeneral);
+    elseif (action == "ServerWorldList") then
+        self:GetClient():handleServerWorldList(packetGeneral);
     end
 end
 

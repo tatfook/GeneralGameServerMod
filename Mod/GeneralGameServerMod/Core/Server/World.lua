@@ -12,9 +12,13 @@ local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
 local World = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
+
+local maxEntityId = 100000;  -- 此数值以上用于世界自己的实体的分配
 
 -- 一个世界对象, 应该包含世界的所有数据
 function World:ctor()
@@ -55,6 +59,9 @@ end
 -- 获取世界实体ID
 function World:GetNextEntityId()
     self.nextEntityId = self.nextEntityId + 1;
+    if (self.nextEntityId > Config.maxEntityId) then
+        self.nextEntityId = 0;
+    end
     return self.nextEntityId;
 end
 
