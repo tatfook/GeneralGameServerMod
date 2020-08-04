@@ -387,7 +387,7 @@ function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
     end
 
     local entityPlayer = self:GetPlayer(entityId);
-    if (not entityPlayer) then return end;
+    if (not entityPlayer or not entityPlayer.SetPlayerInfo) then return end
     entityPlayer:SetPlayerInfo(packetPlayerInfo);
 end
 

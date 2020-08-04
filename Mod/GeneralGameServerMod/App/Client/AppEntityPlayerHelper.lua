@@ -67,9 +67,9 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     <div style="width:200px; margin-left: -100px; margin-top: -30px; color: %s;">
         <div align="center" style="">
             <pe:if condition="%s"><div style="float:left;width:16px;height:16px;background:url(%s);"></div></pe:if>
-            <div style="float:left; margin-left: 2px; margin-top: -3px; font-weight:bold; font-size: 14px; base-font-size:12px; color: %s; %s">%s</div>
+            <div style="float:left; margin-left: 2px; margin-top: -2px; font-weight:bold; font-size: 14px; base-font-size:14px; color: %s; %s">%s</div>
         </div>
-        <div style="text-align: center; font-weight: bold; font-size: 10px; margin-top: 2px;">%s</div>
+        <div style="text-align: center; font-weight: bold; font-size: 12px; base-font-size:12px; margin-top: 0px;">%s</div>
     </div>
 </pe:mcml>
     ]], color, isVip and "true" or "false", vipIconUrl, color, playerUsernameStyle, username, school);

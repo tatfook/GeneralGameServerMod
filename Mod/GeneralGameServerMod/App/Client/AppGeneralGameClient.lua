@@ -30,6 +30,8 @@ function AppGeneralGameClient:ctor()
     GameLogic.GetFilters():remove_filter("OnKeepWorkLogout", AppGeneralGameClient.OnKeepWorkLogout_Callback);
     GameLogic.GetFilters():add_filter("OnKeepWorkLogin", AppGeneralGameClient.OnKeepWorkLogin_Callback);
     GameLogic.GetFilters():add_filter("OnKeepWorkLogout", AppGeneralGameClient.OnKeepWorkLogout_Callback);
+
+    KeepWorkItemManager.GetFilter():add_filter("loaded_all", AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback);
 end
 
 -- 初始化函数
@@ -40,6 +42,16 @@ function AppGeneralGameClient:Init()
     AppGeneralGameClient._super.Init(self);
 
     self.inited = true;
+end
+
+-- 加载世界
+function AppGeneralGameClient:LoadWorld(opts)
+    AppGeneralGameClient._super.LoadWorld(self, opts);
+
+    local options = self:GetOptions();
+    self.userinfo.school = options.school or self.userinfo.school;
+    self.userinfo.isVip = options.isVip or self.userinfo.isVip;
+    self.userinfo.nickname = options.nickname or self.userinfo.nickname;
 end
 
 -- 获取世界类
@@ -59,23 +71,8 @@ function AppGeneralGameClient:GetEntityOtherPlayerClass()
     return AppEntityOtherPlayer;
 end
 
--- 用户登录
-function AppGeneralGameClient:OnKeepWorkLogin_Callback()
-    if (not keepwork.user.school) then return end
+function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     local self = AppGeneralGameClient;
-    keepwork.user.school(nil, function(statusCode, msg, data) 
-        if (not data) then return end
-        self.userinfo.school = data.name;
-    end)
-end
-
--- 用户退出
-function AppGeneralGameClient:OnKeepWorkLogout_Callback() 
-end
-
--- 获取当前认证用户信息
--- 此函函数返回用户信息会在各玩家间同步, 所以尽量精简
-function AppGeneralGameClient:GetUserInfo()
     local userinfo = KeepWorkItemManager.GetProfile();
     local usertag = KeepWorkItemManager.GetUserTag(userinfo);
 
@@ -83,13 +80,30 @@ function AppGeneralGameClient:GetUserInfo()
     self.userinfo.nickname = userinfo.nickname;
     self.userinfo.isVip = usertag == "VT" or usertag == "V";
 
+    keepwork.user.school(nil, function(statusCode, msg, data) 
+        if (not data) then return end
+        self.userinfo.school = data.name;
+    end)
+end
+-- 用户登录
+function AppGeneralGameClient.OnKeepWorkLogin_Callback()
+end
+
+-- 用户退出
+function AppGeneralGameClient.OnKeepWorkLogout_Callback() 
+end
+
+-- 获取当前认证用户信息
+-- 此函函数返回用户信息会在各玩家间同步, 所以尽量精简
+function AppGeneralGameClient:GetUserInfo()
     return self.userinfo;
 end
 
 -- 是否是匿名用户
 function AppGeneralGameClient:IsAnonymousUser()
-    if (self:GetConfig().IsDevEnv) then return false end
-    
+    local isAnonymousUser = self:GetOptions().isAnonymousUser;
+    if (isAnonymousUser ~= nil) then return isAnonymousUser end
+
     return self:GetOptions().username ~= System.User.keepworkUsername;  -- 匿名用户不支持离线缓存
 end
 

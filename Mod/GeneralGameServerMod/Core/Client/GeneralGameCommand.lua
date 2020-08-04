@@ -39,7 +39,13 @@ function ParseOptions(cmd_text)
 		option, cmd_text_remain = ParseOption(cmd_text_remain);
 		if(option) then
 			key, value = option:match("([%w_]+)=?(%S*)");
-			options[key] = key == option and true or value;
+			if (value == "true" or key == option) then 
+				options[key] = true;
+			elseif (value == "false") then 
+				options[key] = false;
+			else
+				options[key] = value;
+			end
 		else
 			break;
 		end
@@ -119,7 +125,7 @@ debug 调试命令
 	/ggs debug [action]
 	/ggs debug client 显示客户端选项信息
 	/ggs debug worldinfo 显示客户端连接的世界服务器信息
-		
+	/ggs debug serverinfo 显示世界服务列表	
 		]],
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
 			local cmd, cmd_text = CmdParser.ParseString(cmd_text);
@@ -132,12 +138,6 @@ debug 调试命令
 			end
 		end
 	}
-
-	-- 开发环境手动加入 方便调试
-	-- if (Config.IsDevEnv) then
-	-- 	SlashCommand.GetSingleton():RegisterSlashCommand(connectGGSCmd);
-	-- 	SlashCommand.GetSingleton():RegisterSlashCommand(ggscmd);
-	-- end
 
 	Commands["connectGGS"] = connectGGSCmd;
 	Commands["ggs"] = ggs;
@@ -166,8 +166,8 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	options.parallelWorldName = parallelWorldName;
 	options.ip = (options.host and options.host ~= "") and options.host or nil;
 	options.port = (options.port and options.port ~= "") and options.port or nil;
-	options.username = (options.u and options.u ~= "") and options.u or nil;
-	options.password = (options.p and options.p ~= "") and options.p or nil;
+	options.username = (options.username and options.username ~= "") and options.u or nil;
+	options.password = (options.password and options.password ~= "") and options.p or nil;
 	-- 移除选项值
 	options.u, options.p = nil, nil
 

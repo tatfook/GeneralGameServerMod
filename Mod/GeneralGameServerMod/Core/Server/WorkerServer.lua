@@ -33,6 +33,8 @@ function WorkerServer:ctor()
 
     self.controlServerIp = controlServerCfg.innerIp;
     self.controlServerPort = controlServerCfg.innerPort;
+
+    self.ServerList = {};
 end
 
 -- 初始化函数
@@ -81,6 +83,10 @@ function WorkerServer:handleGeneral(packetGeneral)
     if (action == "ServerWorldList") then 
         self.ServerList = packetGeneral.data;
     end
+end
+
+function WorkerServer:GetServerList()
+    return self.ServerList;
 end
 
 -- 连接丢失

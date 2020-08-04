@@ -302,12 +302,9 @@ function GeneralGameClient:Debug(action)
     local netHandler = self:GetWorldNetHandler();
     if (not netHandler) then return end
     if (action == "worldinfo") then
-        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({
-            action = "Debug",
-            data = {
-                cmd = "WorldInfo", 
-            }
-        }));
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "WorldInfo"}}));
+    elseif (action == "serverinfo") then
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ServerInfo"}}));
     end
 end
 

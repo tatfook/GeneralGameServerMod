@@ -260,6 +260,9 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
     if (cmd == "WorldInfo") then
         packetGeneral.data.debug = self:GetWorld():GetDebugInfo();
         self:SendPacketToPlayer(packetGeneral);
+    elseif (cmd == "ServerInfo") then
+        packetGeneral.data.debug = self:GetWorkerServer():GetServerList();
+        self:SendPacketToPlayer(packetGeneral);
     end
 end
 
