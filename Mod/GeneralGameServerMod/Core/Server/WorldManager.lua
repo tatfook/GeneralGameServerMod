@@ -41,7 +41,7 @@ function WorldManager:GetWorldKey(worldId, paralelWorldName, no)
     end
 
     local world = self.worldMap[worldKey];
-    if (world and world:GetClientCount() >= Config.World.maxClientCount) then
+    if (world and world:GetOnlineClientCount() >= Config.World.maxClientCount) then
         return self:GetWorldKey(worldId, paralelWorldName, (no or 0) + 1);
     end
 
@@ -81,11 +81,20 @@ function WorldManager:GetClientCount()
     return count;
 end
 
+-- 获取总用户数
+function WorldManager:GetOnlineClientCount() 
+    local count = 0;
+    for worldKey, world in pairs(self.worldMap) do 
+        count = count + world:GetOnlineClientCount();
+    end
+    return count;
+end
+
 -- 获取世界和用户数
 function WorldManager:GetWorldClientCount()
     local totalWorldCount, totalClientCount, totalWorldClientCounts = 0, 0, {};
     for worldKey, world in pairs(self.worldMap) do 
-        local count = world:GetClientCount();
+        local count = world:GetOnlineClientCount();
         totalWorldClientCounts[worldKey] = count;
         totalWorldCount = totalWorldCount + 1;
         totalClientCount = totalClientCount + count;

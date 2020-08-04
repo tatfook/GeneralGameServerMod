@@ -408,6 +408,13 @@ function NetClientHandler:handleGeneral_SyncBlock(packetGeneral)
     end
 end
 
+-- 处理调试信息
+function NetClientHandler:handleGeneral_Debug(packetGeneral)
+    local cmd = packetGeneral.data.cmd;
+    local debug = packetGeneral.data.debug;
+    self:GetClient():ShowDebugInfo(debug);
+end
+
 -- 处理方块点击
 function NetClientHandler:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
@@ -417,6 +424,8 @@ function NetClientHandler:handleGeneral(packetGeneral)
         self:handleGeneral_SyncBlock(packetGeneral);
     elseif (action == "ServerWorldList") then
         self:GetClient():handleServerWorldList(packetGeneral);
+    elseif (action == "Debug") then
+        self:handleGeneral_Debug(packetGeneral);
     end
 end
 

@@ -68,6 +68,11 @@ function World:GetClientCount()
     return self:GetPlayerManager():GetPlayerCount();
 end
 
+-- 获取世界在线用户数
+function World:GetOnlineClientCount() 
+    return self:GetPlayerManager():GetOnlinePlayerCount();
+end
+
 -- 获取世界的玩家管理器
 function World:GetPlayerManager()
     return self.playerManager;
@@ -83,3 +88,27 @@ function World:RemoveInvalidPlayer()
     self:GetPlayerManager():RemoveInvalidPlayer();
 end
 
+-- 获取调试信息
+function World:GetDebugInfo()
+    local playerList = self:GetPlayerManager():GetPlayerList();
+    local players = {};
+
+    for i = 1, #playerList do 
+        local player = playerList[i];
+        players[#players + 1] = {
+            entityId = player.entityId,
+            username = player.username,
+            state = player.state,
+            lastTick = player.lastTick;
+        }
+    end
+
+    return {
+        players = players,
+        worldKey = self:GetWorldKey(),
+        worldId = self.worldId,
+        parallelWorldName = self.parallelWorldName,
+        playerCount = #playerList,
+        onlinePlayerCount = self:GetPlayerManager():GetOnlinePlayerCount(),
+    }
+end

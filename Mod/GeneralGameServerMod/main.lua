@@ -46,7 +46,7 @@ function GeneralGameServerMod:init()
 	inited = true;
 
 	LOG.info("GeneralGameServerMod plugin initialized");
-
+	
 	Common:Init(servermode);
 	-- 启动插件
 	if (servermode) then

@@ -58,23 +58,12 @@ function GeneralGameClient:Init()
     -- 禁用点击继续
     GameLogic.options:SetClickToContinue(false);
 
-    GameLogic.GetFilters():add_filter("OnKeepWorkLogin", GeneralGameClient.OnKeepWorkLogin_Callback);
-    GameLogic.GetFilters():add_filter("OnKeepWorkLogout", GeneralGameClient.OnKeepWorkLogout_Callback)
-    
     self.inited = true;
     return self;
 end
 
 function GeneralGameClient:Exit()
     GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "DisconnectOne");
-end
-
-function GeneralGameClient:OnKeepWorkLogin_Callback()
-    Log:Info("----------------------------------OnKeepWorkLogin_Callback");
-end
-
-function GeneralGameClient:OnKeepWorkLogout_Callback() 
-    Log:Info("----------------------------------OnKeepWorkLogout_Callback");
 end
 
 -- 获取世界类
@@ -193,6 +182,11 @@ function GeneralGameClient:OnWorldUnloaded()
     self.world = nil;
 end
 
+-- 获取世界网络处理程序
+function GeneralGameClient:GetWorldNetHandler() 
+    return self:GetWorld() and self:GetWorld():GetNetHandler();
+end
+
 -- 执行网络命令
 function GeneralGameClient:RunNetCommand(cmd, opts)
     local netHandler = self:GetWorld() and self:GetWorld():GetNetHandler();
@@ -297,6 +291,32 @@ end
 function GeneralGameClient:GetNetCmdList()
     return self.netCmdList;
 end
+
+-- 调试
+function GeneralGameClient:Debug(action)
+    action = string.lower(action or "");
+    if (action == "client" or action == "") then
+        return self:ShowDebugInfo(self:GetOptions());
+    end
+
+    local netHandler = self:GetWorldNetHandler();
+    if (not netHandler) then return end
+    if (action == "worldinfo") then
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({
+            action = "Debug",
+            data = {
+                cmd = "WorldInfo", 
+            }
+        }));
+    end
+end
+
+-- 显示调试信息
+function GeneralGameClient:ShowDebugInfo(debug)
+    Log:Info(commonlib.Json.Encode(debug));
+    _guihelper.MessageBox(commonlib.serialize_compact(debug));
+end
+
 
 -- 初始化成单列模式
 GeneralGameClient:InitSingleton();

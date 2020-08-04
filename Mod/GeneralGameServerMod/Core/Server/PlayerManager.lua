@@ -237,7 +237,19 @@ end
 
 -- 获取玩家数量
 function PlayerManager:GetPlayerCount()
-    return self.playerList:size();
+    return #(self.playerList);
+end
+
+-- 获取在线玩家数量
+function PlayerManager:GetOnlinePlayerCount()
+    local count = 0;
+    for i = 1, #(self.playerList) do 
+        local player = self.playerList[i];
+        if (player:IsAlive()) then
+            count = count + 1;
+        end
+    end
+    return count;
 end
 
 -- called period 移除没有心跳的玩家

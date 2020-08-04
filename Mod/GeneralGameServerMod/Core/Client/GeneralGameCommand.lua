@@ -61,6 +61,7 @@ function GeneralGameCommand:GetGeneralGameClient()
 end
 
 function GeneralGameCommand:InstallCommand()
+	local __this__ = self;
 	Log:Info("InstallCommand");
 	local connectGGSCmd = {
 		mode_deny = "",  -- 暂时支持任意模式联机
@@ -80,36 +81,7 @@ options:
 ]], 
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)		
 			Log:Info("run cmd: %s %s", cmd_name, cmd_text);
-			local options = {};
-			options, cmd_text = ParseOptions(cmd_text);	
-			worldId, cmd_text = CmdParser.ParseInt(cmd_text);
-			parallelWorldName, cmd_text = CmdParser.ParseString(cmd_text);
-		
-			if (options.dev) then 
-				Config:SetEnv("dev"); 
-			elseif (options.test) then
-				Config:SetEnv("test");
-			elseif (options.prod) then
-				Config:SetEnv("prod");
-			else
-				if (Config.IsDevEnv) then
-					Config:SetEnv("dev");
-				else
-					Config:SetEnv("prod");
-				end
-			end
-			
-			options.worldId = (worldId and worldId ~= 0) and worldId or nil;
-			options.parallelWorldName = parallelWorldName;
-			options.ip = (options.host and options.host ~= "") and options.host or nil;
-			options.port = (options.port and options.port ~= "") and options.port or nil;
-			options.username = (options.u and options.u ~= "") and options.u or nil;
-			options.password = (options.p and options.p ~= "") and options.p or nil;
-			-- 移除选项值
-			options.u, options.p = nil, nil
-
-			self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
-			self.generalGameClient:LoadWorld(options);
+			__this__:handleConnectCommand(cmd_text);
 		end,
 	};
 
@@ -128,31 +100,99 @@ options:
 -recursive               # 如果命令会引起递归执行, 需加此选项避免递归, 由机关方块触发命令执行的一般会引起递归
 		]],
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
-			local options = nil;
-			options, cmd_text = ParseOptions(cmd_text);	
-			if (not cmd_text) then return end;
-			local to = options.to or "other";
-			-- 本机执行 
-			if (to == "all" or to == "self") then
-				CommandManager:RunCommand(cmd_text);
-			end
+			__this__:handleCmdCommand(cmd_text);
+		end
+	}
 
-			-- 网络执行
-			if (self.generalGameClient) then
-				self.generalGameClient:RunNetCommand(cmd_text);
+	local ggs = {
+		mode_deny = "",
+		name = "ggs",
+		quick_ref = "/ggs subcmd [options] args...",
+		desc = [[
+subcmd: 
+connect 连接服务器
+	/ggs connect [options] [worldId] [parallelWorldName]
+cmd 执行软件内置命令
+	/ggs cmd [options] cmdname cmdtext
+	/ggs cmd tip hello world	
+debug 调试命令 
+	/ggs debug [action]
+	/ggs debug client 显示客户端选项信息
+	/ggs debug worldinfo 显示客户端连接的世界服务器信息
+		
+		]],
+		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
+			local cmd, cmd_text = CmdParser.ParseString(cmd_text);
+			if (cmd == "debug") then
+				__this__:handleDebugCommand(cmd_text);
+			elseif (cmd == "cmd") then
+				__this__:handleCmdCommand(cmd_text);
+			elseif (cmd == "connect") then
+				__this__:handleConnectCommand(cmd_text);
 			end
 		end
 	}
 
 	-- 开发环境手动加入 方便调试
-	if (Config.IsDevEnv) then
-		SlashCommand.GetSingleton():RegisterSlashCommand(connectGGSCmd);
-		SlashCommand.GetSingleton():RegisterSlashCommand(ggscmd);
-	end
+	-- if (Config.IsDevEnv) then
+	-- 	SlashCommand.GetSingleton():RegisterSlashCommand(connectGGSCmd);
+	-- 	SlashCommand.GetSingleton():RegisterSlashCommand(ggscmd);
+	-- end
 
 	Commands["connectGGS"] = connectGGSCmd;
-	Commands["ggscmd"] = ggscmd;
-	-- GameLogic.GetFilters():add_filters("register_command", function() 
-	-- 	Commands["connectGGS"] = connectGGSCmd;
-	-- end);
+	Commands["ggs"] = ggs;
+end
+
+function GeneralGameCommand:handleConnectCommand(cmd_text)
+	local options, cmd_text = ParseOptions(cmd_text);	
+	local worldId, cmd_text = CmdParser.ParseInt(cmd_text);
+	local parallelWorldName, cmd_text = CmdParser.ParseString(cmd_text);
+
+	if (options.dev) then 
+		Config:SetEnv("dev"); 
+	elseif (options.test) then
+		Config:SetEnv("test");
+	elseif (options.prod) then
+		Config:SetEnv("prod");
+	else
+		if (Config.IsDevEnv) then
+			Config:SetEnv("dev");
+		else
+			Config:SetEnv("prod");
+		end
+	end
+	
+	options.worldId = (worldId and worldId ~= 0) and worldId or nil;
+	options.parallelWorldName = parallelWorldName;
+	options.ip = (options.host and options.host ~= "") and options.host or nil;
+	options.port = (options.port and options.port ~= "") and options.port or nil;
+	options.username = (options.u and options.u ~= "") and options.u or nil;
+	options.password = (options.p and options.p ~= "") and options.p or nil;
+	-- 移除选项值
+	options.u, options.p = nil, nil
+
+	self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
+	self.generalGameClient:LoadWorld(options);
+end
+
+function GeneralGameCommand:handleDebugCommand(cmd_text)
+	local action, cmd_text = CmdParser.ParseString(cmd_text);
+	if (self.generalGameClient) then
+		self.generalGameClient:Debug(action);
+	end
+end
+
+function GeneralGameCommand:handleCmdCommand(cmd_text)
+	local options, cmd_text = ParseOptions(cmd_text);	
+	if (not cmd_text) then return end;
+	local to = options.to or "other";
+	-- 本机执行 
+	if (to == "all" or to == "self") then
+		CommandManager:RunCommand(cmd_text);
+	end
+
+	-- 网络执行
+	if (self.generalGameClient) then
+		self.generalGameClient:RunNetCommand(cmd_text);
+	end
 end
