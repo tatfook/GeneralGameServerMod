@@ -31,6 +31,8 @@ local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clien
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
 
+local AssetsWhiteList = NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua"); 
+
 function GeneralGameClient:ctor() 
     self.inited = false;
     self.options = {
@@ -64,6 +66,11 @@ end
 
 function GeneralGameClient:Exit()
     GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "DisconnectOne");
+end
+
+-- 获取玩家支持的形象列表
+function GeneralGameClient:GetAssetsWhiteList()
+    return AssetsWhiteList;
 end
 
 -- 获取世界类
@@ -311,7 +318,7 @@ end
 -- 显示调试信息
 function GeneralGameClient:ShowDebugInfo(debug)
     Log:Info(commonlib.Json.Encode(debug));
-    _guihelper.MessageBox(commonlib.serialize_compact(debug));
+    _guihelper.MessageBox(commonlib.serialize(debug));
 end
 
 

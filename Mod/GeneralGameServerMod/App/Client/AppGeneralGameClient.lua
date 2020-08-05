@@ -31,6 +31,7 @@ function AppGeneralGameClient:ctor()
     GameLogic.GetFilters():add_filter("OnKeepWorkLogin", AppGeneralGameClient.OnKeepWorkLogin_Callback);
     GameLogic.GetFilters():add_filter("OnKeepWorkLogout", AppGeneralGameClient.OnKeepWorkLogout_Callback);
 
+    KeepWorkItemManager.StaticInit();
     KeepWorkItemManager.GetFilter():add_filter("loaded_all", AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback);
 end
 

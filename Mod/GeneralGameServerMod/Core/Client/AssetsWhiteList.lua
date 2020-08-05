@@ -35,3 +35,18 @@ end
 function AssetsWhiteList.GetRandomFilename()
     return allAssets[math.random(1, #allAssets)]
 end
+
+-- 获取所有支持模型列表
+function AssetsWhiteList.GetAllAssets()
+    return allAssets;
+end
+
+-- 添加模型
+function AssetsWhiteList.AddAsset(filename)
+    allAssets:add(filename);
+end
+
+-- 移除模型
+function AssetsWhiteList.RemoveAsset(filename)
+    allAssets:removeByValue(filename);
+end
