@@ -433,10 +433,6 @@ end
 function NetClientHandler:handleSyncCmd(packetGeneral)
     local cmd = packetGeneral.data.cmd;
     local opts = packetGeneral.data.opts;
-    -- 已存在忽略
-    if (self:GetClient():GetNetCmdList():contains(cmd)) then 
-        return Log:Info("命令正在执行: " .. cmd); 
-    end
 
     -- 收到命令是起点, 发送命令是终点, 添加到命令列表
     self:GetClient():GetNetCmdList():add(cmd);
@@ -445,12 +441,6 @@ function NetClientHandler:handleSyncCmd(packetGeneral)
     Log:Debug("begin exec net cmd: " .. cmd);
     self:GetWorld():SetEnableBlockMark(false);
     GameLogic.RunCommand(cmd);
-    
-    -- 非递归命令
-    if (not opts and not opts.recursive) then
-        Log:Debug("end exec net cmd: " .. cmd);
-        self:GetNetCmdList():removeByValue(cmd);
-    end
 
     self:GetWorld():SetEnableBlockMark(true);
 end

@@ -102,7 +102,7 @@ ggscmd tip hello world   # 联机执行 /tip hello wrold 命令
 ggscmd activate          # 联机执行 /activate 命令
 
 options:
--to=all, other, self     # 命令接收者 all 所有人  other 排除发送者的其它人   self 发送者  默认为 other
+-to=all, other, self     # 命令接收者 all 所有人  other 排除发送者的其它人   self 发送者  默认为 all
 -recursive               # 如果命令会引起递归执行, 需加此选项避免递归, 由机关方块触发命令执行的一般会引起递归
 		]],
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
@@ -185,7 +185,7 @@ end
 function GeneralGameCommand:handleCmdCommand(cmd_text)
 	local options, cmd_text = ParseOptions(cmd_text);	
 	if (not cmd_text) then return end;
-	local to = options.to or "other";
+	local to = options.to or "all";
 	-- 本机执行 
 	if (to == "all" or to == "self") then
 		CommandManager:RunCommand(cmd_text);
