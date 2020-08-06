@@ -97,12 +97,16 @@ function BlockManager:MarkBlockForUpdate(x, y, z)
 	local blockData = BlockEngine:GetBlockData(x,y,z);
 	-- allMarkForUpdateBlockMap 记录最后一次同步的状态  首次记录当前修改前的数据
 	if (not self.allMarkForUpdateBlockMap[blockIndex]) then
-		self.allMarkForUpdateBlockMap[blockIndex] = {blockIndex = blockIndex, blockId = blockId, blockData};
+		self.allMarkForUpdateBlockMap[blockIndex] = {blockIndex = blockIndex, blockId = blockId, lastBlockId = blockId, blockData, isForceSyncAll = blockId == 0};  -- blockId = 0 当前为新增
 	end
-	-- 创建方块 则填充初始数据
-	if (self.allMarkForUpdateBlockMap[blockIndex].blockId == 0 and blockId ~= 0) then
-		self.allMarkForUpdateBlockMap[blockIndex].blockData = BlockEngine:GetBlockData(x,y,z);
+	-- 创建方块 则填充初始数据并设置强制同步标志
+	if (self.allMarkForUpdateBlockMap[blockIndex].lastBlockId == 0 and blockId ~= 0) then
+		self.allMarkForUpdateBlockMap[blockIndex].blockData = blockData;
+		self.allMarkForUpdateBlockMap[blockIndex].isForceSyncAll = true;
 	end
+	-- 在同步前, 此函数可能调用多次, blockId记录上次同步的blockId, lastBlockId记录当前位置的上次BlockId
+	self.allMarkForUpdateBlockMap[blockIndex].lastBlockId = blockId;
+
 	-- 添加到标记列表
 	self.markBlockIndexList:add(blockIndex);
 end
@@ -142,17 +146,28 @@ function BlockManager:SyncBlock()
 		local oldBlock = self.allMarkForUpdateBlockMap[blockIndex];
 		local isBlockIdChange = if_else((block and block:IsAssociatedBlockID(oldBlock.blockId)), false, oldBlock.blockId ~= blockId);
 		local isBlockDataChange = self:IsSyncBlockData(blockId) and oldBlock.blockData ~= blockData;
+		local isForceSyncAll = oldBlock.isForceSyncAll;
+		local blockEntityPacket = nil;
 
 		syncedBlockIndexList[#syncedBlockIndexList + 1] = blockIndex;
 
+		-- 强制同步所有
+		if (isForceSyncAll) then 
+			local blockEntity = BlockEngine:GetBlockEntity(x,y,z);
+			blockEntityPacket = blockEntity and blockEntity:GetDescriptionPacket();
+		end
+
 		-- 块数据出现不同 
-		if (isBlockIdChange or isBlockDataChange) then
+		if (isForceSyncAll or isBlockIdChange or isBlockDataChange) then
 			oldBlock.blockData = if_else(isBlockIdChange and oldBlock.blockId == 0 or isBlockDataChange, blockData, oldBlock.blockData);
 			oldBlock.blockId = if_else(isBlockIdChange, blockId, oldBlock.blockId);
+			oldBlock.blockEntityPacket = if_else(isForceSyncAll, blockEntityPacket, oldBlock.blockEntityPacket);
+			oldBlock.isForceSyncAll = false;
 			packets[#packets + 1] = Packets.PacketBlock:new():Init({
 				blockIndex = blockIndex,
-				blockId = oldBlock.blockId;
-				blockData = oldBlock.blockData;
+				blockId = oldBlock.blockId,
+				blockData = oldBlock.blockData,
+				blockEntityPacket = blockEntityPacket,
 			});
 			-- Log:Debug(packets[#packets]);
 		end
