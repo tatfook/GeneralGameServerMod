@@ -14,6 +14,9 @@ GeneralGameCommand:init();
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
+local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient");
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
@@ -59,11 +62,11 @@ end
 
 function GeneralGameCommand:init()
 	LOG.std(nil, "info", "GeneralGameCommand", "init");
-	self:InstallCommand();
-end
 
-function GeneralGameCommand:GetGeneralGameClient()
-	return self.generalGameClient;
+	-- 监听世界加载完成事件
+	GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+
+	self:InstallCommand();
 end
 
 function GeneralGameCommand:InstallCommand()
@@ -121,6 +124,14 @@ connect 连接服务器
 cmd 执行软件内置命令
 	/ggs cmd [options] cmdname cmdtext
 	/ggs cmd tip hello world	
+sync 世界同步
+	/ggs sync -[block|cmd]
+	/ggs sync -block=true  或 /ggs sync -block 开启同步方块  /ggs sync -block=false 禁用方块同步
+	/ggs sync -forceBlock=false 禁用强制同步块的同步, 默认开启
+setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息默认是不同步, 可使用该指令强制去同步):
+	/ggs setSyncForceBlock x y z on|off
+	/ggs setSyncForceBlock 19200 5 19200 on   强制同步位置19200 5 19200的方块信息
+	/ggs setSyncForceBlock 19200 5 19200 off  取消强制同步位置19200 5 19200的方块信息
 debug 调试命令 
 	/ggs debug [action]
 	/ggs debug client 显示客户端选项信息
@@ -128,13 +139,22 @@ debug 调试命令
 	/ggs debug serverinfo 显示世界服务列表	
 		]],
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
+			Log:Info(cmd_name .. " " .. cmd_text);
 			local cmd, cmd_text = CmdParser.ParseString(cmd_text);
+			if (cmd == "connect") then
+				__this__:handleConnectCommand(cmd_text);
+			elseif (cmd == "setSyncForceBlock") then
+				__this__:handleSetSyncForceBlockCommand(cmd_text);
+			elseif (cmd == "sync") then
+				__this__:handleSyncCmd(cmd_text);
+			end
+			-- 确保进入联机世界
+			if (not __this__.generalGameClient) then return end;
+			-- 联机世界命令
 			if (cmd == "debug") then
 				__this__:handleDebugCommand(cmd_text);
 			elseif (cmd == "cmd") then
 				__this__:handleCmdCommand(cmd_text);
-			elseif (cmd == "connect") then
-				__this__:handleConnectCommand(cmd_text);
 			end
 		end
 	}
@@ -175,16 +195,28 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	self.generalGameClient:LoadWorld(options);
 end
 
+function GeneralGameCommand:GetGeneralGameClient()
+	return self.generalGameClient;
+end
+
 function GeneralGameCommand:handleDebugCommand(cmd_text)
 	local action, cmd_text = CmdParser.ParseString(cmd_text);
-	if (self.generalGameClient) then
-		self.generalGameClient:Debug(action);
-	end
+	self:GetGeneralGameClient():Debug(action);
 end
 
 function GeneralGameCommand:handleCmdCommand(cmd_text)
 	local options, cmd_text = ParseOptions(cmd_text);	
-	if (not cmd_text) then return end;
+	local cmd_name, cmd_text_remain = CmdParser.ParseString(cmd_text);
+
+	-- 禁用activae setblock 命令, 防止递归
+	if (not cmd_name or cmd_name == "" or cmd_name =="activate" or cmd_name == "setblock") then return end
+	if (cmd_name == "ggs") then
+		local subcmd_name = CmdParser.ParseString(cmd_text_remain);
+		if (subcmd_name == "cmd") then
+			return;
+		end
+	end
+	
 	local to = options.to or "all";
 	-- 本机执行 
 	if (to == "all" or to == "self") then
@@ -192,7 +224,47 @@ function GeneralGameCommand:handleCmdCommand(cmd_text)
 	end
 
 	-- 网络执行
-	if (self.generalGameClient) then
-		self.generalGameClient:RunNetCommand(cmd_text);
+	self:GetGeneralGameClient():RunNetCommand(cmd_text, options);
+end
+
+-- 处理同步命令
+function GeneralGameCommand:handleSyncCommand(cmd_text)
+	local options, cmd_text = ParseOptions(cmd_text);
+	local oldOpts = (self:GetGeneralGameClient() or GeneralGameClient):GetOptions();
+	if (options.block ~= nil) then 
+		oldOpts.isSyncBlock = options.block; 
 	end
+	if (options.cmd ~= nil) then
+		oldOpts.isSyncCmd = options.cmd;
+	end
+	if (options.forceBlock ~= nil) then
+		oldOpts.isSyncForceBlock = options.forceBlock;
+	end
+end
+
+-- 设置强制同步块
+function GeneralGameCommand:handleSetSyncForceBlockCommand(cmd_text)
+	local x, y, z, cmd_text = CmdParser.ParsePos(cmd_text);
+	if (not x or not y or not z) then 
+		echo(self:GetGeneralGameClient() and self:GetGeneralGameClient():GetSyncForceBlockList());
+		echo(GeneralGameClient:GetSyncForceBlockList());
+		return 
+	end
+
+	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
+	local onOrOff, cmd_text = CmdParser.ParseString(cmd_text);
+	local data = if_else(onOrOff == "on", true, false);
+	Log:Info("SetSyncForceBlock: x = %s, y = %s, z = %s, on = %s", x, y, z, data);
+
+	if (data) then
+		GeneralGameClient:GetSyncForceBlockList():add(blockIndex);
+	else
+		GeneralGameClient:GetSyncForceBlockList():removeByValue(blockIndex);
+	end
+end
+
+
+-- 世界加载
+function GeneralGameCommand:OnWorldLoaded()
+	GeneralGameClient:GetSyncForceBlockList():clear();
 end

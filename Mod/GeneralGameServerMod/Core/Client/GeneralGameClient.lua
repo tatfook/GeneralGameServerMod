@@ -10,6 +10,7 @@ local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 GeneralGameClient:LoadWorld({ip = "127.0.0.1", port = "9000", worldId = "12348"});
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/Entity.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
@@ -18,7 +19,6 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/Entity.lua");
 local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
@@ -33,12 +33,16 @@ local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.Tool
 
 local AssetsWhiteList = NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua"); 
 
+-- 类共享变量 强制同步块列表
+GeneralGameClient.syncForceBlockList = commonlib.UnorderedArraySet:new();
+GeneralGameClient.options = {
+    isSyncBlock = if_else(Config.IsDevEnv, true, false),
+    isSyncForceBlock = true,
+    isSyncCmd = true,
+}
+
 function GeneralGameClient:ctor() 
     self.inited = false;
-    self.options = {
-        isSyncBlock = if_else(Config.IsDevEnv, true, false),
-        isSyncCmd = true,
-    }
     self.netCmdList = commonlib.UnorderedArraySet:new();  -- 网络命令列表, 禁止命令重复运行 
 end
 
@@ -93,6 +97,14 @@ end
 function GeneralGameClient:GetConfig()
     return Config;
 end
+-- 获取强制同步块列表
+function GeneralGameClient:GetSyncForceBlockList() 
+    return self.syncForceBlockList;
+end
+-- 获取块管理器
+function GeneralGameClient:GetBlockManager()
+    return self:GetWorld():GetBlockManager();
+end
 -- 获取客户端选项
 function GeneralGameClient:GetOptions() 
     return self.options;
@@ -100,6 +112,11 @@ end
 -- 设置客户端选项
 function GeneralGameClient:SetOptions(opts)
     commonlib.partialcopy(self.options, opts);
+end
+
+-- 是否同步强制块
+function GeneralGameClient:IsSyncForceBlock()
+    return self:GetOptions().isSyncForceBlock;
 end
 
 -- 是否同步方块
@@ -228,6 +245,7 @@ function GeneralGameClient:ConnectControlServer(options)
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
+            _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
             return Log:Info("无法连接控制器服务器");
         end
 

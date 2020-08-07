@@ -90,7 +90,7 @@ end
 
 -- 是否是匿名用户
 function Player:IsAnonymousUser()
-    return self.options.isAnonymousUser;
+    return self:GetPlayerInfo().isAnonymousUser;
 end
 
 function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
