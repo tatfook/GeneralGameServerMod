@@ -62,6 +62,7 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     local vipIconUrl = state == "online" and "Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18" or "Texture/Aries/Creator/keepwork/UserInfo/V_gray_32bits.png#0 0 18 18";
     local playerUsernameStyle = state == "online" and "" or "shadow-quality:8; shadow-color:#2b2b2b;text-shadow:true;";
     local school = userinfo.school or "";
+    if (school ~= "") then school = "&lt;" .. school .. "&gt;" end
     local mcml = string.format([[
 <pe:mcml>
     <div style="width:200px; margin-left: -100px; margin-top: -30px; color: %s;">
