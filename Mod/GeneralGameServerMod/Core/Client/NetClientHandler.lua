@@ -449,7 +449,7 @@ function NetClientHandler:handleSyncCmd(packetGeneral)
     -- 非递归命令
     if (not opts or not opts.recursive) then
         Log:Debug("end exec net cmd: " .. cmd);
-        self:GetNetCmdList():removeByValue(cmd);
+        self:GetClient():GetNetCmdList():removeByValue(cmd);
     end
 
     self:GetWorld():SetEnableBlockMark(true);
