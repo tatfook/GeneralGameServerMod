@@ -9,10 +9,13 @@ NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
 local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
 -------------------------------------------------------
 ]]
+NPL.load("(gl)script/ide/System/Encoding/base64.lua");
+NPL.load("(gl)script/ide/Json.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityOtherPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
+local Encoding = commonlib.gettable("System.Encoding");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local AppEntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer");
 local AppEntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer");
@@ -41,6 +44,9 @@ function AppGeneralGameClient:Init()
 
     -- 基类初始化
     AppGeneralGameClient._super.Init(self);
+
+    -- 默认开启
+    -- self:GetOptions().isSyncBlock = true;
 
     self.inited = true;
 end
@@ -77,13 +83,21 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     local userinfo = KeepWorkItemManager.GetProfile();
     local usertag = KeepWorkItemManager.GetUserTag(userinfo);
 
+    self.userinfo.id = userinfo.id;
     self.userinfo.username = userinfo.username;
     self.userinfo.nickname = userinfo.nickname;
     self.userinfo.isVip = usertag == "VT" or usertag == "V";
-
+    self.userinfo.worldCount = 0;
+    -- 拉取学校
     keepwork.user.school(nil, function(statusCode, msg, data) 
         if (not data) then return end
         self.userinfo.school = data.name;
+    end)
+    -- 拉取作品数
+    local id = "kp" .. Encoding.base64(commonlib.Json.Encode({username=userinfo.username}));
+    keepwork.user.getinfo({router_params = {id = id}}, function(statusCode, msg, data) 
+        if (statusCode ~= 200 or not data) then return end
+        self.userinfo.worldCount = data.rank.world or 0;
     end)
 end
 -- 用户登录

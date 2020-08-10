@@ -372,7 +372,7 @@ end
 
 -- 保持连接活跃
 function NetClientHandler:SendTick()
-    self:AddToSendQueue(Packets.PacketTick:new():Init());
+    self:AddToSendQueue(Packets.PacketTick:new():Init({userinfo = self:GetClient():GetUserInfo()}));
 end
 
 -- 处理玩家信息更新

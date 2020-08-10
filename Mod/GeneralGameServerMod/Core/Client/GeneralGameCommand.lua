@@ -146,7 +146,7 @@ debug 调试命令
 			elseif (cmd == "setSyncForceBlock") then
 				__this__:handleSetSyncForceBlockCommand(cmd_text);
 			elseif (cmd == "sync") then
-				__this__:handleSyncCmd(cmd_text);
+				__this__:handleSyncCommand(cmd_text);
 			end
 			-- 确保进入联机世界
 			if (not __this__.generalGameClient) then return end;

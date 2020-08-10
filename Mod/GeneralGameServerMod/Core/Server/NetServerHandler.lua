@@ -202,6 +202,7 @@ function NetServerHandler:handleErrorMessage(text, data)
     -- self:SendServerInfo();
 end
 
+
 -- 服务强制退出玩家 
 function NetServerHandler:KickPlayerFromServer(reason)
     Log:Info("kick player and reason: %s", reason);
@@ -217,7 +218,11 @@ function NetServerHandler:KickPlayerFromServer(reason)
 end
 
 -- 玩家
-function NetServerHandler:handleTick()
+function NetServerHandler:handleTick(packetTick)
+    if (packetTick.userinfo) then
+        self:GetPlayer():SetPlayerInfo({userinfo = packetTick.userinfo});
+    end
+
     self:GetPlayer():UpdateTick();
 end
 

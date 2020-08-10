@@ -1,18 +1,20 @@
 <pe:mcml>
-<script refresh="false" type="text/npl" src="mcml_window.lua"><![CDATA[
+<script refresh="false" type="text/npl"><![CDATA[
     function OnClickOK()
         local content = Page:GetValue("content") or "";
         _guihelper.MessageBox("你输入的是:"..content);
     end
 ]]>
 </script>
-<div style="color:#33ff33;background-color:#808080">
-    <div style="margin:10px;">
+<div style="color:#33ff33;background-color:#808080; width: 500px; height: 400px">
+    <pe:component style="color:#33ff33;background-color:#808080; width: 500px; height: 100px"></pe:component>
+    <div>
         Hello World from HTML page!
-    </div>
-    <div style="margin:10px;">
-        <input type="text" name="content" style="width:200px;height:25px;" />
-        <input type="button" name="ok" value="确定1" onclick="OnClickOK"/>
     </div>
 </div>
 </pe:mcml>
+
+<!-- 
+
+
+-->

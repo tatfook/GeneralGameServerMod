@@ -28,7 +28,6 @@ local PlayerManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGame
 function PlayerManager:ctor()
     self.playerList = commonlib.UnorderedArraySet:new();
     self.minPlayerCount = Config.World.minClientCount;             -- 保持至少玩家数
-    self.minAliveTime = Config.Player.minAliveTime;                -- 最少存活时间   
     self.offlinePlayerQueue = commonlib.Queue:new();  -- 离线玩家队列
 end
 
@@ -123,7 +122,7 @@ end
 -- 移除玩家
 function PlayerManager:RemovePlayer(player)
     -- 匿名玩家或存活时间小于指定时间时不做留存直接删除
-    if (player:IsAnonymousUser() or player.aliveTime < self.minAliveTime) then
+    if (not player:IsKeepworkOffline()) then
         return self:SendPacketPlayerLogout(player);
     end
 
