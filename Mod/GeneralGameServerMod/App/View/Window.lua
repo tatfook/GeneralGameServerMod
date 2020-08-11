@@ -11,6 +11,7 @@ local Window = commonlib.gettable("Mod.GeneralGameServerMod.App.View.Window");
 ]]
 -- load component
 NPL.load("Mod/GeneralGameServerMod/App/View/Component.lua");
+NPL.load("Mod/GeneralGameServerMod/App/View/Slot.lua");
 
 NPL.load("(gl)script/ide/System/Windows/Window.lua");
 local SystemWindow = commonlib.gettable("System.Windows.Window")
