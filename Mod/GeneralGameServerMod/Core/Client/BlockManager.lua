@@ -89,12 +89,24 @@ function BlockManager:OnEditEntity(event)
 	end
 end
 
+-- 设置块, 网络接收后需通过此接口设置
+function BlockManager:SetBlock(x, y, z, blockId, blockData, blockEntityPacket)
+	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
+	if (not self.allMarkForUpdateBlockMap[blockIndex]) then self.allMarkForUpdateBlockMap[blockIndex] = {} end
+	local block = self.allMarkForUpdateBlockMap[blockIndex];
+	block.blockIndex = blockIndex;
+	block.blockId = blockId or block.blockId;
+	block.blockData = blockData or block.blockData;
+	block.blockEntityPacket = blockEntityPacket or block.blockEntityPacket;
+end
+
 -- 标记更新方块
 function BlockManager:MarkBlockForUpdate(x, y, z)
 	-- 次函数可能再同步前调用多次, 无法正确识别创建,删除
 	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
 	local blockId = BlockEngine:GetBlockId(x,y,z) or 0;
 	local blockData = BlockEngine:GetBlockData(x,y,z);
+	Log:Info({"MarkBlockForUpdate", x, y, z});
 	-- allMarkForUpdateBlockMap 记录最后一次同步的状态  首次记录当前修改前的数据
 	if (not self.allMarkForUpdateBlockMap[blockIndex]) then
 		self.allMarkForUpdateBlockMap[blockIndex] = {blockIndex = blockIndex, blockId = blockId, lastBlockId = blockId, blockData, isForceSyncAll = blockId == 0};  -- blockId = 0 当前为新增
@@ -163,7 +175,7 @@ function BlockManager:SyncBlock()
 		local isBlockDataChange = (isSyncForceBlock or self:IsSyncBlockData(blockId)) and oldBlock.blockData ~= blockData;
 		local isForceSyncAll = oldBlock.isForceSyncAll;
 		local blockEntityPacket = nil;
-
+		Log:Debug({"准备同步块:", x, y, z});
 		syncedBlockIndexList[#syncedBlockIndexList + 1] = blockIndex;
 
 		-- 强制同步所有
@@ -192,6 +204,9 @@ function BlockManager:SyncBlock()
 				packets[#packets + 1] = packet;
 			end
 			-- Log:Debug(packets[#packets]);
+			Log:Debug({"准备同步块成功:", x, y, z, oldBlock.blockId, tostring(oldBlock.blockData)});
+		else 
+			Log:Debug({"准备同步块无变化:", x, y, z, oldBlock.blockId, blockId, tostring(oldBlock.blockData), tostring(blockData)});
 		end
 	end
 

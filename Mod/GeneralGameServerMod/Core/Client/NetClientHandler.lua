@@ -473,14 +473,14 @@ function NetClientHandler:handleBlock(packetBlock)
     if (not isSyncForceBlock and not self:GetClient():IsSyncBlock()) then return end;
     -- 获取块坐标
     local x, y, z = BlockEngine:FromSparseIndex(packetBlock.blockIndex);
+    local blockId = packetBlock.blockId or BlockEngine:GetBlockId(x,y,z);
+    local blockData = packetBlock.blockData or BlockEngine:GetBlockData(x,y,z); -- 块数据不存在则使用现有值 
     -- 禁用标记
     self:GetWorld():SetEnableBlockMark(false);
     -- 更新块
     if (packetBlock.blockId) then
         -- 创建或删除都触发相邻块通知事件
         local flag = packetBlock.blockFlag or if_else(packetBlock.blockId == 0 or BlockEngine:GetBlockId(x,y,z) == 0, 3, 0); 
-        -- 块数据不存在则使用现有值 
-        local blockData = packetBlock.blockData or BlockEngine:GetBlockData(x,y,z);
         -- 设置方块信息
         BlockEngine:SetBlock(x, y, z, packetBlock.blockId, blockData, flag);
     end
@@ -492,6 +492,8 @@ function NetClientHandler:handleBlock(packetBlock)
             Log:Error("无效实体数据包");
         end
     end
+    -- 设置块信息
+    self:GetBlockManager():SetBlock(x, y, z, blockId, blockData, packetBlock.blockEntityPacket);
     -- 启用标记
     self:GetWorld():SetEnableBlockMark(true);
 end
