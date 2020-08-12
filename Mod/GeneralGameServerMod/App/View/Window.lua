@@ -14,23 +14,27 @@ NPL.load("Mod/GeneralGameServerMod/App/View/Component.lua");
 NPL.load("Mod/GeneralGameServerMod/App/View/Slot.lua");
 
 NPL.load("(gl)script/ide/System/Windows/Window.lua");
-local SystemWindow = commonlib.gettable("System.Windows.Window")
+local NativeWindow = commonlib.gettable("System.Windows.Window")
 
 local Window = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.App.View.Window"));
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 
-Window.window = nil;
-
 function Window:ctor()
 end
 
-function Window:Show(params)
+function Window:GetNativeWindow()
     if (not self.window) then
-        self.window = SystemWindow:new();
+        self.window = NativeWindow:new();
+
+        self.window:Connect("windowClosed", self, "OnClosed", "UniqueConnection");
     end
+    if (IsDevEnv) then self.window.url = nil end
+    return self.window;
+end
+
+function Window:Show(params)
     
     -- 开发环境强制重新加载页面
-    if (IsDevEnv) then self.window.url = nil end
 
     if (params.url == nil) then params.url = "Mod/GeneralGameServerMod/App/View/Window.html" end
     if (params.alignment == nil) then params.alignment = "_ct" end
@@ -40,7 +44,7 @@ function Window:Show(params)
     if (params.top == nil) then params.top = -params.height / 2 end
     if (params.allowDrag == nil) then params.allowDrag = true end
 
-    return self.window:Show(params);
+    return self:GetNativeWindow():Show(params);
 end
 
 function Window:Close()
@@ -49,8 +53,8 @@ function Window:Close()
     self.window:CloseWindow();
 end
 
-function Window.OnClose()
-    Window:Close();
+-- 窗口关闭回调
+function Window.OnClosed()
 end
 
 Window:InitSingleton();

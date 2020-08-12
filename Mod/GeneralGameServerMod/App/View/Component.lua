@@ -97,10 +97,8 @@ function Component:GetParentComponent(bReset)
 
     local parent = self.parent;
     while (parent and not parent:isa(Component)) do
-        echo(parent.name);
         parent = parent.parent;
     end
-    echo(parent and parent.name);
     self.parentComponent = parent;
 
     return parent;

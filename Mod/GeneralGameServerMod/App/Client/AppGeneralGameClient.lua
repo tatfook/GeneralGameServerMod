@@ -22,6 +22,7 @@ local AppEntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Cli
 local AppGeneralGameClient = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient"));
 
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
+local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
 local moduleName = "Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient";
 
 -- 构造函数
@@ -86,7 +87,8 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     self.userinfo.id = userinfo.id;
     self.userinfo.username = userinfo.username;
     self.userinfo.nickname = userinfo.nickname;
-    self.userinfo.isVip = usertag == "VT" or usertag == "V";
+    self.userinfo.isVip = userinfo.vip == 1;
+    self.userinfo.usertag = KpUserTag.GetMcml(userinfo);
     self.userinfo.worldCount = 0;
     -- 拉取学校
     keepwork.user.school(nil, function(statusCode, msg, data) 

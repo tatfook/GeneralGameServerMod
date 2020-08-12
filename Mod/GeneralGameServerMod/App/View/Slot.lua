@@ -25,12 +25,10 @@ function Slot:ParseComponent()
 end
 
 function Slot:GetSlotNode()
-    echo("--------------------------------------------d");
     local slotName = self.attr and self.attr.name;
     local parentComponent = self:GetParentComponent();
     while(parentComponent) do
         local bContinue = false;
-        echo(parentComponent.childNodes);
         for i, childNode in ipairs(parentComponent.childNodes) do
             if (childNode.attr and childNode.attr["v-slot"] == slotName) then
                 return childNode;
