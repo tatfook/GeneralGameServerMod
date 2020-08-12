@@ -6,17 +6,15 @@ Desc: 视图基类
 use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/App/View/Window.lua");
-local Window = commonlib.gettable("Mod.GeneralGameServerMod.App.View.Window");
+local Window = commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Window");
 -------------------------------------------------------
 ]]
--- load component
-NPL.load("Mod/GeneralGameServerMod/App/View/Component.lua");
-NPL.load("Mod/GeneralGameServerMod/App/View/Slot.lua");
-
 NPL.load("(gl)script/ide/System/Windows/Window.lua");
-local NativeWindow = commonlib.gettable("System.Windows.Window")
+NPL.load("Mod/GeneralGameServerMod/App/ui/ui.lua");
 
-local Window = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.App.View.Window"));
+local NativeWindow = commonlib.gettable("System.Windows.Window")
+local UI = commonlib.gettable("Mod.GeneralGameServerMod.App.ui.ui");
+local Window = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Window"));
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 
 function Window:ctor()
@@ -36,7 +34,7 @@ function Window:Show(params)
     
     -- 开发环境强制重新加载页面
 
-    if (params.url == nil) then params.url = "Mod/GeneralGameServerMod/App/View/Window.html" end
+    if (params.url == nil) then params.url = "Mod/GeneralGameServerMod/App/ui/Window.html" end
     if (params.alignment == nil) then params.alignment = "_ct" end
     if (params.width == nil) then params.width = 500 end
     if (params.height == nil) then params.height = 400 end

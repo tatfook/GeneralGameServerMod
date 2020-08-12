@@ -1,0 +1,26 @@
+<pe:mcml>
+
+<div style="color:#33ff33;background-color:#808080; width: 500px; height: 400px">
+    <pe:component>
+        
+    </pe:component>
+    <div>Hello World from HTML page1!</div>
+</div>
+<script refresh="false" type="text/npl"><![CDATA[
+    function OnClickOK()
+        local content = Page:GetValue("content") or "";
+        _guihelper.MessageBox("你输入的是:"..content);
+    end
+
+    function GetText()
+        return "hello world";
+    end
+]]>
+</script>
+
+</pe:mcml>
+
+<!-- 
+
+
+-->
