@@ -5,14 +5,11 @@ Date: 2020/6/30
 Desc: 插槽组件
 use the lib:
 -------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/App/ui/Component.lua");
-local Slot = commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Slot");
+local Slot = NPL.load("Mod/GeneralGameServerMod/App/ui/Component.lua");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
-NPL.load("Mod/GeneralGameServerMod/App/ui/Component.lua");
-local mcml = commonlib.gettable("System.Windows.mcml");
-local Slot = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Component"), commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Slot"));
+local Component = NPL.load("./Component.lua");
+local Slot = commonlib.inherit(Component, NPL.export());
 
 function Slot:ctor()
     self.filename = nil;

@@ -11,39 +11,69 @@ local Component = commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Component"
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
 NPL.load("(gl)script/ide/System/Windows/mcml/PageElement.lua");
-
 local mcml = commonlib.gettable("System.Windows.mcml");
 local Elements = commonlib.gettable("System.Windows.mcml.Elements");
-local Component = commonlib.inherit(commonlib.gettable("System.Windows.mcml.PageElement"), commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Component"));
+local Component = commonlib.inherit(commonlib.gettable("System.Windows.mcml.PageElement"), NPL.export());
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 
 -- 初始化基本元素
 mcml:StaticInit();
--- 全局组件
-local GlobalComponentMap = {};  
 
--- 获取全局组件表
-function Component.GetGlobalComponentMap()
-    return GlobalComponentMap;
+-- 全局组件
+Component.components = {};  
+
+-- 注册注册组件
+function Component:Extend(opts)
+    -- 只接受table
+    if (type(opts) ~= "table") then return end
+    -- 已经是组件直接返回
+    if (opts.isa and opts:isa(Component)) then return opts end
+    -- 继承Component构造新组件
+    local ComponentExtend = commonlib.inherit(Component, opts);
+    -- 返回新组件
+    return ComponentExtend;
+end
+
+-- 注册组件
+function Component:Register(tagname, tagclass)
+    -- 验证组件类
+    tagclass = self:Extend(tagclass);
+    -- 注册
+    local Register = function (tagname, tagclass)
+        if (not tagclass) then
+            return self:GetComponentByTagName(tagname);
+        end
+
+        self.components[tagname] = tagclass;
+        mcml:RegisterPageElement(tagname, tagclass);
+
+        return tagclass;
+    end
+
+    if (type(tagname) == "string") then
+        tagclass = Register(tagname, tagclass) or tagclass;
+    elseif (type(tagname) == "table") then
+        for i, tag in ipairs(tagname) do
+            tagclass = Register(tag, tagclass) or tagclass;
+        end
+    else
+        LOG:warn("无效组件:" .. tostring(tagname));
+    end
+
+    return tagclass
+end
+
+-- 获取组件类
+function Component:GetComponentByTagName(tagname)
+    if (not tagname) then return nil end
+    return self.components[tagname] or Component.components[tagname] or mcml:GetClassByTagName(tagname);
 end
 
 -- 组件构造函数
 function Component:ctor()
-    self.components = {};  -- 组件类
-    self.filename = nil;
-end
-
--- 初始化函数
-function Component:Init(opts)
-    self.filename = opts.filename;
-    return self;
-end
-
--- 获取组件类
-function Component:GetClassByTagName(name)
-    if (not name) then return nil end
-
-    return self.components[name] or GlobalComponentMap[name] or mcml:GetClassByTagName(name);
+    self.components = {};  -- 依赖组件
+    self.filename = nil;   -- 组件文件
+    self.name = "Component";  -- 组件名
 end
 
 -- 通过xml节点创建页面元素
@@ -190,7 +220,7 @@ end
 function Component:ParseHtmlNode(htmlNode, isRoot)
     if (not htmlNode) then return end
     -- 元素类不存在
-    local ElementClass = self:GetClassByTagName(isRoot and "div" or htmlNode.name); -- template => div
+    local ElementClass = self:GetComponentByTagName(isRoot and "div" or htmlNode.name); -- template => div
     -- 新建元素
     local element = nil;
     if (type(ElementClass) == "table" and ElementClass.new) then
@@ -229,6 +259,7 @@ function Component:ParseHtmlNode(htmlNode, isRoot)
     return element;
 end
 
+-- 解析样式节点
 function Component:ParseStyleNode()
 end
 

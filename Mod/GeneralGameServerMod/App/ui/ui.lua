@@ -5,67 +5,98 @@ Date: 2020/6/30
 Desc: UI 入口文件, 实现组件化开发
 use the lib:
 -------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/App/ui/ui.lua");
-local ui = commonlib.gettable("Mod.GeneralGameServerMod.App.ui.ui");
+local ui = NPL.load("Mod/GeneralGameServerMod/App/ui/ui.lua");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
-NPL.load("Mod/GeneralGameServerMod/App/ui/Component.lua");
-NPL.load("Mod/GeneralGameServerMod/App/ui/Slot.lua");
+NPL.load("(gl)script/ide/System/Windows/Window.lua");
+local Window = commonlib.gettable("System.Windows.Window")
 local mcml = commonlib.gettable("System.Windows.mcml");
-local Component = commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Component");
-local Slot = commonlib.gettable("Mod.GeneralGameServerMod.App.ui.Slot");
-local ui = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.App.ui.ui"));
 
+local Component = NPL.load("./Core/Component.lua");
+local Slot = NPL.load("./Core/Slot.lua");
+
+local ui = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+
+local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
+local __FILE__ = debug.getinfo(1,'S').source;
+local __DIRECTORY__ = string.match(__FILE__, "^.*/");
+
+-- 当前窗口
+ui.window = nil; 
+
+-- 构造函数
 function ui:ctor()
-    self.components = {};
+    self.window = nil;
+end
+
+-- 获取文件
+function ui:GetFilePath(relUiPath)
+    return __DIRECTORY__ .. relUiPath;
 end
 
 -- 注册组件
+function ui:Register(tagname, tagclass)
+    return Component:Register(tagname, tagclass);
+end
+
+-- 定义组件
 function ui:Component(opts)
-    if (type(opts) ~= "table") then return end
-    -- 初始化参数
-    local filename = opts.filename; 
-    -- 定义组件函数
-    local TagCtor = function(_self, xmlNode)
-        return Component:new(xmlNode):Init({
-            filename = filename,
-        });
-    end
-    local GlobalComponentMap = Component.GetGlobalComponentMap();
-    local Register = function (tagname, tagclass)
-        GlobalComponentMap[tagname] = tagclass;
-        mcml:RegisterPageElement(tagname, tagclass);
-    end
-
-    local TagClass = opts.tagclass or { new = TagCtor, createFromXmlNode = TagCtor}
-
-    -- 注册组件
-    local tagname = opts.tagname;
-    if (type(tagname) == "string") then
-        Register(tagname, TagClass);
-        GlobalComponentMap[tagname] = TagClass;
-    elseif (type(tagname) == "table") then
-        for i, tag in ipairs(tagname) do
-            Register(tag, TagClass);
-        end
-    else
-        LOG:warn("无效组件:" .. tostring(tagname));
-    end
-
-    return TagClass;
+    return Component:Extend(opts);
 end
 
-function ui:StaticInit()
-    self:Component({
-        tagname = {"pe:component", "Component"},
-        filename = "Mod/GeneralGameServerMod/App/ui/Component.html",
-    });
-
-    self:Component({
-        tagname = "Slot",
-        tagclass = Slot,
-    });
+-- 获取全局表
+function ui:GetGlobalTable()
+    if (self.global) then return self.global end
+    self.global = { ui = self};
+    setmetatable(self.global, {__index = _G});
+    return self.global;
 end
 
-ui:InitSingleton():StaticInit();
+-- 获取窗口
+function ui:GetWindow(url, isNewNoExist)
+    if (not rawget(self, "window")) then
+        self.window = Window:new();
+        self.window:Connect("windowClosed", self, "OnWindowClosed", "UniqueConnection");
+    end
+    if (IsDevEnv) then self.window.url = nil end
+    return self.window;
+end
+
+-- 显示窗口
+function ui:ShowWindow(params)
+    -- 开发环境强制重新加载页面
+    if (params.url == nil) then params.url = self:GetFilePath("ui.html") end
+    if (params.alignment == nil) then params.alignment = "_ct" end
+    if (params.width == nil) then params.width = 500 end
+    if (params.height == nil) then params.height = 400 end
+    if (params.left == nil) then params.left = -params.width / 2 end
+    if (params.top == nil) then params.top = -params.height / 2 end
+    if (params.allowDrag == nil) then params.allowDrag = true end
+
+    -- 强制更新全局表
+    params.pageGlobalTable = self:GetGlobalTable();
+
+    return self:GetWindow():Show(params);
+end
+
+-- 关闭窗口
+function ui:CloseWindow()
+    if (not self.window) then return end
+    self.window:CloseWindow();
+end
+
+-- 窗口关闭回调
+function ui:OnWindowClosed()
+end
+
+-- 静态初始化
+local function StaticInit()
+    ui:Register({"pe:component", "Component"}, {filename = ui:GetFilePath("Core/Component.html")});
+
+    ui:Register("Slot", { tagclass = Slot});
+
+    ui:Register("WindowTitleBar", { filename = ui:GetFilePath("Component/WindowTitleBar.html")});
+end
+
+StaticInit();

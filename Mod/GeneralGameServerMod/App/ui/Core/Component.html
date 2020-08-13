@@ -1,8 +1,9 @@
 
-<template v-bind:test="">
+<template v-bind:test="text">
     {{text}}
 </template>
 <script>
+
 ExportScope({
     obj = {
         key = 1,
@@ -10,3 +11,7 @@ ExportScope({
     text = "hello world",
 })
 </script>
+
+<style>
+
+</style>
