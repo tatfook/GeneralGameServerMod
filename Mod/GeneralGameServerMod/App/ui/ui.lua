@@ -10,9 +10,7 @@ local ui = NPL.load("Mod/GeneralGameServerMod/App/ui/ui.lua");
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
 NPL.load("(gl)script/ide/System/Windows/Window.lua");
-local Window = commonlib.gettable("System.Windows.Window")
 local mcml = commonlib.gettable("System.Windows.mcml");
-
 local Component = NPL.load("./Core/Component.lua");
 local Slot = NPL.load("./Core/Slot.lua");
 
@@ -21,6 +19,11 @@ local ui = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.exp
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local __FILE__ = debug.getinfo(1,'S').source;
 local __DIRECTORY__ = string.match(__FILE__, "^.*/");
+
+-- UIWindow
+local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), {});
+
+UIWindow:Property("UIWindow", true, "IsUIWindow");
 
 -- 当前窗口
 ui.window = nil; 
@@ -56,7 +59,7 @@ end
 -- 获取窗口
 function ui:GetWindow(url, isNewNoExist)
     if (not rawget(self, "window")) then
-        self.window = Window:new();
+        self.window = UIWindow:new();
         self.window:Connect("windowClosed", self, "OnWindowClosed", "UniqueConnection");
     end
     if (IsDevEnv) then self.window.url = nil end
