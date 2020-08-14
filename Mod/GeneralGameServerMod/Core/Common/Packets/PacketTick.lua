@@ -19,6 +19,8 @@ function PacketTick:ctor()
 end
 
 function PacketTick:Init(packet)
+	self.userinfo = packet.userinfo;
+	
 	return self;
 end
 

@@ -106,8 +106,8 @@ end
 
 -- 服务器是否已达到峰值
 function NetServerHandler:IsAllowLoginWorld(worldId)
-    local totalClientCount = self:GetWorldManager():GetClientCount();
-    local worldClientCount = self:GetWorld() and self:GetWorld():GetClientCount() or 0;
+    local totalClientCount = self:GetWorldManager():GetOnlineClientCount();
+    local worldClientCount = self:GetWorld() and self:GetWorld():GetOnlineClientCount() or 0;
     if (totalClientCount >= Config.Server.maxClientCount) then
         return false;
     end
@@ -157,6 +157,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     packetPlayerLogin.result = "ok";
     packetPlayerLogin.parallelWorldName = self:GetWorld():GetParallelWorldName();
     packetPlayerLogin.username = self:GetPlayer().username;
+    packetPlayerLogin.worldKey = self:GetWorld():GetWorldKey();
     self:SendPacketToPlayer(packetPlayerLogin);
     -- self:SendServerInfo();
 end
@@ -201,6 +202,7 @@ function NetServerHandler:handleErrorMessage(text, data)
     -- self:SendServerInfo();
 end
 
+
 -- 服务强制退出玩家 
 function NetServerHandler:KickPlayerFromServer(reason)
     Log:Info("kick player and reason: %s", reason);
@@ -216,7 +218,11 @@ function NetServerHandler:KickPlayerFromServer(reason)
 end
 
 -- 玩家
-function NetServerHandler:handleTick()
+function NetServerHandler:handleTick(packetTick)
+    if (packetTick.userinfo) then
+        self:GetPlayer():SetPlayerInfo({userinfo = packetTick.userinfo});
+    end
+
     self:GetPlayer():UpdateTick();
 end
 
@@ -253,6 +259,18 @@ function NetServerHandler:handleGeneral_SyncBlock(packetGeneral)
     end
 end
 
+-- 处理调试信息
+function NetServerHandler:handleGeneral_Debug(packetGeneral)
+    local cmd = packetGeneral.data.cmd;
+    if (cmd == "WorldInfo") then
+        packetGeneral.data.debug = self:GetWorld():GetDebugInfo();
+        self:SendPacketToPlayer(packetGeneral);
+    elseif (cmd == "ServerInfo") then
+        packetGeneral.data.debug = self:GetWorkerServer():GetServerList();
+        self:SendPacketToPlayer(packetGeneral);
+    end
+end
+
 -- 通用数据包转发
 function NetServerHandler:handleGeneral(packetGeneral)
     if (packetGeneral.action == "PlayerOptions") then
@@ -261,6 +279,8 @@ function NetServerHandler:handleGeneral(packetGeneral)
         self:GetPlayerManager():SendPacketToSyncCmdPlayers(packetGeneral, self:GetPlayer());
     elseif (packetGeneral.action == "SyncBlock") then
         self:handleGeneral_SyncBlock(packetGeneral);
+    elseif (packetGeneral.action == "Debug") then
+        self:handleGeneral_Debug(packetGeneral);
     else
         self:GetPlayerManager():SendPacketToAllPlayersExcept(packetGeneral, self:GetPlayer());
     end

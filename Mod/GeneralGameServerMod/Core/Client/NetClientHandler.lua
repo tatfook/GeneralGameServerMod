@@ -111,12 +111,12 @@ function NetClientHandler:Init(world, isReconnection)
 	options.port = options.port or "9000";
     options.thread = options.thread or "gl";
     
-	BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", options.ip, options.port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+	-- BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", options.ip, options.port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
     self.connection = Connection:new():InitByIpPort(options.ip, options.port, self);
 	self.connection:Connect(5, function(bSucceed)
 		-- try authenticate
 		if(bSucceed) then
-			BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"成功建立链接:%s:%s", options.ip, options.port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+			-- BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"成功建立链接:%s:%s", options.ip, options.port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
             self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init(options));
         else 
 			-- BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"无法建立链接:%s:%s", options.ip, options.port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
@@ -205,6 +205,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     local playerInfo = {
         state = "online",
         username = username,
+        isAnonymousUser = self:GetClient():IsAnonymousUser(),
         userinfo = self:GetClient():GetUserInfo(),
     }
     entityPlayer:SetPlayerInfo(playerInfo);
@@ -228,7 +229,6 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         data = {
             isSyncBlock = self:GetClient():IsSyncBlock(),
             isSyncCmd = self:GetClient():IsSyncCmd(),
-            isAnonymousUser = self:GetClient():IsAnonymousUser(),
         }
     }));
 
@@ -343,11 +343,11 @@ end
 -- 处理错误信息
 function NetClientHandler:handleErrorMessage(text)
     -- 连接已清说已做过错误处理
+    Log:Info("client connection error %s and nid: %d, isConntectionWorld: %s", text or "", self.connection and self.connection:GetNid() or 0, GameLogic.GetWorld() == self:GetWorld());
     if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
-	Log:Info("client connection error %s and nid: %d", text or "", self.connection:GetNid());
 
 	if(text == "ConnectionNotEstablished") then
-		BroadcastHelper.PushLabel({id="NetClientHandler", label = L"无法链接到这个服务器", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+		-- BroadcastHelper.PushLabel({id="NetClientHandler", label = L"无法链接到这个服务器", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
 		_guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
     
         -- 登出世界
@@ -372,7 +372,7 @@ end
 
 -- 保持连接活跃
 function NetClientHandler:SendTick()
-    self:AddToSendQueue(Packets.PacketTick:new():Init());
+    self:AddToSendQueue(Packets.PacketTick:new():Init({userinfo = self:GetClient():GetUserInfo()}));
 end
 
 -- 处理玩家信息更新
@@ -387,7 +387,7 @@ function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
     end
 
     local entityPlayer = self:GetPlayer(entityId);
-    if (not entityPlayer) then return end;
+    if (not entityPlayer or not entityPlayer.SetPlayerInfo) then return end
     entityPlayer:SetPlayerInfo(packetPlayerInfo);
 end
 
@@ -408,6 +408,13 @@ function NetClientHandler:handleGeneral_SyncBlock(packetGeneral)
     end
 end
 
+-- 处理调试信息
+function NetClientHandler:handleGeneral_Debug(packetGeneral)
+    local cmd = packetGeneral.data.cmd;
+    local debug = packetGeneral.data.debug;
+    self:GetClient():ShowDebugInfo(debug);
+end
+
 -- 处理方块点击
 function NetClientHandler:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
@@ -415,6 +422,10 @@ function NetClientHandler:handleGeneral(packetGeneral)
         self:handleSyncCmd(packetGeneral);
     elseif (action == "SyncBlock") then
         self:handleGeneral_SyncBlock(packetGeneral);
+    elseif (action == "ServerWorldList") then
+        self:GetClient():handleServerWorldList(packetGeneral);
+    elseif (action == "Debug") then
+        self:handleGeneral_Debug(packetGeneral);
     end
 end
 
@@ -436,9 +447,9 @@ function NetClientHandler:handleSyncCmd(packetGeneral)
     GameLogic.RunCommand(cmd);
     
     -- 非递归命令
-    if (not opts and not opts.recursive) then
+    if (not opts or not opts.recursive) then
         Log:Debug("end exec net cmd: " .. cmd);
-        self:GetNetCmdList():removeByValue(cmd);
+        self:GetClient():GetNetCmdList():removeByValue(cmd);
     end
 
     self:GetWorld():SetEnableBlockMark(true);
@@ -457,18 +468,19 @@ end
 
 -- 处理块信息更新
 function NetClientHandler:handleBlock(packetBlock)
+    local isSyncForceBlock = self:GetClient():IsSyncForceBlock() and self:GetBlockManager():IsSyncForceBlock(packetBlock.blockIndex);
     -- 未开启直接跳出
-    if (not self:GetClient():IsSyncBlock()) then return end;
+    if (not isSyncForceBlock and not self:GetClient():IsSyncBlock()) then return end;
     -- 获取块坐标
     local x, y, z = BlockEngine:FromSparseIndex(packetBlock.blockIndex);
+    local blockId = packetBlock.blockId or BlockEngine:GetBlockId(x,y,z);
+    local blockData = packetBlock.blockData or BlockEngine:GetBlockData(x,y,z); -- 块数据不存在则使用现有值 
     -- 禁用标记
     self:GetWorld():SetEnableBlockMark(false);
     -- 更新块
     if (packetBlock.blockId) then
         -- 创建或删除都触发相邻块通知事件
-        local flag = if_else(packetBlock.blockId == 0 or BlockEngine:GetBlockId(x,y,z) == 0, 3, 0); 
-        -- 块数据不存在则使用现有值 
-        local blockData = packetBlock.blockData or BlockEngine:GetBlockData(x,y,z);
+        local flag = packetBlock.blockFlag or if_else(packetBlock.blockId == 0 or BlockEngine:GetBlockId(x,y,z) == 0, 3, 0); 
         -- 设置方块信息
         BlockEngine:SetBlock(x, y, z, packetBlock.blockId, blockData, flag);
     end
@@ -480,6 +492,8 @@ function NetClientHandler:handleBlock(packetBlock)
             Log:Error("无效实体数据包");
         end
     end
+    -- 设置块信息
+    self:GetBlockManager():SetBlock(x, y, z, blockId, blockData, packetBlock.blockEntityPacket);
     -- 启用标记
     self:GetWorld():SetEnableBlockMark(true);
 end

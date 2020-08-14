@@ -89,20 +89,36 @@ function BlockManager:OnEditEntity(event)
 	end
 end
 
+-- 设置块, 网络接收后需通过此接口设置
+function BlockManager:SetBlock(x, y, z, blockId, blockData, blockEntityPacket)
+	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
+	if (not self.allMarkForUpdateBlockMap[blockIndex]) then self.allMarkForUpdateBlockMap[blockIndex] = {} end
+	local block = self.allMarkForUpdateBlockMap[blockIndex];
+	block.blockIndex = blockIndex;
+	block.blockId = blockId or block.blockId;
+	block.blockData = blockData or block.blockData;
+	block.blockEntityPacket = blockEntityPacket or block.blockEntityPacket;
+end
+
 -- 标记更新方块
 function BlockManager:MarkBlockForUpdate(x, y, z)
 	-- 次函数可能再同步前调用多次, 无法正确识别创建,删除
 	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
-	local blockId = BlockEngine:GetBlockId(x,y,z);
+	local blockId = BlockEngine:GetBlockId(x,y,z) or 0;
 	local blockData = BlockEngine:GetBlockData(x,y,z);
+	Log:Info({"MarkBlockForUpdate", x, y, z});
 	-- allMarkForUpdateBlockMap 记录最后一次同步的状态  首次记录当前修改前的数据
 	if (not self.allMarkForUpdateBlockMap[blockIndex]) then
-		self.allMarkForUpdateBlockMap[blockIndex] = {blockIndex = blockIndex, blockId = blockId, blockData};
+		self.allMarkForUpdateBlockMap[blockIndex] = {blockIndex = blockIndex, blockId = blockId, lastBlockId = blockId, blockData, isForceSyncAll = blockId == 0};  -- blockId = 0 当前为新增
 	end
-	-- 创建方块 则填充初始数据
-	if (self.allMarkForUpdateBlockMap[blockIndex].blockId == 0 and blockId ~= 0) then
-		self.allMarkForUpdateBlockMap[blockIndex].blockData = BlockEngine:GetBlockData(x,y,z);
+	-- 创建方块 则填充初始数据并设置强制同步标志
+	if (self.allMarkForUpdateBlockMap[blockIndex].lastBlockId ~= blockId) then
+		self.allMarkForUpdateBlockMap[blockIndex].blockData = blockData;
+		self.allMarkForUpdateBlockMap[blockIndex].isForceSyncAll = true;
 	end
+	-- 在同步前, 此函数可能调用多次, blockId记录上次同步的blockId, lastBlockId记录当前位置的上次BlockId
+	self.allMarkForUpdateBlockMap[blockIndex].lastBlockId = blockId;
+
 	-- 添加到标记列表
 	self.markBlockIndexList:add(blockIndex);
 end
@@ -125,11 +141,25 @@ function BlockManager:IsSyncBlockData(blockId)
 	return not notSyncBlockIdMap[blockId];
 end
 
+
+-- 获取强制同步块列表
+function BlockManager:GetSyncForceBlockList()
+	return self:GetWorld():GetClient():GetSyncForceBlockList();
+end
+
+-- 是否是强制同步块
+function BlockManager:IsSyncForceBlock(blockIndex)
+	-- 没有启用直接返回false
+	if (not self:GetWorld():GetClient():IsSyncForceBlock()) then return false end
+
+	return self:GetSyncForceBlockList():contains(blockIndex);
+end
+
 -- 同步块
 function BlockManager:SyncBlock()
 	if (self.markBlockIndexList:empty()) then return end
 
-	local packets, syncedBlockIndexList = {}, {};
+	local packets, forcePackets, syncedBlockIndexList = {}, {}, {};
 	local markBlockIndexCount = #(self.markBlockIndexList);
 	local maxSyncBlockCount = markBlockIndexCount > MaxSyncBlockCountPerPacket and MaxSyncBlockCountPerPacket or markBlockIndexCount;
 	for i = 1, maxSyncBlockCount do 
@@ -140,26 +170,49 @@ function BlockManager:SyncBlock()
 		local blockData = BlockEngine:GetBlockData(x,y,z);
 		local block = blockId and block_types.get(blockId);
 		local oldBlock = self.allMarkForUpdateBlockMap[blockIndex];
-		local isBlockIdChange = if_else((block and block:IsAssociatedBlockID(oldBlock.blockId)), false, oldBlock.blockId ~= blockId);
-		local isBlockDataChange = self:IsSyncBlockData(blockId) and oldBlock.blockData ~= blockData;
-
+		local isSyncForceBlock = self:IsSyncForceBlock(blockIndex, blockId);
+		local isBlockIdChange = if_else((not isSyncForceBlock and block and block:IsAssociatedBlockID(oldBlock.blockId)), false, oldBlock.blockId ~= blockId);
+		local isBlockDataChange = (isSyncForceBlock or self:IsSyncBlockData(blockId)) and oldBlock.blockData ~= blockData;
+		local isForceSyncAll = oldBlock.isForceSyncAll;
+		local blockEntityPacket = nil;
+		Log:Debug({"准备同步块:", x, y, z});
 		syncedBlockIndexList[#syncedBlockIndexList + 1] = blockIndex;
 
+		-- 强制同步所有
+		if (isForceSyncAll) then 
+			local blockEntity = BlockEngine:GetBlockEntity(x,y,z);
+			blockEntityPacket = blockEntity and blockEntity:GetDescriptionPacket();
+		end
+
 		-- 块数据出现不同 
-		if (isBlockIdChange or isBlockDataChange) then
+		if (isForceSyncAll or isBlockIdChange or isBlockDataChange) then
 			oldBlock.blockData = if_else(isBlockIdChange and oldBlock.blockId == 0 or isBlockDataChange, blockData, oldBlock.blockData);
 			oldBlock.blockId = if_else(isBlockIdChange, blockId, oldBlock.blockId);
-			packets[#packets + 1] = Packets.PacketBlock:new():Init({
+			oldBlock.blockEntityPacket = if_else(isForceSyncAll, blockEntityPacket, oldBlock.blockEntityPacket);
+			oldBlock.blockFlag = if_else(isSyncForceBlock, 3, nil);
+			oldBlock.isForceSyncAll = false;
+			local packet = Packets.PacketBlock:new():Init({
 				blockIndex = blockIndex,
-				blockId = oldBlock.blockId;
-				blockData = oldBlock.blockData;
+				blockId = oldBlock.blockId,
+				blockData = oldBlock.blockData,
+				blockEntityPacket = oldBlock.blockEntityPacket,
+				blockFlag = oldBlock.blockFlag,
 			});
+			if (isSyncForceBlock) then
+				forcePackets[#forcePackets + 1] = packet;
+			else
+				packets[#packets + 1] = packet;
+			end
 			-- Log:Debug(packets[#packets]);
+			Log:Debug({"准备同步块成功:", x, y, z, oldBlock.blockId, tostring(oldBlock.blockData)});
+		else 
+			Log:Debug({"准备同步块无变化:", x, y, z, oldBlock.blockId, blockId, tostring(oldBlock.blockData), tostring(blockData)});
 		end
 	end
 
 	-- 发送方块更新
 	if (#packets > 0) then self:AddToSendQueue(Packets.PacketMultiple:new():Init(packets, "SyncBlock")); end
+	if (#forcePackets > 0) then self:AddToSendQueue(Packets.PacketMultiple:new():Init(forcePackets, "ForceSyncBlock")); end
 	
 	-- 从标记列表中移除
 	for i = 1, #syncedBlockIndexList do
@@ -226,6 +279,7 @@ function BlockManager:handleSyncBlock_RequestSyncBlock(packetGeneral)
 				blockId = block.blockId,
 				blockData = block.blockData,
 				blockEntityPacket = block.blockEntityPacket,
+				blockFlag = block.blockFlag,
 			}):WritePacket();
 		end
 	end

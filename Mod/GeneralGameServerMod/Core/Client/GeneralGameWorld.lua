@@ -87,13 +87,18 @@ end
 
 -- 标记更新方块
 function GeneralGameWorld:MarkBlockForUpdate(x, y, z)
-	if (not self:GetEnableBlockMark() or not self:GetClient():IsSyncBlock()) then return end
+	-- if (not self:GetEnableBlockMark() or not self:GetClient():IsSyncBlock()) then return end
+	-- 未开启同步也进行标记但不发送, 性能稍差, 可使用上述条件.  此条件好处是尽可能标记多的修改过的方块, 而不是开启同步了才开始标记 
+	if (not self:GetEnableBlockMark()) then return end
 
 	self:GetBlockManager():MarkBlockForUpdate(x, y, z);
 end
 
 -- 定时发送
 function GeneralGameWorld:OnFrameMove() 
+	-- 未开启同步则直接退出
+	if (not self:GetClient():IsSyncBlock()) then return end
+
 	-- 30 fps  0.3s 同步一次
 	self.tickBlockInfoUpdateCount = (self.tickBlockInfoUpdateCount or 0) + 1;
 	if (self.tickBlockInfoUpdateCount < 10) then return end
@@ -154,6 +159,10 @@ function GeneralGameWorld:Logout()
 	self.isLogin = false;
 end
 
+function GeneralGameWorld:IsLogin()
+	return self.isLogin;
+end
+
 function GeneralGameWorld:OnExit()
 	GeneralGameWorld._super.OnExit(self);
 
@@ -162,10 +171,6 @@ end
 
 function GeneralGameWorld:GetNetHandler()
 	return self.netHandler;
-end
-
-function GeneralGameWorld:IsLogin()
-	return self.isLogin;
 end
 
 function GeneralGameWorld:AddEntity(entity)

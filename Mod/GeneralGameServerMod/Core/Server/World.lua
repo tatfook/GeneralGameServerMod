@@ -12,6 +12,8 @@ local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
 local World = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
@@ -55,12 +57,20 @@ end
 -- 获取世界实体ID
 function World:GetNextEntityId()
     self.nextEntityId = self.nextEntityId + 1;
+    if (self.nextEntityId > Config.maxEntityId) then
+        self.nextEntityId = 0;
+    end
     return self.nextEntityId;
 end
 
 -- 获取世界用户数
 function World:GetClientCount() 
     return self:GetPlayerManager():GetPlayerCount();
+end
+
+-- 获取世界在线用户数
+function World:GetOnlineClientCount() 
+    return self:GetPlayerManager():GetOnlinePlayerCount();
 end
 
 -- 获取世界的玩家管理器
@@ -78,3 +88,27 @@ function World:RemoveInvalidPlayer()
     self:GetPlayerManager():RemoveInvalidPlayer();
 end
 
+-- 获取调试信息
+function World:GetDebugInfo()
+    local playerList = self:GetPlayerManager():GetPlayerList();
+    local players = {};
+
+    for i = 1, #playerList do 
+        local player = playerList[i];
+        players[#players + 1] = {
+            entityId = player.entityId,
+            username = player.username,
+            state = player.state,
+            lastTick = player.lastTick;
+        }
+    end
+
+    return {
+        players = players,
+        worldKey = self:GetWorldKey(),
+        worldId = self.worldId,
+        parallelWorldName = self.parallelWorldName,
+        playerCount = #playerList,
+        onlinePlayerCount = self:GetPlayerManager():GetOnlinePlayerCount(),
+    }
+end

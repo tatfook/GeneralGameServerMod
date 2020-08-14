@@ -28,7 +28,6 @@ local PlayerManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGame
 function PlayerManager:ctor()
     self.playerList = commonlib.UnorderedArraySet:new();
     self.minPlayerCount = Config.World.minClientCount;             -- 保持至少玩家数
-    self.minAliveTime = Config.Player.minAliveTime;                -- 最少存活时间   
     self.offlinePlayerQueue = commonlib.Queue:new();  -- 离线玩家队列
 end
 
@@ -123,7 +122,7 @@ end
 -- 移除玩家
 function PlayerManager:RemovePlayer(player)
     -- 匿名玩家或存活时间小于指定时间时不做留存直接删除
-    if (player:IsAnonymousUser() or player.aliveTime < self.minAliveTime) then
+    if (not player:IsKeepworkOffline()) then
         return self:SendPacketPlayerLogout(player);
     end
 
@@ -237,7 +236,19 @@ end
 
 -- 获取玩家数量
 function PlayerManager:GetPlayerCount()
-    return self.playerList:size();
+    return #(self.playerList);
+end
+
+-- 获取在线玩家数量
+function PlayerManager:GetOnlinePlayerCount()
+    local count = 0;
+    for i = 1, #(self.playerList) do 
+        local player = self.playerList[i];
+        if (player:IsAlive()) then
+            count = count + 1;
+        end
+    end
+    return count;
 end
 
 -- called period 移除没有心跳的玩家

@@ -10,6 +10,7 @@ local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 GeneralGameClient:LoadWorld({ip = "127.0.0.1", port = "9000", worldId = "12348"});
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/Entity.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
@@ -18,6 +19,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
+local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
@@ -29,12 +31,18 @@ local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clien
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
 
+local AssetsWhiteList = NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua"); 
+
+-- 类共享变量 强制同步块列表
+GeneralGameClient.syncForceBlockList = commonlib.UnorderedArraySet:new();
+GeneralGameClient.options = {
+    isSyncBlock = if_else(Config.IsDevEnv, true, false),
+    isSyncForceBlock = true,
+    isSyncCmd = true,
+}
+
 function GeneralGameClient:ctor() 
     self.inited = false;
-    self.options = {
-        isSyncBlock = if_else(Config.IsDevEnv, true, false),
-        isSyncCmd = true,
-    }
     self.netCmdList = commonlib.UnorderedArraySet:new();  -- 网络命令列表, 禁止命令重复运行 
 end
 
@@ -42,6 +50,9 @@ function GeneralGameClient:Init()
     if (self.inited) then return self end;
     
     Common:Init(false);
+
+    -- 设置实体ID起始值
+    Entity:SetEntityId(Config.maxEntityId);
 
     -- 禁用服务器 指定为客户端
     NPL.StartNetServer("127.0.0.1", "0");
@@ -53,9 +64,6 @@ function GeneralGameClient:Init()
     -- 禁用点击继续
     GameLogic.options:SetClickToContinue(false);
 
-    GameLogic.GetFilters():add_filter("OnKeepWorkLogin", GeneralGameClient.OnKeepWorkLogin_Callback);
-    GameLogic.GetFilters():add_filter("OnKeepWorkLogout", GeneralGameClient.OnKeepWorkLogout_Callback)
-    
     self.inited = true;
     return self;
 end
@@ -64,12 +72,9 @@ function GeneralGameClient:Exit()
     GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "DisconnectOne");
 end
 
-function GeneralGameClient:OnKeepWorkLogin_Callback()
-    Log:Info("----------------------------------OnKeepWorkLogin_Callback");
-end
-
-function GeneralGameClient:OnKeepWorkLogout_Callback() 
-    Log:Info("----------------------------------OnKeepWorkLogout_Callback");
+-- 获取玩家支持的形象列表
+function GeneralGameClient:GetAssetsWhiteList()
+    return AssetsWhiteList;
 end
 
 -- 获取世界类
@@ -92,6 +97,14 @@ end
 function GeneralGameClient:GetConfig()
     return Config;
 end
+-- 获取强制同步块列表
+function GeneralGameClient:GetSyncForceBlockList() 
+    return self.syncForceBlockList;
+end
+-- 获取块管理器
+function GeneralGameClient:GetBlockManager()
+    return self:GetWorld():GetBlockManager();
+end
 -- 获取客户端选项
 function GeneralGameClient:GetOptions() 
     return self.options;
@@ -99,6 +112,11 @@ end
 -- 设置客户端选项
 function GeneralGameClient:SetOptions(opts)
     commonlib.partialcopy(self.options, opts);
+end
+
+-- 是否同步强制块
+function GeneralGameClient:IsSyncForceBlock()
+    return self:GetOptions().isSyncForceBlock;
 end
 
 -- 是否同步方块
@@ -188,6 +206,11 @@ function GeneralGameClient:OnWorldUnloaded()
     self.world = nil;
 end
 
+-- 获取世界网络处理程序
+function GeneralGameClient:GetWorldNetHandler() 
+    return self:GetWorld() and self:GetWorld():GetNetHandler();
+end
+
 -- 执行网络命令
 function GeneralGameClient:RunNetCommand(cmd, opts)
     local netHandler = self:GetWorld() and self:GetWorld():GetNetHandler();
@@ -222,6 +245,7 @@ function GeneralGameClient:ConnectControlServer(options)
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
+            _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
             return Log:Info("无法连接控制器服务器");
         end
 
@@ -247,8 +271,12 @@ end
 -- 处理通用数据包
 function GeneralGameClient:handleGeneral(packetGeneral)
     if (packetGeneral.action == "ServerWorldList") then
-        Log:Info(packetGeneral);
+        self:handleServerWorldList(packetGeneral);
     end
+end
+
+-- 处理服务器推送过来的统计信息
+function GeneralGameClient:handleServerWorldList(packetGeneral)
 end
 
 -- 发送获取世界服务器
@@ -288,6 +316,29 @@ end
 function GeneralGameClient:GetNetCmdList()
     return self.netCmdList;
 end
+
+-- 调试
+function GeneralGameClient:Debug(action)
+    action = string.lower(action or "");
+    if (action == "client" or action == "") then
+        return self:ShowDebugInfo(self:GetOptions());
+    end
+
+    local netHandler = self:GetWorldNetHandler();
+    if (not netHandler) then return end
+    if (action == "worldinfo") then
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "WorldInfo"}}));
+    elseif (action == "serverinfo") then
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ServerInfo"}}));
+    end
+end
+
+-- 显示调试信息
+function GeneralGameClient:ShowDebugInfo(debug)
+    Log:Info(commonlib.Json.Encode(debug));
+    _guihelper.MessageBox(commonlib.serialize(debug));
+end
+
 
 -- 初始化成单列模式
 GeneralGameClient:InitSingleton();

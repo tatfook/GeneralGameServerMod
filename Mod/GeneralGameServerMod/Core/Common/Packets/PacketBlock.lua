@@ -22,6 +22,7 @@ function PacketBlock:Init(packet)
 	self.blockIndex = packet.blockIndex;
 	self.blockId = packet.blockId;
 	self.blockData = packet.blockData;
+	self.blockFlag = packet.blockFlag;
 	self.blockEntityPacket = packet.blockEntityPacket;
 
 	return self;

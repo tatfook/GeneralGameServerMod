@@ -14,6 +14,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
+local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
@@ -51,6 +52,9 @@ function ControlServer:handleServerInfo(packetServerInfo)
     server.outerPort = packetServerInfo.outerPort or server.outerPort;             -- 外网Port 
     server.lastTick = ParaGlobal.timeGetTime();                                    -- 上次发送时间
     servers[connectionId] = server;
+
+    -- 将可用的服务器信息返回给server
+    self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerWorldList", data = self:GetAvailableServers()}));
 end
 
 -- 处理客户端请求连接世界的服务器
@@ -95,7 +99,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
 end
 
 -- 获取可用的服务器列表
-function ControlServer:GetAliveServers()
+function ControlServer:GetAvailableServers()
     local curTick, aliveDuration = ParaGlobal.timeGetTime(), 1000 * 60 * 5;
     local serverList= {};
     for key, svr in pairs(servers) do
@@ -111,7 +115,7 @@ end
 function ControlServer:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
     if (action == "ServerWorldList") then 
-        packetGeneral.data = self:GetAliveServers();
+        packetGeneral.data = self:GetAvailableServers();
         self.connection:AddPacketToSendQueue(packetGeneral);
     end
 end

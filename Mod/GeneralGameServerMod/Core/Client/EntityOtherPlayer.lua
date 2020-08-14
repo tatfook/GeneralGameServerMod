@@ -103,6 +103,7 @@ function EntityOtherPlayer:UpdateEntityActionState()
     EntityOtherPlayer._super.UpdateEntityActionState(self);
 end
 
+-- 压力板同步触发
 function EntityOtherPlayer:doesEntityTriggerPressurePlate()
     return true;
 end

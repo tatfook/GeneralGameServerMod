@@ -21,6 +21,9 @@ local moduleName = "Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer";
 -- 构造函数
 function AppEntityOtherPlayer:ctor()
     self.appEntityPlayerHelper = AppEntityPlayerHelper:new():Init(self, false);
+
+    -- 非主玩家是否检测碰撞
+    self:SetCheckCollision(false);
 end
 
 -- 禁用默认用户名显示

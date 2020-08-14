@@ -90,7 +90,17 @@ end
 
 -- 是否是匿名用户
 function Player:IsAnonymousUser()
-    return self.options.isAnonymousUser;
+    return self:GetPlayerInfo().isAnonymousUser;
+end
+
+-- 是否保持离线
+function Player:IsKeepworkOffline()
+    if (self:IsAnonymousUser()) then return false; end
+    if (self.aliveTime < Config.Player.minAliveTime) then return false; end
+    local userinfo = self:GetUserInfo();
+    if (not userinfo or not userinfo.worldCount or userinfo.worldCount < 3) then return false end
+    
+    return true;
 end
 
 function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
@@ -133,6 +143,10 @@ function Player:GetPlayerInfo()
     self.playerInfo.state = self.state;
     self.playerInfo.username = self.username;
     return self.playerInfo;
+end
+
+function Player:GetUserInfo()
+    return self:GetPlayerInfo().userinfo;
 end
 
 function Player:SetPlayerInfo(info)
