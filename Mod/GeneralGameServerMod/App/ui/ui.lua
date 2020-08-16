@@ -6,6 +6,7 @@ Desc: UI 入口文件, 实现组件化开发
 use the lib:
 -------------------------------------------------------
 local ui = NPL.load("Mod/GeneralGameServerMod/App/ui/ui.lua");
+ui:ShowWindow();
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
@@ -68,6 +69,7 @@ end
 
 -- 显示窗口
 function ui:ShowWindow(params)
+    params = params or {};
     -- 开发环境强制重新加载页面
     if (params.url == nil) then params.url = self:GetFilePath("ui.html") end
     if (params.alignment == nil) then params.alignment = "_ct" end

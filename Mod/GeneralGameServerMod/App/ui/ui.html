@@ -1,13 +1,30 @@
 <pe:mcml>
 
 <div style="color:#33ff33;background-color:#808080; width: 500px; height: 400px">
-    <WindowTitleBar></WindowTitleBar>
-    <pe:component>
-        
-    </pe:component>
+    <div onclick="click1()">
+        <div onclick="click2()" style="width: 200px">tefdadst</div>
+        <div onclick="click3()" style="background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px;"></div>
+    </div>
+    <div onclick="click1()">
+        <div onclick="click2()" style="width: 200px">tefdadst</div>
+        <div onclick="click3()" style="background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px;"></div>
+    </div>
+    <div onclick="click1()">
+        <div onclick="click2()" style="float: left; width: 200px">test</div>
+        <div onclick="click3()" style="float: right; background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px;"></div>
+    </div>
+   
 </div>
 <script refresh="false" type="text/npl"><![CDATA[
-
+function click1()
+    echo("click1");
+end
+function click2()
+    echo("click2");
+end
+function click3()
+    echo("click3");
+end
 ]]>
 </script>
 
@@ -17,5 +34,8 @@
 <pe:component>
         
 </pe:component>
-
+ <WindowTitleBar></WindowTitleBar>
+    <pe:component>
+        
+    </pe:component>
 -->
