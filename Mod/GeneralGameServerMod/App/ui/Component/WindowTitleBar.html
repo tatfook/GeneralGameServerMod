@@ -1,12 +1,21 @@
 <template>
-    <div>
-        <div style="float: left; width: 200px">{{title}}</div>
-        <div onclick="Close()" style="float: right; background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px;"></div>
+    <div style="padding-left:12px; padding-top: 5px; padding-right:8px; height:36px">
+        <div style="float: left; font-size: 16px; base-font-size: 16px; padding-top: 3px;">{{title}}</div>
+        <div v-on:click="close" style="float: right; background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#363 59 26 26:7 7 7 7); width:26px; height:26px;"></div>
     </div>
+    <div style="height:1px; background-color: #b7b2b2;"></div>
 </template>
 
 <script>
-    ExportScope({
-        title = "窗口标题"
-    })
+ExportScope({
+    title = "窗口标题",
+    close = function()
+        ui:CloseWindow();
+    end,
+})
 </script>
+
+
+<!-- 
+
+-->

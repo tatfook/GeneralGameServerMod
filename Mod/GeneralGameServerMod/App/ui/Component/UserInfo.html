@@ -1,0 +1,32 @@
+<template>
+    <!-- 左侧用户信息 -->
+    <div style="float: left; width: 234px; color: white;">
+        <div style="">
+            <pe:mc_player name="player" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" isinteractive="false" />
+        </div>
+        <div style="color:white; text-align: center; font-size: 24px;">{{username}}</div>
+        <div style="margin-top:16px; text-align: center; font-size: 16px; color: #969696;">{{registerTime}}</div>
+        <div style="margin-top: 60px; margin: 25px; ">
+            <div style="float: left; width: 68px; text-align: center; width: 92px;">
+                <div style="font-size: 18px; color: #236dd7;">{{follow}}</div>
+                <div style="font-size: 14px; color: #3d649b;">关注</div>
+            </div>
+            <div style="float: left; width: 68px; text-align: center; width: 92px;">
+                <div style="font-size: 18px; color: #236dd7;">{{fans}}</div>
+                <div style="font-size: 14px; color: #3d649b;">粉丝</div>
+            </div>
+        </div>
+        <button align="center" style="margin-top: 37px; width: 184px; height: 40px; text-align: center; font-size: 16px; base-font-size: 16px; padding-top: 10px;">关注</button>
+    </div>
+    <div style="float: left; width: 1px; height: 546px; margin-left: 0px; margin-top: 0px; background-color: #b7b2b2;"></div>
+</template>
+
+<script>
+    ExportScope({
+        username = "xiaoyao",
+        registerTime = "2010.01.12",
+        follow = 1,
+        fans = 2,
+        IsSignedIn = true,
+    })
+</script>

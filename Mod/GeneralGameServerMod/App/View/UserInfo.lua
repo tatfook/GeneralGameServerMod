@@ -117,6 +117,5 @@ function UserInfo:Show(entityPlayer)
    
 end
 
-
 -- 初始化成单列模式
 UserInfo:InitSingleton();

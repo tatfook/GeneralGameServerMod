@@ -79,6 +79,8 @@ function ui:ShowWindow(params)
     if (params.top == nil) then params.top = -params.height / 2 end
     if (params.allowDrag == nil) then params.allowDrag = true end
 
+    -- 关闭销毁
+    params.DestroyOnClose = true;
     -- 强制更新全局表
     params.pageGlobalTable = self:GetGlobalTable();
 
@@ -93,6 +95,7 @@ end
 
 -- 窗口关闭回调
 function ui:OnWindowClosed()
+    self.window = nil;
 end
 
 -- 静态初始化
@@ -102,6 +105,8 @@ local function StaticInit()
     ui:Register("Slot", { tagclass = Slot});
 
     ui:Register("WindowTitleBar", { filename = ui:GetFilePath("Component/WindowTitleBar.html")});
+    ui:Register("UserInfo", { filename = ui:GetFilePath("Component/UserInfo.html")});
+    ui:Register("Test", { filename = ui:GetFilePath("Component/Test.html")});
 end
 
 StaticInit();

@@ -110,8 +110,7 @@ end
 
 -- 获取全局表
 function Component:GetGlobalTable()
-    -- return nil;
-    return _G;
+    return self:GetPageCtrl():GetPageGlobalTable() or _G;
 end
 
 -- 获取脚本文件
@@ -149,6 +148,16 @@ function Component:SetScope(scope)
     self.scope = scope;
 end
 
+function Component:SetScopeValue(key, value)
+    local scope = self:GetScope();
+    scope[key] = value;
+end
+
+function Component:GetScopeValue(key)
+    local scope = self:GetScope();
+    return scope and scope[key];
+end
+
 -- 获取组件Scope
 function Component:GetScope()
     if (self.scope) then return self.scope end
@@ -180,20 +189,23 @@ function Component:ParseScriptNode(scriptNode)
 end
 
 -- 解析元素属性
-function Component:ParseElementAttr(element)
-    local attr = element and element.attr;
+function Component:ParseXmlNodeAttr(xmlNode, parentXmlNode)
+    local attr = xmlNode and xmlNode.attr;
     if (not attr) then return end
     local realAttr = {};
+    local directive = {};
     for key, val in pairs(attr) do
         -- v-bind 指令
-        local realKey = string.match(key, "^v-bind:(.+)");
+        local realKey = string.match(key, "^v%-bind:(.+)");
         if (realKey and realKey ~= "") then
+            directive[key] = val;
             local realVal = self:ExecTextCode(val, true) or val;
             realAttr[realKey] = realVal;
         end
         -- v-on 指令
-        realKey = string.match(key, "^v-on:(.+)");
+        realKey = string.match(key, "^v%-on:(.+)");
         if (realKey and realKey ~= "") then
+            directive[key] = val;
             local realVal = string.gsub(val, "^%s*(.-)[;%s]*$", "%1");
             local isFuncCall = string.match(realVal, "%S+%(.*%)$");
             if (not isFuncCall) then 
@@ -210,29 +222,101 @@ function Component:ParseElementAttr(element)
                     realVal = function() end;
                 end
             end
-            realAttr[realKey] = realVal;
+            realAttr["on" .. realKey] = realVal;
         end
     end
     commonlib.partialcopy(attr, realAttr);
+    -- 清除已解析的指令
+    for key, val in pairs(directive) do
+        attr[key] = nil;
+    end
+    return attr;
+end
+
+-- 解析v-for指令
+function Component:ParseVForDirective(xmlNode, parentXmlNode)
+    if (not parentXmlNode) then return end
+    local v_for = xmlNode and xmlNode.attr["v-for"];
+    if (not v_for or v_for == "") then return end
+    local keyexp, list = string.match(v_for, "%(?(%a[%w%s,]*)%)?%s+in%s+(%a%w*)");
+    if (not keyexp) then return end
+    local val, key = string.match(keyexp, "(%a%w-)%s*,%s*(%a%w-)");
+    if (not val) then val = keyexp end
+    list = self:ExecTextCode(list, true);
+    parentXmlNode.childNodes = parentXmlNode.childNodes or {};
+    xmlNode.attr["v-for"] = nil;
+    local index = 0;
+    for i = 1, #(parentXmlNode.childNodes) do
+        if (parentXmlNode.childNodes[i] == xmlNode) then
+            index = i;
+            break;
+        end
+    end
+    -- 移除当前节点
+    if (index > 0) then
+        table.remove(parentXmlNode.childNodes, index);
+    else
+        index = #(parentXmlNode.childNodes);
+    end
+    
+    if (type(list) ~= "table" or #list == 0) then return end
+
+    -- 拷贝当前节点
+    for i = 1, #list do
+        local cloneNode = commonlib.copy(xmlNode);
+        cloneNode.scope = cloneNode.scope or {};
+        cloneNode.scope[val] = list[i];
+        if (key) then cloneNode.scope[key] = i end
+        table.insert(parentXmlNode.childNodes, index, cloneNode);
+        index = index + 1;
+    end
 end
 
 -- 解析html
-function Component:ParseHtmlNode(htmlNode, isRoot)
-    if (not htmlNode) then return end
+function Component:ParseXmlNode(xmlNode, parentXmlNode)
+    if (not xmlNode) then return end
+    -- 添加到父节点的孩子列表中
+    if (parentXmlNode) then
+        table.insert(parentXmlNode.childNodes, xmlNode);
+    end
+    -- 文本节点直接返回
+    if (type(xmlNode) ~= "table") then return xmlNode end
+    -- child xml node
+     xmlNode.childNodes = {};
+    -- 解析常规属性
+    self:ParseXmlNodeAttr(xmlNode, parentXmlNode);
+    -- v-for 指令解析
+    self:ParseVForDirective(xmlNode, parentXmlNode);
+    -- 解析子节点
+    local childNodeCount = #xmlNode;
+    for i = 1, childNodeCount do
+        self:ParseXmlNode(xmlNode[i], xmlNode);
+    end
+    for i = childNodeCount, 1, -1 do
+        table.remove(xmlNode, i);
+    end
+    for i = 1, #(xmlNode.childNodes) do
+        table.insert(xmlNode, xmlNode.childNodes[i]);
+    end
+    xmlNode.childNodes = nil;
+    return xmlNode;
+end
+
+-- xmlNode to pageElemetn
+function Component:XmlNodeToPageElement(xmlNode)
+    if (not xmlNode) then return end
     -- 元素类不存在
-    local ElementClass = self:GetComponentByTagName(isRoot and "div" or htmlNode.name); -- template => div
+    local ElementClass = self:GetComponentByTagName(isRoot and "div" or xmlNode.name); -- template => div
     -- 新建元素
     local element = nil;
     if (type(ElementClass) == "table" and ElementClass.new) then
-        element = ElementClass:new(htmlNode);
+        element = ElementClass:new(xmlNode);
     elseif (type(ElementClass) == "function") then
-        element = ElementClass(htmlNode);
+        element = ElementClass(xmlNode);
     else 
-        LOG.std(nil, "warn", "Component", "can not find tag name %s", htmlNode.name or "")
+        LOG.std(nil, "warn", "Component", "can not find tag name %s", xmlNode.name or "")
     end
     if (not element) then return end
-    -- 解析元素属性
-    self:ParseElementAttr(element);
     -- 解析子元素
     local validIndex = 1;
     local childCount = #(element);
@@ -241,7 +325,7 @@ function Component:ParseHtmlNode(htmlNode, isRoot)
         local childElement = nil;
         element[i] = nil;
         if(type(child) == "table") then
-            childElement = self:ParseHtmlNode(child);
+            childElement = self:XmlNodeToPageElement(child);
             if(not childElement) then LOG.std(nil, "warn", "Component", "can not find tag name %s", child.name or ""); end
         else
             -- for inner text of xml
@@ -264,14 +348,17 @@ function Component:ParseStyleNode()
 end
 
 -- 执行文本代码
-function Component:ExecTextCode(code, isAddReturn) 
+function Component:ExecTextCode(code, isAddReturn, scope) 
     if (type(code) ~= "string" or code == "") then return end
     if (isAddReturn) then 
         code = "return (" .. code .. ")";
     end
     local code_func, errmsg = loadstring(code);
     if (not code_func) then return echo("Error: " .. errmsg) end
+    -- if (scope and type(scope) == "table") then self:PushScope(scope) end
     setfenv(code_func, self:GetScope());
+    -- if (scope and type(scope) == "table") then self:PopScope() end
+
     return code_func();
 end
 
@@ -287,8 +374,8 @@ function Component:ParseComponent()
     local styleNode = xmlRoot and commonlib.XPath.selectNode(xmlRoot, "//style");
     -- 解析并执行脚本
     self:ParseScriptNode(scriptNode);
-    -- 解析html
-    self:SetElement(self:ParseHtmlNode(htmlNode));
+    -- 解析html 生成element
+    self:SetElement(self:XmlNodeToPageElement(self:ParseXmlNode(htmlNode)));
     -- 解析style
     self:ParseStyleNode(styleNode);
     -- 标记已经解析
@@ -360,7 +447,6 @@ function Component:paintEvent(painter)
     if (not self:IsValid()) then return end
     self:GetElement():paintEvent(painter);
 end
-
 
 -- 合并组件
 function Component:MergeComponents()
