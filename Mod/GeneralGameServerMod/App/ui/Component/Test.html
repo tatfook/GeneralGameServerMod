@@ -1,9 +1,16 @@
 <template>
-    <div v-for="x, i in list">{{x}}</div>
+    <div>
+        {{title}}
+    </div>
+    <div>
+        {{text}}
+    </div>
 </template>
 
 <script>
 ExportScope({
+    text = "hello world",
+    title = "hello world",
    list = {"list1", "list2", "list3"}
 })
 </script>

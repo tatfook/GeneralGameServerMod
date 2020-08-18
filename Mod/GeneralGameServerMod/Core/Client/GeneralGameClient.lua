@@ -147,7 +147,7 @@ function GeneralGameClient:LoadWorld(opts)
 
     -- 确定世界ID
     options = self:GetOptions();
-    options.worldId = opts.worldId or curWorldId or Config.defaultWorldId;
+    options.worldId = tostring(opts.worldId or curWorldId or Config.defaultWorldId);
     options.username = opts.username or self:GetUserInfo().username;
     options.ip = opts.ip;
     options.port = opts.port;
@@ -156,7 +156,7 @@ function GeneralGameClient:LoadWorld(opts)
     Log:Info(options);
 
     -- only reload world if world id does not match
-    local isReloadWorld = options.worldId ~= curWorldId; 
+    local isReloadWorld = tostring(options.worldId) ~= tostring(curWorldId); 
     local worldId = options.worldId;
 
     -- 退出旧世界
@@ -167,7 +167,7 @@ function GeneralGameClient:LoadWorld(opts)
 
     -- 以只读方式重新进入
     if (isReloadWorld) then
-        GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
+        GameLogic.RunCommand(string.format("/loadworld %s", worldId));    
     else
         self:OnWorldLoaded();
     end
