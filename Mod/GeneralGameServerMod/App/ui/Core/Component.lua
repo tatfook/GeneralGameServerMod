@@ -21,6 +21,15 @@ mcml:StaticInit();
 -- 全局组件
 Component.components = {};  
 
+-- 组件构造函数
+function Component:ctor()
+    self.scope = nil;
+    self.componentScope = nil;
+    self.components = self.components or {};  -- 依赖组件
+    self.filename = self.filename or nil;   -- 组件文件
+    self.name = self.name or "Component";  -- 组件名
+end
+
 -- 注册注册组件
 function Component:Extend(opts)
     -- 只接受table
@@ -68,12 +77,6 @@ function Component:GetComponentByTagName(tagname)
     return self.components[tagname] or Component.components[tagname] or mcml:GetClassByTagName(tagname);
 end
 
--- 组件构造函数
-function Component:ctor()
-    self.components = self.components or {};  -- 依赖组件
-    self.filename = self.filename or nil;   -- 组件文件
-    self.name = self.name or "Component";  -- 组件名
-end
 
 -- 通过xml节点创建页面元素
 function Component:createFromXmlNode(o)
@@ -101,12 +104,11 @@ end
 
 -- 获取全局表
 function Component:GetGlobalTable()
-    return {};
-    -- local page = self:GetPageCtrl();
-    -- local window = page and page:GetWindow();
-    -- local G = window and window:GetUI():GetGlobalTable();
-    -- -- local G = page and page:GetPageGlobalTable();
-    -- return G or _G;
+    local page = self:GetPageCtrl();
+    local window = page and page:GetWindow();
+    local G = window and window:GetUI():GetGlobalTable();
+    -- local G = page and page:GetPageGlobalTable();
+    return G or _G;
 end
 
 -- 获取脚本文件
@@ -121,7 +123,7 @@ function Component:ReadLocalScriptFile(filename)
     end
     return text;
 end
-local debug = false;
+
 function Component:PushScope(scope)
     scope = scope or {};
     local meta = getmetatable (scope);
@@ -221,6 +223,7 @@ function Component:ParseXmlNodeAttr(xmlNode, parentXmlNode)
     local realAttr = {};
     local directive = {};
     for key, val in pairs(attr) do
+        echo(key);
         -- v-bind 指令
         local realKey = string.match(key, "^v%-bind:(.+)");
         if (realKey and realKey ~= "") then
@@ -237,6 +240,7 @@ function Component:ParseXmlNodeAttr(xmlNode, parentXmlNode)
             if (not isFuncCall) then 
                 -- 不是函数调用则获取函数
                 realVal = self:ExecTextCode(realVal, true);
+                if (not realVal) then echo("invalid function listen") end
             else
                 -- 函数调用则返回字符串函数
                 local code_func, errmsg = loadstring(realVal);
@@ -245,7 +249,7 @@ function Component:ParseXmlNodeAttr(xmlNode, parentXmlNode)
                     setfenv(code_func, self:GetScope());
                     realVal = code_func;
                 else
-                    realVal = function() end;
+                    realVal = function() echo("null function") end;
                 end
             end
             realAttr["on" .. realKey] = realVal;
