@@ -22,9 +22,8 @@
 </template>
 
 <script type="text/lua">
-
-UserDetail = UserDetail or {rank = {}, createdAt = "2020-01-01"}
-
+UserDetail = UserDetail or {username = "username", createdAt = "2020-01-01", rank = {}};
+UserDetail.rank = UserDetail.rank or {};
 self.userId = UserDetail.id;
 self.username = UserDetail.username;
 self.isFollow = UserDetail.isFollow or false;
@@ -35,34 +34,32 @@ local datetime = UserDetail.createdAt;
 local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
 self.registerAt = tostring(year) .. "年" .. tostring(month) .. "月" .. tostring(day) .. "日加入帕拉卡";
 
-echo("============================")
 -- 点击关注
 function ClickFollow()
-    echo("--------------------");
     -- if (not GetUserInfo():IsSignedIn()) then  return echo("未登录"); end
     if (self.isFollow) then
         self.fans = self.fans - 1;
-        keepwork.user.unfollow({
+        <!-- keepwork.user.unfollow({
             objectType = 0,
             objectId = self.userId,
         }, function(status, msg, data)
             -- self.fans = self.fans - 1;
-        end);
+        end); -->
     else
         self.fans = self.fans + 1;
-        keepwork.user.unfollow({
+        <!-- keepwork.user.unfollow({
             objectType = 0,
             objectId = self.userId,
         }, function(status, msg, data)
             -- self.fans = self.fans + 1;
-        end);
+        end); -->
     end
     self.isFollow = not self.isFollow;
+    echo({"--------------------ClickFloow", self.fans});
     ui:RefreshWindow();
 end
 
 function OnRefresh()
     echo("----------------OnRefresh------------------");
 end
-
 </script>

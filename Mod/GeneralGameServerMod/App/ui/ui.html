@@ -1,17 +1,30 @@
 
 <template style="width: 880px; height: 584px; color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
     <WindowTitleBar title="用户信息"></WindowTitleBar>
-    <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo>
+    <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo/>
+        <!-- <div>{{count}}</div>
+        <button v-on:click="click">OK</button> -->
 </template>
 
 
-<script src="Mod/GeneralGameServerMod/App/ui/script.lua">
-</script>
-<!-- <script>
-function click(x)
-    echo(x);
-end
+<!-- <script src="Mod/GeneralGameServerMod/App/ui/script.lua">
 </script> -->
+<script>
+    echo("===================================================aaa")
+self.count = 0;
+function click(x)
+    self.count = self.count + 1;
+    ui:RefreshWindow();
+end
+</script>
+<!-- 
+<script>
+
+    <div>{{count}}</div>
+    <button v-on:click="click">OK</button>
+
+</script>
+ -->
 <!-- 
     <WindowTitleBar title="用户信息"></WindowTitleBar>
     <div v-for="x in 3" v-on:click="click(x)">{{x}}</div>
