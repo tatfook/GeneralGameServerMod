@@ -70,6 +70,12 @@ function ui:GetWindow(url, isNewNoExist)
     return self.window;
 end
 
+-- 刷新窗口
+function ui:RefreshWindow(delta)
+    local page = self:GetWindow():Page();
+    return page and page:Refresh(delta or 0);
+end
+
 -- 显示窗口
 function ui:ShowWindow(params)
     params = params or {};

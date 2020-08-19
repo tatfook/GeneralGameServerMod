@@ -7,12 +7,11 @@
 </template>
 
 <script>
-ExportScope({
-    title = "窗口标题",
-    close = function()
-        ui:CloseWindow();
-    end,
-})
+self.title = self.title or "窗口标题";
+echo(ui == nil);
+self.close = function() 
+    ui:CloseWindow();
+end
 </script>
 
 
