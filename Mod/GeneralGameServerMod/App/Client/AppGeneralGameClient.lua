@@ -39,16 +39,6 @@ function AppGeneralGameClient:ctor()
 
     KeepWorkItemManager.StaticInit();
     KeepWorkItemManager.GetFilter():add_filter("loaded_all", AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback);
-
-    -- GameLogic.GetFilters():add_filter("desktop_menu", function(menu_items)
-    --     for i = 1, #menu_items do
-    --         if (menu_items[i].text == L"多人联网") then
-    --             table.remove(menu_items, i);
-    --             break;
-    --         end 
-    --     end
-    -- end)
-    
 end
 
 -- 初始化函数
