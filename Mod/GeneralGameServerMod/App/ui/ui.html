@@ -1,22 +1,27 @@
 
 <template style="width: 880px; height: 584px; color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
     <WindowTitleBar title="用户信息"></WindowTitleBar>
-    <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo/>
+    <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo>
+    <WorksList v-bind:ProjectList="ProjectList" style="float: left;"></WorksList>
         <!-- <div>{{count}}</div>
         <button v-on:click="click">OK</button> -->
 </template>
 
+<script src="%ui%/script.lua">
+ui:SetWindowSize({width = 880, height = 584});
 
-<!-- <script src="Mod/GeneralGameServerMod/App/ui/script.lua">
-</script> -->
-<script>
+RegisterComponent("UserInfo", "Mod/GeneralGameServerMod/App/ui/Component/UserInfo.html");
+RegisterComponent("WorksList", "Mod/GeneralGameServerMod/App/ui/Component/WorksList.html");
+</script>
+
+<!-- <script>
     echo("===================================================aaa")
 self.count = 0;
 function click(x)
     self.count = self.count + 1;
     ui:RefreshWindow();
 end
-</script>
+</script> -->
 <!-- 
 <script>
 

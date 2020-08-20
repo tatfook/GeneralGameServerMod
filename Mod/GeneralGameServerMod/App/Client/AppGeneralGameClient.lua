@@ -12,11 +12,13 @@ local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Cl
 NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
+NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityOtherPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 local Encoding = commonlib.gettable("System.Encoding");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
+local AppGeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameWorld");
 local AppEntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer");
 local AppEntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer");
 local AppGeneralGameClient = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient"));
@@ -37,6 +39,16 @@ function AppGeneralGameClient:ctor()
 
     KeepWorkItemManager.StaticInit();
     KeepWorkItemManager.GetFilter():add_filter("loaded_all", AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback);
+
+    -- GameLogic.GetFilters():add_filter("desktop_menu", function(menu_items)
+    --     for i = 1, #menu_items do
+    --         if (menu_items[i].text == L"多人联网") then
+    --             table.remove(menu_items, i);
+    --             break;
+    --         end 
+    --     end
+    -- end)
+    
 end
 
 -- 初始化函数
@@ -64,7 +76,7 @@ end
 
 -- 获取世界类
 function AppGeneralGameClient:GetGeneralGameWorldClass()
-    return AppGeneralGameClient._super.GetGeneralGameWorldClass(self);  -- 不定制
+    return AppGeneralGameWorld;  
 end
 -- 获取网络处理类
 function AppGeneralGameClient:GetNetClientHandlerClass()

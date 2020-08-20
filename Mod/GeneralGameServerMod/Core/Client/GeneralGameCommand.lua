@@ -186,11 +186,9 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	options.parallelWorldName = parallelWorldName;
 	options.ip = (options.host and options.host ~= "") and options.host or nil;
 	options.port = (options.port and options.port ~= "") and options.port or nil;
-	options.username = (options.username and options.username ~= "") and options.u or nil;
-	options.password = (options.password and options.password ~= "") and options.p or nil;
-	-- 移除选项值
-	options.u, options.p = nil, nil
-
+	options.username = (options.username and options.username ~= "") and options.username or nil;
+	options.password = (options.password and options.password ~= "") and options.password or nil;
+	
 	self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
 	self.generalGameClient:LoadWorld(options);
 end

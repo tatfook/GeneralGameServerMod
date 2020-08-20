@@ -6,9 +6,8 @@
     <div style="height:1px; background-color: #b7b2b2;"></div>
 </template>
 
-<script>
+<script type="text/lua">
 self.title = self.title or "窗口标题";
-echo(ui == nil);
 self.close = function() 
     ui:CloseWindow();
 end

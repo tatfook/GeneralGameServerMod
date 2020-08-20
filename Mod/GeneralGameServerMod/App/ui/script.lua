@@ -6,7 +6,7 @@ local Encoding = commonlib.gettable("System.Encoding");
 local username = self.username or "xiaoyao";
 
 -- 组件全局变量初始化
-self.UserDetail = { rank = {}};
+self.UserDetail = nil
 self.ProjectList = {};
 
 -- 加载用户信息
@@ -28,8 +28,9 @@ function LoadUserInfo(username)
                 ["x-order"] = "updatedAt-desc",  -- 按更新时间降序
             }
         }, function(status, msg, data)
-            if (status ~= 200) then echo("获取用户项目列表失败") end
+            if (status ~= 200) then return echo("获取用户项目列表失败") end
             self.ProjectList = data;
+            ui:RefreshWindow();
             -- echo(data);
             -- 获取是否关注
             keepwork.user.isfollow({
@@ -40,6 +41,7 @@ function LoadUserInfo(username)
                 if (status ~= 200) then return end
                 if (data and data ~= "false" and tonumber(data) ~= 0) then
                     self.UserDetail.isFollow = true;
+                    ui:RefreshWindow();
                 end
             end)
         end)

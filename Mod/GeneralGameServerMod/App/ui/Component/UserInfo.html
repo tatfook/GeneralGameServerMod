@@ -16,7 +16,7 @@
                 <div style="font-size: 14px; color: #3d649b;">粉丝</div>
             </div>
         </div>
-        <button v-on:click="ClickFollow" align="center" style="margin-top: 37px; width: 184px; height: 40px; text-align: center; font-size: 16px; base-font-size: 16px; padding-top: 10px;">关注</button>
+        <button v-on:click="ClickFollow" align="center" style="margin-top: 37px; width: 184px; height: 40px; text-align: center; font-size: 16px; base-font-size: 16px; padding-top: 10px;">{{isFollow and "已关注" or "关注"}}</button>
     </div>
     <div style="float: left; width: 1px; height: 546px; margin-left: 0px; margin-top: 0px; background-color: #b7b2b2;"></div>
 </template>
@@ -39,27 +39,23 @@ function ClickFollow()
     -- if (not GetUserInfo():IsSignedIn()) then  return echo("未登录"); end
     if (self.isFollow) then
         self.fans = self.fans - 1;
-        <!-- keepwork.user.unfollow({
+        keepwork.user.unfollow({
             objectType = 0,
             objectId = self.userId,
         }, function(status, msg, data)
             -- self.fans = self.fans - 1;
-        end); -->
+        end);
     else
         self.fans = self.fans + 1;
-        <!-- keepwork.user.unfollow({
+        keepwork.user.unfollow({
             objectType = 0,
             objectId = self.userId,
         }, function(status, msg, data)
             -- self.fans = self.fans + 1;
-        end); -->
+        end);
     end
     self.isFollow = not self.isFollow;
-    echo({"--------------------ClickFloow", self.fans});
     ui:RefreshWindow();
 end
 
-function OnRefresh()
-    echo("----------------OnRefresh------------------");
-end
 </script>

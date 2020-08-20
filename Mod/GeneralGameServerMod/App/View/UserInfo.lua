@@ -6,7 +6,7 @@ Desc: 用户信息详情页
 use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/App/View/UserInfo.lua");
-local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.App.View.UserInfo"):GetSingleton();
+local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.App.View.UserInfo");
 UserInfo:Show();
 -------------------------------------------------------
 ]]
@@ -86,6 +86,7 @@ end
 
 -- 显示页面
 function UserInfo:Show(entityPlayer)
+    entityPlayer = entityPlayer or GameLogic.GetPlayerController():GetPlayer();
     local username = entityPlayer:GetUserName();
     -- 重复点击相同的用户关闭页面
     if (self.username == username and self:IsShow()) then

@@ -1,11 +1,13 @@
 
 <template style="width: 880px; height: 584px; color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
-    <WindowTitleBar></WindowTitleBar>
-    <UserInfo style="float: left;"></UserInfo>
-    <WorksList style="float: left;"></WorksList>
+    <WindowTitleBar title="用户信息"></WindowTitleBar>
+    <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo>
+    <WorksList v-bind:ProjectList="ProjectList" style="float: left;"></WorksList>
+        <!-- <div>{{count}}</div>
+        <button v-on:click="click">OK</button> -->
 </template>
 
-
-<!-- 
-    
- -->
+<script src="%ui%/Page/UserInfoPage.lua">
+RegisterComponent("UserInfo", "%ui%/Component/UserInfo.html");
+RegisterComponent("WorksList", "%ui%/Component/WorksList.html");
+</script>

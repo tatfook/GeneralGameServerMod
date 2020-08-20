@@ -20,7 +20,7 @@ local ui = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.exp
 
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local __FILE__ = debug.getinfo(1,'S').source;
-local __DIRECTORY__ = string.match(__FILE__, "^.*/");
+local __DIRECTORY__ = string.match(__FILE__, "^(.*)/");
 
 -- UIWindow
 local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), {});
@@ -34,21 +34,22 @@ ui.window = nil;
 -- 构造函数
 function ui:ctor()
     self.window = nil;
+    self.global = nil;
 end
 
 -- 获取文件
 function ui:GetFilePath(relUiPath)
-    return __DIRECTORY__ .. relUiPath;
+    return __DIRECTORY__ .. "/".. relUiPath;
 end
 
 -- 注册组件
 function ui:Register(tagname, tagclass)
-    return Component:Register(tagname, tagclass);
+    return Component.Register(tagname, tagclass);
 end
 
 -- 定义组件
 function ui:Component(opts)
-    return Component:Extend(opts);
+    return Component.Extend(opts);
 end
 
 -- 获取全局表
@@ -77,7 +78,13 @@ function ui:RefreshWindow(delta)
 end
 
 -- 显示窗口
-function ui:ShowWindow(params)
+function ui.ShowWindow(self, params)
+    if (not params) then 
+        params = self;
+        self = ui:new();
+        echo("-------------------new ui window-----------------");
+    end
+
     params = params or {};
     local url = params.url or self:GetFilePath("ui.html");
     if (params.alignment == nil) then params.alignment = "_ct" end
@@ -86,19 +93,40 @@ function ui:ShowWindow(params)
     if (params.left == nil) then params.left = -params.width / 2 end
     if (params.top == nil) then params.top = -params.height / 2 end
     if (params.allowDrag == nil) then params.allowDrag = true end
+    if (params.name == nil) then params.name = "UI" end
 
     params.url = ParaXML.LuaXML_ParseString(params.mcml or string.format([[
-        <pe:mcml style="width: %spx; height: %spx;">
+        <pe:mcml class="ui-pe-mcml" width="100%%" height="100%%">
             <App filename="%s"></App>
         </pe:mcml>
-    ]], params.width, params.height, url));
+    ]], url));
 
     -- 关闭销毁
     params.DestroyOnClose = true;
     -- 强制更新全局表
     params.pageGlobalTable = self:GetGlobalTable();
 
+    self.params = params;
     return self:GetWindow():Show(params);
+end
+
+-- 设置窗口大小
+function ui:SetWindowSize(params)
+    if (params.alignment == nil) then params.alignment = "_ct" end
+    if (params.width == nil) then params.width = 500 end
+    if (params.height == nil) then params.height = 400 end
+    if (params.left == nil) then params.left = -params.width / 2 end
+    if (params.top == nil) then params.top = -params.height / 2 end
+    local window = self:GetWindow();
+    local nativeWindow = window and window:GetNativeWindow();
+    if (nativeWindow) then
+        window:SetAlignment(params.alignment);
+        nativeWindow:Reposition(params.alignment, params.left, params.top, params.width, params.height);
+        window:UpdateGeometry_Sys();
+    else
+        -- 窗口还未创建
+        self.params.alignment, self.params.left, self.params.top, self.params.width, self.params.height = params.alignment, params.left, params.top, params.width, params.height;
+    end
 end
 
 -- 关闭窗口
@@ -114,13 +142,14 @@ end
 
 -- 静态初始化
 local function StaticInit()
-    ui:Register("App", App);
-    ui:Register("Slot", Slot);
+    -- 设置UI目录别名
+    Component.SetPathAlias("ui", __DIRECTORY__);
 
-    ui:Register("WindowTitleBar", { filename = ui:GetFilePath("Component/WindowTitleBar.html")});
-    ui:Register("UserInfo", { filename = ui:GetFilePath("Component/UserInfo.html")});
-    ui:Register("WorksList", { filename = ui:GetFilePath("Component/WorksList.html")});
-    ui:Register("Test", { filename = ui:GetFilePath("Component/Test.html")});
+    ui:Register("App", App);
+    -- ui:Register("Slot", Slot);
+
+    ui:Register("WindowTitleBar", "%ui%/Core/Components/WindowTitleBar.html");
+    ui:Register("Test", "%ui%/Component/Test.html");
 end
 
 StaticInit();

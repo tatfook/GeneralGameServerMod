@@ -1,21 +1,75 @@
 <template>
     <scrollarea style="width: 644px; height: 546px; padding: 3px;">
-        <div v-for="x in 10" style="display: inline; margin: 8px; padding: 10px; width: 190px; height: 244px; background-color: #2c2f32; color:white;">
-            <div style="width: 170px; height: 104px; background: url(%https://keepwork.com/public/img/project_default_cover_new.af774e7d.png);"></div>
-            <div style="font-weight:bold; font-size:14px; margin-top: 12px;">test</div>
-            <div style="font-size:12px; color: #717171;margin-top: 5px;">创建时间: test</div>
-            <div style="font-size:12px; color: #717171;margin-top: 5px;">上次更新: test</div>
-            <button  type="button" style="margin-top: 12px; width: 170px; height: 25px; font-size: 8px;">访问世界</button>
+        <div v-for="project in ProjectList" style="display: inline; margin: 8px; padding: 10px; width: 190px; height: 244px; background-color: #2c2f32; color:white;">
+            <div style="width: 170px; height: 104px; background: url(https://keepwork.com/public/img/project_default_cover_new.af774e7d.png);"></div>
+            <div style="font-weight:bold; font-size:14px; margin-top: 12px;">{{GetProjectName(project.name)}}</div>
+            <div style="font-size:12px; color: #717171;margin-top: 5px;">创建时间: {{GetCreateTime(project.createdAt)}}</div>
+            <div style="font-size:12px; color: #717171;margin-top: 5px;">上次更新: {{GetUpdatedTime(project.updatedAt)}}</div>
+            <button  v-on:click="ClickOpenWorld(project.id)" type="button" style="margin-top: 12px; width: 170px; height: 25px; font-size: 10px; text-align: center;">访问世界</button>
         </div>
     </scrollarea>
 </template>
 
-<script>
-    ExportScope({
-        list = {
-            {
+<script type="text/lua">
+local UniString = commonlib.gettable("System.Core.UniString");
 
-            }
-        }
-    })
+ProjectList = ProjectList or {};
+
+function GetProjectName(text)
+    if type(text) ~= 'string' then
+        return ''
+    end
+
+    local utf8Text = UniString:new(text)
+
+    if _guihelper.GetTextWidth(text) > 112 then
+        return utf8Text:sub(1, 8).text .. '...'
+    else
+        return text
+    end
+end
+
+function GetCreateTime(datetime)
+    local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
+    return tostring(year) .. "年" .. tostring(month) .. "月" .. tostring(day) .. "日";
+end
+
+function GetUpdatedTime(datetime)
+    local year,month,day,hour,min,sec = string.match(datetime, "(%d+)%D(%d+)%D(%d+)%D+(%d+)%D(%d+)%D(%d+)");
+    local dateTime = string.format("%s-%s-%s %s:%s:%s", year,month,day,hour,min,sec);
+    local date,time = commonlib.timehelp.GetLocalTime();
+    local curDateTime = string.format("%s %s", date, string.gsub(time, "-", ":"));
+    local day,hours,minutes,seconds,time_str = commonlib.GetTimeStr_BetweenToDate(curDateTime, dateTime);
+    local year = math.floor(day / 365);
+    local month = math.floor(day / 30);
+    if (year > 0) then
+        return tostring(year) .. "年前";
+    end
+    if (month > 0) then
+        return tostring(month) .. "月前";
+    end
+    if (day > 0) then
+        return tostring(day) .. "天前";
+    end
+    return time_str;
+end
+
+
+-- 点击打开世界
+function ClickOpenWorld(worldId)
+    ui:CloseWindow();
+    GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
+end
 </script>
+
+<!-- 
+            <Columns>
+                    <div style="padding: 10px; width: 190px; height: 244px; background-color: #2c2f32; color:white;">
+                        <div style="<%=GetImageStyle(Eval('extra'))%>"></div>
+                        <div style="font-weight:bold; font-size:14px; margin-top: 12px;"><%=getProjectName(Eval("name"))%></div>
+                        <div style="font-size:12px; color: #717171;margin-top: 5px;">创建时间: <%=GetCreateTime(Eval("createdAt"))%></div>
+                        <div style="font-size:12px; color: #717171;margin-top: 5px;">上次更新: <%=GetUpdatedTime(Eval("updatedAt"))%></div>
+                        <input name="<%= Eval('id') %>" onclick="ClickOpenWorld" type="button" style="margin-top: 12px; width: 170px; height: 25px; font-size: 8px;" class="mc_light_grey_button_with_fillet" value="访问世界" />
+                    </div>
+                </Columns>
+ -->
