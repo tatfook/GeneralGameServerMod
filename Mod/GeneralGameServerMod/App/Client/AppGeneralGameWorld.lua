@@ -10,14 +10,17 @@ local AppGeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.App.Cli
 -------------------------------------------------------
 ]]
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
+-- NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/DesktopMenuPage.lua");
+-- local DesktopMenuPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.DesktopMenuPage");
 
 local AppGeneralGameWorld = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameWorld"));
 
 
 function AppGeneralGameWorld:Init(client)
     AppGeneralGameWorld._super.Init(self, client);
-    
+
     GameLogic.GetEvents():AddEventListener("DesktopMenuShow", AppGeneralGameWorld.OnDesktopMenuShow, self, "AppGeneralGameWorld");
+
 
     return self;
 end
@@ -30,4 +33,5 @@ end
 
 function AppGeneralGameWorld:OnDesktopMenuShow(obj)
     echo(obj);
+    
 end
