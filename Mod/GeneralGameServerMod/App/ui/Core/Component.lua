@@ -10,17 +10,22 @@ local Component = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Component.lua")
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
 NPL.load("(gl)script/ide/System/Windows/mcml/PageElement.lua");
+NPL.load("(gl)script/ide/System/Windows/mcml/Style.lua");
+local Style = commonlib.gettable("System.Windows.mcml.Style");
 local mcml = commonlib.gettable("System.Windows.mcml");
 local Elements = commonlib.gettable("System.Windows.mcml.Elements");
 local Component = commonlib.inherit(commonlib.gettable("System.Windows.mcml.PageElement"), NPL.export());
+local Helper = NPL.load("./Helper.lua");
+local Scope = NPL.load("./Scope.lua");
+local Parser = NPL.load("./Parser.lua");
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 
-Component:Property("Element");  -- 组件页面元素
-Component:Property("Components");  -- 组件依赖组件集
+Component:Property("Element");        -- 组件页面元素
+Component:Property("Components");     -- 组件依赖组件集
+Component:Property("ComponentStyle"); -- 组件样式表  <style></style>
+Component:Property("AutoRefresh", true, "IsAutoRefresh");  -- 是否自动刷新
 -- 全局组件
 local GlobalComponentClassMap = {};
--- 路径简写
-local PathAliasMap = {}; 
 
 -- 初始化基本元素
 mcml:StaticInit();
@@ -28,36 +33,14 @@ Component.name = "Component";
 
 -- 组件构造函数
 function Component:ctor()
-    self.scope = nil;
-    self.ComponentScope = nil;
-    self:SetComponents({});
+    self.scope = nil;                   -- 当前scope
+    self.ComponentScope = nil;          -- 组件scope
+    self:SetComponents({});             -- 依赖组件集
+    self:SetComponentStyle(Style:new():init(self:GetPageCtrl()));   -- 构建组件样式表
+
+    print("-----------------create component: ", self.name);
 end
 
-function Component.SetPathAlias(alias, path)
-    PathAliasMap[string.lower(alias)] = path or "";
-end
-
--- 格式化文件名
-function Component.FormatFilename(filename)
-    return string.gsub(filename or "", "%%(.-)%%", function(alias)
-        return PathAliasMap[string.lower(alias)];
-    end);
-end
-
--- 获取脚本文件
-function Component.ReadFile(filename)
-    local text = nil;
-
-    filename = Component.FormatFilename(filename);
-    if(filename and ParaIO.DoesFileExist(filename)) then
-		local file = ParaIO.open(filename, "r");
-		if(file:IsValid()) then
-			text = file:GetText();
-			file:close();
-		end
-    end
-    return text;
-end
 
 -- 定义组件
 function Component.Extend(opts)
@@ -126,33 +109,38 @@ function Component:IsValid()
     return if_else(self:GetElement(), true, false)
 end
 
--- 获取全局表
-function Component:GetGlobalTable()
+-- 获取UI实例
+function Component:GetUI()
     local page = self:GetPageCtrl();
     local window = page and page:GetWindow();
-    local G = window and window:GetUI():GetGlobalTable();
-    if (G == nil) then echo("-----------------self define global table not exist--------------------") end
+    return window and window:GetUI();
+end
+
+-- 获取全局表
+function Component:GetGlobalScope()
+    local ui = self:GetUI();
+    local G = ui and ui:GetGlobalScope();
+    if (G == nil) then echo("-----------------self define global scope not exist--------------------") end
     return G or _G;
 end
 
-
 function Component:PushScope(scope)
-    scope = scope or {};
-    local meta = getmetatable (scope);
-    if not meta then
-        meta = {}
-        setmetatable (scope, meta);
-    end
-    meta.__index = self:GetScope();
-    self:SetScope(scope);    
-    return self:GetScope();
+    scope = Scope.New(scope);
+    scope:SetMetaTable(self:GetScope());
+    self:SetScope(scope);
+    echo({"--------------------push scope", scope:GetID()});
+    return scope;
 end
 
 function Component:PopScope()
     local scope = self:GetScope();
-    if (scope == self.ComponentScope) then return nil end
-    local meta = getmetatable (scope);
-    self:SetScope(meta and meta.__index);
+    if (scope == self.ComponentScope) then 
+        echo("---------------------------pop scope error !!!");
+        return nil 
+    end
+    echo({"--------------------pop scope", scope:GetID()});
+    scope = scope:GetMetaTable();
+    self:SetScope(scope);
     return scope;
 end
 
@@ -168,24 +156,19 @@ end
 function Component:GetComponentScope()
     if (not self.ComponentScope) then
         -- 组件scope
-        self.ComponentScope = {};  -- 用自身的attr作为scope
+        self.ComponentScope = Scope.New();  -- 用自身的attr作为scope
         self.ComponentScope.self = self.ComponentScope; 
         self.ComponentScope.RegisterComponent = function(tagname, filename)
             Component.Register(tagname, filename, self:GetComponents());
         end
-        setmetatable (self.ComponentScope, {__index =  self:GetGlobalTable()});
+        self.ComponentScope.__newvalue = function(t, key, val)
+            print(string.format("[component:%s] [info] set component scope value, key = %s, ", self.name, key));
+            if (not self:IsAutoRefresh()) then return end
+            self:GetUI():RefreshWindow();
+        end
+        self.ComponentScope:SetMetaTable(self:GetGlobalScope());
     end
     return self.ComponentScope;
-end
-
-function Component:SetScopeValue(key, value)
-    local scope = self:GetScope();
-    scope[key] = value;
-end
-
-function Component:GetScopeValue(key)
-    local scope = self:GetScope();
-    return scope and scope[key];
 end
 
 -- 解析脚本节点
@@ -193,7 +176,7 @@ function Component:ParseScriptNode(scriptNode)
     if (not scriptNode) then return end
     local scriptFile = scriptNode.attr and scriptNode.attr.src;
     local scriptText = scriptNode[1] or "";
-    scriptText = (self.ReadFile(scriptFile) or "") .. "\n" .. scriptText;
+    scriptText = (Helper.ReadFile(scriptFile) or "") .. "\n" .. scriptText;
     local code_func, errormsg = loadstring(scriptText);
     if (not code_func) then 
         return LOG.std(nil, "error", "Component", "<Runtime error> syntax error while loading code in url:%s\n%s", src, tostring(errormsg));
@@ -202,12 +185,6 @@ function Component:ParseScriptNode(scriptNode)
     setfenv(code_func, self:GetScope());
     -- 执行脚本
     code_func();
-end
-
--- 解析文本节点
-function Component:ParseXmlTextNode(xmlNode, parentXmlNode)
-    local code = string.match(xmlNode, "^{{(.*)}}$");
-    return self:ExecTextCode(code, true) or xmlNode; 
 end
 
 -- 解析元素属性
@@ -258,7 +235,13 @@ function Component:ParseXmlNodeAttr(xmlNode)
 end
 
 -- 解析样式节点
-function Component:ParseStyleNode()
+function Component:ParseStyleNode(styleNode)
+    if (not styleNode) then return end
+    local mimetype = styleNode.attr and styleNode.attr.type or "text/css";
+    local type = string.match(mimetype,"[^/]+/([^/]+)");
+    local text = styleNode[1] or "";
+    -- 强制使用css样式
+    self:GetComponentStyle():LoadFromString(text, "css");
 end
 
 -- 执行文本代码
@@ -283,7 +266,7 @@ function Component:LoadXmlNode()
     if (self.template and self.template ~= "") then
         xmlRoot = ParaXML.LuaXML_ParseString(self.template);
     elseif (self.filename and self.filename ~= "") then
-        self.template = self.ReadFile(self.filename) or "";
+        self.template = Helper.ReadFile(self.filename) or "";
         self.template = string.gsub(self.template, "<!%-%-.-%-%->", "");
         self.template = string.gsub(self.template, "[\r\n]<script(.-)>(.-)[\r\n]</script>", "<script%1>\n<![CDATA[\n%2\n]]>\n</script>");
         -- xmlRoot = ParaXML.LuaXML_ParseFile(self.template);
@@ -314,16 +297,24 @@ function Component:ParseXmlNodeRecursive(xmlNode, parentElement)
     if (not xmlNode) then return end
 
     -- 文本节点
-    if (type(xmlNode) == "string") then
+    if (type(xmlNode) == "string" or xmlNode.name == nil) then
         -- for inner text of xml
-        local text = string.gsub(xmlNode, "{{(.-)}}", function(code)
+        local text, element = "", nil;
+        if (type(xmlNode) == "string") then
+            text = xmlNode;
+        else
+            text = xmlNode.text;
+            element = xmlNode.element;
+        end 
+        -- 解析文本
+        text = string.gsub(text, "{{(.-)}}", function(code)
             return self:ExecTextCode(code, true);
         end);
-        childElement = Elements.pe_text:createFromString(text or xmlNode);
-        childElement.parent = parentElement;
-        if (parentElement) then 
-            table.insert(parentElement, childElement);
-        end
+        element = element or  Elements.pe_text:createFromString(text);
+        element.parent = parentElement;
+        element:SetValue(text);
+        if (parentElement) then table.insert(parentElement, element) end
+        xmlNode.element = element;
         return;
     end
     
@@ -363,6 +354,7 @@ function Component:ParseXmlNodeRecursive(xmlNode, parentElement)
         if (not val) then val = keyexp end
         list = self:ExecTextCode(list, true);
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
+        echo({"-------------------------v-for", count})
         -- 弹出scope
         -- self:PopScope();
         for i = 1, count do
@@ -407,6 +399,7 @@ function Component:ParseXmlNodeRecursive(xmlNode, parentElement)
     -- 解析子节点
     -- echo("---------------------child node count:" .. tostring(#xmlNode));
     for i = 1, #xmlNode do
+        if (type(xmlNode[i]) == "string") then xmlNode[i] = {text = xmlNode[i]} end
         self:ParseXmlNodeRecursive(xmlNode[i], element);
     end
 
@@ -416,14 +409,18 @@ function Component:ParseXmlNodeRecursive(xmlNode, parentElement)
     -- 返回元素
     return element;
 end
+
 -- 解析组件获取组件的页面元素 PageElement
 function Component:ParseComponent()
     -- 获取相应的xml节点
     self:LoadXmlNode();
     -- 解析html 生成element
-    -- self:SetElement(self:XmlNodeToPageElement(self:ParseXmlNode(self.xmlNode), true));
-    self:SetElement(self:ParseXmlNodeRecursive(self.xmlNode));
+    -- self:SetElement(self:ParseXmlNodeRecursive(self.xmlNode));
+
+    Parser(self, {xmlNode = self.xmlNode});
+    self:SetElement(self.xmlNode.element);
 end
+
 
 -- 查找父组件 
 function Component:GetParentComponent(bReset)
@@ -441,12 +438,14 @@ end
 -- 将组件属性附加在组件Scope上
 function Component:InitComponentScope()
     if (self.attr) then
+        self:SetAutoRefresh(false);
         local scope = self:GetComponentScope();
         for key, val in pairs(self.attr) do
             if (key ~= "style" and key ~= "class") then
                 scope[key] = val;
             end
         end
+        self:SetAutoRefresh(true);
     end  
 end
 
@@ -475,11 +474,12 @@ end
 
 -- 加载组件
 function Component:LoadComponent(parentElem, parentLayout, style)
+    -- echo({"----------------------LoadComponent:", self.name, "scope id", self:GetScope():GetID(), "scope", self:GetScope():GetRawData()});
+    echo({"----------------------LoadComponent:", self.name, "scope id", self:GetScope():GetID()});
+    -- 初始化
     self:Init();
     -- 解析组件
     self:ParseComponent();
-    -- 执行 OnRefresh 函数
-    -- self:ExecTextCode([[if (type(OnRefresh) == "function") then OnRefresh() end]]);
     -- 组件是否有效
     if (not self:IsValid()) then return end
     -- 组件加载前
@@ -492,16 +492,17 @@ end
 
 function Component:OnLoadComponentBeforeChild(parentElem, parentLayout, css)
     if (not self:IsValid()) then return end
+    self:GetPageStyle():AddReference(self:GetComponentStyle(), "css");
 end
 
 function Component:OnLoadComponentAfterChild(parentElem, parentLayout, css)
     if (not self:IsValid()) then return end
-    local defaultStyle = self:GetStyle();
-    local componentStyle = self:GetElement():GetStyle();
-    for key, val in pairs(defaultStyle) do
-        if (componentStyle[key] == nil) then
-            componentStyle[key] = val;
-        end
+    self:GetPageStyle():RemoveReference(self:GetComponentStyle(), "css");
+
+    local ComponentStyle = self:GetStyle();
+    local ElementStyle = self:GetElement():GetStyle();
+    for key, val in pairs(ComponentStyle) do
+        ElementStyle[key] = val;
     end
 end
 

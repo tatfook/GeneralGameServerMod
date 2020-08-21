@@ -1,26 +1,30 @@
 
-<template style="width: 880px; height: 584px; color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
+<template height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
     <WindowTitleBar title="用户信息"></WindowTitleBar>
-    <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo>
-    <WorksList v-bind:ProjectList="ProjectList" style="float: left;"></WorksList>
-        <!-- <div>{{count}}</div>
-        <button v-on:click="click">OK</button> -->
+    <!-- <Test></Test>
+    <div class="test">hello world</div>
+    <div>{{count}}</div>
+    <button v-on:click="click">OK</button> -->
 </template>
 
-<script src="%ui%/script.lua">
-ui:SetWindowSize({width = 880, height = 584});
-
-RegisterComponent("UserInfo", "Mod/GeneralGameServerMod/App/ui/Component/UserInfo.html");
-RegisterComponent("WorksList", "Mod/GeneralGameServerMod/App/ui/Component/WorksList.html");
+<script>
+self.count = 0;
+function click()
+    self.count = self.count + 1;
+end
 </script>
+
+<style type="text/css">
+.test {
+    width: 100%;
+    font-size: 30px;
+    color: #ff0000;
+}
+</style>
 
 <!-- <script>
     echo("===================================================aaa")
-self.count = 0;
-function click(x)
-    self.count = self.count + 1;
-    ui:RefreshWindow();
-end
+
 </script> -->
 <!-- 
 <script>
@@ -35,18 +39,8 @@ end
     <div v-for="x in 3" v-on:click="click(x)">{{x}}</div>
     <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo>
 
-<WindowTitleBar></WindowTitleBar>
-    <WorksList style="float: left;"></WorksList>
 
-
-
-    <UserInfo></UserInfo>
-
-<pe:component>
-        
-</pe:component>
- <WindowTitleBar></WindowTitleBar>
-    <pe:component>
-        
-    </pe:component>
+ui:SetWindowSize({width = 880, height = 584});
+RegisterComponent("UserInfo", "Mod/GeneralGameServerMod/App/ui/Component/UserInfo.html");
+RegisterComponent("WorksList", "Mod/GeneralGameServerMod/App/ui/Component/WorksList.html");
 -->

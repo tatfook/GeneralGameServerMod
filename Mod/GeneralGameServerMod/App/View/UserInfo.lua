@@ -7,7 +7,7 @@ use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/App/View/UserInfo.lua");
 local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.App.View.UserInfo");
-UserInfo:Show();
+UserInfo:Show(NpcEntity);
 -------------------------------------------------------
 ]]
 

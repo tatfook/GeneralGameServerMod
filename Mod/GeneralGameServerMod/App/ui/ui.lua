@@ -16,6 +16,8 @@ local Component = NPL.load("./Core/Component.lua");
 local App = NPL.load("./Core/App.lua");
 local Slot = NPL.load("./Core/Slot.lua");
 
+local Helper = NPL.load("./Core/Helper.lua");
+local Scope = NPL.load("./Core/Scope.lua");
 local ui = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
@@ -27,6 +29,7 @@ local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), 
 
 UIWindow:Property("UIWindow", true, "IsUIWindow");
 UIWindow:Property("UI");
+
 
 -- 当前窗口
 ui.window = nil; 
@@ -55,9 +58,25 @@ end
 -- 获取全局表
 function ui:GetGlobalTable()
     if (self.global) then return self.global end
-    self.global = { ui = self};
+    self.global = {};
     setmetatable(self.global, {__index = _G});
+    self.global.ui = self;
+    self.global._G = self.global;
+    self.global.self = self.global;
     return self.global;
+end
+
+-- 获取全局Scope支持响应式, 全局表不支持响应式
+function ui:GetGlobalScope()
+    if (self.globalScope) then return self.globalScope end
+    self.globalScope = Scope.New();
+    self.globalScope:SetMetaTable(self:GetGlobalTable());
+    self.globalScope.__newvalue = function(_, key, val) 
+        print("[ui] [info] set global scope value, key = ", key);
+        if (key == "__newvalue") then return end;
+        self:RefreshWindow();
+    end
+    return self.globalScope;
 end
 
 -- 获取窗口
@@ -74,7 +93,7 @@ end
 -- 刷新窗口
 function ui:RefreshWindow(delta)
     local page = self:GetWindow():Page();
-    return page and page:Refresh(delta or 0);
+    return page and page:Refresh(delta or 0.3);
 end
 
 -- 显示窗口
@@ -123,7 +142,9 @@ function ui:SetWindowSize(params)
         window:SetAlignment(params.alignment);
         nativeWindow:Reposition(params.alignment, params.left, params.top, params.width, params.height);
         window:UpdateGeometry_Sys();
+        echo("-----------------------------------window already create-----------------");
     else
+        echo("-----------------------------------window not create-----------------");
         -- 窗口还未创建
         self.params.alignment, self.params.left, self.params.top, self.params.width, self.params.height = params.alignment, params.left, params.top, params.width, params.height;
     end
@@ -143,7 +164,7 @@ end
 -- 静态初始化
 local function StaticInit()
     -- 设置UI目录别名
-    Component.SetPathAlias("ui", __DIRECTORY__);
+    Helper.SetPathAlias("ui", __DIRECTORY__);
 
     ui:Register("App", App);
     -- ui:Register("Slot", Slot);
