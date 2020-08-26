@@ -30,7 +30,7 @@ function LoadUserInfo(username)
         }, function(status, msg, data)
             if (status ~= 200) then return echo("获取用户项目列表失败") end
             self.ProjectList = data;
-            ui:RefreshWindow();
+            -- ui:RefreshWindow();
             -- echo(data);
             -- 获取是否关注
             keepwork.user.isfollow({
@@ -41,7 +41,7 @@ function LoadUserInfo(username)
                 if (status ~= 200) then return end
                 if (data and data ~= "false" and tonumber(data) ~= 0) then
                     self.UserDetail.isFollow = true;
-                    ui:RefreshWindow();
+                    -- ui:RefreshWindow();
                 end
             end)
         end)

@@ -7,6 +7,17 @@ use the lib:
 -------------------------------------------------------
 local Slot = NPL.load("Mod/GeneralGameServerMod/App/ui/Component.lua");
 -------------------------------------------------------
+
+A Component
+<template>
+    <slot></slot>
+</template>
+B Component
+<template>
+    <A>
+        <div v-slot="default">slot content</div>
+    </A>
+</template>
 ]]
 local Component = NPL.load("./Component.lua");
 local Slot = commonlib.inherit(Component, NPL.export());
@@ -16,28 +27,10 @@ function Slot:ctor()
 end
 
 function Slot:ParseComponent()
-    local xmlNode = self:GetSlotNode();
-    local class_type = xmlNode and mcml:GetClassByTagName(xmlNode.name or "div");
-    self:SetElement(class_type and class_type:createFromXmlNode(xmlNode));
+    local xmlNode = self.xmlNode.xmlNode;
+    -- 解析html 生成element
+    self:ParseXmlNode(xmlNode);
+    -- 设置元素
+    self:SetElement(xmlNode and xmlNode.element);
 end
 
-function Slot:GetSlotNode()
-    local slotName = self.attr and self.attr.name;
-    local parentComponent = self:GetParentComponent();
-    while(parentComponent) do
-        local bContinue = false;
-        for i, childNode in ipairs(parentComponent.childNodes) do
-            if (childNode.attr and childNode.attr["v-slot"] == slotName) then
-                return childNode;
-            end
-            if (string.lower(childNode.name) == "slot" and childNode.attr and childNode.attr.name == slotName) then
-                bContinue = true;
-            end
-        end
-        if (bContinue) then
-            parentComponent = parentComponent:GetParentComponent();
-        else
-            parentComponent = nil;
-        end
-    end
-end

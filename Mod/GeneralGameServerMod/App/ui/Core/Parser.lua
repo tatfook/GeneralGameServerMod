@@ -13,6 +13,46 @@ local Elements = commonlib.gettable("System.Windows.mcml.Elements");
 
 local Parser = NPL.export();
 
+-- 是否是文本节点
+local function IsTextXmlNode(xmlNode) 
+    return type(xmlNode) == "string" or (not xmlNode.name) or xmlNode.name == "";
+end
+
+-- 解析Slot节点对应的xmlNode
+local function ParseSlotXmlNode(self, opts)
+    local xmlNode, parentElement = opts.xmlNode, opts.parentElement; 
+    -- 组件子节点列表
+    local childXmlNodes = self.childXmlNodes or {};
+    -- 获取slot对象xmlnode
+    local function GetXmlNodeBySlotName(slotName)
+        for i = 1, #childXmlNodes do
+            local childNode = childXmlNodes[i];
+            local childSlotName = childNode.attr and childNode.attr.name;
+            if (string.lower(childNode.name or "") == "slot" and childSlotName == slotName) then
+                return childNode.xmlNode;
+            end
+            if (childNode.slotName == slotName) then
+                return childNode;
+            end
+        end
+    end
+
+    -- 解析slot的对应的xmlnode
+    local function ParseSlotXmlNodeRecursive(self, opts, xmlNode)
+        -- echo({"parser", "parse slot xml node", xmlNode and xmlNode.name or "nil"});
+        if (IsTextXmlNode(xmlNode)) then return end
+        if (string.lower(xmlNode.name) == "slot") then
+            xmlNode.xmlNode = GetXmlNodeBySlotName(xmlNode.attr and xmlNode.attr.name);
+            return;  -- <slot></slot> 内部节点忽略           
+        end
+        for i = 1, #xmlNode do
+            ParseSlotXmlNodeRecursive(self, opts, xmlNode[i]);
+        end
+    end
+
+    ParseSlotXmlNodeRecursive(self, opts, xmlNode);
+end
+
 -- 解析文本节点生成文本页面元素
 local function ParseTextXmlNode(self, opts)
     local xmlNode, parentElement = opts.xmlNode, opts.parentElement; 
@@ -38,6 +78,7 @@ local function ParseTextXmlNode(self, opts)
     if (parentElement) then 
         table.insert(parentElement, element);
         element.parent = parentElement;
+        element.index = #parentElement;
     else
         element.parent = self;
     end
@@ -53,7 +94,7 @@ local function ParseXmlNode(self, opts)
     if (type(xmlNode) ~= "table") then return end
 
     local element = nil;
-    local attr = commonlib.copy(xmlNode.attr);   -- v-atrr 会常更新, 生成元素需要用最新的attr集 否则可能使用旧的缓存属性集
+    local attr = commonlib.copy(xmlNode.attr);   -- v-attr 会常更新, 生成元素需要用最新的attr集 否则可能使用旧的缓存属性集
     if (xmlNode.element) then
         element = xmlNode.element;
         for i = #element, 1, -1 do
@@ -62,7 +103,7 @@ local function ParseXmlNode(self, opts)
             table.remove(element, i);
         end
     else
-        element = {name = xmlNode.name};
+        element = {name = xmlNode.name, xmlNode = xmlNode};
         local ElementClass = self:GetComponentByTagName(if_else(parentElement == nil and xmlNode.name == "template", "div", xmlNode.name or "text")); -- template => div
         -- 新建元素
         if (type(ElementClass) == "table" and ElementClass.new) then
@@ -72,6 +113,7 @@ local function ParseXmlNode(self, opts)
         else 
             return LOG.std(nil, "warn", "Component", "can not find tag name %s", xmlNode.name or "");
         end
+        echo({"----------------------------Create Element:", xmlNode.name});
     end
 
     if (not element) then
@@ -80,7 +122,8 @@ local function ParseXmlNode(self, opts)
     end
 
     element.attr = attr;
-    echo("[parser] [info] generate page element:" .. element.name);
+
+    -- echo("[parser] [info] generate page element:" .. element.name);
     -- echo({"[parser] [info] element attr:", element.attr});
 
     -- 添加到父元素中
@@ -108,9 +151,53 @@ local function ParseChildXmlNode(self, opts)
 
     -- 解析子节点
     -- echo("---------------------child node count:" .. tostring(#xmlNode));
+    local isComponent = self:IsComponent(xmlNode and xmlNode.name);
+    if (isComponent) then element.childXmlNodes = {}; end
     for i = 1, #xmlNode do
         if (type(xmlNode[i]) == "string") then xmlNode[i] = {text = xmlNode[i]} end
-        Parser(self, {xmlNode = xmlNode[i], parentElement = element});
+        if (isComponent) then
+            -- 组件, 备份子节点, 以便内部<slot></slot>替换
+            table.insert(element.childXmlNodes, xmlNode[i]);
+        else
+            -- 非组件
+            Parser(self, {xmlNode = xmlNode[i], parentElement = element});
+        end
+    end
+
+    -- 如果是组件, 解析slot节点对应的xmlnode
+    if (isComponent) then
+        ParseSlotXmlNode(self, opts);
+    end
+end
+
+-- 解析v-slot指令
+local function v_slot(self, opts)
+    local xmlNode, parentElement = opts.xmlNode, opts.parentElement; 
+    -- v-slot只能用于组件的直接子元素
+    if (type(xmlNode) ~= "table" or not self:IsComponent(xmlNode.name)) then return end
+    -- 不解析slot组件的v-slot命令
+    if (string.lower(xmlNode.name) == "slot") then return end
+
+    -- echo({"Parser", "v-slot", xmlNode.name});
+
+    -- 设置子节点的slotname
+    for i = 1, #xmlNode do
+        local childNode = xmlNode[i];
+        -- 转换文本节点
+        if (type(childNode) == "string") then
+            childNode = {text = childNode}
+            xmlNode[i] = childNode;
+        end
+        childNode.scope = self:GetScope();              -- 获取当前栈顶Scope  支持v-for嵌套
+        if (childNode.attr) then
+            for key, val in pairs(childNode.attr) do
+                local slotName = string.match(key, "v-slot:(%w+)");
+                if (slotName) then
+                    childNode.slotName = slotName;
+                    childNode.slotScope = val;
+                end
+            end
+        end 
     end
 end
 
@@ -216,7 +303,7 @@ local function v_for(self, opts)
         return o;
     end
 
-    echo({"-------------------------v-for", count})
+    echo({"-------------------------v-for", count, cloneXmlNodeCount, #cloneXmlNodes});
     for i = 1, count do
         local cloneNode = i < cloneXmlNodeCount and cloneXmlNodes[i] or copyXmlNode(xmlNode); -- 大于上次数量新增, 小于复用
         cloneXmlNodes[i] = cloneNode;
@@ -233,7 +320,7 @@ local function v_for(self, opts)
         -- 产生新scope压入scope栈
         self:PushScope(scope);
         -- 解析当前节点重新
-        self:ParseXmlNodeRecursive(cloneNode, parentElement);
+        Parser(self, {xmlNode = cloneNode, parentElement = parentElement});
         -- 弹出scope栈
         self:PopScope();
     end
@@ -247,10 +334,12 @@ end
 function Parser.Parse(self, opts)
     -- 优先级高的放前面, 特殊性的放前面
     local parser_list = {
+        {name="v-slot", parse = v_slot},
         {name="v-for", parse = v_for},
         {name="v-if", parse = v_if},
         {name="v-attr", parse = v_attr},
         {name="text-xml-node", parse = ParseTextXmlNode},
+        -- {name="slot-xml-node", parse = ParseSlotXmlNode},
         {name="xml-node", parse = ParseXmlNode},
         {name="child-xml-node", parse = ParseChildXmlNode},
     }

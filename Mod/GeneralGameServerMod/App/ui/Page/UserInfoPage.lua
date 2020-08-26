@@ -3,7 +3,7 @@ NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
 local Encoding = commonlib.gettable("System.Encoding");
 
-local username = self.username or "xiaoyao";
+local username = self.username or "dukes";
 
 -- 组件全局变量初始化
 self.UserDetail = nil
@@ -31,7 +31,7 @@ function LoadUserInfo(username)
             if (status ~= 200) then return echo("获取用户项目列表失败") end
             self.ProjectList = data;
             -- ui:RefreshWindow();
-            echo(data);
+            -- echo(data);
             -- 获取是否关注
             keepwork.user.isfollow({
                 objectId = userId,

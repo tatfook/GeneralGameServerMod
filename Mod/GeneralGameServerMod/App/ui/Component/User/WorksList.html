@@ -1,0 +1,77 @@
+<template>
+    <scrollarea style="width: 604px; height: 540px; padding-left: 6px; padding-top: 6px;">
+        <div v-for="project in ProjectList" class="project">
+            <div style="width: 264px; height: 134px; background: url(https://keepwork.com/public/img/project_default_cover_new.af774e7d.png);"></div>
+            <div style="base-font-size: 16px; font-size:16px; color: #000000; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px;">{{GetProjectName(project.name)}}</div>
+            <div style="base-font-size: 12px; font-size:12px; color: #999999; margin-top: 10px; margin-left:8px; height: 12px; line-height: 12px;">{{GetCreateTime(project.createdAt)}}</div>
+            <div style="margin-top: 12px; margin-left: 8px; base-font-size: 12px; font-size:12px; color: #999999; ">
+                <div style="display:inline; height: 16px;">
+                    <div valign="center" style="display:inline; width: 16px; height: 12px; background: url(Texture/Aries/Creator/keepwork/ggs/user/icon_liulan_16X12_32bits.png#0 0 16 12);"></div>
+                    <div style="display:inline; line-height: 16px; height: 16px; padding-left: 5px; padding-right: 5px;">{{project.visit or 0}}</div>
+                </div>
+                <div style="display:inline; height: 16px;">
+                    <div style="display:inline; width: 16px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/icon_dianzan_16X16_32bits.png#0 0 16 16);"></div>
+                    <div style="display:inline; line-height: 16px; height: 16px; padding-left: 5px; padding-right: 5px;">{{project.star or 0}}</div>
+                </div>
+                <div style="display:inline; height: 16px;">
+                    <div style="display:inline; width: 18px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/icon_xinxi_18X16_32bits.png#0 0 18 16);"></div>
+                    <div style="display:inline; line-height: 16px; height: 16px; padding-left: 5px; padding-right: 5px;">{{project.comment or 0}}</div>
+                </div>
+            </div>
+            <div style="margin-top: 12px; width: 250px;">
+                <div style="float: right;">
+                    <div v-on:click="ClickOpenWorld(project.id)" class="inline" style="width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
+                </div>
+            </div>
+            <Rate style="position: absolute; left: 0px;" v-bind:rate="project.rate"></Rate>
+        </div>
+
+    </scrollarea>
+</template>
+
+<script type="text/lua">
+local UniString = commonlib.gettable("System.Core.UniString");
+ProjectList = ProjectList or {};
+
+function GetProjectName(text)
+    if type(text) ~= 'string' then
+        return ''
+    end
+
+    local utf8Text = UniString:new(text)
+
+    if _guihelper.GetTextWidth(text) > 112 then
+        return utf8Text:sub(1, 8).text .. '...'
+    else
+        return text
+    end
+end
+
+function GetCreateTime(datetime)
+    local datestr, timestr = string.match(datetime, "(%d+%D%d+%D%d+)%D*(%d+%D%d+)");
+    return datestr .. " " .. timestr;
+end
+
+-- 点击打开世界
+function ClickOpenWorld(worldId)
+    ui:CloseWindow();
+    GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
+end
+</script>
+
+<style type="text/css">  
+.project {
+    position: relative;
+    display: inline-block; 
+    margin:3px; 
+    padding: 10px; 
+    padding-top: 8px; 
+    padding-bottom: 9px; 
+    color:white;
+    width: 284px;
+    height: 274px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/kuang1_32X32_32bits.png#0 0 32 32:14 14 14 14);
+}
+</style>
+
+<!-- background: url(Texture/Aries/Creator/keepwork/ggs/user/zuopkuang_32X32_32bits.png#0 0 32 32:14 14 14 14); -->

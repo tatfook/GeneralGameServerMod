@@ -93,7 +93,7 @@ end
 -- 刷新窗口
 function ui:RefreshWindow(delta)
     local page = self:GetWindow():Page();
-    return page and page:Refresh(delta or 0.3);
+    return page and page:Refresh(delta or 0.5);
 end
 
 -- 显示窗口
@@ -136,18 +136,7 @@ function ui:SetWindowSize(params)
     if (params.height == nil) then params.height = 400 end
     if (params.left == nil) then params.left = -params.width / 2 end
     if (params.top == nil) then params.top = -params.height / 2 end
-    local window = self:GetWindow();
-    local nativeWindow = window and window:GetNativeWindow();
-    if (nativeWindow) then
-        window:SetAlignment(params.alignment);
-        nativeWindow:Reposition(params.alignment, params.left, params.top, params.width, params.height);
-        window:UpdateGeometry_Sys();
-        echo("-----------------------------------window already create-----------------");
-    else
-        echo("-----------------------------------window not create-----------------");
-        -- 窗口还未创建
-        self.params.alignment, self.params.left, self.params.top, self.params.width, self.params.height = params.alignment, params.left, params.top, params.width, params.height;
-    end
+    self.params.alignment, self.params.left, self.params.top, self.params.width, self.params.height = params.alignment, params.left, params.top, params.width, params.height;
 end
 
 -- 关闭窗口
@@ -167,7 +156,7 @@ local function StaticInit()
     Helper.SetPathAlias("ui", __DIRECTORY__);
 
     ui:Register("App", App);
-    -- ui:Register("Slot", Slot);
+    ui:Register("Slot", Slot);
 
     ui:Register("WindowTitleBar", "%ui%/Core/Components/WindowTitleBar.html");
     ui:Register("Test", "%ui%/Component/Test.html");

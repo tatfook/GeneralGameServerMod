@@ -1,32 +1,25 @@
 
-<template height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
-    <WindowTitleBar title="用户信息"></WindowTitleBar>
-    <!-- <Test></Test>
-    <div class="test">hello world</div>
-    <div>{{count}}</div>
-    <button v-on:click="click">OK</button> -->
+<template height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/dakuang_32bits.png#0 0 440 93:37 43 33 44);">
+    <Title></Title>
+    <div width="100%">
+        <UserInfo v-bind:UserDetail="UserDetail" style="float:left;"></UserInfo>
+        <WorksList v-bind:ProjectList="ProjectList" style="float:left;"></WorksList>
+    </div>
 </template>
 
-<script>
-self.count = 0;
-function click()
-    self.count = self.count + 1;
-end
+<script type="text/lua" src="%ui%/script.lua">
+ui:SetWindowSize({width = 960, height = 585});
+RegisterComponent("Title", "%ui%/Component/User/Title.html");
+RegisterComponent("UserInfo", "%ui%/Component/User/UserInfo.html");
+RegisterComponent("Rate", "%ui%/Component/User/Rate.html");
+RegisterComponent("WorksList", "%ui%/Component/User/WorksList.html");
 </script>
 
-<style type="text/css">
-.test {
-    width: 100%;
-    font-size: 30px;
-    color: #ff0000;
-}
-</style>
 
-<!-- <script>
-    echo("===================================================aaa")
 
-</script> -->
 <!-- 
+-- 设置窗口高度
+-- ui:SetWindowSize({width = 960, height = 600});
 <script>
 
     <div>{{count}}</div>
