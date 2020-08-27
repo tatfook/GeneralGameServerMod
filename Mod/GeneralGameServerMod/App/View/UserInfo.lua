@@ -13,7 +13,8 @@ UserInfo:Show(NpcEntity);
 
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/App/View/View.lua");
-
+local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
+local userMcml2 = true;
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local UserInfo = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.App.View.View"), commonlib.gettable("Mod.GeneralGameServerMod.App.View.UserInfo"));
 
@@ -87,7 +88,11 @@ end
 -- 显示页面
 function UserInfo:Show(entityPlayer)
     entityPlayer = entityPlayer or GameLogic.GetPlayerController():GetPlayer();
-    local username = entityPlayer:GetUserName();
+    local username = entityPlayer:GetUserName() or System.User.keepworkUsername;
+    local mainasset = entityPlayer:GetMainAssetPath();
+    if (userMcml2) then
+        return page:ShowUserInfoPage({username = username, mainasset = mainasset});
+    end
     -- 重复点击相同的用户关闭页面
     if (self.username == username and self:IsShow()) then
         return self:Close();

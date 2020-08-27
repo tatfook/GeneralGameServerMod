@@ -169,6 +169,9 @@ function Component:GetComponentScope()
         self.ComponentScope.RegisterComponent = function(tagname, filename)
             Component.Register(tagname, filename, self:GetComponents());
         end
+        self.ComponentScope.GetGlobalScope = function()
+            return self:GetGlobalScope();
+        end
         self.ComponentScope.__newvalue = function(t, key, val)
             if (not self:IsAutoRefresh() or key == "__newvalue") then return end
             print(string.format("[component:%s] [info] set component scope value, key = %s, ", self.name, key));

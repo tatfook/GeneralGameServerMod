@@ -3,9 +3,10 @@ NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
 local Encoding = commonlib.gettable("System.Encoding");
 
-local username = self.username or "dukes";
+local username = self.username or "xiaoyao";
 
 -- 组件全局变量初始化
+GetGlobalScope():Set("AuthUsername", System.User.keepworkUsername);
 self.UserDetail = nil
 self.ProjectList = {};
 
@@ -47,6 +48,5 @@ function LoadUserInfo(username)
         end)
     end)
 end
--- 设置窗口高度
-ui:SetWindowSize({width = 880, height = 584});
+
 LoadUserInfo(username);

@@ -1,7 +1,7 @@
 <template>
     <scrollarea style="width: 604px; height: 540px; padding-left: 6px; padding-top: 6px;">
         <div v-for="project in ProjectList" class="project">
-            <div style="width: 264px; height: 134px; background: url(https://keepwork.com/public/img/project_default_cover_new.af774e7d.png);"></div>
+            <div v-bind:style="GetImageStyle(project.extra)"></div>
             <div style="base-font-size: 16px; font-size:16px; color: #000000; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px;">{{GetProjectName(project.name)}}</div>
             <div style="base-font-size: 12px; font-size:12px; color: #999999; margin-top: 10px; margin-left:8px; height: 12px; line-height: 12px;">{{GetCreateTime(project.createdAt)}}</div>
             <div style="margin-top: 12px; margin-left: 8px; base-font-size: 12px; font-size:12px; color: #999999; ">
@@ -23,15 +23,21 @@
                     <div v-on:click="ClickOpenWorld(project.id)" class="inline" style="width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
                 </div>
             </div>
-            <Rate style="position: absolute; left: 0px;" v-bind:rate="project.rate"></Rate>
+            <Rate v-if="project.rate and project.rate > 0" style="position: absolute; left: 0px;" v-bind:rate="project.rate"></Rate>
         </div>
 
     </scrollarea>
 </template>
 
 <script type="text/lua">
+RegisterComponent("Rate", "%ui%/Component/User/Rate.html");
 local UniString = commonlib.gettable("System.Core.UniString");
 ProjectList = ProjectList or {};
+
+function GetImageStyle(extra)
+    local url = extra and extra.imageUrl or "https://keepwork.com/public/img/project_default_cover_new.af774e7d.png"; 
+    return string.format("width: 264px; height: 134px; background: url(%s);", url);
+end
 
 function GetProjectName(text)
     if type(text) ~= 'string' then

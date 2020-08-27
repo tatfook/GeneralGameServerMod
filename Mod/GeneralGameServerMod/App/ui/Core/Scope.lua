@@ -159,6 +159,16 @@ function Scope:IsScope()
     return self.__scope;
 end
 
+-- 设置值
+function Scope:Set(key, val)
+    self[key] = val;
+end
+
+-- 获取值
+function Scope:Get(key)
+    return self[key];
+end
+
 -- 获取ID
 -- local s = Scope.New({1,2,3});
 -- for key, val in ipairs(s) do

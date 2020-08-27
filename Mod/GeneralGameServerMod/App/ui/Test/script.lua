@@ -6,6 +6,7 @@ local Encoding = commonlib.gettable("System.Encoding");
 local username = self.username or "xiaoyao";
 
 -- 组件全局变量初始化
+GetGlobalScope():Set("AuthUsername", System.User.keepworkUsername);
 self.UserDetail = nil
 self.ProjectList = {};
 

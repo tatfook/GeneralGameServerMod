@@ -56,13 +56,22 @@ function ui:Component(opts)
 end
 
 -- 获取全局表
-function ui:GetGlobalTable()
-    if (self.global) then return self.global end
+function ui:GetGlobalTable(G, bReset)
+    if (self.global and not bReset) then return self.global end
     self.global = {};
     setmetatable(self.global, {__index = _G});
+    if (type(G) == "table") then
+        for key, val in pairs(G) do 
+            self.global[key] = val;
+        end
+    end
     self.global.ui = self;
     self.global._G = self.global;
     self.global.self = self.global;
+
+    -- 更新全局Scope的元表
+    self:GetGlobalScope():SetMetaTable(self.global);
+
     return self.global;
 end
 
@@ -123,7 +132,7 @@ function ui.ShowWindow(self, params)
     -- 关闭销毁
     params.DestroyOnClose = true;
     -- 强制更新全局表
-    params.pageGlobalTable = self:GetGlobalTable();
+    params.pageGlobalTable = self:GetGlobalTable(params.G, true);
 
     self.params = params;
     return self:GetWindow():Show(params);
@@ -143,6 +152,8 @@ end
 function ui:CloseWindow()
     if (not self.window) then return end
     self.window:CloseWindow();
+    self.global = nil;
+    self.globalScope = nil;
 end
 
 -- 窗口关闭回调
@@ -159,7 +170,6 @@ local function StaticInit()
     ui:Register("Slot", Slot);
 
     ui:Register("WindowTitleBar", "%ui%/Core/Components/WindowTitleBar.html");
-    ui:Register("Test", "%ui%/Component/Test.html");
 end
 
 StaticInit();

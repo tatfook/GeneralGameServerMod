@@ -69,7 +69,7 @@ local function ParseTextXmlNode(self, opts)
     end 
     -- 解析文本
     text = string.gsub(text, "{{(.-)}}", function(code)
-        return self:ExecTextCode(code, true);
+        return self:ExecTextCode(code, true) or "";
     end);
     
     element = element or Elements.pe_text:createFromString(text);
@@ -113,7 +113,9 @@ local function ParseXmlNode(self, opts)
         else 
             return LOG.std(nil, "warn", "Component", "can not find tag name %s", xmlNode.name or "");
         end
-        echo({"----------------------------Create Element:", xmlNode.name});
+        if (self:IsComponent(xmlNode.name)) then
+            echo({"----------------------------Create Element:", xmlNode.name});
+        end
     end
 
     if (not element) then
@@ -305,7 +307,7 @@ local function v_for(self, opts)
 
     echo({"-------------------------v-for", count, cloneXmlNodeCount, #cloneXmlNodes});
     for i = 1, count do
-        local cloneNode = i < cloneXmlNodeCount and cloneXmlNodes[i] or copyXmlNode(xmlNode); -- 大于上次数量新增, 小于复用
+        local cloneNode = i <= cloneXmlNodeCount and cloneXmlNodes[i] or copyXmlNode(xmlNode); -- 大于上次数量新增, 小于复用
         cloneXmlNodes[i] = cloneNode;
         cloneNode.attr["v-for"] = nil;
 

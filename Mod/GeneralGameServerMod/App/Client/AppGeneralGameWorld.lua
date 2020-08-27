@@ -39,6 +39,7 @@ function AppGeneralGameWorld:Init(client)
     end
     DesktopMenuPage.Refresh();
 
+    GameLogic.GetFilters():apply_filters("ggs", {action = "LoadWorld"});
     return self;
 end
 
@@ -56,6 +57,7 @@ function AppGeneralGameWorld:OnExit()
     DesktopMenuPage.Refresh();
     self.menus = {};
     
+    GameLogic.GetFilters():apply_filters("ggs", {action = "ExitWorld"});
     -- GameLogic.GetEvents():RemoveEventListener("DesktopMenuShow", AppGeneralGameWorld.OnDesktopMenuShow, self);
 end
 

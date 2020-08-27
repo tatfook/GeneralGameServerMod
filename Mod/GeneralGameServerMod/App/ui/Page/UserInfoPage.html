@@ -1,17 +1,16 @@
 
-<template style="width: 880px; height: 584px; color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
-    <WindowTitleBar title="用户信息"></WindowTitleBar>
-    <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo>
-    <WorksList v-bind:ProjectList="ProjectList" style="float: left;"></WorksList>
-        <!-- <div>{{count}}</div>
-        <button v-on:click="click">OK</button> -->
+<template height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/dakuang_32bits.png#0 0 440 93:37 43 33 44);">
+    <Title></Title>
+    <div width="100%">
+        <UserInfo v-bind:UserDetail="UserDetail" style="float:left;"></UserInfo>
+        <WorksList v-bind:ProjectList="ProjectList" style="float:left;"></WorksList>
+    </div>
 </template>
 
-<script src="%ui%/Page/UserInfoPage.lua">
-RegisterComponent("UserInfo", "%ui%/Component/UserInfo.html");
-RegisterComponent("WorksList", "%ui%/Component/WorksList.html");
+<script type="text/lua" src="%ui%/Page/UserInfoPage.lua">
+ui:SetWindowSize({width = 960, height = 585});
+RegisterComponent("Title", "%ui%/Component/User/Title.html");
+RegisterComponent("UserInfo", "%ui%/Component/User/UserInfo.html");
+RegisterComponent("WorksList", "%ui%/Component/User/WorksList.html");
 </script>
 
-<!-- 
-    ui:ShowWindow({url="%ui%/Page/UserInfoPage.lua"});
- -->

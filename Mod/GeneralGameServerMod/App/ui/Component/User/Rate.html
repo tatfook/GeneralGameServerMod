@@ -7,16 +7,14 @@
     </div>
 </template>
 
-<script>
+<script type="text/lua">
 RegisterComponent("Number", "%ui%/Component/User/Number.html");
 
-if (self.rate and self.rate > 0) then
+function OnRefresh()
+    if (not self.rate or self.rate == 0) then return end
     local ratestr = tostring(self.rate or 0);
-    echo("--------------------------------------" .. ratestr)
     self.one, self.two, self.three = string.match(ratestr, "(%d?)(%d?)%D?(%d?)");
     self.count = #ratestr;
 end
-
-
 
 </script>
