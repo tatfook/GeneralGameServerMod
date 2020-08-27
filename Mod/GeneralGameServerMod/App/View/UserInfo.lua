@@ -91,7 +91,7 @@ function UserInfo:Show(entityPlayer)
     local username = entityPlayer:GetUserName() or System.User.keepworkUsername;
     local mainasset = entityPlayer:GetMainAssetPath();
     if (userMcml2) then
-        return page:ShowUserInfoPage({username = username, mainasset = mainasset});
+        return page.ShowUserInfoPage({username = username, mainasset = mainasset});
     end
     -- 重复点击相同的用户关闭页面
     if (self.username == username and self:IsShow()) then

@@ -81,8 +81,8 @@ function ui:GetGlobalScope()
     self.globalScope = Scope.New();
     self.globalScope:SetMetaTable(self:GetGlobalTable());
     self.globalScope.__newvalue = function(_, key, val) 
-        print("[ui] [info] set global scope value, key = ", key);
         if (key == "__newvalue") then return end;
+        print("[ui] [info] set global scope value, key = ", key);
         self:RefreshWindow();
     end
     return self.globalScope;
@@ -107,7 +107,7 @@ end
 
 -- 显示窗口
 function ui.ShowWindow(self, params)
-    if (not params) then 
+    if (not self:isa(ui)) then 
         params = self;
         self = ui:new();
         echo("-------------------new ui window-----------------");
@@ -116,8 +116,8 @@ function ui.ShowWindow(self, params)
     params = params or {};
     local url = params.url or self:GetFilePath("ui.html");
     if (params.alignment == nil) then params.alignment = "_ct" end
-    if (params.width == nil) then params.width = 500 end
-    if (params.height == nil) then params.height = 400 end
+    if (params.width == nil) then params.width = 600 end
+    if (params.height == nil) then params.height = 500 end
     if (params.left == nil) then params.left = -params.width / 2 end
     if (params.top == nil) then params.top = -params.height / 2 end
     if (params.allowDrag == nil) then params.allowDrag = true end
@@ -128,6 +128,8 @@ function ui.ShowWindow(self, params)
             <App filename="%s"></App>
         </pe:mcml>
     ]], url));
+
+    echo("window url: " .. url);
 
     -- 关闭销毁
     params.DestroyOnClose = true;
@@ -141,8 +143,8 @@ end
 -- 设置窗口大小
 function ui:SetWindowSize(params)
     if (params.alignment == nil) then params.alignment = "_ct" end
-    if (params.width == nil) then params.width = 500 end
-    if (params.height == nil) then params.height = 400 end
+    if (params.width == nil) then params.width = 600 end
+    if (params.height == nil) then params.height = 500 end
     if (params.left == nil) then params.left = -params.width / 2 end
     if (params.top == nil) then params.top = -params.height / 2 end
     self.params.alignment, self.params.left, self.params.top, self.params.width, self.params.height = params.alignment, params.left, params.top, params.width, params.height;
