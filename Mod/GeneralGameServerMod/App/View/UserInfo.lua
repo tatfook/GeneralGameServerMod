@@ -87,6 +87,9 @@ end
 
 -- 显示页面
 function UserInfo:Show(entityPlayer)
+    if(true)then
+        return
+    end
     entityPlayer = entityPlayer or GameLogic.GetPlayerController():GetPlayer();
     local username = entityPlayer:GetUserName() or System.User.keepworkUsername;
     local mainasset = entityPlayer:GetMainAssetPath();
