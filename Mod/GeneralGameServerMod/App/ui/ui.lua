@@ -30,6 +30,18 @@ local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), 
 UIWindow:Property("UIWindow", true, "IsUIWindow");
 UIWindow:Property("UI");
 
+function _G.TraceStack(dept)
+    dept = dept or 50;
+    for i = 1, dept do
+        local lastInfo = debug.getinfo(i - 1);
+        local info = debug.getinfo(i);
+        if info then
+            print("TraceStack",info.source, info.currentline, lastInfo and lastInfo.name);
+        else
+            break;
+        end
+    end
+end
 
 -- 当前窗口
 ui.window = nil; 
@@ -102,11 +114,12 @@ end
 -- 刷新窗口
 function ui:RefreshWindow(delta)
     local page = self:GetWindow():Page();
-    return page and page:Refresh(delta or 0.5);
+    return page and page:Refresh(delta or 0.2);
 end
 
 -- 显示窗口
 function ui.ShowWindow(self, params)
+    echo(debug.getinfo(1));
     if (not self:isa(ui)) then 
         params = self;
         self = ui:new();

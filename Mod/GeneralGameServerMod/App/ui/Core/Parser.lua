@@ -98,8 +98,9 @@ local function ParseXmlNode(self, opts)
     if (xmlNode.element) then
         element = xmlNode.element;
         for i = #element, 1, -1 do
-            element[i]:DeleteControls();  -- 无需移除子元素
-            -- element[i]:GetControl():SetParent(nil);
+            local childElement = element[i];
+            local childElementControl = childElement and childElement:GetControl();
+            if (childElementControl) then childElementControl:SetParent(nil) end   -- 将控件从父控件中移除
             table.remove(element, i);
         end
     else

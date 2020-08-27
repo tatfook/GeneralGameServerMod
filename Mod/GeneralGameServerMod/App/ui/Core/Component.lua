@@ -76,7 +76,6 @@ function Component.Register(tagname, tagclass, ComponentClassMap)
     -- 注册
     local Register = function (tagname, tagclass)
         ComponentClassMap = ComponentClassMap or GlobalComponentClassMap;
-
         if (not tagclass) then
             return ComponentClassMap[tagname] or mcml:GetClassByTagName(tagname);
         end
