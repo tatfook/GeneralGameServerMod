@@ -28,9 +28,10 @@ end
 -- 获取脚本文件
 function Helper.ReadFile(filename)
     filename = Helper.FormatFilename(filename);
+    if (not filename or filename ==  "") then return end
 
     local text = nil;
-	local file = filename and ParaIO.open(filename, "r");
+	local file = ParaIO.open(filename, "r");
     if(file:IsValid()) then
         text = file:GetText();
         file:close();

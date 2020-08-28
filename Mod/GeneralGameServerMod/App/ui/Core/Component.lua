@@ -37,7 +37,7 @@ function Component:ctor()
     self.ComponentScope = nil;          -- 组件scope
     self:SetComponents({});             -- 依赖组件集
     self:SetComponentStyle(Style:new():init(self:GetPageCtrl()));   -- 构建组件样式表
-
+    self.refs = {};
     print("-----------------create component: ", self.name);
 end
 
@@ -167,6 +167,9 @@ function Component:GetComponentScope()
         -- 组件scope
         self.ComponentScope = Scope.New();  -- 用自身的attr作为scope
         self.ComponentScope.self = self.ComponentScope; 
+        self.ComponentScope.GetRef = function(refname) 
+            return self.refs[refname];
+        end
         self.ComponentScope.RegisterComponent = function(tagname, filename)
             Component.Register(tagname, filename, self:GetComponents());
         end

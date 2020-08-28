@@ -204,6 +204,13 @@ local function v_slot(self, opts)
     end
 end
 
+-- 解析ref属性  应放在元素解析完成后解析
+local function ref_attr(self, opts)
+    local xmlNode, parentElement = opts.xmlNode, opts.parentElement; 
+    if (type(xmlNode) ~= "table" or type(xmlNode.attr) ~= "table" or type(xmlNode.attr["ref"]) ~= "string" or not xmlNode.element) then return end
+    self.refs[xmlNode.attr["ref"]] = xmlNode.element;
+end
+
 -- 解析v-bind指令
 local function v_attr(self, opts)
     local xmlNode, parentElement = opts.xmlNode, opts.parentElement; 
@@ -340,10 +347,16 @@ function Parser.Parse(self, opts)
         {name="v-slot", parse = v_slot},
         {name="v-for", parse = v_for},
         {name="v-if", parse = v_if},
+        -- 通用属性解析
         {name="v-attr", parse = v_attr},
+        -- 文本元素解析
         {name="text-xml-node", parse = ParseTextXmlNode},
         -- {name="slot-xml-node", parse = ParseSlotXmlNode},
+        -- 通用元素解析
         {name="xml-node", parse = ParseXmlNode},
+        -- 特殊属性
+        {name="ref-attr", parse = ref_attr},
+        -- 子元素
         {name="child-xml-node", parse = ParseChildXmlNode},
     }
 
