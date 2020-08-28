@@ -145,17 +145,21 @@ function ui.ShowWindow(self, params)
 
     self.params = params;
 
+    local ParacraftBuildinModZipName = "npl_packages/ParacraftBuildinMod.zip";
     -- 设置UI目录别名
     if (IsDevEnv) then
         Helper.SetPathAlias("ui", __DIRECTORY__);
     else
-        local ParacraftBuildinModZipName = "npl_packages/ParacraftBuildinMod.zip";
         if (not ParaAsset.OpenArchive(zipPath, true)) then echo("ERROR open file failed: " .. ParacraftBuildinModZipName) end
         Helper.SetPathAlias("ui", "npl_packages/ParacraftBuildinMod/" .. __DIRECTORY__);
         -- 应该找机会关闭  ParaAsset.CloseArchive(zipPath)
     end
 
-    return self:GetWindow():Show(params);
+    self:GetWindow():Show(params);
+
+    ParaAsset.CloseArchive(ParacraftBuildinModZipName);
+
+    return;
 end
 
 -- 设置窗口大小
