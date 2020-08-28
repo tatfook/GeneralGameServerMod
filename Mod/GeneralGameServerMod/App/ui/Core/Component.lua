@@ -64,6 +64,8 @@ function Component.Extend(opts)
     -- 类属性
     ComponentExtend.name = ComponentExtend.name or "ComponentExtend";     -- 组件名
     ComponentExtend.filename = ComponentExtend.filename or "";            -- 组件文件
+    ComponentExtend._class = ComponentExtend;                             -- 当前类 _super为父类
+
     -- 返回新组件
     return ComponentExtend;
 end
@@ -197,8 +199,6 @@ function Component:ParseScriptNode(scriptNode)
     code_func();
 end
 
-
-
 -- 解析样式节点
 function Component:ParseStyleNode(styleNode)
     if (not styleNode) then return end
@@ -231,13 +231,19 @@ function Component:LoadXmlNode()
     if (self.template and self.template ~= "") then
         xmlRoot = ParaXML.LuaXML_ParseString(self.template);
     elseif (self.filename and self.filename ~= "") then
-        self.template = Helper.ReadFile(self.filename) or "";
+        local template = Helper.ReadFile(self.filename) or "";
         -- 移除xml注释
-        self.template = string.gsub(self.template, "<!%-%-.-%-%->", "");
+        template = string.gsub(template, "<!%-%-.-%-%->", "");
         -- 维持脚本原本格式
-        self.template = string.gsub(self.template, "[\r\n]<script(.-)>(.-)[\r\n]</script>", "<script%1>\n<![CDATA[\n%2\n]]>\n</script>");
-        -- xmlRoot = ParaXML.LuaXML_ParseFile(self.template);
-        xmlRoot = ParaXML.LuaXML_ParseString(self.template);
+        template = string.gsub(template, "[\r\n]<script(.-)>(.-)[\r\n]</script>", "<script%1>\n<![CDATA[\n%2\n]]>\n</script>");
+        -- 解析template
+        xmlRoot = ParaXML.LuaXML_ParseString(template);
+        -- 类存在放在类中, 避免重复读取, 不存在放在示例中
+        if(self._class) then 
+            self._class.template = template;
+        else
+            self.template = template;
+        end
     end
 
     -- echo("-----------------------------------component template---------------------------------")

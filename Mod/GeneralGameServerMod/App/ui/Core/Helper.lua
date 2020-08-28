@@ -27,15 +27,16 @@ end
 
 -- 获取脚本文件
 function Helper.ReadFile(filename)
-    local text = nil;
-
     filename = Helper.FormatFilename(filename);
-    if(filename and ParaIO.DoesFileExist(filename)) then
-		local file = ParaIO.open(filename, "r");
-		if(file:IsValid()) then
-			text = file:GetText();
-			file:close();
-		end
+
+    local text = nil;
+	local file = filename and ParaIO.open(filename, "r");
+    if(file:IsValid()) then
+        text = file:GetText();
+        file:close();
+    else
+        echo(string.format("ERROR: read file failed: %s ", filename));
     end
+
     return text;
 end

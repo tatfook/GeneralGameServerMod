@@ -15,11 +15,9 @@ local mcml = commonlib.gettable("System.Windows.mcml");
 local Component = NPL.load("./Core/Component.lua");
 local App = NPL.load("./Core/App.lua");
 local Slot = NPL.load("./Core/Slot.lua");
-
 local Helper = NPL.load("./Core/Helper.lua");
 local Scope = NPL.load("./Core/Scope.lua");
 local ui = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local __FILE__ = debug.getinfo(1,'S').source;
 local __DIRECTORY__ = string.match(__FILE__, "^(.*)/");
@@ -107,7 +105,6 @@ function ui:GetWindow(url, isNewNoExist)
         self.window:Connect("windowClosed", self, "OnWindowClosed", "UniqueConnection");
         self.window:SetUI(self);
     end
-    if (IsDevEnv) then self.window.url = nil end
     return self.window;
 end
 
@@ -119,7 +116,6 @@ end
 
 -- 显示窗口
 function ui.ShowWindow(self, params)
-    echo(debug.getinfo(1));
     if (not self:isa(ui)) then 
         params = self;
         self = ui:new();
@@ -179,7 +175,14 @@ end
 -- 静态初始化
 local function StaticInit()
     -- 设置UI目录别名
-    Helper.SetPathAlias("ui", __DIRECTORY__);
+    if (IsDevEnv) then
+        Helper.SetPathAlias("ui", __DIRECTORY__);
+    else
+        local ParacraftBuildinModZipName = "npl_packages/ParacraftBuildinMod.zip";
+        if (not ParaAsset.OpenArchive(zipPath, true)) then echo("ERROR open file failed: " .. ParacraftBuildinModZipName) end
+        Helper.SetPathAlias("ui", "npl_packages/ParacraftBuildinMod/" .. __DIRECTORY__);
+        -- 应该找机会关闭  ParaAsset.CloseArchive(zipPath)
+    end
 
     ui:Register("App", App);
     ui:Register("Slot", Slot);

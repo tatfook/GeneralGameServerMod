@@ -6,8 +6,7 @@ Desc: UI 入口文件, 实现组件化开发
 use the lib:
 -------------------------------------------------------
 local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
--- 显示用户信息页
-page.ShowUserInfoPage({G={username="用户名", mainasset="人物模型文件名"}});
+page.ShowUserInfoPage({username="用户名", mainasset="人物模型文件名"}); -- 显示用户信息页
 -------------------------------------------------------
 ]]
 
