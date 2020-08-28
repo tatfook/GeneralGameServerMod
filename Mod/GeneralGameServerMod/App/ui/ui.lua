@@ -138,14 +138,23 @@ function ui.ShowWindow(self, params)
         </pe:mcml>
     ]], url));
 
-    echo("window url: " .. url);
-
     -- 关闭销毁
     params.DestroyOnClose = true;
     -- 强制更新全局表
     params.pageGlobalTable = self:GetGlobalTable(params.G, true);
 
     self.params = params;
+
+    -- 设置UI目录别名
+    if (IsDevEnv) then
+        Helper.SetPathAlias("ui", __DIRECTORY__);
+    else
+        local ParacraftBuildinModZipName = "npl_packages/ParacraftBuildinMod.zip";
+        if (not ParaAsset.OpenArchive(zipPath, true)) then echo("ERROR open file failed: " .. ParacraftBuildinModZipName) end
+        Helper.SetPathAlias("ui", "npl_packages/ParacraftBuildinMod/" .. __DIRECTORY__);
+        -- 应该找机会关闭  ParaAsset.CloseArchive(zipPath)
+    end
+
     return self:GetWindow():Show(params);
 end
 
@@ -174,15 +183,15 @@ end
 
 -- 静态初始化
 local function StaticInit()
-    -- 设置UI目录别名
-    if (IsDevEnv) then
-        Helper.SetPathAlias("ui", __DIRECTORY__);
-    else
-        local ParacraftBuildinModZipName = "npl_packages/ParacraftBuildinMod.zip";
-        if (not ParaAsset.OpenArchive(zipPath, true)) then echo("ERROR open file failed: " .. ParacraftBuildinModZipName) end
-        Helper.SetPathAlias("ui", "npl_packages/ParacraftBuildinMod/" .. __DIRECTORY__);
-        -- 应该找机会关闭  ParaAsset.CloseArchive(zipPath)
-    end
+    -- -- 设置UI目录别名
+    -- if (IsDevEnv) then
+    --     Helper.SetPathAlias("ui", __DIRECTORY__);
+    -- else
+    --     local ParacraftBuildinModZipName = "npl_packages/ParacraftBuildinMod.zip";
+    --     if (not ParaAsset.OpenArchive(zipPath, true)) then echo("ERROR open file failed: " .. ParacraftBuildinModZipName) end
+    --     Helper.SetPathAlias("ui", "npl_packages/ParacraftBuildinMod/" .. __DIRECTORY__);
+    --     -- 应该找机会关闭  ParaAsset.CloseArchive(zipPath)
+    -- end
 
     ui:Register("App", App);
     ui:Register("Slot", Slot);
