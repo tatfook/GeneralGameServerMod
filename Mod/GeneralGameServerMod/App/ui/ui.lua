@@ -145,19 +145,7 @@ function ui.ShowWindow(self, params)
 
     self.params = params;
 
-    local ParacraftBuildinModZipName = "npl_packages/ParacraftBuildinMod.zip";
-    -- 设置UI目录别名
-    if (IsDevEnv) then
-        Helper.SetPathAlias("ui", __DIRECTORY__);
-    else
-        if (not ParaAsset.OpenArchive(zipPath, true)) then echo("ERROR open file failed: " .. ParacraftBuildinModZipName) end
-        Helper.SetPathAlias("ui", "npl_packages/ParacraftBuildinMod/" .. __DIRECTORY__);
-        -- 应该找机会关闭  ParaAsset.CloseArchive(zipPath)
-    end
-
     self:GetWindow():Show(params);
-
-    ParaAsset.CloseArchive(ParacraftBuildinModZipName);
 
     return;
 end
@@ -187,16 +175,8 @@ end
 
 -- 静态初始化
 local function StaticInit()
-    -- -- 设置UI目录别名
-    -- if (IsDevEnv) then
-    --     Helper.SetPathAlias("ui", __DIRECTORY__);
-    -- else
-    --     local ParacraftBuildinModZipName = "npl_packages/ParacraftBuildinMod.zip";
-    --     if (not ParaAsset.OpenArchive(zipPath, true)) then echo("ERROR open file failed: " .. ParacraftBuildinModZipName) end
-    --     Helper.SetPathAlias("ui", "npl_packages/ParacraftBuildinMod/" .. __DIRECTORY__);
-    --     -- 应该找机会关闭  ParaAsset.CloseArchive(zipPath)
-    -- end
-
+    Helper.SetPathAlias("ui", __DIRECTORY__);
+    
     ui:Register("App", App);
     ui:Register("Slot", Slot);
 
