@@ -1,29 +1,15 @@
 
 <template height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
     <WindowTitleBar></WindowTitleBar>
-    <scrollarea ref="scrollarea" style="width: 420px; height: 380px;">
-        <div v-for="x in size" class="item">{{x}}</div>
-    </scrollarea>
-    <button v-on:click="click">刷新</button>
+    <div style="text-align: center">
+        test
+        <!-- <Test style="display: inline;"></Test> -->
+        <Test></Test>
+    </div>
 </template>
 
 <script type="text/lua">
-size = 2;
-function click()
-    size = size + 1;
-end
-
-function OnRefresh()
-    local scrollarea = GetRef("scrollarea");
-    local scrollareaCtrl = scrollarea and scrollarea:GetControl();
-    if (scrollareaCtrl) then
-        local vbar = scrollareaCtrl and scrollareaCtrl.vbar;
-        local hbar = scrollareaCtrl and scrollareaCtrl.hbar;
-        vbar:SetShowButton(false);
-        vbar:SetGrooveBackgroundColor("#ffffff00")
-        vbar:SetSliderBackground("Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:0 10 0 10");
-    end
-end
+    RegisterComponent("Test", "%ui%/Test/Test.html");
 </script>
 
 <style>

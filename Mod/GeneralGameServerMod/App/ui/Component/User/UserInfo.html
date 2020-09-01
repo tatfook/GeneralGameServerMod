@@ -1,10 +1,24 @@
 <template>
     <div style="margin-top: 11px; margin-left: 9px; height:529px; width: 339px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwukuang_339X529_32bits.png#0 0 339 529:10 10 10 10);">
-        <div style="height: 298px;">
-            <div style="margin-top: 12px; text-align: center;">
-                <div style="display: inline; font-size: 18px; base-font-size: 18px; color: #ffffff; shadow-quality:8; shadow-color:#000000; text-shadow:true;">{{nickname}}</div>
+        <div style="height: 298px; position: relative;">
+            <div style="margin-top: 15px;">
+                <div align="center" v-if="not isEditNickName" style="display: inline;">
+                    <div style="display: inline;">
+                        <div v-if="isCrown" tooltip="Paracraft 会员" style="margin-left:2px; display: inline-block; width:24px; height:24px; background:url(Texture/Aries/Creator/keepwork/UserInfo/crown_32bits.png#0 0 18 18)"></div>
+                        <div v-if="not isTeacher and isStudent" tooltip="合作机构vip学员" style="margin-left:2px; display: inline-block; width:24px; height:24px;background:url(Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18)"></div>
+                        <div v-if="isTeacher" tooltip="合作机构vip教师" style="margin-left:2px; display: inline-block; width:24px; height:24px; background:url(Texture/Aries/Creator/keepwork/UserInfo/blue_v_32bits.png#0 0 18 18)"></div>
+                    </div>
+                    <div style="display: inline; margin-left: 5px; font-size: 18px; base-font-size: 18px; color: #ffffff; shadow-quality:8; shadow-color:#000000; text-shadow:true;">{{GetNickName(nickname)}}</div>
+                    <div v-if="isAuthUser" v-on:click="ClickEditNickName" style="margin-left: 5px; display: inline-block; height:24; width: 24px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_bianji_24X24_32bits.png#2 1 26 25);"></div>
+                    <Follow v-if="not isAuthUser and isLogin" v-bind:UserDetail="UserDetail" style="display: inline; margin-left: 5px; margin-top:-2px;"></Follow>
+                </div>
+                <div align="center" v-if="isEditNickName" style="display: inline" >
+                    <ChangeNickName v-on:finish="OnEditNickNameFinish" v-bind:userId="UserDetail.id" v-bind:nickname="UserDetail.nickname" style="display: inline;"></ChangeNickName>
+                </div>
             </div>
-            <pe:mc_player align="center" name="player" miniscenegraphname="AvatarMyselfTabCharacter" style="margin-top:-90px; width:330px; height:330px;" isinteractive="false" />
+            <pe:mc_player align="center"  v-bind:assetfile="mainasset" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" isinteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></pe:mc_player>
+            <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 170px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div>
+            <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 170px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div>
         </div>
         <div align="center" style="padding-left: 4px; height: 220px; width: 316px;">
             <div style="margin-top: 20px; height: 38px; width: 310px; background-color: #c1c2c2; font-size: 14px; base-font-size: 14px; color: #313131;">
@@ -57,8 +71,30 @@
 </template>
 
 <script type="text/lua">
+RegisterComponent("ChangeNickName", "%ui%/Component/User/ChangeNickName.html");
+RegisterComponent("Follow", "%ui%/Component/User/Follow.html");
+local UniString = commonlib.gettable("System.Core.UniString");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
+local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
+local assets = {
+    "character/CC/02human/paperman/boy01.x",
+    "character/CC/02human/paperman/boy02.x",
+    "character/CC/02human/paperman/boy03.x",
+    "character/CC/02human/paperman/boy04.x",
+    "character/CC/02human/paperman/boy05.x",
+    "character/CC/02human/paperman/boy06.x",
+    "character/CC/02human/paperman/boy07.x",
+    "character/CC/02human/paperman/girl01.x",
+    "character/CC/02human/paperman/girl02.x",
+    "character/CC/02human/paperman/girl03.x",
+    "character/CC/02human/paperman/girl04.x",
+    "character/CC/02human/paperman/girl05.x",
+}
+local curAssetIndex = 1;
+
 UserDetail = UserDetail or {username = "username", createdAt = "2020-01-01", rank = {}};
+
+self.isEditNickName = false;
 
 function OnRefresh()
     local _, _, _, bean = KeepWorkItemManager.HasGSItem(998);
@@ -71,32 +107,54 @@ function OnRefresh()
     self.isFollow = UserDetail.isFollow or false;
     self.follow = UserDetail.rank.follow or 0;
     self.fans = UserDetail.rank.fans or 0;
+
+    self.isCrown = UserDetail.vip == 1;
+    self.isTeacher = UserDetail.tLevel == 1;
+    self.isStudent = UserDetail.student == 1;
+
     -- 格式化注册时间
     local datetime = UserDetail.createdAt;
     local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
     self.registerAt = tostring(year) .. "." .. tostring(month) .. "." .. tostring(day);
 end
 
--- 点击关注
-function ClickFollow()
-    -- if (not GetUserInfo():IsSignedIn()) then  return echo("未登录"); end
-    if (self.isFollow) then
-        self.fans = self.fans - 1;
-        keepwork.user.unfollow({
-            objectType = 0,
-            objectId = self.userId,
-        }, function(status, msg, data)
-            -- self.fans = self.fans - 1;
-        end);
+function ClickEditNickName()
+    self.isEditNickName = not self.isEditNickName;
+end
+
+function OnEditNickNameFinish(nickname)
+    UserDetail.nickname = nickname;
+    self.isEditNickName = false;
+end 
+
+-- 获取昵称
+function GetNickName(text)
+    if type(text) ~= 'string' then return '' end
+    local utf8Text = UniString:new(text)
+    if _guihelper.GetTextWidth(text) > 112 then
+        return utf8Text:sub(1, 8).text .. '...'
     else
-        self.fans = self.fans + 1;
-        keepwork.user.unfollow({
-            objectType = 0,
-            objectId = self.userId,
-        }, function(status, msg, data)
-            -- self.fans = self.fans + 1;
-        end);
+        return text
     end
-    self.isFollow = not self.isFollow;
+end
+
+function ClickPrevAsset()
+    if (curAssetIndex == 1) then 
+        curAssetIndex = #assets;
+    else
+        curAssetIndex = curAssetIndex - 1;
+    end 
+    mainasset = assets[curAssetIndex];
+    GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
+end
+
+function ClickNextAsset()
+    if (curAssetIndex == #assets) then
+        curAssetIndex = 1;
+    else
+        curAssetIndex = curAssetIndex + 1;
+    end 
+    mainasset = assets[curAssetIndex];
+    GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
 end
 </script>

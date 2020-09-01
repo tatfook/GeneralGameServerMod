@@ -1,5 +1,5 @@
 <template>
-    <scrollarea style="width: 604px; height: 540px; padding-left: 6px; padding-top: 6px;">
+    <scrollarea ref="scrollarea" style="width: 604px; height: 540px; padding-left: 6px; padding-top: 6px;">
         <div v-for="project in ProjectList" class="project">
             <div v-bind:style="GetImageStyle(project.extra)"></div>
             <div style="base-font-size: 16px; font-size:16px; color: #000000; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px;">{{GetProjectName(project.name)}}</div>
@@ -24,6 +24,7 @@
                 </div>
             </div>
             <Rate v-if="project.rate and project.rate > 0" style="position: absolute; left: 0px;" v-bind:rate="project.rate"></Rate>
+            <div v-if="project.visibility == 1" style="position: absolute; top: 5px; right: 5px; width: 28px; height: 31px; background: url(Texture/Aries/Creator/keepwork/ggs/user/suosi_28X31_32bits.png#0 0 28 31);"></div>
         </div>
 
     </scrollarea>
@@ -62,6 +63,19 @@ end
 function ClickOpenWorld(worldId)
     ui:CloseWindow();
     GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
+end
+
+function OnRefresh()
+    local scrollarea = GetRef("scrollarea");
+    local scrollareaCtrl = scrollarea and scrollarea:GetControl();
+    if (scrollareaCtrl) then
+        local vbar = scrollareaCtrl and scrollareaCtrl.vbar;
+        local hbar = scrollareaCtrl and scrollareaCtrl.hbar;
+        vbar:SetShowButton(false);
+        vbar:SetGrooveBackgroundColor("#ffffff00");
+        vbar:SetMinSliderHeight(38);
+        vbar:SetSliderBackground("Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 15 2 15");
+    end
 end
 </script>
 

@@ -84,7 +84,6 @@ end
 function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     local self = AppGeneralGameClient;
     local userinfo = KeepWorkItemManager.GetProfile();
-    local usertag = KeepWorkItemManager.GetUserTag(userinfo);
 
     self.userinfo.id = userinfo.id;
     self.userinfo.username = userinfo.username;

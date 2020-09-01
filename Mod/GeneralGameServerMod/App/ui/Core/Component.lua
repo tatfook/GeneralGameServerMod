@@ -176,6 +176,9 @@ function Component:GetComponentScope()
         self.ComponentScope.GetGlobalScope = function()
             return self:GetGlobalScope();
         end
+        self.ComponentScope.GetComponent = function() 
+            return self;
+        end
         self.ComponentScope.__newvalue = function(t, key, val)
             if (not self:IsAutoRefresh() or key == "__newvalue") then return end
             print(string.format("[component:%s] [info] set component scope value, key = %s, ", self.name, key));
@@ -349,14 +352,16 @@ function Component:LoadComponent(parentElem, parentLayout, style)
     self:ParseComponent();
     -- 组件是否有效
     if (not self:IsValid()) then return end
-    -- 执行组件OnRefresh回调
-    self:ExecTextCode([[if (type(OnRefresh) == "function") then OnRefresh() end]]);
+    
     -- 组件加载前
     self:OnLoadComponentBeforeChild(parentElem, parentLayout, style);
     -- 真实组件加载
     self:GetElement():LoadComponent(parentElem, parentLayout, style);
     -- 组件加载后 合并样式
     self:OnLoadComponentAfterChild(parentElem, parentLayout, style);
+
+    -- 执行组件OnRefresh回调
+    self:ExecTextCode([[if (type(OnRefresh) == "function") then OnRefresh() end]]);
 end
 
 function Component:OnLoadComponentBeforeChild(parentElem, parentLayout, css)

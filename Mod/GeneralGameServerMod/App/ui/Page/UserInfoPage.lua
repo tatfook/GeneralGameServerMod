@@ -7,6 +7,8 @@ local username = self.username or "xiaoyao";
 
 -- 组件全局变量初始化
 GetGlobalScope():Set("AuthUsername", System.User.keepworkUsername);
+GetGlobalScope():Set("isLogin", System.User.keepworkUsername and true or false);
+echo({"--------------------------------",System.User.keepworkUsername})
 self.UserDetail = nil
 self.ProjectList = {};
 
@@ -17,6 +19,9 @@ function LoadUserInfo(username)
     keepwork.user.getinfo({router_params = {id = id}}, function(status, msg, data) 
         if (status ~= 200) then return echo("获取用户详情失败...") end
         self.UserDetail = data;
+        if (System.User.keepworkUsername == self.UserDetail.username) then
+            GetGlobalScope():Set("AuthUserId", self.UserDetail.id);
+        end
         -- echo(data)
         -- 获取项目列表
         local userId = self.UserDetail.id;

@@ -1,0 +1,35 @@
+<template>
+    <div style="display: inline;">
+        <editbox ref="input" v-bind:value="value" style="display:inline-block; width: 180px; background: url(Texture/Aries/Creator/keepwork/ggs/user/shuruzhuangdi_16X16_32bits.png#0 0 16 16: 5 5 5 5);"></editbox>
+        <button v-on:click="confirm" style="display:inline-block; height: 28px; width: 55px; text-align: center; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">确认</button>
+        <button v-on:click="cancel" style="display:inline-block; height: 28px; width: 55px; text-align: center; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_cancel_16X16_32bits.png#0 0 16 16: 5 5 5 5);">取消</button>
+    </div>
+</template>
+
+<script type="text/lua">
+function OnRefresh()
+    self.value = self.nickname;
+    
+    GetRef("input"):GetControl():setFocus("click");
+end
+
+function confirm()
+    local inputEl = GetRef("input");
+    local value = inputEl:GetUIValue();
+    keepwork.user.setinfo({
+        router_params = {id = userId},
+        nickname = value,
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then return echo("更新用户昵称失败") end
+    end);
+    if (type(finish) == "function") then
+        finish(value);
+    end
+end 
+
+function cancel()
+    if (type(finish) == "function") then
+    finish(self.nickname);
+    end
+end
+</script>

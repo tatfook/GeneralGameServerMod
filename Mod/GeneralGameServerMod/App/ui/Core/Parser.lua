@@ -13,6 +13,34 @@ local Elements = commonlib.gettable("System.Windows.mcml.Elements");
 
 local Parser = NPL.export();
 
+-- 拷贝属性
+local function copy_attr(attr)
+    if (type(attr) ~= "table") then return attr end
+    local o = {};
+
+    for key, val in pairs(attr) do
+        o[key] = val;
+    end
+
+    return o;
+end
+
+-- 解析开始
+local function parse_begin(self, opts)
+    local xmlNode, parentElement = opts.xmlNode, opts.parentElement; 
+    if (type(xmlNode) ~= "table") then return end
+    local element = xmlNode.element;
+    if (self:IsComponent(xmlNode.name)) then
+        element = element and element:GetElement();
+    end
+    local control = element and element:GetControl();
+    if (control) then control:SetParent(nil) end   -- 将控件从父控件中移除
+end
+
+-- 解析结束
+local function parse_end(self, opts)
+end
+
 -- 是否是文本节点
 local function IsTextXmlNode(xmlNode) 
     return type(xmlNode) == "string" or (not xmlNode.name) or xmlNode.name == "";
@@ -94,7 +122,7 @@ local function ParseXmlNode(self, opts)
     if (type(xmlNode) ~= "table") then return end
 
     local element = nil;
-    local attr = commonlib.copy(xmlNode.attr);   -- v-attr 会常更新, 生成元素需要用最新的attr集 否则可能使用旧的缓存属性集
+    local attr = copy_attr(xmlNode.attr);   -- v-attr 会常更新, 生成元素需要用最新的attr集 否则可能使用旧的缓存属性集
     if (xmlNode.element) then
         element = xmlNode.element;
         for i = #element, 1, -1 do
@@ -306,7 +334,7 @@ local function v_for(self, opts)
     local cloneXmlNodes = xmlNode.cloneXmlNodes or {};
     local cloneXmlNodeCount = xmlNode.cloneXmlNodeCount or 0;
     local function copyXmlNode(xmlNode)
-        local o = { name = xmlNode.name, attr = commonlib.copy(xmlNode.attr)};
+        local o = { name = xmlNode.name, attr = copy_attr(xmlNode.attr)};
         for i = 1, #xmlNode do
             table.insert(o, type(xmlNode[i]) == "table" and copyXmlNode(xmlNode[i]) or xmlNode[i]);
         end
@@ -344,6 +372,7 @@ end
 function Parser.Parse(self, opts)
     -- 优先级高的放前面, 特殊性的放前面
     local parser_list = {
+        {name="begin", parse = parse_begin},
         {name="v-slot", parse = v_slot},
         {name="v-for", parse = v_for},
         {name="v-if", parse = v_if},
@@ -358,6 +387,7 @@ function Parser.Parse(self, opts)
         {name="ref-attr", parse = ref_attr},
         -- 子元素
         {name="child-xml-node", parse = ParseChildXmlNode},
+        {name="end", parse = parse_end},
     }
 
     for i = 1, #parser_list do
