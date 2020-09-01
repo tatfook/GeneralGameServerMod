@@ -1,15 +1,14 @@
 
 <template height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
     <WindowTitleBar></WindowTitleBar>
-    <div style="text-align: center">
-        test
-        <!-- <Test style="display: inline;"></Test> -->
-        <Test></Test>
-    </div>
+    <ScaleSlider></ScaleSlider>
 </template>
 
 <script type="text/lua">
     RegisterComponent("Test", "%ui%/Test/Test.html");
+    RegisterComponent("Rate", "%ui%/Component/User/Rate.html");
+    RegisterComponent("Number", "%ui%/Component/User/Number.html");
+    RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
 </script>
 
 <style>

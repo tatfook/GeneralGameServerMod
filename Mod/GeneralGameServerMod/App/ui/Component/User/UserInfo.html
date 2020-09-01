@@ -17,8 +17,12 @@
                 </div>
             </div>
             <pe:mc_player align="center"  v-bind:assetfile="mainasset" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" isinteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></pe:mc_player>
-            <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 170px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div>
-            <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 170px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div>
+            <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div>
+            <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div>
+            <div v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div>
+            <div v-on:click="ClickNextAsset" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div>
+            <div v-on:click="ClickPersonalPage" style="position: absolute; left: 10px; bottom: 10px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
+            <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 40px;"></ScaleSlider>
         </div>
         <div align="center" style="padding-left: 4px; height: 220px; width: 316px;">
             <div style="margin-top: 20px; height: 38px; width: 310px; background-color: #c1c2c2; font-size: 14px; base-font-size: 14px; color: #313131;">
@@ -73,6 +77,8 @@
 <script type="text/lua">
 RegisterComponent("ChangeNickName", "%ui%/Component/User/ChangeNickName.html");
 RegisterComponent("Follow", "%ui%/Component/User/Follow.html");
+RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
+
 local UniString = commonlib.gettable("System.Core.UniString");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
@@ -100,7 +106,6 @@ function OnRefresh()
     local _, _, _, bean = KeepWorkItemManager.HasGSItem(998);
     self.bean = bean or 0;
     self.schoolName = UserDetail.school and UserDetail.school.name or "";
-    self.isAuthUser = UserDetail.username == AuthUsername;
     self.userId = UserDetail.id;
     self.username = UserDetail.username;
     self.nickname = UserDetail.nickname;
@@ -156,5 +161,9 @@ function ClickNextAsset()
     end 
     mainasset = assets[curAssetIndex];
     GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
+end
+
+function ClickPersonalPage()
+    ParaGlobal.ShellExecute("open", "https://keepwork.com/u/" .. UserDetail.username, "", "", 1);
 end
 </script>

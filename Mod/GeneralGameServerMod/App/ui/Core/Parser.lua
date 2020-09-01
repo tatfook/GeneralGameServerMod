@@ -239,6 +239,42 @@ local function ref_attr(self, opts)
     self.refs[xmlNode.attr["ref"]] = xmlNode.element;
 end
 
+-- 合并样式属性
+local function merge_style_attr(attr, style)
+    attr.rawStyel = attr.rawStyel or attr.style or "";
+    -- 重置最初样式
+    attr.style = attr.rawStyel .. ";";
+
+    if (type(style) == "string") then 
+        attr.style = attr.style .. style;
+    elseif (type(style) == "table") then
+        for key, val in pairs(style) do
+            if (type(key) == "string" and type(val) == "string") then
+                attr.style = attr.style .. key .. ":" .. val .. ";";
+            end
+        end        
+    else
+    end
+end
+
+-- 合并类属性
+local function merge_class_attr(attr, class)
+    attr.rawClass = attr.rawClass or attr.class or "";
+    attr.class = attr.rawClass .. " ";
+
+    if (type(class) == "string") then
+        attr.class = attr.class .. class;
+    elseif (type(class == "table")) then
+        for key, value in pairs(class) do
+            if (type(key) == "number" and type(val) == "string") then
+                attr.class = attr.class .. val .. " ";
+            elseif (type(key) == "string" and type(val) == "boolean" and val) then
+                attr.class = attr.class .. key .. " ";
+            end
+        end
+    end
+end
+
 -- 解析v-bind指令
 local function v_attr(self, opts)
     local xmlNode, parentElement = opts.xmlNode, opts.parentElement; 
@@ -287,11 +323,19 @@ local function v_attr(self, opts)
             von[realKey] = realVal;
         end
     end
+    
     for key, val in pairs(vbind) do
-        attr[key] = val;
+        if (key == "style") then
+            merge_style_attr(attr, val);
+        elseif (key == "class") then
+            merge_class_attr(attr, val);
+        else 
+            attr[key] = val;
+        end
     end
+
     for key, val in pairs(von) do
-        if (key == "click" or key == "mouseover") then
+        if (key == "click" or key == "change" or key == "mouseover") then
             attr["on" .. key] = val;  -- 标准事件加上 on 前缀
         else
             attr[key] = val;

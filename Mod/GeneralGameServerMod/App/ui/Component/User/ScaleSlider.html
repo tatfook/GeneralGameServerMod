@@ -1,0 +1,52 @@
+<template style="width: 20px; padding-left:10px;">
+    <div v-on:click="ClickAddStep" style="width:11px; height: 11px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jia_11X11_32bits.png#0 0 11 11)"></div>
+    <sliderbar 
+        ref="sliderbar"
+        v-on:change="Change"
+        min=50
+        max=150
+        value=100
+        min_step=10
+        direction="vertical" 
+        style="height: 130px; width: 10px; margin-top: 2px;" 
+        background_width=10
+        background_height=130
+        background="Texture/Aries/Creator/keepwork/ggs/user/btn_ladongdi_10x130_32bits.png#0 0 10 130"
+        button_width=22 
+        button_height=8
+        button_bg="Texture/Aries/Creator/keepwork/ggs/user/btn_ladong_20X8_32bits.png#0 0 22 8">
+    </sliderbar>
+    <div v-on:click="ClickSubStep" style="margin-top: 2px; width:10px; height: 3px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jian_10X3_32bits.png#0 0 10 3)"></div>
+</template>
+
+<script type="text/lua">
+self.value = 100;
+
+local Total = 200;
+
+function ClickAddStep()
+    local sliderbarEl = GetRef("sliderbar");
+    if (not sliderbarEl) then return end
+
+    sliderbarEl:SetValue(sliderbarEl:GetValue() - 10);
+end
+
+function ClickSubStep()
+    local sliderbarEl = GetRef("sliderbar");
+    if (not sliderbarEl) then return end
+
+    sliderbarEl:SetValue(sliderbarEl:GetValue() + 10);
+end
+
+function Change(value)
+    local player = GameLogic.GetPlayerController():GetPlayer();
+    if (not player or self.value == value) then return end;
+    local scale = (Total - value) / 100;
+    player:SetScaling(scale);
+end
+
+function OnRefresh()
+    local player = GameLogic.GetPlayerController():GetPlayer();
+    self.value = Total - math.floor(player:GetScaling() * 100);
+end
+</script>

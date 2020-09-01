@@ -8,7 +8,8 @@ local username = self.username or "xiaoyao";
 -- 组件全局变量初始化
 GetGlobalScope():Set("AuthUsername", System.User.keepworkUsername);
 GetGlobalScope():Set("isLogin", System.User.keepworkUsername and true or false);
-echo({"--------------------------------",System.User.keepworkUsername})
+GetGlobalScope():Set("isAuthUser", false);
+
 self.UserDetail = nil
 self.ProjectList = {};
 
@@ -21,6 +22,7 @@ function LoadUserInfo(username)
         self.UserDetail = data;
         if (System.User.keepworkUsername == self.UserDetail.username) then
             GetGlobalScope():Set("AuthUserId", self.UserDetail.id);
+            GetGlobalScope():Set("isAuthUser", true);
         end
         -- echo(data)
         -- 获取项目列表

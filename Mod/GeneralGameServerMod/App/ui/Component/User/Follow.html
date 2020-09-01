@@ -28,7 +28,7 @@ function clickFollow()
     if (not isLogin) then return end
     UserDetail.rank.fans = UserDetail.rank.fans + 1;
     UserDetail.isFollow = true;
-    ui:RefreshWindow();
+    ui:RefreshWindow(0.01);
     keepwork.user.follow({
         objectType = 0,
         objectId = UserDetail.id,
@@ -42,7 +42,7 @@ function clickCancelFollow()
     self.isShowCancelFollow = false;
     UserDetail.isFollow = false;
     UserDetail.rank.fans = UserDetail.rank.fans - 1;
-    ui:RefreshWindow();
+    ui:RefreshWindow(0.01);
 
     keepwork.user.unfollow({
         objectType = 0,

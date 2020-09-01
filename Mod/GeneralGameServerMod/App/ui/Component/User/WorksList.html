@@ -20,18 +20,24 @@
             </div>
             <div style="margin-top: 10px; width: 250px;">
                 <div style="float: right;">
-                    <div v-on:click="ClickOpenWorld(project.id)" class="inline" style="width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-if="isAuthUser" v-on:click="ClickOpenWorldDir(project.name)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_wenjian_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-if="isAuthUser" v-on:click="ClickWorldDelete(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shanchu_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-if="isAuthUser" v-on:click="ClickWorldSync(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shuaxin_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-on:click="ClickOpenWorld(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
                 </div>
             </div>
             <Rate v-if="project.rate and project.rate > 0" style="position: absolute; left: 0px;" v-bind:rate="project.rate"></Rate>
             <div v-if="project.visibility == 1" style="position: absolute; top: 5px; right: 5px; width: 28px; height: 31px; background: url(Texture/Aries/Creator/keepwork/ggs/user/suosi_28X31_32bits.png#0 0 28 31);"></div>
         </div>
-
     </scrollarea>
 </template>
 
 <script type="text/lua">
 RegisterComponent("Rate", "%ui%/Component/User/Rate.html");
+
+local WorldList = NPL.load("(gl)Mod/WorldShare/cellar/UserConsole/WorldList.lua");
+local KeepworkServiceWorld = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/World.lua");
+
 local UniString = commonlib.gettable("System.Core.UniString");
 ProjectList = ProjectList or {};
 
@@ -77,6 +83,25 @@ function OnRefresh()
         vbar:SetSliderBackground("Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 15 2 15");
     end
 end
+
+function ClickWorldDelete(projectId)
+    KeepworkServiceWorld:SetWorldInstanceByPid(projectId)
+    WorldList:Delete()
+end
+
+function ClickWorldSync(projectId)
+    KeepworkServiceWorld:SetWorldInstanceByPid(projectId)
+    WorldList:Sync();
+end
+
+-- 打开世界目录
+function ClickOpenWorldDir(projectName)
+    -- ParaIO.GetCurDirectory(0) .. GameLogic.GetWorld():GetWorldPath();
+    local path = ParaIO.GetCurDirectory(0) .. "worlds/DesignHouse/" .. projectName .. "/";
+    echo(commonlib.Encoding.Utf8ToDefault(path));
+    ParaGlobal.ShellExecute("open", commonlib.Encoding.Utf8ToDefault(path), "", "", 1);
+end
+
 </script>
 
 <style type="text/css">  
