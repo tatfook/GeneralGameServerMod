@@ -127,23 +127,19 @@ function ui.ShowWindow(self, params)
     if (params.top == nil) then params.top = -params.height / 2 end
     if (params.allowDrag == nil) then params.allowDrag = true end
     if (params.name == nil) then params.name = "UI" end
-
+    -- 关闭销毁
+    params.DestroyOnClose = true;
+    -- 强制更新全局表
+    params.pageGlobalTable = self:GetGlobalTable(params.G, true);
+    -- 生成模板
     params.url = ParaXML.LuaXML_ParseString(params.mcml or string.format([[
         <pe:mcml class="ui-pe-mcml" width="100%%" height="100%%">
             <App filename="%s"></App>
         </pe:mcml>
     ]], url));
 
-    -- 关闭销毁
-    params.DestroyOnClose = true;
-    -- 强制更新全局表
-    params.pageGlobalTable = self:GetGlobalTable(params.G, true);
-
     self.params = params;
-
-    self:GetWindow():Show(params);
-
-    return;
+    return self:GetWindow():Show(params);
 end
 
 -- 设置窗口大小
@@ -160,13 +156,17 @@ end
 function ui:CloseWindow()
     if (not self.window) then return end
     self.window:CloseWindow();
+    self.window = nil;
     self.global = nil;
     self.globalScope = nil;
+
+    if (type(self.params.OnClose) == "function") then
+        self.params.OnClose();
+    end
 end
 
 -- 窗口关闭回调
 function ui:OnWindowClosed()
-    self.window = nil;
 end
 
 -- 静态初始化
