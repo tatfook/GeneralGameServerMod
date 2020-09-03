@@ -47,8 +47,6 @@ local KeepworkServiceWorld = NPL.load("(gl)Mod/WorldShare/service/KeepworkServic
 local UniString = commonlib.gettable("System.Core.UniString");
 local selectedProjectId = nil;
 
-ProjectList = ProjectList or {};
-
 function ClickProject(project)
     selectedProjectId = project.id;
     ui:RefreshWindow(0);

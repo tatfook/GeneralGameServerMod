@@ -170,7 +170,7 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     self:GetPlayerManager():SendPacketToAllPlayersExcept(isNew and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo, self:GetPlayer());
     -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
     if (isNew) then 
-        self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerManager():GetPlayerEntityInfoList()));
+        self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerManager():GetPlayerEntityInfoList(self:GetPlayer())));
     end
 end
 

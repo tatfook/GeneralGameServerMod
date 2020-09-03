@@ -225,12 +225,32 @@ function PlayerManager:GetPlayer(id)
 end
 
 -- 获取所有玩家实体信息列表
-function PlayerManager:GetPlayerEntityInfoList()
+function PlayerManager:GetPlayerEntityInfoList(recvPlayer)
+    local viewSize = recvPlayer and recvPlayer:GetViewSize() or 0;
+    local recvPlayerBX = recvPlayer and recvPlayer:GetEntityInfo().bx or 0;
+    local recvPlayerBZ = recvPlayer and recvPlayer:GetEntityInfo().bz or 0;
+    local recvAreaX = viewSize ~= 0 and math.floor(recvPlayerBX / viewSize) or 0;
+    local recvAreaZ = viewSize ~= 0 and math.floor(recvPlayerBZ / viewSize) or 0;
+    local function filter(player)
+        if (viewSize == 0) then return true end
+        local bx = player:GetEntityInfo().bx or 0; 
+        local bz = player:GetEntityInfo().bx or 0; 
+        local areaX = math.floor(bx / viewSize);
+        local areaZ = math.floor(bz / viewSize);
+        if (recvAreaX == areaX and recvAreaZ == areaZ) then
+            return true;
+        end
+        return false;
+    end
+
     local playerEntityInfoList = {};
     for i = 1, #(self.playerList) do 
         local player = self.playerList[i];
-        playerEntityInfoList[i] = player:GetPlayerEntityInfo();
+        if (filter(player)) then
+            table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
+        end
     end
+
     return playerEntityInfoList;
 end
 

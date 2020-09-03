@@ -88,6 +88,11 @@ function Player:IsSyncCmd()
     return self.options.isSyncCmd;
 end
 
+-- 获取玩家视距
+function Player:GetViewSize()
+    return self.options.viewSize or 0;
+end
+
 -- 是否是匿名用户
 function Player:IsAnonymousUser()
     return self:GetPlayerInfo().isAnonymousUser;
@@ -136,6 +141,10 @@ function Player:GetPlayerEntityInfo()
     -- Log:Info(self);
     self.entityInfo.playerInfo = self:GetPlayerInfo();
     return Packets.PacketPlayerEntityInfo:new():Init(self.entityInfo, self.dataWatcher, true);
+end
+
+function Player:GetEntityInfo()
+    return self.entityInfo;
 end
 
 function Player:GetPlayerInfo()

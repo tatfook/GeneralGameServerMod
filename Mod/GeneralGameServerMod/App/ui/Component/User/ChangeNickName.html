@@ -13,6 +13,16 @@ function OnRefresh()
     GetRef("input"):GetControl():setFocus("click");
 end
 
+local function FinishCallback(value, notify)
+    if (type(finish) == "function") then
+        finish(value);
+    end
+
+    if (notify) then
+        GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateNickName", nickname = value});
+    end
+end
+
 function confirm()
     local inputEl = GetRef("input");
     local value = inputEl:GetUIValue();
@@ -22,14 +32,10 @@ function confirm()
     }, function(status, msg, data) 
         if (status < 200 or status >= 300) then return echo("更新用户昵称失败") end
     end);
-    if (type(finish) == "function") then
-        finish(value);
-    end
+    FinishCallback(value, true);
 end 
 
 function cancel()
-    if (type(finish) == "function") then
-    finish(self.nickname);
-    end
+    FinishCallback(self.nickname, false);
 end
 </script>

@@ -9,14 +9,17 @@ local username = self.username or "xiaoyao";
 GetGlobalScope():Set("AuthUsername", System.User.keepworkUsername);
 GetGlobalScope():Set("isLogin", System.User.keepworkUsername and true or false);
 GetGlobalScope():Set("isAuthUser", false);
-GetGlobalScope():Set("UserDetail", {});
+GetGlobalScope():Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {}});
 GetGlobalScope():Set("ProjectList", {});
 
 -- 加载用户信息
 function LoadUserInfo(username)
     local id = "kp" .. Encoding.base64(commonlib.Json.Encode({username=username}));
     -- 获取用户信息
-    keepwork.user.getinfo({router_params = {id = id}}, function(status, msg, data) 
+    keepwork.user.getinfo({
+        cache_policy = "access plus 0",
+        router_params = {id = id},
+    }, function(status, msg, data) 
         if (status ~= 200) then return echo("获取用户详情失败...") end
         local UserDetail = data;
         if (System.User.keepworkUsername == UserDetail.username) then

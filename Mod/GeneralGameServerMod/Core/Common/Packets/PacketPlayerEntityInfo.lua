@@ -32,6 +32,13 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
         return self;
     end
     
+    -- 遍历信息
+    for key, val in pairs(entityInfo) do
+        if (type(val) ~= "table" and type(val) ~= "function") then
+            self[key] = val;
+        end
+    end
+
     -- 实体基础属性
     self.entityId = entityInfo.entityId;
     self.name = entityInfo.name;
@@ -42,7 +49,10 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
     -- 位置信息
     self.x = entityInfo.x;
     self.y = entityInfo.y;
-    self.z = entityInfo.z
+    self.z = entityInfo.z;
+    self.bx = entityInfo.bx;
+    self.by = entityInfo.by;
+    self.bz = entityInfo.bz;
     self.facing = entityInfo.facing;
     self.pitch = entityInfo.pitch;
     

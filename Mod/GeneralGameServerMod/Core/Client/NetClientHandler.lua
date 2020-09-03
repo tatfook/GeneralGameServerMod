@@ -213,11 +213,13 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     
     -- 上报玩家实体信息
     local dataWatcher = entityPlayer:GetDataWatcher();
+    local bx, by, bz = entityPlayer:GetBlockPos();
     self:AddToSendQueue(Packets.PacketPlayerEntityInfo:new():Init({
         entityId = entityId,
         x = math.floor(entityPlayer.x or 20000),
         y = math.floor(entityPlayer.y or -128),
         z = math.floor(entityPlayer.z or 20000),
+        bx = bx, by = by, bz = bz,
         name = username or tostring(entityId),
         facing = math.floor(entityPlayer.rotationYaw or entityPlayer.facing or 0),
         pitch = math.floor(entityPlayer.rotationPitch or 0),
@@ -230,6 +232,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         data = {
             isSyncBlock = self:GetClient():IsSyncBlock(),
             isSyncCmd = self:GetClient():IsSyncCmd(),
+            viewSize = self:GetClient():GetViewSize(),
         }
     }));
 

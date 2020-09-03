@@ -19,8 +19,8 @@
             <pe:mc_player align="center"  v-bind:assetfile="mainasset" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" isinteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></pe:mc_player>
             <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div>
             <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div>
-            <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div>
-            <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div>
+            <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
+            <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
             <div v-on:click="ClickPersonalPage" style="position: absolute; left: 10px; bottom: 10px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
             <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 40px;"></ScaleSlider>
         </div>
@@ -97,8 +97,6 @@ local assets = {
     "character/CC/02human/paperman/girl05.x",
 }
 local curAssetIndex = 1;
-
-UserDetail = UserDetail or {username = "username", createdAt = "2020-01-01", rank = {}};
 
 self.isEditNickName = false;
 

@@ -12,6 +12,7 @@ local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityPlayerMPClient.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
@@ -92,6 +93,7 @@ function EntityMainPlayer:SendMotionUpdates()
     if (hasMoved or hasRotation) then
         packet.x, packet.y, packet.z = self.x, self.y, self.z; 
         packet.facing, packet.pitch = self.facing, self.rotationPitch;
+        packet.bx, packet.by, packet.bz = self:GetBlockPos();
     end
     if (hasHeadRotation) then
         packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
