@@ -232,7 +232,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         data = {
             isSyncBlock = self:GetClient():IsSyncBlock(),
             isSyncCmd = self:GetClient():IsSyncCmd(),
-            viewSize = self:GetClient():GetViewSize(),
+            areaSize = self:GetClient():GetAreaSize(),
         }
     }));
 

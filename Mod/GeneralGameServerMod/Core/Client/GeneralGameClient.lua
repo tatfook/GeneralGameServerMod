@@ -39,7 +39,7 @@ GeneralGameClient.options = {
     isSyncBlock = if_else(Config.IsDevEnv, true, false),
     isSyncForceBlock = true,
     isSyncCmd = true,
-    viewSize = 128,   -- 表示不做限制
+    areaSize = 0,   -- 表示不做限制
 }
 
 function GeneralGameClient:ctor() 
@@ -131,8 +131,8 @@ function GeneralGameClient:IsSyncCmd()
 end
 
 -- 获取视图大小
-function GeneralGameClient:GetViewSize()
-    return tonumber(self:GetOptions().viewSize) or 0;
+function GeneralGameClient:GetAreaSize()
+    return tonumber(self:GetOptions().areaSize) or 0;
 end
 
 -- 是否获取可用服务器列表

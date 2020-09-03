@@ -92,8 +92,8 @@ function Player:IsSyncCmd()
 end
 
 -- 获取玩家视距
-function Player:GetViewSize()
-    return self.options.viewSize or 0;
+function Player:GetAreaSize()
+    return self.options.areaSize or 0;
 end
 
 -- 是否是匿名用户
@@ -141,17 +141,17 @@ function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
 
     -- 更新用户区域
     self:UpdateArea();
-    
+
     return isNew;
 end
 
 function Player:UpdateArea()
-    local viewSize = self:GetViewSize();
-    if (viewSize == 0) then return end
+    local areaSize = self:GetAreaSize();
+    if (areaSize == 0) then return end
     local bx = self:GetEntityInfo().bx or 0;
     local bz = self:GetEntityInfo().bz or 0;
-    local areaX = math.floor(bx / viewSize);
-    local areaZ = math.floor(bz / viewSize);
+    local areaX = math.floor(bx / areaSize);
+    local areaZ = math.floor(bz / areaSize);
     if (areaX == self.areaX and areaZ == self.areaZ) then return end
     self.areaX, self.areaZ = areaX, areaZ;
     self.playerNetHandler:handlePlayerEntityInfoList();

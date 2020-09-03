@@ -18,5 +18,5 @@ function page.ShowUserInfoPage(G, params)
     params = params or {};
     params.G = G;
     params.url = "%ui%/Page/UserInfoPage.html";
-    ui:ShowWindow(params);
+    ui.ShowWindow(params);
 end

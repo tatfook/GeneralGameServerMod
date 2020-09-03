@@ -180,6 +180,32 @@ function PlayerManager:SendPacketToAllPlayersExcept(packet, excludedPlayer)
     end
 end
 
+-- 获取区域FIlter
+function PlayerManager:GetPlayerAreaFilter(areaPlayer, isAreaPlayerCenter)
+    return function(player)
+        if (areaPlayer.entityId == player.entityId) then return false end
+        local areaSize = if_else(isAreaPlayerCenter, areaPlayer:GetAreaSize(), player:GetAreaSize());
+        if (areaSize == 0) then return true end
+        local playerBX = areaPlayer and areaPlayer:GetEntityInfo().bx or 0;
+        local playerBZ = areaPlayer and areaPlayer:GetEntityInfo().bz or 0;
+        local playerAreaX = areaSize ~= 0 and math.floor(playerBX / areaSize) or 0;
+        local playerAreaZ = areaSize ~= 0 and math.floor(playerBZ / areaSize) or 0;
+        local bx = player:GetEntityInfo().bx or 0; 
+        local bz = player:GetEntityInfo().bz or 0; 
+        local areaX = math.floor(bx / areaSize);
+        local areaZ = math.floor(bz / areaSize);
+        if (math.abs(areaX - playerAreaX) <= 1 and math.abs(areaZ - playerAreaZ) <= 1) then
+            return true;
+        end
+        return false;
+    end
+end
+
+-- 发送给指定区域的玩家
+function PlayerManager:SendPacketToAreaPlayer(packet, areaPlayer)
+    self:SendPacketToAllPlayers(packet, self:GetPlayerAreaFilter(areaPlayer, false));
+end
+
 -- 发送给同步方块的玩家
 function PlayerManager:SendPacketToSyncBlockPlayers(packet, excludedPlayer)
     self:SendPacketToAllPlayers(packet, function(player)
@@ -225,20 +251,20 @@ function PlayerManager:GetPlayer(id)
 end
 
 -- 获取所有玩家实体信息列表
-function PlayerManager:GetPlayerEntityInfoList(recvPlayer)
-    local viewSize = recvPlayer and recvPlayer:GetViewSize() or 0;
-    local recvPlayerBX = recvPlayer and recvPlayer:GetEntityInfo().bx or 0;
-    local recvPlayerBZ = recvPlayer and recvPlayer:GetEntityInfo().bz or 0;
-    local recvAreaX = viewSize ~= 0 and math.floor(recvPlayerBX / viewSize) or 0;
-    local recvAreaZ = viewSize ~= 0 and math.floor(recvPlayerBZ / viewSize) or 0;
+function PlayerManager:GetPlayerEntityInfoList(areaPlayer)
+    local areaSize = areaPlayer and areaPlayer:GetAreaSize() or 0;
+    local playerBX = areaPlayer and areaPlayer:GetEntityInfo().bx or 0;
+    local playerBZ = areaPlayer and areaPlayer:GetEntityInfo().bz or 0;
+    local playerAreaX = areaSize ~= 0 and math.floor(playerBX / areaSize) or 0;
+    local playerAreaZ = areaSize ~= 0 and math.floor(playerBZ / areaSize) or 0;
     local function filter(player)
-        if (viewSize == 0) then return true end
+        if (areaPlayer.entityId == player.entityId) then return false end
+        if (areaSize == 0 or player:IsAlive()) then return true end
         local bx = player:GetEntityInfo().bx or 0; 
-        local bz = player:GetEntityInfo().bx or 0; 
-        local areaX = math.floor(bx / viewSize);
-        local areaZ = math.floor(bz / viewSize);
-        echo({"---------------------", areaX, areaZ, recvAreaX, recvAreaZ});
-        if (recvAreaX == areaX and recvAreaZ == areaZ) then
+        local bz = player:GetEntityInfo().bz or 0; 
+        local areaX = math.floor(bx / areaSize);
+        local areaZ = math.floor(bz / areaSize);
+        if (math.abs(areaX - playerAreaX) <= 1 and math.abs(areaZ - playerAreaZ) <= 1) then
             return true;
         end
         return false;

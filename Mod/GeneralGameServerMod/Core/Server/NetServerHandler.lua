@@ -167,7 +167,9 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     -- 设置当前玩家实体信息
     local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
     -- 新玩家通知所有旧玩家
-    self:GetPlayerManager():SendPacketToAllPlayersExcept(isNew and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo, self:GetPlayer());
+    -- self:GetPlayerManager():SendPacketToAllPlayersExcept(isNew and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo, self:GetPlayer());
+    self:GetPlayerManager():SendPacketToAllPlayersExcept(self:GetPlayer():GetPlayerEntityInfo(), self:GetPlayer());
+    -- self:GetPlayerManager():SendPacketToAreaPlayer(isNew and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo, self:GetPlayer());
     -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
     if (isNew) then 
         self:handlePlayerEntityInfoList();
