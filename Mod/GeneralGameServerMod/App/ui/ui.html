@@ -1,44 +1,33 @@
 
-<template height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
-    <WindowTitleBar></WindowTitleBar>
-    <ScaleSlider></ScaleSlider>
+<template id=0 height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
+    <!-- <WindowTitleBar></WindowTitleBar> -->
+    <div id=1 ref="position_relative" style="position: relative; width: 300px; height: 300px; margin-left: 100px; margin-top: 100px; background-color: #ffffff;">
+        <div id=2 style="id: 2; width: 100px; height: 100px; background-color: #ff0000;"></div>
+        <div id=3 ref="position_absolute" style="position: absolute; left: 0px; top: 0px; width: 100px; height: 100px; background-color: #ff0000;"></div>
+        <!-- <div ref="position_absolute" style="width: 100px; height: 100px; background-color: #ff0000;"></div> -->
+    </div>
+    <button id=4 v-on:click="click">点击</button>
 </template>
 
 <script type="text/lua">
-    RegisterComponent("Test", "%ui%/Test/Test.html");
-    RegisterComponent("Rate", "%ui%/Component/User/Rate.html");
-    RegisterComponent("Number", "%ui%/Component/User/Number.html");
-    RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
+RegisterComponent("Example", "%ui%/Example/Test.html");
+RegisterComponent("Rate", "%ui%/Component/User/Rate.html");
+RegisterComponent("Number", "%ui%/Component/User/Number.html");
+RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
+
+function click()
+    local position_relative_el = GetRef("position_relative");
+    local position_absolute_el = GetRef("position_absolute");
+    local position_relative_el_control = position_relative_el:GetControl();
+    local position_absolute_el_control = position_absolute_el:GetControl();
+    local position_relative_el_layout = position_relative_el:GetElementLayout();
+    local position_absolute_el_layout = position_absolute_el:GetElementLayout();
+    echo({{position_relative_el_layout:GetPos()}, "control pos:", position_relative_el_control:x(), position_relative_el_control:y(), position_relative_el_control:width(), position_relative_el_control:height()})
+    echo({{position_absolute_el_layout:GetPos()}, "control pos:", position_absolute_el_control:x(), position_absolute_el_control:y(), position_absolute_el_control:width(), position_absolute_el_control:height()})
+end
 </script>
 
 <style>
-.item {
-    display: inline-block;
-    width: 200px;
-    height: 200px;
-    margin-left: 10px;
-    margin-top: 10px;
-}
 </style>
 
 
-<!-- 
--- 设置窗口高度
--- ui:SetWindowSize({width = 960, height = 600});
-<script>
-
-    <div>{{count}}</div>
-    <button v-on:click="click">OK</button>
-
-</script>
- -->
-<!-- 
-    <WindowTitleBar title="用户信息"></WindowTitleBar>
-    <div v-for="x in 3" v-on:click="click(x)">{{x}}</div>
-    <UserInfo v-bind:UserDetail="UserDetail" style="float: left;"></UserInfo>
-
-
-ui:SetWindowSize({width = 880, height = 584});
-RegisterComponent("UserInfo", "Mod/GeneralGameServerMod/App/ui/Component/UserInfo.html");
-RegisterComponent("WorksList", "Mod/GeneralGameServerMod/App/ui/Component/WorksList.html");
--->
