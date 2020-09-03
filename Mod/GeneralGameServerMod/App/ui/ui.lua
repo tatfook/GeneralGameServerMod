@@ -43,6 +43,8 @@ ui.window = nil;
 function ui:ctor()
     self.window = nil;
     self.global = nil;
+
+    GameLogic:Connect("WorldUnloaded", self, self.CloseWindow, "UniqueConnection");
 end
 
 -- 获取文件
@@ -139,6 +141,8 @@ function ui.ShowWindow(self, params)
     ]], url));
 
     self.params = params;
+    
+
     return self:GetWindow():Show(params);
 end
 
