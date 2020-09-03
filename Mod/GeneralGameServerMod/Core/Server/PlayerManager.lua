@@ -237,6 +237,7 @@ function PlayerManager:GetPlayerEntityInfoList(recvPlayer)
         local bz = player:GetEntityInfo().bx or 0; 
         local areaX = math.floor(bx / viewSize);
         local areaZ = math.floor(bz / viewSize);
+        echo({"---------------------", areaX, areaZ, recvAreaX, recvAreaZ});
         if (recvAreaX == areaX and recvAreaZ == areaZ) then
             return true;
         end

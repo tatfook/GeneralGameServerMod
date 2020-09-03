@@ -30,6 +30,9 @@ function Player:ctor()
     self.aliveTime = 0;
     self.state = "online";
     self.options = {};
+    self.areaX = 0;
+    self.areaY = 0;
+    self.areaZ = 0;
 end
 
 function Player:Init(player, playerManager, netHandler)
@@ -131,10 +134,31 @@ function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
 
     -- 设置实体信息
     commonlib.partialcopy(self.entityInfo, packetPlayerEntityInfo);
+
+    -- 置空无效信息
     self.entityInfo.id = nil;
     self.entityInfo.metadata = nil;
 
+    -- 更新用户区域
+    self:UpdateArea();
+    
     return isNew;
+end
+
+function Player:UpdateArea()
+    local viewSize = self:GetViewSize();
+    if (viewSize == 0) then return end
+    local bx = self:GetEntityInfo().bx or 0;
+    local bz = self:GetEntityInfo().bz or 0;
+    local areaX = math.floor(bx / viewSize);
+    local areaZ = math.floor(bz / viewSize);
+    if (areaX == self.areaX and areaZ == self.areaZ) then return end
+    self.areaX, self.areaZ = areaX, areaZ;
+    self.playerNetHandler:handlePlayerEntityInfoList();
+end
+
+function Player:GetArea()
+    return self.areaX, self.areaY, self.areaZ;
 end
 
 function Player:GetPlayerEntityInfo()

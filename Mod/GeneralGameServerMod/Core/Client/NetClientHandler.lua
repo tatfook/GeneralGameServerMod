@@ -323,6 +323,7 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     end
     -- 同步玩家
     local entityList = self:GetWorld():GetEntityList();
+    local mainPlayer = self:GetPlayer();
     for i = 1, #entityList do
         local entity = entityList[i];
         -- 重连这里会混乱 所以要加EntityMainPlayer条件  登录成功直接直接清空实体列表就应该不会混乱
@@ -334,7 +335,7 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
                     break;
                 end
             end
-            if (not isExist) then
+            if (not isExist and entity.entityId ~= mainPlayer.entityId) then
                 removeEntityList[#removeEntityList + 1] = entity;
             end
         end
