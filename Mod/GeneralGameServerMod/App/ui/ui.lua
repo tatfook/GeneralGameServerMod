@@ -112,7 +112,7 @@ end
 
 -- 显示窗口
 function ui.ShowWindow(self, params)
-    if (not self:isa(ui)) then 
+    if (not self.isa or not self:isa(ui)) then 
         params = self;
         self = ui:new();
         echo("-------------------new ui window-----------------");
