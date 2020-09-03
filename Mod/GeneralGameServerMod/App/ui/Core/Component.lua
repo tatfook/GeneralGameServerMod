@@ -397,6 +397,11 @@ function Component:OnAfterChildLayout(layout, left, top, right, bottom)
     if (not self:IsValid()) then return end
 end
 
+function Component:OnBeforeUpdateElementLayout(elementLayout, parentElementLayout)
+    elementLayout:UpdateElementLayout(self:GetElement(), parentElementLayout);
+    return true;
+end
+
 function Component:paintEvent(painter)
     if (not self:IsValid()) then return end
     self:GetElement():paintEvent(painter);

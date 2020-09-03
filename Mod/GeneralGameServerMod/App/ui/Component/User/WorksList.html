@@ -1,9 +1,14 @@
 <template>
     <scrollarea ref="scrollarea" style="width: 604px; height: 540px; padding-left: 6px; padding-top: 6px;">
         <div v-if="#ProjectList == 0" valign="center" align="center" style="width: 332px; height: 50px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tixingzi_332X50_32bits.png#0 0 332 50);"></div>
-        <div v-for="project in ProjectList" class="project">
-            <div v-bind:style="GetImageStyle(project.extra)"></div>
-            <div style="base-font-size: 16px; font-size:16px; color: #000000; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px;">{{GetProjectName(project.name)}}</div>
+        <div v-for="project in ProjectList" class="project" v-bind:style="GetProjectStyle(project.id)" v-on:click="ClickProject(project)">
+            <div v-bind:style="GetImageStyle(project.extra)">
+                <Username style="display: block; height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
+            </div>
+            <div style="base-font-size: 16px; font-size:16px; color: #522b2b; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px;">
+                <div v-if="GetProjectStatusStyle(project.status)" class="status" style="display:inline-block; width: 16px; height: 16px;" v-bind:style="GetProjectStatusStyle(project.status)"></div>
+                {{GetProjectName(project.name)}}
+            </div>
             <div style="base-font-size: 12px; font-size:12px; color: #999999; margin-top: 10px; margin-left:8px; height: 12px; line-height: 12px;">{{GetCreateTime(project.createdAt)}}</div>
             <div style="margin-top: 12px; margin-left: 8px; base-font-size: 12px; font-size:12px; color: #999999; ">
                 <div style="display:inline; height: 16px;">
@@ -21,9 +26,9 @@
             </div>
             <div style="margin-top: 10px; width: 250px;">
                 <div style="float: right;">
-                    <div v-if="isAuthUser" v-on:click="ClickOpenWorldDir(project.name)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_wenjian_40X40_32bits.png#0 0 40 40);"></div>
-                    <div v-if="isAuthUser" v-on:click="ClickWorldDelete(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shanchu_40X40_32bits.png#0 0 40 40);"></div>
-                    <div v-if="isAuthUser" v-on:click="ClickWorldSync(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shuaxin_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-if="IsSelected(project.id)" v-on:click="ClickOpenWorldDir(project.name)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_wenjian_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-if="IsSelected(project.id)" v-on:click="ClickWorldDelete(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shanchu_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-if="IsSelected(project.id)" v-on:click="ClickWorldSync(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shuaxin_40X40_32bits.png#0 0 40 40);"></div>
                     <div v-on:click="ClickOpenWorld(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
                 </div>
             </div>
@@ -35,16 +40,57 @@
 
 <script type="text/lua">
 RegisterComponent("Rate", "%ui%/Component/User/Rate.html");
+RegisterComponent("Username", "%ui%/Component/User/Username.html");
 
 local WorldList = NPL.load("(gl)Mod/WorldShare/cellar/UserConsole/WorldList.lua");
 local KeepworkServiceWorld = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/World.lua");
-
 local UniString = commonlib.gettable("System.Core.UniString");
+local selectedProjectId = nil;
+
 ProjectList = ProjectList or {};
+
+function ClickProject(project)
+    selectedProjectId = project.id;
+    ui:RefreshWindow(0);
+end 
+
+function GetProjectStatusStyle(index)
+    if(index == 1) then
+        return 'background:url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#72 104 16 16);';
+    end
+
+    if(index == 2) then
+        return 'background:url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#98 104 16 16);';
+    end
+
+    if(index == 3) then
+        return 'background:url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#20 104 16 16);';
+    end
+
+    if(index == 4) then
+        return 'background:url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#46 104 16 16);';
+    end
+
+    if(index == 5) then
+        return 'background:url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#124 104 16 16);';
+    end
+end
+
+function GetProjectStyle(projectId)
+    if (selectedProjectId == projectId) then
+        return "background: url(Texture/Aries/Creator/keepwork/ggs/user/zuopkuang_selected_32X32_32bits.png#0 0 32 32:14 14 14 14);";
+    else
+        return "background: url(Texture/Aries/Creator/keepwork/ggs/user/zuopkuang_32X32_32bits.png#0 0 32 32:14 14 14 14);";
+    end
+end 
+
+function IsSelected(projectId)
+    return isAuthUser and selectedProjectId == projectId;
+end 
 
 function GetImageStyle(extra)
     local url = extra and extra.imageUrl or "https://keepwork.com/public/img/project_default_cover_new.af774e7d.png"; 
-    return string.format("width: 264px; height: 134px; background: url(%s);", url);
+    return string.format("position: relative; width: 264px; height: 134px; background: url(%s);", url);
 end
 
 function GetProjectName(text)
@@ -86,13 +132,15 @@ function OnRefresh()
 end
 
 function ClickWorldDelete(projectId)
-    KeepworkServiceWorld:SetWorldInstanceByPid(projectId)
-    WorldList:Delete()
+    KeepworkServiceWorld:SetWorldInstanceByPid(projectId, function()
+        WorldList:DeleteWorld()
+    end);
 end
 
 function ClickWorldSync(projectId)
-    KeepworkServiceWorld:SetWorldInstanceByPid(projectId)
-    WorldList:Sync();
+    KeepworkServiceWorld:SetWorldInstanceByPid(projectId, function() 
+        WorldList:Sync();
+    end)
 end
 
 -- 打开世界目录
@@ -117,6 +165,14 @@ end
     width: 284px;
     height: 274px;
     background: url(Texture/Aries/Creator/keepwork/ggs/user/zuopkuang_32X32_32bits.png#0 0 32 32:14 14 14 14);
+}
+
+.status {
+    width: 16px;
+    height: 16px;
+    margin-left: -2px;
+    margin-top: 2px;
+    margin-right: 4px;
 }
 </style>
 

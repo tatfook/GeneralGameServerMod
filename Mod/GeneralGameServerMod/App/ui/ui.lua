@@ -12,6 +12,7 @@ ui:ShowWindow();
 NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
 NPL.load("(gl)script/ide/System/Windows/Window.lua");
 local mcml = commonlib.gettable("System.Windows.mcml");
+local UIWindow = NPL.load("./Core/Window/UIWindow.lua");
 local Component = NPL.load("./Core/Component.lua");
 local App = NPL.load("./Core/App.lua");
 local Slot = NPL.load("./Core/Slot.lua");
@@ -21,12 +22,6 @@ local ui = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.exp
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local __FILE__ = debug.getinfo(1,'S').source;
 local __DIRECTORY__ = string.match(__FILE__, "^(.*)/");
-
--- UIWindow
-local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), {});
-
-UIWindow:Property("UIWindow", true, "IsUIWindow");
-UIWindow:Property("UI");
 
 function _G.TraceStack(dept)
     dept = dept or 50;
@@ -101,6 +96,7 @@ end
 -- 获取窗口
 function ui:GetWindow(url, isNewNoExist)
     if (not rawget(self, "window")) then
+        local UIWindow = commonlib.gettable("UIWindow");
         self.window = UIWindow:new();
         self.window:Connect("windowClosed", self, "OnWindowClosed", "UniqueConnection");
         self.window:SetUI(self);

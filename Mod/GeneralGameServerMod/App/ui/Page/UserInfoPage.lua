@@ -9,9 +9,8 @@ local username = self.username or "xiaoyao";
 GetGlobalScope():Set("AuthUsername", System.User.keepworkUsername);
 GetGlobalScope():Set("isLogin", System.User.keepworkUsername and true or false);
 GetGlobalScope():Set("isAuthUser", false);
-
-self.UserDetail = nil
-self.ProjectList = {};
+GetGlobalScope():Set("UserDetail", {});
+GetGlobalScope():Set("ProjectList", {});
 
 -- 加载用户信息
 function LoadUserInfo(username)
@@ -19,11 +18,13 @@ function LoadUserInfo(username)
     -- 获取用户信息
     keepwork.user.getinfo({router_params = {id = id}}, function(status, msg, data) 
         if (status ~= 200) then return echo("获取用户详情失败...") end
-        self.UserDetail = data;
-        if (System.User.keepworkUsername == self.UserDetail.username) then
-            GetGlobalScope():Set("AuthUserId", self.UserDetail.id);
+        local UserDetail = data;
+        if (System.User.keepworkUsername == UserDetail.username) then
+            GetGlobalScope():Set("AuthUserId", UserDetail.id);
             GetGlobalScope():Set("isAuthUser", true);
         end
+        GetGlobalScope():Set("UserDetail", UserDetail);
+
         -- echo(data)
         -- 获取项目列表
         local userId = self.UserDetail.id;
@@ -37,7 +38,8 @@ function LoadUserInfo(username)
             }
         }, function(status, msg, data)
             if (status ~= 200) then return echo("获取用户项目列表失败") end
-            self.ProjectList = data;
+            local ProjectList = data;
+            GetGlobalScope():Set("ProjectList", ProjectList);
             -- ui:RefreshWindow();
             -- echo(data);
             -- 获取是否关注
@@ -45,10 +47,10 @@ function LoadUserInfo(username)
                 objectId = userId,
                 objectType = 0,
             }, function(status, msg, data) 
-                self.UserDetail.isFollow = false;
+                UserDetail.isFollow = false;
                 if (status ~= 200) then return end
                 if (data and data ~= "false" and tonumber(data) ~= 0) then
-                    self.UserDetail.isFollow = true;
+                    UserDetail.isFollow = true;
                     -- ui:RefreshWindow();
                 end
             end)
