@@ -161,6 +161,9 @@ end
 
 -- 处理生成玩家包
 function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
+    -- 用户不存在
+    if (not self:GetPlayer()) then return end
+
     -- 设置当前玩家实体信息
     local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
     -- 新玩家通知所有旧玩家
@@ -224,6 +227,9 @@ end
 
 -- 玩家
 function NetServerHandler:handleTick(packetTick)
+    -- 用户不存在
+    if (not self:GetPlayer()) then return end
+
     if (packetTick.userinfo) then
         self:GetPlayer():SetPlayerInfo({userinfo = packetTick.userinfo});
     end
@@ -243,6 +249,9 @@ end
 
 -- 处理方块同步
 function NetServerHandler:handleGeneral_SyncBlock(packetGeneral)
+    -- 用户不存在
+    if (not self:GetPlayer()) then return end
+
     local state = packetGeneral.data.state;       -- 同步状态
     local playerId = packetGeneral.data.playerId; -- 请求同步玩家ID
     local player = self:GetPlayerManager():GetPlayer(playerId);
@@ -266,6 +275,9 @@ end
 
 -- 处理调试信息
 function NetServerHandler:handleGeneral_Debug(packetGeneral)
+    -- 用户不存在
+    if (not self:GetPlayer()) then return end
+
     local cmd = packetGeneral.data.cmd;
     if (cmd == "WorldInfo") then
         packetGeneral.data.debug = self:GetWorld():GetDebugInfo();
@@ -278,6 +290,9 @@ end
 
 -- 通用数据包转发
 function NetServerHandler:handleGeneral(packetGeneral)
+    -- 用户不存在
+    if (not self:GetPlayer()) then return end
+
     if (packetGeneral.action == "PlayerOptions") then
         self:GetPlayer():SetOptions(packetGeneral.data);
     elseif (packetGeneral.action == "SyncCmd") then
@@ -293,6 +308,9 @@ end
 
 -- 数据包列表转发
 function NetServerHandler:handleMultiple(packetMultiple)
+    -- 用户不存在
+    if (not self:GetPlayer()) then return end
+    
     if (packetMultiple.action == "SyncBlock") then
         self:GetPlayerManager():SendPacketToSyncBlockPlayers(packetMultiple, self:GetPlayer());
     else
