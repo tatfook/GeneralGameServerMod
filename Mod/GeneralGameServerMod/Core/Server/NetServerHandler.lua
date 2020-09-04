@@ -132,7 +132,6 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     end
 
     -- TODO 认证逻辑
-
     -- 认证通过
     self:SetAuthenticated();
     -- 获取并设置世界
