@@ -142,9 +142,6 @@ local function ParseXmlNode(self, opts)
         else 
             return LOG.std(nil, "warn", "Component", "can not find tag name %s", xmlNode.name or "");
         end
-        if (self:IsComponent(xmlNode.name)) then
-            echo({"----------------------------Create Element:", xmlNode.name});
-        end
     end
 
     if (not element) then
@@ -385,7 +382,7 @@ local function v_for(self, opts)
         return o;
     end
 
-    echo({"-------------------------v-for", count, cloneXmlNodeCount, #cloneXmlNodes});
+    -- echo({"-------------------------v-for", count, cloneXmlNodeCount, #cloneXmlNodes});
     for i = 1, count do
         local cloneNode = i <= cloneXmlNodeCount and cloneXmlNodes[i] or copyXmlNode(xmlNode); -- 大于上次数量新增, 小于复用
         cloneXmlNodes[i] = cloneNode;

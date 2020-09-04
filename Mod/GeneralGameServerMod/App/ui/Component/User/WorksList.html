@@ -119,7 +119,9 @@ end
 function OnRefresh()
     local scrollarea = GetRef("scrollarea");
     local scrollareaCtrl = scrollarea and scrollarea:GetControl();
+
     if (scrollareaCtrl) then
+        scrollareaCtrl:Connect("onScrollEnd", nil, NextPageProjectList, "UniqueConnection");
         local vbar = scrollareaCtrl and scrollareaCtrl.vbar;
         local hbar = scrollareaCtrl and scrollareaCtrl.hbar;
         vbar:SetShowButton(false);

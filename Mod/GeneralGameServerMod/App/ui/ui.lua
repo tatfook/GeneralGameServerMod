@@ -89,7 +89,7 @@ function ui:GetGlobalScope()
     self.globalScope:SetMetaTable(self:GetGlobalTable());
     self.globalScope.__newvalue = function(_, key, val) 
         if (key == "__newvalue") then return end;
-        print("[ui] [info] set global scope value, key = ", key);
+        -- print("[ui] [info] set global scope value, key = ", key);
         self:RefreshWindow();
     end
     return self.globalScope;

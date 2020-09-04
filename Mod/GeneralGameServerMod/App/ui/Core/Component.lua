@@ -38,7 +38,7 @@ function Component:ctor()
     self:SetComponents({});             -- 依赖组件集
     self:SetComponentStyle(Style:new():init(self:GetPageCtrl()));   -- 构建组件样式表
     self.refs = {};
-    print("-----------------create component: ", self.name);
+    -- print("-----------------create component: ", self.name);
 end
 
 -- 是否是组件
@@ -181,7 +181,7 @@ function Component:GetComponentScope()
         end
         self.ComponentScope.__newvalue = function(t, key, val)
             if (not self:IsAutoRefresh() or key == "__newvalue") then return end
-            print(string.format("[component:%s] [info] set component scope value, key = %s, ", self.name, key));
+            -- print(string.format("[component:%s] [info] set component scope value, key = %s, ", self.name, key));
             self:GetUI():RefreshWindow();
         end
         self.ComponentScope:SetMetaTable(self:GetGlobalScope());
@@ -344,8 +344,7 @@ end
 
 -- 加载组件
 function Component:LoadComponent(parentElem, parentLayout, style)
-    -- echo({"----------------------LoadComponent:", self.name, "scope id", self:GetScope():GetID(), "scope", self:GetScope():GetRawData()});
-    echo({"----------------------LoadComponent:", self.name, "scope id", self:GetScope():GetID()});
+    -- echo({"----------------------LoadComponent:", self.name, "scope id", self:GetScope():GetID()});
     -- 初始化
     self:Init();
     -- 解析组件
