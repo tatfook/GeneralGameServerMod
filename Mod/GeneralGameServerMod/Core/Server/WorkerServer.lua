@@ -83,6 +83,7 @@ function WorkerServer:handleGeneral(packetGeneral)
     end
 end
 
+-- 获取服务器列表
 function WorkerServer:GetServerList()
     return self.ServerList;
 end

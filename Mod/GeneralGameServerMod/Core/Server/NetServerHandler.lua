@@ -139,8 +139,6 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     self:SetWorld(self:GetWorldManager():GetWorld(worldId, parallelWorldName, true));
     -- 获取并设置玩家
     self:SetPlayer(self:GetPlayerManager():CreatePlayer(username, self));   -- 创建玩家
-    -- 将玩家加入管理
-    self:GetPlayerManager():AddPlayer(self:GetPlayer());
     -- 玩家登录
     self:GetPlayer():Login();
     -- 打印日志
@@ -172,6 +170,8 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
     if (isNew) then 
         self:handlePlayerEntityInfoList();
+        -- 将玩家加入管理 有实体信息才加入玩家管理器
+        self:GetPlayerManager():AddPlayer(self:GetPlayer());
     end
 end
 
