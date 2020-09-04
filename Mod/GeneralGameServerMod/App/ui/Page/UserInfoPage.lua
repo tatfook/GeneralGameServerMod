@@ -1,9 +1,11 @@
 
 NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
+local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
+local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
 local Encoding = commonlib.gettable("System.Encoding");
-
 local username = self.username or "xiaoyao";
+local SelfProjectList = {};
 
 -- 组件全局变量初始化
 GetGlobalScope():Set("AuthUsername", System.User.keepworkUsername);
@@ -11,6 +13,11 @@ GetGlobalScope():Set("isLogin", System.User.keepworkUsername and true or false);
 GetGlobalScope():Set("isAuthUser", false);
 GetGlobalScope():Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {}});
 GetGlobalScope():Set("ProjectList", {});
+
+-- Compare:RefreshWorldList(function(worldList)
+--     SelfProjectList = worldList or SelfProjectList;
+--     Debug.Print(SelfProjectList);
+-- end, "ONLINE");
 
 -- 加载用户信息
 function LoadUserInfo(username)

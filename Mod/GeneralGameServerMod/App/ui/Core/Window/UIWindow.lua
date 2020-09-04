@@ -9,9 +9,9 @@ local UIWindow = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/UIWindow.
 -------------------------------------------------------
 ]]
 -- UIWindow
--- local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), NPL.export());
+local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), NPL.export());
+-- local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), commonlib.gettable("UIWindow"));
 -- local ElementLayout = NPL.load("./ElementLayout.lua");
-local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), commonlib.gettable("UIWindow"));
 
 UIWindow:Property("UIWindow", true, "IsUIWindow");
 UIWindow:Property("UI");

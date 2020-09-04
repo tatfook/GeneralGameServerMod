@@ -55,13 +55,15 @@ end
 
 local function DebugCall(module, ...)
     if (ModuleLogEnableMap[module] == false or (not IsDevEnv and not ModuleLogEnableMap[module])) then return end
-    local filepos = commonlib.debug.locationinfo(3);
+    local filepos = commonlib.debug.locationinfo(3) or "";
+    filepos = string.sub(filepos, 1, 256);
     Print(string.format("\n[%s] %s ---------------------------start print-----------------", module, filepos));
 
-    Print({...});
+    for i = 1, select('#', ...) do  -->获取参数总数
+        Print(select(i, ...));      -->读取参数
+    end  
 
     Print(string.format("[%s] %s ---------------------------end print-----------------\n", module, filepos));
-
 end
 
 setmetatable(Debug, {
@@ -80,6 +82,10 @@ end
 
 function Debug.Stack()
     commonlib.debugstack();
+end
+
+function Debug.Print(...)
+    Print(...);
 end
 
 function _G.DebugStack(dept)

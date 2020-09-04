@@ -85,7 +85,6 @@ end
 -- 获取窗口
 function ui:GetWindow(url, isNewNoExist)
     if (not rawget(self, "window")) then
-        local UIWindow = commonlib.gettable("UIWindow");
         self.window = UIWindow:new();
         self.window:Connect("windowClosed", self, "OnWindowClosed", "UniqueConnection");
         self.window:SetUI(self);

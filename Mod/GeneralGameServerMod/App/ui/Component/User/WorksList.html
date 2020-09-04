@@ -26,9 +26,9 @@
             </div>
             <div style="margin-top: 10px; width: 250px;">
                 <div style="float: right;">
-                    <!-- <div v-if="isAuthUser" v-on:click="ClickOpenWorldDir(project.name)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_wenjian_40X40_32bits.png#0 0 40 40);"></div> -->
-                    <!-- <div v-if="IsSelected(project.id)" v-on:click="ClickWorldDelete(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shanchu_40X40_32bits.png#0 0 40 40);"></div> -->
-                    <!-- <div v-if="IsSelected(project.id)" v-on:click="ClickWorldSync(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shuaxin_40X40_32bits.png#0 0 40 40);"></div> -->
+                    <!-- <div v-if="isAuthUser" v-on:click="ClickOpenWorldDir(project.name)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_wenjian_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-if="IsSelected(project.id)" v-on:click="ClickWorldDelete(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shanchu_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-if="IsSelected(project.id)" v-on:click="ClickWorldSync(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shuaxin_40X40_32bits.png#0 0 40 40);"></div> -->
                     <div v-on:click="ClickOpenWorld(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
                 </div>
             </div>
@@ -133,7 +133,7 @@ end
 
 function ClickWorldDelete(projectId)
     KeepworkServiceWorld:SetWorldInstanceByPid(projectId, function()
-        WorldList:DeleteWorld()
+        WorldList:DeleteWorld();
     end);
 end
 
