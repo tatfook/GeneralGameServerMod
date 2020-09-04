@@ -16,9 +16,20 @@ local AppEntityMainPlayer = commonlib.inherit(commonlib.gettable("Mod.GeneralGam
 
 local moduleName = "Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer";
 
+
+
 -- 构造函数
 function AppEntityMainPlayer:ctor()
     self.appEntityPlayerHelper = AppEntityPlayerHelper:new():Init(self, true);
+
+    GameLogic.GetFilters():add_filter("ggs", function(msg)
+        if (type(msg) == "table" and msg.action == "UpdateUserInfo") then
+            local userinfo = msg.userinfo;
+            self:SetSuperPlayerInfo({userinfo = userinfo});
+            self.appEntityPlayerHelper:SetHeadOnDisplay();
+        end
+        return msg;
+    end);
 end
 
 -- 禁用默认用户名显示

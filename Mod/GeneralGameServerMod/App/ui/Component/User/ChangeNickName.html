@@ -20,6 +20,7 @@ local function FinishCallback(value, notify)
 
     if (notify) then
         GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateNickName", nickname = value});
+        GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateUserInfo", userinfo = {nickname = value}});
     end
 end
 

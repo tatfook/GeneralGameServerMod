@@ -21,6 +21,8 @@ local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.G
 local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer";
 local maxMotionUpdateTickCount = 33;
 
+EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
+
 -- 构造函数
 function EntityMainPlayer:ctor()
     self.playerInfo = {};
@@ -42,10 +44,13 @@ end
 function EntityMainPlayer:IsCanClick() 
     return false;
 end
+
 -- 设置玩家信息
 function EntityMainPlayer:SetPlayerInfo(playerInfo)
     commonlib.partialcopy(self.playerInfo, playerInfo);
+    self:SetUpdatePlayerInfo(true);
 end
+
 -- 获取玩家信息
 function EntityMainPlayer:GetPlayerInfo()
     return self.playerInfo;
@@ -73,7 +78,7 @@ function EntityMainPlayer:SendMotionUpdates()
     local dRotY = self.facing - self.oldRotationYaw;
     local dRotPitch = self.rotationPitch - self.oldRotationPitch;
     local hasRotation = dRotY ~= 0 or dRotPitch ~= 0;
-    local force = self:IsRiding() and (moveDistance > 2) or (moveDistance > 0.1);
+    local force = self:IsUpdatePlayerInfo() or (self:IsRiding() and (moveDistance > 2) or (moveDistance > 0.1));
     local forceTick = self.motionUpdateTickCount >= maxMotionUpdateTickCount;
 
     -- tick 自增
@@ -90,6 +95,12 @@ function EntityMainPlayer:SendMotionUpdates()
     -- Log:Std("DEBUG", moduleName, "force: %s, moveDistance: %s, ", force, moveDistance);
     -- Log:Std("DEBUG", moduleName, "motionUpdateTickCount: %d, hasMoved: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", self.motionUpdateTickCount, hasMoved, hasRotation, hasHeadRotation, hasMetaDataChange);
     local packet = Packets.PacketPlayerEntityInfo:new():Init({entityId = self.entityId}, self.dataWatcher, false);
+    
+    if (self:IsUpdatePlayerInfo()) then
+        packet.playerInfo = self:GetPlayerInfo();
+        self:SetUpdatePlayerInfo(false);
+    end
+
     if (hasMoved or hasRotation) then
         packet.x, packet.y, packet.z = self.x, self.y, self.z; 
         packet.facing, packet.pitch = self.facing, self.rotationPitch;

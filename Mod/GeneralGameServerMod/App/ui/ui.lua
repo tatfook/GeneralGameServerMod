@@ -142,7 +142,6 @@ function ui.ShowWindow(self, params)
 
     self.params = params;
     
-
     return self:GetWindow():Show(params);
 end
 
@@ -171,6 +170,7 @@ end
 
 -- 窗口关闭回调
 function ui:OnWindowClosed()
+    
 end
 
 -- 静态初始化

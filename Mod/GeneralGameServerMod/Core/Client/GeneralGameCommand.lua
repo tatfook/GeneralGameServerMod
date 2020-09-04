@@ -121,6 +121,7 @@ options:
 subcmd: 
 connect 连接服务器
 	/ggs connect [options] [worldId] [parallelWorldName]
+	/ggs connect -isSyncBlock -isSyncCmd -areaSize=128 -slient 12706
 cmd 执行软件内置命令
 	/ggs cmd [options] cmdname cmdtext
 	/ggs cmd tip hello world	

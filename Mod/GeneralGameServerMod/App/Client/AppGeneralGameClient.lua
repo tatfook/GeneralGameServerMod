@@ -39,6 +39,13 @@ function AppGeneralGameClient:ctor()
 
     KeepWorkItemManager.StaticInit();
     KeepWorkItemManager.GetFilter():add_filter("loaded_all", AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback);
+
+    GameLogic.GetFilters():add_filter("ggs", function(msg)
+        if (type(msg) == "table" and msg.action == "UpdateNickName") then
+            self.userinfo.nickname = msg.nickname;
+        end
+        return msg;
+    end);
 end
 
 -- 初始化函数

@@ -39,7 +39,11 @@ function AppGeneralGameWorld:Init(client)
     end
     DesktopMenuPage.Refresh();
 
-    GameLogic.GetFilters():apply_filters("ggs", {action = "LoadWorld"});
+    -- 非安静模式 发送ggs loadworld通知
+    if (not self:GetClient():GetOptions().slient) then
+        GameLogic.GetFilters():apply_filters("ggs", {action = "LoadWorld"});
+    end
+    
     return self;
 end
 
@@ -57,8 +61,9 @@ function AppGeneralGameWorld:OnExit()
     DesktopMenuPage.Refresh();
     self.menus = {};
     
-    GameLogic.GetFilters():apply_filters("ggs", {action = "ExitWorld"});
-    -- GameLogic.GetEvents():RemoveEventListener("DesktopMenuShow", AppGeneralGameWorld.OnDesktopMenuShow, self);
+    -- if (not self:GetClient():GetOptions().slient) then
+        GameLogic.GetFilters():apply_filters("ggs", {action = "ExitWorld"});
+    -- end 
 end
 
 function AppGeneralGameWorld:OnDesktopMenuShow(obj)
