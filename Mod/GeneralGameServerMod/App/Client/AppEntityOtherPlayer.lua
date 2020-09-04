@@ -10,12 +10,10 @@ local AppEntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Cl
 -------------------------------------------------------
 ]]
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
-NPL.load("Mod/GeneralGameServerMod/App/View/UserInfo.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityPlayerHelper.lua");
+local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
 local AppEntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityPlayerHelper");
-local UserInfo = commonlib.gettable("Mod.GeneralGameServerMod.App.View.UserInfo");
 local AppEntityOtherPlayer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer"));
-
 local moduleName = "Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer";
 
 -- 构造函数
@@ -33,7 +31,10 @@ end
 
 -- 玩家被点击
 function AppEntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
-    UserInfo:Show(self);
+    local mainasset = self:GetMainAssetPath();
+    local username = self:GetUserName()
+    page.ShowUserInfoPage({username = username, mainasset = mainasset});
+    
     -- 阻止默认行为     
     return true;
 end

@@ -30,8 +30,9 @@ local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config")
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
-
 local AssetsWhiteList = NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua"); 
+
+GeneralGameClient:Property("World", nil);  -- 当前世界
 
 -- 类共享变量 强制同步块列表
 GeneralGameClient.syncForceBlockList = commonlib.UnorderedArraySet:new();
@@ -166,7 +167,12 @@ function GeneralGameClient:LoadWorld(opts)
     local worldId = options.worldId;
 
     -- 退出旧世界
-    if (self.world) then self.world:OnExit(); end
+    if (self:GetWorld()) then 
+        -- 相同世界且已登录直接跳出
+        if (not IsDevEnv and self:GetWorld():IsLogin() and self:GetWorld():GetWorldId() == options.worldId) then return end
+        -- 退出旧世界
+        self:GetWorld():OnExit(); 
+    end
 
     -- 标识替换, 其它方式loadworld不替换
     self.IsReplaceWorld = true;
@@ -179,11 +185,6 @@ function GeneralGameClient:LoadWorld(opts)
     end
 end
 
--- 获取世界
-function GeneralGameClient:GetWorld()
-    return self.world;
-end
-
 -- 世界加载
 function GeneralGameClient:OnWorldLoaded() 
     -- 是否需要替换世界
@@ -192,12 +193,12 @@ function GeneralGameClient:OnWorldLoaded()
 
     -- 更新当前世界ID
     local GeneralGameWorldClass = self:GetGeneralGameWorldClass() or GeneralGameWorld;
-    self.world = GeneralGameWorldClass:new():Init(self);
-    GameLogic.ReplaceWorld(self.world);
+    self:SetWorld(GeneralGameWorldClass:new():Init(self));
+    GameLogic.ReplaceWorld(self:GetWorld());
 
     -- 登录世界
     if (self.options.ip and self.options.port) then
-        self.world:Login(self.options);
+        self:GetWorld():Login(self.options);
     else
         self:ConnectControlServer(self.options); -- 连接控制器服务, 获取世界服务
     end
@@ -205,11 +206,10 @@ end
 
 -- 世界退出
 function GeneralGameClient:OnWorldUnloaded()
-    if (self.world) then
-        self.world:OnExit();
+    if (self:GetWorld()) then
+        self:GetWorld():OnExit();
     end
-
-    self.world = nil;
+    self:SetWorld(nil);
 end
 
 -- 获取世界网络处理程序
@@ -296,7 +296,7 @@ function GeneralGameClient:handleWorldServer(packetWorldServer)
     end
 
     -- 登录世界
-    self.world:Login(options);
+    self:GetWorld():Login(options);
 
     -- 关闭控制服务器的链接
     self.controlServerConnection:CloseConnection();

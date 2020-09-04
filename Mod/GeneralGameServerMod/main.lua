@@ -26,6 +26,7 @@ local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == 
 local GeneralGameClients = {};
 local inited = false;
 
+_G.IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 
 function GeneralGameServerMod:ctor()
 end

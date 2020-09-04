@@ -30,6 +30,8 @@ local lshift = mathlib.bit.lshift;
 local band = mathlib.bit.band;
 local bor = mathlib.bit.bor;
 
+GeneralGameWorld:Property("WorldId", 0);  -- 世界ID
+
 function GeneralGameWorld:ctor() 
 end
 
@@ -136,6 +138,7 @@ function GeneralGameWorld:Login()
 	GameLogic:Connect("frameMoved", self, self.OnFrameMove, "UniqueConnection");
 
 	self.isLogin = true;
+	self:SetWorldId(self:GetClient():GetOptions().worldId);
 end
 
 function GeneralGameWorld:Logout() 
@@ -157,6 +160,7 @@ function GeneralGameWorld:Logout()
 	self.timer:Change();
 
 	self.isLogin = false;
+	self:SetWorldId(0);
 end
 
 function GeneralGameWorld:IsLogin()

@@ -222,7 +222,7 @@ function Component:ExecTextCode(code, isAddReturn, scope)
         code = "return (" .. code .. ")";
     end
     local code_func, errmsg = loadstring(code);
-    if (not code_func) then return echo("Error: " .. errmsg) end
+    if (not code_func) then return echo("Exec Code Error: " .. errmsg) end
     setfenv(code_func, scope or self:GetScope());
     return code_func();
 end

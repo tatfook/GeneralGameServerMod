@@ -23,19 +23,6 @@ local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "tru
 local __FILE__ = debug.getinfo(1,'S').source;
 local __DIRECTORY__ = string.match(__FILE__, "^(.*)/");
 
-function _G.TraceStack(dept)
-    dept = dept or 50;
-    for i = 1, dept do
-        local lastInfo = debug.getinfo(i - 1);
-        local info = debug.getinfo(i);
-        if info then
-            print("TraceStack",info.source, info.currentline, lastInfo and lastInfo.name);
-        else
-            break;
-        end
-    end
-end
-
 -- 当前窗口
 ui.window = nil; 
 

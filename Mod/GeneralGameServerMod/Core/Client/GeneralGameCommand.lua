@@ -189,6 +189,7 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	options.port = (options.port and options.port ~= "") and options.port or nil;
 	options.username = (options.username and options.username ~= "") and options.username or nil;
 	options.password = (options.password and options.password ~= "") and options.password or nil;
+	options.slient = options.slient and true or false;
 	
 	self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
 	self.generalGameClient:LoadWorld(options);
