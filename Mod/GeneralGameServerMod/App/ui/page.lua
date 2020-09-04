@@ -14,18 +14,13 @@ local ui = NPL.load("./ui.lua");
 local page = NPL.export();
 
 -- 显示用户信息
-local isShowUserInfoPage = false;
+local UserInfoPageUI = ui:new();
 function page.ShowUserInfoPage(G, params)
-    if (isShowUserInfoPage) then return end
-
-    isShowUserInfoPage = true;
-
     params = params or {};
-    params.G = G;
+
     params.url = "%ui%/Page/UserInfoPage.html";
-    params.OnClose = function() 
-        isShowUserInfoPage = false;
-    end
-    
-    ui.ShowWindow(params);
+    params.G = G;
+    params.OnClose = function() end
+
+    UserInfoPageUI:ShowWindow(params);
 end
