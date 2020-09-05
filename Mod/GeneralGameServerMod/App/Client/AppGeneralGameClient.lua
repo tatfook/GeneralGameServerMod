@@ -57,8 +57,10 @@ function AppGeneralGameClient:Init()
     -- 基类初始化
     AppGeneralGameClient._super.Init(self);
 
-    -- 默认开启
+    -- 配置GGS的默认选项值
     -- self:GetOptions().isSyncBlock = true;
+    -- self:GetOptions().serverIp = "127.0.0.1";
+    -- self:GetOptions().serverPort = "9000";
 
     self.inited = true;
 end

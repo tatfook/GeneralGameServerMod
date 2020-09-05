@@ -116,6 +116,7 @@ end
 -- 设置客户端选项
 function GeneralGameClient:SetOptions(opts)
     commonlib.partialcopy(self.options, opts);
+    return self.options;
 end
 
 -- 是否同步强制块
@@ -149,24 +150,19 @@ function GeneralGameClient:LoadWorld(opts)
     self:Init();
     
     -- 覆盖默认选项
-    self:SetOptions(opts);
-
+    local options = self:SetOptions(opts);
     -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
     local curWorldId = GameLogic.options:GetProjectId();
 
     -- 确定世界ID
-    options = self:GetOptions();
     options.worldId = tostring(opts.worldId or curWorldId or Config.defaultWorldId);
-    options.username = opts.username or self:GetUserInfo().username;
-    options.ip = opts.ip;
-    options.port = opts.port;
+    options.username = options.username or self:GetUserInfo().username;
 
     -- 打印选项值
     Log:Info(options);
 
     -- only reload world if world id does not match
     local isReloadWorld = tostring(options.worldId) ~= tostring(curWorldId); 
-    local worldId = options.worldId;
 
     -- 退出旧世界
     if (self:GetWorld()) then 
@@ -181,7 +177,7 @@ function GeneralGameClient:LoadWorld(opts)
 
     -- 以只读方式重新进入
     if (isReloadWorld) then
-        GameLogic.RunCommand(string.format("/loadworld %s", worldId));    
+        GameLogic.RunCommand(string.format("/loadworld %s", options.worldId));    
     else
         self:OnWorldLoaded();
     end
@@ -199,10 +195,11 @@ function GeneralGameClient:OnWorldLoaded()
     GameLogic.ReplaceWorld(self:GetWorld());
 
     -- 登录世界
-    if (self.options.ip and self.options.port) then
-        self:GetWorld():Login(self.options);
+    local options = self:GetOptions();
+    if (options.ip and options.port) then
+        self:GetWorld():Login(options);
     else
-        self:ConnectControlServer(self.options); -- 连接控制器服务, 获取世界服务
+        self:ConnectControlServer(options); -- 连接控制器服务, 获取世界服务
     end
 end
 
@@ -247,8 +244,13 @@ function GeneralGameClient:handleMouseEvent(event)
 end
 
 -- 连接控制服务器
-function GeneralGameClient:ConnectControlServer(options)
-    Log:Debug("ServerIp: %s, ServerPort: %s", Config.serverIp, Config.serverPort);
+function GeneralGameClient:ConnectControlServer()
+    local options = self:GetOptions();
+    local config = self:GetConfig();
+    local serverIp, serverPort = options.serverIp or config.serverIp, options.serverPort or config.serverPort;
+
+    Log:Debug("contrl server ServerIp: %s, ServerPort: %s", Config.serverIp, Config.serverPort);
+
     self.controlServerConnection = Connection:new():InitByIpPort(Config.serverIp, Config.serverPort, self);
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
@@ -257,18 +259,19 @@ function GeneralGameClient:ConnectControlServer(options)
             return Log:Info("无法连接控制器服务器");
         end
 
-        self:SelectServerAndWorld(options);
+        self:SelectServerAndWorld();
     end);
 end
 
 -- 选择服务器和世界
-function GeneralGameClient:SelectServerAndWorld(options)
+function GeneralGameClient:SelectServerAndWorld()
     if (self:IsShowWorldList()) then
         self.controlServerConnection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
             action = "ServerWorldList"
         }));
     else
     end
+    local options = self:GetOptions();
     self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({
         worldId = options.worldId,
         worldName = options.worldName,
@@ -288,7 +291,7 @@ end
 
 -- 发送获取世界服务器
 function GeneralGameClient:handleWorldServer(packetWorldServer)
-    local options = self.options;
+    local options = self:GetOptions();
     options.ip = packetWorldServer.ip;
     options.port = packetWorldServer.port;
     if (not options.ip or not options.port) then
