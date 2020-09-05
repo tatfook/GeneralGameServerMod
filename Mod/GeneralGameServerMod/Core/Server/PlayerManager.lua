@@ -300,17 +300,11 @@ end
 
 -- called period 移除没有心跳的玩家
 function PlayerManager:RemoveInvalidPlayer()
-    local list = {};
     for i = 1, #(self.playerList) do 
         local player = self.playerList[i];
         if (not player:IsAlive()) then
-            list[#list + 1] = player;
+            -- IsAlive 内部会自动移除无效玩家
         end
-    end
-
-    for i = 1, #list do
-        local player = list[i];
-        player:KickPlayerFromServer("remove inactive users");
     end
 end
 

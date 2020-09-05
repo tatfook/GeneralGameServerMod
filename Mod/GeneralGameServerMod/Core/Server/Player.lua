@@ -205,7 +205,7 @@ function Player:IsAlive()
     local curTime = ParaGlobal.timeGetTime();
     if ((curTime - self.lastTick) > aliveDuration) then
         -- 无心跳通知其它玩家, 玩家下线
-        self.playerNetHandler:handlePlayerLogout();
+        self:KickPlayerFromServer("remove inactive users =>" .. self:GetUserName());
         return  false;
     end
 
