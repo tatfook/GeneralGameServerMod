@@ -13,7 +13,6 @@ local NetClientHandler = commonlib.gettable("GeneralGameServerMod.Core.Client.Ne
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
@@ -30,9 +29,16 @@ local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clien
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
-local NetClientHandler = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.NetHandler"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler"));
+local NetClientHandler = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler"));
+
+NetClientHandler:Property("UserName");       -- 用户名
+NetClientHandler:Property("World");          -- 世界
+NetClientHandler:Property("Client");         -- 客户端
+NetClientHandler:Property("BlockManager");   -- 方块管理器
 
 function NetClientHandler:ctor() 
+    self.reconnectionDelay = 3; -- 3s
+    self.isReconnection = false;
 end
 
  -- Adds the packet to the send queue
@@ -42,38 +48,8 @@ end
     end
 end
 
-function NetClientHandler:GetUserName()
-    return self:GetClient():GetOptions().username;
-end
-
--- clean up connection. 
-function NetClientHandler:Cleanup()
-    if (self.connection) then
-        self.connection:NetworkShutdown();
-    end
-
-    local player = self:GetPlayer()
-    if(player) then
-        player:SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format('<pe:mcml><div style="background-color:red;margin-left:-50px;margin-top:-20">%s</div></pe:mcml>', L"与服务器的连接断开了"))})
-    end
-
-    self.connection = nil;
-end
-
-function NetClientHandler:SetWorld(world)
-    self.world = world;
-end
-
-function NetClientHandler:GetWorld()
-    return self.world;
-end
-
-function NetClientHandler:GetBlockManager()
-    return self:GetWorld():GetBlockManager();
-end
-
+-- 设置当前玩家
 function NetClientHandler:SetPlayer(player)
-    -- 设置当前玩家
     self.player = player;
 end
 
@@ -96,39 +72,26 @@ function NetClientHandler:IsMainPlayer(entityId)
     return player and player.entityId == entityId;
 end
 
--- 获取客户端
-function NetClientHandler:GetClient() 
-    return self:GetWorld():GetClient();
-end
-
 -- create a tcp connection to server. 
-function NetClientHandler:Init(world, isReconnection)
-    self.isReconnection = isReconnection;
+function NetClientHandler:Init(world)
+    -- 设置世界
     self:SetWorld(world);
-    
-    local options = self:GetClient():GetOptions();
-    options.ip = options.ip or "127.0.0.1";
-	options.port = options.port or "9000";
-    options.thread = options.thread or "gl";
-    
-	-- BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"正在建立链接:%s:%s", options.ip, options.port or ""), max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-    self.connection = Connection:new():InitByIpPort(options.ip, options.port, self);
-	self.connection:Connect(5, function(bSucceed)
-		-- try authenticate
-		if(bSucceed) then
-			-- BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"成功建立链接:%s:%s", options.ip, options.port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-            self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init(options));
-        else 
-			-- BroadcastHelper.PushLabel({id="NetClientHandler", label = format(L"无法建立链接:%s:%s", options.ip, options.port or ""), max_duration=4000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-		end
-    end);
-    
+    -- 设置客户端
+    self:SetClient(self:GetWorld():GetClient());
+    -- 设置方块管理器
+    self:SetBlockManager(self:GetWorld():GetBlockManager());
+    -- 设置用户名
+    self:SetUserName(self:GetClient():GetOptions().username);
+
+    -- 连接服务器
+    self:Connect();
+
 	return self;
 end
 
 function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     local username = packetPlayerLogout.username;
-    local entityId = packetPlayerLogout.entityId;
+    local entityId = packetPlayerLogout.entityId;  -- 为空则退出当前玩家
 
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_logout"));
@@ -168,10 +131,10 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 登录成功
     local options = self:GetClient():GetOptions();
     options.worldId = packetPlayerLogin.worldId;                       -- 世界ID
-    options.parallelWorldName = packetPlayerLogin.parallelWorldName;   -- 平行世界名  可能被客户端改掉
+    options.worldName = packetPlayerLogin.worldName;   -- 平行世界名  可能被客户端改掉
     options.username = packetPlayerLogin.username;
 
-    -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
+    -- 只能仿照客户端做  不能使用EntityPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_login"));
 
     -- 获取旧当前玩家
@@ -262,6 +225,7 @@ function NetClientHandler:GetEntityPlayer(entityId, username)
     return otherPlayer, false;
 end
 
+-- 用户实体信息
 function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     if (not packetPlayerEntityInfo) then return end
 
@@ -345,39 +309,10 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     end
 end
 
--- 处理错误信息
-function NetClientHandler:handleErrorMessage(text)
-    -- 连接已清说已做过错误处理
-    Log:Info("client connection error %s and nid: %d, isConntectionWorld: %s", text or "", self.connection and self.connection:GetNid() or 0, GameLogic.GetWorld() == self:GetWorld());
-    if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
-
-	if(text == "ConnectionNotEstablished") then
-		-- BroadcastHelper.PushLabel({id="NetClientHandler", label = L"无法链接到这个服务器", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-		_guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
-    
-        -- 登出世界
-        self:GetWorld():Logout();
-    elseif (not self.isReconnection) then
-        -- 服务器断开链接 极可能是服务器重启更新
-        BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器的连接断开了, 3 秒后尝试重新连接...", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
-        -- 重连
-        commonlib.Timer:new({callbackFunc = function(timer)
-            self:Init(self:GetWorld(), true);
-        end}):Change(3000, nil);
-    end
-    
-    
-end
-
 -- 聊天信息
 function NetClientHandler:handleChat(packetChat)
     LOG.std(nil, "debug", "NetClientHandler.handleChat", "%s", packetChat.text);
 	Desktop.GetChatGUI():PrintChatMessage(packetChat:ToChatMessage())
-end
-
--- 保持连接活跃
-function NetClientHandler:SendTick()
-    self:AddToSendQueue(Packets.PacketTick:new():Init({userinfo = self:GetClient():GetUserInfo()}));
 end
 
 -- 处理玩家信息更新
@@ -431,6 +366,10 @@ function NetClientHandler:handleGeneral(packetGeneral)
         self:GetClient():handleServerWorldList(packetGeneral);
     elseif (action == "Debug") then
         self:handleGeneral_Debug(packetGeneral);
+    end
+    -- 直接重新登录
+    if (packetGeneral:IsReloginPacket()) then
+        self:Login();
     end
 end
 
@@ -501,4 +440,64 @@ function NetClientHandler:handleBlock(packetBlock)
     self:GetBlockManager():SetBlock(x, y, z, blockId, blockData, packetBlock.blockEntityPacket);
     -- 启用标记
     self:GetWorld():SetEnableBlockMark(true);
+end
+
+
+-- 保持连接活跃
+function NetClientHandler:SendTick()
+    -- self:AddToSendQueue(Packets.PacketTick:new():Init({userinfo = self:GetClient():GetUserInfo()}));
+    self:AddPacketToSendQueue(self:GetPlayer():GetPacketPlayerEntityInfo());
+end
+
+-- 登录
+function NetClientHandler:Login()
+    self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init(self:GetClient():GetOptions()));
+end
+
+-- 与服务器建立链接
+function NetClientHandler:Connect()
+    local options = self:GetClient():GetOptions();
+    self.connection = Connection:new():InitByIpPort(options.ip, options.port, self);
+	self.connection:Connect(5, function(bSucceed)
+		if(bSucceed) then
+            self:Login();
+            self.isReconnection = false;
+            self.reconnectionDelay = 3;
+        else 
+            Log:Warn(string.format(L"无法建立链接:%s:%s", options.ip, options.port))
+		end
+    end);
+end
+
+-- 处理错误信息
+function NetClientHandler:handleErrorMessage(text)
+    -- 连接已清说已做过错误处理
+    Log:Info("client connection error %s and nid: %d, isConntectionWorld: %s", text or "", self.connection and self.connection:GetNid() or 0, GameLogic.GetWorld() == self:GetWorld());
+    if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
+
+    -- 第一次重连提醒
+    if (not self.isReconnection) then BroadcastHelper.PushLabel({id="NetClientHandler", label = L"无法连接服务器, 稍后尝试重新连接...", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,}) end
+
+    -- 重连
+    commonlib.Timer:new({callbackFunc = function(timer)
+        self.isReconnection = true;
+        self:Connect();
+        self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
+        -- 最大重连间隔为10分钟
+        if (self.reconnectionDelay > 600) then self.reconnectionDelay = 600 end
+    end}):Change(self.reconnectionDelay * 1000, nil);
+end
+
+-- clean up connection. 
+function NetClientHandler:Cleanup()
+    -- 关闭连接
+    if (self.connection) then
+        self.connection:NetworkShutdown();
+        self.connection = nil;
+    end
+
+    -- 断开服务器后显示灰色用户名
+    if(self:GetPlayer()) then
+        self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format('<pe:mcml><div style="margin-left:-50px; margin-top:-20; color: #b1b1b1;">%s</div></pe:mcml>', self:GetUserName()))})
+    end
 end

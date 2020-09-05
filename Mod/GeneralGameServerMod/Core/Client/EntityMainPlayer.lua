@@ -132,3 +132,14 @@ end
 function EntityMainPlayer:doesEntityTriggerPressurePlate()
     return true;
 end
+
+-- 获取实体信息
+function EntityMainPlayer:GetPacketPlayerEntityInfo()
+    local packet = Packets.PacketPlayerEntityInfo:new():Init({entityId = self.entityId}, self.dataWatcher, true);
+    packet.x, packet.y, packet.z = self.x, self.y, self.z; 
+    packet.facing, packet.pitch = self.facing, self.rotationPitch;
+    packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
+    packet.bx, packet.by, packet.bz = self:GetBlockPos();
+    packet.playerInfo = self:GetPlayerInfo();
+    return packet;
+end

@@ -18,11 +18,13 @@ local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
-local Player = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player"));
+local Player = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player"));
+
+Player:Property("Valid", false, "IsValid");
 
 -- 构造函数
 function Player:ctor() 
-    self.entityInfo = nil;  -- 实体信息 UI信息
+    self.entityInfo = {};  -- 实体信息 UI信息
     self.playerInfo = {};   -- 玩家信息 数据信息
     self.dataWatcher = DataWatcher:new();
     self.loginTick = ParaGlobal.timeGetTime();
@@ -58,15 +60,6 @@ end
 
 -- 设置玩家选项
 function Player:SetOptions(options)
-    -- -- 设置块同步开始时间
-    -- if (self.options.isSyncBlock ~= options.isSyncBlock) then
-    --     if (options.isSyncBlock) then
-    --         self.syncBlockTime = ParaGlobal.timeGetTime();
-    --     else
-    --         self.syncBlockTime = nil;
-    --     end
-    -- end
-
     commonlib.partialcopy(self.options, options);
 end
 
@@ -113,8 +106,10 @@ end
 
 function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
     local isNew = false;
-    if not self.entityInfo then
-        self.entityInfo = {};
+
+    -- 只有具备实体信息的玩家才有效
+    if (not self:IsValid()) then
+        self:SetValid(true);
         isNew = true;
     end
 
@@ -162,7 +157,6 @@ function Player:GetArea()
 end
 
 function Player:GetPlayerEntityInfo()
-    -- Log:Info(self);
     self.entityInfo.playerInfo = self:GetPlayerInfo();
     return Packets.PacketPlayerEntityInfo:new():Init(self.entityInfo, self.dataWatcher, true);
 end
@@ -178,14 +172,14 @@ function Player:GetPlayerInfo()
     return self.playerInfo;
 end
 
-function Player:GetUserInfo()
-    return self:GetPlayerInfo().userinfo;
-end
-
 function Player:SetPlayerInfo(info)
     info.state = nil;
     info.username = nil;
     commonlib.partialcopy(self.playerInfo, info);
+end
+
+function Player:GetUserInfo()
+    return self:GetPlayerInfo().userinfo;
 end
 
 function Player:KickPlayerFromServer(reason)
@@ -210,6 +204,8 @@ function Player:IsAlive()
     -- local aliveDuration = 30000;  -- debug
     local curTime = ParaGlobal.timeGetTime();
     if ((curTime - self.lastTick) > aliveDuration) then
+        -- 无心跳通知其它玩家, 玩家下线
+        self.playerNetHandler:handlePlayerLogout();
         return  false;
     end
 

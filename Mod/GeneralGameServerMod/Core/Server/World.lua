@@ -16,7 +16,12 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
-local World = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
+local World = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
+
+World:Property("WorldKey");            -- 世界key
+World:Property("WorldId");             -- 世界id
+World:Property("WorldName");           -- 世界名
+World:Property("PlayerManager");       -- 玩家管理器
 
 -- 一个世界对象, 应该包含世界的所有数据
 function World:ctor()
@@ -24,34 +29,15 @@ function World:ctor()
     self.nextEntityId = 0;
 
     -- 玩家管理器
-    self.playerManager = PlayerManager:new():Init(self);
-    
-    -- 方块管理器
-    -- self.blockManager = BlockManager:new();
+    self:SetPlayerManager(PlayerManager:new():Init(self));
 end
 
 -- 世界初始化
 function World:Init(worldId, parallelWorldName, worldKey)
-    self.worldId = worldId;
-    self.parallelWorldName = parallelWorldName;
-    self.key = worldKey;
-
+    self:SetWorldId(worldId);
+    self:SetWorldName(parallelWorldName);
+    self:SetWorldKey(worldKey);
     return self;
-end
-
--- 设置世界key
-function World:SetWorldKey(key)
-    self.key = key;
-end
-
--- 获取世界key
-function World:GetWorldKey()
-    return self.key;
-end
-
--- 获取世界的平行世界名
-function World:GetParallelWorldName()
-    return self.parallelWorldName;
 end
 
 -- 获取世界实体ID
@@ -73,16 +59,6 @@ function World:GetOnlineClientCount()
     return self:GetPlayerManager():GetOnlinePlayerCount();
 end
 
--- 获取世界的玩家管理器
-function World:GetPlayerManager()
-    return self.playerManager;
-end
-
--- 获取方块管理器
-function World:GetBlockManager() 
-    return self.blockManager;
-end
-
 -- 移除断开链接的用户
 function World:RemoveInvalidPlayer()
     self:GetPlayerManager():RemoveInvalidPlayer();
@@ -90,25 +66,24 @@ end
 
 -- 获取调试信息
 function World:GetDebugInfo()
-    local playerList = self:GetPlayerManager():GetPlayerList();
-    local players = {};
+    -- local playerList = self:GetPlayerManager():GetPlayerList();
+    -- local players = {};
 
-    for i = 1, #playerList do 
-        local player = playerList[i];
-        players[#players + 1] = {
-            entityId = player.entityId,
-            username = player.username,
-            state = player.state,
-            lastTick = player.lastTick;
-        }
-    end
+    -- for i = 1, #playerList do 
+    --     local player = playerList[i];
+    --     players[#players + 1] = {
+    --         entityId = player.entityId,
+    --         username = player.username,
+    --         state = player.state,
+    --         lastTick = player.lastTick;
+    --     }
+    -- end
 
     return {
-        players = players,
         worldKey = self:GetWorldKey(),
-        worldId = self.worldId,
-        parallelWorldName = self.parallelWorldName,
-        playerCount = #playerList,
+        worldId = self:GetWorldId(),
+        parallelWorldName = self:GetWorldName(),
+        playerCount = self:GetPlayerManager():GetPlayerCount(),
         onlinePlayerCount = self:GetPlayerManager():GetOnlinePlayerCount(),
     }
 end

@@ -71,7 +71,9 @@ function GeneralGameClient:Init()
 end
 
 function GeneralGameClient:Exit()
-    GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "DisconnectOne");
+    GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+    GameLogic:Disconnect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
+    self:OnWorldUnloaded();
 end
 
 -- 获取玩家支持的形象列表
@@ -266,11 +268,10 @@ function GeneralGameClient:SelectServerAndWorld(options)
             action = "ServerWorldList"
         }));
     else
-        
     end
     self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({
         worldId = options.worldId,
-        parallelWorldName = options.parallelWorldName,
+        worldName = options.worldName,
     }));
 end
 

@@ -75,14 +75,14 @@ function GeneralGameCommand:InstallCommand()
 	local connectGGSCmd = {
 		mode_deny = "",  -- 暂时支持任意模式联机
 		name="connectGGS",  -- /connectGGS -test 
-		quick_ref="/connectGGS [options] [worldId] [parallelWorldName]", 
+		quick_ref="/connectGGS [options] [worldId] [worldName]", 
 		desc=[[进入联机世界 
 worldId 为世界ID(未指定或为0则联机当前世界或默认世界)
-parallelWorldName 平行世界名, 可选. 指定世界的副本世界
+worldName 平行世界名, 可选. 指定世界的副本世界
 示例:
 connectGGS                        # 联机进入当前世界或默认世界
 connectGGS 145                    # 联机进入世界ID为145的世界
-connectGGS 145 parallel           # 联机进入世界ID为145的平行世界 parallel
+connectGGS 145 worldName           # 联机进入世界ID为145的平行世界 worldName
 
 options:
 -isSyncBlock 同步方块信息
@@ -120,7 +120,7 @@ options:
 		desc = [[
 subcmd: 
 connect 连接服务器
-	/ggs connect [options] [worldId] [parallelWorldName]
+	/ggs connect [options] [worldId] [worldName]
 	/ggs connect -isSyncBlock -isSyncCmd -areaSize=128 -slient 12706
 cmd 执行软件内置命令
 	/ggs cmd [options] cmdname cmdtext
@@ -167,7 +167,7 @@ end
 function GeneralGameCommand:handleConnectCommand(cmd_text)
 	local options, cmd_text = ParseOptions(cmd_text);	
 	local worldId, cmd_text = CmdParser.ParseInt(cmd_text);
-	local parallelWorldName, cmd_text = CmdParser.ParseString(cmd_text);
+	local worldName, cmd_text = CmdParser.ParseString(cmd_text);
 
 	if (options.dev) then 
 		Config:SetEnv("dev"); 
@@ -184,7 +184,7 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	end
 	
 	options.worldId = (worldId and worldId ~= 0) and worldId or nil;
-	options.parallelWorldName = parallelWorldName;
+	options.worldName = worldName;
 	options.ip = (options.host and options.host ~= "") and options.host or nil;
 	options.port = (options.port and options.port ~= "") and options.port or nil;
 	options.username = (options.username and options.username ~= "") and options.username or nil;

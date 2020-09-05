@@ -16,8 +16,6 @@ local AppEntityMainPlayer = commonlib.inherit(commonlib.gettable("Mod.GeneralGam
 
 local moduleName = "Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer";
 
-
-
 -- 构造函数
 function AppEntityMainPlayer:ctor()
     self.appEntityPlayerHelper = AppEntityPlayerHelper:new():Init(self, true);
@@ -55,3 +53,7 @@ end
 function AppEntityMainPlayer:SetSuperPlayerInfo(playerInfo)
     AppEntityMainPlayer._super.SetPlayerInfo(self, playerInfo);
 end
+
+-- 设置头顶显示内容
+-- function AppEntityMainPlayer:SetHeadOnDisplay()
+-- end

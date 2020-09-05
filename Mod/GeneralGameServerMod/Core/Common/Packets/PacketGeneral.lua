@@ -30,3 +30,14 @@ function PacketGeneral:ProcessPacket(net_handler)
 		net_handler:handleGeneral(self);
 	end
 end
+
+function PacketGeneral:GetReloginPacket(data)
+	return PacketGeneral:new():Init({
+		action = "RELOGIN",
+		data = data,
+	})
+end
+
+function PacketGeneral:IsReloginPacket()
+	return self.action == "RELOGIN";
+end

@@ -60,8 +60,8 @@ end
 -- 处理客户端请求连接世界的服务器
 function ControlServer:handleWorldServer(packetWorldServer)
     local worldId = packetWorldServer.worldId;
-    local parallelWorldName = packetWorldServer.parallelWorldName;
-    local worldKey = self:GetWorldManager():GetWorldKey(worldId, parallelWorldName);
+    local worldName = packetWorldServer.worldName;
+    local worldKey = self:GetWorldManager():GetWorldKey(worldId, worldName);
     -- 优先选择已存在世界的服务器
     -- 其次选择客户端最少的服务器
     -- 最后选择控制服务器

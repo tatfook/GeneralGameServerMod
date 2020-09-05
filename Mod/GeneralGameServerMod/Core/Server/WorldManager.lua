@@ -24,8 +24,8 @@ local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 local WorldManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager"));
 
 -- 生成世界KEY
-function WorldManager:GenerateWorldKey(worldId, paralelWorldName)
-    return string.format("%s_%s", worldId, paralelWorldName or "");
+function WorldManager:GenerateWorldKey(worldId, worldName)
+    return string.format("%s_%s", worldId, worldName or "");
 end
 
 -- 世界管理对象
@@ -34,26 +34,26 @@ function WorldManager:ctor()
 end
 
 -- 获取世界KEY
-function WorldManager:GetWorldKey(worldId, paralelWorldName, no)        
-    local worldKey = self:GenerateWorldKey(worldId, paralelWorldName);
+function WorldManager:GetWorldKey(worldId, worldName, no)        
+    local worldKey = self:GenerateWorldKey(worldId, worldName);
     if (no) then
         worldKey = string.format("%s_%s", worldKey, no);
     end
 
     local world = self.worldMap[worldKey];
     if (world and world:GetOnlineClientCount() >= Config.World.maxClientCount) then
-        return self:GetWorldKey(worldId, paralelWorldName, (no or 0) + 1);
+        return self:GetWorldKey(worldId, worldName, (no or 0) + 1);
     end
 
     return worldKey;
 end
 
 -- 获取指定世界
-function WorldManager:GetWorld(worldId, paralelWorldName, isNewNoExist)
-    local worldKey = self:GetWorldKey(worldId, paralelWorldName);
+function WorldManager:GetWorld(worldId, worldName, isNewNoExist)
+    local worldKey = self:GetWorldKey(worldId, worldName);
     if (not self.worldMap[worldKey] and isNewNoExist) then
-        self.worldMap[worldKey] = World:new():Init(worldId, paralelWorldName, worldKey);
-        Log:Info("create new world: worldId: %s, paralelWorldName: %s, worldKey: %s", worldId, paralelWorldName, worldKey); 
+        self.worldMap[worldKey] = World:new():Init(worldId, worldName, worldKey);
+        Log:Info("create new world: worldId: %s, worldName: %s, worldKey: %s", worldId, worldName, worldKey); 
     end
     return self.worldMap[worldKey];
 end

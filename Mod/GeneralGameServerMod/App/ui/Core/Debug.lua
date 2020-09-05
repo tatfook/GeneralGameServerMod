@@ -81,7 +81,9 @@ function Debug.DisableModule(module)
 end
 
 function Debug.Stack()
+    -- 不一定好使
     commonlib.debugstack();
+    -- DebugStack()
 end
 
 function Debug.Print(...)
@@ -100,6 +102,8 @@ function _G.DebugStack(dept)
         end
     end
 end
+
+
 -- Debug("v-for", {key=1});
 
 -- Print(true);

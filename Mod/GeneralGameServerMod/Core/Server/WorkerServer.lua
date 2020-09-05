@@ -65,6 +65,7 @@ end
 function WorkerServer:SendServerInfo()
     local totalWorldCount, totalClientCount, totalWorldClientCounts = WorldManager:GetWorldClientCount();
     self.connection:AddPacketToSendQueue(Packets.PacketServerInfo:new():Init({
+        isWorkerServer = true,
         totalWorldCount = totalWorldCount,
         totalClientCount = totalClientCount,
         totalWorldClientCounts = totalWorldClientCounts,

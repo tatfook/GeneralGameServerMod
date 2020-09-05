@@ -34,7 +34,7 @@ end
 -- 客户端初始化方式
 function Connection:InitByIpPort(ip, port, net_handler)
 	nextNid = nextNid + 1;
-	local nid = tostring(nextNid);
+	local nid = "ggs_" .. tostring(nextNid);
 	NPL.AddNPLRuntimeAddress({host = tostring(ip), port = tostring(port), nid = nid});
 	
 	return self:Init(nid, net_handler, neuron_file);
@@ -62,11 +62,15 @@ end
 
 -- 接受数据包
 function Connection:OnNetReceive(msg)
+	-- 处理数据包前回调
+	if (self.net_handler and self.net_handler.OnBeforeProcessPacket) then
+		self.net_handler:OnBeforeProcessPacket(msg);
+	end
+
 	local packet = PacketTypes:GetNewPacket(msg.id);
-	
 	Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
 	Log:Std("DEBUG", moduleName, msg);
-
+	
 	if(packet) then
 		packet:ReadPacket(msg);
 		packet:ProcessPacket(self.net_handler);
@@ -78,6 +82,11 @@ function Connection:OnNetReceive(msg)
 			Log:Info("invalid msg");
 			Log:Info(msg);
 		end
+	end
+
+	-- 处理数据包后回调
+	if (self.net_handler and self.net_handler.OnAfterProcessPacket) then
+		self.net_handler:OnAfterProcessPacket(packet or msg);
 	end
 end
 

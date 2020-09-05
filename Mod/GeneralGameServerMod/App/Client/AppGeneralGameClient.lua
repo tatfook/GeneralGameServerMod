@@ -29,7 +29,9 @@ local moduleName = "Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient";
 
 -- 构造函数
 function AppGeneralGameClient:ctor()
-    self.userinfo = {}; -- 认证用户信息
+    self.userinfo = {
+        username = System.User.keepworkUsername,
+    }; -- 认证用户信息
 
     -- 业务初始化
     GameLogic.GetFilters():remove_filter("OnKeepWorkLogin", AppGeneralGameClient.OnKeepWorkLogin_Callback);
@@ -109,6 +111,9 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
         if (statusCode ~= 200 or not data) then return end
         self.userinfo.worldCount = data.rank.world or 0;
     end)
+
+    -- 发送用户通知
+    GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateUserInfo", userinfo = self.userinfo});
 end
 -- 用户登录
 function AppGeneralGameClient.OnKeepWorkLogin_Callback()
