@@ -445,8 +445,7 @@ end
 
 -- 保持连接活跃
 function NetClientHandler:SendTick()
-    -- self:AddToSendQueue(Packets.PacketTick:new():Init({userinfo = self:GetClient():GetUserInfo()}));
-    self:AddPacketToSendQueue(self:GetPlayer():GetPacketPlayerEntityInfo());
+    self:AddToSendQueue(self:GetPlayer():GetPacketPlayerEntityInfo());
 end
 
 -- 登录
@@ -476,7 +475,7 @@ function NetClientHandler:handleErrorMessage(text)
     if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
 
     -- 第一次重连提醒
-    if (not self.isReconnection) then BroadcastHelper.PushLabel({id="NetClientHandler", label = L"无法连接服务器, 稍后尝试重新连接...", max_duration=6000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,}) end
+    if (not self.isReconnection) then BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器断开连接, 稍后尝试重新连接...", max_duration=6000, color = "177 177 177", scaling=1.1, bold=true, shadow=true,}) end
 
     -- 重连
     commonlib.Timer:new({callbackFunc = function(timer)

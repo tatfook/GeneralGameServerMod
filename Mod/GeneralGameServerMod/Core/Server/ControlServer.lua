@@ -20,7 +20,7 @@ local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Wo
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
-local ControlServer = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
+local ControlServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
 
 local servers = {};  -- 服务器信息集
 local ServerAliveDuration = 1000 * 60 * 5;  -- 5s

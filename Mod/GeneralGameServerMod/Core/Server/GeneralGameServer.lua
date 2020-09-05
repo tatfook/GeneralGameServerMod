@@ -57,14 +57,23 @@ function GeneralGameServer:Start()
     -- 设置系统属性
     self:LoadNetworkSettings();
 
-    -- 启动服务
-    NPL.StartNetServer(Config.Server.listenIp, tostring(Config.Server.listenPort));
+	-- 启动服务
+	local listenIp = Config.Server.listenIp;
+	local listenPort = Config.Server.listenPort;
+	if (Config.Server.isControlServer) then
+		listenIp = listenIp or Config.Server.ControlServer.innerIp or Config.Server.ControlServer.outerIp;
+		listenPort = listenPort or Config.Server.ControlServer.listenPort or Config.Server.ControlServer.listenPort;
+	else
+		listenIp = listenIp or Config.Server.WorkerServer.innerIp or Config.Server.WorkerServer.outerIp;
+		listenPort = listenPort or Config.Server.WorkerServer.listenPort or Config.Server.WorkerServer.listenPort;
+	end
 
-    Log:Info("服务器启动");
+    NPL.StartNetServer(listenIp, tostring(listenPort));
+
+    Log:Info(string.format("服务器启动: listenIp: %s, listenPort", listenIp, listenPort));
 
 	-- 控制服务
 	if (Config.Server.isControlServer) then
-		-- ControlServer.GetSingleton():Init();
 		-- 暴露接口文件
 		NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 402);
 	end
@@ -80,6 +89,7 @@ function GeneralGameServer:Start()
 	self.timer = commonlib.Timer:new({callbackFunc = function(timer)
 		self:Tick();
 	end});
+	
 	self.timer:Change(tickDuratin, tickDuratin); -- 两分钟触发一次
 
     self.isStart = true;

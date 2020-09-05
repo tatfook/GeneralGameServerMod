@@ -21,6 +21,7 @@ local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config")
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local WorkerServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer"));
 
+WorkerServer:Property("ServerList", {});  -- 服务器列表
 -- 构造函数
 function WorkerServer:ctor()
     local workerServerCfg = Config.WorkerServer;
@@ -33,8 +34,6 @@ function WorkerServer:ctor()
 
     self.controlServerIp = controlServerCfg.innerIp;
     self.controlServerPort = controlServerCfg.innerPort;
-
-    self.ServerList = {};
 end
 
 -- 初始化函数
@@ -50,15 +49,19 @@ function WorkerServer:Init(server)
     -- 连接控制器
     self.connection = Connection:new():InitByIpPort(self.controlServerIp, self.controlServerPort, self);
     self.connection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
-    self.connection:Connect(5, function(success)
-        if (success) then
-            Log:Info("成功连接控制服务");
-            -- 推送服务器信息到控制器
-            self.SendServerInfoTimer:Change(0, 1000 * 60 * 2); -- 每2分钟上报一次 
-        else
-            Log:Info("无法连接控制服务");
-        end
-    end)
+    local function ConnectControlServer()
+        self.connection:Connect(5, function(success)
+            if (success) then
+                Log:Info("成功连接控制服务");
+                -- 推送服务器信息到控制器
+                self.SendServerInfoTimer:Change(0, 1000 * 60 * 2); -- 每2分钟上报一次 
+            else
+                Log:Info("无法连接控制服务, 2 分钟后重连...");
+                commonlib.Timer:new({callbackFunc = ConnectControlServer}):Change(2 * 60 * 1000); -- 两分钟后重连
+            end
+        end)
+    end
+    ConnectControlServer();
 end
 
 -- 发送服务器信息
@@ -80,13 +83,8 @@ end
 function WorkerServer:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
     if (action == "ServerWorldList") then 
-        self.ServerList = packetGeneral.data;
+        self:SetServerList(packetGeneral.data);
     end
-end
-
--- 获取服务器列表
-function WorkerServer:GetServerList()
-    return self.ServerList;
 end
 
 -- 连接丢失
