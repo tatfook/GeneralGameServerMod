@@ -219,7 +219,7 @@ function NetClientHandler:GetEntityPlayer(entityId, username)
     if (entityId == mainPlayer.entityId) then
         return mainPlayer, false;
     end
-    local EntityOtherPlayerClass = self:GetClient():GetEntityOtherPlayerClass() or EntityOtherPlayerClass;
+    local EntityOtherPlayerClass = self:GetClient():GetEntityOtherPlayerClass() or EntityOtherPlayer;
     if (not otherPlayer or not otherPlayer:isa(EntityOtherPlayer)) then 
         return EntityOtherPlayerClass:new():init(world, username or "", entityId), true;
     end

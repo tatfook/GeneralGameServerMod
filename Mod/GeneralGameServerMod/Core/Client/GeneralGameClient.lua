@@ -249,7 +249,7 @@ function GeneralGameClient:ConnectControlServer()
     local config = self:GetConfig();
     local serverIp, serverPort = options.serverIp or config.serverIp, options.serverPort or config.serverPort;
 
-    Log:Debug("contrl server ServerIp: %s, ServerPort: %s", serverIp, serverPort);
+    Log:Debug(string.format("control server ServerIp: %s, ServerPort: %s", serverIp, serverPort));
 
     self.controlServerConnection = Connection:new():InitByIpPort(serverIp, serverPort, self);
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
