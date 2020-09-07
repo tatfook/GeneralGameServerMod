@@ -19,6 +19,29 @@ local ModuleLogEnableMap = {
     DEBUG = IsDevEnv and true or false,
 }
 
+local ModelDebug = {};
+
+if (IsDevEnv) then 
+    ModuleLogEnableMap["NET"] = false;
+else
+
+end
+
+function Debug.IsEnableModule(module)
+    module = string.upper(module or "DEBUG");
+    return ModuleLogEnableMap[module];
+end
+
+function Debug.ToggleModule(module)
+    module = string.upper(module or "DEBUG");
+    ModuleLogEnableMap[module] = not ModuleLogEnableMap[module];
+end
+
+function Debug.EnableModule(module)
+    ModuleLogEnableMap[module] = true;
+end
+
+
 local function DefaultOutput(...)
     ParaGlobal.WriteToLogFile(...);
     ParaGlobal.WriteToLogFile("\n");
@@ -54,16 +77,19 @@ local function Print(val, key, output, indent, OutputTable)
 end
 
 local function DebugCall(module, ...)
+    module = string.upper(module or "DEBUG");
+
     if (ModuleLogEnableMap[module] == false or (not IsDevEnv and not ModuleLogEnableMap[module])) then return end
+    local dateStr, timeStr = commonlib.log.GetLogTimeString();
     local filepos = commonlib.debug.locationinfo(3) or "";
     filepos = string.sub(filepos, 1, 256);
-    Print(string.format("\n[%s] %s ---------------------------start print-----------------", module, filepos));
+    Print(string.format("\n[%s %s][%s][%s][DEBUG BEGIN]", dateStr, timeStr, module, filepos));
 
     for i = 1, select('#', ...) do  -->获取参数总数
         Print(select(i, ...));      -->读取参数
     end  
 
-    Print(string.format("[%s] %s ---------------------------end print-----------------\n", module, filepos));
+    Print(string.format("[%s %s][%s][%s][DEBUG END]", dateStr, timeStr, module, filepos));
 end
 
 setmetatable(Debug, {
@@ -71,10 +97,6 @@ setmetatable(Debug, {
         DebugCall(...);
     end
 });
-
-function Debug.EnableModule(module)
-    ModuleLogEnableMap[module] = true;
-end
 
 function Debug.DisableModule(module)
     ModuleLogEnableMap[module] = false;
@@ -88,6 +110,56 @@ end
 
 function Debug.Print(...)
     Print(...);
+end
+
+function Debug.GetModuleDebug(module)
+    if (ModelDebug[module]) then return ModelDebug[module] end
+
+    local obj = {};
+
+    function obj.Enable()
+        Debug.EnableModule(module);
+    end
+
+    function obj.Disable()
+        Debug.DisableModule(module);
+    end
+
+    setmetatable(obj, {
+        __call = function(obj, ...)
+            DebugCall(module, ...);
+        end
+    });
+
+    -- if (IsDevEnv) then obj.Enable() end
+
+    ModelDebug[module] = obj;
+
+    return obj;
+end
+
+function Debug.GetFatalDebug()
+    return Debug.GetModuleDebug("FATAL");
+end
+
+function Debug.GetErrorDebug()
+    return Debug.GetModuleDebug("ERROR");
+end
+
+function Debug.GetWarnDebug()
+    return Debug.GetModuleDebug("WARN");
+end
+
+function Debug.GetInfoDebug()
+    return Debug.GetModuleDebug("INFO");
+end
+
+function Debug.GetDebugDebug()
+    return Debug.GetModuleDebug("DEBUG");
+end
+
+function Debug.GetNetDebug()
+    return Debug.GetModuleDebug("NET");
 end
 
 function _G.DebugStack(dept)

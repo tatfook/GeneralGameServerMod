@@ -66,20 +66,21 @@ end
 
 -- 获取调试信息
 function World:GetDebugInfo()
-    -- local playerList = self:GetPlayerManager():GetPlayerList();
-    -- local players = {};
+    local playerList = self:GetPlayerManager():GetPlayerList();
+    local players = {};
 
-    -- for i = 1, #playerList do 
-    --     local player = playerList[i];
-    --     players[#players + 1] = {
-    --         entityId = player.entityId,
-    --         username = player.username,
-    --         state = player.state,
-    --         lastTick = player.lastTick;
-    --     }
-    -- end
+    for i = 1, #playerList do 
+        local player = playerList[i];
+        players[#players + 1] = {
+            entityId = player.entityId,
+            username = player.username,
+            state = player.state,
+            lastTick = player.lastTick;
+        }
+    end
 
     return {
+        players = players,
         worldKey = self:GetWorldKey(),
         worldId = self:GetWorldId(),
         parallelWorldName = self:GetWorldName(),

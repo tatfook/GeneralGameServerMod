@@ -28,4 +28,6 @@ GeneralGameServer.Server.WorkerServer.innerPort 工作节点的内网端口
 GeneralGameServer.Server.WorkerServer.outerIp 工作节点的内网IP
 GeneralGameServer.Server.WorkerServer.outerPort 工作节点的内网端口
 
+**tips**: 当只有一个节点时isControlServer,isWorkerServer应同时为真, ControlServer, WorkerServer 相应IP应该是相同的.
+
 ## 负载策略

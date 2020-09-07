@@ -20,10 +20,10 @@ local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config")
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 -- 对象获取
 local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player");
-
 -- 对象定义
 local PlayerManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
 
+local MaxAreaSize = 30000; -- bx, bz 的最大值为30000
 
 function PlayerManager:ctor()
     self.playerList = commonlib.UnorderedArraySet:new();
@@ -128,6 +128,7 @@ function PlayerManager:RemovePlayer(player)
 
     -- 留存策略采用队列模式, 留存最新玩家
     self.offlinePlayerQueue:pushright(player);  
+    
     -- 发送玩家信息  通知玩家下线   player.state = "offline"
     self:SendPacketPlayerInfo(player);
 

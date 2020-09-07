@@ -198,3 +198,16 @@ function GeneralGameWorld:ClearEntityList()
 	end
 	self.entityList:clear();
 end
+
+
+function GeneralGameWorld:DebugEntitys()
+	local list = {};
+	for i = 1, #self.entityList do
+		local entity = self.entityList[i];
+		table.insert(list, {
+			entityId = entity.entityId,
+			username = entity:GetUserName(),
+		});
+	end
+	GGS.DEBUG("entity list", list);
+end

@@ -134,6 +134,8 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     options.worldName = packetPlayerLogin.worldName;   -- 平行世界名  可能被客户端改掉
     options.username = packetPlayerLogin.username;
 
+    self:SetUserName(options.username);
+
     -- 只能仿照客户端做  不能使用EntityPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_login"));
 
@@ -352,6 +354,10 @@ end
 function NetClientHandler:handleGeneral_Debug(packetGeneral)
     local cmd = packetGeneral.data.cmd;
     local debug = packetGeneral.data.debug;
+    if (cmd == "WorldInfo") then
+        commonlib.echo(debug.players, true);
+        debug.players = nil; -- 信息太多进行屏蔽
+    end
     self:GetClient():ShowDebugInfo(debug);
 end
 
@@ -497,6 +503,13 @@ function NetClientHandler:Cleanup()
 
     -- 断开服务器后显示灰色用户名
     if(self:GetPlayer()) then
-        self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format('<pe:mcml><div style="margin-left:-50px; margin-top:-20; color: #b1b1b1;">%s</div></pe:mcml>', self:GetUserName()))})
+        self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format([[
+            <pe:mcml>
+                <div style="width: 200px; margin-left: -100px; margin-top:-40px;">
+                    <div style="text-align:center; color: #b1b1b1; base-font-size:20px; font-size:20px;">%s</div>
+                    <div style="text-align:center; color: #ff0000; base-font-size:14px; font-size:14px;">已掉线, 处于离线模式中.</div>
+                </div>
+            </pe:mcml>]], self:GetUserName()))});
     end
+    -- _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
 end

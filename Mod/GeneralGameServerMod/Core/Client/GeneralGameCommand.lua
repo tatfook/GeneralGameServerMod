@@ -122,6 +122,8 @@ subcmd:
 connect 连接服务器
 	/ggs connect [options] [worldId] [worldName]
 	/ggs connect -isSyncBlock -isSyncCmd -areaSize=128 -slient 12706
+disconnect 断开连接
+	/ggs disconnect
 cmd 执行软件内置命令
 	/ggs cmd [options] cmdname cmdtext
 	/ggs cmd tip hello world	
@@ -135,7 +137,9 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 	/ggs setSyncForceBlock 19200 5 19200 off  取消强制同步位置19200 5 19200的方块信息
 debug 调试命令 
 	/ggs debug [action]
-	/ggs debug client 显示客户端选项信息
+	/ggs debug debug module 开启或关闭指定模块日志
+	/ggs debug option 显示客户端选项信息
+	/ggs debug entitys 显示客户端实体列表
 	/ggs debug worldinfo 显示客户端连接的世界服务器信息
 	/ggs debug serverinfo 显示世界服务列表	
 		]],
@@ -144,6 +148,8 @@ debug 调试命令
 			local cmd, cmd_text = CmdParser.ParseString(cmd_text);
 			if (cmd == "connect") then
 				__this__:handleConnectCommand(cmd_text);
+			elseif (cmd == "disconnect") then
+				__this__:handleDisconnectCommand(cmd_text);
 			elseif (cmd == "setSyncForceBlock") then
 				__this__:handleSetSyncForceBlockCommand(cmd_text);
 			elseif (cmd == "sync") then
@@ -162,6 +168,12 @@ debug 调试命令
 
 	Commands["connectGGS"] = connectGGSCmd;
 	Commands["ggs"] = ggs;
+end
+
+-- 断开链接
+function GeneralGameCommand:handleDisconnectCommand(cmd_text)
+	if (not self:GetGeneralGameClient()) then return end
+	self:GetGeneralGameClient():OnWorldUnloaded();
 end
 
 function GeneralGameCommand:handleConnectCommand(cmd_text)
@@ -201,6 +213,11 @@ end
 
 function GeneralGameCommand:handleDebugCommand(cmd_text)
 	local action, cmd_text = CmdParser.ParseString(cmd_text);
+	if (action == "debug") then
+		local module = CmdParser.ParseString(cmd_text);
+		return GGS.Debug.ToggleModule(module);
+	end
+
 	self:GetGeneralGameClient():Debug(action);
 end
 
@@ -245,11 +262,7 @@ end
 -- 设置强制同步块
 function GeneralGameCommand:handleSetSyncForceBlockCommand(cmd_text)
 	local x, y, z, cmd_text = CmdParser.ParsePos(cmd_text);
-	if (not x or not y or not z) then 
-		echo(self:GetGeneralGameClient() and self:GetGeneralGameClient():GetSyncForceBlockList());
-		echo(GeneralGameClient:GetSyncForceBlockList());
-		return 
-	end
+	if (not x or not y or not z) then return end
 
 	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
 	local onOrOff, cmd_text = CmdParser.ParseString(cmd_text);
@@ -262,7 +275,6 @@ function GeneralGameCommand:handleSetSyncForceBlockCommand(cmd_text)
 		GeneralGameClient:GetSyncForceBlockList():removeByValue(blockIndex);
 	end
 end
-
 
 -- 世界加载
 function GeneralGameCommand:OnWorldLoaded()

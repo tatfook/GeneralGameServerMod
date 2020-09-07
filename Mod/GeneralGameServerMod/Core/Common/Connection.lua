@@ -24,6 +24,11 @@ local nextNid = 100;
 
 Connection.default_neuron_file = defaultNeuronFile;
 
+local function NetLog(...)
+	local debug = GGS.Debug.GetNetDebug();
+	debug(...);
+end
+
 -- 服务端初始化方式
 function Connection:Init(nid, net_handler)
 	self:SetNid(nid);
@@ -54,8 +59,9 @@ function Connection:OnError(text)
 end
 
 function Connection:AddPacketToSendQueue(packet)
-	Log:Std("DEBUG", moduleName, "---------------------send packet: %d--------------------", packet:GetPacketId());
-	Log:Std("DEBUG", moduleName, packet:WritePacket());
+	NetLog(string.format("---------------------send packet: %d--------------------", packet:GetPacketId()), packet:WritePacket());
+	-- Log:Std("DEBUG", moduleName, "---------------------send packet: %d--------------------", packet:GetPacketId());
+	-- Log:Std("DEBUG", moduleName, packet:WritePacket());
 
 	return Connection._super.AddPacketToSendQueue(self, packet);
 end
@@ -68,8 +74,9 @@ function Connection:OnNetReceive(msg)
 	end
 
 	local packet = PacketTypes:GetNewPacket(msg.id);
-	Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
-	Log:Std("DEBUG", moduleName, msg);
+	NetLog(string.format("---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id), msg);
+	-- Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
+	-- Log:Std("DEBUG", moduleName, msg);
 	
 	if(packet) then
 		packet:ReadPacket(msg);

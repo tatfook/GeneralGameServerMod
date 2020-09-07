@@ -249,9 +249,9 @@ function GeneralGameClient:ConnectControlServer()
     local config = self:GetConfig();
     local serverIp, serverPort = options.serverIp or config.serverIp, options.serverPort or config.serverPort;
 
-    Log:Debug("contrl server ServerIp: %s, ServerPort: %s", Config.serverIp, Config.serverPort);
+    Log:Debug("contrl server ServerIp: %s, ServerPort: %s", serverIp, serverPort);
 
-    self.controlServerConnection = Connection:new():InitByIpPort(Config.serverIp, Config.serverPort, self);
+    self.controlServerConnection = Connection:new():InitByIpPort(serverIp, serverPort, self);
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
@@ -330,8 +330,10 @@ end
 -- 调试
 function GeneralGameClient:Debug(action)
     action = string.lower(action or "");
-    if (action == "client" or action == "") then
+    if (action == "options" or action == "") then
         return self:ShowDebugInfo(self:GetOptions());
+    elseif (action == "entitys") then
+        return self:GetWorld():DebugEntitys();
     end
 
     local netHandler = self:GetWorldNetHandler();
@@ -345,7 +347,6 @@ end
 
 -- 显示调试信息
 function GeneralGameClient:ShowDebugInfo(debug)
-    Log:Info(commonlib.Json.Encode(debug));
     _guihelper.MessageBox(commonlib.serialize(debug));
 end
 

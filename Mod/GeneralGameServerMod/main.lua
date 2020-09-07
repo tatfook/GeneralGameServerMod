@@ -17,16 +17,42 @@ GameLogic.RunCommand("/connectGGS -dev -u=xiaoyao 0");
 GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/System/System.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
-local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
-local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
 
-local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
+--  全局变量初始化
 local GeneralGameClients = {};
-local inited = false;
 
 _G.IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
+local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
+
+_G.GGS = {
+	-- 环境识别
+	IsDevEnv = IsDevEnv,
+
+	-- DEBUG 调试类以及调试函数
+	Debug = Debug,
+	DEBUG = Debug.GetModuleDebug("DEBUG"),
+	INFO = Debug.GetModuleDebug("INFO"),
+	WARN = Debug.GetModuleDebug("WARN"),
+	ERROR= Debug.GetModuleDebug("ERROR"),
+	FATAL= Debug.GetModuleDebug("FATAL"),
+
+	-- 注册主客户端类
+	RegisterClientClass = function(appName, clientClass)
+		GeneralGameClients[appName] = clientClass;
+	end,
+	GetClientClass = function(appName)
+		return GeneralGameClients[appName];
+	end,
+};
+
+
+NPL.load("(gl)script/ide/System/System.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
+
+local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
+local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
+local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
+local inited = false;
 
 function GeneralGameServerMod:ctor()
 end
@@ -89,12 +115,12 @@ end
 
 -- 注册客户端类
 function GeneralGameServerMod:RegisterClientClass(appName, clientClass)
-	GeneralGameClients[appName] = clientClass;
+	GGS.RegisterClientClass(appName, clientClass);
 end
 
 -- 获取客户端类
 function GeneralGameServerMod:GetClientClass(appName)
-	return GeneralGameClients[appName] or AppGeneralGameClient;
+	return GGS.GetClientClass(appName);
 end
 
 -- 服务端激活函数
