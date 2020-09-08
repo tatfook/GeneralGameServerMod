@@ -451,6 +451,9 @@ end
 
 -- 保持连接活跃
 function NetClientHandler:SendTick()
+    local player = self:GetPlayer();
+    if (not player or not player:isa(EntityMainPlayer)) then return end;
+    
     self:AddToSendQueue(self:GetPlayer():GetPacketPlayerEntityInfo());
 end
 

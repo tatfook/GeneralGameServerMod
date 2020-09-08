@@ -51,6 +51,7 @@ end
 function GeneralGameClient:Init() 
     if (self.inited) then return self end;
     
+    -- 公共文件初始化
     Common:Init(false);
 
     -- 设置实体ID起始值

@@ -27,16 +27,25 @@ end
 function confirm()
     local inputEl = GetRef("input");
     local value = inputEl:GetUIValue();
+
+    -- 客户端处理铭感词
+    value = MyCompany.Aries.Chat.BadWordFilter.FilterString(value);
+    
     keepwork.user.setinfo({
         router_params = {id = userId},
         nickname = value,
     }, function(status, msg, data) 
         if (status < 200 or status >= 300) then return echo("更新用户昵称失败") end
+    
+        FinishCallback(value, true);
     end);
-    FinishCallback(value, true);
+    
+    -- FinishCallback(value, true);
 end 
 
 function cancel()
     FinishCallback(self.nickname, false);
 end
 </script>
+
+<!-- MyCompany.Aries.Chat.BadWordFilter.FilterString -->
