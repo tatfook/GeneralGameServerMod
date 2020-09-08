@@ -68,6 +68,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local password = packetPlayerLogin.password;
     local worldId = tostring(packetPlayerLogin.worldId);
     local worldName = packetPlayerLogin.worldName or "";
+    local worldType = packetPlayerLogin.worldType;
 
     PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, nid: %s", username, worldId, worldName, self:GetPlayerConnection():GetNid()));
 
@@ -84,6 +85,8 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     self:SetAuthenticated();
     -- 获取并设置世界
     self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, true));
+    -- 设置世界类型
+    if (not self:GetWorld():GetWorldType()) then self:GetWorld():SetWorldType(worldType) end
     -- 设置玩家管理器
     self:SetPlayerManager(self:GetWorld():GetPlayerManager());
     -- 获取并设置玩家
@@ -137,8 +140,11 @@ end
 
 -- 链接出错 玩家退出
 function NetServerHandler:handleErrorMessage(text, data)
-    -- 发送用户退出
-    self:GetPlayerManager():Logout(self:GetPlayer(), "connection error:" .. tostring(text)); 
+    if (not self:GetPlayer()) then return end
+
+    -- 下线走离线流程 登出直接踢出服务器
+    self:GetPlayerManager():Offline(self:GetPlayer());
+    
     -- 关闭连接
     self:GetPlayerConnection():CloseConnection();
     self:SetPlayerConnection(nil);
@@ -168,14 +174,11 @@ function NetServerHandler:handleGeneral_SyncBlock(packetGeneral)
     local state = packetGeneral.data.state;       -- 同步状态
     local playerId = packetGeneral.data.playerId; -- 请求同步玩家ID
     local player = self:GetPlayerManager():GetPlayer(playerId);
-    
-    -- 同步的玩家下载, 则重新开始同步 TODO
-    if (not player) then
-        return;
-    end
 
-    if (player and player:IsSyncBlockFinish()) then return end;
+    -- 请求的玩家不存在或同步完成直接跳出
+    if (not player and player:IsSyncBlockFinish()) then return end;
 
+    -- 方块同步逻辑
     if (state == "SyncBlock_Finish") then
         self:GetPlayer():SetSyncBlockFinish();
     elseif (state == "SyncBlock_RequestBlockIndexList" or state == "SyncBlock_RequestSyncBlock") then

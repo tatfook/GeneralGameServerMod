@@ -20,6 +20,7 @@ local World = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), comm
 
 World:Property("WorldKey");            -- 世界key
 World:Property("WorldId");             -- 世界id
+World:Property("WorldType");           -- 世界类型
 World:Property("WorldName");           -- 世界名
 World:Property("PlayerManager");       -- 玩家管理器
 
@@ -62,6 +63,11 @@ end
 -- 移除断开链接的用户
 function World:RemoveInvalidPlayer()
     self:GetPlayerManager():RemoveInvalidPlayer();
+end
+
+-- 是否是平行世界
+function World:IsParaWorld()
+    return self:GetWorldType() == "ParaWorld";
 end
 
 -- 获取调试信息

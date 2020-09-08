@@ -144,6 +144,12 @@ function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
     return isNew;
 end
 
+-- 获取玩家块位置
+function Player:GetBlockPos()
+    local entityInfo = self:GetEntityInfo();
+    return entityInfo.bx or 0,  entityInfo.by or 0, entityInfo.bz or 0;
+end
+
 function Player:UpdateArea()
     local areaSize = self:GetAreaSize();
     if (areaSize == 0) then return end

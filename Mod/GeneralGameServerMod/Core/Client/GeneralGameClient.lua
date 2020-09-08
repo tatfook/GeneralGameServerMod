@@ -167,7 +167,7 @@ function GeneralGameClient:LoadWorld(opts)
     options.username = options.username or self:GetUserInfo().username;
     options.ip = opts.ip;            -- ip port 每次重写
     options.port = options.port;     -- 以便动态获取
-    options.isParaWorld = ParaWorldMain:IsCurrentParaWorld();               -- 是否是并行世界
+    options.worldType = ParaWorldMain:IsCurrentParaWorld() and "ParaWorld" or "default";               -- 是否是并行世界
 
     -- 打印选项值
     Log:Info(options);

@@ -126,14 +126,17 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 登录失败
     if (result ~= "ok") then
         local text = "登录失败! " .. errmsg;
-		BroadcastHelper.PushLabel({id="NetClientHandler", label = text, max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+        BroadcastHelper.PushLabel({id="NetClientHandler", label = text, max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true,});
+        PlayerLoginLogoutDebug("登录失败, 退出联机世界");
 		return self:GetWorld():Logout();
     end
 
+    PlayerLoginLogoutDebug("player login success");
+    
     -- 登录成功
     local options = self:GetClient():GetOptions();
     options.worldId = packetPlayerLogin.worldId;                       -- 世界ID
-    options.worldName = packetPlayerLogin.worldName;   -- 平行世界名  可能被客户端改掉
+    options.worldName = packetPlayerLogin.worldName;                   -- 平行世界名  可能被客户端改掉
     options.username = packetPlayerLogin.username;
 
     self:SetUserName(options.username);

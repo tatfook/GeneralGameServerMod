@@ -22,13 +22,22 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets
 local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player");
 -- 对象定义
 local PlayerManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
+-- local QuadTree = NPL.load("./QuadTree.lua");
 
 local MaxAreaSize = 30000; -- bx, bz 的最大值为30000
+local ParaWorldAreaSize = 128; -- 平行世界区域大小
+local ParaWorldMaxOfflineCount = 500; -- 平行世界最大离线用户数
 
 function PlayerManager:ctor()
     self.playerList = commonlib.UnorderedArraySet:new();
     self.minPlayerCount = Config.World.minClientCount;             -- 保持至少玩家数
-    self.offlinePlayerQueue = commonlib.Queue:new();  -- 离线玩家队列
+    self.offlinePlayerQueue = commonlib.Queue:new();               -- 离线玩家队列
+    -- 玩家四叉树
+    -- self.quadtree = QuadTree:new():Init({
+    --     minWidth = 128,
+    --     minHeight = 128,
+    --     left = 0, top = 0, right = 30000, bottom = 30000,
+    -- });
 end
 
 function PlayerManager:Init(world)
@@ -84,7 +93,7 @@ function PlayerManager:RemoveOfflinePlayer(username)
             end
             self.offlinePlayerQueue.last = self.offlinePlayerQueue.last - 1;
             self.playerList:removeByValue(offlinePlayer);
-            self:SendPacketPlayerLogout(offlinePlayer);
+            self:SendPacketPlayerLogout(offlinePlayer, "离线玩家重新上线, 踢出旧离线玩家");
             break;
         end
     end
@@ -104,11 +113,19 @@ end
 
 -- 添加玩家
 function PlayerManager:AddPlayer(player)
+    if (not player) then return end
+
     -- 添加至玩家列表
     self.playerList:add(player);
 
     -- 新上线的玩家在离线列表, 先简单移除, 后续直接使用上次状态
     self:RemoveOfflinePlayer(player.username);
+
+    -- 是平行世界
+    -- if (self:GetWorld():IsParaWorld()) then
+    --     local bx, by, bz = player:GetBlockPos();
+    --     self.quadtree:AddObject(player)
+    -- end
 
     -- 当前玩家数过多时移除玩家
     if (#self.playerList > self.minPlayerCount) then 
@@ -121,6 +138,8 @@ end
 
 -- 移除玩家
 function PlayerManager:RemovePlayer(player)
+    if (not player or not self.playerList:contains(player)) then return end
+
     -- 匿名玩家或存活时间小于指定时间时不做留存直接删除
     if (not player:IsKeepworkOffline()) then
         return self:SendPacketPlayerLogout(player);
@@ -147,8 +166,20 @@ function PlayerManager:GetPlayerList()
     return self.playerList;
 end
 
+-- 下线玩家
+function PlayerManager:Offline(player)
+    if (not player) then return end
+    -- 置玩家登出状态
+    player:Logout();
+    -- 移除玩家
+    self:RemovePlayer(player);
+end
+
 -- 踢出玩家
 function PlayerManager:Logout(player, reason)
+    -- 置玩家登出状态
+    player:Logout();
+    -- 踢出玩家
     self:SendPacketPlayerLogout(player, reason);
 end
 
@@ -170,9 +201,6 @@ function PlayerManager:SendPacketPlayerLogout(player, reason)
     -- 从玩家列表移除
     self.playerList:removeByValue(player);  -- 玩家登出世界, 从玩家列表中移除
     
-    -- 置玩家登出状态
-    player:Logout();
-
     -- 打印日志
     GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("player logout, reason: %s username : %s, worldkey: %s, entityId: %s", tostring(reason), player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end

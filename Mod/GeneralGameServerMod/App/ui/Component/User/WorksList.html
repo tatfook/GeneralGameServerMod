@@ -7,9 +7,13 @@
             </div>
             <div style="base-font-size: 16px; font-size:16px; color: #522b2b; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px;">
                 <div v-if="GetProjectStatusStyle(project.status)" class="status" style="display:inline-block; width: 16px; height: 16px;" v-bind:style="GetProjectStatusStyle(project.status)"></div>
-                {{GetProjectName(project.name)}}
+                <div style="display: inline;">{{GetProjectName(project.name)}}</div>
+                <div style="display: inline; margin-left: 10px; color: #999999">{{"#" .. tostring(project.id)}}</div>
             </div>
-            <div style="base-font-size: 12px; font-size:12px; color: #999999; margin-top: 10px; margin-left:8px; height: 12px; line-height: 12px;">{{GetCreateTime(project.createdAt)}}</div>
+            <div style="base-font-size: 12px; font-size:12px; color: #999999; margin-top: 10px; margin-left:8px; height: 12px; line-height: 12px;">
+                <div style="float: left;">{{GetCreateTime(project.createdAt)}}</div>
+                <div style="float: right; margin-right: 16px;">{{GetUpdatedTime(project.updatedAt)}}</div>
+            </div>
             <div style="margin-top: 12px; margin-left: 8px; base-font-size: 12px; font-size:12px; color: #999999; ">
                 <div style="display:inline; height: 16px;">
                     <div valign="center" style="display:inline; width: 16px; height: 12px; background: url(Texture/Aries/Creator/keepwork/ggs/user/icon_liulan_16X12_32bits.png#0 0 16 12);"></div>
@@ -108,6 +112,26 @@ end
 function GetCreateTime(datetime)
     local datestr, timestr = string.match(datetime, "(%d+%D%d+%D%d+)%D*(%d+%D%d+)");
     return datestr .. " " .. timestr;
+end
+
+function GetUpdatedTime(datetime)
+    local year,month,day,hour,min,sec = string.match(datetime, "(%d+)%D(%d+)%D(%d+)%D+(%d+)%D(%d+)%D(%d+)");
+    local dateTime = string.format("%s-%s-%s %s:%s:%s", year,month,day,hour,min,sec);
+    local date,time = commonlib.timehelp.GetLocalTime();
+    local curDateTime = string.format("%s %s", date, string.gsub(time, "-", ":"));
+    local day,hours,minutes,seconds,time_str = commonlib.GetTimeStr_BetweenToDate(curDateTime, dateTime);
+    local year = math.floor(day / 365);
+    local month = math.floor(day / 30);
+    if (year > 0) then
+        return tostring(year) .. "年前更新";
+    end
+    if (month > 0) then
+        return tostring(month) .. "月前更新";
+    end
+    if (day > 0) then
+        return tostring(day) .. "天前更新";
+    end
+    return time_str;
 end
 
 -- 点击打开世界
