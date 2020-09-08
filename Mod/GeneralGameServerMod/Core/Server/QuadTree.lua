@@ -113,7 +113,11 @@ end
 
 function QuadTree:AddObject(object, left, top, right, bottom)
     local minWidth, minHeight, splitThreshold = self.minWidth, self.minHeight, self.splitThreshold;
+    
+    -- 添加前先移除旧对象
+    self:RemoveObject(object);
 
+    -- 添加新对象
     local function AddObjectToNode(node, object, left, top, right, bottom)
         local key = GetObjectKey(object);
         self.objects[key] = {node = node, left = left, right = right, top = top, bottom = bottom};
