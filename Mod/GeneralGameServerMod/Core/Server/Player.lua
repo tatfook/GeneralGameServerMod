@@ -46,6 +46,10 @@ function Player:Init(player, playerManager, netHandler)
     return self;
 end
 
+function Player:GetEntityId()
+    return self.entityId;
+end
+
 function Player:GetUserName() 
     return self.username;
 end
@@ -183,7 +187,6 @@ function Player:GetUserInfo()
 end
 
 function Player:KickPlayerFromServer(reason)
-    Log:Info("player kick; username : %s, worldkey: %s", self:GetUserName(), self:GetWorld():GetWorldKey());
     return self.playerNetHandler:KickPlayerFromServer(reason);
 end
 
@@ -196,6 +199,12 @@ function Player:UpdateTick()
     self.aliveTime = self.lastTick - self.loginTick;
 end
 
+-- 玩家链接是否存在
+function Player:IsConnection()
+    return self.playerNetHandler:GetPlayerConnection();
+end
+
+-- 是否存活
 function Player:IsAlive()
     if (self.state == "offline") then return false; end
     
@@ -204,8 +213,6 @@ function Player:IsAlive()
     -- local aliveDuration = 30000;  -- debug
     local curTime = ParaGlobal.timeGetTime();
     if ((curTime - self.lastTick) > aliveDuration) then
-        -- 无心跳通知其它玩家, 玩家下线
-        self:KickPlayerFromServer("remove inactive users =>" .. self:GetUserName());
         return  false;
     end
 
@@ -223,4 +230,9 @@ function Player:Logout()
     self.logoutTick = ParaGlobal.timeGetTime();
     self.aliveTime = self.logoutTick - self.loginTick;  -- 本次活跃时间
     self.state = "offline";                             -- 状态置为下线
+end
+
+-- 玩家发送数据包
+function Player:SendPacket(packet)
+    self.playerNetHandler:SendPacketToPlayer(packet);
 end

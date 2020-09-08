@@ -61,7 +61,7 @@ function PlayerManager:CreatePlayer(username, netHandler)
     if(duplicated_players) then
 		for i=1, #(duplicated_players) do
 			local player = duplicated_players[i];
-			player:KickPlayerFromServer("You logged in from another location");
+			self:Logout(player, "You logged in from another location");
 		end
 	end
     
@@ -147,18 +147,41 @@ function PlayerManager:GetPlayerList()
     return self.playerList;
 end
 
--- 发送玩家退出
-function PlayerManager:SendPacketPlayerLogout(player)
-    self.playerList:removeByValue(player);  -- 玩家登出世界, 从玩家列表中移除
-    self:SendPacketToAllPlayers(Packets.PacketPlayerLogout:new():Init(player));
+-- 踢出玩家
+function PlayerManager:Logout(player, reason)
+    self:SendPacketPlayerLogout(player, reason);
+end
 
-    Log:Info("player logout; username : %s, worldkey: %s", player:GetUserName(), self:GetWorld():GetWorldKey());
+-- 发送玩家退出
+function PlayerManager:SendPacketPlayerLogout(player, reason)
+    if (not player) then return end
+
+    -- 先发送后移除, 不然移除没法收到自己登出消息
+    local packet = Packets.PacketPlayerLogout:new():Init({
+        username = player:GetUserName(),
+        entityId = player:GetEntityId(),
+        reason = reason,
+    });
+
+    -- 发送退出包
+    self:SendPacketToAllPlayersExcept(packet, player);        -- 通知其它人退出
+    player:SendPacket(packet);                                -- 单独发, 确保自己一定知道自己退出
+
+    -- 从玩家列表移除
+    self.playerList:removeByValue(player);  -- 玩家登出世界, 从玩家列表中移除
+    
+    -- 置玩家登出状态
+    player:Logout();
+
+    -- 打印日志
+    GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("player logout, reason: %s username : %s, worldkey: %s, entityId: %s", tostring(reason), player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
 
 -- 发送玩家信息
 function PlayerManager:SendPacketPlayerInfo(player)
-    Log:Info("player offline; username : %s, worldkey: %s", player:GetUserName(), self:GetWorld():GetWorldKey());
     self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()));
+
+    GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("player offline; username : %s, worldkey: %s, entityId: %s", player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
 
 -- 发数据给所有玩家
@@ -248,7 +271,7 @@ function PlayerManager:GetPlayer(id)
         end
     end
 
-    return id;
+    return nil;
 end
 
 -- 获取所有玩家实体信息列表
@@ -303,8 +326,9 @@ end
 function PlayerManager:RemoveInvalidPlayer()
     for i = 1, #(self.playerList) do 
         local player = self.playerList[i];
-        if (not player:IsAlive()) then
-            -- IsAlive 内部会自动移除无效玩家
+        -- 玩家不活跃但链接还在则踢出玩家
+        if (not player:IsAlive() and player:IsConnection()) then
+            self:Logout(player, "inactive player remove");
         end
     end
 end

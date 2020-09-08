@@ -142,6 +142,7 @@ debug 调试命令
 	/ggs debug entitys 显示客户端实体列表
 	/ggs debug worldinfo 显示客户端连接的世界服务器信息
 	/ggs debug serverinfo 显示世界服务列表	
+	/ggs debug ping
 		]],
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
 			Log:Info(cmd_name .. " " .. cmd_text);

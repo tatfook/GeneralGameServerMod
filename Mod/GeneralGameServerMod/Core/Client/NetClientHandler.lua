@@ -36,6 +36,8 @@ NetClientHandler:Property("World");          -- 世界
 NetClientHandler:Property("Client");         -- 客户端
 NetClientHandler:Property("BlockManager");   -- 方块管理器
 
+local PlayerLoginLogoutDebug = GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug");
+
 function NetClientHandler:ctor() 
     self.reconnectionDelay = 3; -- 3s
     self.isReconnection = false;
@@ -96,20 +98,20 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_logout"));
 
+    PlayerLoginLogoutDebug({"player logout", username, entityId or 0});
+
     local player = self:GetPlayer(entityId);
     -- 玩家不存在 直接忽视 
-    if (not player) then return end;
+    if (not player) then return PlayerLoginLogoutDebug("player logout and player no exist!!!") end;
 
     -- 玩家退出
     if (self:GetPlayer() == player) then
         -- 当前玩家
         self:GetWorld():Logout();
-        Log:Info("main player logout");
     elseif (player:isa(EntityOtherPlayer)) then
         self:GetWorld():RemoveEntity(player);
-        Log:Info("other player logout, entityId: %s", player.entityId);
     else
-        -- Log:Info("invalid player entityId: %s", player.entityId);
+        PlayerLoginLogoutDebug("invalid player logout");
     end
 
     return;
@@ -162,6 +164,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     else 
         Log:Info("old player no exist!!!");
     end
+
     entityPlayer:Attach();
     GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
     self:SetPlayer(entityPlayer);
@@ -350,16 +353,6 @@ function NetClientHandler:handleGeneral_SyncBlock(packetGeneral)
     end
 end
 
--- 处理调试信息
-function NetClientHandler:handleGeneral_Debug(packetGeneral)
-    local cmd = packetGeneral.data.cmd;
-    local debug = packetGeneral.data.debug;
-    if (cmd == "WorldInfo") then
-        commonlib.echo(debug.players, true);
-        debug.players = nil; -- 信息太多进行屏蔽
-    end
-    self:GetClient():ShowDebugInfo(debug);
-end
 
 -- 处理方块点击
 function NetClientHandler:handleGeneral(packetGeneral)
@@ -452,8 +445,8 @@ end
 -- 保持连接活跃
 function NetClientHandler:SendTick()
     local player = self:GetPlayer();
-    if (not player or not player:isa(EntityMainPlayer)) then return end;
-    
+    if (not player or not player:isa(EntityMainPlayer)) then return end
+
     self:AddToSendQueue(self:GetPlayer():GetPacketPlayerEntityInfo());
 end
 
@@ -465,35 +458,54 @@ end
 -- 与服务器建立链接
 function NetClientHandler:Connect()
     local options = self:GetClient():GetOptions();
+
+    -- 在连接中直接返回
+    if (self.isConnecting) then return end;
+    self.isConnecting = true;
+
+    -- 获取连接
     self.connection = Connection:new():InitByIpPort(options.ip, options.port, self);
-	self.connection:Connect(5, function(bSucceed)
-		if(bSucceed) then
-            self:Login();
-            self.isReconnection = false;
-            self.reconnectionDelay = 3;
-        else 
-            Log:Warn(string.format(L"无法建立链接:%s:%s", options.ip, options.port))
-		end
-    end);
+    -- 连接成功
+    if (self.connection:Connect() == 0) then 
+        self:Login();
+        self.isConnecting = false;
+        self.isReconnection = false;
+        self.reconnectionDelay = 3;
+        PlayerLoginLogoutDebug("与服务器成功建立链接");
+        return 
+    end
+
+    -- 重连
+    commonlib.Timer:new({callbackFunc = function(timer)
+        self.isConnecting = false;
+        self:Connect();
+        -- 最大重连间隔为10分钟
+        self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
+        if (self.reconnectionDelay > 600) then self.reconnectionDelay = 600 end
+        -- 开发环境每次5秒
+        if (IsDevEnv) then self.reconnectionDelay = 5 end
+    end}):Change(self.reconnectionDelay * 1000, nil);
 end
 
 -- 处理错误信息
 function NetClientHandler:handleErrorMessage(text)
     -- 连接已清说已做过错误处理
-    Log:Info("client connection error %s and nid: %d, isConntectionWorld: %s", text or "", self.connection and self.connection:GetNid() or 0, GameLogic.GetWorld() == self:GetWorld());
+    PlayerLoginLogoutDebug(string.format("client connection error %s and nid: %s, isConntectionWorld: %s", text or "", self.connection and self.connection:GetNid() or 0, GameLogic.GetWorld() == self:GetWorld()));
+    
+    -- 离线
+    self:Offline();
+    
     if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
 
     -- 第一次重连提醒
     if (not self.isReconnection) then BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器断开连接, 稍后尝试重新连接...", max_duration=6000, color = "177 177 177", scaling=1.1, bold=true, shadow=true,}) end
 
+    -- 打印重连接时间间隔
+    PlayerLoginLogoutDebug(string.format("exec reconnect after %d second", self.reconnectionDelay));
+
     -- 重连
-    commonlib.Timer:new({callbackFunc = function(timer)
-        self.isReconnection = true;
-        self:Connect();
-        self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
-        -- 最大重连间隔为10分钟
-        if (self.reconnectionDelay > 600) then self.reconnectionDelay = 600 end
-    end}):Change(self.reconnectionDelay * 1000, nil);
+    self.isReconnection = true;
+    self:Connect();
 end
 
 -- clean up connection. 
@@ -504,15 +516,38 @@ function NetClientHandler:Cleanup()
         self.connection = nil;
     end
 
-    -- 断开服务器后显示灰色用户名
-    if(self:GetPlayer()) then
-        self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format([[
-            <pe:mcml>
-                <div style="width: 200px; margin-left: -100px; margin-top:-40px;">
-                    <div style="text-align:center; color: #b1b1b1; base-font-size:20px; font-size:20px;">%s</div>
-                    <div style="text-align:center; color: #ff0000; base-font-size:14px; font-size:14px;">已掉线, 处于离线模式中.</div>
-                </div>
-            </pe:mcml>]], self:GetUserName()))});
-    end
+    -- 离线
+    self:Offline();
+
+    PlayerLoginLogoutDebug("player logout", self:GetUserName());
+   
     -- _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
+end
+
+-- 玩家离线状态
+function NetClientHandler:Offline()
+    -- 清除其它玩家
+    self:GetWorld():ClearEntityList();
+
+    -- 调整当前玩家样式
+    if (not self:GetPlayer()) then return end;
+    -- 灰化用户名
+    self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format([[
+    <pe:mcml>
+        <div style="width: 200px; margin-left: -100px; margin-top:-40px;">
+            <div style="text-align:center; color: #b1b1b1; base-font-size:20px; font-size:20px;">%s</div>
+            <div style="text-align:center; color: #ff0000; base-font-size:14px; font-size:14px;">已掉线, 处于离线模式中.</div>
+        </div>
+    </pe:mcml>]], self:GetUserName()))});
+end
+
+
+-- 处理调试信息
+function NetClientHandler:handleGeneral_Debug(packetGeneral)
+    local cmd = packetGeneral.data.cmd;
+    local debug = packetGeneral.data.debug;
+    -- 信息太多进行屏蔽
+    if (cmd == "WorldInfo") then debug.players = nil end
+    GGS.DEBUG(cmd, debug);
+    self:GetClient():ShowDebugInfo(debug);
 end

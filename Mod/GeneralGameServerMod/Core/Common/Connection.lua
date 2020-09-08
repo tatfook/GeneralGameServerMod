@@ -74,7 +74,7 @@ function Connection:OnNetReceive(msg)
 	end
 
 	local packet = PacketTypes:GetNewPacket(msg.id);
-	NetLog(string.format("---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id), msg);
+	NetLog(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
 	-- Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
 	-- Log:Std("DEBUG", moduleName, msg);
 	

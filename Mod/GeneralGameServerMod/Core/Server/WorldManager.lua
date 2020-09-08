@@ -53,8 +53,13 @@ function WorldManager:GetWorld(worldId, worldName, isNewNoExist)
     local worldKey = self:GetWorldKey(worldId, worldName);
     if (not self.worldMap[worldKey] and isNewNoExist) then
         self.worldMap[worldKey] = World:new():Init(worldId, worldName, worldKey);
-        Log:Info("create new world: worldId: %s, worldName: %s, worldKey: %s", worldId, worldName, worldKey); 
+        -- Log:Info("create new world: worldId: %s, worldName: %s, worldKey: %s", worldId, worldName, worldKey); 
     end
+    return self.worldMap[worldKey];
+end
+
+-- 获取世界
+function WorldManager:GetWorldByKey(worldKey)
     return self.worldMap[worldKey];
 end
 
@@ -102,24 +107,21 @@ function WorldManager:GetWorldClientCount()
     return totalWorldCount, totalClientCount, totalWorldClientCounts;
 end
 
--- 尝试删除世界
-function WorldManager:TryRemoveWorld(world)
-    if (not world or not world:isa(World) or world:GetClientCount() > 0) then 
-        return false; 
-    end
-
-    Log:Info("remove world, workKey: %s", world:GetWorldKey());
-    
-    self.worldMap[world:GetWorldKey()] = nil;
-    
-    return true;
-end
-
 -- timer function
 function WorldManager:Tick()
+    local deleted = {};  -- 删除无用户的世界
+    
     for worldKey, world in pairs(self.worldMap) do 
-        world:RemoveInvalidPlayer();
+        if (world:GetClientCount() == 0) then
+            table.insert(deleted, worldKey);
+        else
+            world:RemoveInvalidPlayer();
+        end
     end  
+
+    for i = 1, #deleted do
+        self.worldMap[deleted[i]] = nil;
+    end
 end
 
 -- 初始化成单列模式

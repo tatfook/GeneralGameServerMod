@@ -31,6 +31,9 @@ NetServerHandler:Property("WorldManager");                             -- 世界
 NetServerHandler:Property("WorkerServer");                             -- 工作服务器
 NetServerHandler:Property("PlayerConnection");                               -- 玩家链接
 
+
+local PlayerLoginLogoutDebug = GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug");
+
 function NetServerHandler:ctor() 
     self:SetWorkerServer(WorkerServer);
     self:SetWorldManager(WorldManager);
@@ -66,6 +69,8 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldId = tostring(packetPlayerLogin.worldId);
     local worldName = packetPlayerLogin.worldName or "";
 
+    PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, nid: %s", username, worldId, worldName, self:GetPlayerConnection():GetNid()));
+
     -- 检测是否达到最大处理量
     if (not self:IsAllowLoginWorld(worldId)) then
         Log:Warn("服务器连接数已到上限");
@@ -86,8 +91,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     -- 玩家登录
     self:GetPlayer():Login();
     -- 打印日志
-    Log:Info("player login; username : %s, worldkey: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey());
-
+    PlayerLoginLogoutDebug(string.format("player success login; username : %s, worldkey: %s, entityId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey(), self:GetPlayer():GetEntityId()));
     -- 通知玩家登录
     packetPlayerLogin.entityId = self:GetPlayer().entityId;
     packetPlayerLogin.result = "ok";
@@ -125,42 +129,19 @@ function NetServerHandler:handlePlayerEntityInfoList()
     self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerManager():GetPlayerEntityInfoList(self:GetPlayer())));
 end
 
--- 处理玩家退出
-function NetServerHandler:handlePlayerLogout(packetPlayerLogout)
-    if (not self:GetPlayer()) then return end
-    
-    -- 玩家退出
-    self:GetPlayer():Logout();
-    -- 从管理器中移除
-    self:GetPlayerManager():RemovePlayer(self:GetPlayer());  -- 移除玩家内部通知其它玩家
-    -- 尝试删除世界
-    self:GetWorldManager():TryRemoveWorld(self:GetWorld()); 
-end
-
 -- 玩家重新登录, 当连接存在玩家丢失需要重新等陆, 这个问题与TCP自身自动重连有关(玩家第一次登录, 登录切后台, tcp自行断开, 程序恢复前台, tcp自行重连, 这样跳过了登录步骤,导致用户丢失, 这种发送客户端重连数据包)
 function NetServerHandler:handlePlayerRelogin()
-    Log:Info("client relogin: ", self:GetPlayerConnection():GetIPAddress());
+    PlayerLoginLogoutDebug("client relogin: " .. tostring(self:GetPlayerConnection():GetIPAddress()));
     self:SendPacketToPlayer(Packets.PacketGeneral:GetReloginPacket());
 end
 
 -- 链接出错 玩家退出
 function NetServerHandler:handleErrorMessage(text, data)
     -- 发送用户退出
-    self:handlePlayerLogout();  
-
+    self:GetPlayerManager():Logout(self:GetPlayer(), "connection error:" .. tostring(text)); 
+    -- 关闭连接
     self:GetPlayerConnection():CloseConnection();
     self:SetPlayerConnection(nil);
-end
-
--- 服务强制退出玩家 
-function NetServerHandler:KickPlayerFromServer(reason)
-    Log:Info("kick player and reason: %s", reason);
-
-    self:handlePlayerLogout(Packets.PacketPlayerLogout:new():Init({
-        entityId = player and player.entityId,
-        username = player and player.username,
-        reason = reason;
-    }));
 end
 
 -- 监听包处理后
@@ -187,6 +168,12 @@ function NetServerHandler:handleGeneral_SyncBlock(packetGeneral)
     local state = packetGeneral.data.state;       -- 同步状态
     local playerId = packetGeneral.data.playerId; -- 请求同步玩家ID
     local player = self:GetPlayerManager():GetPlayer(playerId);
+    
+    -- 同步的玩家下载, 则重新开始同步 TODO
+    if (not player) then
+        return;
+    end
+
     if (player and player:IsSyncBlockFinish()) then return end;
 
     if (state == "SyncBlock_Finish") then
@@ -216,6 +203,10 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
         self:SendPacketToPlayer(packetGeneral);
     elseif (cmd == "ServerInfo") then
         packetGeneral.data.debug = self:GetWorkerServer():GetServerList();
+        self:SendPacketToPlayer(packetGeneral);
+    elseif (cmd == "ping") then
+        local worldKey = self:GetWorld():GetWorldKey();
+        packetGeneral.data.debug = self:GetWorld() == self:GetWorldManager():GetWorldByKey(worldKey);
         self:SendPacketToPlayer(packetGeneral);
     end
 end

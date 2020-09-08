@@ -131,7 +131,7 @@ function Debug.GetModuleDebug(module)
         end
     });
 
-    -- if (IsDevEnv) then obj.Enable() end
+    if (ModuleLogEnableMap[module] == nil and IsDevEnv) then obj.Enable() end
 
     ModelDebug[module] = obj;
 

@@ -19,6 +19,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldMain.lua");
+local ParaWorldMain = commonlib.gettable("Paracraft.Controls.ParaWorldMain");
 local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
@@ -120,6 +122,11 @@ function GeneralGameClient:SetOptions(opts)
     return self.options;
 end
 
+-- 是否是并行世界
+function GeneralGameClient:IsParaWorld()
+    return self:GetOptions().isParaWorld;
+end
+
 -- 是否同步强制块
 function GeneralGameClient:IsSyncForceBlock()
     return self:GetOptions().isSyncForceBlock;
@@ -158,6 +165,9 @@ function GeneralGameClient:LoadWorld(opts)
     -- 确定世界ID
     options.worldId = tostring(opts.worldId or curWorldId or Config.defaultWorldId);
     options.username = options.username or self:GetUserInfo().username;
+    options.ip = opts.ip;            -- ip port 每次重写
+    options.port = options.port;     -- 以便动态获取
+    options.isParaWorld = ParaWorldMain:IsCurrentParaWorld();               -- 是否是并行世界
 
     -- 打印选项值
     Log:Info(options);
@@ -339,10 +349,13 @@ function GeneralGameClient:Debug(action)
 
     local netHandler = self:GetWorldNetHandler();
     if (not netHandler) then return end
+
     if (action == "worldinfo") then
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "WorldInfo"}}));
     elseif (action == "serverinfo") then
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ServerInfo"}}));
+    elseif (action == "ping") then
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ping"}}));
     end
 end
 
