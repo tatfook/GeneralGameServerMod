@@ -200,14 +200,16 @@ end
 -- 获取玩家实体
 function NetClientHandler:GetEntityPlayer(entityId, username)
     local mainPlayer = self:GetPlayer();
-    local otherPlayer = self:GetPlayerManager():GetPlayerByUserName(username);
+    local otherPlayer = self:GetPlayerManager():GetPlayerByUserName(username) or self:GetPlayerManager():GetPlayerByEntityId(entityId);
     local world = self:GetWorld();
 
     -- 是否是主玩家
     if (entityId == mainPlayer.entityId) then
         return mainPlayer, false;
     end
-    
+
+    PlayerLoginLogoutDebug.Format("get other player: entityId: %s, username: %s, isExist: %s", entityId, username, otherPlayer ~= nil);
+
     local EntityOtherPlayerClass = self:GetClient():GetEntityOtherPlayerClass() or EntityOtherPlayer;
     if (not otherPlayer) then 
         return EntityOtherPlayerClass:new():init(world, username or "", entityId), true;
@@ -221,12 +223,12 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     if (not packetPlayerEntityInfo) then return end
 
     local entityId = packetPlayerEntityInfo.entityId;
+    local username = packetPlayerEntityInfo.username;
     local x = packetPlayerEntityInfo.x;
     local y = packetPlayerEntityInfo.y;
     local z = packetPlayerEntityInfo.z;
     local facing = packetPlayerEntityInfo.facing;
     local pitch = packetPlayerEntityInfo.pitch;
-    local username = packetPlayerEntityInfo.name;
 
     local mainPlayer = self:GetPlayer();
     local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
@@ -275,8 +277,10 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     -- 更新玩家信息
     for i = 1, #playerEntityInfoList do
         local username = playerEntityInfoList[i].username; 
-        usernames[username] = true;
-        self:handlePlayerEntityInfo(playerEntityInfoList[i]);
+        if (username) then
+            usernames[username] = true;
+            self:handlePlayerEntityInfo(playerEntityInfoList[i]);
+        end 
     end
     -- 查找无效玩家
     local players = self:GetPlayerManager():GetPlayers();

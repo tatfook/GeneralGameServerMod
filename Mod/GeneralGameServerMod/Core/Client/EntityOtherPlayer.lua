@@ -20,12 +20,15 @@ local EntityOtherPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.
 
 local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer";
 
+-- EntityOtherPlayer:Property("UserName");
+
 function EntityOtherPlayer:ctor()
     self.playerInfo = {};
 end
 
 function EntityOtherPlayer:init(world, username, entityId)
     EntityOtherPlayer._super.init(self, world, username, entityId);
+
     self:SetSkipPicking(not self:IsCanClick());
 
     return self;

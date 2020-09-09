@@ -86,7 +86,8 @@ local function DebugCall(module, ...)
     Print(string.format("\n[%s %s][%s][%s][DEBUG BEGIN]", dateStr, timeStr, module, filepos));
 
     for i = 1, select('#', ...) do  -->获取参数总数
-        Print(select(i, ...));      -->读取参数
+        local arg = select(i, ...); -- 函数会返回多个值
+        Print(arg);      -->读取参数
     end  
 
     Print(string.format("[%s %s][%s][%s][DEBUG END]", dateStr, timeStr, module, filepos));
@@ -125,6 +126,10 @@ function Debug.GetModuleDebug(module)
         Debug.DisableModule(module);
     end
 
+    function obj.Format(...)
+        DebugCall(module, string.format(...));
+    end
+    
     setmetatable(obj, {
         __call = function(obj, ...)
             DebugCall(module, ...);

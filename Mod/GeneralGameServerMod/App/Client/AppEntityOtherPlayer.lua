@@ -49,11 +49,6 @@ function AppEntityOtherPlayer:SetPlayerInfo(playerInfo)
     self.appEntityPlayerHelper:SetPlayerInfo(playerInfo);
 end
 
--- 获取用户名
-function AppEntityOtherPlayer:GetUserName()
-    return self:GetPlayerInfo().username;
-end
-
 -- 设置父类用户信息
 function AppEntityOtherPlayer:SetSuperPlayerInfo(playerInfo)
     AppEntityOtherPlayer._super.SetPlayerInfo(self, playerInfo);

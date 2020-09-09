@@ -6,7 +6,7 @@ Desc: 管理所有世界玩家
 use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Core/Client/PlayerManager.lua");
-local PlayerManager = commonlib.gettable("GeneralGameServerMod.Core.Client.PlayerManager");
+local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.PlayerManager");
 -------------------------------------------------------
 ]]
 
@@ -27,6 +27,7 @@ end
 function PlayerManager:AddPlayer(entityPlayer)
     if (not entityPlayer) then return end
     local username = entityPlayer:GetUserName();
+    if (not username) then return end;
 
     -- 存在同名旧玩家则先移除
     local oldplayer = self.players[username];

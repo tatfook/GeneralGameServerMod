@@ -167,6 +167,8 @@ function Player:GetArea()
 end
 
 function Player:GetPlayerEntityInfo()
+    self.entityInfo.username = self.username;
+    self.entityInfo.entityId = self.entityId;
     self.entityInfo.playerInfo = self:GetPlayerInfo();
     return Packets.PacketPlayerEntityInfo:new():Init(self.entityInfo, self.dataWatcher, true);
 end

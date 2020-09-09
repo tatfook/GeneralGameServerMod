@@ -94,8 +94,11 @@ function EntityMainPlayer:SendMotionUpdates()
     -- Log:Std("DEBUG", moduleName, "-----------------------------------------------");
     -- Log:Std("DEBUG", moduleName, "force: %s, moveDistance: %s, ", force, moveDistance);
     -- Log:Std("DEBUG", moduleName, "motionUpdateTickCount: %d, hasMoved: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", self.motionUpdateTickCount, hasMoved, hasRotation, hasHeadRotation, hasMetaDataChange);
-    local packet = Packets.PacketPlayerEntityInfo:new():Init({entityId = self.entityId}, self.dataWatcher, false);
-    
+    local packet = Packets.PacketPlayerEntityInfo:new():Init(nil, self.dataWatcher, false);
+    -- 设置用户名
+    packet.username = self:GetUserName();
+    packet.entityId = self.entityId;
+
     if (self:IsUpdatePlayerInfo()) then
         packet.playerInfo = self:GetPlayerInfo();
         self:SetUpdatePlayerInfo(false);
