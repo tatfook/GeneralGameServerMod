@@ -26,6 +26,6 @@ ggs 模块对外几乎是封闭的, 对外提供相关命令进行操作. 若需
 -- 注册主类, 再由主类去定制其它相关业务类定义与实现
 local GeneralGameServerMod = commonlib.gettable("Mod.GeneralGameServerMod");
 GeneralGameServerMod:RegisterClientClass("AppName", AppGenerateGameClientClass);
--- 使用 /ggs connect -app=AppName 或 connectGGS -app=AppName (旧命令方式)
+-- 使用 /ggs connect -app=AppName 或 ggs connect -app=AppName (旧命令方式)
 -- ggs 模块的命令都集成到了ggs命令, 此方式减少命令数,但再命令输入窗口智能提示效果差, 故其子命令独立存在保留未删
 ```

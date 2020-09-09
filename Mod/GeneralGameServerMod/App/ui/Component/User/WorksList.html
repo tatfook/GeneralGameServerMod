@@ -122,15 +122,12 @@ function GetUpdatedTime(datetime)
     local day,hours,minutes,seconds,time_str = commonlib.GetTimeStr_BetweenToDate(curDateTime, dateTime);
     local year = math.floor(day / 365);
     local month = math.floor(day / 30);
-    if (year > 0) then
-        return tostring(year) .. "年前更新";
-    end
-    if (month > 0) then
-        return tostring(month) .. "月前更新";
-    end
-    if (day > 0) then
-        return tostring(day) .. "天前更新";
-    end
+    if (year > 0) then return tostring(year) .. " 年前更新" end
+    if (month > 0) then return tostring(month) .. " 月前更新" end
+    if (day > 0) then return tostring(day) .. " 天前更新" end
+    if (hours > 0) then return tostring(hours) .. " 小时前更新" end 
+    if (minutes > 0) then return tostring(minutes) .. " 分钟前更新" end 
+    if (seconds > 0) then return tostring(seconds) .. " 秒前更新" end 
     return time_str;
 end
 

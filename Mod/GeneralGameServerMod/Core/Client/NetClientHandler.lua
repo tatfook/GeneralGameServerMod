@@ -512,7 +512,7 @@ end
 function NetClientHandler:handleGeneral_Debug(packetGeneral)
     local cmd = packetGeneral.data.cmd;
     local debug = packetGeneral.data.debug;
-    GGS.DEBUG(cmd, debug);
+    GGS.INFO(cmd, debug);
     -- 信息太多进行屏蔽
     if (cmd == "WorldInfo") then debug.players = nil end
     self:GetClient():ShowDebugInfo(debug);

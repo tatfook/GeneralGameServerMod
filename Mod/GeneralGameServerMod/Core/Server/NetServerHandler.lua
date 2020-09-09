@@ -12,12 +12,10 @@ local NetServerHandler = commonlib.gettable("GeneralGameServerMod.Core.Server.Ne
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
 local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
@@ -86,7 +84,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     -- TODO 认证逻辑
     -- 检测是否达到最大处理量
     if (not self:IsAllowLoginWorld(worldId)) then
-        Log:Warn("服务器连接数已到上限");
+        GGS.WARN("服务器连接数已到上限");
         packetPlayerLogin.result = "failed";
         packetPlayerLogin.errmsg = "服务器连接数已到上限";
         return self:SendPacketToPlayer(packetPlayerLogin);

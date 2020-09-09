@@ -12,11 +12,9 @@ local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Wo
 
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local WorkerServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer"));
@@ -53,11 +51,11 @@ function WorkerServer:Init(server)
     local function ConnectControlServer()
         self.connection:Connect(5, function(success)
             if (success) then
-                Log:Info("成功连接控制服务");
+                GGS.INFO.Format("成功连接控制服务");
                 -- 推送服务器信息到控制器
                 self.SendServerInfoTimer:Change(0, 1000 * 60 * 2);                                     -- 每2分钟上报一次 
             else
-                Log:Info("无法连接控制服务, 2 分钟后重连...");
+                GGS.INFO.Format("无法连接控制服务, 2 分钟后重连...");
                 commonlib.Timer:new({callbackFunc = ConnectControlServer}):Change(2 * 60 * 1000);      -- 两分钟后重连
             end
         end)
@@ -90,7 +88,7 @@ end
 
 -- 连接丢失
 function WorkerServer:handleErrorMessage(text, connection)
-    Log:Info("断开与控制服务器的连接");
+    GGS.INFO.Format("断开与控制服务器的连接");
 end
 
 -- 初始化成单列模式

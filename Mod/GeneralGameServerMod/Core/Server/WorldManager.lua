@@ -14,10 +14,7 @@ WorldManager.GetSingleton();
 -- 文件加载
 NPL.load("Mod/GeneralGameServerMod/Core/Server/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
--- 对象获取
 local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 
 -- 对象定义
@@ -53,7 +50,6 @@ function WorldManager:GetWorld(worldId, worldName, isNewNoExist)
     local worldKey = self:GetWorldKey(worldId, worldName);
     if (not self.worldMap[worldKey] and isNewNoExist) then
         self.worldMap[worldKey] = World:new():Init(worldId, worldName, worldKey);
-        -- Log:Info("create new world: worldId: %s, worldName: %s, worldKey: %s", worldId, worldName, worldKey); 
     end
     return self.worldMap[worldKey];
 end

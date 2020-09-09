@@ -14,10 +14,8 @@ local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.P
 -- 文件加载
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Player.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/QuadTree.lua");
 local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player");
@@ -211,6 +209,8 @@ function PlayerManager:Offline(player)
     player:Logout();
     -- 移除玩家
     self:RemovePlayer(player);
+    -- 移除玩家
+    self.worldQuadTree:RemoveObject(player:GetUserName());
 end
 
 -- 踢出玩家
@@ -243,6 +243,7 @@ function PlayerManager:SendPacketPlayerLogout(player, reason)
     self.players[username] = nil;
     self.onlineQuadtree:RemoveObject(username);
     self.offlineQuadtree:RemoveObject(username);
+    self.worldQuadTree:RemoveObject(username);
 
     -- 打印日志
     GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("player logout, reason: %s username : %s, worldkey: %s, entityId: %s", tostring(reason), player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));

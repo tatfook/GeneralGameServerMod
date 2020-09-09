@@ -19,6 +19,6 @@ local SelfGeneralGameClientClass = {};                                          
 GeneralGameServerMod:RegisterClientClass("selfAppName", SelfGeneralGameClientClass);      -- 注册入口类
 ```
 
-- 执行命令启动客户端: `/connectGGS -app=selfAppName`
+- 执行命令启动客户端: `/ggs connect -app=selfAppName`
 
 > 当不需要命令启动时, 也可以直接调用入口类的 LoadWorld 接口, 这样可以省去2,3步骤. 如: SelfGeneralGameClientClass:LoadWorld({})

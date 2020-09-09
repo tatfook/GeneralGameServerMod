@@ -13,8 +13,6 @@ Player:new():Init()
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");

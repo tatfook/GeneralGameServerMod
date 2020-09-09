@@ -14,7 +14,7 @@ GeneralGameServerMod 是基于 Paracraft 的一个多人联机的模块, 包含�
 
 ### 客户端程序流程
 
-- 执行命令: `connectGGS worldId` 进入联机世界 worldId(keepwork项目Id)
+- 执行命令: `ggs connect worldId` 进入联机世界 worldId(keepwork项目Id)
 - 如 worldId 为 0, 则进入默认空世界, 否则加载并打开 worldId 对应的世界
 - 与服务器建立TCP链接, 并登陆服务端对应的 worldId 世界中
 - 接受服务端 worldId 世界更新数据并应用数据到客户端世界
@@ -45,7 +45,7 @@ pm2 start npm npl --name "GGS" --  isDevEnv="true" servermode="true" bootstrappe
 - 下载客户端模块的ZIP包, 下载地址: <https://github.com/tatfook/GeneralGameServerMod>
 - 将下载好的zip包放在Paracraft安装目录的Mod文件夹里
 - 启动Paracraft, 在登录页面, 点登录框下面的MOD加载, 再在弹出的Mod对话框中找到刚放入的zip包模块, 并勾选
-- 登录进入世界, 执行 `connectGGS worldId`(`connectGGS -test worldId` 选择测试服务器) 命令进入多人世界, 或按F12执行如下代码:
+- 登录进入世界, 执行 `ggs connect worldId`(`ggs connect -test worldId` 选择测试服务器) 命令进入多人世界, 或按F12执行如下代码:
 
 ### 版本
 

@@ -11,7 +11,7 @@ local GeneralGameServerMod = commonlib.gettable("Mod.GeneralGameServerMod");
 local ModManager = commonlib.gettable("Mod.ModManager");
 ModManager:AddMod(nil, GeneralGameServerMod);
 -- use
-GameLogic.RunCommand("/connectGGS -dev -u=xiaoyao 0");   
+GameLogic.RunCommand("/ggs connect -dev -u=xiaoyao 0");   
 
 -- server
 GeneralGameServerMod:init();

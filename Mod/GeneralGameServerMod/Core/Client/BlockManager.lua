@@ -106,7 +106,7 @@ function BlockManager:MarkBlockForUpdate(x, y, z)
 	local blockId = BlockEngine:GetBlockId(x,y,z) or 0;
 	local blockData = BlockEngine:GetBlockData(x,y,z);
 
-	if (IsDevEnv) then BlockSyncDebug.Format("标记更新块: x = %s, y = %s, z =%s, blockIndex = %s, blockId = %s", x, y, z, blockIndex, blockId) end
+	-- if (IsDevEnv) then BlockSyncDebug.Format("标记更新块: x = %s, y = %s, z =%s, blockIndex = %s, blockId = %s", x, y, z, blockIndex, blockId) end
 
 	-- allMarkForUpdateBlockMap 记录最后一次同步的状态  首次记录当前修改前的数据
 	if (not self.allMarkForUpdateBlockMap[blockIndex]) then
@@ -176,7 +176,7 @@ function BlockManager:SyncBlock()
 		local isForceSyncAll = oldBlock.isForceSyncAll;
 		local blockEntityPacket = nil;
 
-		BlockSyncDebug.Format("准备同步块: x = %s, y = %s, z = %s", x, y, z);
+		BlockSyncDebug.Format("准备同步块: x = %s, y = %s, z = %s, blockId = %s, isSyncForceBlock = %s", x, y, z, blockId, isSyncForceBlock);
 
 		syncedBlockIndexList[#syncedBlockIndexList + 1] = blockIndex;
 

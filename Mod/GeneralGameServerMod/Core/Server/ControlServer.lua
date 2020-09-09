@@ -12,12 +12,10 @@ local ControlServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.C
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local ControlServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
@@ -72,7 +70,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
     for key, svr in pairs(servers) do
         local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
         if (not isAlive) then
-            Log:Warn("服务不可用: ip = %s, port = %s", svr.outerIp, svr.outerPort);
+            GGS.WRAN.Format("服务不可用: ip = %s, port = %s", svr.outerIp, svr.outerPort);
         end
         -- 忽略已挂服务器或超负荷服务器
         if (isAlive and svr.totalClientCount < serverMaxClientCount) then 
@@ -92,7 +90,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
         packetWorldServer.ip = server.outerIp;
         packetWorldServer.port = server.outerPort;
     else 
-        Log:Warn("世界key: %s 无可用服务", worldKey);
+        GGS.WRAN.Format("世界key: %s 无可用服务", worldKey);
     end
 
     self.connection:AddPacketToSendQueue(packetWorldServer);

@@ -11,7 +11,6 @@ GeneralGameCommand:init();
 ------------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
@@ -19,7 +18,6 @@ local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local SlashCommand = commonlib.gettable("MyCompany.Aries.SlashCommand.SlashCommand");
 local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
 local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
@@ -61,8 +59,6 @@ function GeneralGameCommand:ctor()
 end
 
 function GeneralGameCommand:init()
-	LOG.std(nil, "info", "GeneralGameCommand", "init");
-
 	-- 监听世界加载完成事件
 	GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
 
@@ -71,7 +67,6 @@ end
 
 function GeneralGameCommand:InstallCommand()
 	local __this__ = self;
-	Log:Info("InstallCommand");
 	local connectGGSCmd = {
 		mode_deny = "",  -- 暂时支持任意模式联机
 		name="connectGGS",  -- /connectGGS -test 
@@ -89,7 +84,6 @@ options:
 -isSyncCmd   同步命令
 ]], 
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)		
-			Log:Info("run cmd: %s %s", cmd_name, cmd_text);
 			__this__:handleConnectCommand(cmd_text);
 		end,
 	};
@@ -120,13 +114,14 @@ debug 调试命令
 	/ggs debug worldinfo 显示客户端连接的世界服务器信息
 	/ggs debug serverinfo 显示世界服务列表	
 	/ggs debug ping 验证是否是有效联机玩家
+	/ggs debug syncForceBlockList 显示强制同步块列表
 		]],
 -- sync 世界同步
 -- 	/ggs sync -[block|cmd]
 -- 	/ggs sync -block=true  或 /ggs sync -block 开启同步方块  /ggs sync -block=false 禁用方块同步
 -- 	/ggs sync -forceBlock=false 禁用强制同步块的同步, 默认开启
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
-			Log:Info(cmd_name .. " " .. cmd_text);
+			GGS.INFO.Format(cmd_name .. " " .. cmd_text);
 			local cmd, cmd_text = CmdParser.ParseString(cmd_text);
 			if (cmd == "connect") then
 				__this__:handleConnectCommand(cmd_text);
@@ -148,7 +143,7 @@ debug 调试命令
 		end
 	}
 
-	Commands["connectGGS"] = connectGGSCmd;
+	-- Commands["connectGGS"] = connectGGSCmd;
 	Commands["ggs"] = ggs;
 end
 
@@ -183,7 +178,7 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	options.port = (options.port and options.port ~= "") and options.port or nil;
 	options.username = (options.username and options.username ~= "") and options.username or nil;
 	options.password = (options.password and options.password ~= "") and options.password or nil;
-	options.slient = options.slient and true or false;
+	options.slient = if_else(options.slient == nil, true, options.slient and true or false);
 	
 	self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
 	self.generalGameClient:LoadWorld(options);
@@ -249,7 +244,7 @@ function GeneralGameCommand:handleSetSyncForceBlockCommand(cmd_text)
 	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
 	local onOrOff, cmd_text = CmdParser.ParseString(cmd_text);
 	local data = if_else(onOrOff == "on", true, false);
-	Log:Info("SetSyncForceBlock: x = %s, y = %s, z = %s, on = %s", x, y, z, data);
+	GGS.INFO.Format("SetSyncForceBlock: x = %s, y = %s, z = %s, on = %s", x, y, z, data);
 
 	if (data) then
 		GeneralGameClient:GetSyncForceBlockList():add(blockIndex);

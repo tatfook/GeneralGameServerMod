@@ -20,6 +20,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldMain.lua");
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local ParaWorldMain = commonlib.gettable("Paracraft.Controls.ParaWorldMain");
 local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
@@ -346,7 +347,14 @@ function GeneralGameClient:Debug(action)
     if (action == "options" or action == "") then
         return self:ShowDebugInfo(self:GetOptions());
     elseif (action == "players") then
-        return GGS.DEBUG(self:GetWorld():GetPlayerManager():GetPlayers());
+        return GGS.INFO(self:GetWorld():GetPlayerManager():GetPlayers());
+    elseif (action == "syncforceblocklist") then
+        local list = {};
+        for i = 1, #(self.syncForceBlockList) do
+            local x, y, z = BlockEngine:FromSparseIndex(self.syncForceBlockList[i]);
+            table.insert(list, string.format("x = %s, y = %s, z = %s", x, y, z));
+        end
+        return GGS.INFO(list);
     end
 
     local netHandler = self:GetWorldNetHandler();
