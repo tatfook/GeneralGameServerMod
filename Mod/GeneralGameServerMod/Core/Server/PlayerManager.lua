@@ -23,11 +23,11 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets
 local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player");
 local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
 
-local MaxAreaSize = 30000; -- bx, bz 的最大值为30000
-
+local WorldMaxSize = 30000;  -- 世界的最大bx, by, bz值
 PlayerManager:Property("World");   -- 管理器所属世界
 
 function PlayerManager:ctor()
+    
     self.players = {};                                             -- 玩家集 以用户名做key
     self.playerList = commonlib.UnorderedArraySet:new();
     self.minPlayerCount = Config.World.minClientCount;             -- 保持至少玩家数
@@ -35,15 +35,18 @@ function PlayerManager:ctor()
     self.ParaWorldAreaSize =  Config.ParaWorld.areaSize;  
     self.areaMinPlayerCount = Config.ParaWorld.areaMinClientCount;
 
-    -- 玩家四叉树
+    -- 玩家四叉树  ParaWorld 世界特有
     local quadtreeOptions = {
         minWidth = self.ParaWorldAreaSize,
         minHeight = self.ParaWorldAreaSize,
-        left = 0, top = 0, right = 30000, bottom = 30000,
+        left = 0, top = 0, right = WorldMaxSize, bottom = WorldMaxSize,
     }
     self.onlineQuadtree = QuadTree:new():Init(quadtreeOptions);
-    self.offlineQuadtree = QuadTree:new():Init(quadtreeOptions)
+    self.offlineQuadtree = QuadTree:new():Init(quadtreeOptions);
 
+    -- 世界四叉树 所有世界都有 实现玩家世界按可视化区加载变化同步
+    local worldAreaSize = 10;
+    self.worldQuadTree = QuadTree:new():Init({minWidth = worldAreaSize, minHeight = worldAreaSize, left = 0, top = 0, right = WorldMaxSize, bottom = WorldMaxSize});
 end
 
 function PlayerManager:Init(world)
@@ -125,6 +128,9 @@ function PlayerManager:AddPlayer(player)
     -- 添加至玩家列表
     self.playerList:add(player);
     self.players[username] = player;
+
+    -- 将玩家添加到世界中
+    self.worldQuadTree:AddObject(username, bx, bz, bx, bz);
 
     -- 新上线的玩家在离线列表, 先简单移除, 后续直接使用上次状态
     self:RemoveOfflinePlayer(username);

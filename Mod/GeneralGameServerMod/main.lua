@@ -74,6 +74,7 @@ function GeneralGameServerMod:init()
 	inited = true;
 	
 	Common:Init(servermode);
+	
 	-- 启动插件
 	if (servermode) then
 		-- server
