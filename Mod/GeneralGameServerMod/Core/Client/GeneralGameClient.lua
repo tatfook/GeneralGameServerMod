@@ -168,6 +168,8 @@ function GeneralGameClient:LoadWorld(opts)
     options.ip = opts.ip;            -- ip port 每次重写
     options.port = options.port;     -- 以便动态获取
     options.worldType = ParaWorldMain:IsCurrentParaWorld() and "ParaWorld" or "default";               -- 是否是并行世界
+    
+    if (IsDevEnv) then options.worldType = "ParaWorld" end
 
     -- 打印选项值
     Log:Info(options);

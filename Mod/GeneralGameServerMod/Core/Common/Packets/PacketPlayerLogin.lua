@@ -18,6 +18,12 @@ function PacketPlayerLogin:ctor()
 end
 
 function PacketPlayerLogin:Init(packet)
+	-- for key, val in pairs(packet) do
+	-- 	if (type(val) ~= "table" and type(val) ~= "function") then
+	-- 		self[key] = val;
+	-- 	end
+	-- end
+
 	-- 响应包体
 	self.result = packet.result;      -- 请求结果
 	self.entityId = packet.entityId;  -- 玩家实体ID
@@ -28,7 +34,8 @@ function PacketPlayerLogin:Init(packet)
 	self.worldId = packet.worldId;    -- 世界ID
 	self.worldName = packet.worldName; -- 世界名
 	self.worldType = packet.worldType; -- 世界类型
-	
+	self.options = packet.options;     -- 玩家选项信息
+
 	return self;
 end
 

@@ -94,25 +94,6 @@ options:
 		end,
 	};
 
-	local ggscmd = {
-		mode_deny = "",
-		name = "ggscmd",
-		quick_ref = "/ggscmd [options] cmdname cmdtext",
-		desc = [[
-联机命令: 命令将会在联机世界的所有玩家客户端执行.
-示例:
-ggscmd tip hello world   # 联机执行 /tip hello wrold 命令
-ggscmd activate          # 联机执行 /activate 命令
-
-options:
--to=all, other, self     # 命令接收者 all 所有人  other 排除发送者的其它人   self 发送者  默认为 all
--recursive               # 如果命令会引起递归执行, 需加此选项避免递归, 由机关方块触发命令执行的一般会引起递归
-		]],
-		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
-			__this__:handleCmdCommand(cmd_text);
-		end
-	}
-
 	local ggs = {
 		mode_deny = "",
 		name = "ggs",
@@ -127,10 +108,6 @@ disconnect 断开连接
 cmd 执行软件内置命令
 	/ggs cmd [options] cmdname cmdtext
 	/ggs cmd tip hello world	
-sync 世界同步
-	/ggs sync -[block|cmd]
-	/ggs sync -block=true  或 /ggs sync -block 开启同步方块  /ggs sync -block=false 禁用方块同步
-	/ggs sync -forceBlock=false 禁用强制同步块的同步, 默认开启
 setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息默认是不同步, 可使用该指令强制去同步):
 	/ggs setSyncForceBlock x y z on|off
 	/ggs setSyncForceBlock 19200 5 19200 on   强制同步位置19200 5 19200的方块信息
@@ -144,6 +121,10 @@ debug 调试命令
 	/ggs debug serverinfo 显示世界服务列表	
 	/ggs debug ping 验证是否是有效联机玩家
 		]],
+-- sync 世界同步
+-- 	/ggs sync -[block|cmd]
+-- 	/ggs sync -block=true  或 /ggs sync -block 开启同步方块  /ggs sync -block=false 禁用方块同步
+-- 	/ggs sync -forceBlock=false 禁用强制同步块的同步, 默认开启
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
 			Log:Info(cmd_name .. " " .. cmd_text);
 			local cmd, cmd_text = CmdParser.ParseString(cmd_text);
@@ -154,7 +135,7 @@ debug 调试命令
 			elseif (cmd == "setSyncForceBlock") then
 				__this__:handleSetSyncForceBlockCommand(cmd_text);
 			elseif (cmd == "sync") then
-				__this__:handleSyncCommand(cmd_text);
+				-- __this__:handleSyncCommand(cmd_text);
 			end
 			-- 确保进入联机世界
 			if (not __this__.generalGameClient) then return end;

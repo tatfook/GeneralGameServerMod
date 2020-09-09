@@ -89,11 +89,19 @@ function Config:Init(isServer)
         outerPort="9000",
     }
     self.World = {
-        minClientCount=50, 
-        maxClientCount=200,
+        minClientCount = 50, 
+        maxClientCount = 200,
+    }
+    self.ParaWorld = {
+        areaSize = 128,
+        areaMinClientCount = 50,
+        areaMaxClientCount = 200,
+        minClientCount = 50, 
+        maxClientCount = 500,
     }
     self.Player = {
         minAliveTime = 60000,
+        aliveDuration = 180000,
     }
     self.Log = {
         level = "INFO",

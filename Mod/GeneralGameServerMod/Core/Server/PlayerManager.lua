@@ -15,47 +15,45 @@ local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.P
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Player.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/QuadTree.lua");
+local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
--- 对象获取
 local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player");
--- 对象定义
-local PlayerManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
-local QuadTree = NPL.load("./QuadTree.lua");
+local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
 
 local MaxAreaSize = 30000; -- bx, bz 的最大值为30000
-local ParaWorldAreaSize = 128; -- 平行世界区域大小
-local ParaWorldMaxOfflineCount = 500; -- 平行世界最大离线用户数
+
+PlayerManager:Property("World");   -- 管理器所属世界
 
 function PlayerManager:ctor()
     self.players = {};                                             -- 玩家集 以用户名做key
     self.playerList = commonlib.UnorderedArraySet:new();
     self.minPlayerCount = Config.World.minClientCount;             -- 保持至少玩家数
     self.offlinePlayerQueue = commonlib.Queue:new();               -- 离线玩家队列
+    self.ParaWorldAreaSize =  Config.ParaWorld.areaSize;  
+    self.areaMinPlayerCount = Config.ParaWorld.areaMinClientCount;
+
     -- 玩家四叉树
     local quadtreeOptions = {
-        minWidth = 128,
-        minHeight = 128,
+        minWidth = self.ParaWorldAreaSize,
+        minHeight = self.ParaWorldAreaSize,
         left = 0, top = 0, right = 30000, bottom = 30000,
     }
     self.onlineQuadtree = QuadTree:new():Init(quadtreeOptions);
     self.offlineQuadtree = QuadTree:new():Init(quadtreeOptions)
+
 end
 
 function PlayerManager:Init(world)
-    self.world = world;  -- 所属世界
+    self:SetWorld(world);
     return self;
-end
-
--- 获取世界
-function PlayerManager:GetWorld() 
-    return self.world;
 end
 
 -- 获取下一个实体ID
 function PlayerManager:GetNextEntityId()
-    return self.world:GetNextEntityId();
+    return self:GetWorld():GetNextEntityId();
 end
 
 -- 创建用户 若用户已存在则踢出系统
@@ -120,7 +118,7 @@ function PlayerManager:AddPlayer(player)
 
     local username = player:GetUserName();
     local bx, by, bz = player:GetBlockPos();
-    local areaSize = 128;
+    local areaSize = self.ParaWorldAreaSize;
     local areaLeft, areaTop = math.floor(bx / areaSize) * areaSize, math.floor(bz / areaSize) * areaSize;
     local areaRight, areaBottom = areaLeft + areaSize, areaTop + areaSize;
 
@@ -131,16 +129,16 @@ function PlayerManager:AddPlayer(player)
     -- 新上线的玩家在离线列表, 先简单移除, 后续直接使用上次状态
     self:RemoveOfflinePlayer(username);
 
-    -- 添加到在线四叉树
-    self.onlineQuadtree:AddObject(username, bx, bz, bx, bz);
-    -- 移除离线四叉树
-    self.offlineQuadtree:RemoveObject(username);
-
     -- 是平行世界
     if (self:GetWorld():IsParaWorld()) then
+         -- 添加到在线四叉树
+        self.onlineQuadtree:AddObject(username, bx, bz, bx, bz);
+        -- 移除离线四叉树
+        self.offlineQuadtree:RemoveObject(username);
+        -- 移除离线玩家
         local onlineObjects = self.onlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
         local offlineObjects = self.offlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
-        if (((#offlineObjects) + (#offlineObjects)) > self.minClientCount and (#offlineObjects) > 0) then
+        if (((#offlineObjects) + (#offlineObjects)) > self.areaMinPlayerCount and (#offlineObjects) > 0) then
             self:SendPacketPlayerLogout(self.players[offlineObjects[1]]);
         end
         return ;
@@ -170,7 +168,7 @@ function PlayerManager:RemovePlayer(player)
     if (self:GetWorld():IsParaWorld()) then
         local username = player:GetUserName();
         local bx, by, bz = player:GetBlockPos();
-        local areaSize = 128;
+        local areaSize = self.ParaWorldAreaSize;
         local areaLeft, areaTop = math.floor(bx / areaSize) * areaSize, math.floor(bz / areaSize) * areaSize;
         local areaRight, areaBottom = areaLeft + areaSize, areaTop + areaSize;
         local onlineObjects = self.onlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
@@ -178,7 +176,7 @@ function PlayerManager:RemovePlayer(player)
         -- 添加到离线区
         self.offlineQuadtree:AddObject(username, bx, bz, bx, bz);
         -- 人数过少直接返回
-        if (((#offlineObjects) + (#offlineObjects)) < self.minClientCount) then return end
+        if (((#offlineObjects) + (#offlineObjects)) < self.areaMinPlayerCount) then return end
         -- 随机移除一个
         self:SendPacketPlayerLogout(self.players[offlineObjects[1] or username]);
         return 
@@ -410,7 +408,7 @@ function PlayerManager:GetSyncBlockOldestPlayer()
     local oldestPlayer = nil
     for i = 1, #(self.playerList) do 
         local player = self.playerList[i];
-        if (player:IsSyncBlock() and player:IsSyncBlockFinish()) then
+        if (player:IsSyncBlock() and player:IsSyncBlockFinish() and player:IsAlive()) then
             if (not oldestPlayer or oldestPlayer.syncBlockTime > player.syncBlockTime) then
                 oldestPlayer = player;
             end

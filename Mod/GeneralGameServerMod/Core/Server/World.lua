@@ -34,9 +34,9 @@ function World:ctor()
 end
 
 -- 世界初始化
-function World:Init(worldId, parallelWorldName, worldKey)
+function World:Init(worldId, WorldName, worldKey)
     self:SetWorldId(worldId);
-    self:SetWorldName(parallelWorldName);
+    self:SetWorldName(WorldName);
     self:SetWorldKey(worldKey);
     return self;
 end
@@ -48,6 +48,15 @@ function World:GetNextEntityId()
         self.nextEntityId = 0;
     end
     return self.nextEntityId;
+end
+
+-- 获取支持的最大玩家数
+function World:GetMaxClientCount()
+    if (self:IsParaWorld()) then
+        return Config.ParaWorld.maxClientCount;
+    end
+
+    return Config.World.maxClientCount;
 end
 
 -- 获取世界用户数
@@ -89,7 +98,7 @@ function World:GetDebugInfo()
         players = players,
         worldKey = self:GetWorldKey(),
         worldId = self:GetWorldId(),
-        parallelWorldName = self:GetWorldName(),
+        WorldName = self:GetWorldName(),
         playerCount = self:GetPlayerManager():GetPlayerCount(),
         onlinePlayerCount = self:GetPlayerManager():GetOnlinePlayerCount(),
     }

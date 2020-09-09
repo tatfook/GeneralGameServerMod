@@ -74,11 +74,12 @@ end
 function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     local username = packetPlayerLogout.username;
     local entityId = packetPlayerLogout.entityId;  -- 为空则退出当前玩家
+    local reason = packetPlayerLogout.reason;
 
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_logout"));
 
-    PlayerLoginLogoutDebug({"player logout", username, entityId});
+    PlayerLoginLogoutDebug.Format("player logout, username: %s, entityId: %s, reason: %s", username, entityId, reason);
 
     -- 主玩家退出
     if (self:GetPlayer().entityId == entityId) then
@@ -109,7 +110,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
 		return self:GetWorld():Logout();
     end
 
-    PlayerLoginLogoutDebug("player login success");
+    PlayerLoginLogoutDebug.Format("player login success, username: %s, entityId: %s", username, entityId);
     
     -- 登录成功
     local options = self:GetClient():GetOptions();
@@ -141,9 +142,6 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         else 
             entityPlayer:SetPosition(x + math.random(-randomRange, randomRange), y, z + math.random(-randomRange, randomRange));
         end
-        Log:Info("destroy old player entityId: %d", oldEntityPlayer.entityId);
-    else 
-        Log:Info("old player no exist!!!");
     end
 
     -- 设置主玩家
@@ -177,24 +175,6 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         pitch = math.floor(entityPlayer.rotationPitch or 0),
         playerInfo = playerInfo,
     }, dataWatcher, true));
-
-    -- 上报玩家选项信息, 定制相关功能的使用
-    self:AddToSendQueue(Packets.PacketGeneral:new():Init({
-        action = "PlayerOptions",
-        data = {
-            isSyncBlock = self:GetClient():IsSyncBlock(),
-            isSyncCmd = self:GetClient():IsSyncCmd(),
-            areaSize = self:GetClient():GetAreaSize(),
-        }
-    }));
-
-    -- 开始块同步
-    if (self:GetClient():IsSyncBlock()) then
-       self:GetBlockManager():handleSyncBlock_Begin();
-    end
-
-    -- 链接成功取消重连标记
-    self.isReconnection = false;
 end
 
 -- 获取玩家实体
@@ -208,8 +188,7 @@ function NetClientHandler:GetEntityPlayer(entityId, username)
         return mainPlayer, false;
     end
 
-    PlayerLoginLogoutDebug.Format("get other player: entityId: %s, username: %s, isExist: %s", entityId, username, otherPlayer ~= nil);
-
+    -- PlayerLoginLogoutDebug.Format("get other player: entityId: %s, username: %s, isExist: %s", entityId, username, otherPlayer ~= nil);
     local EntityOtherPlayerClass = self:GetClient():GetEntityOtherPlayerClass() or EntityOtherPlayer;
     if (not otherPlayer) then 
         return EntityOtherPlayerClass:new():init(world, username or "", entityId), true;
@@ -313,8 +292,8 @@ end
 -- 处理方块同步
 function NetClientHandler:handleGeneral_SyncBlock(packetGeneral)
     local state = packetGeneral.data.state;
-    if (state == "SyncBlock_Finish") then
-        self:GetBlockManager():handleSyncBlock_Finish();
+    if (state == "SyncBlock_Begin") then
+        self:GetBlockManager():handleSyncBlock_Begin();
     elseif (state == "SyncBlock_RequestBlockIndexList") then
         self:GetBlockManager():handleSyncBlock_RequestBlockIndexList(packetGeneral);
     elseif (state == "SyncBlock_ResponseBlockIndexList") then
@@ -323,7 +302,8 @@ function NetClientHandler:handleGeneral_SyncBlock(packetGeneral)
         self:GetBlockManager():handleSyncBlock_RequestSyncBlock(packetGeneral);
     elseif (state == "SyncBlock_ResponseSyncBlock") then
         self:GetBlockManager():handleSyncBlock_ResponseSyncBlock(packetGeneral);
-    else
+    elseif (state == "SyncBlock_Finish") then
+        self:GetBlockManager():handleSyncBlock_Finish();else
     end
 end
 
@@ -426,7 +406,20 @@ end
 
 -- 登录
 function NetClientHandler:Login()
-    self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init(self:GetClient():GetOptions()));
+    local options = self:GetClient():GetOptions();
+    self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init({
+        username = options.username,
+        password = options.password,
+        worldId = options.worldId,
+        worldName = options.worldName,
+        worldType = options.worldType,
+        options = {
+            isSyncBlock = options.isSyncBlock,
+            isSyncForceBlock = options.isSyncForceBlock,
+            isSyncCmd = options.isSyncCmd,
+            areaSize = options.areaSize,
+        }
+    }));
 end
 
 -- 与服务器建立链接
@@ -493,7 +486,7 @@ function NetClientHandler:Cleanup()
     -- 离线
     self:Offline();
 
-    PlayerLoginLogoutDebug("player logout", self:GetUserName());
+    PlayerLoginLogoutDebug.Format("main player logout, username = %s", self:GetUserName());
 end
 
 -- 玩家离线状态

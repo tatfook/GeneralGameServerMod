@@ -217,7 +217,7 @@ function Player:IsAlive()
     if (self.state == "offline") then return false; end
     
     -- 不能直接使用tick 可能刚登录就退出, 这种tick检测不出
-    local aliveDuration = Config.Player.aliveDuration; 
+    local aliveDuration = Config.Player.aliveDuration or 180000; 
     -- local aliveDuration = 30000;  -- debug
     local curTime = ParaGlobal.timeGetTime();
     if ((curTime - self.lastTick) > aliveDuration) then

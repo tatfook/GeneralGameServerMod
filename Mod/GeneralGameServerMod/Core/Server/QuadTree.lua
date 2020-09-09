@@ -5,11 +5,12 @@ Date: 2020/6/10
 Desc: 四叉树实现类
 use the lib: 
 -------------------------------------------------------
-local QuadTree = NPL.load("Mod/GeneralGameServerMod/Core/Server/QuadTree.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/QuadTree.lua");
+local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree");
 -------------------------------------------------------
 ]]
 
-local QuadTree = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+local QuadTree = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree"));
 local QuadTreeNode = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
 
 local QuadTreeNodeNid = 0;

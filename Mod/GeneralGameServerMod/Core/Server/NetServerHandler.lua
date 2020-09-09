@@ -31,7 +31,6 @@ NetServerHandler:Property("WorldManager");                             -- 世界
 NetServerHandler:Property("WorkerServer");                             -- 工作服务器
 NetServerHandler:Property("PlayerConnection");                               -- 玩家链接
 
-
 local PlayerLoginLogoutDebug = GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug");
 
 function NetServerHandler:ctor() 
@@ -57,7 +56,7 @@ function NetServerHandler:IsAllowLoginWorld(worldId)
     if (totalClientCount >= Config.Server.maxClientCount) then
         return false;
     end
-    if (worldClientCount >= Config.World.maxClientCount) then
+    if (worldClientCount >= self:GetWorld():GetMaxClientCount()) then
         return false;
     end
     return true;
@@ -69,20 +68,11 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldId = tostring(packetPlayerLogin.worldId);
     local worldName = packetPlayerLogin.worldName or "";
     local worldType = packetPlayerLogin.worldType;
+    local options = packetPlayerLogin.options;
+    PlayerLoginLogoutDebug(packetPlayerLogin);
 
     PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, nid: %s", username, worldId, worldName, self:GetPlayerConnection():GetNid()));
 
-    -- 检测是否达到最大处理量
-    if (not self:IsAllowLoginWorld(worldId)) then
-        Log:Warn("服务器连接数已到上限");
-        packetPlayerLogin.result = "failed";
-        packetPlayerLogin.errmsg = "服务器连接数已到上限";
-        return self:SendPacketToPlayer(packetPlayerLogin);
-    end
-
-    -- TODO 认证逻辑
-    -- 认证通过
-    self:SetAuthenticated();
     -- 获取并设置世界
     self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, true));
     -- 设置世界类型
@@ -91,6 +81,20 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     self:SetPlayerManager(self:GetWorld():GetPlayerManager());
     -- 获取并设置玩家
     self:SetPlayer(self:GetPlayerManager():CreatePlayer(username, self));   -- 创建玩家
+    -- 设置玩家选项
+    if (options) then self:GetPlayer():SetOptions(options) end         
+
+    -- TODO 认证逻辑
+    -- 检测是否达到最大处理量
+    if (not self:IsAllowLoginWorld(worldId)) then
+        Log:Warn("服务器连接数已到上限");
+        packetPlayerLogin.result = "failed";
+        packetPlayerLogin.errmsg = "服务器连接数已到上限";
+        return self:SendPacketToPlayer(packetPlayerLogin);
+    end
+
+    -- 认证通过
+    self:SetAuthenticated();
     -- 玩家登录
     self:GetPlayer():Login();
     -- 打印日志
@@ -115,12 +119,16 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     self:GetPlayerManager():SendPacketToAllPlayersExcept(isNew and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo, self:GetPlayer());
     -- self:GetPlayerManager():SendPacketToAreaPlayer(self:GetPlayer():GetPlayerEntityInfo(), self:GetPlayer());
     -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
-    if (isNew) then 
-        self:handlePlayerEntityInfoList();
-        -- 将玩家加入管理 有实体信息才加入玩家管理器
-        self:GetPlayerManager():AddPlayer(self:GetPlayer());
-    end
+    if (not isNew) then return end
 
+    -- 新玩家同步玩家列表
+    self:handlePlayerEntityInfoList();
+    -- 将玩家加入玩家管理器 有实体信息才加入玩家管理器
+    self:GetPlayerManager():AddPlayer(self:GetPlayer());
+    -- 开始块同步
+    if (self:GetPlayer():IsSyncBlock()) then
+        self:SendPacketToPlayer(Packets.PacketGeneral:new():Init({action = "SyncBlock", data = {state = "SyncBlock_Begin"}}));
+    end
 end
 
 -- 同步玩家信息列表
@@ -176,7 +184,7 @@ function NetServerHandler:handleGeneral_SyncBlock(packetGeneral)
     local player = self:GetPlayerManager():GetPlayer(playerId);
 
     -- 请求的玩家不存在或同步完成直接跳出
-    if (not player and player:IsSyncBlockFinish()) then return end;
+    if (not player and player:IsSyncBlockFinish()) then return GGS.DEBUG.Format("请求同步世界方块信息的玩家不存在或已同步完成 playerId = %s", playerId) end
 
     -- 方块同步逻辑
     if (state == "SyncBlock_Finish") then

@@ -47,7 +47,8 @@ function GeneralGameWorld:Init(client)
 	self:SetBlockManager(BlockManager:new():Init(self));
 	self:SetPlayerManager(PlayerManager:new():Init(self));
 	self:SetClient(client);
-
+	self:SetEnableBlockMark(self:GetClient():IsSyncBlock());
+	
 	-- 定时器
 	local tickDuration = 1000 * 60 * 2;  -- 2 min
 	-- local tickDuration = 1000 * 20;   -- debug

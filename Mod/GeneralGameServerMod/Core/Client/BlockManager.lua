@@ -15,7 +15,9 @@ local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
-local BlockManager = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager"));
+local BlockManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager"));
+
+BlockManager:Property("World");   -- 方块管理器所属世界
 
 local MaxSyncBlockCountPerPacket = 4096;  -- 单个数据包最大同步块数
 local notSyncBlockIdMap = {
@@ -36,15 +38,16 @@ local notSyncBlockIdMap = {
 	[227] = true, -- 含羞草石
 }
 
+local BlockSyncDebug = GGS.Debug.GetModuleDebug("BlockSyncDebug");
+
 function BlockManager:ctor()
 	self.allMarkForUpdateBlockMap = {};                                   -- 所有标记更新块 
-	-- self.allMarkForUpdateBlockEntiryMap = {};                          -- 所有标记的块实体
 	self.markBlockIndexList = commonlib.UnorderedArraySet:new();          -- 待同步的标记更新块索引
 	self.needSyncBlockIndexList = commonlib.UnorderedArraySet:new();      -- 需要同步的块索引列表
 end
 
 function BlockManager:Init(world)
-	self.world = world;
+	self:SetWorld(world);
 
 	-- 注册实体编辑事件
 	GameLogic.GetEvents():AddEventListener("OnEditEntity", BlockManager.OnEditEntity, self, "BlockManager");
@@ -54,10 +57,6 @@ end
 
 function BlockManager:CleanUp()
 	GameLogic.GetEvents():RemoveEventListener("OnEditEntity", BlockManager.OnEditEntity, self);
-end
-
-function BlockManager:GetWorld()
-	return self.world;
 end
 
 function BlockManager:GetPlayerId()
@@ -106,7 +105,9 @@ function BlockManager:MarkBlockForUpdate(x, y, z)
 	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
 	local blockId = BlockEngine:GetBlockId(x,y,z) or 0;
 	local blockData = BlockEngine:GetBlockData(x,y,z);
-	Log:Info({"MarkBlockForUpdate", x, y, z});
+
+	if (IsDevEnv) then BlockSyncDebug.Format("标记更新块: x = %s, y = %s, z =%s, blockIndex = %s, blockId = %s", x, y, z, blockIndex, blockId) end
+
 	-- allMarkForUpdateBlockMap 记录最后一次同步的状态  首次记录当前修改前的数据
 	if (not self.allMarkForUpdateBlockMap[blockIndex]) then
 		self.allMarkForUpdateBlockMap[blockIndex] = {blockIndex = blockIndex, blockId = blockId, lastBlockId = blockId, blockData, isForceSyncAll = blockId == 0};  -- blockId = 0 当前为新增
@@ -163,7 +164,6 @@ function BlockManager:SyncBlock()
 	local markBlockIndexCount = #(self.markBlockIndexList);
 	local maxSyncBlockCount = markBlockIndexCount > MaxSyncBlockCountPerPacket and MaxSyncBlockCountPerPacket or markBlockIndexCount;
 	for i = 1, maxSyncBlockCount do 
-	-- for i = 1,  #(self.markBlockIndexList) do 
 		local blockIndex = self.markBlockIndexList[i];
 		local x, y, z = BlockEngine:FromSparseIndex(blockIndex);
 		local blockId = BlockEngine:GetBlockId(x,y,z);
@@ -175,7 +175,9 @@ function BlockManager:SyncBlock()
 		local isBlockDataChange = (isSyncForceBlock or self:IsSyncBlockData(blockId)) and oldBlock.blockData ~= blockData;
 		local isForceSyncAll = oldBlock.isForceSyncAll;
 		local blockEntityPacket = nil;
-		Log:Debug({"准备同步块:", x, y, z});
+
+		BlockSyncDebug.Format("准备同步块: x = %s, y = %s, z = %s", x, y, z);
+
 		syncedBlockIndexList[#syncedBlockIndexList + 1] = blockIndex;
 
 		-- 强制同步所有
@@ -203,10 +205,9 @@ function BlockManager:SyncBlock()
 			else
 				packets[#packets + 1] = packet;
 			end
-			-- Log:Debug(packets[#packets]);
-			Log:Debug({"准备同步块成功:", x, y, z, oldBlock.blockId, tostring(oldBlock.blockData)});
+			BlockSyncDebug.Format("同步方块: x = %s, y = %s, z = %s, oldBlockId = %s, newBlockId = %s, oldBlockData = %s, newBlockData = %s", x, y, z, oldBlock.blockId, blockId, tostring(oldBlock.blockData), tostring(blockData));
 		else 
-			Log:Debug({"准备同步块无变化:", x, y, z, oldBlock.blockId, blockId, tostring(oldBlock.blockData), tostring(blockData)});
+			BlockSyncDebug.Format("准备同步块无变化: x = %s, y = %s, z = %s, oldBlockId = %s, newBlockId = %s, oldBlockData = %s, newBlockData = %s", x, y, z, oldBlock.blockId, blockId, tostring(oldBlock.blockData), tostring(blockData));
 		end
 	end
 
@@ -218,8 +219,6 @@ function BlockManager:SyncBlock()
 	for i = 1, #syncedBlockIndexList do
 		self.markBlockIndexList:removeByValue(syncedBlockIndexList[i]);
 	end
-
-	-- self.markBlockIndexList:clear();
 end
 
 -- 处理请求同步块索引列表数
@@ -236,11 +235,14 @@ function BlockManager:handleSyncBlock_RequestBlockIndexList(packetGeneral)
 			blockIndexList = blockIndexList,
 		},
 	}));
+
+	BlockSyncDebug.Format("处理玩家请求方块索引列表请求, playerId = %s, blockCount = %s", packetGeneral.data.playerId, #blockIndexList);
 end
 
 -- 处理响应同步块索引列表数
 function BlockManager:handleSyncBlock_ResponseBlockIndexList(packetGeneral)
 	local blockIndexList = packetGeneral.data.blockIndexList;
+	BlockSyncDebug.Format("获取方块同步索引列表, blockCount: %s", #blockIndexList);
 	-- 设置需要同步的块
 	if (blockIndexList) then
 		for i = 1, #blockIndexList do
@@ -306,6 +308,7 @@ end
 
 -- 处理同步开始
 function BlockManager:handleSyncBlock_Begin()
+	BlockSyncDebug("同步世界所有方块信息开始");
 	-- 请求获取块同步列表
 	self:AddToSendQueue(Packets.PacketGeneral:new():Init({
 		action = "SyncBlock",
@@ -318,6 +321,7 @@ end
 
 -- 处理同步完成
 function BlockManager:handleSyncBlock_Finish()
+	BlockSyncDebug("同步世界所有方块信息结束");
 	self.needSyncBlockIndexList:clear();
 	self:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "SyncBlock", data = {state = "SyncBlock_Finish", playerId = self:GetPlayerId()}}));  -- 服务器确认完成
 end
