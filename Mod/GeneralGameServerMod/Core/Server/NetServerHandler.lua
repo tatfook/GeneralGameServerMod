@@ -69,7 +69,6 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldName = packetPlayerLogin.worldName or "";
     local worldType = packetPlayerLogin.worldType;
     local options = packetPlayerLogin.options;
-    PlayerLoginLogoutDebug(packetPlayerLogin);
 
     PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, nid: %s", username, worldId, worldName, self:GetPlayerConnection():GetNid()));
 
