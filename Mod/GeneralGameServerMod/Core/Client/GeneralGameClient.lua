@@ -343,8 +343,8 @@ function GeneralGameClient:Debug(action)
     action = string.lower(action or "");
     if (action == "options" or action == "") then
         return self:ShowDebugInfo(self:GetOptions());
-    elseif (action == "entitys") then
-        return self:GetWorld():DebugEntitys();
+    elseif (action == "players") then
+        return GGS.DEBUG(self:GetWorld():GetPlayerManager():GetPlayers());
     end
 
     local netHandler = self:GetWorldNetHandler();

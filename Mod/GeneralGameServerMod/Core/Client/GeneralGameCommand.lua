@@ -138,11 +138,11 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 debug 调试命令 
 	/ggs debug [action]
 	/ggs debug debug module 开启或关闭指定模块日志
-	/ggs debug option 显示客户端选项信息
-	/ggs debug entitys 显示客户端实体列表
+	/ggs debug options 显示客户端选项信息
+	/ggs debug players 显示客户端玩家列表
 	/ggs debug worldinfo 显示客户端连接的世界服务器信息
 	/ggs debug serverinfo 显示世界服务列表	
-	/ggs debug ping
+	/ggs debug ping 验证是否是有效联机玩家
 		]],
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
 			Log:Info(cmd_name .. " " .. cmd_text);

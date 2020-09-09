@@ -6,7 +6,7 @@ Desc: 管理所有世界玩家
 use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
-local PlayerManager = commonlib.gettable("GeneralGameServerMod.Core.Server.PlayerManager");
+local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
 
 -------------------------------------------------------
 ]]
@@ -391,12 +391,17 @@ end
 
 -- called period 移除没有心跳的玩家
 function PlayerManager:RemoveInvalidPlayer()
+    local deleted = {};
     for i = 1, #(self.playerList) do 
         local player = self.playerList[i];
         -- 玩家不活跃但链接还在则踢出玩家
         if (not player:IsAlive() and player:IsConnection()) then
-            self:Logout(player, "inactive player remove");
+            table.insert(deleted, player);
         end
+    end
+    -- 下线不活跃的用户
+    for i = 1, #deleted do
+        self:Logout(deleted[i], "inactive player remove");
     end
 end
 

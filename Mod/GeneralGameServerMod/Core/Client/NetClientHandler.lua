@@ -32,9 +32,11 @@ local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 local NetClientHandler = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler"));
 
 NetClientHandler:Property("UserName");       -- 用户名
+NetClientHandler:Property("Player");         -- 主玩家
 NetClientHandler:Property("World");          -- 世界
 NetClientHandler:Property("Client");         -- 客户端
 NetClientHandler:Property("BlockManager");   -- 方块管理器
+NetClientHandler:Property("PlayerManager");  -- 玩家管理器
 
 local PlayerLoginLogoutDebug = GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug");
 
@@ -50,34 +52,12 @@ end
     end
 end
 
--- 设置当前玩家
-function NetClientHandler:SetPlayer(player)
-    self.player = player;
-end
-
-function NetClientHandler:GetPlayer(entityId) 
-    if (not entityId or (self.player and self.player.entityId == entityId)) then
-        return self.player; -- 获取当前玩家
-    end
-    -- 获取指定玩家
-    return self:GetWorld():GetEntityByID(entityId)
-end
-
--- 获取玩家ID
-function NetClientHandler:GetPlayerId()
-    return self:GetPlayer().entityId;
-end
-
--- 是否是当前玩家
-function NetClientHandler:IsMainPlayer(entityId)
-    local player = self:GetPlayer();
-    return player and player.entityId == entityId;
-end
-
 -- create a tcp connection to server. 
 function NetClientHandler:Init(world)
     -- 设置世界
     self:SetWorld(world);
+    -- 设置玩家管理器
+    self:SetPlayerManager(self:GetWorld():GetPlayerManager());
     -- 设置客户端
     self:SetClient(self:GetWorld():GetClient());
     -- 设置方块管理器
@@ -98,21 +78,19 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
     GameLogic:event(System.Core.Event:new():init("ps_client_logout"));
 
-    PlayerLoginLogoutDebug({"player logout", username, entityId or 0});
+    PlayerLoginLogoutDebug({"player logout", username, entityId});
 
-    local player = self:GetPlayer(entityId);
+    -- 主玩家退出
+    if (self:GetPlayer().entityId == entityId) then
+        return self:GetWorld():Logout();
+    end
+
+    local player = self:GetPlayerManager():GetPlayerByUserName(username);
     -- 玩家不存在 直接忽视 
     if (not player) then return PlayerLoginLogoutDebug("player logout and player no exist!!!") end;
 
-    -- 玩家退出
-    if (self:GetPlayer() == player) then
-        -- 当前玩家
-        self:GetWorld():Logout();
-    elseif (player:isa(EntityOtherPlayer)) then
-        self:GetWorld():RemoveEntity(player);
-    else
-        PlayerLoginLogoutDebug("invalid player logout");
-    end
+    -- 移除玩家
+    self:GetPlayerManager():RemovePlayer(player);
 
     return;
 end
@@ -168,10 +146,13 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         Log:Info("old player no exist!!!");
     end
 
+    -- 设置主玩家
     entityPlayer:Attach();
     GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
     self:SetPlayer(entityPlayer);
-    self:GetWorld():ClearEntityList();
+ 
+    -- 清空玩家列表
+    self:GetPlayerManager():ClearPlayers();
     
     -- 设置玩家信息
     local playerInfo = {
@@ -219,14 +200,16 @@ end
 -- 获取玩家实体
 function NetClientHandler:GetEntityPlayer(entityId, username)
     local mainPlayer = self:GetPlayer();
-    local otherPlayer = self:GetPlayer(entityId);
+    local otherPlayer = self:GetPlayerManager():GetPlayerByUserName(username);
     local world = self:GetWorld();
 
+    -- 是否是主玩家
     if (entityId == mainPlayer.entityId) then
         return mainPlayer, false;
     end
+    
     local EntityOtherPlayerClass = self:GetClient():GetEntityOtherPlayerClass() or EntityOtherPlayer;
-    if (not otherPlayer or not otherPlayer:isa(EntityOtherPlayer)) then 
+    if (not otherPlayer) then 
         return EntityOtherPlayerClass:new():init(world, username or "", entityId), true;
     end
 
@@ -247,9 +230,10 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
 
     local mainPlayer = self:GetPlayer();
     local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
+
     if (isNew) then
         entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
-        self:GetWorld():AddEntity(entityPlayer);
+        self:GetPlayerManager():AddPlayer(entityPlayer);
     end
 
     -- 更新实体元数据
@@ -286,34 +270,25 @@ end
 -- 处理世界玩家列表
 function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     local playerEntityInfoList = packetPlayerEntityInfoList.playerEntityInfoList;
-    local entityIdList = {};
-    local removeEntityList = {};
-    -- 创建玩家
+    local usernames = {};
+    local deleted = {};
+    -- 更新玩家信息
     for i = 1, #playerEntityInfoList do
-        entityIdList[i] = playerEntityInfoList[i].entityId; 
+        local username = playerEntityInfoList[i].username; 
+        usernames[username] = true;
         self:handlePlayerEntityInfo(playerEntityInfoList[i]);
     end
-    -- 同步玩家
-    local entityList = self:GetWorld():GetEntityList();
+    -- 查找无效玩家
+    local players = self:GetPlayerManager():GetPlayers();
     local mainPlayer = self:GetPlayer();
-    for i = 1, #entityList do
-        local entity = entityList[i];
-        -- 重连这里会混乱 所以要加EntityMainPlayer条件  登录成功直接直接清空实体列表就应该不会混乱
-        if (entity:isa(EntityOtherPlayer) or entity:isa(EntityMainPlayer)) then   
-            local isExist = false;
-            for j = 1, #entityIdList do
-                if (entityIdList[j] == entity.entityId) then
-                    isExist = true;
-                    break;
-                end
-            end
-            if (not isExist and entity.entityId ~= mainPlayer.entityId) then
-                removeEntityList[#removeEntityList + 1] = entity;
-            end
+    for username, player in pairs(players) do
+        if (not usernames[username]) then
+            table.insert(deleted, player);
         end
     end
-    for i = 1, #removeEntityList do
-        self:GetWorld():RemoveEntity(removeEntityList[i]);
+    -- 移除无效玩家
+    for i = 1, #deleted do
+        self:GetPlayerManager():RemovePlayer(deleted[i]);
     end
 end
 
@@ -326,15 +301,7 @@ end
 -- 处理玩家信息更新
 function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
     local entityId = packetPlayerInfo.entityId;
-    local state = packetPlayerInfo.state;
-
-    -- 主要下线  被同账号挤下线
-    if (self:IsMainPlayer(entityId)) then
-        -- _guihelper.MessageBox(L"账号在其它地方登陆, 若非本人操作请及时修改密码");
-        return self:GetWorld():Logout();
-    end
-
-    local entityPlayer = self:GetPlayer(entityId);
+    local entityPlayer = self:GetPlayerManager():GetPlayerByEntityId(entityId);
     if (not entityPlayer or not entityPlayer.SetPlayerInfo) then return end
     entityPlayer:SetPlayerInfo(packetPlayerInfo);
 end
@@ -523,17 +490,16 @@ function NetClientHandler:Cleanup()
     self:Offline();
 
     PlayerLoginLogoutDebug("player logout", self:GetUserName());
-   
-    -- _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
 end
 
 -- 玩家离线状态
 function NetClientHandler:Offline()
     -- 清除其它玩家
-    self:GetWorld():ClearEntityList();
+    self:GetPlayerManager():ClearPlayers();
 
     -- 调整当前玩家样式
     if (not self:GetPlayer()) then return end;
+    
     -- 灰化用户名
     self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format([[
     <pe:mcml>
@@ -549,8 +515,8 @@ end
 function NetClientHandler:handleGeneral_Debug(packetGeneral)
     local cmd = packetGeneral.data.cmd;
     local debug = packetGeneral.data.debug;
+    GGS.DEBUG(cmd, debug);
     -- 信息太多进行屏蔽
     if (cmd == "WorldInfo") then debug.players = nil end
-    GGS.DEBUG(cmd, debug);
     self:GetClient():ShowDebugInfo(debug);
 end

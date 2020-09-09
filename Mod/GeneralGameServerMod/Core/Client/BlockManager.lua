@@ -61,7 +61,7 @@ function BlockManager:GetWorld()
 end
 
 function BlockManager:GetPlayerId()
-	return self:GetWorld():GetNetHandler():GetPlayerId();
+	return self:GetWorld():GetNetHandler():GetPlayer().entityId;
 end
 
 function BlockManager:OnEditEntity(event)

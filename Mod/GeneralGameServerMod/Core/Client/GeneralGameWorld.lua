@@ -15,6 +15,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/BlockManager.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/PlayerManager.lua");
+local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.PlayerManager");
 local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager");
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
@@ -30,7 +32,11 @@ local lshift = mathlib.bit.lshift;
 local band = mathlib.bit.band;
 local bor = mathlib.bit.bor;
 
-GeneralGameWorld:Property("WorldId", 0);  -- 世界ID
+GeneralGameWorld:Property("WorldId", 0);      -- 世界ID
+GeneralGameWorld:Property("Client");          -- 所属客户端
+GeneralGameWorld:Property("PlayerManager");   -- 玩家管理器
+GeneralGameWorld:Property("BlockManager");    -- 方块管理器
+GeneralGameWorld:Property("EnableBlockMark");    -- 是否使能方块标记  默认为true 由 IsSyncBlock 控制
 
 function GeneralGameWorld:ctor() 
 end
@@ -38,13 +44,10 @@ end
 function GeneralGameWorld:Init(client)  
 	GeneralGameWorld._super.Init(self);
 	
-	self.blockManager = BlockManager:new():Init(self);
+	self:SetBlockManager(BlockManager:new():Init(self));
+	self:SetPlayerManager(PlayerManager:new():Init(self));
+	self:SetClient(client);
 
-	self.client = client;
-	
-	self.entityList = commonlib.UnorderedArraySet:new();
-	-- 默认为true 由 IsSyncBlock 控制
-	self.enableBlockMark = true;                                          
 	-- 定时器
 	local tickDuration = 1000 * 60 * 2;  -- 2 min
 	-- local tickDuration = 1000 * 20;   -- debug
@@ -56,35 +59,11 @@ function GeneralGameWorld:Init(client)
 	return self;
 end
 
-function GeneralGameWorld:GetClient()
-	return self.client;
-end
-
 function GeneralGameWorld:ReplaceWorld(oldWorld)
 	if(oldWorld) then
 		self:GetChunkProvider():GetGenerator():AddPendingChunksFrom(oldWorld:GetChunkProvider():GetGenerator());
 		oldWorld:OnWeaklyDestroyWorld();
 	end
-end
-
-function GeneralGameWorld:SetName(name)
-	self.name = name;
-end
-
-function GeneralGameWorld:GetName(name)
-	return self.name;
-end
-
-function GeneralGameWorld:SetEnableBlockMark(enable)
-	self.enableBlockMark = enable;
-end
-
-function GeneralGameWorld:GetEnableBlockMark()
-	return self.enableBlockMark;
-end
-
-function GeneralGameWorld:GetBlockManager()
-	return self.blockManager;
 end
 
 -- 标记更新方块
@@ -150,8 +129,7 @@ function GeneralGameWorld:Logout()
 
 	self:GetBlockManager():CleanUp();
 
-	-- 清空并删除实体列表
-	self:ClearEntityList();
+	self:GetPlayerManager():ClearPlayers();
 
 	-- 解除链接关系
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
@@ -177,37 +155,3 @@ function GeneralGameWorld:GetNetHandler()
 	return self.netHandler;
 end
 
-function GeneralGameWorld:AddEntity(entity)
-	entity:Attach();
-	self.entityList:add(entity);
-end
-
-function GeneralGameWorld:RemoveEntity(entity)
-	entity:Destroy();
-	self.entityList:removeByValue(entity);
-end
-
-function GeneralGameWorld:GetEntityList()
-	return self.entityList;
-end
-
-function GeneralGameWorld:ClearEntityList()
-	for i = 1, #self.entityList do
-		-- Log:Debug("destroy entity:", self.entityList[i].entityId);
-		self.entityList[i]:Destroy();
-	end
-	self.entityList:clear();
-end
-
-
-function GeneralGameWorld:DebugEntitys()
-	local list = {};
-	for i = 1, #self.entityList do
-		local entity = self.entityList[i];
-		table.insert(list, {
-			entityId = entity.entityId,
-			username = entity:GetUserName(),
-		});
-	end
-	GGS.DEBUG("entity list", list);
-end
