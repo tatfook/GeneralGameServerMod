@@ -67,34 +67,13 @@ end
 
 function GeneralGameCommand:InstallCommand()
 	local __this__ = self;
-	local connectGGSCmd = {
-		mode_deny = "",  -- 暂时支持任意模式联机
-		name="connectGGS",  -- /connectGGS -test 
-		quick_ref="/connectGGS [options] [worldId] [worldName]", 
-		desc=[[进入联机世界 
-worldId 为世界ID(未指定或为0则联机当前世界或默认世界)
-worldName 平行世界名, 可选. 指定世界的副本世界
-示例:
-connectGGS                        # 联机进入当前世界或默认世界
-connectGGS 145                    # 联机进入世界ID为145的世界
-connectGGS 145 worldName           # 联机进入世界ID为145的平行世界 worldName
-
-options:
--isSyncBlock 同步方块信息
--isSyncCmd   同步命令
-]], 
-		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)		
-			__this__:handleConnectCommand(cmd_text);
-		end,
-	};
-
 	local ggs = {
 		mode_deny = "",
 		name = "ggs",
 		quick_ref = "/ggs subcmd [options] args...",
 		desc = [[
 subcmd: 
-connect 连接服务器
+connect 连接联机世界
 	/ggs connect [options] [worldId] [worldName]
 	/ggs connect -isSyncBlock -isSyncCmd -areaSize=128 -silent 12706
 disconnect 断开连接
@@ -143,7 +122,6 @@ debug 调试命令
 		end
 	}
 
-	-- Commands["connectGGS"] = connectGGSCmd;
 	Commands["ggs"] = ggs;
 end
 
