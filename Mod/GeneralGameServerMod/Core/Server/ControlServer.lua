@@ -70,7 +70,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
     for key, svr in pairs(servers) do
         local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
         if (not isAlive) then
-            GGS.WRAN.Format("服务不可用: ip = %s, port = %s", svr.outerIp, svr.outerPort);
+            GGS.WARN.Format("服务不可用: ip = %s, port = %s", svr.outerIp, svr.outerPort);
         end
         -- 忽略已挂服务器或超负荷服务器
         if (isAlive and svr.totalClientCount < serverMaxClientCount) then 
@@ -90,7 +90,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
         packetWorldServer.ip = server.outerIp;
         packetWorldServer.port = server.outerPort;
     else 
-        GGS.WRAN.Format("世界key: %s 无可用服务", worldKey);
+        GGS.WARN.Format("世界key: %s 无可用服务", worldKey);
     end
 
     self.connection:AddPacketToSendQueue(packetWorldServer);
