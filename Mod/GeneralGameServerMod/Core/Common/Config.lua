@@ -96,8 +96,15 @@ function Config:Init(isServer)
         areaSize = 128,
         areaMinClientCount = 50,
         areaMaxClientCount = 200,
-        minClientCount = 50, 
+        minClientCount = 200, 
         maxClientCount = 500,
+    }
+    self.ParaWorldMini = {
+        areaSize = 128,
+        areaMinClientCount = 0,
+        areaMaxClientCount = 200,
+        minClientCount = 0, 
+        maxClientCount = 200,
     }
     self.Player = {
         minAliveTime = 60000,

@@ -87,8 +87,9 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     end
 
     local player = self:GetPlayerManager():GetPlayerByUserName(username);
+
     -- 玩家不存在 直接忽视 
-    if (not player) then return PlayerLoginLogoutDebug("player logout and player no exist!!!") end;
+    if (not player or player.entityId ~= entityId) then return PlayerLoginLogoutDebug("player logout and player no exist!!!") end;
 
     -- 移除玩家
     self:GetPlayerManager():RemovePlayer(player);
@@ -211,6 +212,9 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
 
     local mainPlayer = self:GetPlayer();
     local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
+    
+    -- 实时更新entityId 同一个用户名的entityId可能变化
+    entityPlayer.entityId = entityId;
 
     if (isNew) then
         entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);

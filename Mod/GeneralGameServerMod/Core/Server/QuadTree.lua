@@ -105,6 +105,7 @@ end
 
 function QuadTree:Init(opts)
     self.objects = {};
+    self.objectCount = 0;
     self.minWidth = opts.minWidth or 0;
     self.minHeight = opts.minHeight or 0;
     self.splitThreshold = opts.splitThreshold or 20;   -- 当对象数小于此值不进分割区域
@@ -122,6 +123,7 @@ function QuadTree:AddObject(object, left, top, right, bottom)
     local function AddObjectToNode(node, object, left, top, right, bottom)
         local key = GetObjectKey(object);
         self.objects[key] = {node = node, left = left, right = right, top = top, bottom = bottom};
+        self.objectCount = self.objectCount + 1;
         node:AddObject(object);
         -- echo({"------------------AddObjectToNode", object, node.left, node.top, node.right, node.bottom, node:GetObjects()});
         return node;
@@ -182,6 +184,7 @@ function QuadTree:RemoveObject(object)
     if (not value) then return end
     value.node:RemoveObject(object);
     self.objects[key] = nil;
+    self.objectCount = self.objectCount - 1;
 end
 
 function QuadTree:GetObjects(left, top, right, bottom)
@@ -224,6 +227,9 @@ function QuadTree:GetObjects(left, top, right, bottom)
     return list;
 end
 
+function QuadTree:GetObjectCount()
+    return self.objectCount;
+end
 
 -- 测试代码
 function QuadTree.Test()

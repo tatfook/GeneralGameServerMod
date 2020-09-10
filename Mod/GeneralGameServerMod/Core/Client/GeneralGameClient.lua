@@ -153,6 +153,17 @@ function GeneralGameClient:IsShowWorldList()
     return if_else(Config.IsDevEnv, true, false);
 end
 
+-- 获取当前世界类型
+function GeneralGameClient:GetWorldType()
+    if (ParaWorldMain:IsMiniWorld()) then
+        return "ParaWordMini";   -- 家园
+    elseif (ParaWorldMain:IsCurrentParaWorld()) then
+        return "ParaWorld";      -- 平行世界
+    else
+        return "World";
+    end
+end
+
 -- 加载世界
 function GeneralGameClient:LoadWorld(opts)
     -- 初始化
@@ -168,10 +179,7 @@ function GeneralGameClient:LoadWorld(opts)
     options.username = options.username or self:GetUserInfo().username;
     options.ip = opts.ip;            -- ip port 每次重写
     options.port = options.port;     -- 以便动态获取
-    options.worldType = ParaWorldMain:IsCurrentParaWorld() and "ParaWorld" or "default";               -- 是否是并行世界
-    
-    if (IsDevEnv) then options.worldType = "ParaWorld" end
-
+  
     -- 打印选项值
     Log:Info(options);
 
@@ -210,6 +218,10 @@ function GeneralGameClient:OnWorldLoaded()
 
     -- 登录世界
     local options = self:GetOptions();
+    -- 设置世界类型
+    options.worldType = self:GetWorldType();  
+    if (IsDevEnv) then options.worldType = "ParaWorld" end
+
     if (options.ip and options.port) then
         self:GetWorld():Login(options);
     else

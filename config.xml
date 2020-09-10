@@ -47,9 +47,23 @@
     areaSize=128
     areaMinClientCount=50
     areaMaxClientCount=200
-    minClientCount=50
-    maxClientCount=500>
+    minClientCount=500
+    maxClientCount=2000>
   </ParaWorld>
+  <!-- 家园
+    areaSize: 每个区域的大小
+    areaMinClientCount: 单区域的最小用户数
+    areaMaxClientCount: 单区域的最大用户数
+    minClientCount: 世界最小客户端数
+    maxClientCount: 世界最大客户端数
+  -->
+  <ParaWorldMini
+    areaSize=128
+    areaMinClientCount=50
+    areaMaxClientCount=200
+    minClientCount=0
+    maxClientCount=200>
+  </ParaWorldMini>
   <!--玩家配置-->
   <Player>
   </Player>

@@ -71,9 +71,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, nid: %s", username, worldId, worldName, self:GetPlayerConnection():GetNid()));
 
     -- 获取并设置世界
-    self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, true));
-    -- 设置世界类型
-    if (not self:GetWorld():GetWorldType()) then self:GetWorld():SetWorldType(worldType) end
+    self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, worldType, true));
     -- 设置玩家管理器
     self:SetPlayerManager(self:GetWorld():GetPlayerManager());
     -- 获取并设置玩家
@@ -148,7 +146,7 @@ function NetServerHandler:handleErrorMessage(text, data)
     if (not self:GetPlayer()) then return end
 
     -- 下线走离线流程 登出直接踢出服务器
-    self:GetPlayerManager():Offline(self:GetPlayer());
+    self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家下线");
     
     -- 关闭连接
     self:GetPlayerConnection():CloseConnection();

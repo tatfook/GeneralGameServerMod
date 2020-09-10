@@ -96,7 +96,7 @@ options:
 subcmd: 
 connect 连接服务器
 	/ggs connect [options] [worldId] [worldName]
-	/ggs connect -isSyncBlock -isSyncCmd -areaSize=128 -slient 12706
+	/ggs connect -isSyncBlock -isSyncCmd -areaSize=128 -silent 12706
 disconnect 断开连接
 	/ggs disconnect
 cmd 执行软件内置命令
@@ -178,7 +178,7 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	options.port = (options.port and options.port ~= "") and options.port or nil;
 	options.username = (options.username and options.username ~= "") and options.username or nil;
 	options.password = (options.password and options.password ~= "") and options.password or nil;
-	options.slient = if_else(options.slient == nil, true, options.slient and true or false);
+	options.silent = if_else(options.silent == nil, true, options.silent and true or false);
 	
 	self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
 	self.generalGameClient:LoadWorld(options);

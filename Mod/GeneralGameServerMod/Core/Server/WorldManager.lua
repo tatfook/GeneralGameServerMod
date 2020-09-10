@@ -38,7 +38,7 @@ function WorldManager:GetWorldKey(worldId, worldName, no)
     end
 
     local world = self.worldMap[worldKey];
-    if (world and world:GetOnlineClientCount() >= Config.World.maxClientCount) then
+    if (world and world:GetOnlineClientCount() >= world:GetMaxClientCount()) then
         return self:GetWorldKey(worldId, worldName, (no or 0) + 1);
     end
 
@@ -46,10 +46,10 @@ function WorldManager:GetWorldKey(worldId, worldName, no)
 end
 
 -- 获取指定世界
-function WorldManager:GetWorld(worldId, worldName, isNewNoExist)
+function WorldManager:GetWorld(worldId, worldName, worldType, isNewNoExist)
     local worldKey = self:GetWorldKey(worldId, worldName);
     if (not self.worldMap[worldKey] and isNewNoExist) then
-        self.worldMap[worldKey] = World:new():Init(worldId, worldName, worldKey);
+        self.worldMap[worldKey] = World:new():Init(worldId, worldName, worldType, worldKey);
     end
     return self.worldMap[worldKey];
 end

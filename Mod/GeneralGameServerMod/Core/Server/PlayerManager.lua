@@ -22,33 +22,39 @@ local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player")
 local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
 
 local WorldMaxSize = 30000;  -- 世界的最大bx, by, bz值
+
 PlayerManager:Property("World");   -- 管理器所属世界
 
 function PlayerManager:ctor()
-    
     self.players = {};                                             -- 玩家集 以用户名做key
-    self.playerList = commonlib.UnorderedArraySet:new();
-    self.minPlayerCount = Config.World.minClientCount;             -- 保持至少玩家数
-    self.offlinePlayerQueue = commonlib.Queue:new();               -- 离线玩家队列
-    self.ParaWorldAreaSize =  Config.ParaWorld.areaSize;  
-    self.areaMinPlayerCount = Config.ParaWorld.areaMinClientCount;
-
-    -- 玩家四叉树  ParaWorld 世界特有
-    local quadtreeOptions = {
-        minWidth = self.ParaWorldAreaSize,
-        minHeight = self.ParaWorldAreaSize,
-        left = 0, top = 0, right = WorldMaxSize, bottom = WorldMaxSize,
-    }
-    self.onlineQuadtree = QuadTree:new():Init(quadtreeOptions);
-    self.offlineQuadtree = QuadTree:new():Init(quadtreeOptions);
-
-    -- 世界四叉树 所有世界都有 实现玩家世界按可视化区加载变化同步
-    local worldAreaSize = 10;
-    self.worldQuadTree = QuadTree:new():Init({minWidth = worldAreaSize, minHeight = worldAreaSize, left = 0, top = 0, right = WorldMaxSize, bottom = WorldMaxSize});
 end
 
 function PlayerManager:Init(world)
     self:SetWorld(world);
+
+    self.minClientCount = self:GetWorld():GetMinClientCount();             -- 保持至少玩家数
+    self.onlinePlayerList = commonlib.UnorderedArraySet:new();             -- 在线玩家列表
+    self.offlinePlayerQueue = commonlib.Queue:new();                       -- 离线玩家队列
+
+    -- 世界区域化
+    local worldConfig = self:GetWorld():GetConfig();
+    self.areaSize =  if_else(worldConfig.areaSize == nil or worldConfig.areaSize == 0, 128, worldConfig.areaSize);  
+    self.areaMinClientCount = worldConfig.areaMinClientCount or 0;
+
+    -- 四叉树选项 
+    local quadtreeOptions = {
+        minWidth = self.areaSize,
+        minHeight = self.areaSize,
+        left = 0, top = 0, right = WorldMaxSize, bottom = WorldMaxSize,
+    }
+    -- 在线用户四叉树
+    self.onlineQuadtree = QuadTree:new():Init(quadtreeOptions);
+    -- 离线用户四叉树  仅对平行世界生效
+    self.offlineQuadtree = QuadTree:new():Init(quadtreeOptions);
+
+    -- 世界四叉树 包含世界都有方块信息 实现玩家世界按可视化区加载变化同步
+    self.worldQuadTree = QuadTree:new():Init({minWidth = self.areaSize, minHeight = self.areaSize, left = 0, top = 0, right = WorldMaxSize, bottom = WorldMaxSize});
+
     return self;
 end
 
@@ -59,22 +65,8 @@ end
 
 -- 创建用户 若用户已存在则踢出系统
 function PlayerManager:CreatePlayer(username, netHandler)
-    local duplicated_players;
-    local username_lower_cased = string.lower(username or "");
-    for i = 1, #(self.playerList) do
-        local player = self.playerList[i];
-        if (string.lower(player:GetUserName() or "") == username_lower_cased) then
-			duplicated_players = duplicated_players or {};
-			duplicated_players[#duplicated_players+1] = player;
-        end
-    end
-
-    if(duplicated_players) then
-		for i=1, #(duplicated_players) do
-			local player = duplicated_players[i];
-			self:Logout(player, "You logged in from another location");
-		end
-	end
+    -- 移除旧玩家
+    self:Logout(self.players[username], "离线玩家重新上线, 踢出旧同名离线玩家");
     
     -- 创建玩家
     local player = Player:new():Init({
@@ -88,14 +80,12 @@ end
 -- 从离线列表中移除玩家
 function PlayerManager:RemoveOfflinePlayer(username)
     for i = self.offlinePlayerQueue.first, self.offlinePlayerQueue.last do
-        local offlinePlayer = self.offlinePlayerQueue[i];
-        if (username and offlinePlayer.username == username) then
+        local offlineUsername = self.offlinePlayerQueue[i];
+        if (offlineUsername == username) then
             for j = i, self.offlinePlayerQueue.last do
                 self.offlinePlayerQueue[j] = self.offlinePlayerQueue[j + 1];
             end
             self.offlinePlayerQueue.last = self.offlinePlayerQueue.last - 1;
-            self.playerList:removeByValue(offlinePlayer);
-            self:SendPacketPlayerLogout(offlinePlayer, "离线玩家重新上线, 踢出旧离线玩家");
             break;
         end
     end
@@ -104,12 +94,11 @@ end
 -- 用户是否存在于离线玩家列表
 function PlayerManager:IsExistOfflinePlayerList(username)
     for i = self.offlinePlayerQueue.first, self.offlinePlayerQueue.last do
-        local offlinePlayer = self.offlinePlayerQueue[i];
-        if (username and offlinePlayer.username == username) then
+        local offlineUsername = self.offlinePlayerQueue[i];
+        if (username == offlineUsername) then
             return true;
         end
     end
-
     return false;
 end
 
@@ -119,105 +108,143 @@ function PlayerManager:AddPlayer(player)
 
     local username = player:GetUserName();
     local bx, by, bz = player:GetBlockPos();
-    local areaSize = self.ParaWorldAreaSize;
+    local areaSize = self.areaSize;
     local areaLeft, areaTop = math.floor(bx / areaSize) * areaSize, math.floor(bz / areaSize) * areaSize;
     local areaRight, areaBottom = areaLeft + areaSize, areaTop + areaSize;
 
-    -- 添加至玩家列表
-    self.playerList:add(player);
-    self.players[username] = player;
+    -- 获取旧玩家
+    local oldPlayer = self.players[username];
+    -- 先移除玩家后添加新玩家
+    if (oldPlayer) then self:Logout(oldPlayer, "离线玩家重新上线, 踢出旧同名离线玩家") end
 
+    -- 设置新玩家
+    self.players[username] = player;
+    -- 添加在线玩家列表
+    self.onlinePlayerList:add(username);
     -- 将玩家添加到世界中
     self.worldQuadTree:AddObject(username, bx, bz, bx, bz);
-
-    -- 新上线的玩家在离线列表, 先简单移除, 后续直接使用上次状态
-    self:RemoveOfflinePlayer(username);
+    -- 添加到在线四叉树
+    self.onlineQuadtree:AddObject(username, bx, bz, bx, bz);
 
     -- 是平行世界
-    if (self:GetWorld():IsParaWorld()) then
-         -- 添加到在线四叉树
-        self.onlineQuadtree:AddObject(username, bx, bz, bx, bz);
-        -- 移除离线四叉树
-        self.offlineQuadtree:RemoveObject(username);
+    if (self:GetWorld():IsParaWorld() and self.offlineQuadtree:GetObjectCount() > 0) then
         -- 移除离线玩家
         local onlineObjects = self.onlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
         local offlineObjects = self.offlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
-        if (((#offlineObjects) + (#offlineObjects)) > self.areaMinPlayerCount and (#offlineObjects) > 0) then
-            self:SendPacketPlayerLogout(self.players[offlineObjects[1]]);
+        if (((#offlineObjects) + (#offlineObjects)) > self.areaMinClientCount and (#offlineObjects) > 0) then
+            local logoutUsername = offlineObjects[i];
+            self.offlineQuadtree:RemoveObject(logoutUsername);
+            self:RemoveOfflinePlayer(logoutUsername);
+            self:Logout(self.players[logoutUsername], "新玩家上线, 移除随机离线玩家");
         end
-        return ;
     end
 
-    -- 当前玩家数过多时移除玩家
-    if (#self.playerList > self.minPlayerCount) then 
-        local logoutPlayer = self.offlinePlayerQueue:popleft();
-        if (logoutPlayer) then
-            self:SendPacketPlayerLogout(logoutPlayer);
-        end
-    end
+    -- 当前玩家数过少或无离线玩家时直接退出
+    if (self:GetPlayerCount() < self.minClientCount or self.offlinePlayerQueue:size() == 0) then return end 
+
+    local logoutUsername = self.offlinePlayerQueue:popleft();
+    self.offlineQuadtree:RemoveObject(logoutUsername);
+    self:Logout(self.players[logoutUsername],  "新玩家上线, 移除最早离线玩家");
 end
 
 -- 移除玩家
 function PlayerManager:RemovePlayer(player)
-    if (not player or not self.playerList:contains(player)) then return end
+    if (not player) then return end
 
     -- 匿名玩家或存活时间小于指定时间时不做留存直接删除
     if (not player:IsKeepworkOffline()) then
-        return self:SendPacketPlayerLogout(player);
+        return self:Logout(player, "链接断开, 用户下线");
     end
-    -- 发送玩家信息  通知玩家下线   player.state = "offline"
-    self:SendPacketPlayerInfo(player);
+
+    local username = player:GetUserName();
+    local bx, by, bz = player:GetBlockPos();
+    local areaSize = self.areaSize;
+    local areaLeft, areaTop = math.floor(bx / areaSize) * areaSize, math.floor(bz / areaSize) * areaSize;
+    local areaRight, areaBottom = areaLeft + areaSize, areaTop + areaSize;
+
+    -- 在线列表中移除玩家
+    self.onlinePlayerList:removeByValue(username);
+    self.worldQuadTree:RemoveObject(username);
+    self.onlineQuadtree:RemoveObject(username);
     
     -- 是平行世界
     if (self:GetWorld():IsParaWorld()) then
-        local username = player:GetUserName();
-        local bx, by, bz = player:GetBlockPos();
-        local areaSize = self.ParaWorldAreaSize;
-        local areaLeft, areaTop = math.floor(bx / areaSize) * areaSize, math.floor(bz / areaSize) * areaSize;
-        local areaRight, areaBottom = areaLeft + areaSize, areaTop + areaSize;
+        -- 统计人数
         local onlineObjects = self.onlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
         local offlineObjects = self.offlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
-        -- 添加到离线区
+        -- 添加到离线区 先统计后添加, 避免将自己移除, 一般通用离线正常使用
         self.offlineQuadtree:AddObject(username, bx, bz, bx, bz);
         -- 人数过少直接返回
-        if (((#offlineObjects) + (#offlineObjects)) < self.areaMinPlayerCount) then return end
-        -- 随机移除一个
-        self:SendPacketPlayerLogout(self.players[offlineObjects[1] or username]);
-        return 
+        if (((#offlineObjects) + (#offlineObjects)) > self.areaMinClientCount and (#offlineObjects) > 0) then 
+            -- 随机移除一个
+            local logoutUsername = offlineObjects[1];
+            self.offlineQuadtree:RemoveObject(logoutUsername);
+            self:RemoveOfflinePlayer(logoutUsername);
+            self:Logout(self.players[logoutUsername], "玩家下线, 随机踢出旧离线玩家");
+        end
     end
 
     -- 留存策略采用队列模式, 留存最新玩家
-    self.offlinePlayerQueue:pushright(player);  
+    self.offlinePlayerQueue:pushright(username);  
     -- 当前玩家数小于指定值 留存玩家不做删除
-    if (#self.playerList < self.minPlayerCount) then return end
+    if (self:GetPlayerCount() < self.minClientCount or self.offlinePlayerQueue:size() == 0) then return end
     -- 当前玩家数较多时移除最旧玩家(下线时间最早)
-    local logoutPlayer = self.offlinePlayerQueue:popleft();
-    if (logoutPlayer) then
-        self:SendPacketPlayerLogout(logoutPlayer);
-    end
+    local logoutUsername = self.offlinePlayerQueue:popleft();
+    -- 同时移除区间用户
+    self.offlineQuadtree:RemoveObject(logoutUsername);
+    self:Logout(self.players[logoutUsername], "玩家下线, 踢出最早下线玩家");
 end
 
--- 获取玩家列表
-function PlayerManager:GetPlayerList() 
-    return self.playerList;
+-- 获取所有玩家
+function PlayerManager:GetPlayers() 
+    return self.players;
 end
 
 -- 下线玩家
-function PlayerManager:Offline(player)
+function PlayerManager:Offline(player, reason)
     if (not player) then return end
     -- 置玩家登出状态
     player:Logout();
+    
+    -- 如果在线用户数大于最小用户数, 此时逻辑上应没有离线玩家了也不需要离线玩家, 可以直接登出当前用户
+    if ((#self.onlinePlayerList) > self.minClientCount) then
+        return self:Logout(player, reason);
+    end
+
+    -- 获取当前玩家
+    local username = player:GetUserName();
+    local curPlayer = self.players[username];
+
+    -- 玩家不存在, 或不是最新玩家直接退出
+    if (not curPlayer or curPlayer.entityId ~= player.entityId) then
+        return self:Logout(player, reason);
+    end
+
     -- 移除玩家
     self:RemovePlayer(player);
-    -- 移除玩家
-    self.worldQuadTree:RemoveObject(player:GetUserName());
+    -- 发送玩家信息  通知玩家下线   player.state = "offline"
+    self:SendPacketPlayerInfo(player);
 end
 
 -- 踢出玩家
 function PlayerManager:Logout(player, reason)
+    if (not player) then return end
     -- 置玩家登出状态
     player:Logout();
-    -- 踢出玩家
+    -- 获取对应的当前玩家
+    local username = player:GetUserName();
+    local curPlayer = self.players[username];
+    -- 玩家不存在或是最新玩家下线, 则需从在线列表中移除
+    if (not curPlayer or curPlayer.entityId == player.entityId) then
+        self.onlinePlayerList:removeByValue(username);        -- 从在线列表中移除
+        self.onlineQuadtree:RemoveObject(username);
+        self.worldQuadTree:RemoveObject(username);
+        self.players[username] = nil;
+    end
+    -- 从离线列表中移除玩家
+    self:RemoveOfflinePlayer(username);                   -- 从离线队列中移除
+    self.offlineQuadtree:RemoveObject(username);
+    -- 发送退出包
     self:SendPacketPlayerLogout(player, reason);
 end
 
@@ -225,26 +252,19 @@ end
 function PlayerManager:SendPacketPlayerLogout(player, reason)
     if (not player) then return end
 
-    local username = player:GetUserName();
-
     -- 先发送后移除, 不然移除没法收到自己登出消息
     local packet = Packets.PacketPlayerLogout:new():Init({
-        username = username,
+        username = player:GetUserName(),
         entityId = player:GetEntityId(),
         reason = reason,
     });
 
-    -- 发送退出包
+    -- 发送退出包给其它玩家
     self:SendPacketToAllPlayersExcept(packet, player);        -- 通知其它人退出
+
+    -- 发送退出包给自己
     player:SendPacket(packet);                                -- 单独发, 确保自己一定知道自己退出
-
-    -- 从玩家列表移除
-    self.playerList:removeByValue(player);  -- 玩家登出世界, 从玩家列表中移除
-    self.players[username] = nil;
-    self.onlineQuadtree:RemoveObject(username);
-    self.offlineQuadtree:RemoveObject(username);
-    self.worldQuadTree:RemoveObject(username);
-
+    
     -- 打印日志
     GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("player logout, reason: %s username : %s, worldkey: %s, entityId: %s", tostring(reason), player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
@@ -252,14 +272,14 @@ end
 -- 发送玩家信息
 function PlayerManager:SendPacketPlayerInfo(player)
     self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()));
-
     GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("player offline; username : %s, worldkey: %s, entityId: %s", player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
 
 -- 发数据给所有玩家
 function PlayerManager:SendPacketToAllPlayers(packet, filterFunc)
-    for i = 1, #(self.playerList) do 
-        local player = self.playerList[i];
+    for i = 1, #(self.onlinePlayerList) do 
+        local username = self.onlinePlayerList[i];
+        local player = self.players[username];
         if (not filterFunc or filterFunc(player)) then
             player:SendPacketToPlayer(packet);
         end
@@ -268,9 +288,10 @@ end
 
 -- 发数据包给所有玩家排除指定玩家
 function PlayerManager:SendPacketToAllPlayersExcept(packet, excludedPlayer)
-    for i = 1, #(self.playerList) do 
-        local player = self.playerList[i];
-        if excludedPlayer ~= player then
+    for i = 1, #(self.onlinePlayerList) do 
+        local username = self.onlinePlayerList[i];
+        local player = self.players[username];
+        if player and excludedPlayer ~= player then
             player:SendPacketToPlayer(packet);
         end
     end
@@ -330,8 +351,7 @@ end
 
 -- 获取指定玩家
 function PlayerManager:GetPlayer(id)
-    for i = 1, #(self.playerList) do 
-        local player = self.playerList[i];
+    for key, player in pairs(self.players) do 
         if (type(id) == "number" and player.entityId == id) then
             return player;
         end
@@ -354,8 +374,9 @@ function PlayerManager:GetPlayerEntityInfoList(areaPlayer)
     local playerAreaX = areaSize ~= 0 and math.floor(playerBX / areaSize) or 0;
     local playerAreaZ = areaSize ~= 0 and math.floor(playerBZ / areaSize) or 0;
     local function filter(player)
-        if (areaPlayer.entityId == player.entityId) then return false end
-        if (areaSize == 0 or player:IsAlive()) then return true end
+        -- 玩家列表, 不发送给自己和不活跃用户, 不活跃用户会被转离线用户, 由离线去同步
+        if (areaPlayer.entityId == player.entityId or not player:IsAlive()) then return false end
+        if (areaSize == 0) then return true end
         local bx = player:GetEntityInfo().bx or 0; 
         local bz = player:GetEntityInfo().bz or 0; 
         local areaX = math.floor(bx / areaSize);
@@ -367,26 +388,59 @@ function PlayerManager:GetPlayerEntityInfoList(areaPlayer)
     end
 
     local playerEntityInfoList = {};
-    for i = 1, #(self.playerList) do 
-        local player = self.playerList[i];
+    -- 获取在线用户列表
+    for i = 1, #(self.onlinePlayerList) do 
+        local username = self.onlinePlayerList[i];
+        local player = self.players[username];
         if (filter(player)) then
             table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
         end
     end
 
+    -- 获取离线用户列表
+    local offlinePlayerList = self:GetOfflinePlayerList(areaPlayer);
+    for i = 1, #offlinePlayerList do 
+        local username = offlinePlayerList[i];
+        local player = self.players[username];
+        table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
+    end
+
     return playerEntityInfoList;
+end
+
+-- 获取离线用户的用户名列表
+function PlayerManager:GetOfflinePlayerList(player)
+    -- 是平行世界
+    if (self:GetWorld():IsParaWorld()) then
+        if (player) then
+            local areaSize = self.areaSize;
+            local bx, by, bz = player:GetBlockPos();
+            local areaLeft, areaTop = math.floor(bx / areaSize) * areaSize, math.floor(bz / areaSize) * areaSize;
+            local areaRight, areaBottom = areaLeft + areaSize, areaTop + areaSize;
+            return self.offlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
+        else 
+            return self.offlineQuadtree:GetObjects(0, 0, WorldMaxSize, WorldMaxSize);
+        end
+    else 
+        local offlines = {};
+        for i = self.offlinePlayerQueue.first, self.offlinePlayerQueue.last do
+            table.insert(offlines, self.offlinePlayerQueue[i]);
+        end
+        return offlines;
+    end
 end
 
 -- 获取玩家数量
 function PlayerManager:GetPlayerCount()
-    return #(self.playerList);
+    return self.onlinePlayerList:size() + self.offlinePlayerQueue:size();
 end
 
 -- 获取在线玩家数量
 function PlayerManager:GetOnlinePlayerCount()
     local count = 0;
-    for i = 1, #(self.playerList) do 
-        local player = self.playerList[i];
+    for i = 1, #(self.onlinePlayerList) do 
+        local username = self.onlinePlayerList[i];
+        local player = self.players[username];
         if (player:IsAlive()) then
             count = count + 1;
         end
@@ -397,8 +451,9 @@ end
 -- called period 移除没有心跳的玩家
 function PlayerManager:RemoveInvalidPlayer()
     local deleted = {};
-    for i = 1, #(self.playerList) do 
-        local player = self.playerList[i];
+    for i = 1, #(self.onlinePlayerList) do 
+        local username = self.onlinePlayerList[i];
+        local player = self.players[username];
         -- 玩家不活跃但链接还在则踢出玩家
         if (not player:IsAlive() and player:IsConnection()) then
             table.insert(deleted, player);
@@ -406,15 +461,16 @@ function PlayerManager:RemoveInvalidPlayer()
     end
     -- 下线不活跃的用户
     for i = 1, #deleted do
-        self:Logout(deleted[i], "inactive player remove");
+        self:Logout(deleted[i], "定时移除不活跃用户");
     end
 end
 
 -- 获取最旧的方块同步玩家
 function PlayerManager:GetSyncBlockOldestPlayer()
     local oldestPlayer = nil
-    for i = 1, #(self.playerList) do 
-        local player = self.playerList[i];
+    for i = 1, #(self.onlinePlayerList) do 
+        local username = self.onlinePlayerList[i];
+        local player = self.players[username];
         if (player:IsSyncBlock() and player:IsSyncBlockFinish() and player:IsAlive()) then
             if (not oldestPlayer or oldestPlayer.syncBlockTime > player.syncBlockTime) then
                 oldestPlayer = player;

@@ -40,7 +40,7 @@ function AppGeneralGameWorld:Init(client)
     DesktopMenuPage.Refresh();
 
     -- 非安静模式 发送ggs loadworld通知
-    if (not self:GetClient():GetOptions().slient) then
+    if (not self:GetClient():GetOptions().silent) then
         GameLogic.GetFilters():apply_filters("ggs", {action = "LoadWorld"});
     end
     
@@ -61,7 +61,7 @@ function AppGeneralGameWorld:OnExit()
     DesktopMenuPage.Refresh();
     self.menus = {};
     
-    -- if (not self:GetClient():GetOptions().slient) then
+    -- if (not self:GetClient():GetOptions().silent) then
         GameLogic.GetFilters():apply_filters("ggs", {action = "ExitWorld"});
     -- end 
 end

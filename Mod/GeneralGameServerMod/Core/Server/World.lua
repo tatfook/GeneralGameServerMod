@@ -28,16 +28,17 @@ World:Property("PlayerManager");       -- 玩家管理器
 function World:ctor()
     -- 实体ID 所有需要同步的实体都需从此分配
     self.nextEntityId = 0;
-
-    -- 玩家管理器
-    self:SetPlayerManager(PlayerManager:new():Init(self));
 end
 
 -- 世界初始化
-function World:Init(worldId, WorldName, worldKey)
+function World:Init(worldId, WorldName, worldType, worldKey)
     self:SetWorldId(worldId);
     self:SetWorldName(WorldName);
     self:SetWorldKey(worldKey);
+    self:SetWorldType(worldType or "World");
+
+    -- 玩家管理器
+    self:SetPlayerManager(PlayerManager:new():Init(self));
     return self;
 end
 
@@ -50,13 +51,19 @@ function World:GetNextEntityId()
     return self.nextEntityId;
 end
 
+-- 获取配置
+function World:GetConfig()
+    return Config[self:GetWorldType()] or Config.World;
+end
+
 -- 获取支持的最大玩家数
 function World:GetMaxClientCount()
-    if (self:IsParaWorld()) then
-        return Config.ParaWorld.maxClientCount;
-    end
+    return self:GetConfig().maxClientCount;
+end
 
-    return Config.World.maxClientCount;
+-- 获取支持的最小玩家数
+function World:GetMinClientCount()
+    return self:GetConfig().minClientCount;
 end
 
 -- 获取世界用户数
@@ -79,13 +86,16 @@ function World:IsParaWorld()
     return self:GetWorldType() == "ParaWorld";
 end
 
+function World:IsParaWorldMini()
+    return self:GetWorldType() == "ParaWorldMini";
+end
+
 -- 获取调试信息
 function World:GetDebugInfo()
-    local playerList = self:GetPlayerManager():GetPlayerList();
+    local allPlayers = self:GetPlayerManager():GetPlayers();
     local players = {};
 
-    for i = 1, #playerList do 
-        local player = playerList[i];
+    for key, player in pairs(allPlayers) do 
         players[#players + 1] = {
             entityId = player.entityId,
             username = player.username,
@@ -98,7 +108,8 @@ function World:GetDebugInfo()
         players = players,
         worldKey = self:GetWorldKey(),
         worldId = self:GetWorldId(),
-        WorldName = self:GetWorldName(),
+        worldType = self:GetWorldType(),
+        worldName = self:GetWorldName(),
         playerCount = self:GetPlayerManager():GetPlayerCount(),
         onlinePlayerCount = self:GetPlayerManager():GetOnlinePlayerCount(),
     }

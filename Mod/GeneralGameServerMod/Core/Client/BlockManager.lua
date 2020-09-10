@@ -242,12 +242,23 @@ end
 -- 处理响应同步块索引列表数
 function BlockManager:handleSyncBlock_ResponseBlockIndexList(packetGeneral)
 	local blockIndexList = packetGeneral.data.blockIndexList;
-	BlockSyncDebug.Format("获取方块同步索引列表, blockCount: %s", #blockIndexList);
 	-- 设置需要同步的块
 	if (blockIndexList) then
 		for i = 1, #blockIndexList do
 			self.needSyncBlockIndexList:add(blockIndexList[i]);
 		end
+	end
+
+	-- 记录需同步的方块数量
+	self.needSyncBlockCount = #blockIndexList;
+	-- 发送块同步的请求次数
+	self.needSyncRequestCount = 0; 
+
+	BlockSyncDebug.Format("获取方块同步索引列表, needSyncBlockCount: %s, needSyncRequestCount: %s", self.needSyncBlockCount, self.needSyncRequestCount);
+
+	-- 没有方块编辑直接完成
+	if (#blockIndexList == 0) then
+		return self:handleSyncBlock_Finish();
 	end
 
 	-- 发送请求块
@@ -264,6 +275,7 @@ function BlockManager:handleSyncBlock_ResponseBlockIndexList(packetGeneral)
 				},
 			}));
 			list = {};
+			self.needSyncRequestCount = self.needSyncRequestCount + 1;
 		end
 	end
 end
@@ -303,6 +315,18 @@ function BlockManager:handleSyncBlock_ResponseSyncBlock(packetGeneral)
 		local packet = Packets.PacketBlock:new();
 		packet:ReadPacket(block);
 		self:GetWorld():GetNetHandler():handleBlock(packet);
+		self.needSyncBlockCount = self.needSyncBlockCount - 1;
+	end
+	self.needSyncRequestCount = self.needSyncRequestCount - 1;
+	
+	BlockSyncDebug.Format("成功获取部分世界方块信息, 剩余同步方块数: %s, 剩余同步请求数: %s", self.needSyncBlockCount, self.needSyncRequestCount);
+
+	if (self.needSyncRequestCount == 0) then
+		if (self.needSyncBlockCount == 0) then
+			self:handleSyncBlock_Finish()
+		else 
+			BlockSyncDebug("同步世界所有方块信息失败");
+		end
 	end
 end
 

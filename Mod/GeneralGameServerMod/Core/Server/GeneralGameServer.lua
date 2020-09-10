@@ -83,7 +83,6 @@ function GeneralGameServer:Start()
 
 	-- 定时器
 	local tickDuratin = 1000 * 60 * 2; 
-	-- local tickDuratin = 1000 * 20;  -- debug
 	self.timer = commonlib.Timer:new({callbackFunc = function(timer)
 		self:Tick();
 	end});
