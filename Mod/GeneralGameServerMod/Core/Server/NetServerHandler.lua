@@ -110,9 +110,10 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
 
     -- 设置当前玩家实体信息
     local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
+    local packet = (isNew or self:GetPlayer():IsEnableArea()) and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo;
     -- 新玩家通知所有旧玩家
-    self:GetPlayerManager():SendPacketToAllPlayersExcept(isNew and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo, self:GetPlayer());
-    -- self:GetPlayerManager():SendPacketToAreaPlayer(self:GetPlayer():GetPlayerEntityInfo(), self:GetPlayer());
+    self:GetPlayerManager():SendPacketToAllPlayers(packet, self:GetPlayer());
+    -- self:GetPlayerManager():SendPacketToAreaPlayers(packet, self:GetPlayer());
     -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
     if (not isNew) then return end
 
@@ -146,7 +147,7 @@ function NetServerHandler:handleErrorMessage(text, data)
     if (not self:GetPlayer()) then return end
 
     -- 下线走离线流程 登出直接踢出服务器
-    self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家下线");
+    self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家主动下线");
     
     -- 关闭连接
     self:GetPlayerConnection():CloseConnection();
@@ -166,7 +167,7 @@ function NetServerHandler:handleChat(packetChat)
     -- 用户不存在
     if (not self:GetPlayer()) then return self:handlePlayerRelogin() end
 
-    self:GetPlayerManager():SendPacketToAllPlayersExcept(packetChat, self:GetPlayer());
+    self:GetPlayerManager():SendPacketToAllPlayers(packetChat, self:GetPlayer());
 end
 
 -- 处理方块同步
@@ -231,7 +232,7 @@ function NetServerHandler:handleGeneral(packetGeneral)
     elseif (packetGeneral.action == "Debug") then
         self:handleGeneral_Debug(packetGeneral);
     else
-        self:GetPlayerManager():SendPacketToAllPlayersExcept(packetGeneral, self:GetPlayer());
+        self:GetPlayerManager():SendPacketToAllPlayers(packetGeneral, self:GetPlayer());
     end
 end
 
@@ -243,6 +244,6 @@ function NetServerHandler:handleMultiple(packetMultiple)
     if (packetMultiple.action == "SyncBlock") then
         self:GetPlayerManager():SendPacketToSyncBlockPlayers(packetMultiple, self:GetPlayer());
     else
-        self:GetPlayerManager():SendPacketToAllPlayersExcept(packetMultiple, self:GetPlayer());
+        self:GetPlayerManager():SendPacketToAllPlayers(packetMultiple, self:GetPlayer());
     end
 end

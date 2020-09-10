@@ -41,6 +41,8 @@ function PlayerManager:Init(world)
     self.areaSize =  if_else(worldConfig.areaSize == nil or worldConfig.areaSize == 0, 128, worldConfig.areaSize);  
     self.areaMinClientCount = worldConfig.areaMinClientCount or 0;
 
+    if (IsDevEnv) then self.areaSize = 10 end
+
     -- 四叉树选项 
     local quadtreeOptions = {
         minWidth = self.areaSize,
@@ -61,6 +63,17 @@ end
 -- 获取下一个实体ID
 function PlayerManager:GetNextEntityId()
     return self:GetWorld():GetNextEntityId();
+end
+
+-- 获取区域大小
+function PlayerManager:GetAreaSize()
+    return self.areaSize;
+end
+
+-- 是否使能区域化
+function PlayerManager:IsEnableArea()
+    local worldAreaSize = self:GetWorld():GetConfig().areaSize;
+    return worldAreaSize ~= nil and worldAreaSize ~= 0;
 end
 
 -- 创建用户 若用户已存在则踢出系统
@@ -106,6 +119,7 @@ end
 function PlayerManager:AddPlayer(player)
     if (not player) then return end
 
+    -- 离线用户留存策略直接以玩家所在世界区域来统计,  不以玩家为中心的动态区域
     local username = player:GetUserName();
     local bx, by, bz = player:GetBlockPos();
     local areaSize = self.areaSize;
@@ -156,6 +170,7 @@ function PlayerManager:RemovePlayer(player)
         return self:Logout(player, "链接断开, 用户下线");
     end
 
+    -- 离线用户留存策略直接以玩家所在世界区域来统计,  不以玩家为中心的动态区域
     local username = player:GetUserName();
     local bx, by, bz = player:GetBlockPos();
     local areaSize = self.areaSize;
@@ -240,6 +255,8 @@ function PlayerManager:Logout(player, reason)
         self.onlineQuadtree:RemoveObject(username);
         self.worldQuadTree:RemoveObject(username);
         self.players[username] = nil;
+    else 
+        GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug").Format("存在同名在线玩家, 保留在线玩家信息: username = %s, entityId = %s", username, curPlayer.entityId);
     end
     -- 从离线列表中移除玩家
     self:RemoveOfflinePlayer(username);                   -- 从离线队列中移除
@@ -260,86 +277,54 @@ function PlayerManager:SendPacketPlayerLogout(player, reason)
     });
 
     -- 发送退出包给其它玩家
-    self:SendPacketToAllPlayersExcept(packet, player);        -- 通知其它人退出
+    self:SendPacketToAllPlayers(packet, player);              -- 通知其它人退出
 
     -- 发送退出包给自己
     player:SendPacket(packet);                                -- 单独发, 确保自己一定知道自己退出
     
     -- 打印日志
-    GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("player logout, reason: %s username : %s, worldkey: %s, entityId: %s", tostring(reason), player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
+    GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("发送玩家退出数据包, reason: %s username : %s, worldkey: %s, entityId: %s", tostring(reason), player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
 
 -- 发送玩家信息
 function PlayerManager:SendPacketPlayerInfo(player)
-    self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()));
-    GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("player offline; username : %s, worldkey: %s, entityId: %s", player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
+    self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()));  
+    GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("发送玩家离线数据包, username : %s, worldkey: %s, entityId: %s", player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
 
--- 发数据给所有玩家
-function PlayerManager:SendPacketToAllPlayers(packet, filterFunc)
+-- 发数据给所有玩家 curPlayer 为 nil 就包含自己
+function PlayerManager:SendPacketToAllPlayers(packet, curPlayer, filter)
     for i = 1, #(self.onlinePlayerList) do 
         local username = self.onlinePlayerList[i];
         local player = self.players[username];
-        if (not filterFunc or filterFunc(player)) then
+        if (player and player ~= curPlayer and (not filter or filter(player))) then
             player:SendPacketToPlayer(packet);
         end
     end
 end
 
--- 发数据包给所有玩家排除指定玩家
-function PlayerManager:SendPacketToAllPlayersExcept(packet, excludedPlayer)
-    for i = 1, #(self.onlinePlayerList) do 
-        local username = self.onlinePlayerList[i];
+-- 发送给指定玩家所在的区域
+function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, filter)
+    local onlinePlayerList = self:GetOnlinePlayerList(curPlayer)
+    for i = 1, #onlinePlayerList do
+        local username = onlinePlayerList[i];
         local player = self.players[username];
-        if player and excludedPlayer ~= player then
-            player:SendPacketToPlayer(packet);
-        end
+        if (player and (not filter or filter(player))) then player:SendPacketToPlayer(packet) end
     end
-end
-
--- 获取区域FIlter
-function PlayerManager:GetPlayerAreaFilter(areaPlayer, isAreaPlayerCenter)
-    return function(player)
-        if (areaPlayer.entityId == player.entityId) then return false end
-        local areaSize = if_else(isAreaPlayerCenter, areaPlayer:GetAreaSize(), player:GetAreaSize());
-        if (areaSize == 0) then return true end
-        local playerBX = areaPlayer and areaPlayer:GetEntityInfo().bx or 0;
-        local playerBZ = areaPlayer and areaPlayer:GetEntityInfo().bz or 0;
-        local playerAreaX = areaSize ~= 0 and math.floor(playerBX / areaSize) or 0;
-        local playerAreaZ = areaSize ~= 0 and math.floor(playerBZ / areaSize) or 0;
-        local bx = player:GetEntityInfo().bx or 0; 
-        local bz = player:GetEntityInfo().bz or 0; 
-        local areaX = math.floor(bx / areaSize);
-        local areaZ = math.floor(bz / areaSize);
-        if (math.abs(areaX - playerAreaX) <= 1 and math.abs(areaZ - playerAreaZ) <= 1) then
-            return true;
-        end
-        return false;
-    end
-end
-
--- 发送给指定区域的玩家
-function PlayerManager:SendPacketToAreaPlayer(packet, areaPlayer)
-    self:SendPacketToAllPlayers(packet, self:GetPlayerAreaFilter(areaPlayer, false));
 end
 
 -- 发送给同步方块的玩家
-function PlayerManager:SendPacketToSyncBlockPlayers(packet, excludedPlayer)
-    self:SendPacketToAllPlayers(packet, function(player)
-        return player ~= excludedPlayer and player:IsSyncBlock();
+function PlayerManager:SendPacketToSyncBlockPlayers(packet, curPlayer)
+    self:SendPacketToAllPlayers(packet, curPlayer, function(player)
+        return player:IsSyncBlock();
     end);
 end
 
 -- 发送给同步命令的玩家
-function PlayerManager:SendPacketToSyncCmdPlayers(packet, excludedPlayer)
-    self:SendPacketToAllPlayers(packet, function(player) 
-        return player ~= excludedPlayer and player:IsSyncCmd();
+function PlayerManager:SendPacketToSyncCmdPlayers(packet, curPlayer)
+    self:SendPacketToAllPlayers(packet, curPlayer, function(player) 
+        return player:IsSyncCmd();
     end);
-end
-
--- 是否是玩家
-function PlayerManager:IsPlayer(player)
-    return type(player) == "table" and player.isa and player:isa(Player);
 end
 
 -- 发送给指定玩家
@@ -347,6 +332,11 @@ function PlayerManager:SendPacketToPlayer(packet, player)
     player = self:IsPlayer(player) and player or self:GetPlayer(player);
     if (not player) then return end
     player:SendPacketToPlayer(packet);
+end
+
+-- 是否是玩家
+function PlayerManager:IsPlayer(player)
+    return type(player) == "table" and player.isa and player:isa(Player);
 end
 
 -- 获取指定玩家
@@ -367,38 +357,20 @@ function PlayerManager:GetPlayer(id)
 end
 
 -- 获取所有玩家实体信息列表
-function PlayerManager:GetPlayerEntityInfoList(areaPlayer)
-    local areaSize = areaPlayer and areaPlayer:GetAreaSize() or 0;
-    local playerBX = areaPlayer and areaPlayer:GetEntityInfo().bx or 0;
-    local playerBZ = areaPlayer and areaPlayer:GetEntityInfo().bz or 0;
-    local playerAreaX = areaSize ~= 0 and math.floor(playerBX / areaSize) or 0;
-    local playerAreaZ = areaSize ~= 0 and math.floor(playerBZ / areaSize) or 0;
-    local function filter(player)
-        -- 玩家列表, 不发送给自己和不活跃用户, 不活跃用户会被转离线用户, 由离线去同步
-        if (areaPlayer.entityId == player.entityId or not player:IsAlive()) then return false end
-        if (areaSize == 0) then return true end
-        local bx = player:GetEntityInfo().bx or 0; 
-        local bz = player:GetEntityInfo().bz or 0; 
-        local areaX = math.floor(bx / areaSize);
-        local areaZ = math.floor(bz / areaSize);
-        if (math.abs(areaX - playerAreaX) <= 1 and math.abs(areaZ - playerAreaZ) <= 1) then
-            return true;
-        end
-        return false;
-    end
-
+function PlayerManager:GetPlayerEntityInfoList(player)
     local playerEntityInfoList = {};
+
     -- 获取在线用户列表
-    for i = 1, #(self.onlinePlayerList) do 
-        local username = self.onlinePlayerList[i];
+    -- local onlinePlayerList = self:GetOnlinePlayerList(player);
+    local onlinePlayerList = self:GetOnlinePlayerList(nil);  -- 拉取所有在线用户
+    for i = 1, #onlinePlayerList do 
+        local username = onlinePlayerList[i];
         local player = self.players[username];
-        if (filter(player)) then
-            table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
-        end
+        table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
     end
 
     -- 获取离线用户列表
-    local offlinePlayerList = self:GetOfflinePlayerList(areaPlayer);
+    local offlinePlayerList = self:GetOfflinePlayerList(player);
     for i = 1, #offlinePlayerList do 
         local username = offlinePlayerList[i];
         local player = self.players[username];
@@ -408,19 +380,25 @@ function PlayerManager:GetPlayerEntityInfoList(areaPlayer)
     return playerEntityInfoList;
 end
 
+-- 获取在线用户的用户名列表
+function PlayerManager:GetOnlinePlayerList(player)
+    if (player and player:IsEnableArea()) then
+        -- 以自己为中心点取区域大小
+        local areaSize = math.floor(player:GetAreaSize() / 2);
+        local bx, by, bz = player:GetBlockPos();
+        return self.onlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
+    else 
+        return self.onlinePlayerList;
+    end
+end
+
 -- 获取离线用户的用户名列表
 function PlayerManager:GetOfflinePlayerList(player)
-    -- 是平行世界
-    if (self:GetWorld():IsParaWorld()) then
-        if (player) then
-            local areaSize = self.areaSize;
-            local bx, by, bz = player:GetBlockPos();
-            local areaLeft, areaTop = math.floor(bx / areaSize) * areaSize, math.floor(bz / areaSize) * areaSize;
-            local areaRight, areaBottom = areaLeft + areaSize, areaTop + areaSize;
-            return self.offlineQuadtree:GetObjects(areaLeft, areaTop, areaRight, areaBottom);
-        else 
-            return self.offlineQuadtree:GetObjects(0, 0, WorldMaxSize, WorldMaxSize);
-        end
+    if (player and player:IsEnableArea()) then
+        -- 以自己为中心点取区域大小
+        local areaSize = math.floor(player:GetAreaSize() / 2);
+        local bx, by, bz = player:GetBlockPos();
+        return self.offlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
         local offlines = {};
         for i = self.offlinePlayerQueue.first, self.offlinePlayerQueue.last do

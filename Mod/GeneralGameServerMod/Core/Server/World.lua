@@ -86,6 +86,7 @@ function World:IsParaWorld()
     return self:GetWorldType() == "ParaWorld";
 end
 
+-- 家园
 function World:IsParaWorldMini()
     return self:GetWorldType() == "ParaWorldMini";
 end
@@ -112,5 +113,6 @@ function World:GetDebugInfo()
         worldName = self:GetWorldName(),
         playerCount = self:GetPlayerManager():GetPlayerCount(),
         onlinePlayerCount = self:GetPlayerManager():GetOnlinePlayerCount(),
+        config = self:GetConfig(),
     }
 end

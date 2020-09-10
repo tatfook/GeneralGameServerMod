@@ -86,9 +86,16 @@ function Player:IsSyncCmd()
     return self.options.isSyncCmd;
 end
 
+-- 是否使能区域化
+function Player:IsEnableArea()
+    if (self:GetPlayerManager():IsEnableArea()) then return true end
+    return self.options.areaSize ~= nil and self.options.areaSize ~= 0;
+end
+
 -- 获取玩家视距
 function Player:GetAreaSize()
-    return self.options.areaSize or 0;
+    if (self.options.areaSize == nil or self.options.areaSize == 0) then return self:GetPlayerManager():GetAreaSize() end
+    return self.options.areaSize;
 end
 
 -- 是否是匿名用户
@@ -98,6 +105,8 @@ end
 
 -- 是否保持离线
 function Player:IsKeepworkOffline()
+    if (IsDevEnv) then return true end
+
     if (self:IsAnonymousUser()) then return false; end
     if (self.aliveTime < Config.Player.minAliveTime) then return false; end
     local userinfo = self:GetUserInfo();
@@ -157,7 +166,9 @@ function Player:UpdateArea()
     local areaZ = math.floor(bz / areaSize);
     if (areaX == self.areaX and areaZ == self.areaZ) then return end
     self.areaX, self.areaZ = areaX, areaZ;
-    self.playerNetHandler:handlePlayerEntityInfoList();
+    if (self:IsEnableArea()) then
+        self.playerNetHandler:handlePlayerEntityInfoList();
+    end
 end
 
 function Player:GetArea()

@@ -345,7 +345,7 @@ end
 
 -- 处理同步完成
 function BlockManager:handleSyncBlock_Finish()
-	BlockSyncDebug("同步世界所有方块信息结束");
+	BlockSyncDebug("同步世界所有方块信息完成");
 	self.needSyncBlockIndexList:clear();
 	self:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "SyncBlock", data = {state = "SyncBlock_Finish", playerId = self:GetPlayerId()}}));  -- 服务器确认完成
 end
