@@ -328,7 +328,7 @@ end
 -- 发送给指定玩家所在的区域
 function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, isCurPlayerCenter, filter)
     -- 玩家自己开启可视化, 世界不一定开启可视化, 所以self:IsEnableArea()必须放在player:IsEnableArea()后检测, 保证玩家和世界都没开启可视化
-    if (not curPlayer or not player:IsEnableArea() or not self:IsEnableArea()) then
+    if (not curPlayer or not curPlayer:IsEnableArea() or not self:IsEnableArea()) then
         return self:SendPacketToAllPlayers(packet, curPlayer, filter);
     end
 
