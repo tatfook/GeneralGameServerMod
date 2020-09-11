@@ -36,6 +36,11 @@ function AssetsWhiteList.GetRandomFilename()
     return allAssets[math.random(1, #allAssets)]
 end
 
+-- 获取默认模型
+function AssetsWhiteList.GetDefaultFilename()
+    return "character/CC/02human/paperman/boy01.x";
+end
+
 -- 获取所有支持模型列表
 function AssetsWhiteList.GetAllAssets()
     return allAssets;

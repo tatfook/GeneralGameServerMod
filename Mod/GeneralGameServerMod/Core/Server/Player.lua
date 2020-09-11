@@ -177,10 +177,6 @@ function Player:UpdateArea()
     end
 end
 
-function Player:GetArea()
-    return self.areaX, self.areaY, self.areaZ;
-end
-
 function Player:GetPlayerEntityInfo()
     self.entityInfo.username = self.username;
     self.entityInfo.entityId = self.entityId;
@@ -248,8 +244,7 @@ function Player:IsAlive()
     if (self.state == "offline") then return false; end
     
     -- 不能直接使用tick 可能刚登录就退出, 这种tick检测不出
-    local aliveDuration = Config.Player.aliveDuration or 180000; 
-    -- local aliveDuration = 30000;  -- debug
+    local aliveDuration = Config.Player.aliveDuration or 500000; 
     local curTime = ParaGlobal.timeGetTime();
     if ((curTime - self.lastTick) > aliveDuration) then
         return  false;

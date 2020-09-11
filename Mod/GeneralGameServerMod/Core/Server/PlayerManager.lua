@@ -304,14 +304,52 @@ function PlayerManager:SendPacketToAllPlayers(packet, curPlayer, filter)
     end
 end
 
+-- 获取区域FIlter
+function PlayerManager:GetPlayerAreaFilter(curPlayer, isCurPlayerCenter)
+    return function(player)
+        if (not curPlayer) then return true end
+        if (curPlayer.entityId == player.entityId) then return false end
+        if (isCurPlayerCenter and (not curPlayer:IsEnableArea())) then return true end
+        if (not isCurPlayerCenter and (not player:IsEnableArea())) then return true end
+        local areaSize = if_else(isCurPlayerCenter, curPlayer:GetAreaSize(), player:GetAreaSize());
+        if (areaSize == 0) then return true end
+        areaSize = math.floor(areaSize / 2) + WorldMarginSize;
+        local curPlayerBX = curPlayer:GetEntityInfo().bx or 0;
+        local curPlayerBZ = curPlayer:GetEntityInfo().bz or 0;
+        local playerBX = player:GetEntityInfo().bx or 0;
+        local playerBZ = player:GetEntityInfo().bz or 0;
+        if (math.abs(curPlayerBX - playerBX) <= areaSize and math.abs(curPlayerBZ - playerBZ) <= areaSize) then
+            return true;
+        end
+        return false;
+    end
+end
+
 -- 发送给指定玩家所在的区域
-function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, filter)
-    local onlinePlayerList = self:GetOnlinePlayerList(curPlayer)
-    for i = 1, #onlinePlayerList do
-        local username = onlinePlayerList[i];
-        local player = self.players[username];
-        if (player and player ~= curPlayer and (not filter or filter(player))) then 
-            player:SendPacketToPlayer(packet);
+function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, isCurPlayerCenter, filter)
+    -- 玩家自己开启可视化, 世界不一定开启可视化, 所以self:IsEnableArea()必须放在player:IsEnableArea()后检测, 保证玩家和世界都没开启可视化
+    if (not curPlayer or not player:IsEnableArea() or not self:IsEnableArea()) then
+        return self:SendPacketToAllPlayers(packet, curPlayer, filter);
+    end
+
+    -- 最好使用四叉树, 效率会高很多
+    if (not self:GetWorld():IsEnablePlayerSelfAreaSize() or isCurPlayerCenter) then
+        local onlinePlayerList = self:GetOnlinePlayerList(curPlayer, isCurPlayerCenter);
+        for i = 1, #onlinePlayerList do
+            local username = onlinePlayerList[i];
+            local player = self.players[username];
+            if (player and player ~= curPlayer and (not filter or filter(player))) then 
+                player:SendPacketToPlayer(packet);
+            end
+        end
+    else 
+        local areaFilter = self:GetPlayerAreaFilter(curPlayer);
+        for i = 1, #(self.onlinePlayerList) do 
+            local username = self.onlinePlayerList[i];
+            local player = self.players[username];
+            if (player and player ~= curPlayer and areaFilter(player) and (not filter or filter(player))) then
+                player:SendPacketToPlayer(packet);
+            end
         end
     end
 end
@@ -378,8 +416,7 @@ function PlayerManager:GetPlayerEntityInfoList(player)
     local playerEntityInfoList = {};
 
     -- 获取在线用户列表
-    local onlinePlayerList = self:GetOnlinePlayerList(player);
-    -- local onlinePlayerList = self:GetOnlinePlayerList(nil);  -- 拉取所有在线用户
+    local onlinePlayerList = self:GetOnlinePlayerList(player, true);
     for i = 1, #onlinePlayerList do 
         local username = onlinePlayerList[i];
         local player = self.players[username];
@@ -387,7 +424,7 @@ function PlayerManager:GetPlayerEntityInfoList(player)
     end
 
     -- 获取离线用户列表
-    local offlinePlayerList = self:GetOfflinePlayerList(player);
+    local offlinePlayerList = self:GetOfflinePlayerList(player, true);
     for i = 1, #offlinePlayerList do 
         local username = offlinePlayerList[i];
         local player = self.players[username];
@@ -398,11 +435,11 @@ function PlayerManager:GetPlayerEntityInfoList(player)
 end
 
 -- 获取在线用户的用户名列表
-function PlayerManager:GetOnlinePlayerList(player)
-    if (player and player:IsEnableArea()) then
-        -- 以自己为中心点取区域大小
-        local areaSize = math.floor(player:GetAreaSize() / 2) + WorldMarginSize;
+function PlayerManager:GetOnlinePlayerList(player, isUsePlayerAreaSize)
+    if (player and self:IsEnableArea()) then
+        local areaSize = if_else(isUsePlayerAreaSize, player:GetAreaSize(), self:GetAreaSize()); 
         local bx, by, bz = player:GetBlockPos();
+        areaSize = math.floor(areaSize / 2) + WorldMarginSize;
         return self.onlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
         local onlines = {};
@@ -414,11 +451,11 @@ function PlayerManager:GetOnlinePlayerList(player)
 end
 
 -- 获取离线用户的用户名列表
-function PlayerManager:GetOfflinePlayerList(player)
-    if (player and player:IsEnableArea()) then
-        -- 以自己为中心点取区域大小
-        local areaSize = math.floor(player:GetAreaSize() / 2);
+function PlayerManager:GetOfflinePlayerList(player, isUsePlayerAreaSize)
+    if (player and self:IsEnableArea()) then
+        local areaSize = if_else(isUsePlayerAreaSize, player:GetAreaSize(), self:GetAreaSize()); 
         local bx, by, bz = player:GetBlockPos();
+        areaSize = math.floor(areaSize / 2) + WorldMarginSize;
         return self.offlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
         local offlines = {};

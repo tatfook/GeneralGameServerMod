@@ -91,16 +91,16 @@ function EntityOtherPlayer:UpdateEntityActionState()
     local dataWatcher = self:GetDataWatcher();
     local curMainAsset = dataWatcher:GetField(self.dataMainAsset);
     if(curMainAsset~=self:GetMainAssetPath()) then
-        if(AssetsWhiteList.IsInWhiteList(curMainAsset)) then
-            self:SetMainAssetPath(curMainAsset);
-        else
-            self:SetMainAssetPath(AssetsWhiteList.GetRandomFilename());
-        end
+        if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then curMainAsset = AssetsWhiteList.GetDefaultFilename() end
+        self:SetMainAssetPath(curMainAsset);
+        dataWatcher:SetField(self.dataMainAsset, curMainAsset);
 	end
     -- 改写大小同步规则
     local curScale = dataWatcher:GetField(self.dataFieldScale);
-	if(curScale and curScale ~= self:GetScaling()) then
-		self:SetScaling(curScale > 1.5 and 1.5 or (curScale < 0.5 and 0.5 or curScale));
+    if(curScale and curScale ~= self:GetScaling()) then
+        local newScale = curScale > 1.5 and 1.5 or (curScale < 0.5 and 0.5 or curScale);
+        self:SetScaling(newScale);
+        dataWatcher:SetField(self.dataFieldScale, newScale);
     end
     -- 调用基类函数
     EntityOtherPlayer._super.UpdateEntityActionState(self);

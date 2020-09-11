@@ -17,6 +17,7 @@ local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher"
 local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityPlayerMPClient"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer"));
+local AssetsWhiteList = NPL.load("./AssetsWhiteList.lua");
 
 local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer";
 local maxMotionUpdateTickCount = 33;
@@ -65,6 +66,11 @@ function EntityMainPlayer:SendMotionUpdates()
     if(not self:GetInnerObject() or not self:IsNearbyChunkLoaded()) then return end
     
     local hasMetaDataChange = self.dataWatcher:HasChanges();
+    
+    -- 获取模型验证模型的有效性
+    local curMainAsset = self.dataWatcher:GetField(self.dataMainAsset);
+    if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then self.dataWatcher:SetField(self.dataMainAsset, AssetsWhiteList.GetRandomFilename()) end
+
 	-- send head rotation if any 
 	local dHeadRot = self.rotationHeadYaw - self.oldRotHeadYaw;
     local dHeadPitch = self.rotationHeadPitch - self.oldRotHeadPitch;

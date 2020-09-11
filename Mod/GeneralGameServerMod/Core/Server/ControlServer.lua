@@ -21,7 +21,7 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 local ControlServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
 
 local servers = {};  -- 服务器信息集
-local ServerAliveDuration = 1000 * 60 * 5;  -- 5s
+local ServerAliveDuration = 1000 * 60 * 5;  -- 5min
 
 function ControlServer:ctor()
 end

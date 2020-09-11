@@ -86,6 +86,11 @@ function World:IsParaWorldMini()
     return self:GetWorldType() == "ParaWorldMini";
 end
 
+-- 是否支持玩家自己定义自己的可视距离, 默认为false
+function World:IsEnablePlayerSelfAreaSize()
+    return self:GetConfig().isEnablePlayerSelfAreaSize;
+end
+
 -- Tick
 function World:Tick()
     self:GetPlayerManager():Tick();

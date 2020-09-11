@@ -108,7 +108,7 @@ function Config:Init(isServer)
     }
     self.Player = {
         minAliveTime = 60000,    -- 最小存活时间, 大于此值才可以进行离线缓存
-        aliveDuration = 180000,  -- 玩家心跳时间 判断玩家是否存活
+        aliveDuration = 300000,  -- 玩家心跳时间 判断玩家是否存活
     }
     self.Log = {
         level = "INFO",
