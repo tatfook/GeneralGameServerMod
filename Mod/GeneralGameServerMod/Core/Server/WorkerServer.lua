@@ -90,6 +90,3 @@ end
 function WorkerServer:handleErrorMessage(text, connection)
     GGS.INFO.Format("断开与控制服务器的连接");
 end
-
--- 初始化成单列模式
-WorkerServer:InitSingleton();

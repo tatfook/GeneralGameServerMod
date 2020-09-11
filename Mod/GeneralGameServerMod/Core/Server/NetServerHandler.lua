@@ -100,6 +100,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     packetPlayerLogin.worldName = self:GetWorld():GetWorldName();
     packetPlayerLogin.username = self:GetPlayer().username;
     packetPlayerLogin.worldKey = self:GetWorld():GetWorldKey();
+    packetPlayerLogin.areaSize = self:GetPlayer():GetAreaSize();
     self:SendPacketToPlayer(packetPlayerLogin);
 end
 
@@ -112,8 +113,8 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
     local packet = (isNew or self:GetPlayer():IsEnableArea()) and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo;
     -- 新玩家通知所有旧玩家
-    self:GetPlayerManager():SendPacketToAllPlayers(packet, self:GetPlayer());
-    -- self:GetPlayerManager():SendPacketToAreaPlayers(packet, self:GetPlayer());
+    -- self:GetPlayerManager():SendPacketToAllPlayers(packet, self:GetPlayer());
+    self:GetPlayerManager():SendPacketToAreaPlayers(packet, self:GetPlayer());
     -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
     if (not isNew) then return end
 

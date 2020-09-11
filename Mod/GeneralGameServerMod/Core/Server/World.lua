@@ -76,11 +76,6 @@ function World:GetOnlineClientCount()
     return self:GetPlayerManager():GetOnlinePlayerCount();
 end
 
--- 移除断开链接的用户
-function World:RemoveInvalidPlayer()
-    self:GetPlayerManager():RemoveInvalidPlayer();
-end
-
 -- 是否是平行世界
 function World:IsParaWorld()
     return self:GetWorldType() == "ParaWorld";
@@ -89,6 +84,11 @@ end
 -- 家园
 function World:IsParaWorldMini()
     return self:GetWorldType() == "ParaWorldMini";
+end
+
+-- Tick
+function World:Tick()
+    self:GetPlayerManager():Tick();
 end
 
 -- 获取调试信息

@@ -11,6 +11,7 @@ GeneralGameClient:LoadWorld({ip = "127.0.0.1", port = "9000", worldId = "12348"}
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/Entity.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldMain.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
@@ -19,7 +20,6 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldMain.lua");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local ParaWorldMain = commonlib.gettable("Paracraft.Controls.ParaWorldMain");
 local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
@@ -220,7 +220,7 @@ function GeneralGameClient:OnWorldLoaded()
     local options = self:GetOptions();
     -- 设置世界类型
     options.worldType = self:GetWorldType();  
-    if (IsDevEnv) then options.worldType = "ParaWorld" end
+    -- if (IsDevEnv) then options.worldType = "ParaWorld" end
 
     if (options.ip and options.port) then
         self:GetWorld():Login(options);

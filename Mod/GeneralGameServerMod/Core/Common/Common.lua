@@ -45,8 +45,5 @@ function Common:Init(isServer)
 		Log:SetLevel("DEBUG");
 	else 
 		Log:SetLevel(Config.Log.level or "INFO");
-		-- 正式环境禁用网络包日志
-		Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Core.Common.Connection", false);
-        Log:SetModuleLogEnable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer", false);
 	end
 end

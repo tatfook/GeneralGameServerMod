@@ -111,7 +111,7 @@ function WorldManager:Tick()
         if (world:GetClientCount() == 0) then
             table.insert(deleted, worldKey);
         else
-            world:RemoveInvalidPlayer();
+            world:Tick();
         end
     end  
 

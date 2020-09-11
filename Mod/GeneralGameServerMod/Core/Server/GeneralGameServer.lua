@@ -78,6 +78,8 @@ function GeneralGameServer:Start()
 
 	-- 工作服务
 	if (Config.Server.isWorkerServer) then
+		-- 初始化成单列模式
+		WorkerServer:InitSingleton();
 		WorkerServer:Init();
 	end
 

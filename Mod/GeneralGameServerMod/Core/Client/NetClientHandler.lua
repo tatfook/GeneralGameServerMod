@@ -102,6 +102,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     local errmsg = packetPlayerLogin.errmsg or "";
     local username = packetPlayerLogin.username;
     local entityId = packetPlayerLogin.entityId;
+    local areaSize = packetPlayerLogin.areaSize;
 
     -- 登录失败
     if (result ~= "ok") then
@@ -111,7 +112,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
 		return self:GetWorld():Logout();
     end
 
-    PlayerLoginLogoutDebug.Format("player login success, username: %s, entityId: %s", username, entityId);
+    PlayerLoginLogoutDebug.Format("player login success, username: %s, entityId: %s, areaSize: %s", username, entityId, areaSize);
     
     -- 登录成功
     local options = self:GetClient():GetOptions();
@@ -138,7 +139,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetSpeedScale(oldEntityPlayer:GetSpeedScale());
         local x, y, z = oldEntityPlayer:GetPosition();
         local randomRange = 5;
-        if (self.isReconnection) then
+        if (oldEntityPlayer:isa(EntityMainPlayerClass)) then
             entityPlayer:SetPosition(x, y, z);
         else 
             entityPlayer:SetPosition(x + math.random(-randomRange, randomRange), y, z + math.random(-randomRange, randomRange));
@@ -148,6 +149,8 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 设置主玩家
     entityPlayer:Attach();
     GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
+    self:GetPlayerManager():SetMainPlayer(entityPlayer);
+    self:GetPlayerManager():SetAreaSize(areaSize);
     self:SetPlayer(entityPlayer);
  
     -- 清空玩家列表
@@ -195,6 +198,10 @@ function NetClientHandler:GetEntityPlayer(entityId, username)
         return EntityOtherPlayerClass:new():init(world, username or "", entityId), true;
     end
 
+    -- 实时更新entityId username  保证 entityId username 的正确性
+    otherPlayer.entityId = entityId or otherPlayer.entityId;  
+    otherPlayer:SetUserName(username or otherPlayer:GetUserName());
+
     return otherPlayer, false;
 end
 
@@ -204,39 +211,34 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
 
     local entityId = packetPlayerEntityInfo.entityId;
     local username = packetPlayerEntityInfo.username;
-    local x = packetPlayerEntityInfo.x;
-    local y = packetPlayerEntityInfo.y;
-    local z = packetPlayerEntityInfo.z;
-    local facing = packetPlayerEntityInfo.facing;
-    local pitch = packetPlayerEntityInfo.pitch;
-
-    local mainPlayer = self:GetPlayer();
-    local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
+    local x, y, z, facing, pitch = packetPlayerEntityInfo.x, packetPlayerEntityInfo.y, packetPlayerEntityInfo.z, packetPlayerEntityInfo.facing, packetPlayerEntityInfo.pitch;
+    local bx, by, bz = packetPlayerEntityInfo.bx, packetPlayerEntityInfo.by, packetPlayerEntityInfo.bz;
     
-    -- 实时更新entityId 同一个用户名的entityId可能变化
-    entityPlayer.entityId = entityId;
+    -- 为主玩家不做处理
+    if (entityId == self:GetPlayer().entityId) then return end
+    
+    -- 不在可视区则移除玩家
+    if (bx and by and bz and not self:GetPlayerManager():IsInnerVisibleArea(bx, by, bz)) then return self:GetPlayerManager():RemovePlayer(username) end
+    
+    -- 获取玩家实体
+    local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
 
-    if (isNew) then
-        entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
+    -- 新用户加入玩家管理器
+    if (isNew) then 
+        entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
         self:GetPlayerManager():AddPlayer(entityPlayer);
     end
 
     -- 更新实体元数据
-    if (isNew or entityId ~= mainPlayer.entityId) then
-        local watcher = entityPlayer:GetDataWatcher();
-        local metadata = packetPlayerEntityInfo:GetMetadata();
-        if (watcher and metadata) then 
-            watcher:UpdateWatchedObjectsFromList(metadata); 
-        end    
-    end
+    local watcher = entityPlayer:GetDataWatcher();
+    local metadata = packetPlayerEntityInfo:GetMetadata();
+    if (watcher and metadata) then 
+        watcher:UpdateWatchedObjectsFromList(metadata); 
+    end    
 
     -- 更新位置信息
     if (x or y or z or facing or pitch) then
-        if (entityId == mainPlayer.entityId) then
-            entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
-        else 
-            entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, 5);
-        end    
+        entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, 5);
     end
 
     -- 头部信息

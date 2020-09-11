@@ -109,6 +109,7 @@ function EntityMainPlayer:SendMotionUpdates()
         packet.facing, packet.pitch = self.facing, self.rotationPitch;
         packet.bx, packet.by, packet.bz = self:GetBlockPos();
     end
+    
     if (hasHeadRotation) then
         packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
     end

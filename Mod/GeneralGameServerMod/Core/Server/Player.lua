@@ -94,8 +94,9 @@ end
 
 -- 获取玩家视距
 function Player:GetAreaSize()
+    if (not self:IsEnableArea()) then return 0 end
     if (self.options.areaSize == nil or self.options.areaSize == 0) then return self:GetPlayerManager():GetAreaSize() end
-    return self.options.areaSize;
+    return self.options.areaSize or 0;
 end
 
 -- 是否是匿名用户

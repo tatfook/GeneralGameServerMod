@@ -22,6 +22,7 @@ local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player")
 local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
 
 local WorldMaxSize = 30000;  -- 世界的最大bx, by, bz值
+local WorldMarginSize = 10;  -- 以用户为中心计算区域加上次边距, 方便客户端识别玩家是否离开自己的可视区域
 
 PlayerManager:Property("World");   -- 管理器所属世界
 
@@ -309,7 +310,9 @@ function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, filter)
     for i = 1, #onlinePlayerList do
         local username = onlinePlayerList[i];
         local player = self.players[username];
-        if (player and (not filter or filter(player))) then player:SendPacketToPlayer(packet) end
+        if (player and player ~= curPlayer and (not filter or filter(player))) then 
+            player:SendPacketToPlayer(packet);
+        end
     end
 end
 
@@ -361,8 +364,8 @@ function PlayerManager:GetPlayerEntityInfoList(player)
     local playerEntityInfoList = {};
 
     -- 获取在线用户列表
-    -- local onlinePlayerList = self:GetOnlinePlayerList(player);
-    local onlinePlayerList = self:GetOnlinePlayerList(nil);  -- 拉取所有在线用户
+    local onlinePlayerList = self:GetOnlinePlayerList(player);
+    -- local onlinePlayerList = self:GetOnlinePlayerList(nil);  -- 拉取所有在线用户
     for i = 1, #onlinePlayerList do 
         local username = onlinePlayerList[i];
         local player = self.players[username];
@@ -384,11 +387,15 @@ end
 function PlayerManager:GetOnlinePlayerList(player)
     if (player and player:IsEnableArea()) then
         -- 以自己为中心点取区域大小
-        local areaSize = math.floor(player:GetAreaSize() / 2);
+        local areaSize = math.floor(player:GetAreaSize() / 2) + WorldMarginSize;
         local bx, by, bz = player:GetBlockPos();
         return self.onlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
-        return self.onlinePlayerList;
+        local onlines = {};
+        for i = 1, #(self.onlinePlayerList) do
+            table.insert(onlines, self.onlinePlayerList[i]);
+        end
+        return onlines;
     end
 end
 
@@ -426,6 +433,48 @@ function PlayerManager:GetOnlinePlayerCount()
     return count;
 end
 
+
+
+-- 获取最旧的方块同步玩家
+function PlayerManager:GetSyncBlockOldestPlayer()
+    local oldestPlayer = nil
+    for i = 1, #(self.onlinePlayerList) do 
+        local username = self.onlinePlayerList[i];
+        local player = self.players[username];
+        if (player:IsSyncBlock() and player:IsSyncBlockFinish() and player:IsAlive()) then
+            if (not oldestPlayer or oldestPlayer.syncBlockTime > player.syncBlockTime) then
+                oldestPlayer = player;
+            end
+        end
+    end
+    return oldestPlayer;
+end
+
+-- Tick
+function PlayerManager:Tick()
+    self:RemoveInvalidPlayer();
+    self:CleanOfflinePlayer();
+end
+
+-- 清理离线用户, 移除离线时间超过48小时的用户
+function PlayerManager:CleanOfflinePlayer()
+    local offlines = self:GetOfflinePlayerList();
+    local curTime = ParaGlobal.timeGetTime();
+    local maxOfflineTime = 1000 * 60 * 60 * 48; -- 48 hour
+    for i = 1, #offlines do
+        local username = offlines[i];
+        local player = self.players[username];
+        if (not player) then
+            self:RemoveOfflinePlayer(username);
+            self.offlineQuadtree:RemoveObject(username);
+        else 
+            if (player.logoutTick and (curTime - player.logoutTick) > maxOfflineTime) then
+                self:Logout(player);
+            end
+        end
+    end
+end
+
 -- called period 移除没有心跳的玩家
 function PlayerManager:RemoveInvalidPlayer()
     local deleted = {};
@@ -441,19 +490,4 @@ function PlayerManager:RemoveInvalidPlayer()
     for i = 1, #deleted do
         self:Logout(deleted[i], "定时移除不活跃用户");
     end
-end
-
--- 获取最旧的方块同步玩家
-function PlayerManager:GetSyncBlockOldestPlayer()
-    local oldestPlayer = nil
-    for i = 1, #(self.onlinePlayerList) do 
-        local username = self.onlinePlayerList[i];
-        local player = self.players[username];
-        if (player:IsSyncBlock() and player:IsSyncBlockFinish() and player:IsAlive()) then
-            if (not oldestPlayer or oldestPlayer.syncBlockTime > player.syncBlockTime) then
-                oldestPlayer = player;
-            end
-        end
-    end
-    return oldestPlayer;
 end
