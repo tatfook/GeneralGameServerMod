@@ -75,7 +75,7 @@ function GeneralGameCommand:InstallCommand()
 subcmd: 
 connect 连接联机世界
 	/ggs connect [options] [worldId] [worldName]
-	/ggs connect -isSyncBlock -isSyncCmd -areaSize=128 -silent 12706
+	/ggs connect -isSyncBlock -isSyncCmd -areaSize=64 -silent 12706
 disconnect 断开连接
 	/ggs disconnect
 cmd 执行软件内置命令
@@ -157,6 +157,7 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	options.username = (options.username and options.username ~= "") and options.username or nil;
 	options.password = (options.password and options.password ~= "") and options.password or nil;
 	options.silent = if_else(options.silent == nil, true, options.silent and true or false);
+	options.areaSize = tonumber(options.areaSize) or 0;
 	
 	self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
 	self.generalGameClient:LoadWorld(options);

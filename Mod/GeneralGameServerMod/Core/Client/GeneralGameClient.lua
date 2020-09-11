@@ -220,7 +220,7 @@ function GeneralGameClient:OnWorldLoaded()
     local options = self:GetOptions();
     -- 设置世界类型
     options.worldType = self:GetWorldType();  
-    -- if (IsDevEnv) then options.worldType = "ParaWorld" end
+    if (IsDevEnv) then options.worldType = "ParaWorld" end
 
     if (options.ip and options.port) then
         self:GetWorld():Login(options);

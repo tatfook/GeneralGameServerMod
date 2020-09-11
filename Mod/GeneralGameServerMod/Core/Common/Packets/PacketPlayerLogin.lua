@@ -7,7 +7,7 @@ use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketPlayerLogin.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerLogin");
-local packet = Packets.PacketLogin:new():Init(username, password);
+local packet = Packets.PacketPlayerLogin:new():Init();
 -------------------------------------------------------
 ]]
 

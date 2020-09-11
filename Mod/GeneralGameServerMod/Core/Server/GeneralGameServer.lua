@@ -91,7 +91,7 @@ function GeneralGameServer:Start()
 	
 	self.timer:Change(tickDuratin, tickDuratin); -- 两分钟触发一次
 
-    self.isStart = true;
+	self.isStart = true;
 end
 
 function GeneralGameServer:Tick() 

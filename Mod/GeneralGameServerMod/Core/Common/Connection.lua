@@ -68,18 +68,22 @@ end
 
 -- 接受数据包
 function Connection:OnNetReceive(msg)
-	-- 处理数据包前回调
-	if (self.net_handler and self.net_handler.OnBeforeProcessPacket) then
-		self.net_handler:OnBeforeProcessPacket(msg);
-	end
-
+	
+	-- 读取数据包
 	local packet = PacketTypes:GetNewPacket(msg.id);
+	if (packet) then packet:ReadPacket(msg) end
+
 	NetLog(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
 	-- Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
 	-- Log:Std("DEBUG", moduleName, msg);
 	
+	-- 处理数据包前回调
+	if (self.net_handler and self.net_handler.OnBeforeProcessPacket) then
+		self.net_handler:OnBeforeProcessPacket(packet or msg, msg);
+	end
+
+	-- 处理数据包
 	if(packet) then
-		packet:ReadPacket(msg);
 		packet:ProcessPacket(self.net_handler);
 	else
 		Log:Info("invalid packet");
@@ -93,7 +97,7 @@ function Connection:OnNetReceive(msg)
 
 	-- 处理数据包后回调
 	if (self.net_handler and self.net_handler.OnAfterProcessPacket) then
-		self.net_handler:OnAfterProcessPacket(packet or msg);
+		self.net_handler:OnAfterProcessPacket(packet or msg, msg);
 	end
 end
 

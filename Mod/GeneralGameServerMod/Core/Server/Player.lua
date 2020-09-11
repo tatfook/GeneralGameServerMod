@@ -88,14 +88,19 @@ end
 
 -- 是否使能区域化
 function Player:IsEnableArea()
+    -- 世界使能区域化, 则玩家必定区域化
     if (self:GetPlayerManager():IsEnableArea()) then return true end
+    -- 世界没有使能区域化, 则判断玩家自身是否开启区域化
     return self.options.areaSize ~= nil and self.options.areaSize ~= 0;
 end
 
 -- 获取玩家视距
 function Player:GetAreaSize()
+    -- 未开启区域化直接返回0
     if (not self:IsEnableArea()) then return 0 end
+    -- 自身未设置区域大小使用玩家默认的区域大小
     if (self.options.areaSize == nil or self.options.areaSize == 0) then return self:GetPlayerManager():GetAreaSize() end
+    -- 返回玩家自身设置的区域大小
     return self.options.areaSize or 0;
 end
 
@@ -222,6 +227,22 @@ function Player:IsConnection()
     return self.playerNetHandler:GetPlayerConnection();
 end
 
+-- 是否有效
+function Player:IsValid()
+    -- 不为在线用户
+    if (self.state ~= "online") then return false end
+    
+    -- 不是在线玩家也无效   保证不是游离玩家
+    if (not self:GetPlayerManager():IsOnlinePlayer(self)) then return false end
+    
+    -- 验证世界不是游离的
+    local world = self:GetWorld();
+    local worldManager = self.playerNetHandler:GetWorldManager();
+    if (worldManager:GetWorldByKey(world:GetWorldKey()) ~= world) then return false end
+
+    return true;
+end
+
 -- 是否存活
 function Player:IsAlive()
     if (self.state == "offline") then return false; end
@@ -248,9 +269,20 @@ function Player:Logout()
     self.logoutTick = ParaGlobal.timeGetTime();
     self.aliveTime = self.logoutTick - self.loginTick;  -- 本次活跃时间
     self.state = "offline";                             -- 状态置为下线
+
+
 end
 
 -- 玩家发送数据包
 function Player:SendPacket(packet)
     self.playerNetHandler:SendPacketToPlayer(packet);
+end
+
+-- 关闭连接
+function Player:CloseConnection()
+    -- 关闭玩家链接  服务器主动关闭可以导致玩家活跃后进行重连
+    if (self.playerNetHandler:GetPlayerConnection()) then
+        self.playerNetHandler:GetPlayerConnection():CloseConnection();
+        self.playerNetHandler:SetPlayerConnection(nil);
+    end
 end

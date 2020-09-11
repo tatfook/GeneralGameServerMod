@@ -42,7 +42,7 @@ function PlayerManager:Init(world)
     self.areaSize =  if_else(worldConfig.areaSize == nil or worldConfig.areaSize == 0, 128, worldConfig.areaSize);  
     self.areaMinClientCount = worldConfig.areaMinClientCount or 0;
 
-    if (IsDevEnv) then self.areaSize = 10 end
+    if (IsDevEnv) then self.areaSize = 128 end
 
     -- 四叉树选项 
     local quadtreeOptions = {
@@ -289,7 +289,7 @@ end
 
 -- 发送玩家信息
 function PlayerManager:SendPacketPlayerInfo(player)
-    self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()));  
+    self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()), player);  
     GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("发送玩家离线数据包, username : %s, worldkey: %s, entityId: %s", player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
 
@@ -342,16 +342,30 @@ function PlayerManager:IsPlayer(player)
     return type(player) == "table" and player.isa and player:isa(Player);
 end
 
+-- 是否是在线玩家
+function PlayerManager:IsOnlinePlayer(player)
+    player = self:GetPlayer(player);  -- 验证玩家有效性
+
+    if (not player) then return false end  -- 不存在则不是
+
+    return self.onlinePlayerList:contains(player:GetUserName());
+end
+
 -- 获取指定玩家
 function PlayerManager:GetPlayer(id)
+    -- 通过用户名查找玩家
+    if (type == "string") then return self.players[id] end
+    
+    -- 玩家验证
+    if (self:IsPlayer(id)) then 
+        local username = id:GetUserName();
+        local player = self.players[username];
+        return player == id and player or nil;
+    end
+
+    -- 通过entityId查找玩家
     for key, player in pairs(self.players) do 
         if (type(id) == "number" and player.entityId == id) then
-            return player;
-        end
-        if (type(id) == "string" and player.username == id) then
-            return player;
-        end
-        if (type(id) == "table" and player == id) then
             return player;
         end
     end
@@ -475,7 +489,7 @@ function PlayerManager:CleanOfflinePlayer()
     end
 end
 
--- called period 移除没有心跳的玩家
+-- 移除没有心跳的玩家
 function PlayerManager:RemoveInvalidPlayer()
     local deleted = {};
     for i = 1, #(self.onlinePlayerList) do 
@@ -486,8 +500,12 @@ function PlayerManager:RemoveInvalidPlayer()
             table.insert(deleted, player);
         end
     end
+
     -- 下线不活跃的用户
     for i = 1, #deleted do
-        self:Logout(deleted[i], "定时移除不活跃用户");
+        local invalidPlayer = deleted[i];
+        -- 服务器最有在此情况主动关闭连接, 其它情况又客户端主动关闭
+        invalidPlayer:CloseConnection();                       -- 主动关闭, 让其激活后自行重连
+        self:Offline(deleted[i], "定时移除不活跃用户");          -- 走离线逻辑 
     end
 end

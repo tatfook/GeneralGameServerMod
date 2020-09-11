@@ -7,7 +7,7 @@ use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketBlock.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketBlock");
-local packet = Packets.PacketBlockInfoList:new():Init();
+local packet = Packets.PacketBlock:new():Init();
 -------------------------------------------------------
 ]]
 

@@ -112,11 +112,16 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     -- 设置当前玩家实体信息
     local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
     local packet = (isNew or self:GetPlayer():IsEnableArea()) and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo;
-    -- 新玩家通知所有旧玩家
+    -- 新玩家通知所有旧玩家  最好只通知可视范围内的玩家信息
     -- self:GetPlayerManager():SendPacketToAllPlayers(packet, self:GetPlayer());
     self:GetPlayerManager():SendPacketToAreaPlayers(packet, self:GetPlayer());
-    -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
-    if (not isNew) then return end
+
+    -- 非新玩家, 检查玩家是否有效
+    if (not isNew) then
+        -- 无效玩家进行重新登录
+        if (not self:GetPlayer():IsValid()) then self:handlePlayerRelogin() end
+        return;
+    end
 
     -- 新玩家同步玩家列表
     self:handlePlayerEntityInfoList();
@@ -145,14 +150,18 @@ end
 
 -- 链接出错 玩家退出
 function NetServerHandler:handleErrorMessage(text, data)
-    if (not self:GetPlayer()) then return end
+    -- 链接出错关闭, 关闭连接
+    if (self:GetPlayerConnection()) then
+        self:GetPlayerConnection():CloseConnection();
+        self:SetPlayerConnection(nil);
+    end
 
+    -- 玩家不存在, 直接退出    
+    if (not self:GetPlayer()) then return end
+   
     -- 下线走离线流程 登出直接踢出服务器
     self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家主动下线");
-    
-    -- 关闭连接
-    self:GetPlayerConnection():CloseConnection();
-    self:SetPlayerConnection(nil);
+  
 end
 
 -- 监听包处理后
@@ -213,8 +222,7 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
         packetGeneral.data.debug = self:GetWorkerServer():GetServerList();
         self:SendPacketToPlayer(packetGeneral);
     elseif (cmd == "ping") then
-        local worldKey = self:GetWorld():GetWorldKey();
-        packetGeneral.data.debug = self:GetWorld() == self:GetWorldManager():GetWorldByKey(worldKey);
+        packetGeneral.data.debug = self:GetPlayer():IsValid();
         self:SendPacketToPlayer(packetGeneral);
     end
 end
