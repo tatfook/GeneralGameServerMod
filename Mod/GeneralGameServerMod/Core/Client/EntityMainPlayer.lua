@@ -27,6 +27,7 @@ EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
 -- 构造函数
 function EntityMainPlayer:ctor()
     self.playerInfo = {};
+    self.oldBX, self.oldBY, self.oldBZ = 0, 0, 0;
 end
 
 -- 初始化函数
@@ -65,45 +66,35 @@ end
 function EntityMainPlayer:SendMotionUpdates()
     if(not self:GetInnerObject() or not self:IsNearbyChunkLoaded()) then return end
     
-    local hasMetaDataChange = self.dataWatcher:HasChanges();
-    
     -- 获取模型验证模型的有效性
     local curMainAsset = self.dataWatcher:GetField(self.dataMainAsset);
     if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then self.dataWatcher:SetField(self.dataMainAsset, AssetsWhiteList.GetRandomFilename()) end
 
-	-- send head rotation if any 
-	local dHeadRot = self.rotationHeadYaw - self.oldRotHeadYaw;
-    local dHeadPitch = self.rotationHeadPitch - self.oldRotHeadPitch;
-    local hasHeadRotation = dHeadRot~=0 or dHeadPitch~=0;
-    -- send movement and body facing. 
-    local dx = self.x - self.oldPosX;
-    local dy = self.y - self.oldPosY;
-    local dz = self.z - self.oldPosZ;
+    local hasMetaDataChange = self.dataWatcher:HasChanges();
+    local hasHeadRotation = self.rotationHeadYaw ~= self.oldRotHeadYaw or self.rotationHeadPitch ~= self.oldRotHeadPitch;
     local hasMoved = self.x ~= self.oldPosX or self.y ~= self.oldPosY or self.z ~= self.oldPosZ;
-    local moveDistance = dx * dx + dy * dy + dz * dz;
-    local dRotY = self.facing - self.oldRotationYaw;
-    local dRotPitch = self.rotationPitch - self.oldRotationPitch;
-    local hasRotation = dRotY ~= 0 or dRotPitch ~= 0;
-    local force = self:IsUpdatePlayerInfo() or (self:IsRiding() and (moveDistance > 2) or (moveDistance > 0.1));
-    local forceTick = self.motionUpdateTickCount >= maxMotionUpdateTickCount;
+    local hasRotation = self.facing ~= self.oldRotationYaw or self.rotationPitch ~= self.oldRotationPitch;
+    local bx, by, bz = self:GetBlockPos();
+    local dx, dy, dz = math.abs(bx - self.oldBX), math.abs(by - self.oldBY), math.abs(bz - self.oldBZ);
+    local moveDistance = math.max(dy, math.max(dx, dz));
+    local force = self:IsUpdatePlayerInfo() or moveDistance > 3 or (hasMoved and self.motionUpdateTickCount > 100); -- 如果发生移动， 最大延迟为3s同步一次
+    local forceTick = self.motionUpdateTickCount >= maxMotionUpdateTickCount; -- 如果
 
     -- tick 自增
     self.motionUpdateTickCount = self.motionUpdateTickCount + 1;
 
     -- 位置实时同步, 其它 hasMetaDataChange, hasHeadRotation, hasRotation 配合 Tick 同步
     if (not force and not (forceTick and (hasMetaDataChange or hasMoved or hasHeadRotation or hasRotation))) then return end
-    if (force) then                   -- 位置变动超标
-        maxMotionUpdateTickCount = 5; -- 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
-    else                              -- 原地操作降低更新频率
-        maxMotionUpdateTickCount = maxMotionUpdateTickCount + maxMotionUpdateTickCount;  -- 5 10 20 40 80 160 320 640
-    end;
-    -- Log:Std("DEBUG", moduleName, "-----------------------------------------------");
-    -- Log:Std("DEBUG", moduleName, "force: %s, moveDistance: %s, ", force, moveDistance);
-    -- Log:Std("DEBUG", moduleName, "motionUpdateTickCount: %d, hasMoved: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", self.motionUpdateTickCount, hasMoved, hasRotation, hasHeadRotation, hasMetaDataChange);
+    if (force) then                                                                     -- 位置变动超标
+        maxMotionUpdateTickCount = self.motionUpdateTickCount                           -- 尽量保证下个数据包比上时间长， 因在在其它玩家世界自己人物慢一个节拍， 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
+    else                                                                                -- 原地操作降低更新频率
+        maxMotionUpdateTickCount = maxMotionUpdateTickCount + maxMotionUpdateTickCount; -- 5 10 20 40 80 160 320 640
+    end
     local packet = Packets.PacketPlayerEntityInfo:new():Init(nil, self.dataWatcher, false);
     -- 设置用户名
     packet.username = self:GetUserName();
     packet.entityId = self.entityId;
+    packet.tick = self.motionUpdateTickCount;
 
     if (self:IsUpdatePlayerInfo()) then
         packet.playerInfo = self:GetPlayerInfo();
@@ -113,7 +104,7 @@ function EntityMainPlayer:SendMotionUpdates()
     if (hasMoved or hasRotation) then
         packet.x, packet.y, packet.z = self.x, self.y, self.z; 
         packet.facing, packet.pitch = self.facing, self.rotationPitch;
-        packet.bx, packet.by, packet.bz = self:GetBlockPos();
+        packet.bx, packet.by, packet.bz = bx, by, bz;
     end
     
     if (hasHeadRotation) then
@@ -122,10 +113,8 @@ function EntityMainPlayer:SendMotionUpdates()
   
     self:AddToSendQueue(packet);
 
-    self.oldPosX = self.x;
-    self.oldMinY = self.y;
-    self.oldPosY = self.y;
-    self.oldPosZ = self.z;
+    self.oldPosX, self.oldPosY, self.oldPosZ = self.x, self.y, self.z;
+    self.oldBX, self.oldBY, self.oldBZ = bx, by, bz;
     self.oldRotationYaw = self.facing;
     self.oldRotationPitch = self.rotationPitch;
     self.oldRotHeadYaw = self.rotationHeadYaw;

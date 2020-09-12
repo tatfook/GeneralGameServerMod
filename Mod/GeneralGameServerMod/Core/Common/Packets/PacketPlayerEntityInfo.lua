@@ -43,9 +43,6 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
     self.entityId = entityInfo.entityId;
     self.username = entityInfo.username;
 
-    -- 玩家模型
-    self.mainAssetPath = entityInfo.mainAssetPath;
-
     -- 位置信息
     self.x = entityInfo.x;
     self.y = entityInfo.y;
@@ -60,13 +57,8 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
     self.headYaw = entityInfo.headYaw;
     self.headPitch = entityInfo.headPitch;
 
-    -- self.asset = entityInfo.asset; -- 外貌
-    -- self.skip = entityInfo.skin; -- 皮肤
-    -- self.animId = entityInfo.animId; -- 动画
-    -- 移动信息
-    -- self.stance = entityInfo.stance;
-    -- self.onground = entityInfo.onground;
-    -- self.moving = entityInfo.moving;
+    -- tickcount = frmaecount
+    self.tick = entityInfo.tick;
 
     -- 实体对应的玩家信息
     self.playerInfo = entityInfo.playerInfo;

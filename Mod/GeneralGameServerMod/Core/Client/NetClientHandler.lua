@@ -212,7 +212,7 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
 
     local entityId = packetPlayerEntityInfo.entityId;
     local username = packetPlayerEntityInfo.username;
-    local x, y, z, facing, pitch = packetPlayerEntityInfo.x, packetPlayerEntityInfo.y, packetPlayerEntityInfo.z, packetPlayerEntityInfo.facing, packetPlayerEntityInfo.pitch;
+    local x, y, z, facing, pitch, tick = packetPlayerEntityInfo.x, packetPlayerEntityInfo.y, packetPlayerEntityInfo.z, packetPlayerEntityInfo.facing, packetPlayerEntityInfo.pitch, packetPlayerEntityInfo.tick or 5;
     local bx, by, bz = packetPlayerEntityInfo.bx, packetPlayerEntityInfo.by, packetPlayerEntityInfo.bz;
     
     -- 为主玩家不做处理
@@ -238,8 +238,11 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     end    
 
     -- 更新位置信息
-    if (x or y or z or facing or pitch) then
-        entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, 5);
+    if (not isNew and (x or y or z or facing or pitch)) then
+        local oldbx, oldby, oldbz = entityPlayer:GetBlockPos();
+        local dx, dy, dz = math.abs(bx - oldbx), math.abs(by - oldby), math.abs(bz - oldbz);
+        local moveDistance = math.max(dy, math.max(dx, dz));
+        entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, if_else(moveDistance > 3, tick, math.min(tick, 30)));
     end
 
     -- 头部信息
