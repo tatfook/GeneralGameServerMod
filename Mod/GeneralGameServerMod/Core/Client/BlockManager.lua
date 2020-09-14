@@ -38,7 +38,7 @@ local notSyncBlockIdMap = {
 	[227] = true, -- 含羞草石
 }
 
-local BlockSyncDebug = GGS.Debug.GetModuleDebug("BlockSyncDebug");
+local BlockSyncDebug = GGS.BlockSyncDebug;
 
 function BlockManager:ctor()
 	self.allMarkForUpdateBlockMap = {};                                   -- 所有标记更新块 

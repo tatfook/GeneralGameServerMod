@@ -38,7 +38,7 @@ NetClientHandler:Property("Client");         -- 客户端
 NetClientHandler:Property("BlockManager");   -- 方块管理器
 NetClientHandler:Property("PlayerManager");  -- 玩家管理器
 
-local PlayerLoginLogoutDebug = GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug");
+local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
 function NetClientHandler:ctor() 
     self.reconnectionDelay = 3; -- 3s

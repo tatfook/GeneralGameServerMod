@@ -163,10 +163,6 @@ function Debug.GetDebugDebug()
     return Debug.GetModuleDebug("DEBUG");
 end
 
-function Debug.GetNetDebug()
-    return Debug.GetModuleDebug("NET");
-end
-
 function _G.DebugStack(dept)
     dept = dept or 50;
     for i = 1, dept do

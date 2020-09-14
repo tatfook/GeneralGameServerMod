@@ -11,8 +11,6 @@ local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config")
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/commonlib.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 Config.IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 Config.IsTestEnv = ParaEngine.GetAppCommandLineByParam("IsTestEnv","false") == "true";
@@ -24,17 +22,17 @@ function Config:SetEnv(env)
         self.IsTestEnv = true;
         self.serverIp = "ggs.keepwork.com";
         self.serverPort = "9001";
-        Log:Info("切换到测试环境");
+        GGS.INFO("切换到测试环境");
     elseif (env == "dev") then
         self.IsDevEnv = true;
         self.serverIp = "127.0.0.1";
         self.serverPort = "9000";
-        Log:Info("切换到开发环境");
+        GGS.INFO("切换到开发环境");
     else 
         self.IsDevEnv, self.IsTestEnv = false, false;
         self.serverIp = "ggs.keepwork.com";
         self.serverPort = "9000";
-        Log:Info("切换到正式环境");
+        GGS.INFO("切换到正式环境");
     end
 end
 
@@ -43,13 +41,13 @@ function Config:Init(isServer)
     if (self.inited) then return end;
 
     self.inited = true;
-    Log:Info("---------------------%s init config----------------", isServer and "server" or "client");
+    GGS.INFO.Format("---------------------%s init config----------------", isServer and "server" or "client");
 
-    self.isServer = isServer;
+    self.IsServer = isServer;
     -- 客户端默认世界ID
     self.maxEntityId = 1000000;    -- 服务器统一分配的最大实体ID数
-    self.defaultWorldId = 10373;  -- 新手岛世界ID
-    self.isSyncBlock = false;     -- 默认不同步 Block 信息
+    self.defaultWorldId = 10373;   -- 新手岛世界ID
+    self.isSyncBlock = false;      -- 默认不同步 Block 信息
     if (self.IsDevEnv) then 
         self.serverIp = "127.0.0.1";
         self.serverPort = "9000";
@@ -89,6 +87,7 @@ function Config:Init(isServer)
         outerPort="9000",
     }
     self.World = {
+        areaSize = 0,
         minClientCount = 50, 
         maxClientCount = 200,
     }
@@ -110,17 +109,32 @@ function Config:Init(isServer)
         minAliveTime = 60000,    -- 最小存活时间, 大于此值才可以进行离线缓存
         aliveDuration = 300000,  -- 玩家心跳时间 判断玩家是否存活
     }
-    self.Log = {
-        level = "INFO",
+    self.Debug = {
+        Net = false,
+        PlayerLoginLogoutDebug = true,
     }
     -- 服务端才需要配置文件, 加载配置
     if (isServer) then
         self:LoadConfig(self.ConfigFile);
     end 
 
-    Log:Info(self);
+    GGS.INFO(self);
 end
 
+-- 拷贝XML节点属性
+local function CopyXmlAttr(dst, src)
+    if (type(dst) ~= "table" or type(src) ~= "table") then return end
+
+    for key, val in pairs(src) do 
+        if (string.lower(val) == "true" or string.lower(val) == "false") then
+            dst[key] = string.lower(val) == "true";
+        elseif (string.match(val, "^%-?%d+$")) then
+            dst[key] = tonumber(val) or dst[key];
+        else
+            dst[key] = val;
+        end
+    end
+end
 
 -- 加载配置文件
 function Config:LoadConfig(filename)
@@ -129,58 +143,30 @@ function Config:LoadConfig(filename)
     -- 加载配置文件
     local xmlRoot = ParaXML.LuaXML_ParseFile(filename);
     local pathPrefix = self.IsDevEnv and "/GeneralGameServerDev" or (self.IsTestEnv and "/GeneralGameServerTest" or "/GeneralGameServer");
-    if (not xmlRoot) then
-		return Log:Error("failed loading paracraft server config file %s", filename);
-    end
+    if (not xmlRoot) then return GGS.Error.Format("failed loading paracraft server config file %s", filename) end
 
     -- 服务器配置
-    self.Server = self.Server or {};
-    local Server = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Server")[1];
-    local ServerAttr = Server and (Server.attr or {});
-    commonlib.partialcopy(self.Server, ServerAttr);
-    self.ip = ServerAttr.ip or self.ip;
-    self.port = ServerAttr.port or self.port;
-    self.Server.maxClientCount = tonumber(ServerAttr.maxClientCount) or self.maxClientCount;
-    self.Server.maxWorldCount = tonumber(ServerAttr.maxWorldCount) or self.maxWorldCount;
-    self.Server.isControlServer = ServerAttr.isControlServer == "true" and true or false;
-    self.Server.isWorkerServer = ServerAttr.isWorkerServer == "true" and true or false;
-
-    -- 日志配置
-    self.Log = self.Log or {};
-    local LogCfg = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Log")[1];
-    local LogAttr = LogCfg and (LogCfg.attr or {});
-    commonlib.partialcopy(self.Log, LogAttr);
-    
-    local LogModules = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Log/Module");
-    for i, module in ipairs(LogModules) do 
-        Log:SetModuleLogEnable(module.name, module.attr.enable == "true" and true or false);
-    end
+    local Server = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Server");
+    CopyXmlAttr(self.Server, Server and Server.attr);
 
     -- 世界配置
     self.World = self.World or {};
-    local World = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/World")[1];
-    local WorldAttr = World and (World.attr or {});
-    commonlib.partialcopy(self.World, WorldAttr);
-    self.World.maxClientCount = tonumber(WorldAttr.maxClientCount) or self.worldMaxClientCount;
-    self.World.minClientCount = tonumber(WorldAttr.minClientCount) or 50;
-    -- Log:Info(self);
+    local World = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/World");
+    CopyXmlAttr(self.World, World and World.attr);
 
     -- 控制器服务配置
-    self.ControlServer = self.ControlServer or {};
-    local ControlServer = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Server/ControlServer")[1];
-    local ControlServerAttr = ControlServer and (ControlServer.attr or {});
-    commonlib.partialcopy(self.ControlServer, ControlServerAttr);
+    local ControlServer = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Server/ControlServer");
+    CopyXmlAttr(self.ControlServer, ControlServer and ControlServer.attr);
 
     -- 工作服务配置
-    self.WorkerServer = self.WorkerServer or {};
-    local WorkerServer = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Server/WorkerServer")[1];
-    local WorkerServerAttr = WorkerServer and (WorkerServer.attr or {});
-    commonlib.partialcopy(self.WorkerServer, WorkerServerAttr);
+    local WorkerServer = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Server/WorkerServer");
+    CopyXmlAttr(self.WorkerServer, WorkerServer and WorkerServer.attr);
 
     -- 玩家配置
-    self.Player = self.Player or {};
-    -- 最小存活时间
-    local MinAliveTime = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/Player/MinAliveTime")[1];
-    self.Player.minAliveTime = tonumber(MinAliveTime and MinAliveTime[1] or 120000);
-    self.Player.aliveDuration = 3 * 60 * 1000; -- 心跳间隔
+    local Player = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Player");
+    CopyXmlAttr(self.Player, Player and Player.attr);
+
+    -- Debug
+    local Debug = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Debug");
+    CopyXmlAttr(self.Debug, Debug and Debug.attr);
 end

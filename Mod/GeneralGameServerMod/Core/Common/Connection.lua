@@ -24,10 +24,7 @@ local nextNid = 100;
 
 Connection.default_neuron_file = defaultNeuronFile;
 
-local function NetLog(...)
-	local debug = GGS.Debug.GetNetDebug();
-	debug(...);
-end
+local NetDebug = GGS.NetDebug;
 
 -- 服务端初始化方式
 function Connection:Init(nid, net_handler)
@@ -59,7 +56,7 @@ function Connection:OnError(text)
 end
 
 function Connection:AddPacketToSendQueue(packet)
-	NetLog(string.format("---------------------send packet: %d--------------------", packet:GetPacketId()), packet:WritePacket());
+	NetDebug(string.format("---------------------send packet: %d--------------------", packet:GetPacketId()), packet:WritePacket());
 	-- Log:Std("DEBUG", moduleName, "---------------------send packet: %d--------------------", packet:GetPacketId());
 	-- Log:Std("DEBUG", moduleName, packet:WritePacket());
 
@@ -73,7 +70,7 @@ function Connection:OnNetReceive(msg)
 	local packet = PacketTypes:GetNewPacket(msg.id);
 	if (packet) then packet:ReadPacket(msg) end
 
-	NetLog(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
+	NetDebug(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
 	-- Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
 	-- Log:Std("DEBUG", moduleName, msg);
 	

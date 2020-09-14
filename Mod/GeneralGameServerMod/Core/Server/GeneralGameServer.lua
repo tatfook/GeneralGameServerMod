@@ -68,7 +68,7 @@ function GeneralGameServer:Start()
 
     NPL.StartNetServer(listenIp, tostring(listenPort));
 
-    GGS.INFO.Format(string.format("服务器启动: listenIp: %s, listenPort", listenIp, listenPort));
+    GGS.INFO.Format(string.format("服务器启动: listenIp: %s, listenPort: %s", listenIp, listenPort));
 
 	-- 控制服务
 	if (Config.Server.isControlServer) then

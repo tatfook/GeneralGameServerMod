@@ -29,10 +29,12 @@
     </WorkerServer>
   </Server>
   <!-- 世界相关信息配置
+  areaSize: 世界区域大小 推荐值64, 128 设置此值后, 玩家信息同步只会同步当前玩家该范围内的玩家数据, 是一种优化选项, 禁用区域优化填0
   minClientCount: 最少玩家数 当玩家数量小于此值会保留离线玩家
   maxClientCount: 最大玩家数 当玩家数量大于此值,此世界不再接受玩家进入
   -->
   <World 
+    areaSize=0
     minClientCount=50 
     maxClientCount=200>
   </World>
@@ -67,6 +69,11 @@
   <!--玩家配置-->
   <Player>
   </Player>
+  <!-- Debug 配置项, 模块日志按业务分模块打印 -->
+  <Debug
+    Net=false
+    PlayerLoginLogoutDebug=true>
+  </Debug>
 </GeneralGameServer>
 <!--开发环境配置-->
 <GeneralGameServerDev>
@@ -102,6 +109,10 @@
   </World>
   <Player>
   </Player>
+  <Debug
+    Net=false
+    PlayerLoginLogoutDebug=true>
+  </Debug>
 </GeneralGameServerDev>
 
 <!--测试环境配置-->

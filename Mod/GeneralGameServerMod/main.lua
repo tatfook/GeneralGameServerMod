@@ -22,7 +22,7 @@ GeneralGameServerMod:init();
 local GeneralGameClients = {};
 
 _G.IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
-local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
+local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua");
 
 _G.GGS = {
 	-- 环境识别
@@ -35,6 +35,10 @@ _G.GGS = {
 	WARN = Debug.GetModuleDebug("WARN"),
 	ERROR= Debug.GetModuleDebug("ERROR"),
 	FATAL= Debug.GetModuleDebug("FATAL"),
+	-- 业务逻辑DEBUG
+	PlayerLoginLogoutDebug = Debug.GetModuleDebug("PlayerLoginLogoutDebug"),   -- 玩家登录登出日志
+	NetDebug = Debug.GetModuleDebug("NET"),                                    -- 发送接收数据包日志
+	BlockSyncDebug = Debug.GetModuleDebug("BlockSyncDebug"),                   -- 方块同步日志
 
 	-- 注册主客户端类
 	RegisterClientClass = function(appName, clientClass)

@@ -27,9 +27,9 @@ NetServerHandler:Property("World");                                    -- 当前
 NetServerHandler:Property("PlayerManager");                            -- 世界玩家管理器
 NetServerHandler:Property("WorldManager");                             -- 世界管理器
 NetServerHandler:Property("WorkerServer");                             -- 工作服务器
-NetServerHandler:Property("PlayerConnection");                               -- 玩家链接
+NetServerHandler:Property("PlayerConnection");                         -- 玩家链接
 
-local PlayerLoginLogoutDebug = GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug");
+local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
 function NetServerHandler:ctor() 
     self:SetWorkerServer(WorkerServer);
