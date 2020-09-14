@@ -20,7 +20,7 @@ local EntityOtherPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.
 
 local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer";
 
--- EntityOtherPlayer:Property("UserName");
+EntityOtherPlayer:Property("MotionAnimId");
 
 function EntityOtherPlayer:ctor()
     self.playerInfo = {};
@@ -88,13 +88,39 @@ end
 
 -- 更改人物外观
 function EntityOtherPlayer:UpdateEntityActionState()
+    local curAnimId = self:GetAnimId();
+    
+    -- 如果处于运动中 优先使用运动中的动画
+    if (self.smoothFrames > 0 and self:GetMotionAnimId()) then curAnimId = self:GetMotionAnimId() end
+
+	if(self.lastAnimId ~= curAnimId and curAnimId) then
+		self.lastAnimId = curAnimId;
+		local obj = self:GetInnerObject();
+		if(obj) then
+			obj:SetField("AnimID", curAnimId);
+		end
+    end
+    
+	local curSkinId = self:GetSkinId();
+	if(self.lastSkinId ~= curSkinId and curSkinId) then
+		self.lastSkinId = curSkinId;
+		self:SetSkin(curSkinId, true);
+    end
+    
     local dataWatcher = self:GetDataWatcher();
+    local curBlockIdInHand = dataWatcher:GetField(self.dataBlockInHand);
+	if(curBlockIdInHand~=self:GetBlockInRightHand()) then
+		self:SetBlockInRightHand(curBlockIdInHand);
+		self:RefreshRightHand();
+    end
+    
     local curMainAsset = dataWatcher:GetField(self.dataMainAsset);
     if(curMainAsset~=self:GetMainAssetPath()) then
         if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then curMainAsset = AssetsWhiteList.GetDefaultFilename() end
         self:SetMainAssetPath(curMainAsset);
         dataWatcher:SetField(self.dataMainAsset, curMainAsset);
 	end
+    
     -- 改写大小同步规则
     local curScale = dataWatcher:GetField(self.dataFieldScale);
     if(curScale and curScale ~= self:GetScaling()) then
@@ -102,8 +128,6 @@ function EntityOtherPlayer:UpdateEntityActionState()
         self:SetScaling(newScale);
         dataWatcher:SetField(self.dataFieldScale, newScale);
     end
-    -- 调用基类函数
-    EntityOtherPlayer._super.UpdateEntityActionState(self);
 end
 
 -- 压力板同步触发

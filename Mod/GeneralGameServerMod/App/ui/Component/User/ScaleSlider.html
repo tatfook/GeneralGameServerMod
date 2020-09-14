@@ -3,10 +3,10 @@
     <sliderbar 
         ref="sliderbar"
         v-on:change="Change"
-        min=50
-        max=150
-        value=100
-        min_step=10
+        min=100
+        max=120
+        value=120
+        min_step=2
         direction="vertical" 
         style="height: 130px; width: 10px; margin-top: 2px;" 
         background_width=10
@@ -20,22 +20,21 @@
 </template>
 
 <script type="text/lua">
-self.value = 100;
-
-local Total = 200;
+self.value = 120;
+local Total = 220;
 
 function ClickAddStep()
     local sliderbarEl = GetRef("sliderbar");
     if (not sliderbarEl) then return end
 
-    sliderbarEl:SetValue(sliderbarEl:GetValue() - 10);
+    sliderbarEl:SetValue(sliderbarEl:GetValue() - 2);
 end
 
 function ClickSubStep()
     local sliderbarEl = GetRef("sliderbar");
     if (not sliderbarEl) then return end
 
-    sliderbarEl:SetValue(sliderbarEl:GetValue() + 10);
+    sliderbarEl:SetValue(sliderbarEl:GetValue() + 2);
 end
 
 function Change(value)

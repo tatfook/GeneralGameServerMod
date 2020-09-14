@@ -230,6 +230,9 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
         self:GetPlayerManager():AddPlayer(entityPlayer);
     end
 
+    -- 更新玩家运动动画
+    if (type(entityPlayer.SetMotionAnimId) == "function") then entityPlayer:SetMotionAnimId(packetPlayerEntityInfo.motionAnimId) end
+
     -- 更新实体元数据
     local watcher = entityPlayer:GetDataWatcher();
     local metadata = packetPlayerEntityInfo:GetMetadata();
@@ -239,10 +242,13 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
 
     -- 更新位置信息
     if (not isNew and (x or y or z or facing or pitch)) then
-        local oldbx, oldby, oldbz = entityPlayer:GetBlockPos();
-        local dx, dy, dz = math.abs(bx - oldbx), math.abs(by - oldby), math.abs(bz - oldbz);
-        local moveDistance = math.max(dy, math.max(dx, dz));
-        entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, if_else(moveDistance > 3, tick, math.min(tick, 30)));
+        local oldpos = string.format("%.2f %.2f %.2f", entityPlayer.x, entityPlayer.y, entityPlayer.z);
+        local newpos = string.format("%.2f %.2f %.2f", x, y, z);
+        if (oldpos == newpos) then
+            entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
+        else
+            entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, tick);
+        end
     end
 
     -- 头部信息

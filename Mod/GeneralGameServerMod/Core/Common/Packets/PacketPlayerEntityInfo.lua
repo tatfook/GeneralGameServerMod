@@ -59,6 +59,7 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
 
     -- tickcount = frmaecount
     self.tick = entityInfo.tick;
+    self.motionAnimId = entityInfo.motionAnimId;
 
     -- 实体对应的玩家信息
     self.playerInfo = entityInfo.playerInfo;
