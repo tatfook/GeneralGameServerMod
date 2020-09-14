@@ -22,6 +22,7 @@ GeneralGameServerMod:init();
 local GeneralGameClients = {};
 
 _G.IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
+-- _G.IsDevEnv = false;
 local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua");
 
 _G.GGS = {

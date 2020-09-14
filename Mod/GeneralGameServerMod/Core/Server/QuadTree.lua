@@ -188,6 +188,10 @@ function QuadTree:RemoveObject(object)
 end
 
 function QuadTree:GetObjects(left, top, right, bottom)
+    if (not left or not top or not right or not bottom) then
+        return self.objects;
+    end
+    
     local function GetObjects(node, left, top, right, bottom)
         left, top, right, bottom, isValidArea = node:GetSubArea(left, top, right, bottom);
         -- echo({"--------------------isValidArea", left, top, right, bottom, isValidArea, node.left, node.top, node.right, node.bottom, node:GetObjects()});

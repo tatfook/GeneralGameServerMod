@@ -341,7 +341,7 @@ function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, isCurPlayerCen
     -- 最好使用四叉树, 效率会高很多
     if (not self:GetWorld():IsEnablePlayerSelfAreaSize() or isCurPlayerCenter) then
         local onlinePlayerList = self:GetOnlinePlayerList(curPlayer, isCurPlayerCenter);
-        GGS.AreaSyncDebug("玩家:" .. curPlayer:GetUserName(), "区域玩家:", onlinePlayerList);
+        -- GGS.AreaSyncDebug("玩家:" .. curPlayer:GetUserName(), "区域玩家:", onlinePlayerList);
         for i = 1, #onlinePlayerList do
             local username = onlinePlayerList[i];
             local player = self.players[username];
@@ -421,7 +421,6 @@ end
 -- 获取所有玩家实体信息列表
 function PlayerManager:GetPlayerEntityInfoList(player)
     local playerEntityInfoList = {};
-
     -- 获取在线用户列表
     local onlinePlayerList = self:GetOnlinePlayerList(player, true);
     for i = 1, #onlinePlayerList do 
@@ -442,12 +441,13 @@ function PlayerManager:GetPlayerEntityInfoList(player)
 end
 
 -- 获取在线用户的用户名列表
-function PlayerManager:GetOnlinePlayerList(player, isUsePlayerAreaSize)
+function PlayerManager:GetOnlinePlayerList(player, isUsePlayerAreaSize, marginSize)
+    marginSize = marginSize or WorldMarginSize;
     if (player and self:IsEnableArea()) then
         local areaSize = if_else(isUsePlayerAreaSize, player:GetAreaSize(), self:GetAreaSize()); 
         local bx, by, bz = player:GetBlockPos();
-        areaSize = math.floor(areaSize / 2) + WorldMarginSize;
-        GGS.AreaSyncDebug.Format("区域大小: %s", areaSize);
+        areaSize = math.floor(areaSize / 2) + marginSize;
+        -- GGS.AreaSyncDebug("区域大小: " .. tostring(areaSize));
         return self.onlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
         local onlines = {};
@@ -459,11 +459,12 @@ function PlayerManager:GetOnlinePlayerList(player, isUsePlayerAreaSize)
 end
 
 -- 获取离线用户的用户名列表
-function PlayerManager:GetOfflinePlayerList(player, isUsePlayerAreaSize)
+function PlayerManager:GetOfflinePlayerList(player, isUsePlayerAreaSize, marginSize)
+    marginSize = marginSize or WorldMarginSize;
     if (player and self:IsEnableArea()) then
         local areaSize = if_else(isUsePlayerAreaSize, player:GetAreaSize(), self:GetAreaSize()); 
         local bx, by, bz = player:GetBlockPos();
-        areaSize = math.floor(areaSize / 2) + WorldMarginSize;
+        areaSize = math.floor(areaSize / 2) + marginSize;
         return self.offlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
         local offlines = {};

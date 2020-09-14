@@ -164,22 +164,20 @@ function Player:GetBlockPos()
 end
 
 function Player:UpdatePosInfo()
-    if (not self:IsEnableArea()) then return end
     local bx, by, bz = self:GetBlockPos();
+    if (not self:IsEnableArea()) then return end
     if (bx == self.oldBX and by == self.oldBY and bz == self.oldBZ) then return end
     self.oldBX, self.oldBY, self.oldBZ = bx, by, bz;
     self:GetPlayerManager():UpdatePlayerPosInfo(self);    
-    local areaSize = self:GetAreaSize();
-    if (areaSize == 0) then return end
+    local areaSize = math.floor(self:GetAreaSize() / 3);
+    if (areaSize == 0) then areaSize = 1 end
     local bx = self:GetEntityInfo().bx or 0;
     local bz = self:GetEntityInfo().bz or 0;
     local areaX = math.floor(bx / areaSize);
     local areaZ = math.floor(bz / areaSize);
     if (areaX == self.areaX and areaZ == self.areaZ) then return end
     self.areaX, self.areaZ = areaX, areaZ;
-    if (self:IsEnableArea()) then
-        self.playerNetHandler:handlePlayerEntityInfoList();
-    end
+    self.playerNetHandler:handlePlayerEntityInfoList();
 end
 
 function Player:GetPlayerEntityInfo()

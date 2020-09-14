@@ -130,7 +130,7 @@ function EntityMainPlayer:SendMotionUpdates()
     if (hasMoved or hasRotation) then
         packet.x, packet.y, packet.z = self.x, self.y, self.z; 
         packet.facing, packet.pitch = self.facing, self.rotationPitch;
-        packet.bx, packet.by, packet.bz = bx, by, bz;
+        packet.bx, packet.by, packet.bz = self:GetBlockPos();
     end
     
     if (hasHeadRotation) then

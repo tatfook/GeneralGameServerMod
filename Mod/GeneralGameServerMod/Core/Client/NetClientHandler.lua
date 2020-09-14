@@ -210,10 +210,8 @@ end
 function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     if (not packetPlayerEntityInfo) then return end
 
-    local entityId = packetPlayerEntityInfo.entityId;
-    local username = packetPlayerEntityInfo.username;
+    local entityId, username = packetPlayerEntityInfo.entityId, packetPlayerEntityInfo.username;
     local x, y, z, facing, pitch, tick = packetPlayerEntityInfo.x, packetPlayerEntityInfo.y, packetPlayerEntityInfo.z, packetPlayerEntityInfo.facing, packetPlayerEntityInfo.pitch, packetPlayerEntityInfo.tick or 5;
-    local bx, by, bz = packetPlayerEntityInfo.bx, packetPlayerEntityInfo.by, packetPlayerEntityInfo.bz;
     
     -- 为主玩家不做处理
     if (entityId == self:GetPlayer().entityId) then return end
@@ -225,11 +223,10 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
 
     -- 新用户加入玩家管理器
-    if (isNew) then 
-        entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
+    if (isNew) then
         self:GetPlayerManager():AddPlayer(entityPlayer);
     end
-
+    
     -- 更新玩家运动动画
     if (type(entityPlayer.SetMotionAnimId) == "function") then entityPlayer:SetMotionAnimId(packetPlayerEntityInfo.motionAnimId) end
 
@@ -241,11 +238,11 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     end    
 
     -- 更新位置信息
-    if (not isNew and (x or y or z or facing or pitch)) then
+    if (x or y or z or facing or pitch) then
         local oldpos = string.format("%.2f %.2f %.2f", entityPlayer.x, entityPlayer.y, entityPlayer.z);
         local newpos = string.format("%.2f %.2f %.2f", x, y, z);
-        if (oldpos == newpos) then
-            entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
+        if (isNew or oldpos == newpos) then 
+            entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
         else
             entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, tick);
         end
