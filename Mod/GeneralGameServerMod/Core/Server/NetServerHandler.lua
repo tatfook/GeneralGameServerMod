@@ -68,7 +68,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldType = packetPlayerLogin.worldType;
     local options = packetPlayerLogin.options;
 
-    PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, nid: %s", username, worldId, worldName, self:GetPlayerConnection():GetNid()));
+    PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, worldType: %s, nid: %s", username, worldId, worldName, worldType, self:GetPlayerConnection():GetNid()));
 
     -- 获取并设置世界
     self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, worldType, true));

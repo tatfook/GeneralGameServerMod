@@ -39,6 +39,7 @@ _G.GGS = {
 	PlayerLoginLogoutDebug = Debug.GetModuleDebug("PlayerLoginLogoutDebug"),   -- 玩家登录登出日志
 	NetDebug = Debug.GetModuleDebug("NET"),                                    -- 发送接收数据包日志
 	BlockSyncDebug = Debug.GetModuleDebug("BlockSyncDebug"),                   -- 方块同步日志
+	AreaSyncDebug = Debug.GetModuleDebug("AreaSyncDebug"),                     -- 区域同步日志
 
 	-- 注册主客户端类
 	RegisterClientClass = function(appName, clientClass)

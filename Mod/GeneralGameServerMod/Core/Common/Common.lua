@@ -39,11 +39,4 @@ function Common:Init(isServer)
     NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
 	-- 初始化插件配置
 	Config:Init(isServer);
-
-	-- 设置日志等级
-	if (Config.IsDevEnv or Config.IsTestEnv) then
-		Log:SetLevel("DEBUG");
-	else 
-		Log:SetLevel(Config.Log.level or "INFO");
-	end
 end

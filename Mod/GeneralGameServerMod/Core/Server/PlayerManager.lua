@@ -42,8 +42,6 @@ function PlayerManager:Init(world)
     self.areaSize =  if_else(worldConfig.areaSize == nil or worldConfig.areaSize == 0, 128, worldConfig.areaSize);  
     self.areaMinClientCount = worldConfig.areaMinClientCount or 0;
 
-    if (IsDevEnv) then self.areaSize = 128 end
-
     -- 四叉树选项 
     local quadtreeOptions = {
         minWidth = self.areaSize,
@@ -211,6 +209,14 @@ function PlayerManager:RemovePlayer(player)
     self:Logout(self.players[logoutUsername], "玩家下线, 踢出最早下线玩家");
 end
 
+-- 更新玩家位置信息
+function PlayerManager:UpdatePlayerPosInfo(player)
+    local bx, by, bz = player:GetBlockPos();
+    local username = player:GetUserName();
+    if (not self.onlinePlayerList:contains(username)) then return end
+    self.onlineQuadtree:AddObject(username, bx, bz, bx, bz);
+end
+
 -- 获取所有玩家
 function PlayerManager:GetPlayers() 
     return self.players;
@@ -335,6 +341,7 @@ function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, isCurPlayerCen
     -- 最好使用四叉树, 效率会高很多
     if (not self:GetWorld():IsEnablePlayerSelfAreaSize() or isCurPlayerCenter) then
         local onlinePlayerList = self:GetOnlinePlayerList(curPlayer, isCurPlayerCenter);
+        GGS.AreaSyncDebug("玩家:" .. curPlayer:GetUserName(), "区域玩家:", onlinePlayerList);
         for i = 1, #onlinePlayerList do
             local username = onlinePlayerList[i];
             local player = self.players[username];
@@ -440,6 +447,7 @@ function PlayerManager:GetOnlinePlayerList(player, isUsePlayerAreaSize)
         local areaSize = if_else(isUsePlayerAreaSize, player:GetAreaSize(), self:GetAreaSize()); 
         local bx, by, bz = player:GetBlockPos();
         areaSize = math.floor(areaSize / 2) + WorldMarginSize;
+        GGS.AreaSyncDebug.Format("区域大小: %s", areaSize);
         return self.onlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
         local onlines = {};

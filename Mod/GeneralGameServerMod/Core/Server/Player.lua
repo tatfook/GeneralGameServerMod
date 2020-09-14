@@ -152,7 +152,7 @@ function Player:SetPlayerEntityInfo(packetPlayerEntityInfo)
     self.entityInfo.metadata = nil;
 
     -- 更新用户区域
-    self:UpdateArea();
+    self:UpdatePosInfo();
 
     return isNew;
 end
@@ -163,7 +163,12 @@ function Player:GetBlockPos()
     return entityInfo.bx or 0,  entityInfo.by or 0, entityInfo.bz or 0;
 end
 
-function Player:UpdateArea()
+function Player:UpdatePosInfo()
+    if (not self:IsEnableArea()) then return end
+    local bx, by, bz = self:GetBlockPos();
+    if (bx == self.oldBX and by == self.oldBY and bz == self.oldBZ) then return end
+    self.oldBX, self.oldBY, self.oldBZ = bx, by, bz;
+    self:GetPlayerManager():UpdatePlayerPosInfo(self);    
     local areaSize = self:GetAreaSize();
     if (areaSize == 0) then return end
     local bx = self:GetEntityInfo().bx or 0;
