@@ -85,9 +85,13 @@ local function DebugCall(module, ...)
     filepos = string.sub(filepos, 1, 256);
     Print(string.format("\n[%s %s][%s][%s][DEBUG BEGIN]", dateStr, timeStr, module, filepos));
 
-    for i = 1, select('#', ...) do  -->获取参数总数
-        local arg = select(i, ...); -- 函数会返回多个值
-        Print(arg);      -->读取参数
+    for i = 1, select('#', ...) do      -->获取参数总数
+        local arg = select(i, ...);     -->函数会返回多个值
+        if (not GGS.IsDevEnv and GGS.IsServer) then
+            Print(arg);                 -- 服务器可以换成压缩的日志格式输出
+        else
+            Print(arg);                 -->打印参数
+        end
     end  
 
     Print(string.format("[%s %s][%s][%s][DEBUG END]", dateStr, timeStr, module, filepos));

@@ -18,6 +18,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
+local CmdParser = commonlib.gettable("MyCompany.Aries.Game.CmdParser");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local ParaWorldMain = commonlib.gettable("Paracraft.Controls.ParaWorldMain");
 local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
@@ -369,7 +370,7 @@ function GeneralGameClient:GetNetCmdList()
 end
 
 -- 调试
-function GeneralGameClient:Debug(action)
+function GeneralGameClient:Debug(action, cmd_text)
     action = string.lower(action or "");
     if (action == "options" or action == "") then
         return self:ShowDebugInfo(self:GetOptions());
@@ -393,6 +394,9 @@ function GeneralGameClient:Debug(action)
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ServerInfo"}}));
     elseif (action == "ping") then
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ping"}}));
+    elseif (action == "serverdebug") then
+        local module = CmdParser.ParseString(cmd_text);
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "debug", debug = module}}));
     end
 end
 

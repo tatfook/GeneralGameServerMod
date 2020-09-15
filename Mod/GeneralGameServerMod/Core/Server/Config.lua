@@ -98,7 +98,7 @@ function Config:LoadConfig(filename)
 
     -- 加载配置文件
     local xmlRoot = ParaXML.LuaXML_ParseFile(filename);
-    local pathPrefix = GGS.IsDevEnv and "/GeneralGameServerDev" or (GGS.IsTestEnv and "/GeneralGameServerTest" or "/GeneralGameServer");
+    local pathPrefix = GGS.IsDevEnv and "/GeneralGameServerDev" or "/GeneralGameServer";
     if (not xmlRoot) then return GGS.Error.Format("failed loading paracraft server config file %s", filename) end
 
     -- 服务器配置

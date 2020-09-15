@@ -20,15 +20,18 @@ GeneralGameServerMod:init();
 
 --  全局变量初始化
 local GeneralGameClients = {};
+local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
+local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
 
-_G.IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
+_G.IsDevEnv = IsDevEnv;
 -- _G.IsDevEnv = false;
 local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua");
 
 _G.GGS = {
 	-- 环境识别
 	IsDevEnv = IsDevEnv,
-
+	IsServer = servermode,
+	
 	-- DEBUG 调试类以及调试函数
 	Debug = Debug,
 	DEBUG = Debug.GetModuleDebug("DEBUG"),
@@ -58,7 +61,6 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 
 local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
-local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
 local inited = false;
 
 function GeneralGameServerMod:ctor()

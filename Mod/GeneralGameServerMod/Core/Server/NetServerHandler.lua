@@ -211,6 +211,7 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
     if (not self:GetPlayer()) then return self:handlePlayerRelogin() end
 
     local cmd = packetGeneral.data.cmd;
+    local debug = packetGeneral.data.debug;
     if (cmd == "WorldInfo") then
         packetGeneral.data.debug = self:GetWorld():GetDebugInfo();
         self:SendPacketToPlayer(packetGeneral);
@@ -220,6 +221,8 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
     elseif (cmd == "ping") then
         packetGeneral.data.debug = self:GetPlayer():IsValid();
         self:SendPacketToPlayer(packetGeneral);
+    elseif (cmd == "debug") then
+        GGS.Debug.ToggleModule(debug);
     end
 end
 

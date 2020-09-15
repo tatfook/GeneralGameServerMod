@@ -88,6 +88,7 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 debug 调试命令 
 	/ggs debug [action]
 	/ggs debug debug module 开启或关闭指定模块日志
+	/ggs debug serverdebug module 开启或关闭指定模块日志
 	/ggs debug options 显示客户端选项信息
 	/ggs debug players 显示客户端玩家列表
 	/ggs debug worldinfo 显示客户端连接的世界服务器信息
@@ -173,7 +174,7 @@ function GeneralGameCommand:handleDebugCommand(cmd_text)
 		return GGS.Debug.ToggleModule(module);
 	end
 
-	self:GetGeneralGameClient():Debug(action);
+	self:GetGeneralGameClient():Debug(action, cmd_text);
 end
 
 function GeneralGameCommand:handleCmdCommand(cmd_text)
