@@ -6,61 +6,18 @@ Date: 2020/6/19
 Desc: mod config
 use the lib:
 -------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/commonlib.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
-Config.IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
-Config.IsTestEnv = ParaEngine.GetAppCommandLineByParam("IsTestEnv","false") == "true";
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
+
 Config.ConfigFile = ParaEngine.GetAppCommandLineByParam("ConfigFile", nil);
 
-
-function Config:SetEnv(env)
-    if (env == "test") then
-        self.IsTestEnv = true;
-        self.serverIp = "ggs.keepwork.com";
-        self.serverPort = "9001";
-        GGS.INFO("切换到测试环境");
-    elseif (env == "dev") then
-        self.IsDevEnv = true;
-        self.serverIp = "127.0.0.1";
-        self.serverPort = "9000";
-        GGS.INFO("切换到开发环境");
-    else 
-        self.IsDevEnv, self.IsTestEnv = false, false;
-        self.serverIp = "ggs.keepwork.com";
-        self.serverPort = "9000";
-        GGS.INFO("切换到正式环境");
-    end
-end
-
 -- 初始化
-function Config:Init(isServer)
-    if (self.inited) then return end;
-
-    self.inited = true;
-    GGS.INFO.Format("---------------------%s init config----------------", isServer and "server" or "client");
-
-    self.IsServer = isServer;
-    -- 客户端默认世界ID
-    self.maxEntityId = 1000000;    -- 服务器统一分配的最大实体ID数
-    self.defaultWorldId = 10373;   -- 新手岛世界ID
-    self.isSyncBlock = false;      -- 默认不同步 Block 信息
-    if (self.IsDevEnv) then 
-        self.serverIp = "127.0.0.1";
-        self.serverPort = "9000";
-    else
-        self.serverIp = "ggs.keepwork.com";
-        self.serverPort = "9000";
-    end
-
-    -- 服务器配置
-    self.maxWorldCount = 200;        -- 服务器最大世界数为200
-    self.worldMaxClientCount = 100;  -- 每个世界限定100用户   
-    self.maxClientCount = 8000;      -- 服务器最大连接数为8000
-
+function Config:StaticInit()
+    GGS.INFO.Format("--------------------- load config----------------");
+    
     -- 服务配置
     self.Server = {
         listenIp="0.0.0.0", 
@@ -113,10 +70,9 @@ function Config:Init(isServer)
         Net = false,
         PlayerLoginLogoutDebug = true,
     }
+
     -- 服务端才需要配置文件, 加载配置
-    if (isServer) then
-        self:LoadConfig(self.ConfigFile);
-    end 
+    self:LoadConfig(self.ConfigFile);
 
     GGS.INFO(self);
 end
@@ -142,7 +98,7 @@ function Config:LoadConfig(filename)
 
     -- 加载配置文件
     local xmlRoot = ParaXML.LuaXML_ParseFile(filename);
-    local pathPrefix = self.IsDevEnv and "/GeneralGameServerDev" or (self.IsTestEnv and "/GeneralGameServerTest" or "/GeneralGameServer");
+    local pathPrefix = GGS.IsDevEnv and "/GeneralGameServerDev" or (GGS.IsTestEnv and "/GeneralGameServerTest" or "/GeneralGameServer");
     if (not xmlRoot) then return GGS.Error.Format("failed loading paracraft server config file %s", filename) end
 
     -- 服务器配置
@@ -170,3 +126,6 @@ function Config:LoadConfig(filename)
     local Debug = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Debug");
     CopyXmlAttr(self.Debug, Debug and Debug.attr);
 end
+
+-- 加载配置
+-- Config:StaticInit();

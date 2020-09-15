@@ -11,12 +11,12 @@ local ControlServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.C
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local ControlServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
 
@@ -64,8 +64,8 @@ function ControlServer:handleWorldServer(packetWorldServer)
     -- 其次选择客户端最少的服务器
     -- 最后选择控制服务器
     local server, controlServer = nil, nil; -- 设置最大值
-    local serverMaxClientCount = tonumber(Config.Server.maxClientCount) or Config.maxClientCount;
-    local worldMaxClientCount = tonumber(Config.World.maxClientCount) or Config.worldMaxClientCount;
+    local serverMaxClientCount = tonumber(Config.Server.maxClientCount);
+    local worldMaxClientCount = tonumber(Config.World.maxClientCount);
     local curTick = ParaGlobal.timeGetTime();
     for key, svr in pairs(servers) do
         local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 

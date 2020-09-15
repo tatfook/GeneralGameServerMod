@@ -1,6 +1,6 @@
 
 --[[
-Title: Config
+Title: Log
 Author(s): wxa
 Date: 2020/6/19
 Desc: log file, 添加模块日志使能效果

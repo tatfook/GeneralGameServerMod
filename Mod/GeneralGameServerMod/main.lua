@@ -41,7 +41,8 @@ _G.GGS = {
 	NetDebug = Debug.GetModuleDebug("NET"),                                    -- 发送接收数据包日志
 	BlockSyncDebug = Debug.GetModuleDebug("BlockSyncDebug"),                   -- 方块同步日志
 	AreaSyncDebug = Debug.GetModuleDebug("AreaSyncDebug"),                     -- 区域同步日志
-
+	-- 配置
+	MaxEntityId =  1000000,                                                    -- 服务器统一分配的最大实体ID数
 	-- 注册主客户端类
 	RegisterClientClass = function(appName, clientClass)
 		GeneralGameClients[appName] = clientClass;
@@ -78,7 +79,7 @@ end
 function GeneralGameServerMod:init()
 	if (inited) then return end;
 	inited = true;
-	
+	GGS.INFO.Format("===============================================GGS[%s] init===========================================", servermode and "server" or "client");
 	Common:Init(servermode);
 	
 	-- 启动插件

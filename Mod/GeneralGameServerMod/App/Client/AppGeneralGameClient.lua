@@ -15,9 +15,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityOtherPlayer.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 local Encoding = commonlib.gettable("System.Encoding");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local AppGeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameWorld");
 local AppEntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer");
 local AppEntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer");
@@ -61,6 +59,7 @@ function AppGeneralGameClient:Init()
     -- self:GetOptions().isSyncBlock = true;
     -- self:GetOptions().serverIp = "127.0.0.1";
     -- self:GetOptions().serverPort = "9000";
+    -- self:GetOptions().defaultWorldId = 1;
 
     self.inited = true;
 end
@@ -137,6 +136,31 @@ function AppGeneralGameClient:IsAnonymousUser()
     if (isAnonymousUser ~= nil) then return isAnonymousUser end
 
     return self:GetOptions().username ~= System.User.keepworkUsername;  -- 匿名用户不支持离线缓存
+end
+
+-- 动态设置客户端环境
+function AppGeneralGameClient:SetEnv(env)
+    AppGeneralGameClient._super.SetEnv(self, env);
+
+    if (env == "test") then
+        self:SetOptions({
+            serverIp = "ggs.keepwork.com";
+            serverPort = "9001";
+        });
+        GGS.INFO("切换到测试环境");
+    elseif (env == "dev") then
+        self:SetOptions({
+            serverIp = "127.0.0.1";
+            serverPort = "9000";
+        });
+        GGS.INFO("切换到开发环境");
+    else 
+        self:SetOptions({
+            serverIp = "ggs.keepwork.com";
+            serverPort = "9000";
+        });
+        GGS.INFO("切换到正式环境");
+    end
 end
 
 -- 初始化成单列模式

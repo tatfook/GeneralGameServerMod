@@ -13,9 +13,7 @@ GeneralGameClient:LoadWorld({ip = "127.0.0.1", port = "9000", worldId = "12348"}
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/Entity.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldMain.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
@@ -27,9 +25,7 @@ local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clien
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
 local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
@@ -40,10 +36,15 @@ GeneralGameClient:Property("World", nil);  -- 当前世界
 -- 类共享变量 强制同步块列表
 GeneralGameClient.syncForceBlockList = commonlib.UnorderedArraySet:new();
 GeneralGameClient.options = {
-    isSyncBlock = if_else(Config.IsDevEnv, true, false),
+    isSyncBlock = if_else(GGS.IsDevEnv, true, false),
     isSyncForceBlock = true,
     isSyncCmd = true,
     areaSize = 0,   -- 表示不做限制
+
+    -- config
+    defaultWorldId = 10373,
+    serverIp = "ggs.keepwork.com";
+    serverPort = "9000";
 }
 
 function GeneralGameClient:ctor() 
@@ -58,7 +59,7 @@ function GeneralGameClient:Init()
     Common:Init(false);
 
     -- 设置实体ID起始值
-    Entity:SetEntityId(Config.maxEntityId);
+    Entity:SetEntityId(GGS.MaxEntityId);
 
     -- 禁用服务器 指定为客户端
     NPL.StartNetServer("127.0.0.1", "0");
@@ -78,6 +79,17 @@ function GeneralGameClient:Exit()
     GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
     GameLogic:Disconnect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
     self:OnWorldUnloaded();
+end
+
+-- 动态设置客户端环境
+function GeneralGameClient:SetEnv(env)
+    if (env == "test") then
+        GGS.IsTestEnv = true;
+    elseif (env == "dev") then
+        GGS.IsDevEnv = true;
+    else 
+        GGS.IsDevEnv, GGS.IsTestEnv = false, false;
+    end
 end
 
 -- 获取玩家支持的形象列表
@@ -101,10 +113,7 @@ end
 function GeneralGameClient:GetEntityOtherPlayerClass()
     return EntityOtherPlayer;
 end
--- 获取配置
-function GeneralGameClient:GetConfig()
-    return Config;
-end
+
 -- 获取强制同步块列表
 function GeneralGameClient:GetSyncForceBlockList() 
     return self.syncForceBlockList;
@@ -135,7 +144,7 @@ end
 
 -- 是否同步方块
 function GeneralGameClient:IsSyncBlock()
-    return if_else(Config.IsDevEnv, true, self:GetOptions().isSyncBlock);
+    return if_else(GGS.IsDevEnv, true, self:GetOptions().isSyncBlock);
 end
 
 -- 是否同步命令
@@ -150,7 +159,7 @@ end
 
 -- 是否获取可用服务器列表
 function GeneralGameClient:IsShowWorldList()
-    return if_else(Config.IsDevEnv, true, false);
+    return if_else(GGS.IsDevEnv, true, false);
 end
 
 -- 获取当前世界类型
@@ -164,8 +173,14 @@ function GeneralGameClient:GetWorldType()
     end
 end
 
+-- 替换世界
+function GeneralGameClient:ReplaceWorld(opts)
+    -- 默认加载替换世界方式 
+    GameLogic.RunCommand(string.format("/loadworld %s", opts.worldId)); 
+end
+
 -- 加载世界
-function GeneralGameClient:LoadWorld(opts)
+function GeneralGameClient:LoadWorld(opts, loadworld)
     -- 初始化
     self:Init();
     
@@ -175,13 +190,13 @@ function GeneralGameClient:LoadWorld(opts)
     local curWorldId = GameLogic.options:GetProjectId();
 
     -- 确定世界ID
-    options.worldId = tostring(opts.worldId or curWorldId or Config.defaultWorldId);
+    options.worldId = tostring(opts.worldId or curWorldId or options.defaultWorldId);
     options.username = options.username or self:GetUserInfo().username;
     options.ip = opts.ip;            -- ip port 每次重写
     options.port = options.port;     -- 以便动态获取
   
     -- 打印选项值
-    Log:Info(options);
+    GGS.INFO(options);
 
     -- only reload world if world id does not match
     local isReloadWorld = tostring(options.worldId) ~= tostring(curWorldId); 
@@ -199,8 +214,9 @@ function GeneralGameClient:LoadWorld(opts)
 
     -- 以只读方式重新进入
     if (isReloadWorld) then
-        GameLogic.RunCommand(string.format("/loadworld %s", options.worldId));    
+        self:ReplaceWorld(opts);
     else
+        -- 当前世界已是所需世界, 直接执行世界加载完成逻辑
         self:OnWorldLoaded();
     end
 end
@@ -248,12 +264,12 @@ function GeneralGameClient:RunNetCommand(cmd, opts)
     if (not netHandler or not self:IsSyncCmd()) then return end;
     -- 命令存在且执行到发包说明命令执行完成, 在收到网络包时加入
     if (self:GetNetCmdList():contains(cmd)) then
-        Log:Debug("end exec net cmd: " .. cmd);
+        GGS.DEBUG("end exec net cmd: " .. cmd);
         self:GetNetCmdList():removeByValue(cmd);
         return;
     end
 
-    Log:Debug("send net cmd: " .. cmd);
+    GGS.DEBUG("send net cmd: " .. cmd);
     netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({
         action = "SyncCmd",
         data = {
@@ -272,17 +288,16 @@ end
 -- 连接控制服务器
 function GeneralGameClient:ConnectControlServer()
     local options = self:GetOptions();
-    local config = self:GetConfig();
-    local serverIp, serverPort = options.serverIp or config.serverIp, options.serverPort or config.serverPort;
+    local serverIp, serverPort = options.serverIp, options.serverPort;
 
-    Log:Debug(string.format("control server ServerIp: %s, ServerPort: %s", serverIp, serverPort));
+    GGS.DEBUG(string.format("control server ServerIp: %s, ServerPort: %s", serverIp, serverPort));
 
     self.controlServerConnection = Connection:new():InitByIpPort(serverIp, serverPort, self);
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
             _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
-            return Log:Info("无法连接控制器服务器");
+            return GGS.INFO("无法连接控制器服务器");
         end
 
         self:SelectServerAndWorld();
@@ -321,7 +336,7 @@ function GeneralGameClient:handleWorldServer(packetWorldServer)
     options.ip = packetWorldServer.ip;
     options.port = packetWorldServer.port;
     if (not options.ip or not options.port) then
-        Log:Info("服务器繁忙, 暂无合适的世界服务器提供");
+        GGS.INFO("服务器繁忙, 暂无合适的世界服务器提供");
         return;
     end
 

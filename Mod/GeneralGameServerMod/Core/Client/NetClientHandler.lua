@@ -17,13 +17,11 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local Desktop = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop");
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
@@ -346,20 +344,20 @@ function NetClientHandler:handleSyncCmd(packetGeneral)
     local opts = packetGeneral.data.opts;
     -- 已存在忽略
     if (self:GetClient():GetNetCmdList():contains(cmd)) then 
-        return Log:Info("命令正在执行: " .. cmd); 
+        return GGS.INFO("命令正在执行: " .. cmd); 
     end
 
     -- 收到命令是起点, 发送命令是终点, 添加到命令列表
     self:GetClient():GetNetCmdList():add(cmd);
     
     -- 开始执行命令
-    Log:Debug("begin exec net cmd: " .. cmd);
+    GGS.DEBUG("begin exec net cmd: " .. cmd);
     self:GetWorld():SetEnableBlockMark(false);
     GameLogic.RunCommand(cmd);
     
     -- 非递归命令
     if (not opts or not opts.recursive) then
-        Log:Debug("end exec net cmd: " .. cmd);
+        GGS.DEBUG("end exec net cmd: " .. cmd);
         self:GetClient():GetNetCmdList():removeByValue(cmd);
     end
 
@@ -400,7 +398,7 @@ function NetClientHandler:handleBlock(packetBlock)
         if (packetBlock.blockEntityPacket.ProcessPacket) then
             packetBlock.blockEntityPacket:ProcessPacket(self);
         else
-            Log:Error("无效实体数据包");
+            GGS.WARN("无效实体数据包");
         end
     end
     -- 设置块信息
@@ -463,7 +461,7 @@ function NetClientHandler:Connect()
         self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
         if (self.reconnectionDelay > 600) then self.reconnectionDelay = 600 end
         -- 开发环境每次5秒
-        if (IsDevEnv) then self.reconnectionDelay = 5 end
+        if (GGS.IsDevEnv) then self.reconnectionDelay = 5 end
     end}):Change(self.reconnectionDelay * 1000, nil);
 end
 

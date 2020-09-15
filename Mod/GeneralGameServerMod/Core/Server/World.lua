@@ -12,8 +12,8 @@ local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
 local World = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
@@ -45,7 +45,7 @@ end
 -- 获取世界实体ID
 function World:GetNextEntityId()
     self.nextEntityId = self.nextEntityId + 1;
-    if (self.nextEntityId > Config.maxEntityId) then
+    if (self.nextEntityId > GGS.MaxEntityId) then
         self.nextEntityId = 0;
     end
     return self.nextEntityId;

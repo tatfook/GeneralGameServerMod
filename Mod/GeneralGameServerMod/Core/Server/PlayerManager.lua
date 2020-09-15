@@ -13,16 +13,16 @@ local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.P
 
 -- 文件加载
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Player.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/QuadTree.lua");
-local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
+local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player");
 local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
 
 local WorldMaxSize = 30000;  -- 世界的最大bx, by, bz值
-local WorldMarginSize = 10;  -- 以用户为中心计算区域加上次边距, 方便客户端识别玩家是否离开自己的可视区域
+local WorldMarginSize = 20;  -- 以用户为中心计算区域加上次边距, 方便客户端识别玩家是否离开自己的可视区域
 
 PlayerManager:Property("World");   -- 管理器所属世界
 

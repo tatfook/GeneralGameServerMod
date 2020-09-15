@@ -12,10 +12,10 @@ local NetServerHandler = commonlib.gettable("GeneralGameServerMod.Core.Server.Ne
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
 local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
@@ -51,15 +51,12 @@ end
 function NetServerHandler:IsAllowLoginWorld(worldId)
     local totalClientCount = self:GetWorldManager():GetOnlineClientCount();
     local worldClientCount = self:GetWorld() and self:GetWorld():GetOnlineClientCount() or 0;
-    if (totalClientCount >= Config.Server.maxClientCount) then
-        return false;
-    end
-    if (worldClientCount >= self:GetWorld():GetMaxClientCount()) then
-        return false;
-    end
+    if (totalClientCount >= self:GetWorkerServer():GetMaxClientCount()) then return false end
+    if (worldClientCount >= self:GetWorld():GetMaxClientCount()) then return false end
     return true;
 end
 
+-- 用户认证成功
 function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local username = packetPlayerLogin.username;
     local password = packetPlayerLogin.password;

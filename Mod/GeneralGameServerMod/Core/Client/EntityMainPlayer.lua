@@ -20,8 +20,7 @@ local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.G
 local AssetsWhiteList = NPL.load("./AssetsWhiteList.lua");
 
 local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer";
-local defaultMaxMotionUpdateTickCount = 33;
-local maxMotionUpdateTickCount = defaultMaxMotionUpdateTickCount;
+local maxMotionUpdateTickCount = 33;
 
 EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
 
@@ -67,6 +66,12 @@ function EntityMainPlayer:IsOnline()
     return self.playerInfo.state == "online";
 end
 
+-- 获取玩家同步信息的频率  33 = 1s   tick = 30fps
+function EntityMainPlayer:GetMotionSyncTickCount()
+    return 30;
+end
+
+
 -- Send updated motion and position information to the server
 function EntityMainPlayer:SendMotionUpdates()
     if(not self:GetInnerObject() or not self:IsNearbyChunkLoaded()) then return end
@@ -94,7 +99,7 @@ function EntityMainPlayer:SendMotionUpdates()
         if (curMoved) then
             -- 开始运动 重置tick
             self.motionUpdateTickCount = 1;
-            maxMotionUpdateTickCount = defaultMaxMotionUpdateTickCount;
+            maxMotionUpdateTickCount = self:GetMotionSyncTickCount();
         else
             -- 停止运动
             self.stopMotionUpdateTickCount = self.motionUpdateTickCount;
@@ -110,7 +115,7 @@ function EntityMainPlayer:SendMotionUpdates()
     if (hasMoved) then                                                                  
         maxMotionUpdateTickCount = self.motionUpdateTickCount;      -- 尽量保证下个数据包比上时间长， 因在在其它玩家世界自己人物慢一个节拍， 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
     else                                                            -- 如果不动, 同步频率X2增长 原地操作降低更新频率 最大值为2min                                                                                                                          
-        maxMotionUpdateTickCount =  maxMotionUpdateTickCount > (30 * 120) and maxMotionUpdateTickCount or (maxMotionUpdateTickCount + maxMotionUpdateTickCount);                                                            -- 5 10 20 40 80 160 320 640
+        maxMotionUpdateTickCount =  maxMotionUpdateTickCount > (30 * 120) and maxMotionUpdateTickCount or (maxMotionUpdateTickCount + maxMotionUpdateTickCount);       -- 5 10 20 40 80 160 320 640
     end
     -- 构建包
     local packet = Packets.PacketPlayerEntityInfo:new():Init(nil, self.dataWatcher, false);

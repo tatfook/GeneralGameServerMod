@@ -11,11 +11,11 @@ local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Wo
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local WorkerServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer"));
 
@@ -61,6 +61,11 @@ function WorkerServer:Init(server)
         end)
     end
     ConnectControlServer();
+end
+
+-- 获取服务器最大客户端数
+function WorkerServer:GetMaxClientCount()
+    return Config.WorkerServer.maxClientCount or Config.Server.maxClientCount;
 end
 
 -- 发送服务器信息

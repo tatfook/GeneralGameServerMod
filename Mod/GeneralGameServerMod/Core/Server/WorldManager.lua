@@ -13,8 +13,8 @@ WorldManager.GetSingleton();
 
 -- 文件加载
 NPL.load("Mod/GeneralGameServerMod/Core/Server/World.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 
 -- 对象定义
