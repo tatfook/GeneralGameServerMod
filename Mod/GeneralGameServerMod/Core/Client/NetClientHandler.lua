@@ -238,7 +238,7 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
 
     -- 更新位置信息
     if (x or y or z or facing or pitch) then
-        local oldpos = string.format("%.2f %.2f %.2f", entityPlayer.x, entityPlayer.y, entityPlayer.z);
+        local oldpos = string.format("%.2f %.2f %.2f", entityPlayer.x or 0, entityPlayer.y or 0, entityPlayer.z or 0);
         local newpos = string.format("%.2f %.2f %.2f", x, y, z);
         if (isNew or oldpos == newpos) then 
             entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
