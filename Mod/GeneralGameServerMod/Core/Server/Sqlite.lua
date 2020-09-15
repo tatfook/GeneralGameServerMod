@@ -16,12 +16,17 @@ local Sqlite = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), com
 local db = sqlite3.open("test.db");
 
 db:exec([[
-    drop table if exists Block;
-    create table if not exists Block (
+    drop table if exists block;
+    create table if not exists block (
         blockIndex	  UNSIGNED INTEGER PRIMARY KEY,
         blockId       UNSIGNED INTEGER,
         blockFlag     INTEGER,
         areaIndex     UNSIGNED INTEGER,
         blockEntity   BLOB
     );
+
+    insert into block(blockIndex, blockId, blockFlag, areaIndex, blockEntity) values(1,1,1,1, null), (2,1,1,1, null);
 ]]);
+
+
+db:close();
