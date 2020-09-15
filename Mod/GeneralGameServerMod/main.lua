@@ -55,11 +55,7 @@ _G.GGS = {
 	end,
 };
 
-
 NPL.load("(gl)script/ide/System/System.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
-
-local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
 local inited = false;
 
@@ -82,8 +78,7 @@ function GeneralGameServerMod:init()
 	if (inited) then return end;
 	inited = true;
 	GGS.INFO.Format("===============================================GGS[%s] init===========================================", servermode and "server" or "client");
-	Common:Init(servermode);
-	
+
 	-- 启动插件
 	if (servermode) then
 		-- server
