@@ -119,7 +119,7 @@
     </WorkerServer>
   </Server>
   <World 
-    areaSize=10
+    areaSize=0
     minClientCount=3 
     maxClientCount=200>
   </World>
