@@ -25,4 +25,3 @@ db:exec([[
         blockEntity   BLOB
     );
 ]]);
-
