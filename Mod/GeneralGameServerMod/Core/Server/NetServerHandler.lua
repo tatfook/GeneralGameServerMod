@@ -65,7 +65,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldType = packetPlayerLogin.worldType;
     local options = packetPlayerLogin.options;
 
-    PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, worldType: %s, nid: %s", username, worldId, worldName, worldType, self:GetPlayerConnection():GetNid()));
+    PlayerLoginLogoutDebug(string.format("玩家请求登录 username : %s, worldId: %s, worldName: %s, worldType: %s, nid: %s", username, worldId, worldName, worldType, self:GetPlayerConnection():GetNid()));
 
     -- 获取并设置世界
     self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, worldType, true));
@@ -90,7 +90,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     -- 玩家登录
     self:GetPlayer():Login();
     -- 打印日志
-    PlayerLoginLogoutDebug(string.format("player success login; username : %s, worldkey: %s, entityId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey(), self:GetPlayer():GetEntityId()));
+    PlayerLoginLogoutDebug(string.format("玩家登录成功 username : %s, worldkey: %s, entityId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey(), self:GetPlayer():GetEntityId()));
     -- 通知玩家登录
     packetPlayerLogin.entityId = self:GetPlayer().entityId;
     packetPlayerLogin.result = "ok";
@@ -140,7 +140,7 @@ end
 
 -- 玩家重新登录, 当连接存在玩家丢失需要重新等陆, 这个问题与TCP自身自动重连有关(玩家第一次登录, 登录切后台, tcp自行断开, 程序恢复前台, tcp自行重连, 这样跳过了登录步骤,导致用户丢失, 这种发送客户端重连数据包)
 function NetServerHandler:handlePlayerRelogin()
-    PlayerLoginLogoutDebug("client relogin: " .. tostring(self:GetPlayerConnection():GetIPAddress()));
+    PlayerLoginLogoutDebug("玩家丢失重新登录: " .. tostring(self:GetPlayerConnection():GetIPAddress()));
     self:SendPacketToPlayer(Packets.PacketGeneral:GetReloginPacket());
 end
 

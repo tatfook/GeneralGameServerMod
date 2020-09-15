@@ -12,8 +12,6 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ConnectionBase.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
@@ -57,8 +55,6 @@ end
 
 function Connection:AddPacketToSendQueue(packet)
 	NetDebug(string.format("---------------------send packet: %d--------------------", packet:GetPacketId()), packet:WritePacket());
-	-- Log:Std("DEBUG", moduleName, "---------------------send packet: %d--------------------", packet:GetPacketId());
-	-- Log:Std("DEBUG", moduleName, packet:WritePacket());
 
 	return Connection._super.AddPacketToSendQueue(self, packet);
 end
@@ -71,8 +67,6 @@ function Connection:OnNetReceive(msg)
 	if (packet) then packet:ReadPacket(msg) end
 
 	NetDebug(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
-	-- Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
-	-- Log:Std("DEBUG", moduleName, msg);
 	
 	-- 处理数据包前回调
 	if (self.net_handler and self.net_handler.OnBeforeProcessPacket) then
@@ -83,12 +77,12 @@ function Connection:OnNetReceive(msg)
 	if(packet) then
 		packet:ProcessPacket(self.net_handler);
 	else
-		Log:Info("invalid packet");
+		GGS.INFO("invalid packet");
 		if (self.net_handler.handleMsg) then
 			self.net_handler:handleMsg(msg);
 		else 
-			Log:Info("invalid msg");
-			Log:Info(msg);
+			GGS.INFO("invalid msg");
+			GGS.INFO(msg);
 		end
 	end
 

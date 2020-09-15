@@ -5,12 +5,13 @@ Date: 2020/6/15
 Desc: the main player entity on the client side. 
 use the lib:
 ------------------------------------------------------------
-local AssetsWhiteList = NPL.load("./AssetsWhiteList.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 AssetsWhiteList.IsInWhiteList(filename)
 AssetsWhiteList.GetRandomFilename()
 -------------------------------------------------------
 ]]
-local AssetsWhiteList = NPL.export();
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 
 local  allAssets = commonlib.UnorderedArraySet:new();
 

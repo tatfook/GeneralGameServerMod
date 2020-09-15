@@ -14,7 +14,6 @@ NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityPlayerHelper.lua");
 local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
 local AppEntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityPlayerHelper");
 local AppEntityOtherPlayer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer"));
-local moduleName = "Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer";
 
 -- 构造函数
 function AppEntityOtherPlayer:ctor()

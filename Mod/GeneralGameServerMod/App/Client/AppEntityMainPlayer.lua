@@ -14,8 +14,6 @@ NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityPlayerHelper.lua");
 local AppEntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityPlayerHelper");
 local AppEntityMainPlayer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer"));
 
-local moduleName = "Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer";
-
 -- 构造函数
 function AppEntityMainPlayer:ctor()
     self.appEntityPlayerHelper = AppEntityPlayerHelper:new():Init(self, true);
@@ -53,7 +51,3 @@ end
 function AppEntityMainPlayer:SetSuperPlayerInfo(playerInfo)
     AppEntityMainPlayer._super.SetPlayerInfo(self, playerInfo);
 end
-
--- 设置头顶显示内容
--- function AppEntityMainPlayer:SetHeadOnDisplay()
--- end

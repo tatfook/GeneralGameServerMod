@@ -11,10 +11,9 @@ local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityPlayerMPOther.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
-local AssetsWhiteList = NPL.load("./AssetsWhiteList.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local EntityOtherPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityPlayerMPOther"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer"));
 

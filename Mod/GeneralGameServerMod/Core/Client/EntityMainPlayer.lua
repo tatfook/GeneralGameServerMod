@@ -11,15 +11,13 @@ local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityPlayerMPClient.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityPlayerMPClient"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer"));
-local AssetsWhiteList = NPL.load("./AssetsWhiteList.lua");
 
-local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer";
 local maxMotionUpdateTickCount = 33;
 
 EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");

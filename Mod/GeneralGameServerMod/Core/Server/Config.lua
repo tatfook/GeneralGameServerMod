@@ -26,10 +26,6 @@ function Config:StaticInit()
         isWorkerServer=true,
         maxClientCount=8000,
         maxWorldCount=200,
-        innerIp="10.28.18.2",
-        innerPort="9000",
-        outerIp="120.132.120.175",
-        outerPort="9000",
     }
     self.ControlServer = {
         innerIp="10.28.18.2",

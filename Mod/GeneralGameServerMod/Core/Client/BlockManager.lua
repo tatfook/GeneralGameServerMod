@@ -9,11 +9,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/BlockManager.lua");
 local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager");
 ------------------------------------------------------------
 ]]
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
-
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local BlockManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager"));
 

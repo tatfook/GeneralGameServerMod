@@ -18,6 +18,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 local CmdParser = commonlib.gettable("MyCompany.Aries.Game.CmdParser");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local ParaWorldMain = commonlib.gettable("Paracraft.Controls.ParaWorldMain");
@@ -30,7 +32,6 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
-local AssetsWhiteList = NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua"); 
 
 GeneralGameClient:Property("World", nil);  -- 当前世界
 
