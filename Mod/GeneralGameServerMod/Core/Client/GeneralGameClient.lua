@@ -73,6 +73,9 @@ function GeneralGameClient:Init()
     -- 禁用点击继续
     GameLogic.options:SetClickToContinue(false);
 
+    -- 客户端日志禁用
+    GGS.NetDebug.Disable();
+
     self.inited = true;
     return self;
 end

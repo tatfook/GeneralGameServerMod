@@ -129,6 +129,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 创建当前玩家
     local EntityMainPlayerClass = self:GetClient():GetEntityMainPlayerClass() or EntityMainPlayer;
     local entityPlayer = EntityMainPlayerClass:new():init(self:GetWorld(), self, entityId);
+    local x, y, z = 20000, -128, 20000;
     if(oldEntityPlayer) then
         local oldMainAssetPath = oldEntityPlayer:GetMainAssetPath();
         entityPlayer:SetMainAssetPath(if_else(not oldMainAssetPath or oldMainAssetPath == "", "character/CC/02human/paperman/boy01.x", oldMainAssetPath));
@@ -136,7 +137,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetGravity(oldEntityPlayer:GetGravity());
         entityPlayer:SetScaling(oldEntityPlayer:GetScaling());
         entityPlayer:SetSpeedScale(oldEntityPlayer:GetSpeedScale());
-        local x, y, z = oldEntityPlayer:GetPosition();
+        x, y, z = oldEntityPlayer:GetPosition();
         local randomRange = 5;
         if (oldEntityPlayer:isa(EntityMainPlayerClass)) then
             entityPlayer:SetPosition(x, y, z);
@@ -145,39 +146,40 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         end
     end
 
-    -- 设置主玩家
-    entityPlayer:Attach();
-    GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
-    self:GetPlayerManager():SetMainPlayer(entityPlayer);
-    self:GetPlayerManager():SetAreaSize(areaSize);
-    self:SetPlayer(entityPlayer);
- 
-    -- 清空玩家列表
-    self:GetPlayerManager():ClearPlayers();
-    
-    -- 设置玩家信息
+    -- 构建玩家信息
     local playerInfo = {
         state = "online",
         username = username,
         isAnonymousUser = self:GetClient():IsAnonymousUser(),
         userinfo = self:GetClient():GetUserInfo(),
     }
-    entityPlayer:SetPlayerInfo(playerInfo);
     
     -- 上报玩家实体信息
     local dataWatcher = entityPlayer:GetDataWatcher();
     local bx, by, bz = entityPlayer:GetBlockPos();
     self:AddToSendQueue(Packets.PacketPlayerEntityInfo:new():Init({
         entityId = entityId,
-        x = math.floor(entityPlayer.x or 20000),
-        y = math.floor(entityPlayer.y or -128),
-        z = math.floor(entityPlayer.z or 20000),
+        x = x, y = y, z = z,
         bx = bx, by = by, bz = bz,
         name = username or tostring(entityId),
         facing = math.floor(entityPlayer.rotationYaw or entityPlayer.facing or 0),
         pitch = math.floor(entityPlayer.rotationPitch or 0),
         playerInfo = playerInfo,
     }, dataWatcher, true));
+
+    -- 清空玩家列表
+    self:GetPlayerManager():ClearPlayers();
+
+    -- 设置主玩家
+    entityPlayer:Attach();
+    GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
+    self:GetPlayerManager():SetMainPlayer(entityPlayer);
+    self:GetPlayerManager():SetAreaSize(areaSize);
+    self:SetPlayer(entityPlayer);
+
+    -- 设置玩家信息
+    entityPlayer:SetPlayerInfo(playerInfo);
+    return;
 end
 
 -- 获取玩家实体
@@ -240,6 +242,7 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     if (x or y or z or facing or pitch) then
         local oldpos = string.format("%.2f %.2f %.2f", entityPlayer.x or 0, entityPlayer.y or 0, entityPlayer.z or 0);
         local newpos = string.format("%.2f %.2f %.2f", x or 0, y or 0, z or 0);
+        echo({isNew, oldpos, newpos});
         if (isNew or oldpos == newpos) then 
             entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
         else
