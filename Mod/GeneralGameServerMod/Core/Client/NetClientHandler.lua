@@ -138,12 +138,12 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetScaling(oldEntityPlayer:GetScaling());
         entityPlayer:SetSpeedScale(oldEntityPlayer:GetSpeedScale());
         x, y, z = oldEntityPlayer:GetPosition();
-        local randomRange = 5;
-        if (oldEntityPlayer:isa(EntityMainPlayerClass)) then
-            entityPlayer:SetPosition(x, y, z);
-        else 
-            entityPlayer:SetPosition(x + math.random(-randomRange, randomRange), y, z + math.random(-randomRange, randomRange));
+        if (not oldEntityPlayer:isa(EntityMainPlayerClass)) then
+            local randomRange = 5;
+            x = x + math.random(-randomRange, randomRange);
+            z = z + math.random(-randomRange, randomRange);
         end
+        entityPlayer:SetPosition(x, y, z);
     end
 
     -- 构建玩家信息

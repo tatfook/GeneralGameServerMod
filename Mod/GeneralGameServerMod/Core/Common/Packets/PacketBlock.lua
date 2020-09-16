@@ -46,9 +46,7 @@ function PacketBlock:ReadPacket(msg)
 
 	if (self.blockEntityPacketData) then
 		local packet = PacketTypes:GetNewPacket(self.blockEntityPacketData.id);
-		if (packet) then 
-			packet:ReadPacket(self.blockEntityPacketData);
-		end
+		if (packet) then packet:ReadPacket(self.blockEntityPacketData) end
 		self.blockEntityPacket = packet;
 		self.blockEntityPacketData = nil;
 	end

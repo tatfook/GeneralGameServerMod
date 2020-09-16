@@ -13,8 +13,8 @@ local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 NPL.load("(gl)script/sqlite/sqlite3.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
-local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager");
+-- NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
+-- local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
@@ -45,18 +45,18 @@ function World:Init(worldId, WorldName, worldType, worldKey)
     self:SetPlayerManager(PlayerManager:new():Init(self));
 
     -- 可编辑世界创建DB
-    if (self:IsEditable()) then 
-        self:NewDB();
-        self:SetBlockManager(BlockManager:new():Init(self));
-    end
+    -- if (self:IsEditable()) then 
+    --     self:NewDB();
+    --     self:SetBlockManager(BlockManager:new():Init(self));
+    -- end
 
     return self;
 end
 
 -- 创建DB
 function World:NewDB()
-    local pathPrefix = self:GetConfig().storePath or "ggs/";
-    local filename = pathPrefix .. self:GetWorldKey();
+    local pathPrefix = self:GetConfig().storePath or "ggs/db/";
+    local filename = pathPrefix .. self:GetWorldKey() .. ".db";
     self:SetDB(sqlite3.open(filename));
 end
 
@@ -82,6 +82,7 @@ end
 
 -- 是否可编辑
 function World:IsEditable()
+    if (IsDevEnv) then return true end
     return self:GetConfig().IsEditable;
 end
 
