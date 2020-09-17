@@ -11,10 +11,12 @@ local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Cl
 ]]
 NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityOtherPlayer.lua");
+local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local Encoding = commonlib.gettable("System.Encoding");
 local AppGeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameWorld");
 local AppEntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer");
@@ -99,6 +101,16 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     self.userinfo.isVip = userinfo.vip == 1;
     self.userinfo.usertag = KpUserTag.GetMcml(userinfo);
     self.userinfo.worldCount = 0;
+
+    local ParacraftPlayerEntityInfo = (userinfo.extra or {}).ParacraftPlayerEntityInfo or {};
+    self.userinfo.scale = ParacraftPlayerEntityInfo.scale;
+    self.userinfo.asset = ParacraftPlayerEntityInfo.asset;
+    self:SetMainPlayerEntityScale(self.userinfo.scale);
+    self:SetMainPlayerEntityAsset(self.userinfo.asset);
+    local oldPlayerEntity = EntityManager.GetPlayer();
+    if (oldPlayerEntity and self:GetMainPlayerEntityScale()) then oldPlayerEntity:SetScaling(self:GetMainPlayerEntityScale()) end
+    if (oldPlayerEntity and self:GetMainPlayerEntityAsset()) then oldPlayerEntity:SetMainAssetPath(self:GetMainPlayerEntityAsset()) end
+
     -- 拉取学校
     keepwork.user.school(nil, function(statusCode, msg, data) 
         if (not data) then return end
@@ -114,6 +126,7 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     -- 发送用户通知
     GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateUserInfo", userinfo = self.userinfo});
 end
+
 -- 用户登录
 function AppGeneralGameClient.OnKeepWorkLogin_Callback()
 end

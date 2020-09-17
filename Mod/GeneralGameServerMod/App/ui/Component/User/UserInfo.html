@@ -159,6 +159,18 @@ function ClickNextAsset()
     end 
     mainasset = assets[curAssetIndex];
     GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
+
+    -- 更新用户信息
+    if (not isAuthUser) then return end
+    local extra = UserDetail.extra or {};
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    extra.ParacraftPlayerEntityInfo.asset = mainasset;
+    keepwork.user.setinfo({
+        router_params = {id = AuthUserId},
+        extra = extra,
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
+    end);
 end
 
 function ClickPrevRotate()
