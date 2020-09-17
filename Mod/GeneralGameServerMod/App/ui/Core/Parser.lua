@@ -13,6 +13,8 @@ local Elements = commonlib.gettable("System.Windows.mcml.Elements");
 
 local Parser = NPL.export();
 
+local ElementDebug = GGS.Debug.GetModuleDebug("ui-parase-element").Disable();
+
 -- 拷贝属性
 local function copy_attr(attr)
     if (type(attr) ~= "table") then return attr end
@@ -151,8 +153,7 @@ local function ParseXmlNode(self, opts)
 
     element.attr = attr;
 
-    -- echo("[parser] [info] generate page element:" .. element.name);
-    -- echo({"[parser] [info] element attr:", element.attr});
+    ElementDebug(element.name, element.attr);
 
     -- 添加到父元素中
     if (parentElement) then 

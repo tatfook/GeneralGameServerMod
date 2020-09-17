@@ -124,14 +124,17 @@ function Debug.GetModuleDebug(module)
 
     function obj.Enable()
         Debug.EnableModule(module);
+        return obj;
     end
 
     function obj.Disable()
         Debug.DisableModule(module);
+        return obj;
     end
 
     function obj.Format(...)
         DebugCall(module, string.format(...));
+        return obj;
     end
     
     setmetatable(obj, {
