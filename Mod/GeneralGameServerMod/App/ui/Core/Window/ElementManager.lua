@@ -8,14 +8,15 @@ use the lib:
 local ElementManager = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/ElementManager.lua");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
-local mcml = commonlib.gettable("System.Windows.mcml");
--- 初始化基本元素
-mcml:StaticInit();
+-- NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");
+-- local mcml = commonlib.gettable("System.Windows.mcml");
+-- -- 初始化基本元素
+-- mcml:StaticInit();
 
-local Html = NPL.load("./Elements/Html.lua", true);
-local Text = NPL.load("./Elements/Text.lua", true);
-local Button = NPL.load("./Elements/Button.lua", true);
+local Html = NPL.load("./Elements/Html.lua");
+local Div = NPL.load("./Elements/Div.lua");
+local Text = NPL.load("./Elements/Text.lua");
+local Button = NPL.load("./Elements/Button.lua");
 
 local ElementManager = NPL.export();
 local ElementClassMap = {};
@@ -23,6 +24,7 @@ local ElementClassMap = {};
 function ElementManager.StaticInit()
     -- 注册元素
     ElementManager.RegisterByTagName("Html", Html);
+    ElementManager.RegisterByTagName("Div", Html);
     ElementManager.RegisterByTagName("Text", Text);
     ElementManager.RegisterByTagName("Button", Button);
 end
@@ -33,7 +35,7 @@ function ElementManager.RegisterByTagName(tagname, class)
 end
 
 function ElementManager.GetElementByTagName(tagname)
-    return ElementClassMap[tagname] or mcml:GetClassByTagName(tagname);
+    return ElementClassMap[tagname] or Div;
 end
 
 ElementManager.StaticInit();

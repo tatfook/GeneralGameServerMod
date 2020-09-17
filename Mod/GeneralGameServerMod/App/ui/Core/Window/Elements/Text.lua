@@ -11,29 +11,27 @@ local Text = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Text
 NPL.load("(gl)script/ide/System/Windows/Controls/Label.lua");
 local Label = commonlib.gettable("System.Windows.Controls.Label");
 
-local Element = NPL.load("../Element.lua", IsDevEnv);
+local Element = NPL.load("../Element.lua");
 
 local Text = commonlib.inherit(Element, NPL.export());
 
-Text:Property({"value", nil, "GetValue", "SetValue"})
+Text:Property("Value");  -- 文本值
 
 function Text:ctor()
+	self:SetName("Text");
 end
 
 -- public:
-function Text:createFromXmlNode(xmlNode)
+function Text:Init(xmlNode)
 	local value = (type(xmlNode) == "string" or type(xmlNode) == "number") and tostring(xmlNode) or nil;
-	return self:new({name="Text", value = value});
-end
 
-function Text:clone()
-	local o = Text._super.clone(self)
-	o.value = self.value;
-	return o;
+	self:SetValue(value);
+
+	return self;
 end
 
 function Text:GetTextTrimmed()
-	local value = self.value or self:GetAttributeWithCode("value", nil, true);
+	local value = self.value or self:GetAttrValue("value", nil);
 	if(value) then
 		value = string.gsub(value, "nbsp;", "");
 		value = string.gsub(value, "^[%s]+", "");
@@ -42,15 +40,15 @@ function Text:GetTextTrimmed()
 	return value;
 end
 
-function Text:LoadComponent(parentElem, parentLayout, style)
-	local css = self:CreateStyle(mcml:GetStyleItem(self.class_name), style);
-	css["text-align"] = css["text-align"] or "left";
-
+function Text:LoadComponent(parentElem, parentLayout, parentStyle)
 	self.value = self:GetTextTrimmed();
+
+	local css = self:CreateStyle(nil, parentStyle);
+	css["text-align"] = css["text-align"] or "left";
 
 	if(not self.value or self.value=="") then return end
 
-	self:EnableSelfPaint(parentElem);
+	-- self:EnableSelfPaint(parentElem);
 
 	local font, font_size, scale = css:GetFontSettings();
 	local line_padding = 2;
@@ -138,7 +136,7 @@ end
 function Text:paintEvent(painter)
 	if(self.labels) then
 		local css = self:GetStyle();
-		local be_shadow,shadow_offset_x,shadow_offset_y,shadow_color = css:GetTextShadow();
+		local be_shadow, shadow_offset_x, shadow_offset_y, shadow_color = css:GetTextShadow();
 		painter:SetFont(self.font);
 		painter:SetPen(css.color or "#000000");
 		local textAlignment = css:GetTextAlignment();

@@ -11,11 +11,11 @@ local Button = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Bu
 NPL.load("(gl)script/ide/System/Windows/Controls/Button.lua");
 local Button = commonlib.gettable("System.Windows.Controls.Button");
 
-local Element = NPL.load("../Element.lua", IsDevEnv);
+local Element = NPL.load("../Element.lua");
 local Button= commonlib.inherit(Element, NPL.export());
 
 function Button:ctor()
-	self:SetTabIndex(0);
+	self:SetName("Button");
 end
 
 function Button:createFromXmlNode(o)
@@ -25,7 +25,7 @@ function Button:createFromXmlNode(o)
 	return o;
 end
 
-function Button:OnLoadComponentBeforeChild(parentElem, parentLayout, css)
+function Button:OnLoadComponentBeforeChild(parentElement, parentLayout, style)
 	local polygonStyle = self:GetAttributeWithCode("polygonStyle", nil, true);
 	local direction = self:GetAttributeWithCode("direction", nil, true);
 	local hotkey = self:GetAttributeWithCode("hotkey", nil, true);
@@ -36,18 +36,18 @@ function Button:OnLoadComponentBeforeChild(parentElem, parentLayout, css)
 
 	local _this = self.control;
 	if(not _this) then
-		_this = Button:new():init(parentElem);
+		_this = Button:new():init(parentElement);
 		_this:SetPolygonStyle(polygonStyle);
 		_this:SetDirection(direction);
 		self:SetControl(_this);
 	else
-		_this:SetParent(parentElem);
+		_this:SetParent(parentElement);
 	end
-	_this:ApplyCss(css);
+	_this:ApplyCss(style);
 	_this:SetText(tostring(self:GetAttributeWithCode("value", nil, true) or ""));
 	_this:SetTooltip(self:GetAttributeWithCode("tooltip", nil, true));
 	_this:Connect("clicked", self, self.OnClick, "UniqueConnection")
-	Button._super.OnLoadComponentBeforeChild(self, parentElem, parentLayout, css)
+	Button._super.OnLoadComponentBeforeChild(self, parentElement, parentLayout, style)
 end
 
 
