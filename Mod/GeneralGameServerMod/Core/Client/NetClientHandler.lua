@@ -146,6 +146,9 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetPosition(x, y, z);
     end
 
+    if (self:GetClient():GetMainPlayerEntityScale()) then entityPlayer:SetScaling(self:GetClient():GetMainPlayerEntityScale()) end
+    if (self:GetClient():GetMainPlayerEntityAsset()) then entityPlayer:SetMainAssetPath(self:GetClient():GetMainPlayerEntityAsset()) end
+
     -- 构建玩家信息
     local playerInfo = {
         state = "online",

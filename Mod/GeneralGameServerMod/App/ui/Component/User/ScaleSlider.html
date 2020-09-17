@@ -20,7 +20,6 @@
 </template>
 
 <script type="text/lua">
-self.value = 120;
 local Total = 220;
 
 function ClickAddStep()
@@ -42,12 +41,23 @@ function Change(value)
     if (not player or self.value == value) then return end;
     local scale = (Total - value) / 100;
     player:SetScaling(scale);
+    self.value = value;
+
+    if (not isAuthUser) then return end
+    -- 更新用户信息
+    local extra = UserDetail.extra or {};
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    extra.ParacraftPlayerEntityInfo.scale = scale;
+    keepwork.user.setinfo({
+        router_params = {id = AuthUserId},
+        extra = extra,
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
+    end);
 end
 
-function OnRefresh()
-    local player = GameLogic.GetPlayerController():GetPlayer();
-    local scale = player:GetScaling();
-    scale = scale > 1.2 and 1.2 or (scale < 1 and 1 or scale);
-    self.value = Total - math.floor(scale * 100);
-end
+local player = GameLogic.GetPlayerController():GetPlayer();
+local scale = player and player:GetScaling() or 1;
+scale = scale > 1.2 and 1.2 or (scale < 1 and 1 or scale);
+self.value = Total - math.floor(scale * 100);
 </script>

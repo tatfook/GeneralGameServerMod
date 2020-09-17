@@ -34,6 +34,8 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
 
 GeneralGameClient:Property("World", nil);  -- 当前世界
+GeneralGameClient:Property("MainPlayerEntityScale", nil);  -- 玩家实体大小
+GeneralGameClient:Property("MainPlayerEntityAsset", nil);  -- 玩家实体模型
 
 -- 类共享变量 强制同步块列表
 GeneralGameClient.syncForceBlockList = commonlib.UnorderedArraySet:new();
