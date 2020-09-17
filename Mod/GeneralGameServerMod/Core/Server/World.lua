@@ -62,8 +62,8 @@ end
 
 -- 设置块
 function World:SetBlocks(blocks)
-    if (not self:IsEditable()) then return end
-    self:GetBlockManager():SetBlocks(blocks);
+    -- if (not self:IsEditable()) then return end
+    -- self:GetBlockManager():SetBlocks(blocks);
 end
 
 -- 获取世界实体ID

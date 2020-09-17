@@ -134,6 +134,9 @@ end
 -- 设置客户端选项
 function GeneralGameClient:SetOptions(opts)
     commonlib.partialcopy(self.options, opts);
+    if (self.options.editable) then
+        self.options.editable = not GameLogic.IsReadOnly();
+    end
     return self.options;
 end
 

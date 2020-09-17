@@ -9,6 +9,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/sqlite/sqlite3.lua");
 NPL.load("(gl)script/ide/timer.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
@@ -33,6 +34,7 @@ GeneralGameWorld:Property("Client");          -- 所属客户端
 GeneralGameWorld:Property("PlayerManager");   -- 玩家管理器
 GeneralGameWorld:Property("BlockManager");    -- 方块管理器
 GeneralGameWorld:Property("EnableBlockMark");    -- 是否使能方块标记  默认为true 由 IsSyncBlock 控制
+GeneralGameWorld:Property("DB");              -- 世界DB
 
 function GeneralGameWorld:ctor() 
 end
@@ -52,6 +54,11 @@ function GeneralGameWorld:Init(client)
 		self:Tick();
 	end});
 	self.timer:Change(tickDuration, tickDuration); -- 两分钟触发一次
+
+	-- 是否可编辑
+	-- if (self:GetClient():GetOptions().editable) then
+	-- 	self:SetDB(sqlite3.open(ParaWorld.GetWorldDirectory() .. "/ggs.db"));
+	-- end
 
 	return self;
 end
@@ -134,6 +141,12 @@ function GeneralGameWorld:Logout()
 	-- 清除定时任务
 	self.timer:Change();
 
+	-- 关闭DB
+	if (self:GetDB()) then 
+		self:GetDB():close();
+		self:SetDB(nil);
+	end
+	
 	self.isLogin = false;
 	self:SetWorldId(0);
 end

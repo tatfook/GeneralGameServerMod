@@ -10,18 +10,18 @@ CSS 相关属性解释
 元素百分比: 取父元素最大大小的百分比 size = parentMaxSize * percentage
 ]]
 
--- local ElementLayout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-local ElementLayout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("ElementLayout"));
+local ElementLayout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 -- 属性定义
 ElementLayout:Property("UseSpace", true, "IsUseSpace");  -- 是否占据文档流空间
 ElementLayout:Property("Element");                       -- 元素
 ElementLayout:Property("ParentElementLayout");           -- 父元素布局
 ElementLayout:Property("Style");                         -- 元素样式
+ElementLayout:Property("Window");                        -- 所属窗口
 
 local nid = 0;
 -- 初始化
-function ElementLayout:Init(element, parentElementLayout)
+function ElementLayout:Init(element, parentElementLayout, window)
 	-- 右侧可用位置
 	self.rightAvailableX = 0;
 	self.rightAvailableY = 0;
@@ -45,16 +45,13 @@ function ElementLayout:Init(element, parentElementLayout)
 	self:SetStyle({});
 	self:SetElement(element);
 	self:SetParentElementLayout(parentElementLayout);
+	self:SetWindow(window);
 
 	self:InitLayout();
 
 	return self;
 end
 
--- 获取窗口
-function ElementLayout:GetWindow()
-	return self:GetElement():GetPageCtrl():GetWindow();
-end
 -- 获取窗口位置 x, y, w, h    (w, h 为宽高, 非坐标)
 function ElementLayout:GetWindowPosition()
 	return self:GetWindow():GetNativeWindow():GetAbsPosition();
@@ -63,12 +60,10 @@ end
 function ElementLayout:GetScreenPosition()
 	return ParaUI.GetUIObject("root"):GetAbsPosition();
 end
-
 -- 获取页面元素的CSS
 function ElementLayout:GetElementStyle()
 	return self:GetElement() and self:GetElement():GetStyle();
 end
-
 -- 设置位置坐标
 function ElementLayout:SetPos(x, y)
 	self.x, self.y = x, y;
@@ -98,6 +93,16 @@ end
 function ElementLayout:GetRealWidthHeight()
 	return self.realWidth, self.realHeight;
 end
+-- 获取填充 left top right bottom
+function ElementLayout:GetPaddings()
+	local style = self:GetStyle();
+	return style.paddingLeft, style.paddingTop, style.paddingRight, style.paddingBottom;
+end
+-- 获取边距
+function ElementLayout:GetMargins()
+	local style = self:GetStyle();
+	return style.marginLeft, style.marginTop, style.marginRight, style.marginBottom;
+end
 -- 设置可用位置
 function ElementLayout:SetAvailablePos(availableX, availableY)
 	self.availableX, self.availableY = availableX, availableY;
@@ -106,7 +111,6 @@ end
 function ElementLayout:GetAvailablePos()
 	return self.availableX, self.availableY;
 end
-
 -- 是否是有效布局
 function ElementLayout:IsValid()
 	return self:GetStyle().display ~= "none";
@@ -197,49 +201,12 @@ function ElementLayout:InitLayout()
 
 	-- 默认使用文档流
 	self:SetUseSpace(true);
-	self:SetPos(0, 0);
+	self:SetPos(parentElementLayout:GetAvailablePos());
 	self:SetAvailablePos(0, 0);
 	self:SetRealWidthHeight(0, 0);
 
 	echo({self:GetElement().name, width or "nil", height or "nil", "init layout", "nid", self.nid, "parent nid", parentElementLayout.nid, "parent width height:", parentWidth, parentHeight, style});
 
-end
-
--- 元素布局更新前
-function ElementLayout:OnBeforeUpdateElementLayout()
-end
-
--- 子元素布局更新前
-function ElementLayout:OnBeforeUpdateChildElementLayout()
-end
-
--- 元素布局更新
-function ElementLayout:OnUpdateElementLayout()
-	local realWidth, realHeight = self:GetRealWidthHeight();
-	local width, height = self:GetWidthHeight();
-	
-	-- 元素布局更新必须确保宽高存在
-	self:SetWidthHeight(width or realHeight or 0, height or realHeight or 0);
-
-	-- 调整位置信息
-	self:ApplyStyle();
-
-	-- 更新父布局 将自己加入父布局
-	self:UpdateParentElementLayout();
-end
-
--- 子元素布局更新后
-function ElementLayout:OnAfterUpdateChildElementLayout()
-end
-
--- 元素布局更新后
-function ElementLayout:OnAfterUpdateElementLayout()
-	local left, top = self:GetPos();
-	local width, height = self:GetWidthHeight();
-	local element = self:GetElement();
-	local control = element and element.control;
-	if (not control) then return end
-	control:setGeometry(left, top, width, height);
 end
 
 -- 生效位置
@@ -390,63 +357,58 @@ function ElementLayout:UpdateParentElementLayout()
 	self:SetPos(left, top);  -- 更新自己再父元素中相对坐标
 end
 
--- 应用布局
-function ElementLayout:ApplyLayout()
-	local left, top = self:GetPos();
-	local width, height = self:GetWidthHeight();
-	self:GetLayout():SetRealSize(self:GetRealWidthHeight());
-	self:GetLayout():SetPos(left, top);
-	self:GetLayout():SetSize(width, height);
-	self:GetLayout():SetUsedSize(width, height);
-	self:GetElement():OnAfterChildLayout(self:GetLayout(), left, top, left + width, top + height);
-	echo({self:GetElement().name, left, top, left + width, top + height});
+-- 元素布局更新前
+function ElementLayout:OnBeforeUpdateElementLayout()
 end
 
-
--- 更新子布局
-function ElementLayout:ApplyChildLayout()
-	local layout = self:GetLayout();
-	local width, height = self:GetWidthHeight();
-	layout:SetPos(0, 0);
-	layout:ResetUsedSize();
-	-- layout:SetSize(width or 0, height or 0);
-	if(not self:GetElement():OnBeforeChildLayout(layout)) then
-		self:GetElement():UpdateChildLayout(layout);
-	end
-	local usedWidth, usedHeight = layout:GetUsedSize();
-	-- 子元素布局完成必须有宽高
-	self:SetWidthHeight(width or usedWidth or 0, height or usedHeight or 0);
-	self:SetRealWidthHeight(usedWidth or 0, usedHeight or 0);
+-- 子元素布局更新前
+function ElementLayout:OnBeforeUpdateChildElementLayout()
 end
 
-
--- 更新布局
-function ElementLayout:UpdateLayout(parentLayout)
-
-	-- 初始化样式
-	self:InitLayout();
+-- 元素布局更新
+function ElementLayout:OnUpdateElementLayout()
+	local realWidth, realHeight = self:GetRealWidthHeight();
+	local width, height = self:GetWidthHeight();
 	
-	-- 应用子布局
-	self:ApplyChildLayout();
+	-- 元素布局更新必须确保宽高存在
+	self:SetWidthHeight(width or realHeight or 0, height or realHeight or 0);
 
 	-- 调整位置信息
 	self:ApplyStyle();
 
-	-- 应用父布局
-	self:ApplyParentLayout();
-
-	-- 应用布局
-	self:ApplyLayout();
-
-	-- echo(string.format("-----------------[tag:%s, nid:%s] end layout----------------", self:GetElement().name, self.nid));
+	-- 更新父布局 将自己加入父布局
+	self:UpdateParentElementLayout();
 end
 
+-- 子元素布局更新后, 真实宽高必定存在
+function ElementLayout:OnAfterUpdateChildElementLayout()
+	local realWidth, realHeight = self:GetRealWidthHeight();
+	local width, height = self:GetWidthHeight();
+	local style = self:GetStyle();
+	local paddingLeft, paddingTop, paddingRight, paddingBottom = style.paddingLeft, style.paddingTop, style.paddingRight, style.paddingBottom;
+	
+	width = width or (realWidth + paddingLeft + paddingRight);
+	height = height or (realHeight + paddingTop + paddingBottom);
 
+	self:SetWidthHeight(width, height);
+end
+
+-- 元素布局更新后
+function ElementLayout:OnAfterUpdateElementLayout()
+	local left, top = self:GetPos();
+	local width, height = self:GetWidthHeight();
+	local element = self:GetElement();
+	local control = element and element.control;
+	if (not control) then return end
+	control:setGeometry(left, top, width, height);
+end
 
 -- 更新元素布局
 local function UpdateElementLayout(element, parentElementLayout)
+	if (not parentElementLayout) then return end
+
     -- 获取当前元素布局
-    local elementLayout = ElementLayout:new():Init(element, parentElementLayout);
+    local elementLayout = ElementLayout:new():Init(element, parentElementLayout, parentElementLayout:GetWindow());
 	echo(string.format("-----------------[tag:%s, nid: %s] begin layout----------------", element.name, elementLayout.nid));
     
     -- 布局无效 直接退出

@@ -14,7 +14,8 @@ local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local BlockManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager"));
 
-BlockManager:Property("World");   -- 方块管理器所属世界
+BlockManager:Property("World");                                   -- 方块管理器所属世界
+BlockManager:Property("DB");                                      -- DB
 
 local MaxSyncBlockCountPerPacket = 4096;  -- 单个数据包最大同步块数
 local notSyncBlockIdMap = {
@@ -48,6 +49,21 @@ function BlockManager:Init(world)
 
 	-- 注册实体编辑事件
 	GameLogic.GetEvents():AddEventListener("OnEditEntity", BlockManager.OnEditEntity, self, "BlockManager");
+
+	-- 设置DB
+	self:SetDB(self:GetWorld():GetDB());
+	
+	-- 构建数据表
+	-- if (self:GetDB()) then
+	-- 	self:GetDB():exec([[
+	-- 		drop table if exists block;
+	-- 		create table if not exists block (
+	-- 			blockIndex	        VARCHAR(24) PRIMARY KEY,
+	-- 			areaIndex           VARCHAR(24),
+	-- 			packet              BLOB
+	-- 		);
+	-- 	]]);
+	-- end
 
 	return self;
 end

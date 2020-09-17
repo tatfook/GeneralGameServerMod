@@ -250,7 +250,6 @@ function NetServerHandler:handleMultiple(packetMultiple)
     if (not self:GetPlayer()) then return self:handlePlayerRelogin() end
     
     if (packetMultiple.action == "SyncBlock") then
-        -- self:GetWorld():SetBlocks(packetMultiple.packets);
         self:GetPlayerManager():SendPacketToSyncBlockPlayers(packetMultiple, self:GetPlayer());
     else
         self:GetPlayerManager():SendPacketToAllPlayers(packetMultiple, self:GetPlayer());
