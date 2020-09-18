@@ -103,8 +103,8 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     self.userinfo.worldCount = 0;
 
     local ParacraftPlayerEntityInfo = (userinfo.extra or {}).ParacraftPlayerEntityInfo or {};
-    self.userinfo.scale = ParacraftPlayerEntityInfo.scale;
-    self.userinfo.asset = ParacraftPlayerEntityInfo.asset;
+    self.userinfo.scale = ParacraftPlayerEntityInfo.scale or 1;
+    self.userinfo.asset = ParacraftPlayerEntityInfo.asset or "character/CC/02human/paperman/boy01.x";
     self:SetMainPlayerEntityScale(self.userinfo.scale);
     self:SetMainPlayerEntityAsset(self.userinfo.asset);
     local oldPlayerEntity = EntityManager.GetPlayer();
