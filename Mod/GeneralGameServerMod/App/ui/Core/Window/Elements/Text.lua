@@ -92,7 +92,7 @@ end
 -- 绘制文本
 function Text:OnRender(painter)
 	local style = self:GetStyle();
-	local textAlignment, fontSize, lineHeight, scale = style:GetTextAlignment(), style:GetFontSize(), style:GetLineHeight(), style:GetScale();
+	local fontSize, lineHeight = style:GetFontSize(), style:GetLineHeight();
 	local linePadding = (lineHeight - fontSize) / 2;
 
 	painter:SetFont(style:GetFont());
@@ -100,7 +100,7 @@ function Text:OnRender(painter)
 
 	for i = 1, #self.texts do
 		local obj = self.texts[i];
-		local x, y, w, h, text = obj.x, obj.y + linePadding, obj.w, obj.h - linePadding - linePadding, obj.text;
-		painter:DrawTextScaledEx(x, y, w, h, text, textAlignment, self.scale);
+		local x, y, text = obj.x, obj.y + linePadding, obj.text;
+		painter:DrawText(x, y, text);
 	end
 end

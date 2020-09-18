@@ -37,7 +37,8 @@ end
 function UIWindow:LoadComponent(url)
     url = commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString([[
        <html style="height:100%;">
-            hello world
+            <Button>按钮</Button>
+            hello world  this is a test
        </html>
     ]]), "//html");
 

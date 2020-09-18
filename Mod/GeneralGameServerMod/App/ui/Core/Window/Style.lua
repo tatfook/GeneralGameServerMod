@@ -24,25 +24,57 @@ local Style = commonlib.inherit(nil, NPL.export());
 
 local remoteTextrue = {};
 
+-- 伪类字段
+local pseudo_class_fields = {
+	["active"] = true,
+	["hover"] = true,
+}
+
 function Style:ctor()
 end
 
 function Style:Init(style)
     self:Merge(style);
 
+	-- 伪类样式
+	self.ActiveStyle = Style:new();  -- 激活样式
+	self.HoverStyle = Style:new();   -- 鼠标悬浮样式
+
+	-- 合并伪类样式
+	if (type(style) == "table") then
+		self.ActiveStyle:Merge(style.ActiveStyle);
+		self.HoverStyle:Merge(style.HoverStyle);
+	end
+	
     return self;
 end
 
+-- 获取激活样式
+function Style:GetActiveStyle()
+	return self.ActiveStyle;
+end
+
+-- 获取悬浮样式
+function Style:GetHoverStyle()
+	return self.HoverStyle;
+end
+
+-- 合并样式
 function Style:Merge(style)
     if(type(style) ~= "table") then return end 
     
-    for key, value in pairs(style) do
-        self[key] = value;
+	for key, value in pairs(style) do
+		key = string.lower(key);
+		if (not pseudo_class_fields[key]) then
+			self[key] = value;
+		end
     end
     
     return self;
 end
 
+
+-- 继承字段
 local inheritable_fields = {
 	["color"] = true,
 	["font-family"] = true,
@@ -103,13 +135,15 @@ local dimension_fields = {
 	["top"] = true,
 	["spacing"] = true,
 	
-	["border-width"] = true,
 	["shadow-quality"] = true,
 	["text-shadow-offset-x"] = true,
 	["text-shadow-offset-y"] = true,
 }
 
 local number_fields = {
+	["border-width"] = true,
+	["outline-width"] = true, 
+
 	["font-size"] = true,
 	["base-font-size"] = true,
 	["z-index"] = true,
@@ -119,6 +153,7 @@ local number_fields = {
 local color_fields = {
 	["color"] = true,
 	["border-color"] = true,
+	["outline-color"] = true,
 	["background-color"] = true,
 	["shadow-color"] = true,
 	["caret-color"] = true,
@@ -207,7 +242,7 @@ function Style:AddItem(name,value)
 			value = tonumber(value);
 		end
 	elseif (number_fields[name]) then
-		value = tonumber(value);
+		value = tonumber(string.match(value, "[%+%-]?%d+"));
 	elseif(color_fields[name]) then
 		value = StyleColor.ConvertTo16(value);
 	elseif(transform_fields[name]) then
@@ -294,47 +329,10 @@ function Style:GetLineHeight(defaultValue)
 	return lineHeight; 
 end
 
-function Style:GetTextShadow()
-	return self["text-shadow"] or false;
+function Style:GetOutlineWidth(defaultValue)
+	return self["outline-width"] or defaultValue;
 end
 
-function Style:GetTextShadowOffsetX()
-	return self["text-shadow-offset-x"] or 1;
-end
-
-function Style:GetTextShadowOffsetY()
-	return self["text-shadow-offset-y"] or 1;
-end
-
-function Style:GetTextShadowColor()
-	return self["shadow-color"] or "#00000088";
-end
-
-function Style:GetTextShadow()
-	return self:TextShadow(), self:TextShadowOffsetX(), self:TextShadowOffsetY(), self:TextShadowColor();
-end
-
-function Style:GetTextAlignment(defaultAlignment)
-	local alignment = defaultAlignment or 1;	-- center align
-	if(self["text-align"]) then
-		if(self["text-align"] == "right") then
-			alignment = 2;
-		elseif(self["text-align"] == "left") then
-			alignment = 0;
-		end
-	end
-	if(self["text-singleline"] ~= "false") then
-		alignment = alignment + 32;
-	else
-		if(self["text-wordbreak"] == "true") then
-			alignment = alignment + 16;
-		end
-	end
-	if(self["text-noclip"] ~= "false") then
-		alignment = alignment + 256;
-	end
-	if(self["text-valign"] ~= "top") then
-		alignment = alignment + 4;
-	end
-	return alignment;
+function Style:GetOutlineColor(defaultValue)
+	return self["outline-color"] or defaultValue;
 end
