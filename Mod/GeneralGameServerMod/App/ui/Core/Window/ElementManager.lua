@@ -13,29 +13,31 @@ local ElementManager = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Ele
 -- -- 初始化基本元素
 -- mcml:StaticInit();
 
-local Html = NPL.load("./Elements/Html.lua");
-local Div = NPL.load("./Elements/Div.lua");
-local Text = NPL.load("./Elements/Text.lua");
-local Button = NPL.load("./Elements/Button.lua");
+local Element = NPL.load("./Element.lua", IsDevEnv);
+local Html = NPL.load("./Elements/Html.lua", IsDevEnv);
+local Div = NPL.load("./Elements/Div.lua", IsDevEnv);
+local Text = NPL.load("./Elements/Text.lua", IsDevEnv);
+local Button = NPL.load("./Elements/Button.lua", IsDevEnv);
 
-local ElementManager = NPL.export();
+local ElementManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export())
 local ElementClassMap = {};
 
-function ElementManager.StaticInit()
+function ElementManager:ctor()
     -- 注册元素
-    ElementManager.RegisterByTagName("Html", Html);
-    ElementManager.RegisterByTagName("Div", Html);
-    ElementManager.RegisterByTagName("Text", Text);
-    ElementManager.RegisterByTagName("Button", Button);
+    ElementManager:RegisterByTagName("Html", Html);
+    ElementManager:RegisterByTagName("Div", Div);
+    ElementManager:RegisterByTagName("Text", Text);
+    ElementManager:RegisterByTagName("Button", Button);
 end
 
-function ElementManager.RegisterByTagName(tagname, class)
-    ElementClassMap[tagname] = class;
-    -- mcml:RegisterPageElement(tagname, class);
+function ElementManager:RegisterByTagName(tagname, class)
+    ElementClassMap[string.lower(tagname)] = class;
 end
 
-function ElementManager.GetElementByTagName(tagname)
-    return ElementClassMap[tagname] or Div;
+function ElementManager:GetElementByTagName(tagname)
+    return ElementClassMap[string.lower(tagname)] or Element;
 end
 
-ElementManager.StaticInit();
+
+-- 初始化成单列模式
+ElementManager:InitSingleton();

@@ -10,3 +10,7 @@ local Html = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Html
 
 local Element = NPL.load("../Element.lua", IsDevEnv);
 local Html= commonlib.inherit(Element, NPL.export());
+
+function Html:ctor()
+    self:SetName("Html");
+end

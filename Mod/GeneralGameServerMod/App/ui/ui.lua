@@ -103,8 +103,8 @@ end
 
 -- 显示窗口
 function ui.ShowWindow(self, params)
-    if (not self or not self.isa or not self:isa(ui)) then 
-        params = self;
+    if (not self or not self.isa or self == ui or not self:isa(ui)) then 
+        params = self ~= ui and self or params;
         self = ui:new();
     end
 

@@ -11,7 +11,7 @@ local Button = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Bu
 NPL.load("(gl)script/ide/System/Windows/Controls/Button.lua");
 local Button = commonlib.gettable("System.Windows.Controls.Button");
 
-local Element = NPL.load("../Element.lua");
+local Element = NPL.load("../Element.lua", IsDevEnv);
 local Button= commonlib.inherit(Element, NPL.export());
 
 function Button:ctor()

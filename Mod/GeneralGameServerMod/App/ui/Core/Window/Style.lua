@@ -92,7 +92,7 @@ local reset_fields =
 	["padding-bottom"] = true,
 }
 
-local number_fields = {
+local dimension_fields = {
 	["height"] = true,
 	["min-height"] = true,
 	["max-height"] = true,
@@ -101,13 +101,19 @@ local number_fields = {
 	["max-width"] = true,
 	["left"] = true,
 	["top"] = true,
-	["font-size"] = true,
 	["spacing"] = true,
-	["base-font-size"] = true,
+	
 	["border-width"] = true,
 	["shadow-quality"] = true,
 	["text-shadow-offset-x"] = true,
 	["text-shadow-offset-y"] = true,
+}
+
+local number_fields = {
+	["font-size"] = true,
+	["base-font-size"] = true,
+	["z-index"] = true,
+	["scale"] = true,
 };
 
 local color_fields = {
@@ -135,6 +141,22 @@ local transform_fields = {
 	["transform"] = true,
 	["transform-origin"] = true,
 };
+
+function Style.IsPx(value)
+	return string.match(value or "", "^[%+%-]?%d+px$");
+end
+
+function Style.GetPxValue(value)
+	return tonumber(string.match(value or "", "^([%+%-]?%d+)px$"));
+end
+
+function Style.IsNumber(value)
+	return string.match(value or "", "[%+%-]?%d+%.?%d*$");
+end
+
+function Style.GetNumberValue(value)
+	return tonumber(value);
+end
 
 function Style.isResetField(name)
 	return reset_fields[name];
@@ -175,12 +197,17 @@ function Style:AddItem(name,value)
 	end
 	name = string_lower(name);
 	value = string_gsub(value, "%s*$", "");
-    if(number_fields[name] or string_find(name,"^margin") or string_find(name,"^padding")) then
-        local isPercentage = string.match(value, "^[%+%-]?%d+%%$");
-        if (not isPercentage) then
-            local _, _, selfvalue = string_find(value, "([%+%-]?%d+)");
-            value = tonumber(selfvalue);
-        end
+    if(dimension_fields[name] or string_find(name,"^margin") or string_find(name,"^padding")) then
+		local isPercentage = string.match(value, "^[%+%-]?%d+%%$");
+		if (string.match(value, "^[%+%-]?%d+px$")) then   -- 像素值
+			value = tonumber(string.match(value, "^([%+%-]?%d+)px$"));
+		elseif (string.match(value, "^[%+%-]?%d+%%$")) then  -- 百分比
+			value = value;
+		else 
+			value = tonumber(value);
+		end
+	elseif (number_fields[name]) then
+		value = tonumber(value);
 	elseif(color_fields[name]) then
 		value = StyleColor.ConvertTo16(value);
 	elseif(transform_fields[name]) then
@@ -217,50 +244,69 @@ function Style:AddItem(name,value)
 	self[name] = value;
 end
 
--- the user may special many font size, however, some font size is simulated with a base font and scaling. 
--- @return font, base_font_size, font_scaling: font may be nil if not specified. font_size is the base font size.
-function Style:GetFontSettings()
-	local font;
-	local scale;
-	local font_size = 12;
-	if(self["font-family"] or self["font-size"] or self["font-weight"])then
-		local font_family = self["font-family"] or "System";
-		-- this is tricky. we convert font size to integer, and we will use scale if font size is either too big or too small. 
-		font_size = math.floor(tonumber(self["font-size"] or 12));
-
-		if(self["base-font-size"]) then
-			local baseFontSize = tonumber(self["base-font-size"]) or 12;
-			if(font_size>baseFontSize) then
-				scale = font_size / baseFontSize;
-				font_size = baseFontSize;
-			end
-			if(font_size<baseFontSize) then
-				scale = font_size / baseFontSize;
-				font_size = baseFontSize;
-			end			
-		end
-
-		local font_weight = self["font-weight"] or "norm";
-		font = string.format("%s;%d;%s", font_family, font_size, font_weight);
-	else
-		font = string.format("%s;%d;%s", "System", font_size, "norm");
-	end
-	return font, font_size, scale;
+-- 获取字体
+function Style:GetFont()
+	return string.format("%s;%d;%s", self:GetFontFamily(), self:GetFontSize(), self:GetFontWeight());
 end
 
-function Style:TextShadow()
+function Style:GetFontFamily(defaultValue)
+	return self["font-family"] or defaultValue or "System";
+end
+
+function Style:GetFontWeight(defaultValue)
+	return self["font-weight"] or defaultValue or "norm";
+end
+
+function Style:GetFontSize(defaultValue)
+	return self["font-size"] or defaultValue or 14;
+end
+
+function Style:GetScale(defaultValue)
+	return self.scale or (self["font-size"] and self["base-font-size"] and self["font-size"] / self["base-font-size"]) or defaultValue;
+end
+
+function Style:GetColor(defaultValue)
+	return self.color or defaultValue;
+end
+
+function Style:GetBackgroundColor(defaultValue)
+	return self["background-color"] or defaultValue;
+end
+
+function Style:GetBackground(defaultValue)
+	return self["background"] or defaultValue;
+end
+
+function Style:GetLineHeight(defaultValue)
+	local lineHeight = self["line-height"];
+	if (type(lineHeight) == "number") then return lineHeight end
+
+	if (self.IsPx(lineHeight)) then 
+		lineHeight = self.GetPxValue(lineHeight);
+	elseif (self.IsNumber(lineHeight)) then 
+		lineHeight = math.floor(self.GetNumberValue(lineHeight) * self:GetFontSize());
+	else
+		lineHeight = defaultValue or math.floor(1.4 * self:GetFontSize());
+	end
+
+	self["line-height"] = lineHeight;
+
+	return lineHeight; 
+end
+
+function Style:GetTextShadow()
 	return self["text-shadow"] or false;
 end
 
-function Style:TextShadowOffsetX()
+function Style:GetTextShadowOffsetX()
 	return self["text-shadow-offset-x"] or 1;
 end
 
-function Style:TextShadowOffsetY()
+function Style:GetTextShadowOffsetY()
 	return self["text-shadow-offset-y"] or 1;
 end
 
-function Style:TextShadowColor()
+function Style:GetTextShadowColor()
 	return self["shadow-color"] or "#00000088";
 end
 

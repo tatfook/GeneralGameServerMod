@@ -10,9 +10,8 @@ local UIWindow = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/UIWindow.
 ]]
 -- UIWindow
 
-local Element = NPL.load("./Element.lua");
-local ElementLayout = NPL.load("./ElementLayout.lua");
-local ElementManager = NPL.load("./ElementManager.lua");
+local ElementLayout = NPL.load("./ElementLayout.lua", IsDevEnv);
+local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), NPL.export());
 
 UIWindow:Property("UIWindow", true, "IsUIWindow");    -- 是否是UIWindow
@@ -36,11 +35,11 @@ end
 
 -- 加载页面内容
 function UIWindow:LoadComponent(url)
-    url = commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString(string.format([[
-       <html>
+    url = commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString([[
+       <html style="height:100%;">
             hello world
        </html>
-    ]])), "//html");
+    ]]), "//html");
 
     -- 只接受xmlNode
     if (type(url) ~= "table") then return end
@@ -49,7 +48,7 @@ function UIWindow:LoadComponent(url)
     self:SetRootXmlNode(url);
 
     -- 获取元素类 
-    local Element = ElementManager.GetElementByTagName(self:GetRootXmlNode().name);
+    local Element = ElementManager:GetElementByTagName(self:GetRootXmlNode().name);
     if (not Element) then return end;
 
     -- 设置根元素
@@ -70,20 +69,13 @@ function UIWindow:Refresh()
     self:GetRootLayout():activate();
 end
 
--- handle ondraw callback from system ParaUI object. 
-function UIWindow:handleRender()
-	self.isRepaintScheduled = false;
-	self:Render(self.painterContext);
-	if(self.bSelfPaint) then
-		-- for some reason, opengl sprites needs to be flushed in order to paint
-		self.painterContext:Flush();
-	end
-end
-
 -- 窗口显示
-function UIWindow:Show(params)
-    -- if (IsDevEnv) then self:SetEnableElementLayout(true) end
-    
+function UIWindow.Show(self, params)
+    if (not self or not self.isa or self == UIWindow or not self:isa(UIWindow)) then 
+        params = self ~= UIWindow and self or params;
+        self = UIWindow:new();
+    end
+
     self:LoadComponent();
 
     params = params or {};
@@ -105,3 +97,28 @@ end
 function UIWindow:CloseWindow()
     UIWindow._super.CloseWindow(self);
 end
+
+
+
+-- handle ondraw callback from system ParaUI object. 
+function UIWindow:handleRender()
+	self.isRepaintScheduled = false;
+	self:Render(self.painterContext);
+	if(self.bSelfPaint) then
+		-- for some reason, opengl sprites needs to be flushed in order to paint
+		self.painterContext:Flush();
+	end
+end
+
+-- render the widget and all its child objects to the current device context. 
+function UIWindow:Render(painterContext)
+	if(not painterContext or not self:GetRootElement()) then return end
+	-- make sure all widgets are recursively laid out properly
+	self:prepareToRender();
+
+    self:GetRootElement():Render(painterContext);
+end
+
+if (_G.UIWindow) then _G.UIWindow:CloseWindow() end
+_G.UIWindow = UIWindow:new();
+UIWindow.Test = _G.UIWindow;

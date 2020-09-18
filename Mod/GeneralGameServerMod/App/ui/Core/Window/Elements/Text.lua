@@ -8,12 +8,11 @@ local Text = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Text
 -------------------------------------------------------
 ]]
 
-NPL.load("(gl)script/ide/System/Windows/Controls/Label.lua");
-local Label = commonlib.gettable("System.Windows.Controls.Label");
-
-local Element = NPL.load("../Element.lua");
+local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Text = commonlib.inherit(Element, NPL.export());
+
+local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug");
 
 Text:Property("Value");  -- 文本值
 
@@ -23,15 +22,17 @@ end
 
 -- public:
 function Text:Init(xmlNode)
-	local value = (type(xmlNode) == "string" or type(xmlNode) == "number") and tostring(xmlNode) or nil;
+	local value = (type(xmlNode) == "string" or type(xmlNode) == "number") and tostring(xmlNode) or (xmlNode and xmlNode.attr and xmlNode.attr.value);
 
-	self:SetValue(value);
+	-- TextElementDebug("Init Value:" .. tostring(value), xmlNode);
+
+	self:SetValue(self:GetTextTrimmed(value));
 
 	return self;
 end
 
-function Text:GetTextTrimmed()
-	local value = self.value or self:GetAttrValue("value", nil);
+function Text:GetTextTrimmed(value)
+	value = value or self:GetValue() or self:GetAttrValue("value", nil);
 	if(value) then
 		value = string.gsub(value, "nbsp;", "");
 		value = string.gsub(value, "^[%s]+", "");
@@ -40,46 +41,12 @@ function Text:GetTextTrimmed()
 	return value;
 end
 
-function Text:LoadComponent(parentElem, parentLayout, parentStyle)
-	self.value = self:GetTextTrimmed();
-
-	local css = self:CreateStyle(nil, parentStyle);
-	css["text-align"] = css["text-align"] or "left";
-
-	if(not self.value or self.value=="") then return end
-
-	-- self:EnableSelfPaint(parentElem);
-
-	local font, font_size, scale = css:GetFontSettings();
-	local line_padding = 2;
-	
-	if(css["line-height"]) then
-		local line_height = css["line-height"];
-		local line_height_percent = line_height:match("(%d+)%%");
-		if(line_height_percent) then
-			line_height_percent = tonumber(line_height_percent);
-			line_padding = math.ceil((line_height_percent*font_size*0.01-font_size)*0.5);
-		else
-			line_height = line_height:match("(%d+)");
-			line_height = tonumber(line_height);
-			if(line_height) then
-				line_padding = math.ceil((line_height-font_size)*0.5);
-			end
-		end
-	end
-	self.font = font;
-	self.font_size = font_size;
-	self.scale = scale;
-	self.line_padding = line_padding;
-	self.textflow = css.textflow;
-end
-
 local function CalculateTextLayout(self, text, width, left, top)
+	TextElementDebug.Format("CalculateTextLayout, text = %s, width = %s, left = %s, top = %s", text, width, left, top);
 	if(not text or text =="") then return 0, 0 end
 
-	-- font-family: Arial; font-size: 14pt;font-weight: bold; 
-	local scale, font_size, line_padding = self.scale, self.font_size or 14, self.line_padding or 2;
-	local textWidth, textHeight = _guihelper.GetTextWidth(text, self.font), font_size;
+	local style = self:GetStyle();
+	local textWidth, textHeight = _guihelper.GetTextWidth(text, self.font), style:GetLineHeight();
 	local remaining_text = nil;
 
 	if(width and width > 0 and textWidth > width) then
@@ -87,24 +54,13 @@ local function CalculateTextLayout(self, text, width, left, top)
 		textWidth = _guihelper.GetTextWidth(text, self.font);
 	end
 
-	if(scale) then
-		textWidth = textWidth * scale;
-		textHeight = textHeight * scale;
-	end	
-
-	textHeight = textHeight + line_padding + line_padding;
-
-	local _this = Label:new():init();
-	_this:SetText(text);
-	_this:setGeometry(left, top, textWidth, textHeight);
-	self.labels:add(_this);
-
-	local css = self:GetStyle();
-	if(css and width and width > 0 and width > textWidth) then
-		if(css["text-align"]) then
-			if(css["text-align"] == "right") then
+	table.insert(self.texts, {text = text, x = left, y = top, w = textWidth, h = textHeight});
+		
+	if(style and width and width > 0 and width > textWidth) then
+		if(style["text-align"]) then
+			if(style["text-align"] == "right") then
 				_this:setX(left + width - textWidth);
-			elseif(css["text-align"] == "center") then
+			elseif(style["text-align"] == "center") then
 				_this:setX(left + (width - textWidth) / 2);
 			end
 		end
@@ -119,44 +75,32 @@ local function CalculateTextLayout(self, text, width, left, top)
 end
 
 function Text:OnBeforeUpdateChildElementLayout(elementLayout, parentElementLayout)
-	
 	local parentWidth, parentHeight = parentElementLayout:GetWidthHeight();
 	local left, top = elementLayout:GetPos();
 
-	self.labels = commonlib.Array:new();
+	self.texts = {};
 
-	local width, height = CalculateTextLayout(self, self:GetTextTrimmed(), parentWidth, left, top);
+	local width, height = CalculateTextLayout(self, self:GetValue(), parentWidth, left, top);
+
+	TextElementDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 
 	elementLayout:SetWidthHeight(width, height);
 
     return true; 
 end
 
--- virtual function: 
-function Text:paintEvent(painter)
-	if(self.labels) then
-		local css = self:GetStyle();
-		local be_shadow, shadow_offset_x, shadow_offset_y, shadow_color = css:GetTextShadow();
-		painter:SetFont(self.font);
-		painter:SetPen(css.color or "#000000");
-		local textAlignment = css:GetTextAlignment();
-		for i = 1, #self.labels do
-			local label = self.labels[i];
-			if(label) then
-				local x = label.crect:x();
-				local y = label.crect:y()+self.line_padding;
-				local w = label.crect:width();
-				local h = label.crect:height()-self.line_padding-self.line_padding;
-				local text = label:GetText();
+-- 绘制文本
+function Text:OnRender(painter)
+	local style = self:GetStyle();
+	local textAlignment, fontSize, lineHeight, scale = style:GetTextAlignment(), style:GetFontSize(), style:GetLineHeight(), style:GetScale();
+	local linePadding = (lineHeight - fontSize) / 2;
 
-				if(be_shadow) then
-					painter:SetPen(shadow_color);
-					painter:DrawTextScaledEx(x + shadow_offset_x, y + shadow_offset_y, w, h, text, textAlignment, self.scale);
-					painter:SetPen(css.color or "#000000");
-				end
+	painter:SetFont(style:GetFont());
+	painter:SetPen(style:GetColor("#000000"));
 
-				painter:DrawTextScaledEx(x, y, w, h, text, textAlignment, self.scale);
-			end
-		end
+	for i = 1, #self.texts do
+		local obj = self.texts[i];
+		local x, y, w, h, text = obj.x, obj.y + linePadding, obj.w, obj.h - linePadding - linePadding, obj.text;
+		painter:DrawTextScaledEx(x, y, w, h, text, textAlignment, self.scale);
 	end
 end

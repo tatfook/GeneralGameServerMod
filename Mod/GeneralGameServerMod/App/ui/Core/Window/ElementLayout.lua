@@ -89,7 +89,7 @@ function ElementLayout:GetScreenPosition()
 end
 -- 获取页面元素的CSS
 function ElementLayout:GetElementStyle()
-	return self:GetElement() and self:GetElement():GetStyle() or {};
+	return self:GetElement() and self:GetElement():GetStyle();
 end
 -- 设置位置坐标
 function ElementLayout:SetPos(x, y)
@@ -140,7 +140,7 @@ function ElementLayout:GetAvailablePos()
 end
 -- 是否是有效布局
 function ElementLayout:IsValid()
-	return self:GetStyle().display ~= "none";
+	return self:GetElementStyle() and self:GetStyle().display ~= "none";
 end
 
 -- 百分比转数字
@@ -164,7 +164,7 @@ end
 function ElementLayout:InitLayout()
 	-- 获取父元素布局
 	local parentElementLayout = self:GetParentElementLayout();
-	if (not parentElementLayout) then return end
+	if (not parentElementLayout or not self:IsValid()) then return end
 
 	-- 获取样式表
 	local css = self:GetElementStyle();
@@ -424,10 +424,7 @@ end
 function ElementLayout:OnAfterUpdateElementLayout()
 	local left, top = self:GetPos();
 	local width, height = self:GetWidthHeight();
-	local element = self:GetElement();
-	local control = element and element.control;
-	if (not control) then return end
-	control:setGeometry(left, top, width, height);
+	self:GetElement():SetGeometry(left, top, width, height);
 end
 
 -- 更新元素布局
@@ -462,7 +459,7 @@ local function UpdateElementLayout(element, parentElementLayout)
     
 	-- 执行子元素布局  子元素布局未更新则进行更新
 	if (not isUpdatedChildElementLayout) then
-		for childElement in element:Next() do
+		for childElement in element:ChildrenElementIterator() do
 			UpdateElementLayout(childElement, elementLayout);
 		end
 	end
