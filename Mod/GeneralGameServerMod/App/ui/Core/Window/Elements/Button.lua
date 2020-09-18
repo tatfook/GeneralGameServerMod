@@ -18,13 +18,6 @@ function Button:ctor()
 	self:SetName("Button");
 end
 
-function Button:createFromXmlNode(o)
-    o = self:new(o);
-    
-
-	return o;
-end
-
 function Button:OnLoadComponentBeforeChild(parentElement, parentLayout, style)
 	local polygonStyle = self:GetAttributeWithCode("polygonStyle", nil, true);
 	local direction = self:GetAttributeWithCode("direction", nil, true);
@@ -49,8 +42,6 @@ function Button:OnLoadComponentBeforeChild(parentElement, parentLayout, style)
 	_this:Connect("clicked", self, self.OnClick, "UniqueConnection")
 	Button._super.OnLoadComponentBeforeChild(self, parentElement, parentLayout, style)
 end
-
-
 
 function Button:OnBeforeUpdateChildElementLayout(elementLayout, parentElementLayout)
     if(not self.control) then return end
