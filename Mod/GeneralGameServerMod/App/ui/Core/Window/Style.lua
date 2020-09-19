@@ -31,6 +31,7 @@ local pseudo_class_fields = {
 }
 
 function Style:ctor()
+	self.RawStyle = {};             -- 原始样式
 end
 
 function Style:Init(style)
@@ -60,7 +61,7 @@ function Style:GetHoverStyle()
 end
 
 -- 合并样式
-function Style:Merge(style)
+function Style:Merge(style)			
     if(type(style) ~= "table") then return end 
     
 	for key, value in pairs(style) do
@@ -141,6 +142,10 @@ local dimension_fields = {
 }
 
 local number_fields = {
+	["border-top-width"] = true,
+	["border-right-width"] = true,
+	["border-bottom-width"] = true,
+	["border-left-width"] = true,
 	["border-width"] = true,
 	["outline-width"] = true, 
 

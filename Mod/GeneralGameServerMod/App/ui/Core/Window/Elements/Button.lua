@@ -17,8 +17,16 @@ Button:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 
 Button:Property("BaseStyle", {
 	["display"] = "inline",
-	["background-color"] = "#ff0000",
+	["background-color"] = "#434343",
+	["color"] = "#ffffff",
+	["font-size"] = 12,
+	["padding-top"] = 5,
+	["padding-right"] = 10,
+	["padding-bottom"] = 5,
+	["padding-left"] = 10,
 });
+
+local ButtonElementDebug = GGS.Debug.GetModuleDebug("ButtonElementDebug");
 
 function Button:ctor()
 	self:SetName("Button");
@@ -43,6 +51,8 @@ function Button:Init(xmlNode)
 		end
 	end
 
+	-- ButtonElementDebug(xmlNode, value);
+
 	-- 设置按钮
 	self:SetValue(value or "");
 
@@ -50,38 +60,41 @@ function Button:Init(xmlNode)
 end
 
 -- 子元素布局前回调
-function Button:OnBeforeUpdateChildElementLayout(elementLayout, parentElementLayout)
-	local style = self:GetStyle();
-
-    local paddingLeft, paddingTop, paddingRight, paddingBottom = elementLayout:GetPaddings();
-    local width, height = elementLayout:GetWidthHeight();
-    
-    width = width or (_guihelper.GetTextWidth(self:GetValue(), style:GetFont())  + paddingLeft + paddingRight);
-	height = height or (style:GetLineHeight() + paddingTop + paddingBottom);
+function Button:OnBeforeUpdateChildLayout()
+	local layout, style = self:GetLayout(), self:GetStyle();
+	local borderTop, borderRight, borderBottom, borderLeft = layout:GetBorder();
+    local paddingTop, paddingRight, paddingBottom, paddingLeft = layout:GetPadding();
+    local width, height = layout:GetWidthHeight();
 	
-    elementLayout:SetWidthHeight(width, height);
+	local textWidth = _guihelper.GetTextWidth(self:GetValue(), style:GetFont());
+	local textHeight = style:GetLineHeight();
+    width = width or (textWidth + paddingLeft + paddingRight + borderLeft + borderRight);
+	height = height or (textHeight + paddingTop + paddingBottom + borderTop + borderBottom);
+
+	-- ButtonElementDebug.Format("width = %s, height = %s, textWidth = %s, textHeight = %s, paddingLeft = %s, paddingRight = %s", width, height, textWidth, textHeight, paddingLeft, paddingRight);
+
+    layout:SetWidthHeight(width, height);
 
 	return true;  -- 返回true不执行子元素布局
 end
 
 -- 按钮渲染
 function Button:RenderContent(painter, style)
-	-- local style = self:GetCurrentStyle(); 
 	local x, y, w, h = self:GetGeometry();
 	local text = self:GetValue();
 	if(not text or text =="") then return end
 	local paddingTop, paddingRight, paddingBottom, paddingLeft = style["padding-top"] or 0, style["padding-right"] or 0, style["padding-bottom"] or 0, style["padding-left"] or 0;
-	local textWidth = _guihelper.GetTextWidth(self:GetValue(), style:GetFont());
+	local textWidth = _guihelper.GetTextWidth(text, style:GetFont());
 	local textHeight = style:GetFontSize();
 	local offsetLeft = (w - textWidth - paddingLeft - paddingRight) / 2;
-	local offsetTop = (h - textHeight - paddingTop - paddingBottom) / 2;
+	local offsetTop = (h - textHeight - paddingTop - paddingBottom) / 2 - textHeight / 6;  -- 后面减去的像素是根据实际效果调整的
 	offsetLeft = offsetLeft > 0 and offsetLeft or 0;
 	offsetTop = offsetTop > 0 and offsetTop or 0;
 	x = x + paddingLeft + offsetLeft;
 	y = y + paddingTop + offsetTop;
 	painter:SetFont(style:GetFont());
-	painter:SetPen(style:GetColor());
-	painter:DrawText(x, y, text);
+	painter:SetPen(style:GetColor("#000000"));
+	painter:DrawTextScaled(x, y, text);
 end
 
 

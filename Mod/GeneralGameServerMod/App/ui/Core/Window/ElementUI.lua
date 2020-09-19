@@ -1,30 +1,30 @@
 --[[
-Title: ElementBase
+Title: ElementUI
 Author(s): wxa
 Date: 2020/6/30
-Desc: 元素基类, 主要实现元素绘制相关功能
+Desc: 元素UI基类, 主要实现元素绘制相关功能
 use the lib:
 -------------------------------------------------------
-local ElementBase = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/ElementBase.lua");
+local ElementUI = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/ElementUI.lua");
 -------------------------------------------------------
 ]]
 
-local ElementBase = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+local ElementUI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-ElementBase:Property("Value");                                -- 元素值
-ElementBase:Property("Active", false, "IsActive");            -- 是否激活
-ElementBase:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
-
+ElementUI:Property("Value");                                -- 元素值
+ElementUI:Property("Active", false, "IsActive");            -- 是否激活
+ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
+ElementUI:Property("Layout");                               -- 元素布局
 
 -- 是否需要
-function ElementBase:IsRender()
+function ElementUI:IsRender()
     local style = self:GetStyle();
     if (self.isRender or not style or style.display == "none" or style.visibility == "hidden" or self:GetWidth() == 0 or self:GetHeight() == 0) then return true end
     return false;
 end
 
 -- 元素渲染
-function ElementBase:Render(painterContext)
+function ElementUI:Render(painterContext)
 	if (self:IsRender()) then return end
 
     self.isRender = true;  -- 设置渲染标识 避免递归渲染
@@ -36,7 +36,7 @@ function ElementBase:Render(painterContext)
 
     -- 渲染子元素
     painterContext:Translate(self:GetX(), self:GetY());
-    for childElement in self:ChildrenElementIterator() do
+    for childElement in self:ChildElementIterator() do
         childElement:Render(painterContext);
     end
     painterContext:Translate(-self:GetX(), -self:GetY());
@@ -45,7 +45,7 @@ function ElementBase:Render(painterContext)
 end
 
 -- 绘制元素
-function ElementBase:OnRender(painter)
+function ElementUI:OnRender(painter)
     local style = self:GetCurrentStyle();
 
     self:RenderOutline(painter, style);
@@ -55,7 +55,7 @@ function ElementBase:OnRender(painter)
 end
 
 -- 绘制外框线
-function ElementBase:RenderOutline(painter, style)
+function ElementUI:RenderOutline(painter, style)
     local outlineWidth, outlineColor = style["outline-width"], style["outline-color"];
     local x, y, w, h = self:GetGeometry();
     if (not outlineWidth or not outlineColor) then return end
@@ -67,15 +67,15 @@ function ElementBase:RenderOutline(painter, style)
 end
 
 -- 绘制背景
-function ElementBase:RenderBackground(painter, style)
-    local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor("#ffffff");
+function ElementUI:RenderBackground(painter, style)
+    local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor();
     local x, y, w, h = self:GetGeometry();
 	painter:SetPen(backgroundColor);
 	painter:DrawRectTexture(x, y, w, h, background);
 end
 
 -- 绘制边框
-function ElementBase:RenderBorder(painter, style)
+function ElementUI:RenderBorder(painter, style)
     local borderWidth, borderColor = style["border-width"], style["border-color"];
     local x, y, w, h = self:GetGeometry();
     if (not borderWidth or not borderColor) then return end
@@ -87,54 +87,55 @@ function ElementBase:RenderBorder(painter, style)
 end
 
 -- 绘制内容
-function ElementBase:RenderContent()
+function ElementUI:RenderContent()
 end
 
 -- 元素位置
-function ElementBase:SetGeometry(x, y, w, h)
+function ElementUI:SetGeometry(x, y, w, h)
     self:GetRect():setRect(x, y, w, h);
 end
 
-function ElementBase:GetGeometry()
+function ElementUI:GetGeometry()
     return self:GetRect():getRect();
 end
 
-function ElementBase:GetX()
+function ElementUI:GetX()
 	return self:GetRect():x();
 end
 
-function ElementBase:GetY()
+function ElementUI:GetY()
 	return self:GetRect():y();
 end
 
-function ElementBase:SetX(x)
+function ElementUI:SetX(x)
 	self:GetRect():setX(x);
 end
 
-function ElementBase:SetY(y)
+function ElementUI:SetY(y)
 	self:GetRect():setY(y);
 end
 
-function ElementBase:GetWidth()
+function ElementUI:GetWidth()
 	return self:GetRect():width();
 end
 
-function ElementBase:GetHeight()
+function ElementUI:GetHeight()
 	return self:GetRect():height();
 end
 
-function ElementBase:SetWidth(w)
+function ElementUI:SetWidth(w)
     self:GetRect():setWidth(w);
 end
 
-function ElementBase:SetHeight(h)
+function ElementUI:SetHeight(h)
     self:GetRect():setHeight(h);
 end
 
-function ElementBase:SetPosition(x, y)
+function ElementUI:SetPosition(x, y)
     self:GetRect():setPosition(x, y);
 end
 
-function ElementBase:SetSize(w, h)
+function ElementUI:SetSize(w, h)
     self:GetRect():setSize(w, h);
 end
+

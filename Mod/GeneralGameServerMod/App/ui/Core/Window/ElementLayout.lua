@@ -459,7 +459,7 @@ local function UpdateElementLayout(element, parentElementLayout)
     
 	-- 执行子元素布局  子元素布局未更新则进行更新
 	if (not isUpdatedChildElementLayout) then
-		for childElement in element:ChildrenElementIterator() do
+		for childElement in element:ChildElementIterator() do
 			UpdateElementLayout(childElement, elementLayout);
 		end
 	end

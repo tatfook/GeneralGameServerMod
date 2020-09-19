@@ -16,6 +16,11 @@ local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug");
 
 Text:Property("Value");  -- 文本值
 
+Text:Property("BaseStyle", {
+	["display"] = "inline",
+	["color"] = "#000000",
+});
+
 function Text:ctor()
 	self:SetName("Text");
 end
@@ -23,6 +28,15 @@ end
 -- public:
 function Text:Init(xmlNode)
 	local value = (type(xmlNode) == "string" or type(xmlNode) == "number") and tostring(xmlNode) or (xmlNode and xmlNode.attr and xmlNode.attr.value);
+
+	if (not value and type(xmlNode) == "table") then
+		for i = 1, #xmlNode do
+			if (type(xmlNode[i]) == "string" or type(xmlNode[i] == "number")) then
+				value = tostring(xmlNode[i]);
+				break;
+			end
+		end
+	end
 
 	-- TextElementDebug("Init Value:" .. tostring(value), xmlNode);
 
@@ -54,6 +68,7 @@ local function CalculateTextLayout(self, text, width, left, top)
 		textWidth = _guihelper.GetTextWidth(text, self.font);
 	end
 
+	TextElementDebug.Format("text = %s, x = %s, y = %s, w = %s, h = %s", text, left, top, textWidth, textHeight);
 	table.insert(self.texts, {text = text, x = left, y = top, w = textWidth, h = textHeight});
 		
 	if(style and width and width > 0 and width > textWidth) then
@@ -74,9 +89,14 @@ local function CalculateTextLayout(self, text, width, left, top)
 	return textWidth, textHeight;
 end
 
-function Text:OnBeforeUpdateChildElementLayout(elementLayout, parentElementLayout)
-	local parentWidth, parentHeight = parentElementLayout:GetWidthHeight();
-	local left, top = elementLayout:GetPos();
+function Text:OnBeforeUpdateChildLayout()
+	local layout = self:GetLayout();
+	local parentElement = self:GetParentElement();
+	local parentLayout = parentElement and parentElement:GetLayout();
+	local parentWidth, parentHeight = parentLayout:GetWidthHeight();
+	local left, top = 0, 0;
+
+	-- if (not layout:IsBlock()) then left, top = layout:GetPos() end
 
 	self.texts = {};
 
@@ -84,23 +104,24 @@ function Text:OnBeforeUpdateChildElementLayout(elementLayout, parentElementLayou
 
 	TextElementDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 
-	elementLayout:SetWidthHeight(width, height);
+	self:GetLayout():SetWidthHeight(width, height);
 
     return true; 
 end
 
 -- 绘制文本
 function Text:OnRender(painter)
-	local style = self:GetStyle();
+	local style, layout = self:GetStyle(), self:GetLayout();
 	local fontSize, lineHeight = style:GetFontSize(), style:GetLineHeight();
-	local linePadding = (lineHeight - fontSize) / 2;
+	local linePadding = (lineHeight - fontSize) / 2 - fontSize / 6;
+	local left, top = layout:GetLeftTop();
 
 	painter:SetFont(style:GetFont());
-	painter:SetPen(style:GetColor("#000000"));
+	painter:SetPen(style:GetColor());
 
 	for i = 1, #self.texts do
 		local obj = self.texts[i];
-		local x, y, text = obj.x, obj.y + linePadding, obj.text;
+		local x, y, text = left + obj.x, top + obj.y + linePadding, obj.text;
 		painter:DrawText(x, y, text);
 	end
 end
