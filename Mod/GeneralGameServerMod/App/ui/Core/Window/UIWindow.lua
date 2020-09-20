@@ -46,7 +46,7 @@ end
 -- 加载页面内容
 function UIWindow:LoadComponent(url)
     url = commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString([[
-       <html style="height:100%;">
+       <html style="height:100%; background-color:#ffffff;">
             <Button>按钮</Button>
             <Text>中文 hello world  this is a test</Text>
        </html>
@@ -155,10 +155,10 @@ function UIWindow:CreateNativeWindow(params)
 		self:handleRender();
 	end);
 	_this:SetScript("onmousedown", function()
-		self:handleMouseEvent(MouseEvent:init("mousePressEvent", self));
+		self:handleMouseDownEvent(MouseEvent:init("mousePressEvent", self));
 	end);
 	_this:SetScript("onmouseup", function()
-		self:handleMouseEvent(MouseEvent:init("mouseReleaseEvent", self));
+		self:handleMouseUpEvent(MouseEvent:init("mouseReleaseEvent", self));
 	end);
 	_this:SetScript("onmousemove", function()
 		self:handleMouseEvent(MouseEvent:init("mouseMoveEvent", self));
@@ -215,7 +215,7 @@ end
 -- 窗口大小改变
 function UIWindow:handleGeometryChangeEvent()
     -- 保存窗口大小
-    local x, y, w, h = native_window:GetAbsPosition();
+    local x, y, w, h = self:GetNativeWindow():GetAbsPosition();
     self.x, self.y, self.width, self.height = x, y, w, h;
     -- 更新布局
     if (not self:GetRootElement()) then return end
@@ -229,11 +229,14 @@ end
 -- handle ondraw callback from system ParaUI object. 
 function UIWindow:handleRender()
 	if(not self:GetRootElement()) then return end
-
     self:GetRootElement():Render(self:GetPainterContext());
 end
 
-function UIWindow:handleMouseEvent()
+-- 鼠标按下
+function UIWindow:handleMouseDownEvent(event)
+end
+-- 鼠标松开
+function UIWindow:handleMouseUpEvent(event)
 end
 
 function UIWindow:handleMouseEnterLeaveEvent()
@@ -248,7 +251,6 @@ end
 function UIWindow:handleDestroyEvent()
     self:SetNativeWindow(nil);
 end
-
 
 function UIWindow:mapFromGlobal(pos)
     if((self.uiScalingX or 1) == 1 and (self.uiScalingY or 1) == 1) then

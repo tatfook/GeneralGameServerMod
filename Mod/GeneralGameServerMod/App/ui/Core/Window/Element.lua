@@ -106,13 +106,20 @@ function Element:GetChildElementList()
     return self.childrens;
 end
 
--- 遍历
-function Element:ChildElementIterator()
-    local i, size, childrens = 0, self:GetChildElementCount() or 0, self:GetChildElementList();
+-- 遍历 默认渲染序  false 事件序
+function Element:ChildElementIterator(isRender)
+    local i, size, childrens， list = 0, self:GetChildElementCount() or 0, self:GetChildElementList(), {};
+    for i = 1, #childrens do  list[i] = childrens[i] end
+    local function comp(child1, child2)
+        local zindex1 = (child1:GetStyle())["z-index"] or 0;
+        local zindex2 = (child2:GetStyle())["z-index"] or 0;
+        return (isRender or isRender == nil) and (zindex1 <= zindex2) or (zindex1 > zindex2);
+    end
+    table.sort(list, comp);
     return function() 
         i = i + 1;
         if (i > size) then return end
-        return childrens[i];
+        return list[i];
     end
 end
 
@@ -127,20 +134,17 @@ function Element:OnAfterUpdateChildLayout()
 end
 -- 元素布局更新后回调
 function Element:OnAfterUpdateLayout()
-    local layout = self:GetLayout();
-    local left, top = layout:GetPos();
-    local width, height = layout:GetWidthHeight();
-	self:SetGeometry(left, top, width, height);
 end
 -- 更新布局, 先进行子元素布局, 再布局当前元素
 function Element:UpdateLayout()
+    local layout = self:GetLayout();
     if (self:OnBeforeUpdateLayout()) then return end
 
     -- 准备布局
-    self:GetLayout():PrepareLayout();
+    layout:PrepareLayout();
 
     -- 是否布局
-    if (not self:GetLayout():IsLayout()) then return end
+    if (not layout:IsLayout()) then return end
 
     -- 子元素布局更新前回调
     local isUpdatedChildLayout = self:OnBeforeUpdateChildLayout();
@@ -156,13 +160,18 @@ function Element:UpdateLayout()
     self:OnAfterUpdateChildLayout();
 
     -- 更新元素布局
-    self:GetLayout():Update();
+    layout:Update();
 
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
+
+    -- 设置几何图形大小
+    local left, top = layout:GetPos();
+    local width, height = layout:GetWidthHeight();
+	self:SetGeometry(left, top, width, height);
 end
 
--- 加载元素
+-- 加载元素样式相关属性
 function Element:LoadComponent()
     ElementDebug("LoadComponent: " .. self:GetName());
 
@@ -175,6 +184,7 @@ function Element:LoadComponent()
     self:OnLoadComponentAfterChild();
     
     self:MergePseudoClassStyle(); -- 合并伪类样式
+
 end
 
 -- 子元素加载前

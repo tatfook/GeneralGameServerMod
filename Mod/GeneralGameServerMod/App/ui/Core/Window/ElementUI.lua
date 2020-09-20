@@ -16,6 +16,8 @@ ElementUI:Property("Active", false, "IsActive");            -- 是否激活
 ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 ElementUI:Property("Layout");                               -- 元素布局
 
+local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
+
 -- 是否需要
 function ElementUI:IsRender()
     local style = self:GetStyle();
@@ -70,6 +72,7 @@ end
 function ElementUI:RenderBackground(painter, style)
     local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor();
     local x, y, w, h = self:GetGeometry();
+    -- ElementUIDebug.Format("RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
 	painter:SetPen(backgroundColor);
 	painter:DrawRectTexture(x, y, w, h, background);
 end
