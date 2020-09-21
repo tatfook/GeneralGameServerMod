@@ -20,10 +20,10 @@ local Layout = NPL.load("./layout.lua", IsDevEnv);
 local ElementUI = NPL.load("./ElementUI.lua", IsDevEnv);
 local Element = commonlib.inherit(ElementUI, NPL.export());
 
-local ElementDebug = GGS.Debug.GetModuleDebug("ElementDebug");
+local ElementDebug = GGS.Debug.GetModuleDebug("ElementDebug").Disable();
 
 Element:Property("Window");     -- 元素所在窗口
-Element:Property("Attr");       -- 元素属性
+Element:Property("Attr", {});   -- 元素属性
 Element:Property("XmlNode");    -- 元素XmlNode
 Element:Property("ParentElement");                        -- 父元素
 Element:Property("Style", {});                            -- 样式
@@ -41,6 +41,16 @@ function Element:ctor()
     self:SetLayout(Layout:new():Init(self));
 end
 
+-- 是否是元素
+function Element:IsElement()
+    return true;
+end
+
+-- 是否是窗口
+function Element:IsWindow()
+    return false;
+end
+
 -- 获取元素
 function Element:GetElementByTagName(tagname)
     return self:GetWindow():GetElementManager():GetElementByTagName(tagname);
@@ -56,8 +66,11 @@ function Element:Init(xmlNode, uiwindow)
     
     -- 设置元素属性
     self:SetTagName(xmlNode.name);
-    self:SetAttr(xmlNode.attr);
+    self:SetAttr(xmlNode.attr or {});
     self:SetXmlNode(xmlNode);
+
+    -- 先清除
+    self:ClearChildElement();
 
     -- 创建子元素
     for i, childXmlNode in ipairs(xmlNode) do
@@ -79,9 +92,13 @@ end
 function Element:InsertChildElement(pos, childElement)
     local element = childElement or pos;
     -- 验证元素的有效性
-    if (type(element) ~= "table" or not element.isa or not childElement:isa(Element)) then return end
+    if (type(element) ~= "table" or not element.IsElement or not element:IsElement()) then return end
     -- 添加子元素
-    table.insert(self.childrens, pos, childElement);
+    if (childElement) then
+        table.insert(self.childrens, pos, childElement);
+    else 
+        table.insert(self.childrens, element);
+    end
     -- 设置子元素的父元素
     element:SetParentElement(self);
     -- 更新元素布局
@@ -89,11 +106,25 @@ end
 
 -- 移除子元素
 function Element:RemoveChildElement(pos)
+    if (type(pos) == "table" and pos.IsElement and pos:IsElement()) then
+        for i = 1, #self.childrens do
+            if (self.childrens[i] == pos) then 
+                table.remove(self.childrens, i);
+                pos:SetParentElement(nil);
+                return;
+            end
+        end
+    end
     pos = pos or self:GetChildElementCount();
     if (type(pos) ~= "number" or pos < 1 or pos > self:GetChildElementCount()) then return end
     local element = self.childrens[pos];
     table.remove(self.childrens, pos);
     if (element) then element:SetParentElement(nil) end
+end
+
+-- 清除子元素
+function Element:ClearChildElement()
+    self.childrens = {};
 end
 
 -- 获取子元素数量
@@ -108,7 +139,7 @@ end
 
 -- 遍历 默认渲染序  false 事件序
 function Element:ChildElementIterator(isRender)
-    local i, size, childrens， list = 0, self:GetChildElementCount() or 0, self:GetChildElementList(), {};
+    local i, size, childrens, list = 0, self:GetChildElementCount() or 0, self:GetChildElementList(), {};
     for i = 1, #childrens do  list[i] = childrens[i] end
     local function comp(child1, child2)
         local zindex1 = (child1:GetStyle())["z-index"] or 0;
@@ -173,7 +204,7 @@ end
 
 -- 加载元素样式相关属性
 function Element:LoadComponent()
-    ElementDebug("LoadComponent: " .. self:GetName());
+    ElementDebug.Format("LoadComponent:  Name = %s, ChildElementCount = %s", self:GetName(), self:GetChildElementCount());
 
     self:SetStyle(self:CreateStyle());
 
@@ -239,10 +270,13 @@ end
 -- 获取属性值
 function Element:GetAttrValue(attrName, defaultValue)
     local attr = self:GetAttr();
-    if (not attr) then return defaultValue end
     return attr[attrName] or defaultValue;
 end
 
-
+-- 设置属性值
+function Element:SetAttrValue(attrName, attrValue)
+    local attr = self:GetAttr();
+    attr[attrName] = attrValue;
+end
 
 

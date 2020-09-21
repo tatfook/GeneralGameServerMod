@@ -12,7 +12,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Text = commonlib.inherit(Element, NPL.export());
 
-local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug");
+local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug").Disable();
 
 Text:Property("Value");  -- 文本值
 

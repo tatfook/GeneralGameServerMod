@@ -9,6 +9,10 @@ local ElementUI = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/ElementU
 -------------------------------------------------------
 ]]
 
+NPL.load("(gl)script/ide/System/Windows/Mouse.lua");
+NPL.load("(gl)script/ide/System/Windows/MouseEvent.lua");
+local Mouse = commonlib.gettable("System.Windows.Mouse");
+local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
 local ElementUI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 ElementUI:Property("Value");                                -- 元素值
@@ -17,6 +21,10 @@ ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬�
 ElementUI:Property("Layout");                               -- 元素布局
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
+
+function ElementUI:ctor()
+    self.screenX, self.screenY = 0, 0;  -- 窗口的屏幕位置
+end
 
 -- 是否需要
 function ElementUI:IsRender()
@@ -142,3 +150,118 @@ function ElementUI:SetSize(w, h)
     self:GetRect():setSize(w, h);
 end
 
+function ElementUI:GetSize()
+    return self:GetWidth(), self:GetHeight();
+end
+
+function ElementUI:SetScreenPos(x, y)
+    self.screenX, self.screenY = x, y;
+end
+
+function ElementUI:GetScreenPos()
+    return self.screenX, self.screenY;
+end
+
+-- if the mouse is captured to this element or not.
+function ElementUI:IsMouseCaptured()
+    return Mouse:GetCapture() == self;
+end
+
+-- Captures the mouse to this element.
+function ElementUI:CaptureMouse()
+	local lastCaptured = Mouse:GetCapture();
+	if(lastCaptured) then lastCaptured:ReleaseMouseCapture() end
+    return Mouse:Capture(self);
+end
+
+-- Releases the mouse capture.
+function ElementUI:ReleaseMouseCapture()
+	if (Mouse:GetCapture() == self) then
+        Mouse:Capture(nil);
+    end
+end
+
+-- 是否可以拖拽
+function ElementUI:IsDraggable()
+    return self:GetAttrValue("draggable") == true and true or false;
+end
+
+-- https://developer.mozilla.org/en-US/docs/Web/Events
+-- Capture
+function ElementUI:OnMouseDownCapture(event)
+end
+
+function ElementUI:OnMouseMove(event)
+    -- self:SetHoverElement(self);
+    -- event:accept();
+end
+
+function ElementUI:OnMouseLeave()
+end
+
+function ElementUI:OnMouseEnter()
+end
+
+function ElementUI:OnFocusOut()
+end
+
+function ElementUI:OnFocusIn()
+end
+
+-- 是否是光标元素
+function ElementUI:IsHover()
+    return self:GetHover() == self;
+end
+
+-- 获取光标元素
+function ElementUI:GetHover()
+    return self:GetWindow():GetHoverElement();
+end
+
+-- 设置光标元素
+function ElementUI:SetHover(element)
+    local window = self:GetWindow();
+    if (not window) then return end
+    local hoverElement = window:GetHoverElement();
+    if (hoverElement == element) then return end
+    if (hoverElement) then
+        hoverElement:OnMouseLeave(MouseEvent:init("mouseLeaveEvent", window));
+        hoverElement:ComputedStyle();
+    end
+    window:SetHoverElement(element);
+    if (element) then
+        element:OnMouseEnter(MouseEvent:init("mouseEnterEvent", window));
+        element:ComputedStyle();
+    end
+end
+
+-- 是否是聚焦元素
+function ElementUI:IsFocus()
+    return self:GetFocus() == self;
+end
+
+-- 获取聚焦元素
+function ElementUI:GetFocus()
+    return self:GetWindow():GetFocusElement();
+end
+
+-- 设置聚焦元素
+function ElementUI:SetFocus(element)
+    local window = self:GetWindow();
+    if (not window) then return end
+    local focusElement = window:GetFocusElement();
+    if (focusElement == element) then return end
+    if (focusElement) then
+        focusElement:OnFocusOut();
+        focusElement:ComputedStyle();
+    end
+    window:SetFocusElement(element);
+    if (element) then
+        element:OnFocusIn();
+        element:ComputedStyle();
+    end
+end
+
+-- 计算样式
+function ElementUI:ComputedStyle()
+end

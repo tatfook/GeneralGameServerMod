@@ -11,7 +11,7 @@ local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout.lua"
 
 local Layout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug");
+local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Disable();
 
 -- 属性定义
 Layout:Property("Element");                              -- 元素
@@ -21,25 +21,22 @@ local nid = 0;
 
 -- 重置布局
 function Layout:Reset()
-	-- 右侧可用位置
-	-- self.rightAvailableX = 0;
-	-- self.rightAvailableY = 0;
 	-- 当前可用位置
-	self.availableX = 0;
-	self.availableY = 0;
+	self.availableX, self.availableY, self.rightAvailableX, self.rightAvailableY = 0, 0, 0, 0;
 	-- 相对于父元素的位置
-	self.left = 0;
-    self.top = 0;
-    self.right = 0;
-    self.bottom = 0;
+	self.top, self.right, self.bottom, self.left = 0, 0, 0, 0;
 	-- 元素宽高 
-	self.width = nil;
-	self.height = nil;
+	self.width, self.height = nil, nil;
 	-- 真实宽高
-	self.realWidth = 0;
-    self.realHeight = 0;
-    
-    self.width, self.height = nil, nil;
+	self.realWidth, self.realHeight = 0, 0;
+	-- 内容宽高就是真实宽高
+	self.contentWidth, self.contentHeight = 0, 0;  
+	-- 边框
+	self.borderTop, self.borderRight, self.borderBottom, self.borderLeft = 0, 0, 0, 0;
+	-- 填充
+	self.paddingTop, self.paddingRight, self.paddingBottom, self.paddingLeft = 0, 0, 0, 0;
+	-- 边距
+	self.marginTop, self.marginRight, self.marginBottom, self.marginLeft = 0, 0, 0, 0;
 end
 
 -- 初始化
@@ -216,22 +213,21 @@ function Layout:PrepareLayout()
 
 	-- 获取父元素布局
     local parentLayout = self:GetParentLayout();
-    -- 获取元素样式
-    local style = self:GetStyle();
-
-    -- 获取父元素宽高
-    local parentWidth, parentHeight = nil, nil;
-    if (parentLayout) then
-        parentWidth, parentHeight = parentLayout:GetWidthHeight();
-    else
+	
+	-- 窗口元素 直接设置宽高
+	if (not parentLayout) then
         local x, y, w, h = self:GetWindowPosition();
-        parentWidth, parentHeight = w or 0, h or 0;
-    end
-
+		return self:SetWidthHeight(w or 0, h or 0);
+	end
+	
+	-- 获取父元素宽高
+    local parentWidth, parentHeight = parentLayout:GetWidthHeight();
     -- 父元素无宽高则不布局
     if (parentWidth == 0 or parentHeight == 0) then return self:SetWidthHeight(0, 0) end 
 
-    -- 数字最大最小宽高
+    -- 获取元素样式
+    local style = self:GetStyle();
+   -- 数字最大最小宽高
 	local minWidth, minHeight, maxWidth, maxHeight = style["min-width"], style["min-height"], style["max-width"], style["max-height"];
 	minWidth = self:PercentageToNumber(minWidth, parentWidth);
 	maxWidth = self:PercentageToNumber(maxWidth, parentWidth);
