@@ -39,8 +39,9 @@ function ElementUI:Render(painterContext)
 
     self.isRender = true;  -- 设置渲染标识 避免递归渲染
     -- if(self.transform) then self:applyRenderTransform(painterContext, self.transform) end
-
-    self:OnRender(painterContext);  -- 渲染元素
+       
+    -- 渲染元素
+    self:OnRender(painterContext);  
 
     self.isRender = false; -- 清除渲染标识
 
@@ -56,7 +57,7 @@ end
 
 -- 绘制元素
 function ElementUI:OnRender(painter)
-    local style = self:GetCurrentStyle();
+    local style = self:GetStyle();
 
     self:RenderOutline(painter, style);
     self:RenderBackground(painter, style);
@@ -162,22 +163,27 @@ function ElementUI:GetScreenPos()
     return self.screenX, self.screenY;
 end
 
--- if the mouse is captured to this element or not.
+-- 是否捕获鼠标
 function ElementUI:IsMouseCaptured()
-    return Mouse:GetCapture() == self;
+    return self:GetMouseCapture() == self;
 end
 
--- Captures the mouse to this element.
+-- 捕获鼠标
 function ElementUI:CaptureMouse()
-	local lastCaptured = Mouse:GetCapture();
+	local lastCaptured = self:GetWindow():GetMouseCaptureElement();
 	if(lastCaptured) then lastCaptured:ReleaseMouseCapture() end
-    return Mouse:Capture(self);
+    self:GetWindow():SetMouseCaptureElement(self);
 end
 
--- Releases the mouse capture.
+-- 获取鼠标捕获
+function ElementUI:GetMouseCapture()
+    return self:GetWindow():GetMouseCaptureElement();
+end
+
+-- 释放鼠标捕获
 function ElementUI:ReleaseMouseCapture()
-	if (Mouse:GetCapture() == self) then
-        Mouse:Capture(nil);
+	if (self:IsMouseCaptured()) then
+        self:GetWindow():SetMouseCaptureElement(nil);
     end
 end
 
@@ -215,7 +221,15 @@ end
 
 -- 获取光标元素
 function ElementUI:GetHover()
-    return self:GetWindow():GetHoverElement();
+    return self:GetWindow() and self:GetWindow():GetHoverElement();
+end
+
+-- 鼠标悬浮
+function ElementUI:OnHover()
+end
+
+-- 鼠标取消悬浮
+function ElementUI:OffHover()
 end
 
 -- 设置光标元素
@@ -226,12 +240,15 @@ function ElementUI:SetHover(element)
     if (hoverElement == element) then return end
     if (hoverElement) then
         hoverElement:OnMouseLeave(MouseEvent:init("mouseLeaveEvent", window));
-        hoverElement:ComputedStyle();
+        hoverElement:SelectStyle("OffHover");
+        hoverElement:OffHover();
     end
     window:SetHoverElement(element);
     if (element) then
         element:OnMouseEnter(MouseEvent:init("mouseEnterEvent", window));
-        element:ComputedStyle();
+        element:SelectStyle("OnHover");
+        element:OnHover();
+        ElementUIDebug("SetHover", self:GetName());
     end
 end
 
@@ -242,26 +259,46 @@ end
 
 -- 获取聚焦元素
 function ElementUI:GetFocus()
-    return self:GetWindow():GetFocusElement();
+    return self:GetWindow() and self:GetWindow():GetFocusElement();
 end
 
 -- 设置聚焦元素
 function ElementUI:SetFocus(element)
+    ElementUIDebug("SetFocus", self:GetName());
     local window = self:GetWindow();
     if (not window) then return end
     local focusElement = window:GetFocusElement();
     if (focusElement == element) then return end
     if (focusElement) then
         focusElement:OnFocusOut();
-        focusElement:ComputedStyle();
+        focusElement:SelectStyle("FocusOut");
     end
     window:SetFocusElement(element);
     if (element) then
         element:OnFocusIn();
-        element:ComputedStyle();
+        element:SelectStyle("FocusIn");
     end
 end
 
 -- 计算样式
-function ElementUI:ComputedStyle()
+function ElementUI:SelectStyle(action)
+    local isNeedRefreshLayout = false;
+    local style = self:GetStyle();
+    if (not style) then return end
+    if (not action) then
+        if (self:IsFocus()) then action = "FocusIn" end
+        if (self:IsHover()) then action = "OnHover" end
+    end
+    if (action == "OnHover" or action == "OffHover") then
+        if (action == "OnHover") then style:SelectHoverStyle() end
+        isNeedRefreshLayout = style:IsNeedRefreshLayout(style:GetHoverStyle()); 
+    elseif (action == "FocusIn" or action == "FocusOut") then
+        if (action == "FocusIn") then style:SelectFocusStyle() end
+        isNeedRefreshLayout = style:IsNeedRefreshLayout(style:GetFocusStyle()); 
+    else
+        style:SelectNormalStyle();
+    end
+    if (isNeedRefreshLayout) then
+        self:UpdateLayout();
+    end 
 end

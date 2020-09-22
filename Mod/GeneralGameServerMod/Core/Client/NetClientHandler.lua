@@ -182,6 +182,10 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
 
     -- 设置玩家信息
     entityPlayer:SetPlayerInfo(playerInfo);
+
+    -- -- 设置是否可以飞行
+    -- GameLogic.options:SetCanJumpInAir(false); 
+    -- Entity:ToggleFly(false)
     return;
 end
 

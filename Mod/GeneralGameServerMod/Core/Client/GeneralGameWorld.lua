@@ -135,6 +135,8 @@ function GeneralGameWorld:Logout()
 
 	self:GetPlayerManager():ClearPlayers();
 
+	self:GetPlayerManager():SetMainPlayer(nil);
+
 	-- 解除链接关系
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
 	

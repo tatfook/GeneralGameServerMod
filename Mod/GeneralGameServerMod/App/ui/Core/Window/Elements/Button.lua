@@ -16,14 +16,19 @@ Button:Property("Active", false, "IsActive");            -- 是否激活
 Button:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 
 Button:Property("BaseStyle", {
-	["display"] = "inline",
-	["background-color"] = "#434343",
-	["color"] = "#ffffff",
-	["font-size"] = 12,
-	["padding-top"] = 5,
-	["padding-right"] = 10,
-	["padding-bottom"] = 5,
-	["padding-left"] = 10,
+	NormalStyle = {
+		["display"] = "inline",
+		["background-color"] = "#434343",
+		["color"] = "#ffffff",
+		["font-size"] = 12,
+		["padding-top"] = 5,
+		["padding-right"] = 10,
+		["padding-bottom"] = 5,
+		["padding-left"] = 10,
+	},
+	HoverStyle = {
+		["color"] = "#ff0000",
+	}
 });
 
 local ButtonElementDebug = GGS.Debug.GetModuleDebug("ButtonElementDebug");
@@ -80,7 +85,9 @@ end
 
 -- 按钮渲染
 function Button:RenderContent(painter, style)
-	local x, y, w, h = self:GetGeometry();
+	local layout = self:GetLayout();
+	local x, y = layout:GetPos();
+	local w, h = layout:GetWidthHeight();
 	local text = self:GetValue();
 	if(not text or text =="") then return end
 	local paddingTop, paddingRight, paddingBottom, paddingLeft = style["padding-top"] or 0, style["padding-right"] or 0, style["padding-bottom"] or 0, style["padding-left"] or 0;

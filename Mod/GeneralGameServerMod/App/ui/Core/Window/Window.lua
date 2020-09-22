@@ -39,6 +39,7 @@ Window:Property("PainterContext");                  -- 绘制上下文
 Window:Property("ElementManager", ElementManager);  -- 元素管理器
 Window:Property("HoverElement");                    -- 光标所在元素
 Window:Property("FocusElement");                    -- 焦点元素
+Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 
 function Window:ctor()
     self:SetName("Window");
@@ -202,7 +203,8 @@ function Window:handleGeometryChangeEvent()
     local oldWidth, oldHeight = self:GetSize();
 
     self:SetScreenPos(x, y);
-    if (oldWidth == newWidh and oldHeight == newHeight) then return end
+    if (oldWidth == newWidth and oldHeight == newHeight) then return end
+
     self:SetSize(newWidth, newHeight);
     self:UpdateLayout();
 end
@@ -238,7 +240,7 @@ function Window:handleMouseEvent(event)
         -- 检测元素是否包含
         if (not element:GetRect():contains(point)) then return end
 
-        -- if (eventType ~= "mouseMoveEvent") then WindowDebug.Format("Element Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
+        if (eventType ~= "mouseMoveEvent") then WindowDebug.Format("Element Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
 
         -- 触发捕获事件
         if (type(element[captureFuncName]) == "function") then 
@@ -254,12 +256,12 @@ function Window:handleMouseEvent(event)
             target = ElementMouseEvent(child);
             if (target) then break end
         end
-        target = target or self;
+        target = target or element;
 
         -- 是否已处理
         if (event:isAccepted()) then return target end
         
-        -- if (eventType ~= "mouseMoveEvent") then WindowDebug.Format("Element Bubble: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
+        if (eventType ~= "mouseMoveEvent") then WindowDebug.Format("Element Bubble: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
 
         -- 触发相应事件
         if (type(element[bubbleFuncName]) == "function") then
@@ -270,7 +272,7 @@ function Window:handleMouseEvent(event)
     end
 
     -- 如果鼠标事件已被锁定则直接执行事件回调
-    local element = Mouse:GetCapture();
+    local element = self:GetMouseCapture();
     if (element) then
         -- if (eventType ~= "mouseMoveEvent") then WindowDebug.Format("Mouse Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
 

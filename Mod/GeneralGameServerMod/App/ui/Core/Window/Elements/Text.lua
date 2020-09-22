@@ -17,8 +17,10 @@ local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug").Disable();
 Text:Property("Value");  -- 文本值
 
 Text:Property("BaseStyle", {
-	["display"] = "inline",
-	["color"] = "#000000",
+	NormalStyle = {
+		["display"] = "inline",
+		["color"] = "#000000",
+	}
 });
 
 function Text:ctor()

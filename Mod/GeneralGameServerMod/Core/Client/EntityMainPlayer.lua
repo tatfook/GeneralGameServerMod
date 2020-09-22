@@ -49,6 +49,11 @@ function EntityMainPlayer:IsCanClick()
     return false;
 end
 
+-- 是否可以飞行
+function EntityMainPlayer:IsCanFlying()
+    return false;
+end
+
 -- 设置玩家信息
 function EntityMainPlayer:SetPlayerInfo(playerInfo)
     commonlib.partialcopy(self.playerInfo, playerInfo);

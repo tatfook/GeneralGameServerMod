@@ -144,7 +144,8 @@ function Element:ChildElementIterator(isRender)
     local function comp(child1, child2)
         local zindex1 = (child1:GetStyle())["z-index"] or 0;
         local zindex2 = (child2:GetStyle())["z-index"] or 0;
-        return (isRender or isRender == nil) and (zindex1 <= zindex2) or (zindex1 > zindex2);
+        local sort = zindex1 < zindex2;  -- 默认升序
+        return if_else(isRender or isRender == nil, sort, not sort);
     end
     table.sort(list, comp);
     return function() 
@@ -168,14 +169,27 @@ function Element:OnAfterUpdateLayout()
 end
 -- 更新布局, 先进行子元素布局, 再布局当前元素
 function Element:UpdateLayout()
+    -- 是否正在更新布局
+    if (self.isUpdateLayout) then return end
+    self.isUpdateLayout = true;
+
+    -- 选择合适样式
+    self:SelectStyle();
+
     local layout = self:GetLayout();
-    if (self:OnBeforeUpdateLayout()) then return end
+    if (self:OnBeforeUpdateLayout()) then 
+        self.isUpdateLayout = false;
+        return; 
+    end
 
     -- 准备布局
     layout:PrepareLayout();
 
     -- 是否布局
-    if (not layout:IsLayout()) then return end
+    if (not layout:IsLayout()) then 
+        self.isUpdateLayout = false;
+        return; 
+    end
 
     -- 子元素布局更新前回调
     local isUpdatedChildLayout = self:OnBeforeUpdateChildLayout();
@@ -196,10 +210,11 @@ function Element:UpdateLayout()
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
 
-    -- 设置几何图形大小
-    local left, top = layout:GetPos();
-    local width, height = layout:GetWidthHeight();
-	self:SetGeometry(left, top, width, height);
+    -- 设置布局完成
+    layout:SetLayoutFinish(true);
+
+    self.isUpdateLayout = false;
+    return;
 end
 
 -- 加载元素样式相关属性
@@ -214,7 +229,6 @@ function Element:LoadComponent()
 	
     self:OnLoadComponentAfterChild();
     
-    self:MergePseudoClassStyle(); -- 合并伪类样式
 
 end
 
@@ -247,23 +261,6 @@ function Element:CreateStyle(baseStyle, inheritStyle)
     -- inline style
     style:AddString(self:GetAttrValue("style"));
 
-    return style;
-end
-
--- 合并伪类样式
-function Element:MergePseudoClassStyle()
-    local style = self:GetStyle();
-    local activeStyle, hoverStyle = style:GetActiveStyle(), style:GetHoverStyle();
-    activeStyle:Merge(style);
-    hoverStyle:Merge(style);
-end
-
--- 获取当前样式
-function Element:GetCurrentStyle()
-    local style = self:GetStyle();
-    local activeStyle, hoverStyle = style:GetActiveStyle(), style:GetHoverStyle();
-    if (self:IsHover()) then return hoverStyle end
-    if (self:IsActive()) then return activeStyle end
     return style;
 end
 

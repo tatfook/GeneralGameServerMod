@@ -22,55 +22,136 @@ local string_find = string.find;
 
 local Style = commonlib.inherit(nil, NPL.export());
 
-local remoteTextrue = {};
-
--- 伪类字段
-local pseudo_class_fields = {
-	["active"] = true,
-	["hover"] = true,
+local no_style_fields = {
+	["RawStyle"] = true,
+	["NormalStyle"] = true,
+	["ActiveStyle"] = true,
+	["HoverStyle"] = true,
 }
+-- 拷贝样式
+local function CopyStyle(dst, src)
+	if (type(src) ~= "table") then return dst end
+	for key, value in pairs(src) do
+		if (not no_style_fields[key]) then
+			dst[string.lower(key)] = value;
+		end
+	end
+	return dst;
+end
+
+-- 布局字段
+local layout_fields = {
+	["width"] = true,
+	["height"] = true,
+	["max-width"] = true,
+	["max-height"] = true,
+	["min-width"] = true,
+	["min-height"] = true,
+	["margin"] = true,
+	["margin-left"] = true,
+	["margin-top"] = true,
+	["margin-right"] = true,
+	["margin-bottom"] = true,
+	["padding"] = true,
+	["padding-left"] = true,
+	["padding-top"] = true,
+	["padding-right"] = true,
+	["padding-bottom"] = true,
+	["border-size"] = true,
+	["border-left-size"] = true,
+	["border-right-size"] = true,
+	["border-top-size"] = true,
+	["border-bottom-size"] = true,
+	["left"] = true,
+	["top"] = true,
+	["right"] = true,
+	["bottom"] = true,
+
+	["float"] = true,
+	["position"] = true,
+	["box-sizing"] = true,
+}
+-- 是否需要重新布局
+local function IsRefreshLayout(style)
+	if (type(style) ~= "table") then return false end
+	for key, val in pairs(style) do
+		if (layout_fields[key]) then
+			return true;
+		end
+	end
+	return false;
+end
 
 function Style:ctor()
 	self.RawStyle = {};             -- 原始样式
+	self.NormalStyle = {};          -- 普通样式
+
+	-- 伪类样式
+	self.ActiveStyle = {};          -- 激活样式
+	self.HoverStyle = {};           -- 鼠标悬浮样式
+	self.FocusStyle = {};           -- 聚焦样式
 end
 
 function Style:Init(style)
     self:Merge(style);
-
-	-- 伪类样式
-	self.ActiveStyle = Style:new();  -- 激活样式
-	self.HoverStyle = Style:new();   -- 鼠标悬浮样式
-
-	-- 合并伪类样式
-	if (type(style) == "table") then
-		self.ActiveStyle:Merge(style.ActiveStyle);
-		self.HoverStyle:Merge(style.HoverStyle);
-	end
-	
     return self;
 end
 
--- 获取激活样式
+-- 是否需要刷新布局
+function Style:IsNeedRefreshLayout(style)
+	return IsRefreshLayout(style);
+end
+
+-- 选择默认样式
+function Style:SelectNormalStyle()
+	return CopyStyle(self, self.NormalStyle);
+end
+
+-- 选择激活样式
+function Style:SelectActiveStyle()
+	return CopyStyle(self, self.ActiveStyle);
+end
+
+-- 选择悬浮样式
+function Style:SelectHoverStyle()
+	return CopyStyle(self, self.HoverStyle);
+end
+
+-- 选择聚焦样式
+function Style:SelectFocusStyle()
+	return CopyStyle(self, self.FocusStyle);
+end
+
+-- 选择默认样式
+function Style:GetNormalStyle()
+	return self.NormalStyle;
+end
+
+-- 选择激活样式
 function Style:GetActiveStyle()
 	return self.ActiveStyle;
 end
 
--- 获取悬浮样式
+-- 选择悬浮样式
 function Style:GetHoverStyle()
 	return self.HoverStyle;
+end
+
+-- 选择聚焦样式
+function Style:GetFocusStyle()
+	return self.FocusStyle;
 end
 
 -- 合并样式
 function Style:Merge(style)			
     if(type(style) ~= "table") then return end 
-    
-	for key, value in pairs(style) do
-		key = string.lower(key);
-		if (not pseudo_class_fields[key]) then
-			self[key] = value;
-		end
-    end
-    
+
+	CopyStyle(self, style);                              -- 计算样式
+	CopyStyle(self.RawStyle, style.RawStyle);
+	CopyStyle(self.NormalStyle, style.NormalStyle);
+	CopyStyle(self.ActiveStyle, style.ActiveStyle);
+	CopyStyle(self.HoverStyle, style.HoverStyle);
+	
     return self;
 end
 
@@ -97,33 +178,9 @@ function Style:MergeInheritable(style)
     if(type(style) ~= "table") then return end 
 
     for field, _ in pairs(inheritable_fields) do
-        self[field] = self[field] or style[field];
+        self.NormalStyle[field] = self.NormalStyle[field] or style[field];
     end
 end
-
-local reset_fields = 
-{
-	["height"] = true,
-	["min-height"] = true,
-	["max-height"] = true,
-	["width"] = true,
-	["min-width"] = true,
-	["max-width"] = true,
-	["left"] = true,
-	["top"] = true,
-
-	["margin"] = true,
-	["margin-left"] = true,
-	["margin-top"] = true,
-	["margin-right"] = true,
-	["margin-bottom"] = true,
-
-	["padding"] = true,
-	["padding-left"] = true,
-	["padding-top"] = true,
-	["padding-right"] = true,
-	["padding-bottom"] = true,
-}
 
 local dimension_fields = {
 	["height"] = true,
@@ -196,10 +253,6 @@ end
 
 function Style.GetNumberValue(value)
 	return tonumber(value);
-end
-
-function Style.isResetField(name)
-	return reset_fields[name];
 end
 
 -- @param style_code: mcml style attribute string like "background:url();margin:10px;"
@@ -281,7 +334,7 @@ function Style:AddItem(name,value)
 		value = string_gsub(value, "url%((.*)%)", "%1");
 		value = string_gsub(value, "#", ";");
 	end
-	self[name] = value;
+	self.NormalStyle[name] = value;
 end
 
 -- 获取字体
