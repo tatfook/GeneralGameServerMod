@@ -22,7 +22,7 @@ local string_find = string.find;
 
 local Style = commonlib.inherit(nil, NPL.export());
 
-local no_style_fields = {
+local pseudo_class_fields = {
 	["RawStyle"] = true,
 	["NormalStyle"] = true,
 	["ActiveStyle"] = true,
@@ -32,8 +32,8 @@ local no_style_fields = {
 local function CopyStyle(dst, src)
 	if (type(src) ~= "table") then return dst end
 	for key, value in pairs(src) do
-		if (not no_style_fields[key]) then
-			dst[string.lower(key)] = value;
+		if (not pseudo_class_fields[key]) then
+			dst[string.lower(key)] = Style.GetStyleValue(key, value);
 		end
 	end
 	return dst;
@@ -227,12 +227,6 @@ local image_fields =
 	["background2"] = true,
 	["background-image"] = true,
 }
--- these fields are made up of the other simple fields.
-local complex_fields = {
-    ["border"] = "border-width border-style border-color",
-    ["padding"] = "padding-top padding-right padding-left padding-bottom",
-    ["margin"] = "margin-top margin-right margin-left margin-bottom",
-};
 
 local transform_fields = {
 	["transform"] = true,
@@ -255,39 +249,8 @@ function Style.GetNumberValue(value)
 	return tonumber(value);
 end
 
--- @param style_code: mcml style attribute string like "background:url();margin:10px;"
-function Style:AddString(style_code)
-	local name, value;
-	for name, value in string.gfind(style_code or "", "([%w%-]+)%s*:%s*([^;]*)[;]?") do
-		name = string_lower(name);
-		value = string_gsub(value, "%s*$", "");
-		if(complex_fields[name]) then
-			self:AddComplexField(name, value);
-		else
-			self:AddItem(name,value);
-		end
-	end
-end
-
-function Style:AddComplexField(name, value)
-	local names = commonlib.split(complex_fields[name], "%s");
-    local values = commonlib.split(value, "%s");
-    
-    if (name == "padding" or name == "margin") then
-        values[4] = values[4] or values[2] or values[1];
-        values[3] = values[3] or values[1];
-        values[2] = values[2] or values[1];
-    end
-    
-    for i = 1, #names do
-		self:AddItem(names[i], values[i]);
-	end
-end
-
-function Style:AddItem(name,value)
-	if(not name or not value) then
-		return;
-	end
+function Style.GetStyleValue(name,value)
+	if(not name or not value) then return end
 	name = string_lower(name);
 	value = string_gsub(value, "%s*$", "");
     if(dimension_fields[name] or string_find(name,"^margin") or string_find(name,"^padding")) then
@@ -334,7 +297,59 @@ function Style:AddItem(name,value)
 		value = string_gsub(value, "url%((.*)%)", "%1");
 		value = string_gsub(value, "#", ";");
 	end
-	self.NormalStyle[name] = value;
+	return value;
+end
+
+-- 缩写字段
+local complex_fields = {
+	["border"] = "border-width border-style border-color",
+	["border-width"] = "border-top-width border-right-width border-bottom-width border-left-width",
+    ["padding"] = "padding-top padding-right padding-left padding-bottom",
+	["margin"] = "margin-top margin-right margin-left margin-bottom",
+	["overflow"] = "overflow-x, overflow-y",
+};
+
+function Style:AddComplexField(name, value)
+	local names = commonlib.split(complex_fields[name], "%s");
+    local values = commonlib.split(value, "%s");
+    
+    if (name == "padding" or name == "margin" or name == "border-width") then
+		value[1] = value[1] or 0;
+		values[4] = values[4] or values[2] or values[1];
+        values[3] = values[3] or values[1];
+		values[2] = values[2] or values[1];
+	elseif (name == "border") then
+		values[1] = values[1] or 0;
+		values[2] = values[2] or "solid";
+		values[3] = values[3] or "#000000";
+	elseif (name == "overflow") then
+		values[1] = values[1] or "hidden";
+		values[2] = values[2] or values[1];
+    end
+    
+    for i = 1, #names do
+		self:AddItem(names[i], values[i]);
+	end
+end
+
+-- 添加样式代码: mcml style attribute string like "background:url();margin:10px;"
+function Style:AddString(style_code)
+	local name, value;
+	for name, value in string.gfind(style_code or "", "([%w%-]+)%s*:%s*([^;]*)[;]?") do
+		name = string_lower(name);
+		value = string_gsub(value, "%s*$", "");
+		if(complex_fields[name]) then
+			self:AddComplexField(name, value);
+		else
+			self:AddItem(name,value);
+		end
+	end
+end
+
+function Style:AddItem(name,value)
+	value = self.GetStyleValue(name, value);
+	if (not value) then return end
+	self.NormalStyle[string.lower(name)] = value;
 end
 
 -- 获取字体

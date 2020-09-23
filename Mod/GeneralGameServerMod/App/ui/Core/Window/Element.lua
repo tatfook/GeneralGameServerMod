@@ -217,6 +217,10 @@ function Element:UpdateLayout()
     return;
 end
 
+-- 真实内容大小更改
+function Element:OnRealContentSizeChange()
+end
+
 -- 加载元素样式相关属性
 function Element:LoadComponent()
     ElementDebug.Format("LoadComponent:  Name = %s, ChildElementCount = %s", self:GetName(), self:GetChildElementCount());

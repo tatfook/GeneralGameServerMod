@@ -147,6 +147,10 @@ function ElementUI:SetPosition(x, y)
     self:GetRect():setPosition(x, y);
 end
 
+function ElementUI:GetPosition()
+    return self:GetX(), self:GetY();
+end
+
 function ElementUI:SetSize(w, h)
     self:GetRect():setSize(w, h);
 end
@@ -208,10 +212,9 @@ end
 function ElementUI:OnMouseEnter()
 end
 
-function ElementUI:OnFocusOut()
-end
 
-function ElementUI:OnFocusIn()
+function ElementUI:IsCanHover()
+    return true;
 end
 
 -- 是否是光标元素
@@ -244,12 +247,22 @@ function ElementUI:SetHover(element)
         hoverElement:OffHover();
     end
     window:SetHoverElement(element);
-    if (element) then
+    if (element and element:IsCanHover()) then
         element:OnMouseEnter(MouseEvent:init("mouseEnterEvent", window));
-        element:SelectStyle("OnHover");
         element:OnHover();
-        ElementUIDebug("SetHover", self:GetName());
+        element:SelectStyle("OnHover");
+        ElementUIDebug.Format("Hover Element, Name = %s", element:GetName());
     end
+end
+
+function ElementUI:OnFocusOut()
+end
+
+function ElementUI:OnFocusIn()
+end
+
+function ElementUI:IsCanFocus()
+    return true;
 end
 
 -- 是否是聚焦元素
@@ -264,7 +277,6 @@ end
 
 -- 设置聚焦元素
 function ElementUI:SetFocus(element)
-    ElementUIDebug("SetFocus", self:GetName());
     local window = self:GetWindow();
     if (not window) then return end
     local focusElement = window:GetFocusElement();
@@ -274,9 +286,10 @@ function ElementUI:SetFocus(element)
         focusElement:SelectStyle("FocusOut");
     end
     window:SetFocusElement(element);
-    if (element) then
+    if (element and element:IsCanFocus()) then
         element:OnFocusIn();
         element:SelectStyle("FocusIn");
+        ElementUIDebug.Format("Hover Element, Name = %s", element:GetName());
     end
 end
 
@@ -290,10 +303,18 @@ function ElementUI:SelectStyle(action)
         if (self:IsHover()) then action = "OnHover" end
     end
     if (action == "OnHover" or action == "OffHover") then
-        if (action == "OnHover") then style:SelectHoverStyle() end
+        if (action == "OnHover") then 
+            style:SelectHoverStyle();
+        else
+            style:SelectNormalStyle();
+        end
         isNeedRefreshLayout = style:IsNeedRefreshLayout(style:GetHoverStyle()); 
     elseif (action == "FocusIn" or action == "FocusOut") then
-        if (action == "FocusIn") then style:SelectFocusStyle() end
+        if (action == "FocusIn") then 
+            style:SelectFocusStyle();
+        else
+            style:SelectNormalStyle();
+        end
         isNeedRefreshLayout = style:IsNeedRefreshLayout(style:GetFocusStyle()); 
     else
         style:SelectNormalStyle();

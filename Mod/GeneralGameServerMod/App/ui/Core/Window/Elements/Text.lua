@@ -50,7 +50,7 @@ end
 function Text:GetTextTrimmed(value)
 	value = value or self:GetValue() or self:GetAttrValue("value", nil);
 	if(value) then
-		value = string.gsub(value, "nbsp;", "");
+		value = string.gsub(value, "&nbsp;", " ");
 		value = string.gsub(value, "^[%s]+", "");
 		value = string.gsub(value, "[%s]+$", "");
 	end

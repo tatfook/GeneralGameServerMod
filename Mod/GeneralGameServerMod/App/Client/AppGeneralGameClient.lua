@@ -55,6 +55,10 @@ function AppGeneralGameClient:Init()
     -- 基类初始化
     AppGeneralGameClient._super.Init(self);
 
+    -- 默认禁止飞行
+    local userinfo = KeepWorkItemManager.GetProfile();
+    GameLogic.options:SetCanJumpInAir(userinfo.vip == 1 and true or false); 
+
     -- 配置GGS的默认选项值
     -- self:GetOptions().isSyncBlock = true;
     -- self:GetOptions().serverIp = "127.0.0.1";
@@ -94,7 +98,9 @@ end
 function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     local self = AppGeneralGameClient;
     local userinfo = KeepWorkItemManager.GetProfile();
-
+    
+    GameLogic.options:SetCanJumpInAir(userinfo.vip == 1 and true or false); 
+    
     self.userinfo.id = userinfo.id;
     self.userinfo.username = userinfo.username;
     self.userinfo.nickname = userinfo.nickname;

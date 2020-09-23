@@ -30,8 +30,10 @@ function Layout:Reset()
 	self.top, self.right, self.bottom, self.left = 0, 0, 0, 0;
 	-- 元素宽高 
 	self.width, self.height = nil, nil;
-	-- 内容宽高就是真实宽高
-	self.contentWidth, self.contentHeight = nil, nil;  
+	-- 真实内容宽高
+	self.realContentWidth, self.realContentHeight = nil, nil;
+	-- 内容宽高
+	self.contentWidth, self.contentHeight = 0, 0;  
 	-- 空间大小
 	self.spaceWidth, self.spaceHeight = 0, 0;
 	-- 边框
@@ -89,9 +91,6 @@ end
 -- 设置空间大小
 function Layout:SetSpaceWidthHeight(width, height)
 	self.spaceWidth, self.spaceHeight = width, height;
-	local marginTop, marginRight, marginBottom, marginLeft = self:GetMargin();
-	self.width = width and (width - marginLeft - marginRight);
-	self.height = height and (height - marginTop - marginBottom);
 end
 -- 获取空间大小 margin border padding content
 function Layout:GetSpaceWidthHeight(width, height)
@@ -103,8 +102,12 @@ function Layout:SetWidthHeight(width, height)
 	self:GetElement():SetSize(self.width or 0, self.height or 0);
 	
 	local marginTop, marginRight, marginBottom, marginLeft = self:GetMargin();
+	local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
+	local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
 	self.spaceWidth = width and (width + marginLeft + marginRight);
 	self.spaceHeight = height and (height + marginTop + marginBottom);
+	self.contentWidth = width and (width - borderLeft - borderRight - paddingLeft - paddingRight);
+	self.contentHeight = height and (height - borderTop - borderBottom - paddingTop - paddingBottom);
 end
 -- 获取区域宽高 非坐标 包含 padding border style.width    style.width 可能是内容宽也可能是区域宽,  布局里的宽一定是区域宽
 function Layout:GetWidthHeight()
@@ -117,6 +120,14 @@ end
 -- 获取内容宽高 
 function Layout:GetContentWidthHeight()
 	return self.contentWidth, self.contentHeight;
+end
+-- 设置真实宽高
+function Layout:SetRealContentWidthHeight(width, height)
+    self.realContentWidth, self.realContentHeight = width, height;
+end
+-- 获取真实宽高 
+function Layout:GetRealContentWidthHeight()
+	return self.realContentWidth, self.realContentHeight;
 end
 -- 设置最小宽高 
 function Layout:SetMinWidthHeight(width, height)
@@ -218,6 +229,19 @@ function Layout:IsLayout()
     if (width == 0 or height == 0 or display == "none") then return false end 
     return true;
 end
+-- 是否溢出
+function Layout:IsOverflow()
+	return self:IsOverflowX() or self:IsOverflowY();
+end
+-- 是否溢出
+function Layout:IsOverflowX()
+	return self.realContentWidth and self.realContentWidth > self.contentWidth;
+end
+-- 是否溢出
+function Layout:IsOverflowY()
+	return self.realContentHeight and self.realContentHeight > self.contentHeight;
+end
+
 -- 处理布局准备工作, 单位数字化
 function Layout:PrepareLayout()
     -- 先重置布局
@@ -311,19 +335,19 @@ end
 -- 更新布局
 function Layout:Update()
 	local width, height = self:GetWidthHeight();
-	local contentWidth, contentHeight = self:GetContentWidthHeight();
+	local realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
 	local marginTop, marginRight, marginBottom, marginLeft = self:GetMargin();
     local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
     local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
 
-	if (not self:IsFixedSize() or not contentWidth or not contentHeight) then
-		self:UpdateContentWidthHeight();
-		contentWidth, contentHeight = self:GetContentWidthHeight();
-		width = width or (contentWidth + paddingLeft + paddingRight + borderLeft + borderRight) or 0;
-		height = height or (contentHeight + paddingTop + paddingBottom + borderTop + borderBottom) or 0;
+	if (not self:IsFixedSize() or not realContentWidth or not realContentHeight) then
+		self:UpdateRealContentWidthHeight();
+		realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
+		width = width or (realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight) or 0;
+		height = height or (realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom) or 0;
 	end
 
-    LayoutDebug.Format("Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, contentWidth = %s, contentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), contentWidth, contentHeight);
+    LayoutDebug.Format("Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
 
 	-- 确定元素大小
 	self:SetWidthHeight(width, height);
@@ -340,8 +364,9 @@ function Layout:Update()
 end
 
 -- 更新内容宽高
-function Layout:UpdateContentWidthHeight()
-	local availableX, availableY, contentWidth, contentHeight = 0, 0, 0, 0;
+function Layout:UpdateRealContentWidthHeight()
+	local oldRealContentWidth, oldRealContentHeight = self:GetRealContentWidthHeight();
+	local availableX, availableY, realContentWidth, realContentHeight = 0, 0, 0, 0;
 	local width, height = self:GetWidthHeight();
 	local element = self:GetElement();
 
@@ -353,7 +378,7 @@ function Layout:UpdateContentWidthHeight()
 		local childSpaceWidth, childSpaceHeight = childLayout:GetSpaceWidthHeight();
 		LayoutDebug(
 			string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
-			string.format("Layout availableX = %s, availableY = %s, contentWidth = %s, contentHeight = %s, width = %s, height = %s", availableX, availableY, contentWidth, contentHeight, width, height),
+			string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 			string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
 		);
 		if (childLayout:IsLayout()) then
@@ -362,7 +387,7 @@ function Layout:UpdateContentWidthHeight()
 				if (width and width < (availableX + childSpaceWidth)) then
 					-- 新起一行
 					childLeft = childMarginLeft;
-					childTop = contentHeight + childMarginTop;
+					childTop = realContentHeight + childMarginTop;
 					availableX = childSpaceWidth;
 					availableY = realHeight;
 				else 
@@ -372,29 +397,33 @@ function Layout:UpdateContentWidthHeight()
 					availableX = availableX + childSpaceWidth;
 					availableY = availableY; -- 可用点的Y坐标不变
 				end
-				contentWidth = if_else(contentWidth > availableX, contentWidth, availableX);
+				realContentWidth = if_else(realContentWidth > availableX, realContentWidth, availableX);
 				local newHeight = availableY + childSpaceHeight;
-				contentHeight = if_else(newHeight > contentHeight, newHeight, contentHeight)
+				realContentHeight = if_else(newHeight > realContentHeight, newHeight, realContentHeight)
 			else 
 				-- 块元素 新起一行
 				childLeft = childMarginLeft;
-				childTop = contentHeight + childMarginTop;
+				childTop = realContentHeight + childMarginTop;
 				availableX = 0;                                                      -- 可用位置X坐标置0
-				availableY = contentHeight + childSpaceHeight;                       -- 取最大Y坐标
-				contentWidth = if_else(childSpaceWidth > contentWidth, childSpaceWidth, contentWidth);
-				contentHeight = availableY;
+				availableY = realContentHeight + childSpaceHeight;                       -- 取最大Y坐标
+				realContentWidth = if_else(childSpaceWidth > realContentWidth, childSpaceWidth, realContentWidth);
+				realContentHeight = availableY;
 			end
 		end
 		childLayout:SetPos(childLeft, childTop);
 		LayoutDebug(
 			string.format("[%s] Layout Add ChildLayout After ", self:GetName()),
-			string.format("Layout availableX = %s, availableY = %s, contentWidth = %s, contentHeight = %s, width = %s, height = %s", availableX, availableY, contentWidth, contentHeight, width, height),
+			string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 			string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
 		);
 	end
 
 	-- 设置内容宽高
-	self:SetContentWidthHeight(contentWidth, contentHeight);
+	self:SetRealContentWidthHeight(realContentWidth, realContentHeight);
+	-- 真实内容发生改变
+	if (oldRealContentWidth ~= realContentWidth or oldRealContentHeight ~= realContentHeight) then
+		self:GetElement():OnRealContentSizeChange();
+	end
 end
 
 -- 添加子布局

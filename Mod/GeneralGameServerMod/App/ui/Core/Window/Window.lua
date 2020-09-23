@@ -250,6 +250,8 @@ function Window:handleMouseEvent(event)
         -- 是否已处理
         if (event:isAccepted()) then return target end
         
+        -- 切换点为元素内的坐标
+        point:sub(element:GetPosition());
         -- 子元素
         local target = nil;
         for child in element:ChildElementIterator(false) do
@@ -257,7 +259,9 @@ function Window:handleMouseEvent(event)
             if (target) then break end
         end
         target = target or element;
-
+        -- 还原点坐标
+        point:add(element:GetPosition());
+        
         -- 是否已处理
         if (event:isAccepted()) then return target end
         
@@ -282,6 +286,8 @@ function Window:handleMouseEvent(event)
     else 
         element = ElementMouseEvent(self);
     end
+
+    if (eventType ~= "mouseMoveEvent") then WindowDebug.Format("Target Element: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
 
     if (eventType == "mouseMoveEvent") then
         self:SetHover(element);

@@ -19,7 +19,10 @@ local Div = NPL.load("./Elements/Div.lua", IsDevEnv);
 local Text = NPL.load("./Elements/Text.lua", IsDevEnv);
 local Button = NPL.load("./Elements/Button.lua", IsDevEnv);
 
-local ElementManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export())
+local ElementManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+
+ElementManager.ScrollBar = NPL.load("./Controls/ScrollBar.lua", IsDevEnv);
+
 local ElementClassMap = {};
 
 function ElementManager:ctor()
