@@ -21,6 +21,8 @@ local ElementUI = NPL.load("./ElementUI.lua", IsDevEnv);
 local Element = commonlib.inherit(ElementUI, NPL.export());
 
 local ElementDebug = GGS.Debug.GetModuleDebug("ElementDebug").Disable();
+local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable();
+local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
 Element:Property("Window");     -- 元素所在窗口
 Element:Property("Attr", {});   -- 元素属性
@@ -28,9 +30,10 @@ Element:Property("XmlNode");    -- 元素XmlNode
 Element:Property("ParentElement");                        -- 父元素
 Element:Property("Style", {});                            -- 样式
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
-Element:Property("Rect", Rect:new():init(0,0,0,0));       -- 元素几何区域矩形
+Element:Property("Rect");                                 -- 元素几何区域矩形
 Element:Property("Name");                                 -- 元素名
 Element:Property("TagName");                              -- 标签名
+Element:Property("Visible", true, "IsVisible");           -- 可见性
 
 -- 构造函数
 function Element:ctor()
@@ -39,6 +42,7 @@ function Element:ctor()
 
     -- 设置布局
     self:SetLayout(Layout:new():Init(self));
+    self:SetRect(Rect:new():init(0,0,0,0));
 end
 
 -- 是否是元素
@@ -142,9 +146,10 @@ function Element:ChildElementIterator(isRender)
     local i, size, childrens, list = 0, self:GetChildElementCount() or 0, self:GetChildElementList(), {};
     for i = 1, #childrens do  list[i] = childrens[i] end
     local function comp(child1, child2)
-        local zindex1 = (child1:GetStyle())["z-index"] or 0;
-        local zindex2 = (child2:GetStyle())["z-index"] or 0;
-        local sort = zindex1 < zindex2;  -- 默认升序
+        local style1, style2 = child1:GetStyle(), child2:GetStyle();
+        local zindex1, zindex2 = style1["z-index"] or 0, style2["z-index"] or 0;
+        -- 函数返回true, 表两个元素需要交换位置
+        local sort = if_else(zindex1 == zindex2, style1.float ~= nil and style2.float == nil, zindex1 < zindex2);  -- true 默认升序  z-index 相同 含有float优先
         return if_else(isRender or isRender == nil, sort, not sort);
     end
     table.sort(list, comp);
@@ -219,6 +224,25 @@ end
 
 -- 真实内容大小更改
 function Element:OnRealContentSizeChange()
+    if (not self:GetWindow()) then return end
+    local ElementManager = self:GetWindow():GetElementManager();
+    local layout, ScrollBar = self:GetLayout(), ElementManager.ScrollBar;
+    local width, height = layout:GetWidthHeight();
+    local realContentWidth, realContentHeight = layout:GetRealContentWidthHeight();
+    if (layout:IsOverflowX()) then 
+        self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow());
+    end
+    if (layout:IsOverflowY()) then 
+        self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow());
+    end
+
+    if (self.horizontalScrollBar) then
+        self.horizontalScrollBar:SetVisible(layout:IsOverflowX());
+    end
+
+    if (self.verticalScrollBar) then
+        self.verticalScrollBar:SetVisible(layout:IsOverflowY());
+    end
 end
 
 -- 加载元素样式相关属性
@@ -232,8 +256,6 @@ function Element:LoadComponent()
 	self:OnLoadChildrenComponent();
 	
     self:OnLoadComponentAfterChild();
-    
-
 end
 
 -- 子元素加载前
@@ -272,6 +294,17 @@ end
 function Element:GetAttrValue(attrName, defaultValue)
     local attr = self:GetAttr();
     return attr[attrName] or defaultValue;
+end
+
+function Element:GetAttrNumberValue(attrName, defaultValue)
+    return tonumber(self:GetAttrValue(attrName)) or defaultValue;
+end
+
+function Element:GetAttrBoolValue(attrName, defaultValue)
+    local value = self:GetAttrValue(attrName);
+    if (type(value) == "boolean") then return value end
+    if (type(value) ~= "string") then return defaultValue end
+    return value == "true";
 end
 
 -- 设置属性值

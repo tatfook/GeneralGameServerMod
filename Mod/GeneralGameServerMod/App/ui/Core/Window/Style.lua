@@ -71,6 +71,7 @@ local layout_fields = {
 	["position"] = true,
 	["box-sizing"] = true,
 }
+
 -- 是否需要重新布局
 local function IsRefreshLayout(style)
 	if (type(style) ~= "table") then return false end
@@ -250,7 +251,10 @@ function Style.GetNumberValue(value)
 end
 
 function Style.GetStyleValue(name,value)
-	if(not name or not value) then return end
+	if (type(name) ~= "string") then return end
+	if (type(value) == "number" and (number_fields[name] or dimension_fields[name])) then return value end
+	if (type(value) ~= "string") then return end
+	
 	name = string_lower(name);
 	value = string_gsub(value, "%s*$", "");
     if(dimension_fields[name] or string_find(name,"^margin") or string_find(name,"^padding")) then

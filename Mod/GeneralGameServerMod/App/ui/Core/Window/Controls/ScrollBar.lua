@@ -14,15 +14,15 @@ local defaultScrollBarSize = "10px";
 local ScrollBarButton = commonlib.inherit(Element, {});
 function ScrollBarButton:ctor()
     self:SetName("ScrollBarButton");
+    self:SetBaseStyle({NormalStyle = {}});
 end
 function ScrollBarButton:Init(xmlNode, window)
     ScrollBarButton._super.Init(self, xmlNode, window);
     local ScrollBarDirection = self:GetAttrValue("ScrollBarDirection");
-    local BaseStyle = {
-        ["position"] = "absolute",
-        ["width"] = ScrollBarDirection == "horizontal" and defaultScrollBarSize or "100%",
-        ["height"] = ScrollBarDirection == "horizontal" and "100%" or defaultScrollBarSize,
-    }
+    local NormalStyle = self:GetBaseStyle().NormalStyle;
+    NormalStyle["position"] = "absolute";
+    NormalStyle["width"] = ScrollBarDirection == "horizontal" and defaultScrollBarSize or "100%";
+    NormalStyle["height"] = ScrollBarDirection == "horizontal" and "100%" or defaultScrollBarSize;
 
     if (self:GetTagName() == "ScrollBarPrevButton") then
         NormalStyle["left"] = "0px";
@@ -32,7 +32,7 @@ function ScrollBarButton:Init(xmlNode, window)
         NormalStyle["bottom"] = "0px";
     end
 
-    self:SetBaseStyle(BaseStyle);
+    return self;
 end
 
 local ScrollBarThumb = commonlib.inherit(Element, {});
@@ -46,11 +46,21 @@ function ScrollBarTrack:ctor()
 end
 
 local ScrollBar = commonlib.inherit(Element, NPL.export());
-ScrollBar:Property("Value");  
+ScrollBar:Property("ScrollTop");  
+ScrollBar:Property("ScrollHeight");
+ScrollBar:Property("ClientHeight");
+ScrollBar:Property("ScrollLeft");  
+ScrollBar:Property("ScrollWidth");
+ScrollBar:Property("ClientWidth");
 ScrollBar:Property("Direction");  -- 方向                               
 
 function ScrollBar:ctor()
     self:SetName("ScrollBar");
+    self:SetBaseStyle({NormalStyle = {}});
+end
+
+function ScrollBar:IsHorizontal()
+    return self:GetDirection() == "horizontal";
 end
 
 function ScrollBar:Init(xmlNode, window)
@@ -58,23 +68,14 @@ function ScrollBar:Init(xmlNode, window)
 
     self:SetDirection(self:GetAttrValue("direction") or "horizontal"); -- horizontal  vertical
     local isHorizontal = self:GetDirection() == "horizontal";
-
+    local NormalStyle = self:GetBaseStyle().NormalStyle;
+    NormalStyle["position"] = "relative";
     if (isHorizontal) then
-        self:SetBaseStyle({
-            NormalStyle = {
-                ["position"] = "relative",
-                ["height"] = defaultScrollBarSize,
-                ["width"] = "100%",
-            }
-        });
+        NormalStyle["height"] = defaultScrollBarSize;
+        NormalStyle["width"] = "100%";
     else 
-        self:SetBaseStyle({
-            NormalStyle = {
-                ["position"] = "relative",
-                ["width"] = defaultScrollBarSize,
-                ["height"] = "100%",
-            }
-        });
+        NormalStyle["width"] = defaultScrollBarSize;
+        NormalStyle["height"] = "100%";
     end
 
     self.prevButton = ScrollBarButton:new():Init({name = "ScrollBarPrevButton", attr = {ScrollBarDirection = self:GetDirection()}}, window);
@@ -92,5 +93,11 @@ function ScrollBar:Init(xmlNode, window)
     self.thumb:SetParentElement(self);
     table.insert(self.childrens, self.nextButton);
     self.nextButton:SetParentElement(self);
+
+    return self;
 end
 
+function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, scrollWidth, scrollHeight)
+    self:SetClientWidth(clientWidth);
+    
+end

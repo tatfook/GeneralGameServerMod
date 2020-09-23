@@ -17,15 +17,14 @@ local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Enable(); --.Disable
 Layout:Property("Element");                                        -- 元素
 Layout:Property("BorderBox", false, "IsBorderBox");                -- 区域盒子
 Layout:Property("LayoutFinish", false, "IsLayoutFinish");          -- 是否布局完成
-Layout:Property("FixedSize", false, "IsFixedSize");                -- 是否是固定大小
-Layout:Property("FixedWidth", false, "IsFixedWidth");  			   -- 是否是固定宽
-Layout:Property("FixedHeight", false, "IsFixedHeight");  		   -- 是否是固定高
+Layout:Property("FixedSize", false, "IsFixedSize");                -- 是否是固定宽高
+Layout:Property("FixedWidth", false, "IsFixedWidth");              -- 是否是固定宽
+Layout:Property("FixedHeight", false, "IsFixedHeight");            -- 是否是固定高
+Layout:Property("UseSpace", true, "IsUseSpace");                   -- 是否使用空间
 local nid = 0;
 
 -- 重置布局
 function Layout:Reset()
-	-- 当前可用位置
-	self.availableX, self.availableY, self.rightAvailableX, self.rightAvailableY = 0, 0, 0, 0;
 	-- 相对于父元素的位置
 	self.top, self.right, self.bottom, self.left = 0, 0, 0, 0;
 	-- 元素宽高 
@@ -45,9 +44,8 @@ function Layout:Reset()
 
 	-- 是否固定内容大小
 	self:SetFixedSize(false);
-	self:SetFixedWidth(false);
-	self:SetFixedHeight(false);
 	self:SetLayoutFinish(false);
+	self:SetUseSpace(true);
 end
 
 -- 初始化
@@ -71,7 +69,7 @@ function Layout:GetWindow()
 end
 -- 获取窗口位置 x, y, w, h    (w, h 为宽高, 非坐标)
 function Layout:GetWindowPosition()
-    local wnd = self:GetWindow():GetNativeWindow();
+    local wnd = self:GetWindow() and self:GetWindow():GetNativeWindow();
     if (not wnd) then return end;
 	return wnd:GetAbsPosition();
 end
@@ -88,6 +86,10 @@ function Layout:GetParentLayout()
     local parent = self:GetElement():GetParentElement();
     return parent and parent:GetLayout();
 end
+-- 获取根布局
+function Layout:GetRootLayout()
+    return self:GetWindow() and self:GetWindow():GetLayout();
+end
 -- 设置空间大小
 function Layout:SetSpaceWidthHeight(width, height)
 	self.spaceWidth, self.spaceHeight = width, height;
@@ -100,7 +102,6 @@ end
 function Layout:SetWidthHeight(width, height)
 	self.width, self.height = width, height;
 	self:GetElement():SetSize(self.width or 0, self.height or 0);
-	
 	local marginTop, marginRight, marginBottom, marginLeft = self:GetMargin();
 	local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
 	local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
@@ -179,33 +180,12 @@ function Layout:GetPosition()
 end
 -- 设置位置坐标
 function Layout:SetPos(x, y)
-	self.left, self.top = x or 0, y or 0;
-	self:GetElement():SetPosition(self.left, self.top);
+	self.x, self.y = x or 0, y or 0;
+	self:GetElement():SetPosition(self.x, self.y);
 end
 -- 获取位置坐标
 function Layout:GetPos()
-	return self.left or 0, self.top or 0; 
-end
--- 获取左上点
-function Layout:GetLeftTop()
-    return self.left, self.top;
-end
--- 获取右下点
-function Layout:GetRightBottom()
-    return self.right, self.bottom;
-end
--- 偏移位置
-function Layout:OffsetPos(dx, dy)
-	self.left = self.left + (dx or 0);
-	self.top = self.top + (dy or 0);
-end
--- 设置可用位置
-function Layout:SetAvailablePos(availableX, availableY)
-	self.availableX, self.availableY = availableX, availableY;
-end
--- 获取可用位置
-function Layout:GetAvailablePos()
-	return self.availableX, self.availableY;
+	return self.x or 0, self.y or 0; 
 end
 -- 百分比转数字
 function Layout:PercentageToNumber(percentage, size)
@@ -220,13 +200,19 @@ end
 -- 块元素识别
 function Layout:IsBlock()
 	local style = self:GetStyle();
-	return (not style.display or style.display == "block") and not style.float and not style.position;
+	return (not style.display or style.display == "block") and not style.float;
+end
+-- 是定位元素
+function Layout:IsPosition()
+	local style = self:GetStyle();
+	return style.position == "absoulte" or style.position == "fixed" or style.position == "screen";
 end
 -- 元素是否布局 false 不布局
 function Layout:IsLayout()
+	local element = self:GetElement();
     local display = self:GetStyle().display;
     local width, height = self:GetWidthHeight();
-    if (width == 0 or height == 0 or display == "none") then return false end 
+    if (not element:IsVisible() or width == 0 or height == 0 or display == "none") then return false end 
     return true;
 end
 -- 是否溢出
@@ -235,11 +221,11 @@ function Layout:IsOverflow()
 end
 -- 是否溢出
 function Layout:IsOverflowX()
-	return self.realContentWidth and self.realContentWidth > self.contentWidth;
+	return self:IsFixedWidth() and self.realContentWidth and self.realContentWidth > self.contentWidth;
 end
 -- 是否溢出
 function Layout:IsOverflowY()
-	return self.realContentHeight and self.realContentHeight > self.contentHeight;
+	return self:IsFixedHeight() and self.realContentHeight and self.realContentHeight > self.contentHeight;
 end
 
 -- 处理布局准备工作, 单位数字化
@@ -251,13 +237,15 @@ function Layout:PrepareLayout()
     local parentLayout = self:GetParentLayout();
 	
 	-- 窗口元素 直接设置宽高
-	if (not parentLayout) then
+	if (not parentLayout and self:GetElement():IsWindow()) then
         local x, y, w, h = self:GetWindowPosition();
 		return self:SetWidthHeight(w or 0, h or 0);
 	end
 	
 	-- 获取父元素宽高
-    local parentWidth, parentHeight = parentLayout:GetWidthHeight();
+	local parentWidth, parentHeight = nil, nil;
+	if (parentLayout) then parentWidth, parentHeight = parentLayout:GetWidthHeight() end
+	
     -- 父元素无宽高则不布局
     if (parentWidth == 0 or parentHeight == 0) then return self:SetWidthHeight(0, 0) end 
 
@@ -304,8 +292,8 @@ function Layout:PrepareLayout()
     end
 
 	-- 数字化宽高
-	local width, height = style.width, style.height;                           -- 支持百分比, px
-	if (self:IsBlock() and not width) then width = parentWidth end             -- 块元素默认为父元素宽
+	local width, height = style.width, style.height;                                                     -- 支持百分比, px
+	if (self:IsBlock() and not self:IsPosition() and not width) then width = parentWidth end             -- 块元素默认为父元素宽
 	width = self:PercentageToNumber(width, parentWidth);
     height = self:PercentageToNumber(height, parentHeight);
     if (self:IsBorderBox()) then
@@ -325,327 +313,184 @@ function Layout:PrepareLayout()
 	bottom = self:PercentageToNumber(bottom, parentHeight);
 	self:SetPosition(top, right, bottom, left);
 
-    LayoutDebug(
-        "PrepareLayout:" .. self:GetElement():GetName(), 
-        string.format("Element nid = %s, width = %s, height = %s", nid, width, height),
-        parentLayout and string.format("ParentElement nid = %s, width = %s, height = %s", parentLayout.nid, parentWidth, parentHeight)
-    );
+    -- LayoutDebug(
+    --     "PrepareLayout:" .. self:GetElement():GetName(), 
+    --     string.format("Element nid = %s, width = %s, height = %s", nid, width, height),
+    --     parentLayout and string.format("ParentElement nid = %s, width = %s, height = %s", parentLayout.nid, parentWidth, parentHeight)
+    -- );
 end
 
 -- 更新布局
 function Layout:Update()
 	local width, height = self:GetWidthHeight();
-	local realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
-	local marginTop, marginRight, marginBottom, marginLeft = self:GetMargin();
     local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
     local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
+	local oldRealContentWidth, oldRealContentHeight = self:GetRealContentWidthHeight();
+	local isRealContentWidthHeightChange = false;
 
-	if (not self:IsFixedSize() or not realContentWidth or not realContentHeight) then
-		self:UpdateRealContentWidthHeight();
-		realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
-		width = width or (realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight) or 0;
-		height = height or (realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom) or 0;
-	end
+	-- 应用定位方式获取宽高
+	self:ApplyPositionStyle();
+	
+	-- 更新真实内容大小 由所有子元素决定
+	self:UpdateRealContentWidthHeight();
+	local realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
+	isRealContentWidthHeightChange = oldRealContentWidth ~= realContentWidth or oldRealContentHeight ~= realContentHeight;
 
-    LayoutDebug.Format("Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
+	width = width or (realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight) or 0;
+	height = height or (realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom) or 0;
+
+    LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
 
 	-- 确定元素大小
 	self:SetWidthHeight(width, height);
 
-    -- 	self:ApplyPositionStyle();
+	-- 真实内容发生改变
+	if (isRealContentWidthHeightChange) then
+		self:GetElement():OnRealContentSizeChange();
+	end
+	
     -- 	self:ApplyAlignStyle();
     -- 	self:ApplyFloatStyle();
 
-	-- 父元素布局更新
+	-- 子元素更新, 当父元素存在,不处于更新中,非固定宽高时, 需要更新父布局使其有正确的宽高 
 	local parentLayout = self:GetParentLayout();
-    if (parentLayout and parentLayout:IsLayoutFinish()) then
+    if (parentLayout and parentLayout:IsLayoutFinish() and not parentLayout:IsFixedSize()) then
         parentLayout:Update();
     end
 end
 
 -- 更新内容宽高
 function Layout:UpdateRealContentWidthHeight()
-	local oldRealContentWidth, oldRealContentHeight = self:GetRealContentWidthHeight();
-	local availableX, availableY, realContentWidth, realContentHeight = 0, 0, 0, 0;
+	local availableX, availableY, rightAvailableX, rightAvailableY, realContentWidth, realContentHeight = 0, 0, 0, 0, 0, 0;
 	local width, height = self:GetWidthHeight();
 	local element = self:GetElement();
+	local isFalseWidth = false;
+
+	if (not width) then
+		width = 1000000; -- 虚拟出假宽度
+		isFalseWidth = true;
+	end
 
 	-- 渲染序
 	for child in element:ChildElementIterator(true) do
-		local childLayout = child:GetLayout();
+		local childLayout, childStyle = child:GetLayout(), child:GetStyle();
 		local childLeft, childTop = 0, 0;
 		local childMarginTop, childMarginRight, childMarginBottom, childMarginLeft = childLayout:GetMargin();
 		local childSpaceWidth, childSpaceHeight = childLayout:GetSpaceWidthHeight();
-		LayoutDebug(
-			string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
-			string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
-			string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
-		);
-		if (childLayout:IsLayout()) then
+		local childWidth, childHeight = childLayout:GetWidthHeight();
+		local isRightFloat = childStyle.float == "right";
+		if (childLayout:IsLayout() and childLayout:IsUseSpace()) then
+			LayoutDebug.If(
+				child:GetAttrValue("id") == "debug",
+				string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
+				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
+				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s, childWidth = %s, childHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight, childWidth, childHeight)
+			);
 			if (not childLayout:IsBlock()) then
 				-- 内联元素
-				if (width and width < (availableX + childSpaceWidth)) then
+				if ((width - availableX - rightAvailableX) < childSpaceWidth) then
 					-- 新起一行
-					childLeft = childMarginLeft;
-					childTop = realContentHeight + childMarginTop;
-					availableX = childSpaceWidth;
-					availableY = realHeight;
+					if (isRightFloat) then
+						childLeft, childTop = (width - childSpaceWidth + childMarginLeft), realContentHeight + childMarginTop;
+						availableX, availableY = 0, realContentHeight;
+						rightAvailableX, rightAvailableY = childSpaceWidth, realContentHeight;
+					else
+						childLeft, childTop = childMarginLeft, realContentHeight + childMarginTop;
+						availableX, availableY = childSpaceWidth, realContentHeight;
+						rightAvailableX, rightAvailableY = 0, realContentHeight;
+					end
 				else 
 					-- 同行追加
-					childLeft = availableX + childMarginLeft;
-					childTop = availableY + childMarginTop;
-					availableX = availableX + childSpaceWidth;
-					availableY = availableY; -- 可用点的Y坐标不变
+					if (isRightFloat) then
+						childLeft, childTop = (width - rightAvailableX - childSpaceWidth + childMarginLeft), rightAvailableY + childMarginTop;
+						availableX, availableY = availableX, availableY;
+						rightAvailableX, rightAvailableY = rightAvailableX + childSpaceWidth, rightAvailableY;
+					else
+						childLeft, childTop = availableX + childMarginLeft, availableY + childMarginTop;
+						availableX, availableY = availableX + childSpaceWidth, availableY;
+						rightAvailableX, rightAvailableY = rightAvailableX, rightAvailableY;
+					end
 				end
-				realContentWidth = if_else(realContentWidth > availableX, realContentWidth, availableX);
+				realContentWidth = if_else(realContentWidth > (availableX + rightAvailableX), realContentWidth, availableX + rightAvailableX);
 				local newHeight = availableY + childSpaceHeight;
 				realContentHeight = if_else(newHeight > realContentHeight, newHeight, realContentHeight)
 			else 
 				-- 块元素 新起一行
-				childLeft = childMarginLeft;
-				childTop = realContentHeight + childMarginTop;
-				availableX = 0;                                                      -- 可用位置X坐标置0
-				availableY = realContentHeight + childSpaceHeight;                       -- 取最大Y坐标
+				childLeft, childTop = childMarginLeft, realContentHeight + childMarginTop;
+				availableX, availableY = 0, realContentHeight + childSpaceHeight;    -- 可用位置X坐标置0 取最大Y坐标
+				rightAvailableX, rightAvailableY = availableX, availableY;
 				realContentWidth = if_else(childSpaceWidth > realContentWidth, childSpaceWidth, realContentWidth);
 				realContentHeight = availableY;
 			end
+			childLayout:SetPos(childLeft, childTop);
+			LayoutDebug.If(
+				child:GetAttrValue("id") == "debug",
+				string.format("[%s] Layout Add ChildLayout After ", self:GetName()),
+				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
+				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
+			);
 		end
-		childLayout:SetPos(childLeft, childTop);
-		LayoutDebug(
-			string.format("[%s] Layout Add ChildLayout After ", self:GetName()),
-			string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
-			string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
-		);
+	end
+
+	-- 假宽度右浮动元素需要调整
+	if (isFalseWidth) then
+		for child in element:ChildElementIterator(true) do
+			local childLayout, childStyle = child:GetLayout(), child:GetStyle(); 
+			if (childStyle.float == "right") then
+				local left, top = childLayout:GetPos();
+				childLayout:SetPos(left - width + realContentWidth, top);
+			end
+		end
 	end
 
 	-- 设置内容宽高
 	self:SetRealContentWidthHeight(realContentWidth, realContentHeight);
-	-- 真实内容发生改变
-	if (oldRealContentWidth ~= realContentWidth or oldRealContentHeight ~= realContentHeight) then
-		self:GetElement():OnRealContentSizeChange();
-	end
 end
 
--- 添加子布局
--- function Layout:AddChildLayout(childLayout)
--- 	if (not childLayout:IsLayout()) then return end
--- 	local childStyle = childLayout:GetStyle();
---     -- 定位元素忽略
---     if (childStyle.position == "absolute" or childStyle.position == "fixed" or childStyle.position == "screen") then return end
-
--- 	local width, height = self:GetWidthHeight();
--- 	local availableX, availableY = self:GetAvailablePos();
---     local realWidth, realHeight = self:GetRealWidthHeight();
--- 	local childMarginTop, childMarginRight, childMarginBottom, childMarginLeft = childLayout:GetMargin();
--- 	local childWidth, childHeight = childLayout:GetWidthHeight();
---     local childLeft, childTop = childLayout:GetPos();
---     LayoutDebug(
---         string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
---         string.format("Layout availableX = %s, availableY = %s, realWidth = %s, realHeight = %s, width = %s, height = %s", availableX, availableY, realWidth, realHeight, width, height),
---         string.format("[%s] childLeft = %s, childTop = %s, childWidth = %s, childHeight = %s", childLayout:GetName(), childLeft, childTop, childWidth, childHeight)
---     );
--- 	-- 添加元素到父布局
--- 	if (not childLayout:IsBlock()) then
--- 		-- 内联元素
--- 		if (width < (availableX + childWidth + childMarginLeft + childMarginRight)) then
--- 			-- 新起一行
--- 			availableX = childWidth + childMarginLeft + childMarginRight;
--- 			availableY = realHeight;
--- 			childLeft = childMarginLeft;
--- 			childTop = availableY + childMarginTop;
--- 		else 
--- 			availableX = availableX + childWidth + childMarginLeft + childMarginRight;
--- 			availableY = availableY; -- 可用点的Y坐标不变
--- 			childLeft = availableX - childWidth - childMarginRight;
--- 			childTop = availableY + childMarginTop;
--- 		end
--- 		realWidth = if_else(realWidth > availableX, realWidth, availableX);
--- 		local newHeight = availableY + childHeight + childMarginTop + childMarginBottom;
--- 		realHeight = if_else(newHeight > realHeight, newHeight, realHeight)
--- 	else 
--- 		-- 块元素 新起一行
--- 		availableX = 0;                                                   -- 可用位置X坐标置0
--- 		availableY = realHeight + childHeight + childMarginTop + childMarginBottom;      -- 取最大Y坐标
--- 		local newWidth = childWidth + childMarginLeft + childMarginRight;
--- 		realWidth = if_else(newWidth > realWidth, newWidth, realWidth);
--- 		realHeight = availableY;
--- 		childLeft = childMarginLeft;
--- 		childTop = realHeight - childHeight - childMarginBottom;
---     end
---     LayoutDebug(
---         string.format("[%s] Layout Add ChildLayout After ", self:GetName()),
---         string.format("Layout availableX = %s, availableY = %s, realWidth = %s, realHeight = %s, width = %s, height = %s", availableX, availableY, realWidth, realHeight, width, height),
---         string.format("[%s] childLeft = %s, childTop = %s, childWidth = %s, childHeight = %s", childLayout:GetName(), childLeft, childTop, childWidth, childHeight)
---     );
--- 	self:SetAvailablePos(availableX, availableY);    -- 更新父元素的可用位置
--- 	self:SetRealWidthHeight(realWidth, realHeight);  -- 更新父元素的真实大小
--- 	childLayout:SetPos(childLeft, childTop);        -- 更新自己再父元素中相对坐标
--- end
-
 -- 应用CSS的定位样式
--- function ElementLayout:ApplyPositionStyle()
--- 	local style = self:GetStyle();
--- 	local width, height = self:GetWidthHeight();
--- 	local WindowX, WindowY, WindowWidth, WindowHeight = self:GetWindowPosition();
--- 	local ScreenX, ScreenY, ScreenWidth, ScreenHeight = self:GetScreenPosition();
--- 	local float, position, left, top, right, bottom = style.float, style.position, style.left, style.top, style.right, style.bottom;
--- 	-- 浮动与定位不共存
--- 	if (float or not position) then return end
--- 	-- 相对定位
--- 	if (position == "relative") then return self:OffsetPos(left or 0, top or 0) end
--- 	-- 不使用文档流
--- 	self:SetUseSpace(false);
--- 	-- 计算定位
--- 	local relElementLayout = self:GetParentElementLayout();
--- 	if (position == "absolute") then
--- 		-- 绝对定位 取已定位的父元素
--- 		while (relElementLayout and relElementLayout:GetParentElementLayout()) do
--- 			local relStyle = relElementLayout:GetStyle();
--- 			if (relStyle.position and (relStyle.position == "relative" or relStyle.position == "absolute" or relStyle.position == "fixed" or relStyle.position == "screen")) then break end
--- 			relElementLayout = relElementLayout:GetParentElementLayout();
--- 		end
--- 	elseif (position == "fixed") then
--- 		-- 固定定位 取根元素
--- 		while (relElementLayout and relElementLayout:GetParentElementLayout()) do
--- 			relElementLayout = relElementLayout:GetParentElementLayout();
--- 		end
--- 	end
--- 	local relWidth, relHeight = relElementLayout:GetWidthHeight();
--- 	if (position == "screen") then relWidth, relHeight = ScreenWidth, ScreenHeight end
--- 	relWidth, relHeight = relWidth or 0, relHeight or 0;
--- 	if (right and width and not left) then left = relWidth - right - width end
--- 	if (bottom and height and not top) then top = relHeight - bottom - height end
--- 	if (not width) then width = relWidth - (left or 0) - (right or 0) end 
--- 	if (not height) then height = relHeight - (top or 0) - (bottom or 0) end 
--- 	left, top = left or 0, top or 0;
--- 	if (position == "screen") then
--- 		self:SetPos(left - WindowX, top - WindowY);
--- 	else
--- 		self:SetPos(left, top);
--- 	end
--- 	self:SetWidthHeight(math.max(width, 0), math.max(height, 0));
--- end
-
--- -- 应用排列属性
--- function ElementLayout:ApplyAlignStyle()
--- 	local style = self:GetStyle();
--- 	local parentElementLayout = self:GetParentElementLayout();
--- 	local parentWidth, parentHeight = parentElementLayout:GetWidthHeight();
--- 	local width, height = self:GetWidthHeight();
--- 	local align = self:GetElement():GetAttrValue("align") or style.align;
--- 	local valign = self:GetElement():GetAttrValue("valign") or style.valign;
--- 	local x, y = 0, 0;
-
--- 	if (parentWidth and width and align) then
--- 		-- align at center. 
--- 		if(align == "center") then 
--- 			x = (parentWidth - width) / 2;
--- 		elseif(align == "right") then
--- 			x = (parentWidth - width);
--- 		else 
--- 			x = 0;
--- 		end	
--- 	end
-
--- 	if (parentHeight and height and valign) then
--- 		if(valign == "center") then
--- 			y = (parentHeight - height) / 2;
--- 		elseif(valign == "bottom") then
--- 			y = (parentHeight - height);
--- 		else
--- 			y = 0;
--- 		end	
--- 	end
-
--- 	self:SetPos(x, y);
--- end
-
--- -- 应用浮动样式
--- function ElementLayout:ApplyFloatStyle()
--- 	local style = self:GetStyle();
--- 	local parentElementLayout = self:GetParentElementLayout();
--- 	local parentWidth, parentHeight = parentElementLayout:GetWidthHeight();
--- 	local width, height = self:GetWidthHeight();
--- 	local float = style.float;
--- 	local left, top = self:GetPos();
--- 	if (float == "right" and parentWidth and width) then
--- 		-- 不使用文档流
--- 		self:SetUseSpace(false);
--- 		self:SetPos(parentWidth - width - (style.marginRight or 0), top);
--- 	end
--- end
-
--- -- 元素布局更新后
--- function ElementLayout:OnAfterUpdateElementLayout()
--- 	local left, top = self:GetPos();
--- 	local width, height = self:GetWidthHeight();
--- 	self:GetElement():SetGeometry(left, top, width, height);
--- end
-
--- -- 更新元素布局
--- local function UpdateElementLayout(element, parentElementLayout)
--- 	if (not parentElementLayout) then return end
-
---     -- 获取当前元素布局
---     local elementLayout = ElementLayout:new():Init(element, parentElementLayout, parentElementLayout:GetWindow());
--- 	echo(string.format("-----------------[tag:%s, nid: %s] begin layout----------------", element:GetName(), elementLayout.nid));
-    
---     -- 布局无效 直接退出
---     if (not elementLayout:IsValid() or not element) then return elementLayout end
-
--- 	-- 元素布局更新前回调
--- 	local isUpdatedElementLayout = false;
--- 	if (type(element.OnBeforeUpdateElementLayout) == "function") then
---         isUpdatedElementLayout = element:OnBeforeUpdateElementLayout(elementLayout, parentElementLayout);
---     else
---         isUpdatedElementLayout = elementLayout:OnBeforeUpdateElementLayout();
--- 	end
-
--- 	-- 元素布局已更新则直接返回
--- 	if (isUpdatedElementLayout) then return elementLayout end
+function Layout:ApplyPositionStyle()
+	local style = self:GetStyle();
+	local width, height = self:GetWidthHeight();
+	local WindowX, WindowY, WindowWidth, WindowHeight = self:GetWindowPosition();
+	local ScreenX, ScreenY, ScreenWidth, ScreenHeight = self:GetScreenPosition();
+	local top, right, bottom, left = self:GetPosition()
+	local float, position  = style.float, style.position;
+	-- 浮动与定位不共存
+	if (float or not position or position == "static") then return end
+	-- 相对定位
+	if (position == "relative") then return end  -- self:OffsetPos(left or 0, top or 0)
+	-- 不使用文档流
+	self:SetUseSpace(false);
+	-- 计算定位
+	local relLayout = self:GetParentLayout();
 	
--- 	-- 子元素布局更新前回调
--- 	local isUpdatedChildElementLayout = false;
---     if (type(element.OnBeforeUpdateChildElementLayout) == "function") then
---         isUpdatedChildElementLayout = element:OnBeforeUpdateChildElementLayout(elementLayout, parentElementLayout);
---     else
---         isUpdatedChildElementLayout = elementLayout:OnBeforeUpdateChildElementLayout();
---     end
-    
--- 	-- 执行子元素布局  子元素布局未更新则进行更新
--- 	if (not isUpdatedChildElementLayout) then
--- 		for childElement in element:ChildrenElementIterator() do
--- 			UpdateElementLayout(childElement, elementLayout);
--- 		end
--- 	end
-	
--- 	-- 执行子元素布局后回调
---     if (type(element.OnAfterUpdateChildElementLayout) == "function") then
---         element:OnAfterUpdateChildElementLayout(elementLayout, parentElementLayout);
---     else
---         elementLayout:OnAfterUpdateChildElementLayout();
--- 	end
-	
---     -- 执行元素布局更新
---     if (type(element.OnUpdateElementLayout) == "function") then
---         element:OnUpdateElementLayout(elementLayout, parentElementLayout);
---     else
---         elementLayout:OnUpdateElementLayout();
---     end
+	if (position == "absolute") then
+		-- 绝对定位 取已定位的父元素
+		-- while (relLayout and relLayout:GetParentLayout()) do
+		-- 	local relStyle = relLayout:GetStyle();
+		-- 	if (relStyle.position and (relStyle.position == "relative" or relStyle.position == "absolute" or relStyle.position == "fixed" or relStyle.position == "screen")) then break end
+		-- 	relLayout = relLayout:GetParentLayout();
+		-- end
+	elseif (position == "fixed") then
+		-- 固定定位 取根元素
+		relLayout = self:GetRootLayout();
+	end
 
--- 	-- 元素布局更新后回调
--- 	if (type(element.OnAfterUpdateElementLayout) == "function") then
---         element:OnAfterUpdateElementLayout(elementLayout, parentElementLayout);
---     else
---         elementLayout:OnAfterUpdateElementLayout();
--- 	end
+	local relWidth, relHeight = nil, nil;
+	if (relLayout) then relWidth, relHeight = relLayout:GetWidthHeight() end
+	if (position == "screen") then relWidth, relHeight = ScreenWidth, ScreenHeight end
+	relWidth, relHeight = relWidth or 0, relHeight or 0;
+	if (right and width and not left) then left = relWidth - right - width end
+	if (bottom and height and not top) then top = relHeight - bottom - height end
+	if (not width) then width = relWidth - (left or 0) - (right or 0) end 
+	if (not height) then height = relHeight - (top or 0) - (bottom or 0) end 
+	left, top = left or 0, top or 0;
+	if (position == "screen") then
+		self:SetPos(left - WindowX, top - WindowY);
+	else
+		self:SetPos(left, top);
+	end
+	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", left, top, right, bottom, width, height, relWidth, relHeight);
+	self:SetWidthHeight(math.max(width, 0), math.max(height, 0));
+end
 
--- 	echo(string.format("-----------------[tag:%s, nid:%s] end layout----------------", element:GetName(), elementLayout.nid));
-
---     return elementLayout;
--- end
-
--- -- 更新元素布局
--- function ElementLayout:UpdateElementLayout(elment, parentElementLayout)
--- 	return UpdateElementLayout(elment, parentElementLayout or self);
--- end

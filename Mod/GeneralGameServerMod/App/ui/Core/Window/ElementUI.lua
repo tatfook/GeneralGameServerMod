@@ -21,21 +21,31 @@ ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬�
 ElementUI:Property("Layout");                               -- 元素布局
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
+local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable();
+local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
 function ElementUI:ctor()
     self.screenX, self.screenY = 0, 0;  -- 窗口的屏幕位置
 end
 
--- 是否需要
-function ElementUI:IsRender()
+-- 是否需要渲染
+function ElementUI:IsNeedRender()
     local style = self:GetStyle();
-    if (self.isRender or not style or style.display == "none" or style.visibility == "hidden" or self:GetWidth() == 0 or self:GetHeight() == 0) then return true end
-    return false;
+    if (self.isRender 
+        or not self:IsVisible() 
+        or not style 
+        or style.display == "none" 
+        or style.visibility == "hidden" 
+        or self:GetWidth() == 0 
+        or self:GetHeight() == 0) then 
+            return false; 
+        end
+    return true;
 end
 
 -- 元素渲染
 function ElementUI:Render(painterContext)
-	if (self:IsRender()) then return end
+	if (not self:IsNeedRender()) then return end
 
     self.isRender = true;  -- 设置渲染标识 避免递归渲染
     -- if(self.transform) then self:applyRenderTransform(painterContext, self.transform) end
@@ -79,9 +89,9 @@ end
 
 -- 绘制背景
 function ElementUI:RenderBackground(painter, style)
-    local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor();
+    local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor("#ffffff00");
     local x, y, w, h = self:GetGeometry();
-    -- ElementUIDebug.Format("RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
+    -- ElementUIDebug.FormatIf(self:GetName() == "Div", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
 	painter:SetPen(backgroundColor);
 	painter:DrawRectTexture(x, y, w, h, background);
 end
@@ -251,7 +261,7 @@ function ElementUI:SetHover(element)
         element:OnMouseEnter(MouseEvent:init("mouseEnterEvent", window));
         element:OnHover();
         element:SelectStyle("OnHover");
-        ElementUIDebug.Format("Hover Element, Name = %s", element:GetName());
+        ElementHoverDebug.Format("Hover Element, Name = %s", element:GetName());
     end
 end
 
@@ -289,7 +299,7 @@ function ElementUI:SetFocus(element)
     if (element and element:IsCanFocus()) then
         element:OnFocusIn();
         element:SelectStyle("FocusIn");
-        ElementUIDebug.Format("Hover Element, Name = %s", element:GetName());
+        ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
     end
 end
 

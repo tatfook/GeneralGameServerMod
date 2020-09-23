@@ -132,7 +132,18 @@ function Debug.GetModuleDebug(module)
         return obj;
     end
 
+    function obj.If(ok, ...)
+        if (not ok) then return end
+        DebugCall(module, ...);
+    end
+    
     function obj.Format(...)
+        DebugCall(module, string.format(...));
+        return obj;
+    end
+    
+    function obj.FormatIf(ok, ...)
+        if (not ok) then return end
         DebugCall(module, string.format(...));
         return obj;
     end

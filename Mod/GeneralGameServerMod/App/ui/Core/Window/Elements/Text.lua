@@ -50,9 +50,9 @@ end
 function Text:GetTextTrimmed(value)
 	value = value or self:GetValue() or self:GetAttrValue("value", nil);
 	if(value) then
-		value = string.gsub(value, "&nbsp;", " ");
 		value = string.gsub(value, "^[%s]+", "");
 		value = string.gsub(value, "[%s]+$", "");
+		value = string.gsub(value, "nbsp;", " ");
 	end
 	return value;
 end
@@ -116,7 +116,7 @@ function Text:OnRender(painter)
 	local style, layout = self:GetStyle(), self:GetLayout();
 	local fontSize, lineHeight = style:GetFontSize(), style:GetLineHeight();
 	local linePadding = (lineHeight - fontSize) / 2 - fontSize / 6;
-	local left, top = layout:GetLeftTop();
+	local left, top = layout:GetPos();
 
 	painter:SetFont(style:GetFont());
 	painter:SetPen(style:GetColor());
