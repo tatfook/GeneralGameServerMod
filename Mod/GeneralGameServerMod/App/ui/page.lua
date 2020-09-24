@@ -23,4 +23,5 @@ function page.ShowUserInfoPage(G, params)
     params.OnClose = function() end
 
     UserInfoPageUI:ShowWindow(params);
+    return UserInfoPageUI;
 end

@@ -2,3 +2,4 @@
 GameServer/
 log.txt
 *.log
+.vs
