@@ -24,6 +24,10 @@ local function FinishCallback(value, notify)
     end
 end
 
+function cancel()
+    FinishCallback(self.nickname, false);
+end
+
 function confirm()
     local inputEl = GetRef("input");
     local value = inputEl:GetUIValue();
@@ -31,21 +35,19 @@ function confirm()
     -- 客户端处理铭感词
     value = MyCompany.Aries.Chat.BadWordFilter.FilterString(value);
     
-    keepwork.user.setinfo({
-        router_params = {id = userId},
-        nickname = value,
-    }, function(status, msg, data) 
-        if (status < 200 or status >= 300) then return echo("更新用户昵称失败") end
-    
-        FinishCallback(value, true);
-    end);
-    
-    -- FinishCallback(value, true);
+    _guihelper.MessageBox("修改昵称将消耗 10 个知识豆, 请确认是否修改", function(res)
+        if( res ~= _guihelper.DialogResult.OK) then return cancel() end
+        keepwork.user.setinfo({
+            router_params = {id = userId},
+            nickname = value,
+        }, function(status, msg, data) 
+            if (status < 200 or status >= 300) then return cancel() end
+        
+            FinishCallback(value, true);
+        end);
+    end, _guihelper.MessageBoxButtons.OKCancel_CustomLabel,nil,nil,nil,nil, {ok = "修改", cancel = "取消"});
 end 
 
-function cancel()
-    FinishCallback(self.nickname, false);
-end
 </script>
 
 <!-- MyCompany.Aries.Chat.BadWordFilter.FilterString -->

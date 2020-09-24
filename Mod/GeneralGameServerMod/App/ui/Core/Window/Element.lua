@@ -33,7 +33,7 @@ Element:Property("BaseStyle");                            -- 默认样式, 基�
 Element:Property("Rect");                                 -- 元素几何区域矩形
 Element:Property("Name");                                 -- 元素名
 Element:Property("TagName");                              -- 标签名
-Element:Property("Visible", true, "IsVisible");           -- 可见性
+
 
 -- 构造函数
 function Element:ctor()
@@ -143,16 +143,31 @@ end
 
 -- 遍历 默认渲染序  false 事件序
 function Element:ChildElementIterator(isRender)
-    local i, size, childrens, list = 0, self:GetChildElementCount() or 0, self:GetChildElementList(), {};
+    local childrens, list = self:GetChildElementList(), {};
     for i = 1, #childrens do  list[i] = childrens[i] end
+
+    isRender = isRender == nil or isRender;
     local function comp(child1, child2)
-        local style1, style2 = child1:GetStyle(), child2:GetStyle();
+        local style1, style2 = child1:GetStyle() or {}, child2:GetStyle() or {};
         local zindex1, zindex2 = style1["z-index"] or 0, style2["z-index"] or 0;
         -- 函数返回true, 表两个元素需要交换位置
         local sort = if_else(zindex1 == zindex2, style1.float ~= nil and style2.float == nil, zindex1 < zindex2);  -- true 默认升序  z-index 相同 含有float优先
-        return if_else(isRender or isRender == nil, sort, not sort);
+        return if_else(isRender, sort, not sort);
     end
-    table.sort(list, comp);
+    -- table.sort(list, comp);
+    -- 自行排序 table.sort 不稳定报错
+    for i = 1, #list do
+        for j = i + 1, #list do 
+            if (comp(list[i], list[j])) then
+                list[i], list[j] = list[j], list[i];
+            end
+        end
+    end
+    
+    if (self.horizontalScrollBar) then table.insert(list, isRender and (#list + 1) or 1, self.horizontalScrollBar) end
+    if (self.verticalScrollBar) then table.insert(list, isRender and (#list + 1) or 1, self.verticalScrollBar) end
+
+    local i, size = 0, #list;
     return function() 
         i = i + 1;
         if (i > size) then return end
@@ -211,12 +226,12 @@ function Element:UpdateLayout()
 
     -- 更新元素布局
     layout:Update();
+    
+    -- 设置布局完成
+    layout:SetLayoutFinish(true);
 
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
-
-    -- 设置布局完成
-    layout:SetLayoutFinish(true);
 
     self.isUpdateLayout = false;
     return;
@@ -228,20 +243,21 @@ function Element:OnRealContentSizeChange()
     local ElementManager = self:GetWindow():GetElementManager();
     local layout, ScrollBar = self:GetLayout(), ElementManager.ScrollBar;
     local width, height = layout:GetWidthHeight();
+    local contentWidth, contentHeight = layout:GetContentWidthHeight();
     local realContentWidth, realContentHeight = layout:GetRealContentWidthHeight();
     if (layout:IsOverflowX()) then 
         self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow());
+        self.horizontalScrollBar:SetVisible(true);
+        self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+    elseif (self.horizontalScrollBar) then
+        self.horizontalScrollBar:SetVisible(false);
     end
     if (layout:IsOverflowY()) then 
         self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow());
-    end
-
-    if (self.horizontalScrollBar) then
-        self.horizontalScrollBar:SetVisible(layout:IsOverflowX());
-    end
-
-    if (self.verticalScrollBar) then
-        self.verticalScrollBar:SetVisible(layout:IsOverflowY());
+        self.verticalScrollBar:SetVisible(true);
+        self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+    elseif (self.verticalScrollBar) then
+        self.verticalScrollBar:SetVisible(false);
     end
 end
 

@@ -56,8 +56,9 @@ function Window:Init(params)
        <html style="height:100%; background-color:#ffffff;">
             <Button>按钮</Button>
             <Text>中文 hello wor&nbsp;ld  this is a test</Text>
-            <Div style="background-color:#ff0000; height: 100px; width: 100px">
-                <div style="height: 200px; width: 300px"></div>
+            <Div style="height: 100px; width: 100px">
+                <div style="background-color:#ff0000; height: 100px;"></div>
+                <div style="background-color:#00ff00; height: 100px;"></div>
             </Div>
        </html>
     ]]), "//html");
@@ -240,7 +241,7 @@ function Window:handleMouseEvent(event)
     -- 获取点所在的元素
     local function ElementMouseEvent(element)
         -- 无布局的元素忽略
-        if (not element:GetLayout():IsLayout()) then return end
+        if (not element:IsVisible()) then return end
 
         -- 检测元素是否包含
         if (not element:GetRect():contains(point)) then return end
@@ -257,6 +258,7 @@ function Window:handleMouseEvent(event)
         
         -- 切换点为元素内的坐标
         point:sub(element:GetPosition());
+        point:add(element:GetScrollPos()); -- 加上滚动
         -- 子元素
         local target = nil;
         for child in element:ChildElementIterator(false) do
@@ -266,7 +268,8 @@ function Window:handleMouseEvent(event)
         target = target or element;
         -- 还原点坐标
         point:add(element:GetPosition());
-
+        point:sub(element:GetScrollPos()); -- 减去滚动
+        
         -- 是否已处理
         if (event:isAccepted()) then return target end
         

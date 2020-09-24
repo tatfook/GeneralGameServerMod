@@ -76,7 +76,7 @@ function Button:OnBeforeUpdateChildLayout()
     width = width or (textWidth + paddingLeft + paddingRight + borderLeft + borderRight);
 	height = height or (textHeight + paddingTop + paddingBottom + borderTop + borderBottom);
 
-	-- ButtonElementDebug.Format("width = %s, height = %s, textWidth = %s, textHeight = %s, paddingLeft = %s, paddingRight = %s", width, height, textWidth, textHeight, paddingLeft, paddingRight);
+	-- ButtonElementDebug.Format("width = %s, height = %s, textWidth = %s, textHeight = %s, paddingLeft = %s, paddingRight = %s, paddingTop = %s, paddingBottom = %s", width, height, textWidth, textHeight, paddingLeft, paddingRight, paddingTop, paddingBottom);
 
     layout:SetWidthHeight(width, height);
 

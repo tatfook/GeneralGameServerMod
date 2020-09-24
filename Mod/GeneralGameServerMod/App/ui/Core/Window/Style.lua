@@ -184,37 +184,30 @@ function Style:MergeInheritable(style)
 end
 
 local dimension_fields = {
-	["height"] = true,
-	["min-height"] = true,
-	["max-height"] = true,
-	["width"] = true,
-	["min-width"] = true,
-	["max-width"] = true,
-	["left"] = true,
-	["top"] = true,
+	["height"] = true, ["min-height"] = true, ["max-height"] = true,
+	["width"] = true, ["min-width"] = true, ["max-width"] = true,
+	["left"] = true, ["top"] = true, ["right"] = true, ["bottom"] = true,
+	["padding"] = true, ["padding-top"] = true, ["padding-right"] = true, ["padding-bottom"] = true, ["padding-left"] = true, 
+	["margin"] = true, ["margin-top"] = true, ["margin-right"] = true, ["margin-bottom"] = true, ["margin-left"] = true, 
+	["border-width"] = true, ["border-top-wdith"] = true, ["border-right-wdith"] = true, ["border-bottom-wdith"] = true, ["border-left-wdith"] = true, 
+
 	["spacing"] = true,
-	
 	["shadow-quality"] = true,
 	["text-shadow-offset-x"] = true,
 	["text-shadow-offset-y"] = true,
 }
 
 local number_fields = {
-	["border-top-width"] = true,
-	["border-right-width"] = true,
-	["border-bottom-width"] = true,
-	["border-left-width"] = true,
-	["border-width"] = true,
+	["border-top-width"] = true, ["border-right-width"] = true, ["border-bottom-width"] = true, ["border-left-width"] = true, ["border-width"] = true,
 	["outline-width"] = true, 
 
-	["font-size"] = true,
-	["base-font-size"] = true,
+	["font-size"] = true, ["base-font-size"] = true,
 	["z-index"] = true,
 	["scale"] = true,
 };
 
 local color_fields = {
-	["color"] = true,
+	["color"] = true, 
 	["border-color"] = true,
 	["outline-color"] = true,
 	["background-color"] = true,
@@ -222,10 +215,8 @@ local color_fields = {
 	["caret-color"] = true,
 };
 
-local image_fields = 
-{
+local image_fields = {
 	["background"] = true,
-	["background2"] = true,
 	["background-image"] = true,
 }
 
@@ -239,7 +230,8 @@ function Style.IsPx(value)
 end
 
 function Style.GetPxValue(value)
-	return tonumber(string.match(value or "", "^([%+%-]?%d+)px$"));
+	if (type(value) ~= "string") then return value end
+	return tonumber(string.match(value, "[%+%-]?%d+"));
 end
 
 function Style.IsNumber(value)
@@ -252,12 +244,12 @@ end
 
 function Style.GetStyleValue(name,value)
 	if (type(name) ~= "string") then return end
-	if (type(value) == "number" and (number_fields[name] or dimension_fields[name])) then return value end
+	if (type(value) == "number" and (dimension_fields[name] or number_fields[name])) then return value end
 	if (type(value) ~= "string") then return end
 	
 	name = string_lower(name);
 	value = string_gsub(value, "%s*$", "");
-    if(dimension_fields[name] or string_find(name,"^margin") or string_find(name,"^padding")) then
+    if(dimension_fields[name]) then
 		local isPercentage = string.match(value, "^[%+%-]?%d+%%$");
 		if (string.match(value, "^[%+%-]?%d+px$")) then   -- 像素值
 			value = tonumber(string.match(value, "^([%+%-]?%d+)px$"));
@@ -297,7 +289,7 @@ function Style.GetStyleValue(name,value)
 				value = nil;
 			end
 		end
-	elseif(string_match(name, "^background[2]?$") or name == "background-image") then
+	elseif(image_fields[name]) then
 		value = string_gsub(value, "url%((.*)%)", "%1");
 		value = string_gsub(value, "#", ";");
 	end

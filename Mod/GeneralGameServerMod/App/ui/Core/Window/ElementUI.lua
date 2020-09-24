@@ -19,6 +19,7 @@ ElementUI:Property("Value");                                -- 元素值
 ElementUI:Property("Active", false, "IsActive");            -- 是否激活
 ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 ElementUI:Property("Layout");                               -- 元素布局
+ElementUI:Property("Visible", true);                        -- 可见性
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
 local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable();
@@ -26,6 +27,13 @@ local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable(
 
 function ElementUI:ctor()
     self.screenX, self.screenY = 0, 0;  -- 窗口的屏幕位置
+end
+
+-- 是否显示
+function ElementUI:IsVisible()
+    if (not self:GetVisible()) then return false end
+    local style = self:GetStyle();
+    return not style or style.display ~= "none";
 end
 
 -- 是否需要渲染
@@ -44,25 +52,36 @@ function ElementUI:IsNeedRender()
 end
 
 -- 元素渲染
-function ElementUI:Render(painterContext)
+function ElementUI:Render(painter)
 	if (not self:IsNeedRender()) then return end
-
     self.isRender = true;  -- 设置渲染标识 避免递归渲染
-    -- if(self.transform) then self:applyRenderTransform(painterContext, self.transform) end
-       
     -- 渲染元素
-    self:OnRender(painterContext);  
-
-    self.isRender = false; -- 清除渲染标识
+    self:OnRender(painter);  
 
     -- 渲染子元素
-    painterContext:Translate(self:GetX(), self:GetY());
-    for childElement in self:ChildElementIterator() do
-        childElement:Render(painterContext);
-    end
-    painterContext:Translate(-self:GetX(), -self:GetY());
+    painter:Translate(self:GetX(), self:GetY());
 
-	-- if(self.transform) then painterContext:Restore() end
+    -- 存在滚动需要做裁剪
+    local layout = self:GetLayout();
+    local width, height = self:GetSize();
+    local scrollX, scrollY = self:GetScrollPos();
+    if (layout:IsOverflowX() or layout:IsOverflowY()) then
+        painter:Save();
+        painter:SetClipRegion(0, 0, width, height);
+        painter:Translate(-scrollX, -scrollY);
+    end
+
+    for childElement in self:ChildElementIterator() do
+        childElement:Render(painter);
+    end
+    -- 恢复裁剪
+    if (layout:IsOverflowX() or layout:IsOverflowY()) then
+        painter:Translate(scrollX, scrollY);
+        painter:Restore();
+    end
+    
+    painter:Translate(-self:GetX(), -self:GetY());
+    self.isRender = false; -- 清除渲染标识
 end
 
 -- 绘制元素
@@ -73,6 +92,7 @@ function ElementUI:OnRender(painter)
     self:RenderBackground(painter, style);
     self:RenderBorder(painter, style);
     self:RenderContent(painter, style);
+
 end
 
 -- 绘制外框线
@@ -88,11 +108,15 @@ function ElementUI:RenderOutline(painter, style)
 end
 
 -- 绘制背景
+local debug = true;
 function ElementUI:RenderBackground(painter, style)
     local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor("#ffffff00");
     local x, y, w, h = self:GetGeometry();
-    -- ElementUIDebug.FormatIf(self:GetName() == "Div", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
-	painter:SetPen(backgroundColor);
+
+    ElementUIDebug.FormatIf(debug and self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
+    if (self:GetName() == "ScrollBarThumb") then debug = false end
+
+    painter:SetPen(backgroundColor);
 	painter:DrawRectTexture(x, y, w, h, background);
 end
 
@@ -175,6 +199,13 @@ end
 
 function ElementUI:GetScreenPos()
     return self.screenX, self.screenY;
+end
+
+function ElementUI:GetScrollPos()
+    local scrollX, scrollY = 0, 0;
+    if (self.horizontalScrollBar and self.horizontalScrollBar:IsVisible()) then scrollX = self.horizontalScrollBar.scrollLeft end
+    if (self.verticalScrollBar and self.verticalScrollBar:IsVisible()) then scrollY = self.verticalScrollBar.scrollTop end
+    return scrollX, scrollY;
 end
 
 -- 是否捕获鼠标
@@ -332,4 +363,9 @@ function ElementUI:SelectStyle(action)
     if (isNeedRefreshLayout) then
         self:UpdateLayout();
     end 
+end
+
+-- 鼠标滚动事件
+function ElementUI:OnMouseWheel(event)
+    if (self.verticalScrollBar and self.verticalScrollBar:IsVisible()) then self.verticalScrollBar:OnMouseWheel(event) end
 end
