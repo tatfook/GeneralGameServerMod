@@ -1,26 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- general game server configuration file -->
+<!-- GGS 后端配置 -->
 <GeneralGameServer>
-  <!--which ip and port this server listens to. As well as the nid of itself.-->
+  <!--服务器配置
+    listenIp 服务器监听的IP
+    listenPort 服务器监听的端口
+    isControlServer 是否为控制节点
+    isWorkerServer 是否为工作节点
+    maxClientCount 可接受的最大客户端数
+    maxWorldCount 可接受的最大世界数
+  -->
   <Server 
     listenIp="0.0.0.0" 
     listenPort="9000"
     isControlServer=true
     isWorkerServer=true
     maxClientCount=8000
-    maxWorldCount=200
-    innerIp="10.28.18.2"
-    innerPort="9000"
-    outerIp="120.132.120.175"
-    outerPort="9000">
-    <!-- 内网Ip和Port用于服务端互联, 外网Ip和Port将会返回给客户端, 供其连接 -->
-     <ControlServer
+    maxWorldCount=200>
+    <!-- 控制节点配置  内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
+      innerIp 内网IP 
+      innerPort 内网端口 
+      outerIp 外网IP
+      outerPort 外网端口 
+    -->
+    <ControlServer
       innerIp="10.28.18.2"
       innerPort="9000"
       outerIp="120.132.120.175"
       outerPort="9000">
     </ControlServer>   
-    <!-- 工作主机配置 -->
+    <!-- 控制节点配置 内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
+      innerIp 内网IP 
+      innerPort 内网端口 
+      outerIp 外网IP
+      outerPort 外网端口 
+    -->
     <WorkerServer
       innerIp="10.28.18.2"
       innerPort="9000"
@@ -29,10 +42,12 @@
     </WorkerServer>
   </Server>
   <!-- 世界相关信息配置
+  areaSize: 世界区域大小 推荐值64, 128 (玩家视区最大40方块, 世界区域大小通常为视区的2倍) 设置此值后, 玩家信息同步只会同步当前玩家该范围内的玩家数据, 是一种优化选项, 禁用区域优化填0, 世界玩家数量不多时不建议开启
   minClientCount: 最少玩家数 当玩家数量小于此值会保留离线玩家
   maxClientCount: 最大玩家数 当玩家数量大于此值,此世界不再接受玩家进入
   -->
   <World 
+    areaSize=0
     minClientCount=50 
     maxClientCount=200>
   </World>
@@ -50,7 +65,7 @@
     minClientCount=500
     maxClientCount=2000>
   </ParaWorld>
-  <!-- 家园
+  <!-- 家园世界配置
     areaSize: 每个区域的大小
     areaMinClientCount: 单区域的最小用户数
     areaMaxClientCount: 单区域的最大用户数
@@ -64,25 +79,32 @@
     minClientCount=0
     maxClientCount=200>
   </ParaWorldMini>
-  <!--玩家配置-->
-  <Player>
+  <!-- 玩家配置
+    minAliveTime 最小存活时间 默认1分钟, 为玩家离线缓存的必要条件. 不支持离线缓存可忽略
+    aliveDuration 玩家是否存活心跳时间上限, 默认5分, 超过该值未收到玩家的数据包就认为玩家离线
+  -->
+  <Player
+    minAliveTime=60000
+    aliveDuration=300000>
   </Player>
+  <!-- Debug 配置项, 模块日志按业务分模块打印 
+    Net 网络发包收包日志, 生产环境强烈建议关闭 设成false
+    PlayerLoginLogoutDebug 玩家登入登出日志 可以开启
+  -->
+  <Debug
+    Net=false
+    PlayerLoginLogoutDebug=true>
+  </Debug>
 </GeneralGameServer>
 <!--开发环境配置-->
 <GeneralGameServerDev>
-<!--which ip and port this server listens to. As well as the nid of itself.-->
   <Server 
     listenIp="0.0.0.0" 
     listenPort="9000"
     isControlServer=true
     isWorkerServer=true
     maxClientCount=100
-    maxWorldCount=200
-    innerIp="127.0.0.1"
-    innerPort="9000"
-    outerIp="127.0.0.1"
-    outerPort="9000">
-    <!-- 内网Ip和Port用于服务端互联, 外网Ip和Port将会返回给客户端, 供其连接 -->
+    maxWorldCount=200>
     <ControlServer
       innerIp="127.0.0.1"
       innerPort="9000"
@@ -97,47 +119,15 @@
     </WorkerServer>
   </Server>
   <World 
+    areaSize=0
     minClientCount=3 
     maxClientCount=200>
   </World>
   <Player>
   </Player>
+  <Debug
+    Net=false
+    PlayerLoginLogoutDebug=true>
+  </Debug>
 </GeneralGameServerDev>
 
-<!--测试环境配置-->
-<GeneralGameServerTest>
-<!--which ip and port this server listens to. As well as the nid of itself.-->
-  <Server 
-    listenIp="0.0.0.0" 
-    listenPort="9001"
-    isControlServer=true
-    isWorkerServer=true
-    maxClientCount=100
-    maxWorldCount=200
-    innerIp="10.28.18.2"
-    innerPort="9001"
-    outerIp="120.132.120.175"
-    outerPort="9001">
-    <!-- 内网Ip和Port用于服务端互联, 外网Ip和Port将会返回给客户端, 供其连接 -->
-     <ControlServer
-      innerIp="10.28.18.2"
-      innerPort="9001"
-      outerIp="120.132.120.175"
-      outerPort="9001">
-    </ControlServer>   
-    <!-- 工作主机配置 -->
-    <WorkerServer
-      innerIp="10.28.18.2"
-      innerPort="9001"
-      outerIp="120.132.120.175"
-      outerPort="9001">
-    </WorkerServer>
-  </Server>
-  <!-- 世界相关信息配置 -->
-  <World 
-    minClientCount=50 
-    maxClientCount=200>
-  </World>
-  <Player>
-  </Player>
-</GeneralGameServerTest>

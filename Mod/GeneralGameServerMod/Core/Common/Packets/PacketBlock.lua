@@ -7,7 +7,7 @@ use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketBlock.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketBlock");
-local packet = Packets.PacketBlockInfoList:new():Init();
+local packet = Packets.PacketBlock:new():Init();
 -------------------------------------------------------
 ]]
 
@@ -46,9 +46,7 @@ function PacketBlock:ReadPacket(msg)
 
 	if (self.blockEntityPacketData) then
 		local packet = PacketTypes:GetNewPacket(self.blockEntityPacketData.id);
-		if (packet) then 
-			packet:ReadPacket(self.blockEntityPacketData);
-		end
+		if (packet) then packet:ReadPacket(self.blockEntityPacketData) end
 		self.blockEntityPacket = packet;
 		self.blockEntityPacketData = nil;
 	end

@@ -11,14 +11,13 @@ local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityPlayerMPClient.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityPlayerMPClient"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer"));
 
-local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer";
 local maxMotionUpdateTickCount = 33;
 
 EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
@@ -26,6 +25,11 @@ EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
 -- 构造函数
 function EntityMainPlayer:ctor()
     self.playerInfo = {};
+    self.oldXYZ = "";
+    self.motionAnimId = 0;
+    self.lastMoved = false;
+    self.lastXYZ = "";
+    self.motionUpdateTickCount = 0;
 end
 
 -- 初始化函数
@@ -45,6 +49,11 @@ function EntityMainPlayer:IsCanClick()
     return false;
 end
 
+-- 是否可以飞行
+function EntityMainPlayer:IsCanFlying()
+    return false;
+end
+
 -- 设置玩家信息
 function EntityMainPlayer:SetPlayerInfo(playerInfo)
     commonlib.partialcopy(self.playerInfo, playerInfo);
@@ -60,44 +69,66 @@ function EntityMainPlayer:IsOnline()
     return self.playerInfo.state == "online";
 end
 
+-- 获取玩家同步信息的频率  33 = 1s   tick = 30fps
+function EntityMainPlayer:GetMotionSyncTickCount()
+    return 30;
+end
+
+
 -- Send updated motion and position information to the server
 function EntityMainPlayer:SendMotionUpdates()
     if(not self:GetInnerObject() or not self:IsNearbyChunkLoaded()) then return end
-    
-    local hasMetaDataChange = self.dataWatcher:HasChanges();
-	-- send head rotation if any 
-	local dHeadRot = self.rotationHeadYaw - self.oldRotHeadYaw;
-    local dHeadPitch = self.rotationHeadPitch - self.oldRotHeadPitch;
-    local hasHeadRotation = dHeadRot~=0 or dHeadPitch~=0;
-    -- send movement and body facing. 
-    local dx = self.x - self.oldPosX;
-    local dy = self.y - self.oldPosY;
-    local dz = self.z - self.oldPosZ;
-    local hasMoved = self.x ~= self.oldPosX or self.y ~= self.oldPosY or self.z ~= self.oldPosZ;
-    local moveDistance = dx * dx + dy * dy + dz * dz;
-    local dRotY = self.facing - self.oldRotationYaw;
-    local dRotPitch = self.rotationPitch - self.oldRotationPitch;
-    local hasRotation = dRotY ~= 0 or dRotPitch ~= 0;
-    local force = self:IsUpdatePlayerInfo() or (self:IsRiding() and (moveDistance > 2) or (moveDistance > 0.1));
-    local forceTick = self.motionUpdateTickCount >= maxMotionUpdateTickCount;
+    -- 设置当前动画ID
+	self:SetAnimId(self:GetInnerObject():GetField("AnimID", 0));
+    self.motionUpdateTickCount = self.motionUpdateTickCount + 1;  -- tick 自增
+    -- 获取模型验证模型的有效性
+    local curMainAsset = self.dataWatcher:GetField(self.dataMainAsset);
+    if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then self.dataWatcher:SetField(self.dataMainAsset, AssetsWhiteList.GetRandomFilename()) end
 
-    -- tick 自增
-    self.motionUpdateTickCount = self.motionUpdateTickCount + 1;
+    local lastMoved, lastXYZ, curAnimId = self.lastMoved, self.lastXYZ, self:GetAnimId();
+    local maxMoveDelayFrameCount = 30;
+    local hasPlayerInfoChange = self:IsUpdatePlayerInfo();
+    local hasMetaDataChange = self.dataWatcher:HasChanges();
+    local hasHeadRotation = self.rotationHeadYaw ~= self.oldRotHeadYaw or self.rotationHeadPitch ~= self.oldRotHeadPitch;
+    local hasRotation = self.facing ~= self.oldRotationYaw or self.rotationPitch ~= self.oldRotationPitch;
+    local xyz = string.format("%.2f %.2f %.2f", self.x, self.y, self.z) 
+    local hasMoved, curMoved = self.oldXYZ ~= xyz, self.lastXYZ ~= xyz;
+    
+    -- 备份当前位置
+    self.lastMoved = curMoved;
+    self.lastXYZ = xyz;
+    -- 开始或停止运动
+    if (lastMoved ~= curMoved) then 
+        if (curMoved) then
+            -- 开始运动 重置tick
+            self.motionUpdateTickCount = 1;
+            maxMotionUpdateTickCount = self:GetMotionSyncTickCount();
+        else
+            -- 停止运动
+            self.stopMotionUpdateTickCount = self.motionUpdateTickCount;
+        end
+    end      
+    -- 记录上次运动的动画ID
+    if ((curAnimId == 4 or curAnimId == 5 or curAnimId == 37 or curAnimId == 41 or curAnimId == 42) and self.motionAnimId ~= curAnimId) then self.motionAnimId = curAnimId end
 
     -- 位置实时同步, 其它 hasMetaDataChange, hasHeadRotation, hasRotation 配合 Tick 同步
-    if (not force and not (forceTick and (hasMetaDataChange or hasMoved or hasHeadRotation or hasRotation))) then return end
-    if (force) then                   -- 位置变动超标
-        maxMotionUpdateTickCount = 5; -- 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
-    else                              -- 原地操作降低更新频率
-        maxMotionUpdateTickCount = maxMotionUpdateTickCount + maxMotionUpdateTickCount;  -- 5 10 20 40 80 160 320 640
-    end;
-    -- Log:Std("DEBUG", moduleName, "-----------------------------------------------");
-    -- Log:Std("DEBUG", moduleName, "force: %s, moveDistance: %s, ", force, moveDistance);
-    -- Log:Std("DEBUG", moduleName, "motionUpdateTickCount: %d, hasMoved: %s, hasRotation: %s, hasHeadRotation: %s, hasMetaDataChange: %s", self.motionUpdateTickCount, hasMoved, hasRotation, hasHeadRotation, hasMetaDataChange);
+    local isSync = self.motionUpdateTickCount > maxMotionUpdateTickCount and (hasPlayerInfoChange or hasMetaDataChange or hasMoved or hasHeadRotation or hasRotation);
+    if (not isSync) then return end
+    
+    if (hasMoved) then                                                                  
+        maxMotionUpdateTickCount = self.motionUpdateTickCount;      -- 尽量保证下个数据包比上时间长， 因在在其它玩家世界自己人物慢一个节拍， 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
+    else                                                            -- 如果不动, 同步频率X2增长 原地操作降低更新频率 最大值为2min                                                                                                                          
+        maxMotionUpdateTickCount =  maxMotionUpdateTickCount > (30 * 120) and maxMotionUpdateTickCount or (maxMotionUpdateTickCount + maxMotionUpdateTickCount);       -- 5 10 20 40 80 160 320 640
+    end
+    -- 构建包
     local packet = Packets.PacketPlayerEntityInfo:new():Init(nil, self.dataWatcher, false);
     -- 设置用户名
     packet.username = self:GetUserName();
     packet.entityId = self.entityId;
+    packet.tick = self.stopMotionUpdateTickCount or self.motionUpdateTickCount;
+    packet.motionAnimId = self.motionAnimId;
+
+    self.stopMotionUpdateTickCount = nil;
 
     if (self:IsUpdatePlayerInfo()) then
         packet.playerInfo = self:GetPlayerInfo();
@@ -109,16 +140,14 @@ function EntityMainPlayer:SendMotionUpdates()
         packet.facing, packet.pitch = self.facing, self.rotationPitch;
         packet.bx, packet.by, packet.bz = self:GetBlockPos();
     end
+    
     if (hasHeadRotation) then
         packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
     end
   
     self:AddToSendQueue(packet);
-
-    self.oldPosX = self.x;
-    self.oldMinY = self.y;
-    self.oldPosY = self.y;
-    self.oldPosZ = self.z;
+    -- 还原真正的动画ID
+    self.oldXYZ = xyz;
     self.oldRotationYaw = self.facing;
     self.oldRotationPitch = self.rotationPitch;
     self.oldRotHeadYaw = self.rotationHeadYaw;

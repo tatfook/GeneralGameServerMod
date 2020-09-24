@@ -13,7 +13,7 @@ GeneralGameServer.Start();
 ]]
 NPL.load("(gl)script/ide/timer.lua");
 NPL.load("(gl)script/ide/System/System.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
@@ -21,7 +21,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
 local ControlServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer");
 local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
 local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.GeneralGameServer");
 
@@ -50,6 +50,10 @@ end
 function GeneralGameServer:Start() 
 	if (self.isStart) then return end;
 	
+	-- 配置初始化
+	Config:StaticInit();
+
+	-- 公共模块初始化
 	Common:Init(true);
 	
     -- 设置系统属性
@@ -68,7 +72,7 @@ function GeneralGameServer:Start()
 
     NPL.StartNetServer(listenIp, tostring(listenPort));
 
-    GGS.INFO.Format(string.format("服务器启动: listenIp: %s, listenPort", listenIp, listenPort));
+    GGS.INFO.Format(string.format("服务器启动: listenIp: %s, listenPort: %s", listenIp, listenPort));
 
 	-- 控制服务
 	if (Config.Server.isControlServer) then
@@ -78,6 +82,8 @@ function GeneralGameServer:Start()
 
 	-- 工作服务
 	if (Config.Server.isWorkerServer) then
+		-- 初始化成单列模式
+		WorkerServer:InitSingleton();
 		WorkerServer:Init();
 	end
 
@@ -89,7 +95,7 @@ function GeneralGameServer:Start()
 	
 	self.timer:Change(tickDuratin, tickDuratin); -- 两分钟触发一次
 
-    self.isStart = true;
+	self.isStart = true;
 end
 
 function GeneralGameServer:Tick() 

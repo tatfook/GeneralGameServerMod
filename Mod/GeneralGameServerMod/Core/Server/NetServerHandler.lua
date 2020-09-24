@@ -12,10 +12,10 @@ local NetServerHandler = commonlib.gettable("GeneralGameServerMod.Core.Server.Ne
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
 local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
@@ -27,9 +27,9 @@ NetServerHandler:Property("World");                                    -- 当前
 NetServerHandler:Property("PlayerManager");                            -- 世界玩家管理器
 NetServerHandler:Property("WorldManager");                             -- 世界管理器
 NetServerHandler:Property("WorkerServer");                             -- 工作服务器
-NetServerHandler:Property("PlayerConnection");                               -- 玩家链接
+NetServerHandler:Property("PlayerConnection");                         -- 玩家链接
 
-local PlayerLoginLogoutDebug = GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug");
+local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
 function NetServerHandler:ctor() 
     self:SetWorkerServer(WorkerServer);
@@ -51,15 +51,12 @@ end
 function NetServerHandler:IsAllowLoginWorld(worldId)
     local totalClientCount = self:GetWorldManager():GetOnlineClientCount();
     local worldClientCount = self:GetWorld() and self:GetWorld():GetOnlineClientCount() or 0;
-    if (totalClientCount >= Config.Server.maxClientCount) then
-        return false;
-    end
-    if (worldClientCount >= self:GetWorld():GetMaxClientCount()) then
-        return false;
-    end
+    if (totalClientCount >= self:GetWorkerServer():GetMaxClientCount()) then return false end
+    if (worldClientCount >= self:GetWorld():GetMaxClientCount()) then return false end
     return true;
 end
 
+-- 用户认证成功
 function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local username = packetPlayerLogin.username;
     local password = packetPlayerLogin.password;
@@ -68,7 +65,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldType = packetPlayerLogin.worldType;
     local options = packetPlayerLogin.options;
 
-    PlayerLoginLogoutDebug(string.format("player request login; username : %s, worldId: %s, worldName: %s, nid: %s", username, worldId, worldName, self:GetPlayerConnection():GetNid()));
+    PlayerLoginLogoutDebug(string.format("玩家请求登录 username : %s, worldId: %s, worldName: %s, worldType: %s, nid: %s", username, worldId, worldName, worldType, self:GetPlayerConnection():GetNid()));
 
     -- 获取并设置世界
     self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, worldType, true));
@@ -93,13 +90,14 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     -- 玩家登录
     self:GetPlayer():Login();
     -- 打印日志
-    PlayerLoginLogoutDebug(string.format("player success login; username : %s, worldkey: %s, entityId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey(), self:GetPlayer():GetEntityId()));
+    PlayerLoginLogoutDebug(string.format("玩家登录成功 username : %s, worldkey: %s, entityId: %s", self:GetPlayer():GetUserName(), self:GetWorld():GetWorldKey(), self:GetPlayer():GetEntityId()));
     -- 通知玩家登录
     packetPlayerLogin.entityId = self:GetPlayer().entityId;
     packetPlayerLogin.result = "ok";
     packetPlayerLogin.worldName = self:GetWorld():GetWorldName();
     packetPlayerLogin.username = self:GetPlayer().username;
     packetPlayerLogin.worldKey = self:GetWorld():GetWorldKey();
+    packetPlayerLogin.areaSize = self:GetPlayer():GetAreaSize();
     self:SendPacketToPlayer(packetPlayerLogin);
 end
 
@@ -112,10 +110,14 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
     local packet = (isNew or self:GetPlayer():IsEnableArea()) and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo;
     -- 新玩家通知所有旧玩家
-    self:GetPlayerManager():SendPacketToAllPlayers(packet, self:GetPlayer());
-    -- self:GetPlayerManager():SendPacketToAreaPlayers(packet, self:GetPlayer());
-    -- 所有旧玩家告知新玩家   最好只通知可视范围内的玩家信息
-    if (not isNew) then return end
+    self:GetPlayerManager():SendPacketToAreaPlayers(packet, self:GetPlayer());
+
+    -- 非新玩家, 检查玩家是否有效
+    if (not isNew) then
+        -- 无效玩家进行重新登录
+        if (not self:GetPlayer():IsValid()) then self:handlePlayerRelogin() end
+        return;
+    end
 
     -- 新玩家同步玩家列表
     self:handlePlayerEntityInfoList();
@@ -138,20 +140,24 @@ end
 
 -- 玩家重新登录, 当连接存在玩家丢失需要重新等陆, 这个问题与TCP自身自动重连有关(玩家第一次登录, 登录切后台, tcp自行断开, 程序恢复前台, tcp自行重连, 这样跳过了登录步骤,导致用户丢失, 这种发送客户端重连数据包)
 function NetServerHandler:handlePlayerRelogin()
-    PlayerLoginLogoutDebug("client relogin: " .. tostring(self:GetPlayerConnection():GetIPAddress()));
+    PlayerLoginLogoutDebug("玩家丢失重新登录: " .. tostring(self:GetPlayerConnection():GetIPAddress()));
     self:SendPacketToPlayer(Packets.PacketGeneral:GetReloginPacket());
 end
 
 -- 链接出错 玩家退出
 function NetServerHandler:handleErrorMessage(text, data)
-    if (not self:GetPlayer()) then return end
+    -- 链接出错关闭, 关闭连接
+    if (self:GetPlayerConnection()) then
+        self:GetPlayerConnection():CloseConnection();
+        self:SetPlayerConnection(nil);
+    end
 
+    -- 玩家不存在, 直接退出    
+    if (not self:GetPlayer()) then return end
+   
     -- 下线走离线流程 登出直接踢出服务器
     self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家主动下线");
-    
-    -- 关闭连接
-    self:GetPlayerConnection():CloseConnection();
-    self:SetPlayerConnection(nil);
+  
 end
 
 -- 监听包处理后
@@ -205,6 +211,7 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
     if (not self:GetPlayer()) then return self:handlePlayerRelogin() end
 
     local cmd = packetGeneral.data.cmd;
+    local debug = packetGeneral.data.debug;
     if (cmd == "WorldInfo") then
         packetGeneral.data.debug = self:GetWorld():GetDebugInfo();
         self:SendPacketToPlayer(packetGeneral);
@@ -212,9 +219,10 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
         packetGeneral.data.debug = self:GetWorkerServer():GetServerList();
         self:SendPacketToPlayer(packetGeneral);
     elseif (cmd == "ping") then
-        local worldKey = self:GetWorld():GetWorldKey();
-        packetGeneral.data.debug = self:GetWorld() == self:GetWorldManager():GetWorldByKey(worldKey);
+        packetGeneral.data.debug = self:GetPlayer():IsValid();
         self:SendPacketToPlayer(packetGeneral);
+    elseif (cmd == "debug") then
+        GGS.Debug.ToggleModule(debug);
     end
 end
 

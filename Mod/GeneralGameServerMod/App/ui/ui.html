@@ -1,31 +1,21 @@
 
-<template id=0 height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
+<template ref="template" id=0 height="100%" style="color:#ffffff; background: url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#267 89 34 34:8 8 8 8);">
     <!-- <WindowTitleBar></WindowTitleBar> -->
-    <div style="width: 200px; height: 200px; background: url(http://qiniu.keepwork.com/cad6d380-edff-11e8-bd63-e1a2685452e9.jpg?e=4696454355&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:b1QZAwaODlPxDsoB9rFMQAKGxnw=#550c791a127b11e2!400x400_big.jpg);"></div>
+    <editbox></editbox>
+    <!-- <div style="margin-left: 100px; width: 200px; height: 200px; background: url(http://qiniu.keepwork.com/cad6d380-edff-11e8-bd63-e1a2685452e9.jpg?e=4696454355&token=LYZsjH0681n9sWZqCM4E2KmU6DsJOE7CAM4O3eJq:b1QZAwaODlPxDsoB9rFMQAKGxnw=#550c791a127b11e2!400x400_big.jpg);"></div>
     <div id=1 ref="position_relative" style="position: relative; width: 300px; height: 300px; margin-left: 100px; margin-top: 100px; background-color: #ffffff;">
         <div id=2 style="id: 2; width: 100px; height: 100px; background-color: #ff0000;"></div>
         <div id=3 ref="position_absolute" style="position: absolute; left: 0px; top: 0px; width: 100px; height: 100px; background-color: #ff0000;"></div>
-        <!-- <div ref="position_absolute" style="width: 100px; height: 100px; background-color: #ff0000;"></div> -->
     </div>
-    <button id=4 v-on:click="click">点击</button>
+    <button ref="button" id=4 v-on:click="click" style="padding-top: 10px; padding-bottom: 10px;" value="点击"></button> -->
 </template>
 
 <script type="text/lua">
-RegisterComponent("Example", "%ui%/Example/Test.html");
-RegisterComponent("Rate", "%ui%/Component/User/Rate.html");
-RegisterComponent("Number", "%ui%/Component/User/Number.html");
-RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
-
 function click()
-    local position_relative_el = GetRef("position_relative");
-    local position_absolute_el = GetRef("position_absolute");
-    local position_relative_el_control = position_relative_el:GetControl();
-    local position_absolute_el_control = position_absolute_el:GetControl();
-    local position_relative_el_layout = position_relative_el:GetElementLayout();
-    local position_absolute_el_layout = position_absolute_el:GetElementLayout();
-    echo({{position_relative_el_layout:GetPos()}, "control pos:", position_relative_el_control:x(), position_relative_el_control:y(), position_relative_el_control:width(), position_relative_el_control:height()})
-    echo({{position_absolute_el_layout:GetPos()}, "control pos:", position_absolute_el_control:x(), position_absolute_el_control:y(), position_absolute_el_control:width(), position_absolute_el_control:height()})
+    local control = GetRef("template"):GetControl();
+    echo({control:PageElement() and "1" or "0", control.children and control.children:empty() or "nil"})
 end
+
 </script>
 
 <style>

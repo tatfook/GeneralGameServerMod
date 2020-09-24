@@ -11,6 +11,7 @@ local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
 
 local Debug = NPL.export()
 
+-- 模块使能映射
 local ModuleLogEnableMap = {
     FATAL = true,
     ERROR = true,
@@ -19,28 +20,12 @@ local ModuleLogEnableMap = {
     DEBUG = IsDevEnv and true or false,
 }
 
+-- debug 实例
 local ModelDebug = {};
 
-if (IsDevEnv) then 
-    ModuleLogEnableMap["NET"] = false;
-else
-
+local function FormatModuleName(module)
+    return string.upper(module or "DEBUG");
 end
-
-function Debug.IsEnableModule(module)
-    module = string.upper(module or "DEBUG");
-    return ModuleLogEnableMap[module];
-end
-
-function Debug.ToggleModule(module)
-    module = string.upper(module or "DEBUG");
-    ModuleLogEnableMap[module] = not ModuleLogEnableMap[module];
-end
-
-function Debug.EnableModule(module)
-    ModuleLogEnableMap[module] = true;
-end
-
 
 local function DefaultOutput(...)
     ParaGlobal.WriteToLogFile(...);
@@ -77,7 +62,7 @@ local function Print(val, key, output, indent, OutputTable)
 end
 
 local function DebugCall(module, ...)
-    module = string.upper(module or "DEBUG");
+    module = FormatModuleName(module);
 
     if (ModuleLogEnableMap[module] == false or (not IsDevEnv and not ModuleLogEnableMap[module])) then return end
     local dateStr, timeStr = commonlib.log.GetLogTimeString();
@@ -85,9 +70,13 @@ local function DebugCall(module, ...)
     filepos = string.sub(filepos, 1, 256);
     Print(string.format("\n[%s %s][%s][%s][DEBUG BEGIN]", dateStr, timeStr, module, filepos));
 
-    for i = 1, select('#', ...) do  -->获取参数总数
-        local arg = select(i, ...); -- 函数会返回多个值
-        Print(arg);      -->读取参数
+    for i = 1, select('#', ...) do      -->获取参数总数
+        local arg = select(i, ...);     -->函数会返回多个值
+        if (not GGS.IsDevEnv and GGS.IsServer) then
+            Print(arg);                 -- 服务器可以换成压缩的日志格式输出
+        else
+            Print(arg);                 -->打印参数
+        end
     end  
 
     Print(string.format("[%s %s][%s][%s][DEBUG END]", dateStr, timeStr, module, filepos));
@@ -99,8 +88,21 @@ setmetatable(Debug, {
     end
 });
 
+function Debug.IsEnableModule(module)
+    return ModuleLogEnableMap[FormatModuleName(module)];
+end
+
+function Debug.ToggleModule(module)
+    module = FormatModuleName(module);
+    ModuleLogEnableMap[module] = not ModuleLogEnableMap[module];
+end
+
+function Debug.EnableModule(module)
+    ModuleLogEnableMap[FormatModuleName(module)] = true;
+end
+
 function Debug.DisableModule(module)
-    ModuleLogEnableMap[module] = false;
+    ModuleLogEnableMap[FormatModuleName(module)] = false;
 end
 
 function Debug.Stack()
@@ -114,20 +116,25 @@ function Debug.Print(...)
 end
 
 function Debug.GetModuleDebug(module)
+    module = FormatModuleName(module);
+    
     if (ModelDebug[module]) then return ModelDebug[module] end
 
     local obj = {};
 
     function obj.Enable()
         Debug.EnableModule(module);
+        return obj;
     end
 
     function obj.Disable()
         Debug.DisableModule(module);
+        return obj;
     end
 
     function obj.Format(...)
         DebugCall(module, string.format(...));
+        return obj;
     end
     
     setmetatable(obj, {
@@ -161,10 +168,6 @@ end
 
 function Debug.GetDebugDebug()
     return Debug.GetModuleDebug("DEBUG");
-end
-
-function Debug.GetNetDebug()
-    return Debug.GetModuleDebug("NET");
 end
 
 function _G.DebugStack(dept)

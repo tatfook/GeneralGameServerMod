@@ -82,7 +82,8 @@ pm2 start npm npl --name "GGS" --  isDevEnv="true" servermode="true" bootstrappe
 [x] 玩家进入世界, 起始位置小范围随机  
 [x] 维持世界最小玩家, 当玩家数量过少维持离线玩家在世界中  
 [x] 支持平行世界(同一世界多开)  
-[ ] 区域化离线人物 ParaWorldMinimapSurface.lua
-
+[x] 区域化离线人物 ParaWorldMinimapSurface.lua
 
 ### 对外接口只有命令
+
+

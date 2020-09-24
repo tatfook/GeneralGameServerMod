@@ -24,6 +24,12 @@ function Packet:GetPacketId()
     return PacketTypes:GetPacketId(self:class());
 end
 
+-- 读包
+function Packet:ReadPacket(msg)
+    Packet._super.ReadPacket(self, msg);
+    return self;
+end
+
 -- 写包
 function Packet:WritePacket()
     local msg = Packet._super.WritePacket(self);

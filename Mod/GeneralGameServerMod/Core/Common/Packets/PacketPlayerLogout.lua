@@ -5,9 +5,9 @@ Date: 2020/6/12
 Desc: 客户端登录成功, 服务器送玩家登录包通知客户端
 use the lib:
 -------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketPlayerLogin.lua");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerLogin");
-local packet = Packets.PacketLogin:new():Init(username, password);
+NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketPlayerLogout.lua");
+local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerLogout");
+local packet = Packets.PacketPlayerLogout:new():Init();
 -------------------------------------------------------
 ]]
 

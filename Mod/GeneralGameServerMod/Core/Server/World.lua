@@ -10,10 +10,12 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/World.lua");
 local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 -------------------------------------------------------
 ]]
-
+NPL.load("(gl)script/sqlite/sqlite3.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
+-- NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
+-- local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
 local World = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
@@ -23,6 +25,8 @@ World:Property("WorldId");             -- 世界id
 World:Property("WorldType");           -- 世界类型
 World:Property("WorldName");           -- 世界名
 World:Property("PlayerManager");       -- 玩家管理器
+World:Property("BlockManager");       -- 玩家管理器
+World:Property("DB");                  -- 数据库
 
 -- 一个世界对象, 应该包含世界的所有数据
 function World:ctor()
@@ -39,13 +43,33 @@ function World:Init(worldId, WorldName, worldType, worldKey)
 
     -- 玩家管理器
     self:SetPlayerManager(PlayerManager:new():Init(self));
+
+    -- 可编辑世界创建DB
+    -- if (self:IsEditable()) then 
+    --     self:NewDB();
+    --     self:SetBlockManager(BlockManager:new():Init(self));
+    -- end
+
     return self;
+end
+
+-- 创建DB
+function World:NewDB()
+    local pathPrefix = self:GetConfig().storePath or "ggs/db/";
+    local filename = pathPrefix .. self:GetWorldKey() .. ".db";
+    self:SetDB(sqlite3.open(filename));
+end
+
+-- 设置块
+function World:SetBlocks(blocks)
+    -- if (not self:IsEditable()) then return end
+    -- self:GetBlockManager():SetBlocks(blocks);
 end
 
 -- 获取世界实体ID
 function World:GetNextEntityId()
     self.nextEntityId = self.nextEntityId + 1;
-    if (self.nextEntityId > Config.maxEntityId) then
+    if (self.nextEntityId > GGS.MaxEntityId) then
         self.nextEntityId = 0;
     end
     return self.nextEntityId;
@@ -54,6 +78,12 @@ end
 -- 获取配置
 function World:GetConfig()
     return Config[self:GetWorldType()] or Config.World;
+end
+
+-- 是否可编辑
+function World:IsEditable()
+    if (IsDevEnv) then return true end
+    return self:GetConfig().IsEditable;
 end
 
 -- 获取支持的最大玩家数
@@ -76,11 +106,6 @@ function World:GetOnlineClientCount()
     return self:GetPlayerManager():GetOnlinePlayerCount();
 end
 
--- 移除断开链接的用户
-function World:RemoveInvalidPlayer()
-    self:GetPlayerManager():RemoveInvalidPlayer();
-end
-
 -- 是否是平行世界
 function World:IsParaWorld()
     return self:GetWorldType() == "ParaWorld";
@@ -89,6 +114,16 @@ end
 -- 家园
 function World:IsParaWorldMini()
     return self:GetWorldType() == "ParaWorldMini";
+end
+
+-- 是否支持玩家自己定义自己的可视距离, 默认为false
+function World:IsEnablePlayerSelfAreaSize()
+    return self:GetConfig().isEnablePlayerSelfAreaSize;
+end
+
+-- Tick
+function World:Tick()
+    self:GetPlayerManager():Tick();
 end
 
 -- 获取调试信息

@@ -5,12 +5,13 @@ Date: 2020/6/15
 Desc: the main player entity on the client side. 
 use the lib:
 ------------------------------------------------------------
-local AssetsWhiteList = NPL.load("./AssetsWhiteList.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 AssetsWhiteList.IsInWhiteList(filename)
 AssetsWhiteList.GetRandomFilename()
 -------------------------------------------------------
 ]]
-local AssetsWhiteList = NPL.export();
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 
 local  allAssets = commonlib.UnorderedArraySet:new();
 
@@ -34,6 +35,11 @@ end
 
 function AssetsWhiteList.GetRandomFilename()
     return allAssets[math.random(1, #allAssets)]
+end
+
+-- 获取默认模型
+function AssetsWhiteList.GetDefaultFilename()
+    return "character/CC/02human/paperman/boy01.x";
 end
 
 -- 获取所有支持模型列表

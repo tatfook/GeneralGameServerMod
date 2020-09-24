@@ -9,19 +9,16 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/sqlite/sqlite3.lua");
 NPL.load("(gl)script/ide/timer.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/BlockManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/PlayerManager.lua");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.PlayerManager");
 local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager");
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local GeneralGameWorld = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.World.World"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld"));
@@ -37,6 +34,7 @@ GeneralGameWorld:Property("Client");          -- 所属客户端
 GeneralGameWorld:Property("PlayerManager");   -- 玩家管理器
 GeneralGameWorld:Property("BlockManager");    -- 方块管理器
 GeneralGameWorld:Property("EnableBlockMark");    -- 是否使能方块标记  默认为true 由 IsSyncBlock 控制
+GeneralGameWorld:Property("DB");              -- 世界DB
 
 function GeneralGameWorld:ctor() 
 end
@@ -56,6 +54,11 @@ function GeneralGameWorld:Init(client)
 		self:Tick();
 	end});
 	self.timer:Change(tickDuration, tickDuration); -- 两分钟触发一次
+
+	-- 是否可编辑
+	-- if (self:GetClient():GetOptions().editable) then
+	-- 	self:SetDB(sqlite3.open(ParaWorld.GetWorldDirectory() .. "/ggs.db"));
+	-- end
 
 	return self;
 end
@@ -94,8 +97,8 @@ end
 function GeneralGameWorld:handleMouseEvent(event)
 	-- local scene = GameLogic.GetSceneContext();
 	-- local result = scene:CheckMousePick();
-	-- Log:Info(commonlib.serialize(result, true));
-	-- -- Log:Info(commonlib.serialize(event, true));
+	-- GGS.INFO(commonlib.serialize(result, true));
+	-- -- GGS.INFO(commonlib.serialize(event, true));
 end
 
 -- 维持用户在线
@@ -122,7 +125,7 @@ function GeneralGameWorld:Login()
 end
 
 function GeneralGameWorld:Logout() 
-	Log:Info("logout world");
+	GGS.INFO("logout world");
 
 	if(self.netHandler) then
 		self.netHandler:Cleanup();
@@ -132,12 +135,20 @@ function GeneralGameWorld:Logout()
 
 	self:GetPlayerManager():ClearPlayers();
 
+	self:GetPlayerManager():SetMainPlayer(nil);
+
 	-- 解除链接关系
 	GameLogic:Disconnect("frameMoved", self, self.OnFrameMove, "DisconnectOne");
 	
 	-- 清除定时任务
 	self.timer:Change();
 
+	-- 关闭DB
+	if (self:GetDB()) then 
+		self:GetDB():close();
+		self:SetDB(nil);
+	end
+	
 	self.isLogin = false;
 	self:SetWorldId(0);
 end

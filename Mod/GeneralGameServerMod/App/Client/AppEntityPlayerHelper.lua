@@ -10,10 +10,8 @@ local AppEntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.App.C
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/headon_speech.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
+local UniString = commonlib.gettable("System.Core.UniString");
+
 local AppEntityPlayerHelper = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityPlayerHelper"));
 
 function AppEntityPlayerHelper:Init(entityPlayer, isMainPlayer)
@@ -49,6 +47,20 @@ function AppEntityPlayerHelper:SetPlayerInfo(playerInfo)
     end
 end
 
+local function GetUserName(text)
+    if type(text) ~= 'string' then
+        return ''
+    end
+
+    local utf8Text = UniString:new(text)
+
+    if _guihelper.GetTextWidth(text) > 112 then
+        return utf8Text:sub(1, 8).text .. '...'
+    else
+        return text
+    end
+end
+
 -- 设置头顶信息
 function AppEntityPlayerHelper:SetHeadOnDisplay()
     local player = self:GetEntityPlayer();
@@ -58,7 +70,6 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     local state = playerInfo.state;
     local isVip = userinfo.isVip;
     local usertag = state == "online" and userinfo.usertag or "";
-    -- Log:Debug("username: %s, state: %s, vip: %s", username, state, isVip);
     local color = state == "online" and (self.isMainPlayer and "#ffffff" or "#0cff05") or "#b1b1b1";
     local vipIconUrl = state == "online" and "Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18" or "Texture/Aries/Creator/keepwork/UserInfo/V_gray_32bits.png#0 0 18 18";
     local playerUsernameStyle = state == "online" and "" or "shadow-quality:8; shadow-color:#2b2b2b;text-shadow:true;";
@@ -74,7 +85,7 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
         <div style="text-align: center; font-weight: bold; font-size: 12px; base-font-size:12px; margin-top: 0px;">%s</div>
     </div>
 </pe:mcml>
-    ]], color, usertag, playerUsernameStyle, username, school);
+    ]], color, usertag, playerUsernameStyle, GetUserName(username), school);
     player:SetHeadOnDisplay({url = ParaXML.LuaXML_ParseString(mcml)});
 end
 

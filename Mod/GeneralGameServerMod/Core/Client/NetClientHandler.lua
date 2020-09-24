@@ -17,13 +17,11 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local Desktop = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop");
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
@@ -38,7 +36,7 @@ NetClientHandler:Property("Client");         -- 客户端
 NetClientHandler:Property("BlockManager");   -- 方块管理器
 NetClientHandler:Property("PlayerManager");  -- 玩家管理器
 
-local PlayerLoginLogoutDebug = GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug");
+local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
 function NetClientHandler:ctor() 
     self.reconnectionDelay = 3; -- 3s
@@ -102,6 +100,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     local errmsg = packetPlayerLogin.errmsg or "";
     local username = packetPlayerLogin.username;
     local entityId = packetPlayerLogin.entityId;
+    local areaSize = packetPlayerLogin.areaSize;
 
     -- 登录失败
     if (result ~= "ok") then
@@ -111,13 +110,14 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
 		return self:GetWorld():Logout();
     end
 
-    PlayerLoginLogoutDebug.Format("player login success, username: %s, entityId: %s", username, entityId);
+    PlayerLoginLogoutDebug.Format("player login success, username: %s, entityId: %s, areaSize: %s", username, entityId, areaSize);
     
     -- 登录成功
     local options = self:GetClient():GetOptions();
     options.worldId = packetPlayerLogin.worldId;                       -- 世界ID
     options.worldName = packetPlayerLogin.worldName;                   -- 平行世界名  可能被客户端改掉
     options.username = packetPlayerLogin.username;
+    options.areaSize = packetPlayerLogin.areaSize or 0; 
 
     self:SetUserName(options.username);
 
@@ -129,6 +129,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 创建当前玩家
     local EntityMainPlayerClass = self:GetClient():GetEntityMainPlayerClass() or EntityMainPlayer;
     local entityPlayer = EntityMainPlayerClass:new():init(self:GetWorld(), self, entityId);
+    local x, y, z = 20000, -128, 20000;
     if(oldEntityPlayer) then
         local oldMainAssetPath = oldEntityPlayer:GetMainAssetPath();
         entityPlayer:SetMainAssetPath(if_else(not oldMainAssetPath or oldMainAssetPath == "", "character/CC/02human/paperman/boy01.x", oldMainAssetPath));
@@ -136,46 +137,53 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
         entityPlayer:SetGravity(oldEntityPlayer:GetGravity());
         entityPlayer:SetScaling(oldEntityPlayer:GetScaling());
         entityPlayer:SetSpeedScale(oldEntityPlayer:GetSpeedScale());
-        local x, y, z = oldEntityPlayer:GetPosition();
-        local randomRange = 5;
-        if (self.isReconnection) then
-            entityPlayer:SetPosition(x, y, z);
-        else 
-            entityPlayer:SetPosition(x + math.random(-randomRange, randomRange), y, z + math.random(-randomRange, randomRange));
+        x, y, z = oldEntityPlayer:GetPosition();
+        if (not oldEntityPlayer:isa(EntityMainPlayerClass)) then
+            local randomRange = 5;
+            x = x + math.random(-randomRange, randomRange);
+            z = z + math.random(-randomRange, randomRange);
         end
+        entityPlayer:SetPosition(x, y, z);
     end
 
-    -- 设置主玩家
-    entityPlayer:Attach();
-    GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
-    self:SetPlayer(entityPlayer);
- 
-    -- 清空玩家列表
-    self:GetPlayerManager():ClearPlayers();
-    
-    -- 设置玩家信息
+    if (self:GetClient():GetMainPlayerEntityScale()) then entityPlayer:SetScaling(self:GetClient():GetMainPlayerEntityScale()) end
+    if (self:GetClient():GetMainPlayerEntityAsset()) then entityPlayer:SetMainAssetPath(self:GetClient():GetMainPlayerEntityAsset()) end
+
+    -- 构建玩家信息
     local playerInfo = {
         state = "online",
         username = username,
         isAnonymousUser = self:GetClient():IsAnonymousUser(),
         userinfo = self:GetClient():GetUserInfo(),
     }
-    entityPlayer:SetPlayerInfo(playerInfo);
     
     -- 上报玩家实体信息
     local dataWatcher = entityPlayer:GetDataWatcher();
     local bx, by, bz = entityPlayer:GetBlockPos();
     self:AddToSendQueue(Packets.PacketPlayerEntityInfo:new():Init({
         entityId = entityId,
-        x = math.floor(entityPlayer.x or 20000),
-        y = math.floor(entityPlayer.y or -128),
-        z = math.floor(entityPlayer.z or 20000),
+        x = x, y = y, z = z,
         bx = bx, by = by, bz = bz,
         name = username or tostring(entityId),
         facing = math.floor(entityPlayer.rotationYaw or entityPlayer.facing or 0),
         pitch = math.floor(entityPlayer.rotationPitch or 0),
         playerInfo = playerInfo,
     }, dataWatcher, true));
+
+    -- 清空玩家列表
+    self:GetPlayerManager():ClearPlayers();
+
+    -- 设置主玩家
+    entityPlayer:Attach();
+    GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
+    self:GetPlayerManager():SetMainPlayer(entityPlayer);
+    self:GetPlayerManager():SetAreaSize(areaSize);
+    self:SetPlayer(entityPlayer);
+
+    -- 设置玩家信息
+    entityPlayer:SetPlayerInfo(playerInfo);
+    
+    return;
 end
 
 -- 获取玩家实体
@@ -195,6 +203,10 @@ function NetClientHandler:GetEntityPlayer(entityId, username)
         return EntityOtherPlayerClass:new():init(world, username or "", entityId), true;
     end
 
+    -- 实时更新entityId username  保证 entityId username 的正确性
+    otherPlayer.entityId = entityId or otherPlayer.entityId;  
+    otherPlayer:SetUserName(username or otherPlayer:GetUserName());
+
     return otherPlayer, false;
 end
 
@@ -202,41 +214,43 @@ end
 function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     if (not packetPlayerEntityInfo) then return end
 
-    local entityId = packetPlayerEntityInfo.entityId;
-    local username = packetPlayerEntityInfo.username;
-    local x = packetPlayerEntityInfo.x;
-    local y = packetPlayerEntityInfo.y;
-    local z = packetPlayerEntityInfo.z;
-    local facing = packetPlayerEntityInfo.facing;
-    local pitch = packetPlayerEntityInfo.pitch;
-
-    local mainPlayer = self:GetPlayer();
-    local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
+    local entityId, username = packetPlayerEntityInfo.entityId, packetPlayerEntityInfo.username;
+    local x, y, z, facing, pitch, tick = packetPlayerEntityInfo.x, packetPlayerEntityInfo.y, packetPlayerEntityInfo.z, packetPlayerEntityInfo.facing, packetPlayerEntityInfo.pitch, packetPlayerEntityInfo.tick or 5;
+    local bx, by, bz = packetPlayerEntityInfo.bx, packetPlayerEntityInfo.by, packetPlayerEntityInfo.bz;
     
-    -- 实时更新entityId 同一个用户名的entityId可能变化
-    entityPlayer.entityId = entityId;
+    -- 为主玩家不做处理
+    if (entityId == self:GetPlayer().entityId) then return end
+    
+    -- 不在可视区则移除玩家
+    if (bx and by and bz and not self:GetPlayerManager():IsInnerVisibleArea(bx, by, bz)) then return self:GetPlayerManager():RemovePlayer(username) end
+    
+    -- 获取玩家实体
+    local entityPlayer, isNew = self:GetEntityPlayer(entityId, username);
 
+    -- 新用户加入玩家管理器
     if (isNew) then
-        entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
         self:GetPlayerManager():AddPlayer(entityPlayer);
     end
+    
+    -- 更新玩家运动动画
+    if (type(entityPlayer.SetMotionAnimId) == "function") then entityPlayer:SetMotionAnimId(packetPlayerEntityInfo.motionAnimId) end
 
     -- 更新实体元数据
-    if (isNew or entityId ~= mainPlayer.entityId) then
-        local watcher = entityPlayer:GetDataWatcher();
-        local metadata = packetPlayerEntityInfo:GetMetadata();
-        if (watcher and metadata) then 
-            watcher:UpdateWatchedObjectsFromList(metadata); 
-        end    
-    end
+    local watcher = entityPlayer:GetDataWatcher();
+    local metadata = packetPlayerEntityInfo:GetMetadata();
+    if (watcher and metadata) then 
+        watcher:UpdateWatchedObjectsFromList(metadata); 
+    end    
 
     -- 更新位置信息
     if (x or y or z or facing or pitch) then
-        if (entityId == mainPlayer.entityId) then
-            entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);
-        else 
-            entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, 5);
-        end    
+        local oldpos = string.format("%.2f %.2f %.2f", entityPlayer.x or 0, entityPlayer.y or 0, entityPlayer.z or 0);
+        local newpos = string.format("%.2f %.2f %.2f", x or 0, y or 0, z or 0);
+        if (isNew or oldpos == newpos) then 
+            entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
+        else
+            entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, tick);
+        end
     end
 
     -- 头部信息
@@ -336,20 +350,20 @@ function NetClientHandler:handleSyncCmd(packetGeneral)
     local opts = packetGeneral.data.opts;
     -- 已存在忽略
     if (self:GetClient():GetNetCmdList():contains(cmd)) then 
-        return Log:Info("命令正在执行: " .. cmd); 
+        return GGS.INFO("命令正在执行: " .. cmd); 
     end
 
     -- 收到命令是起点, 发送命令是终点, 添加到命令列表
     self:GetClient():GetNetCmdList():add(cmd);
     
     -- 开始执行命令
-    Log:Debug("begin exec net cmd: " .. cmd);
+    GGS.DEBUG("begin exec net cmd: " .. cmd);
     self:GetWorld():SetEnableBlockMark(false);
     GameLogic.RunCommand(cmd);
     
     -- 非递归命令
     if (not opts or not opts.recursive) then
-        Log:Debug("end exec net cmd: " .. cmd);
+        GGS.DEBUG("end exec net cmd: " .. cmd);
         self:GetClient():GetNetCmdList():removeByValue(cmd);
     end
 
@@ -390,7 +404,7 @@ function NetClientHandler:handleBlock(packetBlock)
         if (packetBlock.blockEntityPacket.ProcessPacket) then
             packetBlock.blockEntityPacket:ProcessPacket(self);
         else
-            Log:Error("无效实体数据包");
+            GGS.WARN("无效实体数据包");
         end
     end
     -- 设置块信息
@@ -453,7 +467,7 @@ function NetClientHandler:Connect()
         self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
         if (self.reconnectionDelay > 600) then self.reconnectionDelay = 600 end
         -- 开发环境每次5秒
-        if (IsDevEnv) then self.reconnectionDelay = 5 end
+        if (GGS.IsDevEnv) then self.reconnectionDelay = 5 end
     end}):Change(self.reconnectionDelay * 1000, nil);
 end
 

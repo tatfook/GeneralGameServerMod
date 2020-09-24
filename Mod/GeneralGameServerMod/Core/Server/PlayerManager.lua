@@ -13,15 +13,16 @@ local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.P
 
 -- 文件加载
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Player.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/QuadTree.lua");
-local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
+local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree");
+local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Player = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player");
 local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager"));
 
 local WorldMaxSize = 30000;  -- 世界的最大bx, by, bz值
+local WorldMarginSize = 20;  -- 以用户为中心计算区域加上次边距, 方便客户端识别玩家是否离开自己的可视区域
 
 PlayerManager:Property("World");   -- 管理器所属世界
 
@@ -40,8 +41,6 @@ function PlayerManager:Init(world)
     local worldConfig = self:GetWorld():GetConfig();
     self.areaSize =  if_else(worldConfig.areaSize == nil or worldConfig.areaSize == 0, 128, worldConfig.areaSize);  
     self.areaMinClientCount = worldConfig.areaMinClientCount or 0;
-
-    if (IsDevEnv) then self.areaSize = 10 end
 
     -- 四叉树选项 
     local quadtreeOptions = {
@@ -210,6 +209,14 @@ function PlayerManager:RemovePlayer(player)
     self:Logout(self.players[logoutUsername], "玩家下线, 踢出最早下线玩家");
 end
 
+-- 更新玩家位置信息
+function PlayerManager:UpdatePlayerPosInfo(player)
+    local bx, by, bz = player:GetBlockPos();
+    local username = player:GetUserName();
+    if (not self.onlinePlayerList:contains(username)) then return end
+    self.onlineQuadtree:AddObject(username, bx, bz, bx, bz);
+end
+
 -- 获取所有玩家
 function PlayerManager:GetPlayers() 
     return self.players;
@@ -288,7 +295,7 @@ end
 
 -- 发送玩家信息
 function PlayerManager:SendPacketPlayerInfo(player)
-    self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()));  
+    self:SendPacketToAllPlayers(Packets.PacketPlayerInfo:new():Init(player:GetPlayerInfo()), player);  
     GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("发送玩家离线数据包, username : %s, worldkey: %s, entityId: %s", player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
 
@@ -303,13 +310,54 @@ function PlayerManager:SendPacketToAllPlayers(packet, curPlayer, filter)
     end
 end
 
+-- 获取区域FIlter
+function PlayerManager:GetPlayerAreaFilter(curPlayer, isCurPlayerCenter)
+    return function(player)
+        if (not curPlayer) then return true end
+        if (curPlayer.entityId == player.entityId) then return false end
+        if (isCurPlayerCenter and (not curPlayer:IsEnableArea())) then return true end
+        if (not isCurPlayerCenter and (not player:IsEnableArea())) then return true end
+        local areaSize = if_else(isCurPlayerCenter, curPlayer:GetAreaSize(), player:GetAreaSize());
+        if (areaSize == 0) then return true end
+        areaSize = math.floor(areaSize / 2) + WorldMarginSize;
+        local curPlayerBX = curPlayer:GetEntityInfo().bx or 0;
+        local curPlayerBZ = curPlayer:GetEntityInfo().bz or 0;
+        local playerBX = player:GetEntityInfo().bx or 0;
+        local playerBZ = player:GetEntityInfo().bz or 0;
+        if (math.abs(curPlayerBX - playerBX) <= areaSize and math.abs(curPlayerBZ - playerBZ) <= areaSize) then
+            return true;
+        end
+        return false;
+    end
+end
+
 -- 发送给指定玩家所在的区域
-function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, filter)
-    local onlinePlayerList = self:GetOnlinePlayerList(curPlayer)
-    for i = 1, #onlinePlayerList do
-        local username = onlinePlayerList[i];
-        local player = self.players[username];
-        if (player and (not filter or filter(player))) then player:SendPacketToPlayer(packet) end
+function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, isCurPlayerCenter, filter)
+    -- 玩家自己开启可视化, 世界不一定开启可视化, 所以self:IsEnableArea()必须放在player:IsEnableArea()后检测, 保证玩家和世界都没开启可视化
+    if (not curPlayer or not curPlayer:IsEnableArea() or not self:IsEnableArea()) then
+        return self:SendPacketToAllPlayers(packet, curPlayer, filter);
+    end
+
+    -- 最好使用四叉树, 效率会高很多
+    if (not self:GetWorld():IsEnablePlayerSelfAreaSize() or isCurPlayerCenter) then
+        local onlinePlayerList = self:GetOnlinePlayerList(curPlayer, isCurPlayerCenter);
+        -- GGS.AreaSyncDebug("玩家:" .. curPlayer:GetUserName(), "区域玩家:", onlinePlayerList);
+        for i = 1, #onlinePlayerList do
+            local username = onlinePlayerList[i];
+            local player = self.players[username];
+            if (player and player ~= curPlayer and (not filter or filter(player))) then 
+                player:SendPacketToPlayer(packet);
+            end
+        end
+    else 
+        local areaFilter = self:GetPlayerAreaFilter(curPlayer);
+        for i = 1, #(self.onlinePlayerList) do 
+            local username = self.onlinePlayerList[i];
+            local player = self.players[username];
+            if (player and player ~= curPlayer and areaFilter(player) and (not filter or filter(player))) then
+                player:SendPacketToPlayer(packet);
+            end
+        end
     end
 end
 
@@ -339,16 +387,30 @@ function PlayerManager:IsPlayer(player)
     return type(player) == "table" and player.isa and player:isa(Player);
 end
 
+-- 是否是在线玩家
+function PlayerManager:IsOnlinePlayer(player)
+    player = self:GetPlayer(player);  -- 验证玩家有效性
+
+    if (not player) then return false end  -- 不存在则不是
+
+    return self.onlinePlayerList:contains(player:GetUserName());
+end
+
 -- 获取指定玩家
 function PlayerManager:GetPlayer(id)
+    -- 通过用户名查找玩家
+    if (type == "string") then return self.players[id] end
+    
+    -- 玩家验证
+    if (self:IsPlayer(id)) then 
+        local username = id:GetUserName();
+        local player = self.players[username];
+        return player == id and player or nil;
+    end
+
+    -- 通过entityId查找玩家
     for key, player in pairs(self.players) do 
         if (type(id) == "number" and player.entityId == id) then
-            return player;
-        end
-        if (type(id) == "string" and player.username == id) then
-            return player;
-        end
-        if (type(id) == "table" and player == id) then
             return player;
         end
     end
@@ -359,10 +421,8 @@ end
 -- 获取所有玩家实体信息列表
 function PlayerManager:GetPlayerEntityInfoList(player)
     local playerEntityInfoList = {};
-
     -- 获取在线用户列表
-    -- local onlinePlayerList = self:GetOnlinePlayerList(player);
-    local onlinePlayerList = self:GetOnlinePlayerList(nil);  -- 拉取所有在线用户
+    local onlinePlayerList = self:GetOnlinePlayerList(player, true);
     for i = 1, #onlinePlayerList do 
         local username = onlinePlayerList[i];
         local player = self.players[username];
@@ -370,7 +430,7 @@ function PlayerManager:GetPlayerEntityInfoList(player)
     end
 
     -- 获取离线用户列表
-    local offlinePlayerList = self:GetOfflinePlayerList(player);
+    local offlinePlayerList = self:GetOfflinePlayerList(player, true);
     for i = 1, #offlinePlayerList do 
         local username = offlinePlayerList[i];
         local player = self.players[username];
@@ -381,23 +441,30 @@ function PlayerManager:GetPlayerEntityInfoList(player)
 end
 
 -- 获取在线用户的用户名列表
-function PlayerManager:GetOnlinePlayerList(player)
-    if (player and player:IsEnableArea()) then
-        -- 以自己为中心点取区域大小
-        local areaSize = math.floor(player:GetAreaSize() / 2);
+function PlayerManager:GetOnlinePlayerList(player, isUsePlayerAreaSize, marginSize)
+    marginSize = marginSize or WorldMarginSize;
+    if (player and self:IsEnableArea()) then
+        local areaSize = if_else(isUsePlayerAreaSize, player:GetAreaSize(), self:GetAreaSize()); 
         local bx, by, bz = player:GetBlockPos();
+        areaSize = math.floor(areaSize / 2) + marginSize;
+        -- GGS.AreaSyncDebug("区域大小: " .. tostring(areaSize));
         return self.onlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
-        return self.onlinePlayerList;
+        local onlines = {};
+        for i = 1, #(self.onlinePlayerList) do
+            table.insert(onlines, self.onlinePlayerList[i]);
+        end
+        return onlines;
     end
 end
 
 -- 获取离线用户的用户名列表
-function PlayerManager:GetOfflinePlayerList(player)
-    if (player and player:IsEnableArea()) then
-        -- 以自己为中心点取区域大小
-        local areaSize = math.floor(player:GetAreaSize() / 2);
+function PlayerManager:GetOfflinePlayerList(player, isUsePlayerAreaSize, marginSize)
+    marginSize = marginSize or WorldMarginSize;
+    if (player and self:IsEnableArea()) then
+        local areaSize = if_else(isUsePlayerAreaSize, player:GetAreaSize(), self:GetAreaSize()); 
         local bx, by, bz = player:GetBlockPos();
+        areaSize = math.floor(areaSize / 2) + marginSize;
         return self.offlineQuadtree:GetObjects(bx - areaSize, bz - areaSize, bx + areaSize, bz + areaSize);
     else 
         local offlines = {};
@@ -426,22 +493,7 @@ function PlayerManager:GetOnlinePlayerCount()
     return count;
 end
 
--- called period 移除没有心跳的玩家
-function PlayerManager:RemoveInvalidPlayer()
-    local deleted = {};
-    for i = 1, #(self.onlinePlayerList) do 
-        local username = self.onlinePlayerList[i];
-        local player = self.players[username];
-        -- 玩家不活跃但链接还在则踢出玩家
-        if (not player:IsAlive() and player:IsConnection()) then
-            table.insert(deleted, player);
-        end
-    end
-    -- 下线不活跃的用户
-    for i = 1, #deleted do
-        self:Logout(deleted[i], "定时移除不活跃用户");
-    end
-end
+
 
 -- 获取最旧的方块同步玩家
 function PlayerManager:GetSyncBlockOldestPlayer()
@@ -456,4 +508,50 @@ function PlayerManager:GetSyncBlockOldestPlayer()
         end
     end
     return oldestPlayer;
+end
+
+-- Tick
+function PlayerManager:Tick()
+    self:RemoveInvalidPlayer();
+    self:CleanOfflinePlayer();
+end
+
+-- 清理离线用户, 移除离线时间超过48小时的用户
+function PlayerManager:CleanOfflinePlayer()
+    local offlines = self:GetOfflinePlayerList();
+    local curTime = ParaGlobal.timeGetTime();
+    local maxOfflineTime = 1000 * 60 * 60 * 48; -- 48 hour
+    for i = 1, #offlines do
+        local username = offlines[i];
+        local player = self.players[username];
+        if (not player) then
+            self:RemoveOfflinePlayer(username);
+            self.offlineQuadtree:RemoveObject(username);
+        else 
+            if (player.logoutTick and (curTime - player.logoutTick) > maxOfflineTime) then
+                self:Logout(player);
+            end
+        end
+    end
+end
+
+-- 移除没有心跳的玩家
+function PlayerManager:RemoveInvalidPlayer()
+    local deleted = {};
+    for i = 1, #(self.onlinePlayerList) do 
+        local username = self.onlinePlayerList[i];
+        local player = self.players[username];
+        -- 玩家不活跃但链接还在则踢出玩家
+        if (not player:IsAlive() and player:IsConnection()) then
+            table.insert(deleted, player);
+        end
+    end
+
+    -- 下线不活跃的用户
+    for i = 1, #deleted do
+        local invalidPlayer = deleted[i];
+        -- 服务器最有在此情况主动关闭连接, 其它情况又客户端主动关闭
+        invalidPlayer:CloseConnection();                       -- 主动关闭, 让其激活后自行重连
+        self:Offline(deleted[i], "定时移除不活跃用户");          -- 走离线逻辑 
+    end
 end

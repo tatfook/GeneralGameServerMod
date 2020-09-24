@@ -7,7 +7,7 @@ use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketPlayerLogin.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerLogin");
-local packet = Packets.PacketLogin:new():Init(username, password);
+local packet = Packets.PacketPlayerLogin:new():Init();
 -------------------------------------------------------
 ]]
 
@@ -18,15 +18,10 @@ function PacketPlayerLogin:ctor()
 end
 
 function PacketPlayerLogin:Init(packet)
-	-- for key, val in pairs(packet) do
-	-- 	if (type(val) ~= "table" and type(val) ~= "function") then
-	-- 		self[key] = val;
-	-- 	end
-	-- end
-
 	-- 响应包体
 	self.result = packet.result;      -- 请求结果
 	self.entityId = packet.entityId;  -- 玩家实体ID
+	self.areaSize = packet.areaSize;  -- 玩家可视区大小
 	self.errmsg = packet.errmsg;      -- 错误信息
 	-- 请求包体
 	self.username =	packet.username;  -- 用户名

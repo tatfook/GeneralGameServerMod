@@ -16,7 +16,7 @@
                     <ChangeNickName v-on:finish="OnEditNickNameFinish" v-bind:userId="UserDetail.id" v-bind:nickname="UserDetail.nickname" style="display: inline;"></ChangeNickName>
                 </div>
             </div>
-            <pe:mc_player align="center"  v-bind:assetfile="mainasset" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" isinteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></pe:mc_player>
+            <pe:mc_player align="center"  v-bind:assetfile="mainasset" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" IsInteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></pe:mc_player>
             <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div>
             <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div>
             <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
@@ -159,6 +159,18 @@ function ClickNextAsset()
     end 
     mainasset = assets[curAssetIndex];
     GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
+
+    -- 更新用户信息
+    if (not isAuthUser) then return end
+    local extra = UserDetail.extra or {};
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    extra.ParacraftPlayerEntityInfo.asset = mainasset;
+    keepwork.user.setinfo({
+        router_params = {id = AuthUserId},
+        extra = extra,
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
+    end);
 end
 
 function ClickPrevRotate()

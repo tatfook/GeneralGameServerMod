@@ -11,19 +11,19 @@ GeneralGameCommand:init();
 ------------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
 local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Config");
 local SlashCommand = commonlib.gettable("MyCompany.Aries.SlashCommand.SlashCommand");
 local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
 local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
 local CmdParser = commonlib.gettable("MyCompany.Aries.Game.CmdParser");	
 local GeneralGameServerMod = commonlib.gettable("Mod.GeneralGameServerMod");
-local GeneralGameCommand = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand"));
+local GeneralGameCommand = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand"));
+
+GeneralGameCommand:Property("GeneralGameClient");
 
 function ParseOption(cmd_text)
 	local value, cmd_text_remain = cmd_text:match("^%s*%-([%w_]+%S+)%s*(.*)$");
@@ -75,7 +75,7 @@ function GeneralGameCommand:InstallCommand()
 subcmd: 
 connect 连接联机世界
 	/ggs connect [options] [worldId] [worldName]
-	/ggs connect -isSyncBlock -isSyncCmd -areaSize=128 -silent 12706
+	/ggs connect -isSyncBlock -isSyncCmd -areaSize=64 -silent -editable 12706
 disconnect 断开连接
 	/ggs disconnect
 cmd 执行软件内置命令
@@ -88,6 +88,7 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 debug 调试命令 
 	/ggs debug [action]
 	/ggs debug debug module 开启或关闭指定模块日志
+	/ggs debug serverdebug module 开启或关闭指定模块日志
 	/ggs debug options 显示客户端选项信息
 	/ggs debug players 显示客户端玩家列表
 	/ggs debug worldinfo 显示客户端连接的世界服务器信息
@@ -112,7 +113,7 @@ debug 调试命令
 				-- __this__:handleSyncCommand(cmd_text);
 			end
 			-- 确保进入联机世界
-			if (not __this__.generalGameClient) then return end;
+			if (not __this__:GetGeneralGameClient()) then return end;
 			-- 联机世界命令
 			if (cmd == "debug") then
 				__this__:handleDebugCommand(cmd_text);
@@ -136,20 +137,6 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	local worldId, cmd_text = CmdParser.ParseInt(cmd_text);
 	local worldName, cmd_text = CmdParser.ParseString(cmd_text);
 
-	if (options.dev) then 
-		Config:SetEnv("dev"); 
-	elseif (options.test) then
-		Config:SetEnv("test");
-	elseif (options.prod) then
-		Config:SetEnv("prod");
-	else
-		if (Config.IsDevEnv) then
-			Config:SetEnv("dev");
-		else
-			Config:SetEnv("prod");
-		end
-	end
-	
 	options.worldId = (worldId and worldId ~= 0) and worldId or nil;
 	options.worldName = worldName;
 	options.ip = (options.host and options.host ~= "") and options.host or nil;
@@ -157,13 +144,28 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	options.username = (options.username and options.username ~= "") and options.username or nil;
 	options.password = (options.password and options.password ~= "") and options.password or nil;
 	options.silent = if_else(options.silent == nil, true, options.silent and true or false);
+	options.editable = options.editable == true and true or false;
+	options.areaSize = tonumber(options.areaSize) or 0;
 	
-	self.generalGameClient = GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient;
-	self.generalGameClient:LoadWorld(options);
-end
+	-- 设置客户端
+	self:SetGeneralGameClient(GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient);
 
-function GeneralGameCommand:GetGeneralGameClient()
-	return self.generalGameClient;
+	-- 设置环境
+	if (options.dev) then 
+		self:GetGeneralGameClient():SetEnv("dev"); 
+	elseif (options.test) then
+		self:GetGeneralGameClient():SetEnv("test");
+	elseif (options.prod) then
+		self:GetGeneralGameClient():SetEnv("prod");
+	else
+		if (GGS.IsDevEnv) then
+			self:GetGeneralGameClient():SetEnv("dev");
+		else
+			self:GetGeneralGameClient():SetEnv("prod");
+		end
+	end
+	
+	self:GetGeneralGameClient():LoadWorld(options);
 end
 
 function GeneralGameCommand:handleDebugCommand(cmd_text)
@@ -173,7 +175,7 @@ function GeneralGameCommand:handleDebugCommand(cmd_text)
 		return GGS.Debug.ToggleModule(module);
 	end
 
-	self:GetGeneralGameClient():Debug(action);
+	self:GetGeneralGameClient():Debug(action, cmd_text);
 end
 
 function GeneralGameCommand:handleCmdCommand(cmd_text)
@@ -222,7 +224,6 @@ function GeneralGameCommand:handleSetSyncForceBlockCommand(cmd_text)
 	local blockIndex = BlockEngine:GetSparseIndex(x, y, z);
 	local onOrOff, cmd_text = CmdParser.ParseString(cmd_text);
 	local data = if_else(onOrOff == "on", true, false);
-	GGS.INFO.Format("SetSyncForceBlock: x = %s, y = %s, z = %s, on = %s", x, y, z, data);
 
 	if (data) then
 		GeneralGameClient:GetSyncForceBlockList():add(blockIndex);
@@ -235,3 +236,6 @@ end
 function GeneralGameCommand:OnWorldLoaded()
 	GeneralGameClient:GetSyncForceBlockList():clear();
 end
+
+-- 初始化成单列模式
+GeneralGameCommand:InitSingleton();

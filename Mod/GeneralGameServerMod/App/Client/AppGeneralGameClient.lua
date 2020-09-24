@@ -11,21 +11,19 @@ local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Cl
 ]]
 NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityOtherPlayer.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
+local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local Encoding = commonlib.gettable("System.Encoding");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local AppGeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameWorld");
 local AppEntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer");
 local AppEntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityMainPlayer");
 local AppGeneralGameClient = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient"));
-
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
-local moduleName = "Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient";
 
 -- 构造函数
 function AppGeneralGameClient:ctor()
@@ -57,10 +55,15 @@ function AppGeneralGameClient:Init()
     -- 基类初始化
     AppGeneralGameClient._super.Init(self);
 
+    -- 默认禁止飞行
+    local userinfo = KeepWorkItemManager.GetProfile();
+    GameLogic.options:SetCanJumpInAir(userinfo.vip == 1 and true or false); 
+
     -- 配置GGS的默认选项值
     -- self:GetOptions().isSyncBlock = true;
     -- self:GetOptions().serverIp = "127.0.0.1";
     -- self:GetOptions().serverPort = "9000";
+    -- self:GetOptions().defaultWorldId = 1;
 
     self.inited = true;
 end
@@ -95,13 +98,25 @@ end
 function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     local self = AppGeneralGameClient;
     local userinfo = KeepWorkItemManager.GetProfile();
-
+    
+    GameLogic.options:SetCanJumpInAir(userinfo.vip == 1 and true or false); 
+    
     self.userinfo.id = userinfo.id;
     self.userinfo.username = userinfo.username;
     self.userinfo.nickname = userinfo.nickname;
     self.userinfo.isVip = userinfo.vip == 1;
     self.userinfo.usertag = KpUserTag.GetMcml(userinfo);
     self.userinfo.worldCount = 0;
+
+    local ParacraftPlayerEntityInfo = (userinfo.extra or {}).ParacraftPlayerEntityInfo or {};
+    self.userinfo.scale = ParacraftPlayerEntityInfo.scale or 1;
+    self.userinfo.asset = ParacraftPlayerEntityInfo.asset or "character/CC/02human/paperman/boy01.x";
+    self:SetMainPlayerEntityScale(self.userinfo.scale);
+    self:SetMainPlayerEntityAsset(self.userinfo.asset);
+    local oldPlayerEntity = EntityManager.GetPlayer();
+    if (oldPlayerEntity and self:GetMainPlayerEntityScale()) then oldPlayerEntity:SetScaling(self:GetMainPlayerEntityScale()) end
+    if (oldPlayerEntity and self:GetMainPlayerEntityAsset()) then oldPlayerEntity:SetMainAssetPath(self:GetMainPlayerEntityAsset()) end
+
     -- 拉取学校
     keepwork.user.school(nil, function(statusCode, msg, data) 
         if (not data) then return end
@@ -117,6 +132,7 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     -- 发送用户通知
     GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateUserInfo", userinfo = self.userinfo});
 end
+
 -- 用户登录
 function AppGeneralGameClient.OnKeepWorkLogin_Callback()
 end
@@ -137,6 +153,31 @@ function AppGeneralGameClient:IsAnonymousUser()
     if (isAnonymousUser ~= nil) then return isAnonymousUser end
 
     return self:GetOptions().username ~= System.User.keepworkUsername;  -- 匿名用户不支持离线缓存
+end
+
+-- 动态设置客户端环境
+function AppGeneralGameClient:SetEnv(env)
+    AppGeneralGameClient._super.SetEnv(self, env);
+
+    if (env == "test") then
+        self:SetOptions({
+            serverIp = "ggs.keepwork.com";
+            serverPort = "9001";
+        });
+        GGS.INFO("切换到测试环境");
+    elseif (env == "dev") then
+        self:SetOptions({
+            serverIp = "127.0.0.1";
+            serverPort = "9000";
+        });
+        GGS.INFO("切换到开发环境");
+    else 
+        self:SetOptions({
+            serverIp = "ggs.keepwork.com";
+            serverPort = "9000";
+        });
+        GGS.INFO("切换到正式环境");
+    end
 end
 
 -- 初始化成单列模式

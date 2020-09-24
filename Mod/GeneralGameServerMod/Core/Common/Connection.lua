@@ -12,8 +12,6 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ConnectionBase.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Log.lua");
-local Log = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Log");
 local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
@@ -24,10 +22,7 @@ local nextNid = 100;
 
 Connection.default_neuron_file = defaultNeuronFile;
 
-local function NetLog(...)
-	local debug = GGS.Debug.GetNetDebug();
-	debug(...);
-end
+local NetDebug = GGS.NetDebug;
 
 -- 服务端初始化方式
 function Connection:Init(nid, net_handler)
@@ -59,41 +54,41 @@ function Connection:OnError(text)
 end
 
 function Connection:AddPacketToSendQueue(packet)
-	NetLog(string.format("---------------------send packet: %d--------------------", packet:GetPacketId()), packet:WritePacket());
-	-- Log:Std("DEBUG", moduleName, "---------------------send packet: %d--------------------", packet:GetPacketId());
-	-- Log:Std("DEBUG", moduleName, packet:WritePacket());
+	NetDebug(string.format("---------------------send packet: %d--------------------", packet:GetPacketId()), packet:WritePacket());
 
 	return Connection._super.AddPacketToSendQueue(self, packet);
 end
 
 -- 接受数据包
 function Connection:OnNetReceive(msg)
+	
+	-- 读取数据包
+	local packet = PacketTypes:GetNewPacket(msg.id);
+	if (packet) then packet:ReadPacket(msg) end
+
+	NetDebug(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
+	
 	-- 处理数据包前回调
 	if (self.net_handler and self.net_handler.OnBeforeProcessPacket) then
-		self.net_handler:OnBeforeProcessPacket(msg);
+		self.net_handler:OnBeforeProcessPacket(packet or msg, msg);
 	end
 
-	local packet = PacketTypes:GetNewPacket(msg.id);
-	NetLog(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
-	-- Log:Std("DEBUG", moduleName, "---------------------recv packet: %d--------------------", packet and packet:GetPacketId() or msg.id);
-	-- Log:Std("DEBUG", moduleName, msg);
-	
+	-- 处理数据包
 	if(packet) then
-		packet:ReadPacket(msg);
 		packet:ProcessPacket(self.net_handler);
 	else
-		Log:Info("invalid packet");
+		GGS.INFO("invalid packet");
 		if (self.net_handler.handleMsg) then
 			self.net_handler:handleMsg(msg);
 		else 
-			Log:Info("invalid msg");
-			Log:Info(msg);
+			GGS.INFO("invalid msg");
+			GGS.INFO(msg);
 		end
 	end
 
 	-- 处理数据包后回调
 	if (self.net_handler and self.net_handler.OnAfterProcessPacket) then
-		self.net_handler:OnAfterProcessPacket(packet or msg);
+		self.net_handler:OnAfterProcessPacket(packet or msg, msg);
 	end
 end
 

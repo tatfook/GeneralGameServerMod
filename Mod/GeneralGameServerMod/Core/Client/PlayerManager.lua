@@ -14,6 +14,7 @@ local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase
 
 PlayerManager:Property("World");            -- 玩家管理器所属世界
 PlayerManager:Property("MainPlayer");       -- 主玩家
+PlayerManager:Property("AreaSize");         -- 玩家可视区域
 
 function PlayerManager:ctor()
     self.players = {};   -- 玩家集
@@ -28,17 +29,23 @@ function PlayerManager:AddPlayer(entityPlayer)
     if (not entityPlayer) then return end
     local username = entityPlayer:GetUserName();
     if (not username) then return end;
-
-    -- 存在同名旧玩家则先移除
+    
+    -- 存在同名旧玩家且不为当前对象则先移除
     local oldplayer = self.players[username];
-    if (oldplayer) then self:RemovePlayer(oldplayer) end
+    if (oldplayer ~= entityPlayer) then self:RemovePlayer(oldplayer) end
+    entityPlayer:Attach();
     
     -- 添加新玩家
-    entityPlayer:Attach();
+    -- if (self:IsVisible(entityPlayer)) then 
+    --     entityPlayer:Attach();
+    -- else
+    --     entityPlayer:Destroy();
+    -- end
     self.players[username] = entityPlayer;
 end
 
 function PlayerManager:RemovePlayer(entityPlayer)
+    if (type(entityPlayer) == "string") then entityPlayer = self.players[entityPlayer] end
     if (not entityPlayer) then return end
     local username = entityPlayer:GetUserName();
     entityPlayer:Destroy();
@@ -59,6 +66,20 @@ function PlayerManager:GetPlayerByEntityId(entityId)
             return player;
         end
     end
+end
+
+-- 是否玩家是否可见
+function PlayerManager:IsVisible(player)
+    local playerBX, playerBY, playerBZ = player:GetBlockPos();
+    return self:IsInnerVisibleArea(playerBX, playerBY, playerBZ);
+end
+
+-- 是否在可视区
+function PlayerManager:IsInnerVisibleArea(bx, by, bz)
+    local areaSize = math.floor(self:GetAreaSize() or 0);
+    if (not areaSize or areaSize == 0) then return true end
+    local mainPlayerBX, mainPlayerBY, mainPlayerBZ = self:GetMainPlayer():GetBlockPos();
+    return math.abs(bx - mainPlayerBX) <= areaSize and math.abs(bz - mainPlayerBZ) <= areaSize;
 end
 
 -- 获取所有玩家
