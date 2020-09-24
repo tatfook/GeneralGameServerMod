@@ -159,7 +159,7 @@ function ClickNextAsset()
     end 
     mainasset = assets[curAssetIndex];
     GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
-    GameLogic.options:SetMainPlayerAssetName(filename);
+    GameLogic.options:SetMainPlayerAssetName(mainasset);
 
     -- 更新用户信息
     if (not isAuthUser) then return end
