@@ -27,9 +27,8 @@ local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpU
 
 -- 构造函数
 function AppGeneralGameClient:ctor()
-    self.userinfo = {
-        username = System.User.keepworkUsername,
-    }; -- 认证用户信息
+    local userinfo = KeepWorkItemManager.GetProfile();
+    self:CopyKpUserInfo(userinfo);
 
     -- 业务初始化
     GameLogic.GetFilters():remove_filter("OnKeepWorkLogin", AppGeneralGameClient.OnKeepWorkLogin_Callback);
@@ -54,10 +53,6 @@ function AppGeneralGameClient:Init()
 
     -- 基类初始化
     AppGeneralGameClient._super.Init(self);
-
-    -- 默认禁止飞行
-    local userinfo = KeepWorkItemManager.GetProfile();
-    GameLogic.options:SetCanJumpInAir(userinfo.vip == 1 and true or false); 
 
     -- 配置GGS的默认选项值
     -- self:GetOptions().isSyncBlock = true;
@@ -95,14 +90,12 @@ function AppGeneralGameClient:GetEntityOtherPlayerClass()
     return AppEntityOtherPlayer;
 end
 
-function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
-    local self = AppGeneralGameClient;
-    local userinfo = KeepWorkItemManager.GetProfile();
-    
-    GameLogic.options:SetCanJumpInAir(userinfo.vip == 1 and true or false); 
-    
+-- 拷贝KeepWork用户信息
+function AppGeneralGameClient:CopyKpUserInfo(userinfo)
+    self.userinfo = self.userinfo or {};
+
     self.userinfo.id = userinfo.id;
-    self.userinfo.username = userinfo.username;
+    self.userinfo.username = userinfo.username or System.User.keepworkUsername;
     self.userinfo.nickname = userinfo.nickname;
     self.userinfo.isVip = userinfo.vip == 1;
     self.userinfo.usertag = KpUserTag.GetMcml(userinfo);
@@ -116,6 +109,15 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     local oldPlayerEntity = EntityManager.GetPlayer();
     if (oldPlayerEntity and self:GetMainPlayerEntityScale()) then oldPlayerEntity:SetScaling(self:GetMainPlayerEntityScale()) end
     if (oldPlayerEntity and self:GetMainPlayerEntityAsset()) then oldPlayerEntity:SetMainAssetPath(self:GetMainPlayerEntityAsset()) end
+end
+
+-- 用户登录回调
+function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
+    local self = AppGeneralGameClient;
+    local userinfo = KeepWorkItemManager.GetProfile();
+    
+    self:CopyKpUserInfo(userinfo);
+    GameLogic.options:SetCanJumpInAir(self:IsCanFly()); 
 
     -- 拉取学校
     keepwork.user.school(nil, function(statusCode, msg, data) 
@@ -139,6 +141,11 @@ end
 
 -- 用户退出
 function AppGeneralGameClient.OnKeepWorkLogout_Callback() 
+end
+
+-- 是否可以飞行
+function AppGeneralGameClient:IsCanFly()
+    return self.userinfo.isVip;
 end
 
 -- 获取当前认证用户信息

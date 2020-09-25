@@ -167,6 +167,11 @@ function GeneralGameClient:GetAreaSize()
     return tonumber(self:GetOptions().areaSize) or 0;
 end
 
+-- 是否可以飞行
+function GeneralGameClient:IsCanFly()
+    return true;
+end
+
 -- 是否获取可用服务器列表
 function GeneralGameClient:IsShowWorldList()
     return if_else(GGS.IsDevEnv, true, false);
@@ -241,7 +246,7 @@ function GeneralGameClient:OnWorldLoaded()
     local GeneralGameWorldClass = self:GetGeneralGameWorldClass() or GeneralGameWorld;
     self:SetWorld(GeneralGameWorldClass:new():Init(self));
     GameLogic.ReplaceWorld(self:GetWorld());
-
+    GameLogic.options:SetCanJumpInAir(self:IsCanFly());  -- 设置是否可以飞行
     -- 登录世界
     local options = self:GetOptions();
     -- 设置世界类型
@@ -383,6 +388,8 @@ function GeneralGameClient:Debug(action, cmd_text)
     action = string.lower(action or "");
     if (action == "options" or action == "") then
         return self:ShowDebugInfo(self:GetOptions());
+    elseif (action == "userinfo") then
+        return self:ShowDebugInfo(self:GetUserInfo());
     elseif (action == "players") then
         return GGS.INFO(self:GetWorld():GetPlayerManager():GetPlayers());
     elseif (action == "syncforceblocklist") then
