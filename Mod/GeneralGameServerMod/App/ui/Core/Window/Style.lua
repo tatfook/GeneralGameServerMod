@@ -310,7 +310,7 @@ function Style:AddComplexField(name, value)
     local values = commonlib.split(value, "%s");
     
     if (name == "padding" or name == "margin" or name == "border-width") then
-		value[1] = value[1] or 0;
+		values[1] = values[1] or 0;
 		values[4] = values[4] or values[2] or values[1];
         values[3] = values[3] or values[1];
 		values[2] = values[2] or values[1];

@@ -101,10 +101,10 @@ function ElementUI:RenderOutline(painter, style)
     local x, y, w, h = self:GetGeometry();
     if (not outlineWidth or not outlineColor) then return end
     painter:SetPen(outlineColor);
-    painter:DrawRectTexture(x, y - outlineWidth , w, outlineWidth, background); -- 上
-    painter:DrawRectTexture(x + w, y , outlineWidth, h, background); -- 右
-    painter:DrawRectTexture(x, y + h , w, outlineWidth, background); -- 下
-    painter:DrawRectTexture(x - outlineWidth, y , outlineWidth, h, background); -- 左
+    painter:DrawRectTexture(x - outlineWidth, y - outlineWidth , w + 2 * outlineWidth, outlineWidth);  -- 上
+    painter:DrawRectTexture(x + w, y - outlineWidth, outlineWidth, h + 2 * outlineWidth); -- 右
+    painter:DrawRectTexture(x - outlineWidth, y + h , w + 2 * outlineWidth, outlineWidth);             -- 下
+    painter:DrawRectTexture(x - outlineWidth, y - outlineWidth, outlineWidth, h + 2 * outlineWidth); -- 左
 end
 
 -- 绘制背景
@@ -126,14 +126,14 @@ function ElementUI:RenderBorder(painter, style)
     local x, y, w, h = self:GetGeometry();
     if (not borderWidth or not borderColor) then return end
     painter:SetPen(borderColor);
-    painter:DrawRectTexture(x, y - borderWidth , w, borderWidth, background); -- 上
-    painter:DrawRectTexture(x + w, y , borderWidth, h, background); -- 右
-    painter:DrawRectTexture(x, y + h , w, borderWidth, background); -- 下
-    painter:DrawRectTexture(x - borderWidth, y , borderWidth, h, background); -- 左
+    painter:DrawRectTexture(x, y, w, borderWidth); -- 上
+    painter:DrawRectTexture(x + w - borderWidth, y , borderWidth, h); -- 右
+    painter:DrawRectTexture(x, y + h - borderWidth, w, borderWidth); -- 下
+    painter:DrawRectTexture(x, y , borderWidth, h); -- 左
 end
 
 -- 绘制内容
-function ElementUI:RenderContent()
+function ElementUI:RenderContent(painter)
 end
 
 -- 元素位置
@@ -303,7 +303,7 @@ function ElementUI:OnFocusIn()
 end
 
 function ElementUI:IsCanFocus()
-    return true;
+    return false;
 end
 
 -- 是否是聚焦元素
@@ -368,4 +368,13 @@ end
 -- 鼠标滚动事件
 function ElementUI:OnMouseWheel(event)
     if (self.verticalScrollBar and self.verticalScrollBar:IsVisible()) then self.verticalScrollBar:OnMouseWheel(event) end
+end
+
+function ElementUI:OnKeyDown(event)
+end
+
+function ElementUI:OnKeyUp(event)
+end
+
+function ElementUI:OnKey(event)
 end

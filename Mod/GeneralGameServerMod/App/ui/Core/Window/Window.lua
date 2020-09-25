@@ -54,13 +54,13 @@ end
 function Window:Init(params)
     url = commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString([[
        <html style="height:100%; background-color:#ffffff;">
-            <Button>按钮</Button>
+            <Button style="margin: 10px">按钮</Button>
             <Text>中文 hello wor&nbsp;ld  this is a test</Text>
-            <Div style="height: 100px; width: 100px">
+            <Div style="height: 100px; width: 100px; outline-width:1px; outline-color:#000000;">
                 <div style="background-color:#ff0000; height: 100px;"></div>
                 <div style="background-color:#00ff00; height: 100px;"></div>
             </Div>
-            <Canvas style="height: 100px;"></Canvas>
+            <input style="margin: 10px"></input>
        </html>
     ]]), "//html");
 
@@ -138,7 +138,10 @@ function Window:CreateNativeWindow(params)
     local name, left, top, width, height, alignment = params.name, params.left or 0, params.top or 0, params.width or 500, params.height or 400, params.alignment or "_lt";
     -- 创建窗口
     local native_window = ParaUI.CreateUIObject("container", name or "Window", alignment, left, top, width, height);
-    native_window:SetField("OwnerDraw", true); -- enable owner draw paint event
+    native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
+    native_window:SetField("CanHaveFocus", true);
+    native_window:SetField("InputMethodEnabled", true);
+
     -- 加到有效窗口上
     if(not native_window.parent or not native_window.parent:IsValid()) then
         local parent = params.parent or ParaUI.GetUIObject("root");
@@ -175,11 +178,11 @@ function Window:CreateNativeWindow(params)
 	_this:SetScript("onmouseleave", function()
 		self:handleMouseEnterLeaveEvent(MouseEvent:init("mouseLeaveEvent", self));
 	end);
-	_this:SetScript("onmouseenter", function()
+    _this:SetScript("onmouseenter", function()
 		self:handleMouseEnterLeaveEvent(MouseEvent:init("mouseEnterEvent", self));
 	end);
 	_this:SetScript("onkeydown", function()
-		self:handleKeyEvent(KeyEvent:init("keyPressEvent"));
+        self:handleKeyEvent(KeyEvent:init("keyPressEvent"));
 	end);
     _this:SetScript("onkeyup", function()
         self:handleKeyEvent(KeyEvent:init("keyReleaseEvent"));
@@ -311,7 +314,17 @@ function Window:handleMouseEnterLeaveEvent(event)
     end
 end
 
-function Window:handleKeyEvent()
+function Window:handleKeyEvent(event)
+    local focusElement = self:GetFocus();
+    if (not focusElement) then return end
+    if (event:GetType() == "keyPressEvent") then
+        focusElement:OnKeyDown(event);
+    elseif (event:GetType() == "keyReleaseEvent") then 
+        focusElement:OnKeyUp(event);    -- 不生效
+    else
+        focusElement:OnKey(event);
+    end
+    -- 系统其它事件处理
     if(not event:isAccepted()) then
         local context = SceneContextManager:GetCurrentContext();
         if(context) then

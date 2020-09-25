@@ -19,16 +19,22 @@ Button:Property("BaseStyle", {
 	NormalStyle = {
 		["display"] = "inline",
 		["background-color"] = "#434343",
-		["color"] = "#ffffff",
+		["color"] = "#ffffff33",
 		["font-size"] = 12,
-		["padding-top"] = 5,
-		["padding-right"] = 10,
-		["padding-bottom"] = 5,
-		["padding-left"] = 10,
+		["padding-top"] = 1,
+		["padding-right"] = 6,
+		["padding-bottom"] = 1,
+		["padding-left"] = 6,
+		["border-width"] = 2,
+		["border-color"] = "#171717",
 	},
 	HoverStyle = {
-		["color"] = "#ff0000",
-	}
+		["border-color"] = "#737373",
+	},
+	ActiveStyle = {
+		["outline_border"] = "#000000",
+		["background"] = "#242424"
+	},
 });
 
 local ButtonElementDebug = GGS.Debug.GetModuleDebug("ButtonElementDebug");
