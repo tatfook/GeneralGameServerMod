@@ -1,6 +1,7 @@
 
 NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
+local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
 local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
 local Encoding = commonlib.gettable("System.Encoding");
@@ -29,6 +30,10 @@ function LoadUserInfo(username)
     }, function(status, msg, data) 
         if (status ~= 200) then return echo("获取用户详情失败...") end
         local UserDetail = data;
+
+        -- 设置知识豆
+        _, _, _, UserDetail.bean = KeepWorkItemManager.HasGSItem(998);
+
         -- echo(data)
         if (System.User.keepworkUsername == UserDetail.username) then
             GetGlobalScope():Set("AuthUserId", UserDetail.id);

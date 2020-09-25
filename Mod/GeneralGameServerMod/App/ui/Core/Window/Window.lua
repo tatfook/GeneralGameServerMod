@@ -60,6 +60,7 @@ function Window:Init(params)
                 <div style="background-color:#ff0000; height: 100px;"></div>
                 <div style="background-color:#00ff00; height: 100px;"></div>
             </Div>
+            <Canvas style="height: 100px;"></Canvas>
        </html>
     ]]), "//html");
 

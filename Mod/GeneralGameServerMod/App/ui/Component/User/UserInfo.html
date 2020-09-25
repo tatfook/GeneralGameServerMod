@@ -101,8 +101,7 @@ local curAssetIndex = 1;
 self.isEditNickName = false;
 
 function OnRefresh()
-    local _, _, _, bean = KeepWorkItemManager.HasGSItem(998);
-    self.bean = bean or 0;
+    self.bean = tostring(UserDetail.bean or 0);
     self.schoolName = UserDetail.school and UserDetail.school.name or "";
     self.userId = UserDetail.id;
     self.username = UserDetail.username;
