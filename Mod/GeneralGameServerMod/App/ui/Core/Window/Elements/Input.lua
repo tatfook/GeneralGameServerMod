@@ -39,8 +39,8 @@ function Input:ctor()
     self.isShowCursor = false;
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = nil, nil, nil, nil;
     self.cursorLine = 1;  -- 光标行
-    self.cursorAt = 0;    -- 光标位置  
-    self.startAt = 0;     -- 视图开始位置
+    self.cursorAt = 1;    -- 光标位置  
+    self.startAt = 1;     -- 视图开始位置
     self.commands = {};                      -- 命令
     self.text = UniString:new();
 end
@@ -149,13 +149,21 @@ function Input:OnKey(event)
     event:accept();
 
     local commitString = event:commitString();
+
+    -- 忽略控制字符
+    local char1 = string.byte(commitString, 1);
+	if(char1 <= 31) then return end
+    
     self:InsertTextCmd(commitString);
 end
 
 function Input:InsertTextCmd(text)
     text = UniString:new(text);
-    table.insert(self.commands, {cursor = self.cursor, action = "insert", text = text});
+    table.insert(self.commands, {cursor = self.cursor, action = "add", text = text});
     self:InsertText(self.cursor, text);
+end
+
+function Input:DeleteTextCmd()
 end
 
 function Input:InsertText(pos, text)
@@ -174,7 +182,7 @@ end
 
 function Input:RenderCursor(painter)
     if (not self:IsFocus()) then return end
-    local x, y, w, h = self:GetGeometry();
+    local x, y, w, h = self:GetContentGeometry();
     local cursorWidth = self.cursorWidth or 2;
     local cursorHeight = self.cursorHeight or (self:GetStyle():GetLineHeight(16) - 4); 
     local cursorX = self.cursorX or (x + 0);
@@ -193,16 +201,20 @@ function Input:RenderCursor(painter)
     end
 
     local offsetX = self.text:sub(self.startAt, self.cursorAt):GetWidth(self:GetFont());
+    while (offsetX > w and self.startAt <= self.cursorAt) do
+        self.startAt = self.startAt + 1; 
+        offsetX = self.text:sub(self.startAt, self.cursorAt):GetWidth(self:GetFont());
+    end
     painter:DrawRectTexture(cursorX + offsetX, cursorY, cursorWidth, cursorHeight);
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = cursorX, cursorY, cursorWidth, cursorHeight;
 end
-
 
 -- 绘制内容
 function Input:RenderContent(painter)
     self:RenderCursor(painter);
     
-    local x, y, w, h = self:GetGeometry();
+    local x, y, w, h = self:GetContentGeometry();
     painter:SetPen(self:GetColor());
+    -- _guihelper.AutoTrimTextByWidth
     painter:DrawText(x, y, self:GetValue());
 end

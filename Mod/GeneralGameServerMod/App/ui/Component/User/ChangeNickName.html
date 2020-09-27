@@ -40,7 +40,8 @@ end
 function confirm()
     local inputEl = GetRef("input");
     local value = inputEl:GetUIValue();
-
+    if (value == self.nickname) then return cancel() end
+    
     -- 客户端处理铭感词
     value = MyCompany.Aries.Chat.BadWordFilter.FilterString(value);
     

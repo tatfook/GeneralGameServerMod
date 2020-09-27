@@ -187,6 +187,10 @@ end
 function Layout:GetPos()
 	return self.x or 0, self.y or 0; 
 end
+-- 获取内容位置
+function Layout:GetContentPos()
+	return self.x + self.borderLeft + self.paddingLeft, self.y + self.borderTop + self.paddingTop;
+end
 -- 百分比转数字
 function Layout:PercentageToNumber(percentage, size)
 	if (type(percentage) == "number") then return percentage end;

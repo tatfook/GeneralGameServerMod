@@ -164,6 +164,12 @@ function ElementUI:GetGeometry()
     return self:GetRect():getRect();
 end
 
+function ElementUI:GetContentGeometry()
+    local x, y = self:GetLayout():GetContentPos();
+    local w, h = self:GetLayout():GetContentWidthHeight();
+    return x, y, w, h;
+end
+
 function ElementUI:GetX()
 	return self:GetRect():x();
 end
