@@ -192,7 +192,8 @@ function Input:RenderCursor(painter)
         painter:SetPen("#00000000");
     end
 
-    painter:DrawRectTexture(cursorX, cursorY, cursorWidth, cursorHeight);
+    local offsetX = self.text:sub(self.startAt, self.cursorAt):GetWidth(self:GetFont());
+    painter:DrawRectTexture(cursorX + offsetX, cursorY, cursorWidth, cursorHeight);
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = cursorX, cursorY, cursorWidth, cursorHeight;
 end
 
