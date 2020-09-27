@@ -26,10 +26,12 @@ EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
 function EntityMainPlayer:ctor()
     self.playerInfo = {};
     self.oldXYZ = "";
-    self.motionAnimId = 0;
     self.lastMoved = false;
     self.lastXYZ = "";
+    self.lastX, self.lastY, self.lastZ = 0, 0, 0;
     self.motionUpdateTickCount = 0;
+    self.lastMotionUpdateTickCount = 1;
+    self.motionPacketList = Packets.PacketPlayerEntityInfoList:new():Init();
 end
 
 -- 初始化函数
@@ -70,10 +72,16 @@ function EntityMainPlayer:IsOnline()
 end
 
 -- 获取玩家同步信息的频率  33 = 1s   tick = 30fps
+-- 该值决定同步包的间隔时长
 function EntityMainPlayer:GetMotionSyncTickCount()
-    return 30;
+    return 30;  -- 多久发一次同步包  1 = 30ms 本地帧频率
 end
 
+-- 获取玩家位置同步的帧距离, 移动多长距离记为1帧, 或理解为小于该值没有移动
+-- 该值决定单次同步帧的数量, 若为0, 不丢帧, 若为无穷大则丢弃两次同步间的中间帧, 若指定值, 则同步指定间隔的关键帧
+function EntityMainPlayer:GetMotionMinDistance()
+    return 0.01;   -- 为零玩家一直处于运动状态  若此是频率为1, 则帧同步同本地完全一致
+end
 
 -- Send updated motion and position information to the server
 function EntityMainPlayer:SendMotionUpdates()
@@ -93,66 +101,84 @@ function EntityMainPlayer:SendMotionUpdates()
     local hasRotation = self.facing ~= self.oldRotationYaw or self.rotationPitch ~= self.oldRotationPitch;
     local xyz = string.format("%.2f %.2f %.2f", self.x, self.y, self.z) 
     local hasMoved, curMoved = self.oldXYZ ~= xyz, self.lastXYZ ~= xyz;
-    
+    local moveDistance = math.max(math.abs(self.x - self.lastX), math.max(math.abs(self.y - self.lastY), math.abs(self.z - self.lastZ)));
+
     -- 备份当前位置
     self.lastMoved = curMoved;
     self.lastXYZ = xyz;
+    self.lastX, self.lastY, self.lastZ = self.x, self.y, self.z;
     -- 开始或停止运动
     if (lastMoved ~= curMoved) then 
         if (curMoved) then
             -- 开始运动 重置tick
             self.motionUpdateTickCount = 1;
+            self.lastMotionUpdateTickCount = 0;
+            self.stopMotionUpdateTickCount = nil;    
             maxMotionUpdateTickCount = self:GetMotionSyncTickCount();
         else
             -- 停止运动
             self.stopMotionUpdateTickCount = self.motionUpdateTickCount;
         end
     end      
-    -- 记录上次运动的动画ID
-    if ((curAnimId == 4 or curAnimId == 5 or curAnimId == 37 or curAnimId == 41 or curAnimId == 42) and self.motionAnimId ~= curAnimId) then self.motionAnimId = curAnimId end
 
-    -- 位置实时同步, 其它 hasMetaDataChange, hasHeadRotation, hasRotation 配合 Tick 同步
-    local isSync = self.motionUpdateTickCount > maxMotionUpdateTickCount and (hasPlayerInfoChange or hasMetaDataChange or hasMoved or hasHeadRotation or hasRotation);
+    local GetPacketPlayerEntityInfo = function()
+        -- 构建包
+        local packet = Packets.PacketPlayerEntityInfo:new():Init(nil, self.dataWatcher, false);
+        -- 设置用户名
+        packet.username = self:GetUserName();
+        packet.entityId = self.entityId;
+        packet.tick = self.motionUpdateTickCount - self.lastMotionUpdateTickCount;
+
+        -- 保存tick状态
+        self.lastMotionUpdateTickCount = self.motionUpdateTickCount;
+        self.stopMotionUpdateTickCount = nil;
+
+        if (self:IsUpdatePlayerInfo()) then
+            packet.playerInfo = self:GetPlayerInfo();
+            self:SetUpdatePlayerInfo(false);
+        end
+
+        if (hasMoved or hasRotation) then
+            packet.x, packet.y, packet.z = self.x, self.y, self.z; 
+            packet.facing, packet.pitch = self.facing, self.rotationPitch;
+            packet.bx, packet.by, packet.bz = self:GetBlockPos();
+        end
+        
+        if (hasHeadRotation) then
+            packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
+        end
+
+        -- 记录上一个包的状态
+        self.oldXYZ = xyz;
+        self.oldRotationYaw = self.facing;
+        self.oldRotationPitch = self.rotationPitch;
+        self.oldRotHeadYaw = self.rotationHeadYaw;
+        self.oldRotHeadPitch = self.rotationHeadPitch;
+
+        return packet;
+    end
+
+    local isSync = self.stopMotionUpdateTickCount or (self.motionUpdateTickCount > maxMotionUpdateTickCount and (not self.motionPacketList:Empty() or  hasPlayerInfoChange or hasMetaDataChange or hasMoved or hasHeadRotation or hasRotation));
+    -- 超过指定距离, 停止运动, 超过指定时间添加中间帧
+    if (moveDistance > self:GetMotionMinDistance() or isSync) then
+        self.motionPacketList:AddPacket(GetPacketPlayerEntityInfo());  -- 添加移动帧
+    end
+
     if (not isSync) then return end
     
+    -- 更新最大同步时间
     if (hasMoved) then                                                                  
         maxMotionUpdateTickCount = self.motionUpdateTickCount;      -- 尽量保证下个数据包比上时间长， 因在在其它玩家世界自己人物慢一个节拍， 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
     else                                                            -- 如果不动, 同步频率X2增长 原地操作降低更新频率 最大值为2min                                                                                                                          
         maxMotionUpdateTickCount =  maxMotionUpdateTickCount > (30 * 120) and maxMotionUpdateTickCount or (maxMotionUpdateTickCount + maxMotionUpdateTickCount);       -- 5 10 20 40 80 160 320 640
     end
-    -- 构建包
-    local packet = Packets.PacketPlayerEntityInfo:new():Init(nil, self.dataWatcher, false);
-    -- 设置用户名
-    packet.username = self:GetUserName();
-    packet.entityId = self.entityId;
-    packet.tick = self.stopMotionUpdateTickCount or self.motionUpdateTickCount;
-    packet.motionAnimId = self.motionAnimId;
-
-    self.stopMotionUpdateTickCount = nil;
-
-    if (self:IsUpdatePlayerInfo()) then
-        packet.playerInfo = self:GetPlayerInfo();
-        self:SetUpdatePlayerInfo(false);
-    end
-
-    if (hasMoved or hasRotation) then
-        packet.x, packet.y, packet.z = self.x, self.y, self.z; 
-        packet.facing, packet.pitch = self.facing, self.rotationPitch;
-        packet.bx, packet.by, packet.bz = self:GetBlockPos();
-    end
-    
-    if (hasHeadRotation) then
-        packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
-    end
   
-    self:AddToSendQueue(packet);
-    -- 还原真正的动画ID
-    self.oldXYZ = xyz;
-    self.oldRotationYaw = self.facing;
-    self.oldRotationPitch = self.rotationPitch;
-    self.oldRotHeadYaw = self.rotationHeadYaw;
-	self.oldRotHeadPitch = self.rotationHeadPitch;
+    -- 发送帧序
+    self:AddToSendQueue(self.motionPacketList);
+    self.motionPacketList:CleanPacket();                 -- 清空运动包列表
+    -- 重置计数器
     self.motionUpdateTickCount = 0; 
+    self.lastMotionUpdateTickCount = 0;
 end
 
 -- @param chatmsg: ChatMessage or string. 

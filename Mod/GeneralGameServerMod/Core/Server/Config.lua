@@ -122,7 +122,6 @@ function Config:LoadConfig(filename)
     local Debug = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Debug");
     CopyXmlAttr(self.Debug, Debug and Debug.attr);
     for key, val in pairs(self.Debug) do
-        echo({key, val, type(val)});
         if (val) then
             GGS.Debug.EnableModule(key);
         else

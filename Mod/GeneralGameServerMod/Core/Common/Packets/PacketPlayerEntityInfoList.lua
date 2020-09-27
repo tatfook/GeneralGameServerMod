@@ -17,27 +17,52 @@ local PacketPlayerEntityInfo = commonlib.gettable("Mod.GeneralGameServerMod.Core
 local PacketPlayerEntityInfoList = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerEntityInfoList"));
 
 function PacketPlayerEntityInfoList:ctor()
+	self.hasWritePacket = false;
+	self.hasReadPacket = false;
 end
 
 function PacketPlayerEntityInfoList:Init(entityInfoList)
-    self.playerEntityInfoList = entityInfoList or {};
+	self.playerEntityInfoList = entityInfoList or {};
+	self:WritePacket();
 	return self;
+end
+
+function PacketPlayerEntityInfoList:AddPacket(packet)
+	if (self.hasWritePacket) then
+		table.insert(self.playerEntityInfoList, packet:WritePacket());
+	else
+		table.insert(self.playerEntityInfoList, packet);
+	end
+end
+
+function PacketPlayerEntityInfoList:CleanPacket()
+	self.playerEntityInfoList = {};
+end
+
+function PacketPlayerEntityInfoList:Empty()
+	return #self.playerEntityInfoList == 0;
 end
 
 -- virtual: read packet from network msg data
 function PacketPlayerEntityInfoList:ReadPacket(msg)
-	self.playerEntityInfoList = {};
-    for i = 1, #(msg.playerEntityInfoList or {}) do
-		self.playerEntityInfoList[i] = PacketPlayerEntityInfo:new():Init();
-		self.playerEntityInfoList[i]:ReadPacket(msg.playerEntityInfoList[i]);
+	if (not self.hasReadPacket) then
+		self.playerEntityInfoList = {};
+		for i = 1, #(msg.playerEntityInfoList or {}) do
+			self.playerEntityInfoList[i] = PacketPlayerEntityInfo:new():Init();
+			self.playerEntityInfoList[i]:ReadPacket(msg.playerEntityInfoList[i]);
+		end
+		self.hasReadPacket = true;
 	end
 end
 
 -- virtual: By default, the packet itself is used as the raw message. 
 -- @return a packet to be send. 
 function PacketPlayerEntityInfoList:WritePacket()
-	for i = 1, #(self.playerEntityInfoList or {}) do
-		self.playerEntityInfoList[i] = (self.playerEntityInfoList[i]):WritePacket();
+	if (not self.hasWritePacket) then
+		for i = 1, #(self.playerEntityInfoList or {}) do
+			self.playerEntityInfoList[i] = (self.playerEntityInfoList[i]):WritePacket();
+		end
+		self.hasWritePacket = true;
 	end
 	return self._super.WritePacket(self);
 end

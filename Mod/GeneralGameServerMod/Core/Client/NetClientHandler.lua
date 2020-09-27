@@ -230,39 +230,12 @@ function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     -- 新用户加入玩家管理器
     if (isNew) then
         self:GetPlayerManager():AddPlayer(entityPlayer);
+        entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
     end
     
-    -- 更新玩家运动动画
-    if (type(entityPlayer.SetMotionAnimId) == "function") then entityPlayer:SetMotionAnimId(packetPlayerEntityInfo.motionAnimId) end
-
-    -- 更新实体元数据
-    local watcher = entityPlayer:GetDataWatcher();
-    local metadata = packetPlayerEntityInfo:GetMetadata();
-    if (watcher and metadata) then 
-        watcher:UpdateWatchedObjectsFromList(metadata); 
-    end    
-
-    -- 更新位置信息
-    if (x or y or z or facing or pitch) then
-        local oldpos = string.format("%.2f %.2f %.2f", entityPlayer.x or 0, entityPlayer.y or 0, entityPlayer.z or 0);
-        local newpos = string.format("%.2f %.2f %.2f", x or 0, y or 0, z or 0);
-        if (isNew or oldpos == newpos) then 
-            entityPlayer:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
-        else
-            entityPlayer:SetPositionAndRotation2(x, y, z, facing, pitch, tick);
-        end
-    end
-
-    -- 头部信息
-    local headYaw = packetPlayerEntityInfo.headYaw;
-    local headPitch = packetPlayerEntityInfo.headPitch;
-    if (entityPlayer.SetTargetHeadRotation and headYaw ~= nil and headPitch ~= nil) then
-        entityPlayer:SetTargetHeadRotation(headYaw, headPitch, 3);
-    end
-
-    -- 设置玩家信息
-    if (packetPlayerEntityInfo.playerInfo) then
-        entityPlayer:SetPlayerInfo(packetPlayerEntityInfo.playerInfo);
+    -- 添加移动帧
+    if (entityPlayer.AddPlayerEntityInfo) then
+        entityPlayer:AddPlayerEntityInfo(packetPlayerEntityInfo);
     end
 end
 

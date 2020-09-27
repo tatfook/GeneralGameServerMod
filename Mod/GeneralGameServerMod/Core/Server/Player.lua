@@ -177,7 +177,7 @@ function Player:UpdatePosInfo()
     local areaZ = math.floor(bz / areaSize);
     if (areaX == self.areaX and areaZ == self.areaZ) then return end
     self.areaX, self.areaZ = areaX, areaZ;
-    self.playerNetHandler:handlePlayerEntityInfoList();
+    self:GetPlayerManager():SendPlayerListToPlayer(self);
 end
 
 function Player:GetPlayerEntityInfo()

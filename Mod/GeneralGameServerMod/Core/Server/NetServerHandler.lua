@@ -120,7 +120,7 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     end
 
     -- 新玩家同步玩家列表
-    self:handlePlayerEntityInfoList();
+    self:GetPlayerManager():SendPlayerListToPlayer(self:GetPlayer());
     -- 将玩家加入玩家管理器 有实体信息才加入玩家管理器
     self:GetPlayerManager():AddPlayer(self:GetPlayer());
     -- 开始块同步
@@ -130,12 +130,15 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
 end
 
 -- 同步玩家信息列表
-function NetServerHandler:handlePlayerEntityInfoList()
-    -- 用户不存在 重新登录
-    if (not self:GetPlayer()) then return self:handlePlayerRelogin() end
-    
-    -- 更新玩家列表
-    self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerManager():GetPlayerEntityInfoList(self:GetPlayer())));
+function NetServerHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
+    -- 非有效用户直接忽视
+    if (not self:GetPlayer() or not self:GetPlayer():IsValid()) then return end
+
+    local playerEntityInfoList = packetPlayerEntityInfoList.playerEntityInfoList;
+    for _, packetPlayerEntityInfo in ipairs(playerEntityInfoList) do 
+        self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
+    end
+    self:GetPlayerManager():SendPacketToAllPlayers(packetPlayerEntityInfoList, self:GetPlayer());
 end
 
 -- 玩家重新登录, 当连接存在玩家丢失需要重新等陆, 这个问题与TCP自身自动重连有关(玩家第一次登录, 登录切后台, tcp自行断开, 程序恢复前台, tcp自行重连, 这样跳过了登录步骤,导致用户丢失, 这种发送客户端重连数据包)

@@ -382,6 +382,12 @@ function PlayerManager:SendPacketToPlayer(packet, player)
     player:SendPacketToPlayer(packet);
 end
 
+-- 同步玩家信息列表
+function PlayerManager:SendPlayerListToPlayer(player)
+    if (not player) then return end
+    self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerEntityInfoList(player)), player);
+end
+
 -- 是否是玩家
 function PlayerManager:IsPlayer(player)
     return type(player) == "table" and player.isa and player:isa(Player);

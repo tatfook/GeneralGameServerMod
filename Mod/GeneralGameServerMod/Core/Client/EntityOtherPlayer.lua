@@ -19,10 +19,9 @@ local EntityOtherPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.
 
 local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer";
 
-EntityOtherPlayer:Property("MotionAnimId");
-
 function EntityOtherPlayer:ctor()
     self.playerInfo = {};
+    self.packetPlayerEntityInfoQueue = commonlib.Queue:new();  -- 移动队列
 end
 
 function EntityOtherPlayer:init(world, username, entityId)
@@ -89,9 +88,6 @@ end
 function EntityOtherPlayer:UpdateEntityActionState()
     local curAnimId = self:GetAnimId();
     
-    -- 如果处于运动中 优先使用运动中的动画
-    if (self.smoothFrames > 0 and self:GetMotionAnimId()) then curAnimId = self:GetMotionAnimId() end
-
 	if(self.lastAnimId ~= curAnimId and curAnimId) then
 		self.lastAnimId = curAnimId;
 		local obj = self:GetInnerObject();
@@ -126,6 +122,53 @@ function EntityOtherPlayer:UpdateEntityActionState()
         local newScale = curScale > 1.2 and 1.2 or (curScale < 1 and 1 or curScale);
         self:SetScaling(newScale);
         dataWatcher:SetField(self.dataFieldScale, newScale);
+    end
+end
+
+-- 帧函数
+function EntityOtherPlayer:OnLivingUpdate()
+    EntityOtherPlayer._super.OnLivingUpdate(self);
+    if (self.smoothFrames > 0 or self.packetPlayerEntityInfoQueue:empty()) then return end
+    local packetPlayerEntityInfo = self.packetPlayerEntityInfoQueue:pop();
+    self:UpdatePlayerEntityInfo(packetPlayerEntityInfo);
+end 
+
+-- 添加移动帧
+function EntityOtherPlayer:AddPlayerEntityInfo(packetPlayerEntityInfo)
+    self.packetPlayerEntityInfoQueue:push(packetPlayerEntityInfo);
+end
+
+-- 更新玩家实体信息
+function EntityOtherPlayer:UpdatePlayerEntityInfo(packetPlayerEntityInfo)
+    local x, y, z, facing, pitch, tick = packetPlayerEntityInfo.x, packetPlayerEntityInfo.y, packetPlayerEntityInfo.z, packetPlayerEntityInfo.facing, packetPlayerEntityInfo.pitch, packetPlayerEntityInfo.tick or 5;
+    -- 更新实体元数据
+    local watcher = self:GetDataWatcher();
+    local metadata = packetPlayerEntityInfo:GetMetadata();
+    if (watcher and metadata) then 
+        watcher:UpdateWatchedObjectsFromList(metadata); 
+    end    
+
+    -- 更新位置信息
+    if (x or y or z or facing or pitch) then
+        local oldpos = string.format("%.2f %.2f %.2f", self.x or 0, self.y or 0, self.z or 0);
+        local newpos = string.format("%.2f %.2f %.2f", x or 0, y or 0, z or 0);
+        if (oldpos == newpos) then 
+            self:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
+        else
+            self:SetPositionAndRotation2(x, y, z, facing, pitch, tick);
+        end
+    end
+
+    -- 头部信息
+    local headYaw = packetPlayerEntityInfo.headYaw;
+    local headPitch = packetPlayerEntityInfo.headPitch;
+    if (self.SetTargetHeadRotation and headYaw ~= nil and headPitch ~= nil) then
+        self:SetTargetHeadRotation(headYaw, headPitch, 3);
+    end
+
+    -- 设置玩家信息
+    if (packetPlayerEntityInfo.playerInfo) then
+        self:SetPlayerInfo(packetPlayerEntityInfo.playerInfo);
     end
 end
 
