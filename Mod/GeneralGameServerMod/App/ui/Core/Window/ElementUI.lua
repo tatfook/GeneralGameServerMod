@@ -108,13 +108,11 @@ function ElementUI:RenderOutline(painter, style)
 end
 
 -- 绘制背景
-local debug = true;
 function ElementUI:RenderBackground(painter, style)
     local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor("#ffffff00");
     local x, y, w, h = self:GetGeometry();
 
-    ElementUIDebug.FormatIf(debug and self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
-    if (self:GetName() == "ScrollBarThumb") then debug = false end
+    -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
 
     painter:SetPen(backgroundColor);
 	painter:DrawRectTexture(x, y, w, h, background);
@@ -134,6 +132,27 @@ end
 
 -- 绘制内容
 function ElementUI:RenderContent(painter)
+end
+
+
+-- 获取字体
+function ElementUI:GetFont(defaultValue)
+    return self:GetStyle():GetFont(defaultValue);
+end
+
+-- 获取字体颜色
+function ElementUI:GetColor(defaultValue)
+    return self:GetStyle():GetColor(defaultValue);
+end
+
+-- 获取背景
+function ElementUI:GetBackground(defaultValue)
+    return self:GetStyle():GetBackground(defaultValue);
+end
+
+-- 获取背景颜色
+function ElementUI:GetBackgroundColor(defaultValue)
+    return self:GetStyle():GetBackgroundColor(defaultValue);
 end
 
 -- 元素位置

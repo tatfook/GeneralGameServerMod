@@ -121,6 +121,12 @@ function Debug.GetModuleDebug(module)
     if (ModelDebug[module]) then return ModelDebug[module] end
 
     local obj = {};
+    local counts = {};   -- 数量控制
+
+    -- 设置指定日志输出次数
+    function obj.SetCount(key, count) 
+        counts[tostring(key)] = count or 1;
+    end
 
     function obj.Enable()
         Debug.EnableModule(module);
@@ -137,6 +143,15 @@ function Debug.GetModuleDebug(module)
         DebugCall(module, ...);
     end
     
+    function obj.Once(key, ...)
+        key = tostring(key)''
+        if (counts[key] == 0) then return end
+        counts[key] = counts[key] or 1;
+        counts[key] = counts[key] - 1;
+
+        DebugCall(...);
+    end
+
     function obj.Format(...)
         DebugCall(module, string.format(...));
         return obj;

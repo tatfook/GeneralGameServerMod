@@ -251,7 +251,7 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
 
     self:UpdateLayout();
 
-    ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s", self:GetDirection(), self.width, self.height, thumbSize);
+    -- ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s", self:GetDirection(), self.width, self.height, thumbSize);
 end
 
 -- 滚动位置计算
@@ -284,8 +284,6 @@ end
 
 -- 鼠标滚动事件
 function ScrollBar:OnMouseWheel(event)
-    if (not self:IsVisible()) then return end
-    
     local delta = event:GetDelta();  -- 1 向上滚动  -1 向下滚动
     self.thumb:ScrollByDelta(delta);
 end

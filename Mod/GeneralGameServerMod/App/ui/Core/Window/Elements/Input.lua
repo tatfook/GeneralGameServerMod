@@ -19,6 +19,8 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Input = commonlib.inherit(Element, NPL.export());
 
+local CursorShowHideMaxTickCount = 30;
+
 Input:Property("Name", "Input");
 Input:Property("Value");                                -- 按钮文本值
 
@@ -33,13 +35,26 @@ Input:Property("BaseStyle", {
 });
 
 function Input:ctor()
+    self.cursorShowHideTickCount = 0;
+    self.isShowCursor = false;
+    self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = nil, nil, nil, nil;
+    self.cursorLine = 1;  -- 光标行
+    self.cursorAt = 0;    -- 光标位置  
+    self.startAt = 0;     -- 视图开始位置
+    self.commands = {};                      -- 命令
+    self.text = UniString:new();
+end
+
+function Input:IsCanFocus()
+    return true;
 end
 
 function Input:IsReadOnly()
     return self:GetAttrBoolValue("readonly");
 end
 
-function Input:handleCharInput()
+function Input:handleCharInput(event)
+    echo(event);
 end
 
 function Input:handleReturn()
@@ -124,6 +139,69 @@ function Input:OnKeyDown(event)
     elseif (event:IsFunctionKey() or event.ctrl_pressed) then 
     else
         -- 处理普通输入
-        self:handleCharInput(event);
+        -- self:handleCharInput(event);
 	end
+end
+
+function Input:OnKey(event)
+    if (not self:IsFocus()) then return end
+    if (self:IsReadOnly()) then return end
+    event:accept();
+
+    local commitString = event:commitString();
+    self:InsertTextCmd(commitString);
+end
+
+function Input:InsertTextCmd(text)
+    text = UniString:new(text);
+    table.insert(self.commands, {cursor = self.cursor, action = "insert", text = text});
+    self:InsertText(self.cursor, text);
+end
+
+function Input:InsertText(pos, text)
+    pos = pos or self.text:length();
+    self.text:insert(pos, text);
+    self.cursorAt = self.cursorAt + text:length();
+    self:UpdateValue();
+end
+
+function Input:UpdateValue()
+    local value = self.text:GetText();
+    if (self:GetValue() == value) then return end
+    self:SetValue(value);
+    -- self:OnChange(value);
+end
+
+function Input:RenderCursor(painter)
+    if (not self:IsFocus()) then return end
+    local x, y, w, h = self:GetGeometry();
+    local cursorWidth = self.cursorWidth or 2;
+    local cursorHeight = self.cursorHeight or (self:GetStyle():GetLineHeight(16) - 4); 
+    local cursorX = self.cursorX or (x + 0);
+    local cursorY = self.cursorY or (y + (h - cursorHeight) / 2);
+
+    self.cursorShowHideTickCount = self.cursorShowHideTickCount + 1;
+    if (self.cursorShowHideTickCount > CursorShowHideMaxTickCount) then 
+        self.cursorShowHideTickCount = 0;
+        self.isShowCursor = not self.isShowCursor;
+    end
+
+    if (self.isShowCursor) then
+        painter:SetPen(self:GetColor());
+    else
+        painter:SetPen("#00000000");
+    end
+
+    painter:DrawRectTexture(cursorX, cursorY, cursorWidth, cursorHeight);
+    self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = cursorX, cursorY, cursorWidth, cursorHeight;
+end
+
+
+-- 绘制内容
+function Input:RenderContent(painter)
+    self:RenderCursor(painter);
+    
+    local x, y, w, h = self:GetGeometry();
+    painter:SetPen(self:GetColor());
+    painter:DrawText(x, y, self:GetValue());
 end

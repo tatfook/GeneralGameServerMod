@@ -325,12 +325,12 @@ function Window:handleKeyEvent(event)
         focusElement:OnKey(event);
     end
     -- 系统其它事件处理
-    if(not event:isAccepted()) then
-        local context = SceneContextManager:GetCurrentContext();
-        if(context) then
-            context:handleKeyEvent(event);
-        end
-    end
+    -- if(not event:isAccepted()) then
+    --     local context = SceneContextManager:GetCurrentContext();
+    --     if(context) then
+    --         context:handleKeyEvent(event);
+    --     end
+    -- end
 end
 
 function Window:handleActivateEvent(isActive)
