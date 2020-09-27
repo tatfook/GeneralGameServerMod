@@ -13,6 +13,20 @@ page.ShowUserInfoPage({username="用户名", mainasset="人物模型文件名"})
 local ui = NPL.load("./ui.lua");
 local page = NPL.export();
 
+-- 通用信息框
+function page.Show(G, params)
+    params = params or {};
+
+    -- params.width = params.width or 500;
+    -- params.height = params.height or 242;
+    -- params.url = "%ui%/Page/MessageBox.html";
+
+    params.G = G;
+    params.OnClose = function() end
+
+    ui:ShowWindow(params);
+end
+
 -- 显示用户信息
 local UserInfoPageUI = ui:new();
 function page.ShowUserInfoPage(G, params)

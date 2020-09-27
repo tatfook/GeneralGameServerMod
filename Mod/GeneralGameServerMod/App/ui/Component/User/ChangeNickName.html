@@ -28,6 +28,15 @@ function cancel()
     FinishCallback(self.nickname, false);
 end
 
+function ShowResultBox(text)
+    ui.ShowWindow({
+        url = "%ui%/Component/User/ChangeNicknameResult.html",
+        width = 500,
+        height = 242,
+        G = {text = text},
+    })
+end
+
 function confirm()
     local inputEl = GetRef("input");
     local value = inputEl:GetUIValue();
@@ -35,7 +44,38 @@ function confirm()
     -- 客户端处理铭感词
     value = MyCompany.Aries.Chat.BadWordFilter.FilterString(value);
     
-    _guihelper.MessageBox("修改昵称将消耗 10 个知识豆, 请确认是否修改", function(res)
+    ui.ShowWindow({
+        url = "%ui%/Component/User/ChangeNicknameConfirm.html",
+        width = 500,
+        height = 242,
+        G = {
+            Confirm = function()
+                keepwork.user.setinfo({
+                    router_params = {id = userId},
+                    nickname = value,
+                }, function(status, msg, data) 
+                    if (status < 200 or status >= 300) then 
+                        ShowResultBox(data and data.message or "修改昵称失败");
+                        return cancel() 
+                    end
+                    ShowResultBox("昵称修改成功, 知识豆扣除 10 个");
+                    UserDetail.bean = UserDetail.bean - 10;
+                    FinishCallback(value, true);
+                end);
+            end,
+            Cancel = function()
+                cancel();
+            end
+        }
+    })
+    
+end 
+
+</script>
+
+<!-- MyCompany.Aries.Chat.BadWordFilter.FilterString -->
+
+<!-- _guihelper.MessageBox("修改昵称将消耗 10 个知识豆, 请确认是否修改", function(res)
         if( res ~= _guihelper.DialogResult.OK) then return cancel() end
         keepwork.user.setinfo({
             router_params = {id = userId},
@@ -49,9 +89,4 @@ function confirm()
             UserDetail.bean = UserDetail.bean - 10;
             FinishCallback(value, true);
         end);
-    end, _guihelper.MessageBoxButtons.OKCancel_CustomLabel,nil,nil,nil,nil, {ok = "修改", cancel = "取消"});
-end 
-
-</script>
-
-<!-- MyCompany.Aries.Chat.BadWordFilter.FilterString -->
+    end, _guihelper.MessageBoxButtons.OKCancel_CustomLabel,nil,nil,nil,nil, {ok = "修改", cancel = "取消"}); -->
