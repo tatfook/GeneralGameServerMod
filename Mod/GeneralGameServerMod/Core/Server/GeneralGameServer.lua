@@ -59,6 +59,8 @@ function GeneralGameServer:Start()
     -- 设置系统属性
     self:LoadNetworkSettings();
 
+	GGS.NetDebug.Disable();
+	
 	-- 启动服务
 	local listenIp = Config.Server.listenIp;
 	local listenPort = Config.Server.listenPort;

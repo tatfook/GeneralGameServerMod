@@ -92,7 +92,7 @@
     PlayerLoginLogoutDebug 玩家登入登出日志 可以开启
   -->
   <Debug
-    Net=false
+    NetDebug=false
     PlayerLoginLogoutDebug=true>
   </Debug>
 </GeneralGameServer>

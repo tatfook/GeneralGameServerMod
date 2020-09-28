@@ -76,6 +76,7 @@ end
 
 -- 是否在可视区
 function PlayerManager:IsInnerVisibleArea(bx, by, bz)
+    if (not self:GetMainPlayer()) then return false end
     local areaSize = math.floor(self:GetAreaSize() or 0);
     if (not areaSize or areaSize == 0) then return true end
     local mainPlayerBX, mainPlayerBY, mainPlayerBZ = self:GetMainPlayer():GetBlockPos();

@@ -31,7 +31,7 @@ function EntityMainPlayer:ctor()
     self.lastX, self.lastY, self.lastZ = 0, 0, 0;
     self.motionUpdateTickCount = 0;
     self.lastMotionUpdateTickCount = 1;
-    self.motionPacketList = Packets.PacketPlayerEntityInfoList:new():Init();
+    self.motionPacketList = Packets.PacketPlayerEntityInfoList:new():Init(nil, "SyncPlayerPosition");
 end
 
 -- 初始化函数

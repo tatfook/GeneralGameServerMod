@@ -128,6 +128,7 @@ function Config:LoadConfig(filename)
             GGS.Debug.DisableModule(key);
         end
     end
+    echo(GGS.Debug.GetModuleLogEnableMap());
 end
 
 -- 加载配置

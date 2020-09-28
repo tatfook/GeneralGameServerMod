@@ -31,6 +31,10 @@ Input:Property("BaseStyle", {
         ["color"] = "#000000",
         ["height"] = 20,
         ["width"] = 100,
+        ["padding-left"] = 4, 
+        ["padding-right"] = 4, 
+        ["padding-top"] = 2, 
+        ["padding-bottom"] = 2, 
     }
 });
 
@@ -157,19 +161,24 @@ function Input:OnKey(event)
     self:InsertTextCmd(commitString);
 end
 
-function Input:InsertTextCmd(text)
+function Input:InsertTextCmd(text, startAt)
+    startAt = startAt or self.cursorAt;
     text = UniString:new(text);
-    table.insert(self.commands, {cursor = self.cursor, action = "add", text = text});
-    self:InsertText(self.cursor, text);
+
+    table.insert(self.commands, {startAt = startAt, endAt = startAt + text:length(), action = "add", text = text});
+    self:InsertText(text, text);
 end
 
-function Input:DeleteTextCmd()
+function Input:DeleteTextCmd(startAt, endAt)
 end
 
-function Input:InsertText(pos, text)
-    pos = pos or self.text:length();
+function Input:InsertText(text, startAt)
+    local textLength = text:length();
+    startAt = startAt or self.cursorAt;
     self.text:insert(pos, text);
-    self.cursorAt = self.cursorAt + text:length();
+    if (startAt <= self.cursorAt) then
+        self.cursorAt = self.cursorAt + textLength;
+    end
     self:UpdateValue();
 end
 
@@ -212,9 +221,8 @@ end
 -- 绘制内容
 function Input:RenderContent(painter)
     self:RenderCursor(painter);
-    
     local x, y, w, h = self:GetContentGeometry();
     painter:SetPen(self:GetColor());
-    -- _guihelper.AutoTrimTextByWidth
-    painter:DrawText(x, y, self:GetValue());
+    local text = _guihelper.AutoTrimTextByWidth(self.text:sub(self.startAt):GetText(), w, self:GetFont());
+    painter:DrawText(x, y, text);
 end

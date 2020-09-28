@@ -41,7 +41,7 @@ _G.GGS = {
 	FATAL= Debug.GetModuleDebug("FATAL"),
 	-- 业务逻辑DEBUG
 	PlayerLoginLogoutDebug = Debug.GetModuleDebug("PlayerLoginLogoutDebug"),   -- 玩家登录登出日志
-	NetDebug = Debug.GetModuleDebug("NET"),                                    -- 发送接收数据包日志
+	NetDebug = Debug.GetModuleDebug("NetDebug"),                               -- 发送接收数据包日志
 	BlockSyncDebug = Debug.GetModuleDebug("BlockSyncDebug"),                   -- 方块同步日志
 	AreaSyncDebug = Debug.GetModuleDebug("AreaSyncDebug"),                     -- 区域同步日志
 	-- 配置

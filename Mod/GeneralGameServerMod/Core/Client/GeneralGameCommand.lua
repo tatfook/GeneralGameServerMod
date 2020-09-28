@@ -150,6 +150,8 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	-- 设置客户端
 	self:SetGeneralGameClient(GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient);
 
+	if (IsDevEnv) then options.dev = true end
+	
 	-- 设置环境
 	if (options.dev) then 
 		self:GetGeneralGameClient():SetEnv("dev"); 

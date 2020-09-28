@@ -385,7 +385,7 @@ end
 -- 同步玩家信息列表
 function PlayerManager:SendPlayerListToPlayer(player)
     if (not player) then return end
-    self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerEntityInfoList(player)), player);
+    self:SendPacketToPlayer(Packets.PacketPlayerEntityInfoList:new():Init(self:GetPlayerEntityInfoList(player), "SyncPlayerList"), player);
 end
 
 -- 是否是玩家

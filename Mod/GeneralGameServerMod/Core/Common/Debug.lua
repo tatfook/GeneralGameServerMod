@@ -88,6 +88,10 @@ setmetatable(Debug, {
     end
 });
 
+function Debug.GetModuleLogEnableMap()
+    return ModuleLogEnableMap;
+end
+
 function Debug.IsEnableModule(module)
     return ModuleLogEnableMap[FormatModuleName(module)];
 end

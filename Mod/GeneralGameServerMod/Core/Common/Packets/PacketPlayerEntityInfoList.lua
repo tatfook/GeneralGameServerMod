@@ -17,11 +17,13 @@ local PacketPlayerEntityInfo = commonlib.gettable("Mod.GeneralGameServerMod.Core
 local PacketPlayerEntityInfoList = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerEntityInfoList"));
 
 function PacketPlayerEntityInfoList:ctor()
+	self.action = "SyncPlayerPosition"; -- sync position sync player
 	self.hasWritePacket = false;
 	self.hasReadPacket = false;
 end
 
-function PacketPlayerEntityInfoList:Init(entityInfoList)
+function PacketPlayerEntityInfoList:Init(entityInfoList, action)
+	self.action = action or self.action;
 	self.playerEntityInfoList = entityInfoList or {};
 	self:WritePacket();
 	return self;
@@ -45,6 +47,7 @@ end
 
 -- virtual: read packet from network msg data
 function PacketPlayerEntityInfoList:ReadPacket(msg)
+	self.action = msg.action;
 	if (not self.hasReadPacket) then
 		self.playerEntityInfoList = {};
 		for i = 1, #(msg.playerEntityInfoList or {}) do

@@ -242,6 +242,7 @@ end
 -- 处理世界玩家列表
 function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
     local playerEntityInfoList = packetPlayerEntityInfoList.playerEntityInfoList;
+    local action = packetPlayerEntityInfoList.action;
     local usernames = {};
     local deleted = {};
     -- 更新玩家信息
@@ -252,6 +253,10 @@ function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
             self:handlePlayerEntityInfo(playerEntityInfoList[i]);
         end 
     end
+
+    -- 不是同步玩家列表 则不移除
+    if (action ~= "SyncPlayerList") then return end
+
     -- 查找无效玩家
     local players = self:GetPlayerManager():GetPlayers();
     local mainPlayer = self:GetPlayer();
