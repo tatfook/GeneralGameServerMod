@@ -252,16 +252,21 @@ function Window:handleMouseEvent(event)
 
         if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Element Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
 
+        -- 偏移元素位置
+        point:sub(element:GetPosition());
+
         -- 触发捕获事件
         if (type(element[captureFuncName]) == "function") then 
             (element[captureFuncName])(element, event);
         end
 
         -- 是否已处理
-        if (event:isAccepted()) then return target end
-        
-        -- 切换点为元素内的坐标
-        point:sub(element:GetPosition());
+        if (event:isAccepted()) then 
+            point:add(element:GetPosition());
+            return target;
+        end
+
+        -- 偏移滚动
         point:add(element:GetScrollPos()); -- 加上滚动
         -- 子元素
         local target = nil;
@@ -270,12 +275,15 @@ function Window:handleMouseEvent(event)
             if (target) then break end
         end
         target = target or element;
-        -- 还原点坐标
-        point:add(element:GetPosition());
+        
+        -- 还原滚动偏移
         point:sub(element:GetScrollPos()); -- 减去滚动
         
         -- 是否已处理
-        if (event:isAccepted()) then return target end
+        if (event:isAccepted()) then 
+            point:add(element:GetPosition());
+            return target;
+        end
         
         if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Element Bubble: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
 
@@ -283,6 +291,9 @@ function Window:handleMouseEvent(event)
         if (type(element[bubbleFuncName]) == "function") then
             (element[bubbleFuncName])(element, event);
         end
+        
+        -- 还原元素位置偏移
+        point:add(element:GetPosition());
 
         return target;
     end

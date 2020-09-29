@@ -17,7 +17,7 @@ local PacketPlayerEntityInfo = commonlib.gettable("Mod.GeneralGameServerMod.Core
 local PacketPlayerEntityInfoList = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerEntityInfoList"));
 
 function PacketPlayerEntityInfoList:ctor()
-	self.action = "SyncPlayerPosition"; -- sync position sync player
+	self.action = "SyncPlayerPosition"; --SyncPlayerPosition 同步玩家位置,  SyncPlayerList 同步在线用户列表
 	self.hasWritePacket = false;
 	self.hasReadPacket = false;
 end

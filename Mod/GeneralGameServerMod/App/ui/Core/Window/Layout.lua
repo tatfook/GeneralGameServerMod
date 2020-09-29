@@ -28,7 +28,7 @@ function Layout:Reset()
 	-- 相对于父元素的位置
 	self.top, self.right, self.bottom, self.left = 0, 0, 0, 0;
 	-- 元素宽高 
-	self.width, self.height = nil, nil;
+	self.x, self.y, self.width, self.height = 0, 0, nil, nil;
 	-- 真实内容宽高
 	self.realContentWidth, self.realContentHeight = nil, nil;
 	-- 内容宽高

@@ -155,9 +155,17 @@ function ElementUI:GetBackgroundColor(defaultValue)
     return self:GetStyle():GetBackgroundColor(defaultValue);
 end
 
+-- 元素位置更新
+function ElementUI:OnSize()
+end
+
 -- 元素位置
 function ElementUI:SetGeometry(x, y, w, h)
+    local oldx, oldy, oldw, oldh = self:GetGeometry();
     self:GetRect():setRect(x, y, w, h);
+    if (oldx ~= x or oldy ~= y or oldw ~= w or oldh ~= h) then
+        self:OnSize();
+    end
 end
 
 function ElementUI:GetGeometry()
@@ -179,11 +187,15 @@ function ElementUI:GetY()
 end
 
 function ElementUI:SetX(x)
-	self:GetRect():setX(x);
+    local oldx = self:GetX();
+    self:GetRect():setX(x);
+    if (oldx ~= x) then self:OnSize() end
 end
 
 function ElementUI:SetY(y)
-	self:GetRect():setY(y);
+    local oldy = self:GetY();
+    self:GetRect():setY(y);
+    if (oldy ~= y) then self:OnSize() end
 end
 
 function ElementUI:GetWidth()
@@ -195,15 +207,21 @@ function ElementUI:GetHeight()
 end
 
 function ElementUI:SetWidth(w)
+    local oldw = self:GetWidth();
     self:GetRect():setWidth(w);
+    if (oldw ~= w) then self:OnSize() end
 end
 
 function ElementUI:SetHeight(h)
+    local oldh = self:GetHeight();
     self:GetRect():setHeight(h);
+    if (oldh ~= h) then self:OnSize() end
 end
 
 function ElementUI:SetPosition(x, y)
+    local oldx, oldy = self:GetPosition();
     self:GetRect():setPosition(x, y);
+    if (oldx ~= x or oldy ~= y) then self:OnSize() end
 end
 
 function ElementUI:GetPosition()
@@ -211,7 +229,9 @@ function ElementUI:GetPosition()
 end
 
 function ElementUI:SetSize(w, h)
+    local oldw, oldh = self:GetSize();
     self:GetRect():setSize(w, h);
+    if (oldw ~= w or oldh ~= h) then self:OnSize() end
 end
 
 function ElementUI:GetSize()
@@ -334,6 +354,11 @@ end
 -- 是否是聚焦元素
 function ElementUI:IsFocus()
     return self:GetFocus() == self;
+end
+
+-- 元素主动聚焦
+function ElementUI:FocusIn()
+    self:SetFocus(self);
 end
 
 -- 获取聚焦元素
