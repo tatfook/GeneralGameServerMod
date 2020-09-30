@@ -19,7 +19,8 @@ local Div = NPL.load("./Elements/Div.lua", IsDevEnv);
 local Text = NPL.load("./Elements/Text.lua", IsDevEnv);
 local Button = NPL.load("./Elements/Button.lua", IsDevEnv);
 local Input = NPL.load("./Elements/Input.lua", IsDevEnv);
-local Canvas = NPL.load("./Elements/Canvas.lua", IsDevEnv);
+local Input = NPL.load("./Elements/Input.lua", IsDevEnv);
+local TextArea = NPL.load("./Elements/TextArea.lua", IsDevEnv);
 
 local ElementManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -35,6 +36,7 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("Button", Button);
     ElementManager:RegisterByTagName("Input", Input);
     ElementManager:RegisterByTagName("Canvas", Canvas);
+    ElementManager:RegisterByTagName("TextArea", TextArea);
 end
 
 function ElementManager:RegisterByTagName(tagname, class)

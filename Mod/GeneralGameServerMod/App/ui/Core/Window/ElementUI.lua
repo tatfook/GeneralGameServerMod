@@ -26,7 +26,7 @@ local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable(
 local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
 function ElementUI:ctor()
-    self.screenX, self.screenY = 0, 0;  -- 窗口的屏幕位置
+    self.windowX, self.windowY = 0, 0;  -- 窗口内坐标
 end
 
 -- 是否显示
@@ -187,15 +187,11 @@ function ElementUI:GetY()
 end
 
 function ElementUI:SetX(x)
-    local oldx = self:GetX();
-    self:GetRect():setX(x);
-    if (oldx ~= x) then self:OnSize() end
+    self:SetPosition(x, self:GetY());
 end
 
 function ElementUI:SetY(y)
-    local oldy = self:GetY();
-    self:GetRect():setY(y);
-    if (oldy ~= y) then self:OnSize() end
+    self:SetPosition(self:GetX(), y);
 end
 
 function ElementUI:GetWidth()
@@ -207,15 +203,11 @@ function ElementUI:GetHeight()
 end
 
 function ElementUI:SetWidth(w)
-    local oldw = self:GetWidth();
-    self:GetRect():setWidth(w);
-    if (oldw ~= w) then self:OnSize() end
+    self:SetSize(w, self:GetHeight());
 end
 
 function ElementUI:SetHeight(h)
-    local oldh = self:GetHeight();
-    self:GetRect():setHeight(h);
-    if (oldh ~= h) then self:OnSize() end
+    self:SetSize(self:GetWidth(), h);
 end
 
 function ElementUI:SetPosition(x, y)
@@ -238,12 +230,52 @@ function ElementUI:GetSize()
     return self:GetWidth(), self:GetHeight();
 end
 
-function ElementUI:SetScreenPos(x, y)
-    self.screenX, self.screenY = x, y;
+-- 设置元素相对窗口的坐标
+function ElementUI:SetWindowPos(x, y)
+    self.windowX, self.windowY = x, y;
 end
 
+-- 获取元素相对窗口的坐标
+function ElementUI:GetWindowPos()
+    return self.windowX, self.windowY;
+end
+-- 全局坐标转窗口坐标
+function ElementUI:GloablToWindowPos()
+end 
+
+-- 全局坐标转元素内坐标
+function ElementUI:GloablToGeometryPos()
+end
+-- 全局坐标转元素内容区坐标
+function ElementUI:GlobalToContentGeometryPos()
+end
+
+-- 更新元素窗口的坐标
+function ElementUI:UpdateWindowPos()
+    local parentElement = self:GetParentElement();
+	local windowX, windowY = 0, 0;
+	local x, y = self:GetPosition();
+    windowX, windowY = windowX + x, windowY + y;
+    self:SetWindowPos(windowX, windowY);
+    -- 更新子元素的窗口位置
+	for child in self:ChildElementIterator() do
+        child:UpdateWindowPos();
+    end
+end
+
+-- 获取元素相对屏幕的坐标
 function ElementUI:GetScreenPos()
-    return self.screenX, self.screenY;
+    local windowX, windowY = self:GetWindowPos();
+    local screenX, screenY = self:GetWindow():GetScreenPos();
+    return screenX + windowX, screenY + windowY;
+end
+
+-- 指定点是否在元素视区内
+function ElementUI:IsContainPoint(screenX, screenY)
+    local left, top = self:GetScreenPos();
+    local width, height = self:GetSize();
+    local right, bottom = left + width, top + height;
+    return left <= screenX and screenX <= right and top <= screenY and screenY <= bottom;
 end
 
 function ElementUI:GetScrollPos()

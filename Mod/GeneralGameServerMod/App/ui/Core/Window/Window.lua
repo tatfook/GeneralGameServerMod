@@ -43,6 +43,7 @@ Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 
 function Window:ctor()
+    self.screenX, self.screenY = 0, 0;  -- 窗口的屏幕位置
     self:SetName("Window");
     self:SetTagName("Window");
 end
@@ -56,11 +57,11 @@ function Window:Init(params)
        <html style="height:100%; background-color:#ffffff;">
             <Button style="margin: 10px">按钮</Button>
             <Text>中文 hello wor&nbsp;ld  this is a test</Text>
-            <Div style="height: 100px; width: 100px; outline-width:1px; outline-color:#000000;">
+            <div id="debug" style="margin-left: 100px; height: 100px; width: 100px; outline-width:1px; outline-color:#000000;">
                 <div style="background-color:#ff0000; height: 100px;"></div>
                 <div style="background-color:#00ff00; height: 100px;"></div>
-            </Div>
-            <input style="margin: 10px"></input>
+            </div>
+            <TextArea style="margin: 10px"></TextArea>
        </html>
     ]]), "//html");
 
@@ -204,6 +205,16 @@ function Window:CreateNativeWindow(params)
     end);
 
     return native_window;
+end
+
+-- 设置元素相对屏幕的坐标
+function Window:SetScreenPos(x, y)
+    self.screenX, self.screenY = x, y;
+end
+
+-- 获取元素相对屏幕的坐标
+function Window:GetScreenPos()
+    return self.screenX, self.screenY;
 end
 
 -- 窗口大小改变

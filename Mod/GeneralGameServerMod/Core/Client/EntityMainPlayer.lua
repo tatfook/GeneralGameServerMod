@@ -167,9 +167,12 @@ function EntityMainPlayer:SendMotionUpdates()
     if (not isSync) then return end
     
     -- 更新最大同步时间
-    if (hasMoved) then                                                                  
-        maxMotionUpdateTickCount = self.motionUpdateTickCount;      -- 尽量保证下个数据包比上时间长， 因在在其它玩家世界自己人物慢一个节拍， 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
-    else                                                            -- 如果不动, 同步频率X2增长 原地操作降低更新频率 最大值为2min                                                                                                                          
+    if (hasMoved) then              
+        -- motionUpdateTickCount 为本次移动所需时间, 调整下次移动时间上限为本次时间-5*30ms, 可以低消150ms网络延迟, 客户端存在移动帧队列故可以下次时间比上次时间短
+        -- maxMotionUpdateTickCount = math.max(math.min(self.motionUpdateTickCount, self:GetMotionSyncTickCount()) - 5, 1); 
+        maxMotionUpdateTickCount = self:GetMotionSyncTickCount();                                                   
+        -- maxMotionUpdateTickCount = self.motionUpdateTickCount;      -- 尽量保证下个数据包比上时间长， 因在在其它玩家世界自己人物慢一个节拍，避免上次动画未完成就播放本次动画 如果是强制更新, 则将tick频率调低  30fps  33 = 1s
+    else                                                               -- 如果不动, 同步频率X2增长 原地操作降低更新频率 最大值为2min                                                                                                                          
         maxMotionUpdateTickCount =  maxMotionUpdateTickCount > (30 * 120) and maxMotionUpdateTickCount or (maxMotionUpdateTickCount + maxMotionUpdateTickCount);       -- 5 10 20 40 80 160 320 640
     end
   

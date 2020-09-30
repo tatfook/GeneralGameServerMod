@@ -41,6 +41,8 @@ function Layout:Reset()
 	self.paddingTop, self.paddingRight, self.paddingBottom, self.paddingLeft = 0, 0, 0, 0;
 	-- 边距
 	self.marginTop, self.marginRight, self.marginBottom, self.marginLeft = 0, 0, 0, 0;
+	-- 窗口坐标
+	-- self.windowX, self.windowY = 0, 0;
 
 	-- 是否固定内容大小
 	self:SetFixedSize(false);
@@ -243,7 +245,10 @@ function Layout:PrepareLayout()
 	-- 窗口元素 直接设置宽高
 	if (not parentLayout and self:GetElement():IsWindow()) then
         local x, y, w, h = self:GetWindowPosition();
-		return self:SetWidthHeight(w or 0, h or 0);
+		self:SetPos(0, 0);
+		self:SetWidthHeight(w or 0, h or 0);
+		self:SetFixedSize(true);
+		return ;
 	end
 	
 	-- 获取父元素宽高
@@ -265,27 +270,27 @@ function Layout:PrepareLayout()
     self:SetMaxWidthHeight(maxWidth, maxHeight);
 
     -- 数字化边距
-	local marginLeft, marginTop, marginRight, marginBottom = style["margin-top"], style["margin-right"], style["margin-bottom"], style["margin-left"];
-	marginLeft = self:PercentageToNumber(marginLeft, parentWidth) or 0;
+	local marginTop, marginRight, marginBottom, marginLeft = style["margin-top"], style["margin-right"], style["margin-bottom"], style["margin-left"];
 	marginRight = self:PercentageToNumber(marginRight, parentWidth) or 0;
 	marginTop = self:PercentageToNumber(marginTop, parentWidth) or 0;
 	marginBottom = self:PercentageToNumber(marginBottom, parentWidth) or 0;
+	marginLeft = self:PercentageToNumber(marginLeft, parentWidth) or 0;
     self:SetMargin(marginTop, marginRight, marginBottom, marginLeft);
     
     -- 数字化边框
-	local borderLeft, borderTop, borderRight, borderBottom = style["border-left-width"], style["border-top-width"], style["border-right-width"], style["border-bottom-width"];
-	borderLeft = self:PercentageToNumber(borderLeft, parentWidth) or 0;
+	local borderTop, borderRight, borderBottom, borderLeft = style["border-top-width"], style["border-right-width"], style["border-bottom-width"], style["border-left-width"];
 	borderRight = self:PercentageToNumber(borderRight, parentWidth) or 0;
 	borderTop = self:PercentageToNumber(borderTop, parentWidth) or 0;
     borderBottom = self:PercentageToNumber(borderBottom, parentWidth) or 0;
+	borderLeft = self:PercentageToNumber(borderLeft, parentWidth) or 0;
     self:SetBorder(borderTop, borderRight, borderBottom, borderLeft);
 
 	-- 数字化填充
-	local paddingLeft, paddingTop, paddingRight, paddingBottom = style["padding-left"], style["padding-top"], style["padding-right"], style["padding-bottom"];
-	paddingLeft = self:PercentageToNumber(paddingLeft, parentWidth) or 0;
+	local paddingTop, paddingRight, paddingBottom, paddingLeft = style["padding-top"], style["padding-right"], style["padding-bottom"], style["padding-left"];
 	paddingRight = self:PercentageToNumber(paddingRight, parentWidth) or 0;
 	paddingTop = self:PercentageToNumber(paddingTop, parentWidth) or 0;
     paddingBottom = self:PercentageToNumber(paddingBottom, parentWidth) or 0;
+	paddingLeft = self:PercentageToNumber(paddingLeft, parentWidth) or 0;
     self:SetPadding(paddingTop, paddingRight, paddingBottom, paddingLeft);
     
     -- 设置盒子类型
@@ -353,14 +358,19 @@ function Layout:Update()
 		self:GetElement():OnRealContentSizeChange();
 	end
 	
-    -- 	self:ApplyAlignStyle();
-    -- 	self:ApplyFloatStyle();
-
-	-- 子元素更新, 当父元素存在,不处于更新中,非固定宽高时, 需要更新父布局使其有正确的宽高 
+	-- 子元素更新完成, 当父元素存在,非固定宽高时, 需要更新父布局使其有正确的宽高 
 	local parentLayout = self:GetParentLayout();
-    if (parentLayout and parentLayout:IsLayoutFinish() and not parentLayout:IsFixedSize()) then
-        parentLayout:Update();
-    end
+	-- 父布局存在且在布局中则直接跳出
+	if (parentLayout and not parentLayout:IsLayoutFinish()) then return end
+	
+	-- 父布局存在且不为固定宽高则需更新父布局重新计算宽高 
+	if (parentLayout and not parentLayout:IsFixedSize()) then return parentLayout:Update() end
+
+	-- 父布局存在且为固定宽高则直接更新父布局的真实宽高即可
+	if (parentLayout and parentLayout:IsFixedSize()) then parentLayout:UpdateRealContentWidthHeight() end
+
+	-- 父布局更新完毕, 重新计算元素的窗口坐标
+	self:GetElement():UpdateWindowPos();
 end
 
 -- 更新内容宽高
@@ -388,6 +398,7 @@ function Layout:UpdateRealContentWidthHeight()
 				child:GetAttrValue("id") == "debug",
 				string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
+				-- string.format("child margin: %s, %s, %s, %s", childMarginTop, childMarginRight, childMarginBottom, childMarginLeft), childStyle,
 				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s, childWidth = %s, childHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight, childWidth, childHeight)
 			);
 			if (not childLayout:IsBlock()) then
