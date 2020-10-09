@@ -22,7 +22,6 @@ local TextArea = commonlib.inherit(Element, NPL.export());
 local TextAreaDebug = GGS.Debug.GetModuleDebug("TextAreaDebug");
 local CursorShowHideMaxTickCount = 30;
 
-TextArea:Property("Name", "TextArea");
 TextArea:Property("Value");                                    -- 文本值
 TextArea:Property("RowCount", 2);                              -- 行数
 TextArea:Property("AutoWrap", true, "IsAutoWrap");             -- 是否自动换行
@@ -39,20 +38,32 @@ TextArea:Property("BaseStyle", {
         ["padding-right"] = 4, 
         ["padding-top"] = 2, 
         ["padding-bottom"] = 2, 
+        ["overflow-y"] = "scroll",
     }
 });
 
 function TextArea:ctor()
+    self:SetName("TextArea");
     self.cursorShowHideTickCount = 0;
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = 0, 0, nil, nil;
     self.cursorAt = 1;    -- 光标位置 占据下一个输入位置
     self.undoCmds = {};   -- 撤销命令
     self.redoCmds = {};   -- 重做命令
-    self.text = UniString:new();  -- 文本值
     self.lines = {};      -- 所有文本行
     self.selectStartAt, self.selectEndAt = nil, nil;  -- 文本选择
 
+    self.text = UniString:new();  -- 文本值
     self:UpdateValue();
+end
+
+-- 初始化完成
+function TextArea:Init(xmlNode, window)
+    TextArea._super.Init(self, xmlNode, window);
+
+    self.text = UniString:new(self:GetAttrStringValue("value", ""));
+    self:UpdateValue();
+
+    return self;
 end
 
 -- 是否选择
@@ -87,6 +98,7 @@ function TextArea:IsReadOnly()
 end
 
 function TextArea:handleReturn()
+    self:InsertTextCmd("\n", self.cursorAt);
 end
 
 function TextArea:handleEscape()
@@ -157,9 +169,19 @@ function TextArea:handleEnd()
 end
 
 function TextArea:handleMoveToPrevLine()
+    local cursorLine = self:GetCursorLine();
+    if (cursorLine.line <= 1) then return end
+    local lastLine = self.lines[cursorLine.line - 1];
+    local cursorAt = lastLine.startAt + self.cursorAt - cursorLine.startAt;
+    self.cursorAt = cursorAt > lastLine.endAt and lastLine.endAt or cursorAt;
 end
 
 function TextArea:handleMoveToNextLine()
+    local cursorLine = self:GetCursorLine();
+    if (cursorLine.line >= #self.lines) then return end
+    local nextLine = self.lines[cursorLine.line + 1];
+    local cursorAt = nextLine.startAt + self.cursorAt - cursorLine.startAt;
+    self.cursorAt = cursorAt > nextLine.endAt and nextLine.endAt or cursorAt;
 end
 
 function TextArea:handleMoveToPrevChar()
@@ -177,9 +199,11 @@ function TextArea:handleMoveToNextChar()
 end
 
 function TextArea:handleSelectToPrevLine()
+    
 end
 
 function TextArea:handleSelectToNextLine()
+    
 end
 
 function TextArea:handleSelectNextChar()
@@ -198,14 +222,19 @@ function TextArea:handleSelectPrevChar()
     self.selectEndAt = math.max(math.min(self.selectEndAt, self.text:length()), 1);
     self.selectStartAt = self.selectEndAt >= self.cursorAt and self.cursorAt or self.cursorAt -1;
 end
+
 function TextArea:handleMoveToNextWord()
 end
+
 function TextArea:handleMoveToPrevWord()
 end
+
 function TextArea:handleSelectNextWord()
 end
+
 function TextArea:handleSelectPrevWord()
 end
+
 function TextArea:OnKeyDown(event)
     if (not self:IsFocus()) then return end
     if (self:IsReadOnly()) then return end
@@ -308,6 +337,9 @@ function TextArea:UpdateLineInfo()
     local linetexts = commonlib.split(text, "\n");
     local x, y, w, h = self:GetContentGeometry();
     local linecount, lines, line, at = #linetexts, {}, 0, 0;
+
+    w = w - self:GetScrollBarWidth();
+    if (w <= 0 or h == 0) then linecount = 0 end
     for i = 1, linecount do
         local linetext = linetexts[i];
         local trimtext, remaintext = _guihelper.TrimUtf8TextByWidth(linetext, w, self:GetFont());
@@ -316,7 +348,7 @@ function TextArea:UpdateLineInfo()
         line = line + 1;
         at = endAt;
         table.insert(lines, {line = line, startAt = startAt, endAt = endAt});
-        while (remaintext and remaintext ~= "") do
+        while (remaintext and remaintext ~= "" and startAt <= endAt) do
             trimtext, remaintext = _guihelper.TrimUtf8TextByWidth(remaintext, w, self:GetFont());
             startAt, endAt = at + 1, at + self:GetTextLength(trimtext);
             line = line + 1;
@@ -335,6 +367,12 @@ function TextArea:UpdateLineInfo()
 
     self.lines = lines;
     TextAreaDebug("UpdateLineInfo", text, lines);
+
+    if (not self:GetStyle()) then return end
+
+    local LineHeight = self:GetStyle():GetLineHeight(); 
+    self:GetLayout():SetRealContentWidthHeight(w, (#lines) * LineHeight);
+    self:OnRealContentSizeChange();
 end
 
 function TextArea:DeleteTextCmd(startAt, count)
@@ -379,11 +417,23 @@ function TextArea:AdjustCursorAt(offset)
     self.cursorAt = self.cursorAt + offset;
     self.cursorAt = math.max(self.cursorAt, 1);
     self.cursorAt = math.min(self.cursorAt, self.text:length() + 1);
+
+    local x, y, w, h = self:GetContentGeometry();
+    local line = self:GetLineByAt(self.cursorAt);
+    local LineHeight = self:GetStyle():GetLineHeight(); 
+    local offsetY = (line.line - 1) * LineHeight;
+    local scrollValue = self:GetScrollBarValue();
+    if ((offsetY + LineHeight) > h) then scrollValue = offsetY + LineHeight - h end
+    if (offsetY < scrollValue) then scrollValue = offsetY end
+    TextAreaDebug.Format("AdjustCursorAt offsetY = %s, scrollValue = %s, h = %s", offsetY, scrollValue, h);
+    self:SetScrollBarValue(scrollValue);
+end
+
+function TextArea:GetCursorLine()
+    return self:GetLineByAt(self.cursorAt);
 end
 
 function TextArea:RenderCursor(painter)
-    if (not self:IsFocus()) then return end
-
     local x, y, w, h = self:GetContentGeometry();
     local line = self:GetLineByAt(self.cursorAt);
     local LineHeight = self:GetStyle():GetLineHeight(); 
@@ -394,7 +444,7 @@ function TextArea:RenderCursor(painter)
         self:SetShowCursor(not self:IsShowCursor());
     end
 
-    if (self:IsShowCursor()) then
+    if (self:IsShowCursor() and self:IsFocus()) then
         painter:SetPen(self:GetColor());
     else
         painter:SetPen("#00000000");
@@ -409,6 +459,16 @@ function TextArea:RenderContent(painter)
     local LineHeight = self:GetStyle():GetLineHeight(); 
     local x, y, w, h = self:GetContentGeometry();
 
+    -- 存在滚动需要做裁剪
+    local layout = self:GetLayout();
+    local width, height = self:GetSize();
+    local scrollX, scrollY = self:GetScrollPos();
+    if (layout:IsOverflowX() or layout:IsOverflowY()) then
+        painter:Save();
+        painter:SetClipRegion(x, y, w, h);
+        painter:Translate(-scrollX, -scrollY);
+    end
+    
     self:RenderCursor(painter);
 
     -- 渲染选择背景
@@ -438,10 +498,35 @@ function TextArea:RenderContent(painter)
     for i, line in ipairs(self.lines) do
         painter:DrawText(x, y + (line.line - 1) * LineHeight, self.text:sub(line.startAt, line.endAt):GetText());
     end
+
+    -- 恢复裁剪
+    if (layout:IsOverflowX() or layout:IsOverflowY()) then
+        painter:Translate(scrollX, scrollY);
+        painter:Restore();
+    end
+end
+
+-- 获取滚动条的宽度
+function TextArea:GetScrollBarWidth()
+    if (not self.verticalScrollBar or not self.verticalScrollBar:IsVisible()) then return 0 end
+    return self.verticalScrollBar:GetWidth();
+end
+
+-- 获取滚动位置
+function TextArea:GetScrollBarValue()
+    local scrollX, scrollY = self:GetScrollPos();
+    return scrollY;
+end
+
+-- 设置滚动条的位置
+function TextArea:SetScrollBarValue(val)
+    if (not self.verticalScrollBar) then return end
+    self.verticalScrollBar:ScrollTo(val or 0);
 end
 
 function TextArea:GetAtByPos(x, y)
     local lineNo, LineHeight = 1, self:GetStyle():GetLineHeight(); 
+    y = y + self:GetScrollBarValue();
     while (y > LineHeight) do 
         y = y - LineHeight;
         lineNo = lineNo + 1;
@@ -466,6 +551,10 @@ function TextArea:GloablToContentGeometryPos(x, y)
     local parentScreenX, parentScreenY = self:GetParentElement():GetScreenPos();
     local contentX, contentY = self:GetContentGeometry();
     return x - parentScreenX - contentX, y - parentScreenY - contentY;
+end
+
+function TextArea:OnAfterUpdateLayout()
+    self:UpdateLineInfo();
 end
 
 function TextArea:OnMouseDown(event)

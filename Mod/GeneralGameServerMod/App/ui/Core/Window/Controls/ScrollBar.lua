@@ -293,3 +293,12 @@ function ScrollBar:OnMouseDown(event)
     local pos = event:pos();
     self.thumb:ScrollTo(pos:x() - self.scrollLeft - self.thumbSize / 2, pos:y() - self.scrollTop - self.thumbSize / 2);
 end
+
+-- 滚动到指定位置
+function ScrollBar:ScrollTo(val)
+    if (self:IsHorizontal()) then 
+        self.thumb:ScrollTo(val / (self.scrollWidth - self.contentWidth) * self.thumb.maxLeft , nil);
+    else 
+        self.thumb:ScrollTo(nil, val / (self.scrollHeight - self.contentHeight) * self.thumb.maxTop);
+    end
+end

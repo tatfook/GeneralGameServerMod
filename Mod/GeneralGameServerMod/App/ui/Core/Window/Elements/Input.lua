@@ -345,15 +345,13 @@ function Input:RenderCursor(painter)
     local cursorY = self.cursorY or 0;
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = cursorX, cursorY, cursorWidth, cursorHeight;
     
-    if (not self:IsFocus()) then return end
-
     self.cursorShowHideTickCount = self.cursorShowHideTickCount + 1;
     if (self.cursorShowHideTickCount > CursorShowHideMaxTickCount) then 
         self.cursorShowHideTickCount = 0;
         self:SetShowCursor(not self:IsShowCursor());
     end
 
-    if (self:IsShowCursor()) then
+    if (self:IsShowCursor() and self:IsFocus()) then
         painter:SetPen(self:GetColor());
     else
         painter:SetPen("#00000000");

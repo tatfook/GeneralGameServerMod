@@ -305,7 +305,15 @@ local complex_fields = {
 	["overflow"] = "overflow-x, overflow-y",
 };
 
-function Style:AddComplexField(name, value)
+
+local function AddStyleItem(style, name, value)
+	value = Style.GetStyleValue(name, value);
+	if (not value) then return end
+	style[string.lower(name)] = value;
+	-- self.NormalStyle[string.lower(name)] = value;
+end
+
+local function AddComplexStyleItem(style, name, value)
 	local names = commonlib.split(complex_fields[name], "%s");
     local values = commonlib.split(value, "%s");
     
@@ -324,29 +332,33 @@ function Style:AddComplexField(name, value)
     end
     
     for i = 1, #names do
-		self:AddItem(names[i], values[i]);
+		AddStyleItem(style, names[i], values[i]);
 	end
 end
 
--- 添加样式代码: mcml style attribute string like "background:url();margin:10px;"
-function Style:AddString(style_code)
-	local name, value;
+
+function Style.ParseString(style_code)
+	local style, name, value = {};
 	for name, value in string.gfind(style_code or "", "([%w%-]+)%s*:%s*([^;]*)[;]?") do
 		name = string_lower(name);
 		value = string_gsub(value, "%s*$", "");
 		if(complex_fields[name]) then
-			self:AddComplexField(name, value);
+			AddComplexStyleItem(style, name, value);
 		else
-			self:AddItem(name,value);
+			AddStyleItem(style, name, value);
 		end
+	end
+	return style;
+end
+
+-- 添加样式代码: mcml style attribute string like "background:url();margin:10px;"
+function Style:AddString(style_code)
+	local style = Style.ParseString(style_code);
+	for key, val in pairs(style) do
+		self.NormalStyle[key] = val;
 	end
 end
 
-function Style:AddItem(name,value)
-	value = self.GetStyleValue(name, value);
-	if (not value) then return end
-	self.NormalStyle[string.lower(name)] = value;
-end
 
 -- 获取字体
 function Style:GetFont()

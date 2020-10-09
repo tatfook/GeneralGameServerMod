@@ -31,6 +31,7 @@ local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
 
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
+local StyleManager = NPL.load("./StyleManager.lua", IsDevEnv);
 local Window = commonlib.inherit(Element, NPL.export());
 local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug");
 local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();
@@ -38,6 +39,7 @@ local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();
 Window:Property("NativeWindow");                    -- 原生窗口
 Window:Property("PainterContext");                  -- 绘制上下文
 Window:Property("ElementManager", ElementManager);  -- 元素管理器
+Window:Property("StyleManager");                    -- 元素管理器
 Window:Property("HoverElement");                    -- 光标所在元素
 Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
@@ -46,6 +48,7 @@ function Window:ctor()
     self.screenX, self.screenY = 0, 0;  -- 窗口的屏幕位置
     self:SetName("Window");
     self:SetTagName("Window");
+    self:SetStyleManager(StyleManager:new());
 end
 
 function Window:IsWindow()
@@ -55,13 +58,18 @@ end
 function Window:Init(params)
     url = commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString([[
        <html style="height:100%; background-color:#ffffff;">
+            <style>
+                .text {
+                    color: #ff0000;
+                }
+            </style>
             <Button style="margin: 10px">按钮</Button>
-            <Text>中文 hello wor&nbsp;ld  this is a test</Text>
+            <Text class="text">中文 hello wor&nbsp;ld  this is a test</Text>
             <div id="debug" style="margin-left: 100px; height: 100px; width: 100px; outline-width:1px; outline-color:#000000;">
                 <div style="background-color:#ff0000; height: 100px;"></div>
                 <div style="background-color:#00ff00; height: 100px;"></div>
             </div>
-            <TextArea style="margin: 10px"></TextArea>
+            <TextArea style="margin: 10px" value="hello world, this is a test;hello world, this is a test""></TextArea>
        </html>
     ]]), "//html");
 
@@ -77,6 +85,8 @@ function Window:Init(params)
     self:SetAttr({
         draggable = if_else(params.draggable == false, false, true),   -- 窗口默认可以拖拽
     });
+    -- 设置元素样式
+    self:SetStyle(self:CreateStyle());
     -- 清子元素
     self:ClearChildElement();
     -- 获取元素类 

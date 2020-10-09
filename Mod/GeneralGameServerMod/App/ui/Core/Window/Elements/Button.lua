@@ -49,7 +49,9 @@ function Button:Init(xmlNode)
 	self:SetTagName(xmlNode.name);
 	self:SetAttr(xmlNode.attr);
 	self:SetXmlNode(xmlNode);
-
+	-- 设置元素样式
+	self:SetStyle(self:CreateStyle());
+	
 	-- 获取按钮文本
 	local value = self:GetAttrValue("value");
 	-- 如果没值取第一个文本节点
@@ -90,7 +92,8 @@ function Button:OnBeforeUpdateChildLayout()
 end
 
 -- 按钮渲染
-function Button:RenderContent(painter, style)
+function Button:RenderContent(painter)
+	local style = self:GetStyle();
 	local layout = self:GetLayout();
 	local x, y = layout:GetPos();
 	local w, h = layout:GetWidthHeight();

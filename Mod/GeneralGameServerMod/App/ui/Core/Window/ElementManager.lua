@@ -15,6 +15,7 @@ local ElementManager = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Ele
 
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local Html = NPL.load("./Elements/Html.lua", IsDevEnv);
+local Style = NPL.load("./Elements/Style.lua", IsDevEnv);
 local Div = NPL.load("./Elements/Div.lua", IsDevEnv);
 local Text = NPL.load("./Elements/Text.lua", IsDevEnv);
 local Button = NPL.load("./Elements/Button.lua", IsDevEnv);
@@ -31,6 +32,7 @@ local ElementClassMap = {};
 function ElementManager:ctor()
     -- 注册元素
     ElementManager:RegisterByTagName("Html", Html);
+    ElementManager:RegisterByTagName("Style", Style);
     ElementManager:RegisterByTagName("Div", Div);
     ElementManager:RegisterByTagName("Text", Text);
     ElementManager:RegisterByTagName("Button", Button);

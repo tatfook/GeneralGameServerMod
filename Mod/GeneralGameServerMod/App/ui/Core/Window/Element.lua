@@ -28,7 +28,7 @@ Element:Property("Window");     -- 元素所在窗口
 Element:Property("Attr", {});   -- 元素属性
 Element:Property("XmlNode");    -- 元素XmlNode
 Element:Property("ParentElement");                        -- 父元素
-Element:Property("Style", {});                            -- 样式
+Element:Property("Style", nil);                           -- 样式
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
 Element:Property("Rect");                                 -- 元素几何区域矩形
 Element:Property("Name");                                 -- 元素名
@@ -72,7 +72,9 @@ function Element:Init(xmlNode, uiwindow)
     self:SetTagName(xmlNode.name);
     self:SetAttr(xmlNode.attr or {});
     self:SetXmlNode(xmlNode);
-
+    -- 设置元素样式
+    self:SetStyle(self:CreateStyle());
+    
     -- 先清除
     self:ClearChildElement();
 
@@ -265,8 +267,6 @@ end
 function Element:LoadComponent()
     ElementDebug.Format("LoadComponent:  Name = %s, ChildElementCount = %s", self:GetName(), self:GetChildElementCount());
 
-    self:SetStyle(self:CreateStyle());
-
     self:OnLoadComponentBeforeChild();
 
 	self:OnLoadChildrenComponent();
@@ -290,7 +290,7 @@ function Element:OnLoadComponentAfterChild(parentElement, parentLayout, style)
 end
 
 -- 创建样式
-function Element:CreateStyle(baseStyle, inheritStyle)
+function Element:CreateStyle()
     local baseStyle = self:GetBaseStyle();
     local inheritStyle = self:GetParentElement() and self:GetParentElement():GetStyle();
 
@@ -312,10 +312,17 @@ function Element:GetAttrValue(attrName, defaultValue)
     return attr[attrName] or defaultValue;
 end
 
+-- 获取数字属性值
 function Element:GetAttrNumberValue(attrName, defaultValue)
     return tonumber(self:GetAttrValue(attrName)) or defaultValue;
 end
 
+-- 获取数字属性值
+function Element:GetAttrStringValue(attrName, defaultValue)
+    return tostring(self:GetAttrValue(attrName, defaultValue));
+end
+
+-- 获取布尔属性值
 function Element:GetAttrBoolValue(attrName, defaultValue)
     local value = self:GetAttrValue(attrName);
     if (type(value) == "boolean") then return value end

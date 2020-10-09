@@ -126,7 +126,10 @@ function Layout:GetContentWidthHeight()
 end
 -- 设置真实宽高
 function Layout:SetRealContentWidthHeight(width, height)
+	local isRealContentWidthHeightChange = self.realContentWidth ~= width or self.realContentHeight ~= height;
     self.realContentWidth, self.realContentHeight = width, height;
+	-- 真实内容发生改变
+	if (isRealContentWidthHeightChange) then self:GetElement():OnRealContentSizeChange() end
 end
 -- 获取真实宽高 
 function Layout:GetRealContentWidthHeight()
@@ -334,8 +337,6 @@ function Layout:Update()
 	local width, height = self:GetWidthHeight();
     local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
     local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
-	local oldRealContentWidth, oldRealContentHeight = self:GetRealContentWidthHeight();
-	local isRealContentWidthHeightChange = false;
 
 	-- 应用定位方式获取宽高
 	self:ApplyPositionStyle();
@@ -343,7 +344,6 @@ function Layout:Update()
 	-- 更新真实内容大小 由所有子元素决定
 	self:UpdateRealContentWidthHeight();
 	local realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
-	isRealContentWidthHeightChange = oldRealContentWidth ~= realContentWidth or oldRealContentHeight ~= realContentHeight;
 
 	width = width or (realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight) or 0;
 	height = height or (realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom) or 0;
@@ -353,10 +353,6 @@ function Layout:Update()
 	-- 确定元素大小
 	self:SetWidthHeight(width, height);
 
-	-- 真实内容发生改变
-	if (isRealContentWidthHeightChange) then
-		self:GetElement():OnRealContentSizeChange();
-	end
 	
 	-- 子元素更新完成, 当父元素存在,非固定宽高时, 需要更新父布局使其有正确的宽高 
 	local parentLayout = self:GetParentLayout();

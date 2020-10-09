@@ -26,7 +26,7 @@ local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable(
 local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
 function ElementUI:ctor()
-    self.windowX, self.windowY = 0, 0;  -- 窗口内坐标
+    self.windowX, self.windowY = 0, 0;                         -- 窗口内坐标
 end
 
 -- 是否显示
@@ -66,14 +66,17 @@ function ElementUI:Render(painter)
     local width, height = self:GetSize();
     local scrollX, scrollY = self:GetScrollPos();
     if (layout:IsOverflowX() or layout:IsOverflowY()) then
+        -- ElementUIDebug.FormatIf(self:GetName() == "TextArea", "Render ScrollX = %s, ScrollY = %s", scrollX, scrollY);
         painter:Save();
         painter:SetClipRegion(0, 0, width, height);
         painter:Translate(-scrollX, -scrollY);
     end
 
+    -- 绘制子元素
     for childElement in self:ChildElementIterator() do
         childElement:Render(painter);
     end
+
     -- 恢复裁剪
     if (layout:IsOverflowX() or layout:IsOverflowY()) then
         painter:Translate(scrollX, scrollY);
@@ -86,17 +89,16 @@ end
 
 -- 绘制元素
 function ElementUI:OnRender(painter)
-    local style = self:GetStyle();
-
-    self:RenderOutline(painter, style);
-    self:RenderBackground(painter, style);
-    self:RenderBorder(painter, style);
-    self:RenderContent(painter, style);
-
+    self:RenderOutline(painter);
+    self:RenderBackground(painter);
+    self:RenderBorder(painter);
+    -- 绘制元素内容
+    self:RenderContent(painter);
 end
 
 -- 绘制外框线
-function ElementUI:RenderOutline(painter, style)
+function ElementUI:RenderOutline(painter)
+    local style = self:GetStyle();
     local outlineWidth, outlineColor = style["outline-width"], style["outline-color"];
     local x, y, w, h = self:GetGeometry();
     if (not outlineWidth or not outlineColor) then return end
@@ -108,7 +110,8 @@ function ElementUI:RenderOutline(painter, style)
 end
 
 -- 绘制背景
-function ElementUI:RenderBackground(painter, style)
+function ElementUI:RenderBackground(painter)
+    local style = self:GetStyle();
     local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor("#ffffff00");
     local x, y, w, h = self:GetGeometry();
 
@@ -119,7 +122,8 @@ function ElementUI:RenderBackground(painter, style)
 end
 
 -- 绘制边框
-function ElementUI:RenderBorder(painter, style)
+function ElementUI:RenderBorder(painter)
+    local style = self:GetStyle();
     local borderWidth, borderColor = style["border-width"], style["border-color"];
     local x, y, w, h = self:GetGeometry();
     if (not borderWidth or not borderColor) then return end
@@ -278,6 +282,7 @@ function ElementUI:IsContainPoint(screenX, screenY)
     return left <= screenX and screenX <= right and top <= screenY and screenY <= bottom;
 end
 
+-- 获取滚动条的位置
 function ElementUI:GetScrollPos()
     local scrollX, scrollY = 0, 0;
     if (self.horizontalScrollBar and self.horizontalScrollBar:IsVisible()) then scrollX = self.horizontalScrollBar.scrollLeft end
@@ -425,6 +430,7 @@ function ElementUI:SelectStyle(action)
         if (self:IsFocus()) then action = "FocusIn" end
         if (self:IsHover()) then action = "OnHover" end
     end
+    -- ElementUIDebug.Format("Select Style: Name = %s", self:GetName());
     if (action == "OnHover" or action == "OffHover") then
         if (action == "OnHover") then 
             style:SelectHoverStyle();

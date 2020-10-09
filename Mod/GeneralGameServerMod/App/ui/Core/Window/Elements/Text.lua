@@ -29,6 +29,9 @@ end
 
 -- public:
 function Text:Init(xmlNode)
+	-- 设置元素样式
+	self:SetStyle(self:CreateStyle());
+	
 	local value = (type(xmlNode) == "string" or type(xmlNode) == "number") and tostring(xmlNode) or (xmlNode and xmlNode.attr and xmlNode.attr.value);
 
 	if (not value and type(xmlNode) == "table") then
