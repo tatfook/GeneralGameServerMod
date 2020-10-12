@@ -43,12 +43,14 @@ Window:Property("StyleManager");                    -- 元素管理器
 Window:Property("HoverElement");                    -- 光标所在元素
 Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
+Window:Property("G");                               -- 全局对象
 
 function Window:ctor()
     self.screenX, self.screenY = 0, 0;  -- 窗口的屏幕位置
     self:SetName("Window");
     self:SetTagName("Window");
     self:SetStyleManager(StyleManager:new());
+    self:SetG(setmetatable({}, {__index = _G}));    -- 设置全局G表
 end
 
 function Window:IsWindow()
@@ -58,13 +60,9 @@ end
 function Window:Init(params)
     url = commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString([[
        <html style="height:100%; background-color:#ffffff;">
-            <style>
-                .text {
-                    color: #ff0000;
-                }
-            </style>
+            <component src="Mod/GeneralGameServerMod/App/ui/Core/Window/Window.html"></component>
             <Button style="margin: 10px">按钮</Button>
-            <Text class="text">中文 hello wor&nbsp;ld  this is a test</Text>
+            &amp;nbsp;&amp;nbsp;&amp;nbsp;中文 hello wor&nbsp;ld  this is a test
             <div id="debug" style="margin-left: 100px; height: 100px; width: 100px; outline-width:1px; outline-color:#000000;">
                 <div style="background-color:#ff0000; height: 100px;"></div>
                 <div style="background-color:#00ff00; height: 100px;"></div>
@@ -124,8 +122,6 @@ function Window.Show(self, params)
     end
 
     self:Init(params);
-
-    self:LoadComponent();
 
     self:UpdateLayout();
 end
@@ -429,4 +425,18 @@ function Window:OnMouseUp(event)
 		event:accept();
 	end
 	self.isMouseDown = false;
+end
+
+-- 执行字符串代码  返回 result, errmsg
+function Window:ExecCode(code)
+    local code_func, errmsg = loadstring(code);
+    if (not code_func) then 
+        WindowDebug.Format("Window ExecCode Error: %s", errmsg);
+        return nil, errmsg;
+    end
+    -- 设置脚本执行环境
+    setfenv(code_func, self:GetG());
+    -- 执行脚本
+    local result = code_func();
+    return result, nil;
 end

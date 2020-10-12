@@ -44,13 +44,12 @@ function Button:ctor()
 end
 
 -- 初始化函数
-function Button:Init(xmlNode)
+function Button:Init(xmlNode, window)
 	-- 设置元素属性
 	self:SetTagName(xmlNode.name);
 	self:SetAttr(xmlNode.attr);
 	self:SetXmlNode(xmlNode);
-	-- 设置元素样式
-	self:SetStyle(self:CreateStyle());
+	self:SetWindow(window);
 	
 	-- 获取按钮文本
 	local value = self:GetAttrValue("value");
@@ -70,6 +69,15 @@ function Button:Init(xmlNode)
 	self:SetValue(value or "");
 
 	return self;
+end
+
+-- 鼠标按下
+function Button:OnMouseDown(event)
+	local mousedown = self:GetAttrFunctionValue("onmousedown");
+	if (mousedown) then mousedown(event) end
+
+	local click = self:GetAttrFunctionValue("onclick");
+	if (click) then click(event) end
 end
 
 -- 子元素布局前回调

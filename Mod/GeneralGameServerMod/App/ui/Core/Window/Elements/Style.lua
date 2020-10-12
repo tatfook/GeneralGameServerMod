@@ -28,7 +28,6 @@ function Style:Init(xmlNode, window)
 	self:SetAttr(xmlNode.attr);
 	self:SetXmlNode(xmlNode);
     self:SetWindow(window);
-    self:SetStyle(self:CreateStyle());
 
     local code = "";
     for i = 1, #xmlNode do
@@ -38,7 +37,7 @@ function Style:Init(xmlNode, window)
     end
 
     self.sheet = self:GetWindow():GetStyleManager():AddStyleSheetByString(code);
-    
+
 	return self;
 end
 

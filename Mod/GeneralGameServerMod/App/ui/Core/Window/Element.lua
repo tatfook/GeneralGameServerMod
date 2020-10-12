@@ -20,7 +20,7 @@ local Layout = NPL.load("./layout.lua", IsDevEnv);
 local ElementUI = NPL.load("./ElementUI.lua", IsDevEnv);
 local Element = commonlib.inherit(ElementUI, NPL.export());
 
-local ElementDebug = GGS.Debug.GetModuleDebug("ElementDebug").Disable();
+local ElementDebug = GGS.Debug.GetModuleDebug("ElementDebug").Enable();   --Enable  Disable
 local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable();
 local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
@@ -50,6 +50,11 @@ function Element:IsElement()
     return true;
 end
 
+-- 是否是组件
+function Element:IsComponent()
+    return false;
+end
+
 -- 是否是窗口
 function Element:IsWindow()
     return false;
@@ -60,38 +65,77 @@ function Element:GetElementByTagName(tagname)
     return self:GetWindow():GetElementManager():GetElementByTagName(tagname);
 end
 
--- 元素初始化
-function Element:Init(xmlNode, uiwindow)
-    -- 设置窗口
-    self:SetWindow(uiwindow);
+-- 创建元素
+function Element:CreateFromXmlNode(xmlNode, window)
+    local PageElement = type(xmlNode) == "table" and self:GetElementByTagName(xmlNode.name) or self:GetWindow():GetElementManager():GetTextElement();
+    return PageElement:new():Init(xmlNode, window);
+end
 
-    -- 文本节点直接转换格式
-    if (type(xmlNode) ~= "table") then xmlNode = {name = "Text", attr = {value = tostring(xmlNode)}} end
-    
-    -- 设置元素属性
-    self:SetTagName(xmlNode.name);
-    self:SetAttr(xmlNode.attr or {});
-    self:SetXmlNode(xmlNode);
-    -- 设置元素样式
-    self:SetStyle(self:CreateStyle());
-    
-    -- 先清除
+-- 元素初始化
+function Element:Init(xmlNode, window)
+    self:InitElement(xmlNode, window);
+    self:InitChildElement(xmlNode, window);
+    return self;
+end
+-- 初始化基本属性
+function Element:InitElement(xmlNode, window)
+    -- 设置窗口
+    self:SetWindow(window);
+
+    -- 先清除子元素
     self:ClearChildElement();
 
+    -- 设置元素属性
+    if (type(xmlNode) ~= "table") then 
+        self:SetTagName(nil);
+        self:SetAttr({});
+        self:SetXmlNode(xmlNode);
+    else 
+        self:SetTagName(xmlNode.name);
+        self:SetAttr(xmlNode.attr or {});
+        self:SetXmlNode(xmlNode);
+    end
+end
+
+-- 初始化子元素
+function Element:InitChildElement(xmlNode, window)
+    if (not xmlNode) then return end
     -- 创建子元素
     for i, childXmlNode in ipairs(xmlNode) do
-        if (type(childXmlNode) ~= "table") then 
-            childXmlNode = {name = "Text", attr = {value = tostring(childXmlNode)}};
-            xmlNode[i] = childXmlNode;
-        end
-        local PageElement = self:GetElementByTagName(childXmlNode.name);
-        local childElement = PageElement:new():Init(childXmlNode, uiwindow);
-        -- self:InsertChildElement(childElement);
-        table.insert(self.childrens, childElement);
-        childElement:SetParentElement(self);
+        local childElement = self:CreateFromXmlNode(childXmlNode, window);
+        -- ElementDebug.Format("InitChildElement Child Element Name = %s, TagName = %s", childElement:GetName(), childElement:GetTagName());
+        self:InsertChildElement(childElement);
+        -- table.insert(self.childrens, childElement);
+        -- childElement:SetParentElement(self);
     end
+end
 
-    return self;
+-- 初始化样式
+function Element:InitStyle()
+    self:SetStyle(self:CreateStyle());
+end
+
+-- 获取内联文本
+function Element:GetInnerText()
+    local function GetInnerText(xmlNode)
+        if (not xmlNode) then return "" end
+        if (type(xmlNode) == "string") then return xmlNode end
+        local text = "";
+        for _, childXmlNode in ipairs(xmlNode) do
+            text = text .. GetInnerText(childXmlNode);
+        end 
+        return text;
+    end
+    return GetInnerText(self:GetXmlNode());
+end
+
+-- 添加DOM树中
+function Element:OnAttach()
+    self:InitStyle();
+end
+
+-- 从DOM树中移除
+function Element:OnDetach()
 end
 
 -- 添加子元素
@@ -101,15 +145,23 @@ function Element:InsertChildElement(pos, childElement)
     if (type(element) ~= "table" or not element.IsElement or not element:IsElement()) then return end
     -- 添加子元素
     if (childElement) then
-        table.insert(self.childrens, pos, childElement);
+        table.insert(self.childrens, pos, element);
     else 
         table.insert(self.childrens, element);
     end
     -- 设置子元素的父元素
     element:SetParentElement(self);
     -- 更新元素布局
+    element:OnAttach();
 end
 
+-- 获取元素位置
+function Element:GetChildElementPos(childElement)
+    for i, child in ipairs(self.childrens) do
+        if (child == childElement) then return i end
+    end
+    return 0;
+end
 -- 移除子元素
 function Element:RemoveChildElement(pos)
     if (type(pos) == "table" and pos.IsElement and pos:IsElement()) then
@@ -117,6 +169,7 @@ function Element:RemoveChildElement(pos)
             if (self.childrens[i] == pos) then 
                 table.remove(self.childrens, i);
                 pos:SetParentElement(nil);
+                pos:OnDetach();
                 return;
             end
         end
@@ -125,7 +178,10 @@ function Element:RemoveChildElement(pos)
     if (type(pos) ~= "number" or pos < 1 or pos > self:GetChildElementCount()) then return end
     local element = self.childrens[pos];
     table.remove(self.childrens, pos);
-    if (element) then element:SetParentElement(nil) end
+    if (element) then 
+        element:OnDetach();
+        element:SetParentElement(nil);
+    end
 end
 
 -- 清除子元素
@@ -186,6 +242,11 @@ end
 -- 子元素布局更新后回调
 function Element:OnAfterUpdateChildLayout()
 end
+-- 元素布局更新回调
+function Element:OnUpdateLayout()
+    self:GetLayout():Update();
+end
+
 -- 元素布局更新后回调
 function Element:OnAfterUpdateLayout()
 end
@@ -195,16 +256,17 @@ function Element:UpdateLayout()
     if (self.isUpdateLayout) then return end
     self.isUpdateLayout = true;
 
-    -- 选择合适样式
-    self:SelectStyle();
-
-    local layout = self:GetLayout();
+    -- 布局更新前回调
     if (self:OnBeforeUpdateLayout()) then 
         self.isUpdateLayout = false;
         return; 
     end
 
+    -- 选择合适样式
+    self:SelectStyle();
+
     -- 准备布局
+    local layout = self:GetLayout();
     layout:PrepareLayout();
 
     -- 是否布局
@@ -227,11 +289,8 @@ function Element:UpdateLayout()
     self:OnAfterUpdateChildLayout();
 
     -- 更新元素布局
-    layout:Update();
+    self:OnUpdateLayout();
     
-    -- 设置布局完成
-    layout:SetLayoutFinish(true);
-
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
 
@@ -263,32 +322,6 @@ function Element:OnRealContentSizeChange()
     end
 end
 
--- 加载元素样式相关属性
-function Element:LoadComponent()
-    ElementDebug.Format("LoadComponent:  Name = %s, ChildElementCount = %s", self:GetName(), self:GetChildElementCount());
-
-    self:OnLoadComponentBeforeChild();
-
-	self:OnLoadChildrenComponent();
-	
-    self:OnLoadComponentAfterChild();
-end
-
--- 子元素加载前
-function Element:OnLoadComponentBeforeChild(parentElement, parentLayout, style)
-end
-
--- 加载子元素
-function Element:OnLoadChildrenComponent(parentElement, parentLayout, style)
-    for childElement in self:ChildElementIterator() do
-        childElement:LoadComponent(parentElement, parentElement, style);
-    end
-end
-
--- 子元素加载后
-function Element:OnLoadComponentAfterChild(parentElement, parentLayout, style)
-end
-
 -- 创建样式
 function Element:CreateStyle()
     local baseStyle = self:GetBaseStyle();
@@ -296,11 +329,14 @@ function Element:CreateStyle()
 
     local style = Style:new():Init(baseStyle);
     
-    -- inherit style
+    -- 继承样式
     style:MergeInheritable(inheritStyle);
-    -- class style
 
-    -- inline style
+    -- 类样式
+    local class = self:GetAttrStringValue("class",  "");
+    self:GetWindow():GetStyleManager():ApplyClassStyle(class, style, self);
+
+    -- 内联样式
     style:AddString(self:GetAttrValue("style"));
 
     return style;
@@ -319,7 +355,8 @@ end
 
 -- 获取数字属性值
 function Element:GetAttrStringValue(attrName, defaultValue)
-    return tostring(self:GetAttrValue(attrName, defaultValue));
+    local value = self:GetAttrValue(attrName, defaultValue)
+    return value and tostring(value);
 end
 
 -- 获取布尔属性值
@@ -328,6 +365,20 @@ function Element:GetAttrBoolValue(attrName, defaultValue)
     if (type(value) == "boolean") then return value end
     if (type(value) ~= "string") then return defaultValue end
     return value == "true";
+end
+
+-- 获取函数属性
+function Element:GetAttrFunctionValue(attrName, defaultValue)
+    local value = self:GetAttrValue(attrName, defaultValue);
+    if (type(value) == "string") then
+        local code_func, errmsg = loadstring(value);
+        if (code_func) then
+            setfenv(code_func, self:GetWindow():GetG());
+            value = code_func;
+        end
+    end
+
+    return type(value) == "function" and value or nil;
 end
 
 -- 设置属性值

@@ -324,9 +324,15 @@ end
 function ElementUI:OnMouseDownCapture(event)
 end
 
+function ElementUI:OnMouseDown(event)
+end
+
 function ElementUI:OnMouseMove(event)
     -- self:SetHoverElement(self);
     -- event:accept();
+end
+
+function ElementUI:OnMouseUp(event)
 end
 
 function ElementUI:OnMouseLeave()

@@ -4,7 +4,7 @@ Author(s): wxa
 Date: 2020/8/14
 Desc: 文本
 -------------------------------------------------------
-local Text = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Text.lua");
+local Text = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Controls/Text.lua");
 -------------------------------------------------------
 ]]
 
@@ -19,20 +19,30 @@ Text:Property("Value");  -- 文本值
 Text:Property("BaseStyle", {
 	NormalStyle = {
 		["display"] = "inline",
+		["width"] = "100%",
 		["color"] = "#000000",
 	}
 });
+
+-- 处理实体字符
+local function ReplaceEntityReference(value)
+	value = string.gsub(value, "&nbsp;", " ");
+	return value;
+end
 
 function Text:ctor()
 	self:SetName("Text");
 end
 
 -- public:
-function Text:Init(xmlNode)
-	-- 设置元素样式
-	self:SetStyle(self:CreateStyle());
-	
+function Text:Init(xmlNode, window)
+	self:InitElement(xmlNode, window);
+
 	local value = (type(xmlNode) == "string" or type(xmlNode) == "number") and tostring(xmlNode) or (xmlNode and xmlNode.attr and xmlNode.attr.value);
+	
+	if (type(xmlNode) == "table") then
+		self:SetAttr(xmlNode.attr);
+	end
 
 	if (not value and type(xmlNode) == "table") then
 		for i = 1, #xmlNode do
@@ -44,20 +54,17 @@ function Text:Init(xmlNode)
 	end
 
 	-- TextElementDebug("Init Value:" .. tostring(value), xmlNode);
-
-	self:SetValue(self:GetTextTrimmed(value));
+	-- 处理实体字符
+	self:SetValue(ReplaceEntityReference(value));
 
 	return self;
 end
 
-function Text:GetTextTrimmed(value)
-	value = value or self:GetValue() or self:GetAttrValue("value", nil);
-	if(value) then
-		value = string.gsub(value, "^[%s]+", "");
-		value = string.gsub(value, "[%s]+$", "");
-		value = string.gsub(value, "nbsp;", " ");
-	end
-	return value;
+function Text:SetText(value)
+	local value = ReplaceEntityReference(value);
+	if (value == self:GetValue()) then return end
+	self:SetValue(value);
+	self:UpdateLayout();
 end
 
 local function CalculateTextLayout(self, text, width, left, top)
@@ -65,12 +72,12 @@ local function CalculateTextLayout(self, text, width, left, top)
 	if(not text or text =="") then return 0, 0 end
 
 	local style = self:GetStyle();
-	local textWidth, textHeight = _guihelper.GetTextWidth(text, self.font), style:GetLineHeight();
+	local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), style:GetLineHeight();
 	local remaining_text = nil;
 
 	if(width and width > 0 and textWidth > width) then
-		text, remaining_text = _guihelper.TrimUtf8TextByWidth(text, width, self.font)
-		textWidth = _guihelper.GetTextWidth(text, self.font);
+		text, remaining_text = _guihelper.TrimUtf8TextByWidth(text, width, self:GetFont())
+		textWidth = _guihelper.GetTextWidth(text, self:GetFont());
 	end
 
 	TextElementDebug.Format("text = %s, x = %s, y = %s, w = %s, h = %s", text, left, top, textWidth, textHeight);
@@ -94,18 +101,14 @@ local function CalculateTextLayout(self, text, width, left, top)
 	return textWidth, textHeight;
 end
 
-function Text:OnBeforeUpdateChildLayout()
+function Text:OnUpdateLayout()
 	local layout = self:GetLayout();
-	local parentElement = self:GetParentElement();
-	local parentLayout = parentElement and parentElement:GetLayout();
-	local parentWidth, parentHeight = parentLayout:GetWidthHeight();
+	local width, height = layout:GetWidthHeight();
 	local left, top = 0, 0;
-
-	-- if (not layout:IsBlock()) then left, top = layout:GetPos() end
 
 	self.texts = {};
 
-	local width, height = CalculateTextLayout(self, self:GetValue(), parentWidth, left, top);
+	width, height = CalculateTextLayout(self, self:GetValue(), width, left, top);
 
 	TextElementDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 

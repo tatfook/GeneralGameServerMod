@@ -11,7 +11,7 @@ local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout.lua"
 
 local Layout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Enable(); --.Disable()
+local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Disable(); --Enable  Disable
 
 -- 属性定义
 Layout:Property("Element");                                        -- 元素
@@ -262,7 +262,7 @@ function Layout:PrepareLayout()
     if (parentWidth == 0 or parentHeight == 0) then return self:SetWidthHeight(0, 0) end 
 
     -- 获取元素样式
-    local style = self:GetStyle();
+	local style = self:GetStyle();
    -- 数字最大最小宽高
 	local minWidth, minHeight, maxWidth, maxHeight = style["min-width"], style["min-height"], style["max-width"], style["max-height"];
 	minWidth = self:PercentageToNumber(minWidth, parentWidth);
@@ -352,7 +352,9 @@ function Layout:Update()
 
 	-- 确定元素大小
 	self:SetWidthHeight(width, height);
-
+	
+	-- 设置布局完成
+	self:SetLayoutFinish(true);
 	
 	-- 子元素更新完成, 当父元素存在,非固定宽高时, 需要更新父布局使其有正确的宽高 
 	local parentLayout = self:GetParentLayout();

@@ -26,6 +26,7 @@ end
 
 function ScrollBarButton:Init(xmlNode, window)
     ScrollBarButton._super.Init(self, xmlNode, window);
+
     local ScrollBarDirection = self:GetAttrValue("ScrollBarDirection");
     local NormalStyle = self:GetBaseStyle().NormalStyle;
     NormalStyle["position"] = "absolute";
@@ -39,6 +40,8 @@ function ScrollBarButton:Init(xmlNode, window)
         NormalStyle["right"] = "0px";
         NormalStyle["bottom"] = "0px";
     end
+
+    self:InitStyle();
 
     return self;
 end
@@ -56,6 +59,12 @@ function ScrollBarThumb:ctor()
     self:SetName("ScrollBarThumb");
     self.left, self.top, self.width, self.height = 0, 0, 0, 0;
     self.maxLeft, self.maxTop, self.maxWidth, self.maxHeight = 1, 1, 0, 0;
+end
+
+function ScrollBarThumb:Init(xmlNode, window)
+    ScrollBarThumb._super.Init(self, xmlNode, window);
+    self:InitStyle();
+    return self;
 end
 
 function ScrollBarThumb:OnAfterUpdateLayout()
@@ -168,6 +177,12 @@ function ScrollBarTrack:ctor()
     self:SetName("ScrollBarTrack");
 end
 
+function ScrollBarTrack:Init(xmlNode, window)
+    ScrollBarThumb._super.Init(self, xmlNode, window);
+    self:InitStyle();
+    return self;
+end
+
 local ScrollBar = commonlib.inherit(Element, NPL.export());
 ScrollBar:Property("Direction");  -- 方向         
 ScrollBar:Property("DefaultWidth", 10);                      
@@ -192,6 +207,7 @@ end
 
 function ScrollBar:Init(xmlNode, window)
     ScrollBar._super.Init(self, xmlNode, window);
+    self:InitStyle();
 
     self:SetDirection(self:GetAttrValue("direction") or "horizontal"); -- horizontal  vertical
     self.prevButton = ScrollBarButton:new():Init({name = "ScrollBarPrevButton", attr = {ScrollBarDirection = self:GetDirection()}}, window);
@@ -210,9 +226,6 @@ function ScrollBar:Init(xmlNode, window)
     self.thumb:SetScrollBar(self);
     table.insert(self.childrens, self.nextButton);
     self.nextButton:SetParentElement(self);
-
-    -- 加载一次组件
-    self:LoadComponent();
 
     return self;
 end

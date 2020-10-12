@@ -30,7 +30,7 @@ local pseudo_class_fields = {
 }
 -- 拷贝样式
 local function CopyStyle(dst, src)
-	if (type(src) ~= "table") then return dst end
+	if (type(src) ~= "table" or type(dst) ~= "table") then return dst end
 	for key, value in pairs(src) do
 		if (not pseudo_class_fields[key]) then
 			dst[string.lower(key)] = Style.GetStyleValue(key, value);
@@ -38,6 +38,8 @@ local function CopyStyle(dst, src)
 	end
 	return dst;
 end
+
+Style.CopyStyle = CopyStyle;
 
 -- 布局字段
 local layout_fields = {

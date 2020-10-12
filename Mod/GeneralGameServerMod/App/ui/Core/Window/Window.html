@@ -1,0 +1,25 @@
+<template>
+    <div v-for="x in 0">
+        {{text}}
+    </div>
+    <div v-if="true">
+        if test
+    </div>
+    <div ref="ref">
+        ref test {{nid}}
+    </div>
+    <button onclick="click">btn</button>
+</template>
+
+<script type="text/lua">
+nid = 1;
+text = "hello world"
+function click()
+    echo("hello world");
+    nid = nid + 1;
+    echo(nid);
+end
+function OnReady()
+    echo(GetRef("ref") == nil)
+end
+</script>

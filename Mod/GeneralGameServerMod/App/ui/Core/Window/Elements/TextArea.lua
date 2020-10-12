@@ -19,7 +19,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local TextArea = commonlib.inherit(Element, NPL.export());
 
-local TextAreaDebug = GGS.Debug.GetModuleDebug("TextAreaDebug");
+local TextAreaDebug = GGS.Debug.GetModuleDebug("TextAreaDebug").Disable();   --Enable  Disable
 local CursorShowHideMaxTickCount = 30;
 
 TextArea:Property("Value");                                    -- 文本值
@@ -366,7 +366,7 @@ function TextArea:UpdateLineInfo()
     if (#lines == 0) then table.insert(lines, {line = 1, startAt = 1, endAt = 1}) end
 
     self.lines = lines;
-    TextAreaDebug("UpdateLineInfo", text, lines);
+    -- TextAreaDebug("UpdateLineInfo", text, lines);
 
     if (not self:GetStyle()) then return end
 
