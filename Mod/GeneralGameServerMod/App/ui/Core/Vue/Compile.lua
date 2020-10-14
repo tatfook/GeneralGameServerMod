@@ -17,7 +17,8 @@ local CompileDebug = GGS.Debug.GetModuleDebug("CompileDebug").Enable();   --Enab
 Compile:Property("Component");
 
 local function GenerateDependItem(obj, key)
-    return tostring(obj) .. "[" .. tostring(key) .. "]";
+    if (key == nil) then return tostring(obj) end
+    return  tostring(obj) .. "[" .. tostring(key) .. "]";
 end
 -- local EventNameMap = {["onclick"] = true, ["onmousedown"] = true, ["onmousemove"] = true, ["onmouseup"] = true};
 local DependItems = {};
@@ -61,13 +62,14 @@ function Compile:ExecCode(code, object, watch, isExecWatch)
 
     DependItems = {};   -- 清空依赖集
     local oldVal = code_func();
+    -- CompileDebug.If(code == "List", code, DependItems);
     if (object and type(watch) == "function") then
         for dependItem in pairs(DependItems) do
             AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};  -- 依赖项的对象集
             AllDependItemWatch[dependItem][object] = AllDependItemWatch[dependItem][object] or {};  -- 对象的监控集
             AllDependItemWatch[dependItem][object][code] = function()  -- 监控集项
                 local newVal = code_func();
-                if (newVal == oldVal) then return end
+                if (type(newVal) ~= "table" and newVal == oldVal) then return end
                 watch(newVal, oldVal);
                 oldVal = newVal;
             end
@@ -79,13 +81,13 @@ function Compile:ExecCode(code, object, watch, isExecWatch)
 end
 
 -- 移除监控
-function Compile:UnWatch(object)
+function Compile:UnWatch(element)
     if (not object) then return end
     for key, watch in pairs(AllDependItemWatch) do
         AllDependItemWatch[key][object] = nil;
     end
     for childElement in element:ChildElementIterator() do
-        self:UnWatch(nil, childElement);
+        self:UnWatch(childElement);
     end
 end
 
@@ -97,7 +99,6 @@ function Compile:Text(element)
         local text = string.gsub(xmlNode, "{{(.-)}}", function(code)
             return self:ExecCode(code, element, watch) or "";
         end)
-        echo({xmlNode, text});
         element:SetText(text)
     end
     watch();
@@ -132,20 +133,21 @@ function Compile:VFor(element)
     local val, key = string.match(keyexp, "(%a%w-)%s*,%s*(%a%w-)");
     if (not val) then val = keyexp end
 
-    local clones, scopes = {}, {};
+    local lastCount, clones, scopes = 0, {}, {};
     local parentElement = element:GetParentElement();
     local pos = parentElement:GetChildElementPos(element);
     self:ExecCode(listexp, element, function(list)
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
-        CompileDebug.Format("VFor List Count = %s", count)
+        -- CompileDebug.Format("VFor List Count = %s", count);
         for i = 1, count do
             if (not clones[i]) then 
                 local cloneXmlNode = commonlib.deepcopy(xmlNode);
                 cloneXmlNode.attr["v-for"] = nil;
-                clones[i] = element:CreateFromXmlNode(cloneXmlNode, element:GetWindow());
+                clones[i] = element:CreateFromXmlNode(cloneXmlNode, element:GetWindow(), parentElement);
+            end
+            self:UnWatch(clones[i]);
+            if (i > lastCount) then
                 parentElement:InsertChildElement(pos + i, clones[i]);
-            else 
-                self:UnWatch(clones[i]);
             end
             -- v-for 产生新scope
             local scope = scopes[i] or {};
@@ -155,7 +157,6 @@ function Compile:VFor(element)
             else
                 scope[val] = i; 
             end
-
             -- 产生新scope压入scope栈
             scopes[i] = self:GetComponent():PushScope(scope);
             -- 解析当前节点重新
@@ -164,10 +165,12 @@ function Compile:VFor(element)
             self:GetComponent():PopScope();
         end
         -- 移除多余元素
-        for i = count + 1, #clones do
+        for i = count + 1, lastCount do
             self:UnWatch(clones[i]);
             parentElement:RemoveChildElement(clones[i]);
         end
+        lastCount = count;
+        parentElement:UpdateLayout();
     end, true);
 end
 
@@ -179,7 +182,7 @@ function Compile:VOn(element)
         local realKey = string.match(key, "^v%-on:(%S+)");
         local realVal = val;
         if (not realKey or realKey == "") then realKey = string.match(key, "on(%S+)") end
-        if (realKey and realKey ~= "") then
+        if (realKey and realKey ~= "" and type(val) == "string") then
             -- 以括号结束则当做函数调用  
             local isFuncCall = string.match(val, "%S+%(.*%)[;%s]*$");
             if (not isFuncCall) then 
@@ -216,23 +219,38 @@ function Compile:VBind(element)
     end
 end
 
-
-function Compile:CompileElement(element)
-    self:VFor(element);
-    self:Text(element);
-    self:Ref(element);
-    self:VIf(element);  
-    self:VOn(element);
-    self:VBind(element);
-
-    for childElement in element:ChildElementIterator() do
-        self:CompileElement(childElement);
-    end
+function Compile:IsComponent(element)
+    return element.IsComponent and element:IsComponent();
 end
 
-function Compile:Compile(compoent)
+function Compile:CompileElement(element, isSkipComponentElement)
+    local isComponent = self:IsComponent(element);
+    if (isComponent) then element:OnBeforeCompile() end
+
+    if (not isComponent or not isSkipComponentElement) then
+        self:VFor(element);
+        self:Text(element);
+        self:Ref(element);
+        self:VIf(element);  
+        self:VOn(element);
+        self:VBind(element);
+    end
+    -- 是组件且不为当前组件, 则编译子组件
+    if (isComponent and self:GetComponent() ~= element) then
+        self:Compile(element, true);
+    else 
+        -- 编译子元素
+        for childElement in element:ChildElementIterator() do
+            self:CompileElement(childElement);
+        end
+    end
+    
+    if (isComponent) then element:OnAfterCompile() end
+end
+
+function Compile:Compile(compoent, isSkipComponentElement)
     self:SetComponent(compoent);
-    self:CompileElement(compoent);
+    self:CompileElement(compoent, isSkipComponentElement);
 
     -- 执行组件OnRefresh回调
     self:ExecCode([[type(OnReady) == "function" and OnReady()]]);

@@ -21,7 +21,7 @@ local ElementUI = NPL.load("./ElementUI.lua", IsDevEnv);
 local Element = commonlib.inherit(ElementUI, NPL.export());
 
 local ElementDebug = GGS.Debug.GetModuleDebug("ElementDebug").Enable();   --Enable  Disable
-local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable();
+local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Enable();
 local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
 Element:Property("Window");     -- 元素所在窗口
@@ -29,6 +29,7 @@ Element:Property("Attr", {});   -- 元素属性
 Element:Property("XmlNode");    -- 元素XmlNode
 Element:Property("ParentElement");                        -- 父元素
 Element:Property("Style", nil);                           -- 样式
+Element:Property("StyleSheet");                           -- 元素样式表
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
 Element:Property("Rect");                                 -- 元素几何区域矩形
 Element:Property("Name");                                 -- 元素名
@@ -66,22 +67,24 @@ function Element:GetElementByTagName(tagname)
 end
 
 -- 创建元素
-function Element:CreateFromXmlNode(xmlNode, window)
+function Element:CreateFromXmlNode(xmlNode, window, parent)
     local PageElement = type(xmlNode) == "table" and self:GetElementByTagName(xmlNode.name) or self:GetWindow():GetElementManager():GetTextElement();
-    return PageElement:new():Init(xmlNode, window);
+    return PageElement:new():Init(xmlNode, window, parent);
 end
 
 -- 元素初始化
-function Element:Init(xmlNode, window)
-    self:InitElement(xmlNode, window);
+function Element:Init(xmlNode, window, parent)
+    self:InitElement(xmlNode, window, parent);
     self:InitChildElement(xmlNode, window);
     return self;
 end
+
 -- 初始化基本属性
-function Element:InitElement(xmlNode, window)
+function Element:InitElement(xmlNode, window, parent)
     -- 设置窗口
     self:SetWindow(window);
-
+    -- 设置父元素
+    self:SetParentElement(parent);
     -- 先清除子元素
     self:ClearChildElement();
 
@@ -95,6 +98,22 @@ function Element:InitElement(xmlNode, window)
         self:SetAttr(xmlNode.attr or {});
         self:SetXmlNode(xmlNode);
     end
+
+    -- 初始化样式表
+    if (not self:GetStyleSheet()) then
+        self:SetStyleSheet(self:GetWindow():GetStyleManager():NewStyleSheet());
+    end
+    self:GetStyleSheet():SetInheritStyleSheet(parent and parent:GetStyleSheet());
+
+    -- 初始化元素样式
+    self:InitStyle();
+end
+
+-- 初始化样式
+function Element:InitStyle()
+    self:SetStyle(self:CreateStyle());
+    self:GetStyle():SelectNormalStyle();
+    ElementDebug.If(self:GetAttrStringValue("id") == "debug", self:GetStyle():GetCurStyle());
 end
 
 -- 初始化子元素
@@ -102,7 +121,7 @@ function Element:InitChildElement(xmlNode, window)
     if (not xmlNode) then return end
     -- 创建子元素
     for i, childXmlNode in ipairs(xmlNode) do
-        local childElement = self:CreateFromXmlNode(childXmlNode, window);
+        local childElement = self:CreateFromXmlNode(childXmlNode, window, self);
         -- ElementDebug.Format("InitChildElement Child Element Name = %s, TagName = %s", childElement:GetName(), childElement:GetTagName());
         self:InsertChildElement(childElement);
         -- table.insert(self.childrens, childElement);
@@ -110,28 +129,29 @@ function Element:InitChildElement(xmlNode, window)
     end
 end
 
--- 初始化样式
-function Element:InitStyle()
-    self:SetStyle(self:CreateStyle());
+-- 元素加载
+function Element:LoadElement()
+    self:OnLoadElementBeforeChild();
+
+    self:OnLoadElement();
+    for child in self:ChildElementIterator() do
+        child:LoadElement();
+    end
+
+    self:OnLoadElementAfterChild();
 end
 
--- 获取内联文本
-function Element:GetInnerText()
-    local function GetInnerText(xmlNode)
-        if (not xmlNode) then return "" end
-        if (type(xmlNode) == "string") then return xmlNode end
-        local text = "";
-        for _, childXmlNode in ipairs(xmlNode) do
-            text = text .. GetInnerText(childXmlNode);
-        end 
-        return text;
-    end
-    return GetInnerText(self:GetXmlNode());
+function Element:OnLoadElementBeforeChild()
+end
+
+function Element:OnLoadElement()
+end
+
+function Element:OnLoadElementAfterChild()
 end
 
 -- 添加DOM树中
 function Element:OnAttach()
-    self:InitStyle();
 end
 
 -- 从DOM树中移除
@@ -255,7 +275,6 @@ function Element:UpdateLayout()
     -- 是否正在更新布局
     if (self.isUpdateLayout) then return end
     self.isUpdateLayout = true;
-
     -- 布局更新前回调
     if (self:OnBeforeUpdateLayout()) then 
         self.isUpdateLayout = false;
@@ -264,7 +283,6 @@ function Element:UpdateLayout()
 
     -- 选择合适样式
     self:SelectStyle();
-
     -- 准备布局
     local layout = self:GetLayout();
     layout:PrepareLayout();
@@ -326,19 +344,21 @@ end
 function Element:CreateStyle()
     local baseStyle = self:GetBaseStyle();
     local inheritStyle = self:GetParentElement() and self:GetParentElement():GetStyle();
-
-    local style = Style:new():Init(baseStyle);
+    local style = Style:new():Init(baseStyle, inheritStyle);
     
-    -- 继承样式
-    style:MergeInheritable(inheritStyle);
-
-    -- 类样式
+    -- 全局类样式
     local class = self:GetAttrStringValue("class",  "");
     self:GetWindow():GetStyleManager():ApplyClassStyle(class, style, self);
-
+    -- 局部样式表
+    local styleSheet = self:GetStyleSheet();
+    if (styleSheet) then 
+        styleSheet:ApplyClassStyle(class, style, self);
+    end
+    -- ElementDebug.If(self:GetName() == "Text", "class", style);
     -- 内联样式
     style:AddString(self:GetAttrValue("style"));
-
+    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle());
+    -- ElementDebug.If(self:GetName() == "Text", "inline", style);
     return style;
 end
 
@@ -387,4 +407,16 @@ function Element:SetAttrValue(attrName, attrValue)
     attr[attrName] = attrValue;
 end
 
-
+-- 获取内联文本
+function Element:GetInnerText()
+    local function GetInnerText(xmlNode)
+        if (not xmlNode) then return "" end
+        if (type(xmlNode) == "string") then return xmlNode end
+        local text = "";
+        for _, childXmlNode in ipairs(xmlNode) do
+            text = text .. GetInnerText(childXmlNode);
+        end 
+        return text;
+    end
+    return GetInnerText(self:GetXmlNode());
+end

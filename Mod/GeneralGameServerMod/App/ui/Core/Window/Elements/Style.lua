@@ -23,25 +23,14 @@ function Style:ctor()
 end
 
 -- public:
-function Style:Init(xmlNode, window)
-    self:SetTagName(xmlNode.name);
-	self:SetAttr(xmlNode.attr);
-	self:SetXmlNode(xmlNode);
-    self:SetWindow(window);
-
-    local code = "";
-    for i = 1, #xmlNode do
-        if (type(xmlNode[i]) == "string") then
-            code = code .. xmlNode[i];
-        end
-    end
-
+function Style:Init(xmlNode, window, parent)
+    self:InitElement(xmlNode, window, parent);
+    local code = self:GetInnerText()
     self.sheet = self:GetWindow():GetStyleManager():AddStyleSheetByString(code);
-
 	return self;
 end
 
 
 function Style:Destroy()
-    self:GetWindow():GetStyleManager():RemoveStyleSheet(code);
+    self:GetWindow():GetStyleManager():RemoveStyleSheet(self.sheet);
 end

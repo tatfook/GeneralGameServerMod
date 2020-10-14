@@ -11,7 +11,7 @@ local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout.lua"
 
 local Layout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Disable(); --Enable  Disable
+local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Enable(); --Enable  Disable
 
 -- 属性定义
 Layout:Property("Element");                                        -- 元素
@@ -71,9 +71,7 @@ function Layout:GetWindow()
 end
 -- 获取窗口位置 x, y, w, h    (w, h 为宽高, 非坐标)
 function Layout:GetWindowPosition()
-    local wnd = self:GetWindow() and self:GetWindow():GetNativeWindow();
-    if (not wnd) then return end;
-	return wnd:GetAbsPosition();
+	return self:GetWindow():GetWindowPosition();
 end
 -- 获取屏幕(应用程序窗口)位置 x, y, w, h    (w, h 为宽高, 非坐标)
 function Layout:GetScreenPosition()
@@ -230,11 +228,13 @@ function Layout:IsOverflow()
 end
 -- 是否溢出
 function Layout:IsOverflowX()
-	return self:IsFixedWidth() and self.realContentWidth and self.realContentWidth > self.contentWidth;
+	local style = self:GetStyle();
+	return style["overflow-x"] ~= "none" and self:IsFixedWidth() and self.realContentWidth and self.realContentWidth > self.contentWidth;
 end
 -- 是否溢出
 function Layout:IsOverflowY()
-	return self:IsFixedHeight() and self.realContentHeight and self.realContentHeight > self.contentHeight;
+	local style = self:GetStyle();
+	return style["overflow-y"] ~= "none" and self:IsFixedHeight() and self.realContentHeight and self.realContentHeight > self.contentHeight;
 end
 
 -- 处理布局准备工作, 单位数字化
@@ -247,8 +247,8 @@ function Layout:PrepareLayout()
 	
 	-- 窗口元素 直接设置宽高
 	if (not parentLayout and self:GetElement():IsWindow()) then
-        local x, y, w, h = self:GetWindowPosition();
-		self:SetPos(0, 0);
+		local x, y, w, h = self:GetWindowPosition();
+		self:SetPos(x or 0, y or 0);
 		self:SetWidthHeight(w or 0, h or 0);
 		self:SetFixedSize(true);
 		return ;
@@ -305,13 +305,15 @@ function Layout:PrepareLayout()
 
 	-- 数字化宽高
 	local width, height = style.width, style.height;                                                     -- 支持百分比, px
-	if (self:IsBlock() and not self:IsPosition() and not width) then width = parentWidth end             -- 块元素默认为父元素宽
+	if (self:IsBlock() and not self:IsPosition() and not width and parentLayout) then                    -- 块元素默认为父元素宽
+		width = parentLayout:GetContentWidthHeight();
+	end             
 	width = self:PercentageToNumber(width, parentWidth);
     height = self:PercentageToNumber(height, parentHeight);
-    if (self:IsBorderBox()) then
-		self:SetWidthHeight(width, height);
-    else
+	if (style["box-sizing"] == "content-box" and style.width) then
 		self:SetWidthHeight(width and (width + paddingLeft + paddingRight + borderLeft + borderRight), height and (height + paddingTop + paddingBottom + borderTop + borderBottom));
+	else
+		self:SetWidthHeight(width, height);
 	end
 	if (width and height) then self:SetFixedSize(true) end
 	if (width) then self:SetFixedWidth(true) end
@@ -366,9 +368,6 @@ function Layout:Update()
 
 	-- 父布局存在且为固定宽高则直接更新父布局的真实宽高即可
 	if (parentLayout and parentLayout:IsFixedSize()) then parentLayout:UpdateRealContentWidthHeight() end
-
-	-- 父布局更新完毕, 重新计算元素的窗口坐标
-	self:GetElement():UpdateWindowPos();
 end
 
 -- 更新内容宽高
@@ -393,7 +392,7 @@ function Layout:UpdateRealContentWidthHeight()
 		local isRightFloat = childStyle.float == "right";
 		if (childLayout:IsLayout() and childLayout:IsUseSpace()) then
 			LayoutDebug.If(
-				child:GetAttrValue("id") == "debug",
+				element:GetAttrValue("id") == "debug",
 				string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 				-- string.format("child margin: %s, %s, %s, %s", childMarginTop, childMarginRight, childMarginBottom, childMarginLeft), childStyle,
@@ -437,23 +436,31 @@ function Layout:UpdateRealContentWidthHeight()
 			end
 			childLayout:SetPos(childLeft, childTop);
 			LayoutDebug.If(
-				child:GetAttrValue("id") == "debug",
+				element:GetAttrValue("id") == "debug",
 				string.format("[%s] Layout Add ChildLayout After ", self:GetName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
 			);
 		end
 	end
-
+	local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
+    local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
 	-- 假宽度右浮动元素需要调整
-	if (isFalseWidth) then
-		for child in element:ChildElementIterator(true) do
-			local childLayout, childStyle = child:GetLayout(), child:GetStyle(); 
-			if (childStyle.float == "right") then
-				local left, top = childLayout:GetPos();
-				childLayout:SetPos(left - width + realContentWidth, top);
-			end
+	for child in element:ChildElementIterator(true) do
+		local childLayout, childStyle = child:GetLayout(), child:GetStyle(); 
+		local left, top = childLayout:GetPos();
+		if (childStyle.float == "right") then
+			if (isFalseWidth) then left = left - width + realContentWidth end
+			left = left - paddingRight - borderRight;
+		else
+			left = left + paddingLeft + borderLeft
 		end
+		top = top + paddingTop + borderTop;
+		childLayout:SetPos(left, top);
+		LayoutDebug.If(
+			element:GetAttrValue("id") == "debug",
+			string.format("[%s] Adjust Pos Left = %s, Top = %s ", child:GetName(), left, top)
+		);
 	end
 
 	-- 设置内容宽高

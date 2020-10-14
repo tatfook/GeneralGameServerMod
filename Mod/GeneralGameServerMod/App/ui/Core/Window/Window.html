@@ -1,25 +1,22 @@
-<template>
-    <div v-for="x in 0">
-        {{text}}
-    </div>
-    <div v-if="true">
-        if test
-    </div>
-    <div ref="ref">
-        ref test {{nid}}
-    </div>
-    <button onclick="click">btn</button>
+<template class="container">
+    <WindowTitleBar title="测试"></WindowTitleBar>
+    <For></For>
 </template>
 
 <script type="text/lua">
-nid = 1;
-text = "hello world"
-function click()
-    echo("hello world");
-    nid = nid + 1;
-    echo(nid);
-end
+RegisterComponent("WindowTitleBar", "%ui%/Core/Vue/Components/WindowTitleBar.html");
+RegisterComponent("For", "%ui%/Core/Vue/Example/For.html");
+
+-- 组件解析完成
 function OnReady()
-    echo(GetRef("ref") == nil)
 end
 </script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    padding: 0px 2px 2px 2px;
+    background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);
+}
+</style>

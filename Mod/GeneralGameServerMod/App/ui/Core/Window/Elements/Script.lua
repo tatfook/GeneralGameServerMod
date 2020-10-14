@@ -23,11 +23,8 @@ function Script:ctor()
     self:SetVisible(false);
 end
 
-function Script:Init(xmlNode, window)
-    self:SetTagName(xmlNode.name);
-	self:SetAttr(xmlNode.attr);
-	self:SetXmlNode(xmlNode);
-    self:SetWindow(window);
+function Script:Init(xmlNode, window, parent)
+	self:InitElement(xmlNode, window, parent);
 
     self:GetWindow():ExecCode(self:GetInnerText());
 

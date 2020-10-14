@@ -1,0 +1,17 @@
+<template>
+    <div v-if="IsShow">v-if test</div>
+    <button id="debug" onclick="click">{{GetBtnText()}}</button>
+</template>
+
+<script type="text/lua">
+IsShow = true;
+
+function GetBtnText()
+    return IsShow and "隐藏" or "显示";
+end
+function click()
+    IsShow = not IsShow;
+end
+</script>
+
+<!-- RegisterComponent("WindowTitleBar", "%ui%/Core/Vue/Components/WindowTitleBar.html"); -->

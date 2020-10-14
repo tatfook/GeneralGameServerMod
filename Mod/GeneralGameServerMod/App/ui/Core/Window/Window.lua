@@ -29,6 +29,7 @@ local SizeEvent = commonlib.gettable("System.Windows.SizeEvent");
 local InputMethodEvent = commonlib.gettable("System.Windows.InputMethodEvent");
 local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
 
+local G = NPL.load("./G.lua", IsDevEnv);
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local StyleManager = NPL.load("./StyleManager.lua", IsDevEnv);
@@ -46,52 +47,53 @@ Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
 
 function Window:ctor()
-    self.screenX, self.screenY = 0, 0;  -- 窗口的屏幕位置
+    --屏幕位置,宽度,高度
+    self.screenX, self.screenY, self.screenWidth, self.screenHeight = 0, 0, 0, 0; 
+    -- 窗口的位置,宽度,高度
+    self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, 0, 0; 
     self:SetName("Window");
     self:SetTagName("Window");
     self:SetStyleManager(StyleManager:new());
-    self:SetG(setmetatable({}, {__index = _G}));    -- 设置全局G表
+    self:SetG(G(self));                             -- 设置全局G表
 end
 
 function Window:IsWindow()
     return true;
 end
 
-function Window:Init(params)
-    url = commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString([[
-       <html style="height:100%; background-color:#ffffff;">
-            <component src="Mod/GeneralGameServerMod/App/ui/Core/Window/Window.html"></component>
-            <Button style="margin: 10px">按钮</Button>
-            &amp;nbsp;&amp;nbsp;&amp;nbsp;中文 hello wor&nbsp;ld  this is a test
-            <div id="debug" style="margin-left: 100px; height: 100px; width: 100px; outline-width:1px; outline-color:#000000;">
-                <div style="background-color:#ff0000; height: 100px;"></div>
-                <div style="background-color:#00ff00; height: 100px;"></div>
-            </div>
-            <TextArea style="margin: 10px" value="hello world, this is a test;hello world, this is a test""></TextArea>
-       </html>
-    ]]), "//html");
+function Window:LoadXmlNodeByUrl(url)
+    if (type(url) == "table") then return url end
+    if (type(url) ~= "string") then return nil end
 
-    -- 只接受xmlNode
-    if (type(url) ~= "table") then return end
-    
-    local xmlNode = url;
+    local file = ParaIO.open(url, "r");
+    if(not file:IsValid()) then
+        WindowDebug.Format("ERROR: read file failed: %s ", url);
+        return ;
+    end
+    local text = file:GetText();
+    file:close();
+    return commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString(text), "//html");
+end
+
+function Window:Init(params)
+    -- 保存窗口大小
+    self.screenX, self.screenY, self.screenWidth, self.screenHeight = self:GetNativeWindow():GetAbsPosition();
+    self.windowWidth, self.windowHeight = params.width or 600, params.height or 500;
+    self.windowX, self.windowY = params.x or math.floor((self.screenWidth - self.windowWidth) / 2), params.y or math.floor((self.screenHeight - self.windowHeight) / 2);
+
     -- 设置窗口元素
-    self:SetWindow(self);
-    -- 保存XML
-    self:SetXmlNode({Name = "Window"});
-    -- 设置属性
-    self:SetAttr({
-        draggable = if_else(params.draggable == false, false, true),   -- 窗口默认可以拖拽
-    });
-    -- 设置元素样式
-    self:SetStyle(self:CreateStyle());
-    -- 清子元素
-    self:ClearChildElement();
-    -- 获取元素类 
-    local Element = ElementManager:GetElementByTagName(xmlNode.name);
-    if (not Element) then return end;
+    self:InitElement({
+        name = "Window",
+        attr = {
+            draggable = if_else(params.draggable == false, false, true),   -- 窗口默认可以拖拽
+        }, 
+    }, self, nil)
+
     -- 设置根元素
-    self:InsertChildElement(Element:new():Init(xmlNode, self));
+    local xmlNode = self:LoadXmlNodeByUrl(params.url);
+    if (xmlNode) then
+        self:InsertChildElement(self:CreateFromXmlNode(xmlNode, self, self));
+    end
 end
 
 -- 窗口刷新
@@ -104,25 +106,11 @@ function Window.Show(self, params)
         params = self ~= Window and self or params;
         self = Window:new();
     end
-
     params = params or {};
-    if (params.alignment == nil) then params.alignment = "_ct" end
-    if (params.width == nil) then params.width = 600 end
-    if (params.height == nil) then params.height = 500 end
-    if (params.left == nil) then params.left = -params.width / 2 end
-    if (params.top == nil) then params.top = -params.height / 2 end
-    if (params.allowDrag == nil) then params.allowDrag = true end
-    if (params.name == nil) then params.name = "UI" end
-    
-    -- 关闭销毁
-    params.DestroyOnClose = true;
-
     if (not self:GetNativeWindow()) then
         self:SetNativeWindow(self:CreateNativeWindow(params));
     end
-
     self:Init(params);
-
     self:UpdateLayout();
 end
 
@@ -134,37 +122,26 @@ function Window:CloseWindow()
 	end
 end
 
-if (_G.Window) then _G.Window:CloseWindow() end
-_G.Window = Window:new();
-Window.Test = _G.Window;
-
 -- 创建原生窗口
 function Window:CreateNativeWindow(params)
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
-
-    local name, left, top, width, height, alignment = params.name, params.left or 0, params.top or 0, params.width or 500, params.height or 400, params.alignment or "_lt";
+    local RootUIObject = ParaUI.GetUIObject("root");
+    local rootX, rootY, rootWidth, rootHeight = RootUIObject:GetAbsPosition();
+    -- WindowDebug.Format("CreateNativeWindow rootX = %s, rootY = %s, rootWidth = %s, rootHeight = %s", rootX, rootY, rootWidth, rootHeight);
+    rootWidth = 1000;
     -- 创建窗口
-    local native_window = ParaUI.CreateUIObject("container", name or "Window", alignment, left, top, width, height);
+    local native_window = ParaUI.CreateUIObject("container", "Window", "_lt", rootX, rootY, rootWidth, rootHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
     native_window:SetField("InputMethodEnabled", true);
-
     -- 加到有效窗口上
-    if(not native_window.parent or not native_window.parent:IsValid()) then
-        local parent = params.parent or ParaUI.GetUIObject("root");
-        parent:AddChild(native_window);
-    end
-    -- 保存窗口大小
-    local x, y, w, h = native_window:GetAbsPosition();
-    self:SetScreenPos(x, y);
-    self:SetSize(w, h);
-
+    if(not native_window.parent or not native_window.parent:IsValid()) then RootUIObject:AddChild(native_window) end
     -- 创建绘图上下文
     self:SetPainterContext(System.Core.PainterContext:new():init(self));
 	
 	local _this = native_window;
 	-- redirect events from native ParaUI object to this object. 
-	_this:SetScript("onsize", function()
+    _this:SetScript("onsize", function()
 		self:handleGeometryChangeEvent();
 	end);
 	_this:SetScript("ondraw", function()
@@ -176,7 +153,7 @@ function Window:CreateNativeWindow(params)
 	_this:SetScript("onmouseup", function()
 		self:handleMouseEvent(MouseEvent:init("mouseReleaseEvent", self));
 	end);
-	_this:SetScript("onmousemove", function()
+    _this:SetScript("onmousemove", function()
 		self:handleMouseEvent(MouseEvent:init("mouseMoveEvent", self));
 	end);
 	_this:SetScript("onmousewheel", function()
@@ -213,27 +190,23 @@ function Window:CreateNativeWindow(params)
     return native_window;
 end
 
--- 设置元素相对屏幕的坐标
-function Window:SetScreenPos(x, y)
-    self.screenX, self.screenY = x, y;
+-- 获取窗口位置
+function Window:GetWindowPosition()
+    return self.windowX, self.windowY, self.windowWidth, self.windowHeight;
 end
-
+-- 设置窗口位置
+function Window:SetWindowPosition(x, y, w, h)
+    local isChangeSize = self.windowWidth ~= w or self.windowHeight ~= h;
+    self.windowX, self.windowY, self.windowWidth, self.windowHeight = x, y, w, h;
+    if (isChangeSize) then self:UpdateLayout() end
+end
 -- 获取元素相对屏幕的坐标
-function Window:GetScreenPos()
-    return self.screenX, self.screenY;
+function Window:GetScreenPosition()
+    return self.screenX, self.screenY, self.screenWidth, self.screenHeight;
 end
-
 -- 窗口大小改变
 function Window:handleGeometryChangeEvent()
-    -- 保存窗口大小
-    local x, y, newWidth, newHeight = self:GetNativeWindow():GetAbsPosition();
-    local oldWidth, oldHeight = self:GetSize();
-
-    self:SetScreenPos(x, y);
-    if (oldWidth == newWidth and oldHeight == newHeight) then return end
-
-    self:SetSize(newWidth, newHeight);
-    self:UpdateLayout();
+    self.screenX, self.screenY, self.screenWidth, self.screenHeight = self:GetNativeWindow():GetAbsPosition();
 end
 
 -- handle ondraw callback from system ParaUI object. 
@@ -242,6 +215,8 @@ function Window:handleRender()
 end
 
 function Window:handleMouseEvent(event)
+    self:Hover(event);
+
     local point, eventType = event:localPos(), event:GetType();
     local captureFuncName, bubbleFuncName = nil, nil;
     if (eventType == "mousePressEvent") then
@@ -327,12 +302,20 @@ function Window:handleMouseEvent(event)
         element = ElementMouseEvent(self);
     end
 
-    if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Target Element: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
+    if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Target Element: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element and element:GetName(), eventType, captureFuncName, bubbleFuncName) end
 
     if (eventType == "mouseMoveEvent") then
-        self:SetHover(element);
+        -- self:SetHover(element);
     elseif(eventType == "mousePressEvent") then
         self:SetFocus(element);
+    end
+
+    -- 系统其它事件处理
+    if(not event:isAccepted() and not element) then
+        local context = SceneContextManager:GetCurrentContext();
+        if(context) then
+            context:handleMouseEvent(event);
+        end
     end
 end
 
@@ -344,21 +327,23 @@ end
 
 function Window:handleKeyEvent(event)
     local focusElement = self:GetFocus();
-    if (not focusElement) then return end
-    if (event:GetType() == "keyPressEvent") then
-        focusElement:OnKeyDown(event);
-    elseif (event:GetType() == "keyReleaseEvent") then 
-        focusElement:OnKeyUp(event);    -- 不生效
-    else
-        focusElement:OnKey(event);
+    if (focusElement) then
+        if (event:GetType() == "keyPressEvent") then
+            focusElement:OnKeyDown(event);
+        elseif (event:GetType() == "keyReleaseEvent") then 
+            focusElement:OnKeyUp(event);    -- 不生效
+        else
+            focusElement:OnKey(event);
+        end
     end
+
     -- 系统其它事件处理
-    -- if(not event:isAccepted()) then
-    --     local context = SceneContextManager:GetCurrentContext();
-    --     if(context) then
-    --         context:handleKeyEvent(event);
-    --     end
-    -- end
+    if (not focusElement and not event:isAccepted()) then 
+        local context = SceneContextManager:GetCurrentContext();
+        if(context) then
+            context:handleKeyEvent(event);
+        end
+    end
 end
 
 function Window:handleActivateEvent(isActive)
@@ -389,26 +374,25 @@ function Window:OnMouseDown(event)
     if(self:IsDraggable() and event:button()=="left") then
         self.isMouseDown = true;
         self.isDragging = false;
-		self.startDragPosition = event:screenPos():clone();
+        local pos = event:screenPos();
+        self.startDragX, self.startDragY = pos:x(), pos:y();
 		event:accept();
 	end
 end
 
 function Window:OnMouseMove(event)
     if(event:isAccepted()) then return end
-    
+    local pos = event:screenPos();
 	if(self.isMouseDown and self:IsDraggable() and event:button() == "left") then
 		if(not self.isDragging) then
-			if(event:screenPos():dist2(self.startDragPosition[1], self.startDragPosition[2]) > 2) then
-				self.isDragging = true;
-				self.startDragWinLocation = Point:new():init(self:GetScreenPos());
+			if(pos:dist2(self.startDragX, self.startDragY) > 2) then
+                self.isDragging = true;
+                self.startDragWinX, self.startDragWinY = self.windowX, self.windowY;
 				self:CaptureMouse();
 			end
-		elseif(self.isDragging) then
-            local newPos = self.startDragWinLocation + event:screenPos() - self.startDragPosition;
-            local screenX, screenY = newPos[1], newPos[2];
-            local width, height = self:GetSize();
-            self:GetNativeWindow():Reposition("_lt", screenX, screenY, width, height);
+        elseif(self.isDragging) then
+            self.windowX, self.windowY = pos:x() - self.startDragX + self.startDragWinX, pos:y() - self.startDragY + self.startDragWinY;
+            self:SetPosition(self.windowX, self.windowY);
 		end
 		if(self.isDragging) then
 			event:accept();
@@ -440,3 +424,9 @@ function Window:ExecCode(code)
     local result = code_func();
     return result, nil;
 end
+
+
+
+if (_G.Window) then _G.Window:CloseWindow() end
+_G.Window = Window:new();
+Window.Test = _G.Window;

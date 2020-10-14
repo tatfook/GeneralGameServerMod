@@ -19,8 +19,6 @@ Text:Property("Value");  -- 文本值
 Text:Property("BaseStyle", {
 	NormalStyle = {
 		["display"] = "inline",
-		["width"] = "100%",
-		["color"] = "#000000",
 	}
 });
 
@@ -35,27 +33,11 @@ function Text:ctor()
 end
 
 -- public:
-function Text:Init(xmlNode, window)
-	self:InitElement(xmlNode, window);
+function Text:Init(xmlNode, window, parent)
+	self:InitElement(xmlNode, window, parent);
 
-	local value = (type(xmlNode) == "string" or type(xmlNode) == "number") and tostring(xmlNode) or (xmlNode and xmlNode.attr and xmlNode.attr.value);
-	
-	if (type(xmlNode) == "table") then
-		self:SetAttr(xmlNode.attr);
-	end
-
-	if (not value and type(xmlNode) == "table") then
-		for i = 1, #xmlNode do
-			if (type(xmlNode[i]) == "string" or type(xmlNode[i] == "number")) then
-				value = tostring(xmlNode[i]);
-				break;
-			end
-		end
-	end
-
-	-- TextElementDebug("Init Value:" .. tostring(value), xmlNode);
 	-- 处理实体字符
-	self:SetValue(ReplaceEntityReference(value));
+	self:SetValue(ReplaceEntityReference(self:GetInnerText()));
 
 	return self;
 end
@@ -67,12 +49,15 @@ function Text:SetText(value)
 	self:UpdateLayout();
 end
 
+function Text:GetTextAlign()
+	return self:GetStyle():GetTextAlign();
+end
+
 local function CalculateTextLayout(self, text, width, left, top)
 	TextElementDebug.Format("CalculateTextLayout, text = %s, width = %s, left = %s, top = %s", text, width, left, top);
 	if(not text or text =="") then return 0, 0 end
 
-	local style = self:GetStyle();
-	local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), style:GetLineHeight();
+	local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
 	local remaining_text = nil;
 
 	if(width and width > 0 and textWidth > width) then
@@ -81,15 +66,15 @@ local function CalculateTextLayout(self, text, width, left, top)
 	end
 
 	TextElementDebug.Format("text = %s, x = %s, y = %s, w = %s, h = %s", text, left, top, textWidth, textHeight);
-	table.insert(self.texts, {text = text, x = left, y = top, w = textWidth, h = textHeight});
-		
-	if(style and width and width > 0 and width > textWidth) then
-		if(style["text-align"]) then
-			if(style["text-align"] == "right") then
-				_this:setX(left + width - textWidth);
-			elseif(style["text-align"] == "center") then
-				_this:setX(left + (width - textWidth) / 2);
-			end
+	local textObject = {text = text, x = left, y = top, w = textWidth, h = textHeight};
+	table.insert(self.texts, textObject);
+	
+	local textAlign = self:GetTextAlign();
+	if(width and width > 0 and width > textWidth and textAlign) then
+		if(textAlign == "right") then
+			textObject.x = left + width - textWidth;
+		elseif(textAlign == "center") then
+			textObject.x = left + (width - textWidth) / 2;
 		end
 	end
 	
@@ -103,29 +88,34 @@ end
 
 function Text:OnUpdateLayout()
 	local layout = self:GetLayout();
+	local parentLayout = self:GetParentElement():GetLayout();
+	local parentContentWidth, parentContentHeight = parentLayout:GetContentWidthHeight();
 	local width, height = layout:GetWidthHeight();
 	local left, top = 0, 0;
 
 	self.texts = {};
 
-	width, height = CalculateTextLayout(self, self:GetValue(), width, left, top);
+	width, height = CalculateTextLayout(self, self:GetValue(), width or parentContentWidth, left, top);
 
 	TextElementDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 
 	self:GetLayout():SetWidthHeight(width, height);
 
+	Text._super.OnUpdateLayout(self);
+	
     return true; 
 end
 
 -- 绘制文本
 function Text:OnRender(painter)
 	local style, layout = self:GetStyle(), self:GetLayout();
-	local fontSize, lineHeight = style:GetFontSize(), style:GetLineHeight();
+	local fontSize = self:GetFontSize(14)
+	local lineHeight = self:GetLineHeight();
 	local linePadding = (lineHeight - fontSize) / 2 - fontSize / 6;
 	local left, top = layout:GetPos();
 
-	painter:SetFont(style:GetFont());
-	painter:SetPen(style:GetColor());
+	painter:SetFont(self:GetFont());
+	painter:SetPen(self:GetColor("#000000"));
 
 	for i = 1, #self.texts do
 		local obj = self.texts[i];

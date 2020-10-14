@@ -12,7 +12,9 @@ local Helper = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Helper.lua");
 local Helper = (NPL and NPL.export) and NPL.export() or {};
 
 -- 路径简写
-local PathAliasMap = {}; 
+local PathAliasMap = {
+    ["ui"] = "Mod/GeneralGameServerMod/App/ui",
+}; 
 local FileCacheMap = {};
 
 function Helper.SetPathAlias(alias, path)

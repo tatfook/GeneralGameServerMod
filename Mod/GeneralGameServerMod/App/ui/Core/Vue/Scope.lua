@@ -15,6 +15,20 @@ local nid = 0;
 local __index = nil;
 local __newindex = nil;
 
+local function IsScope(scope)
+    return type(scope) == "table" and scope.__scope;
+end
+
+local function __index_callback(obj, key)
+    if (type(__index) ~= "function") then return end
+    __index(obj, key);
+end
+
+local function __newindex_callback(obj, key, val, oldval)
+    if (type(__newindex) ~= "function") then return end
+    __newindex(obj, key, val, oldval);
+end
+
 local function NewScope(deep)
     nid = nid + 1;
 
@@ -48,13 +62,25 @@ local function NewScope(deep)
     end
 
     -- 设置值
-    scope.Set = function(self, key, val)
-        self[key] = val;
+    -- scope.Set = function(self, key, val)
+    --     self[key] = Scope.New(val);
+    --     return self[key];
+    -- end
+
+    -- -- 获取值
+    -- scope.Get = function(self, key)
+    --     return self[key];
+    -- end
+
+    -- List Insert
+    scope.insert = function(self, pos, val)
+        table.insert(data, pos, val);
+        __newindex_callback(self, nil, self, self);
     end
 
-    -- 获取值
-    scope.Get = function(self, key)
-        return self[key];
+    scope.remove = function(self, pos)
+        table.remove(data, pos)
+        __newindex_callback(self, nil, self, self);
     end
 
     -- 监控变量
@@ -83,7 +109,7 @@ local function NewScope(deep)
         end
 
         -- 相同则直接返回
-        if (data[key] == val) then return  end
+        if (data[key] == val) then return end
 
         -- 如果为表则构建新的scope
         if (type(val) == "table" and not val.__scope and __deep) then
@@ -122,9 +148,10 @@ local function NewScope(deep)
         if (key == "__scope") then return true end
 
         -- 取更新表
-        if (data[key]) then 
-            -- print("get", __nid, key);
-            return data[key];
+        local val = data[key];
+        if (val) then 
+            if (IsScope(val)) then __index_callback(val, nil) end
+            return val;
          end
         
         -- 获取只读ID
@@ -158,7 +185,10 @@ end
 
 -- 新建一个scope  deep 为真则字表scope化
 function Scope.New(obj, deep)
-    obj = type(obj) == "table" and obj or {};
+    deep = deep ~= false and true or false;
+    obj = obj or {};
+    if (type(obj) ~= "table") then return obj end
+
     -- 如果已经是Scope对象直接返回
     if (obj.__scope) then return obj end
 
@@ -184,6 +214,8 @@ function Scope.New(obj, deep)
 
     _copy(scope, obj, deep);
 
+    __index_callback(scope, nil); -- 将自身加入依赖
+
     return scope;
 end
 
@@ -194,37 +226,3 @@ end
 function Scope.__SetNewIndex(newindex)
     __newindex = newindex;
 end
-
-
-
-
-
--- 获取ID
--- local s = Scope.New({1,2,3});
--- for key, val in ipairs(s) do
---     print(key, val);
--- end
--- print(#s, rawlen(s));
--- print(s[1]);
--- s.self = s;
--- s.self.key = 1;
--- print(s.key)
--- s.key = 1;
--- s.__newindex = 1;
--- print(s.__newindex);
--- s.__index = nil;
--- s.obj.key = 2;
--- s.object = {val = 2};
--- print(s.key, s.val, s.obj.key);
-
--- 元表测试
--- local s1 = Scope.New();
--- local s2 = Scope.New();
--- s1.s1 = 1;
--- s2.s2 = 2;
-
--- s2:SetMetaTable(s1);
--- print(s2.s1, s2.s2);
--- s2.s1 = 3;
--- print(s2.s1, s2.s2);
--- print(s2:GetMetaTable() == s1)

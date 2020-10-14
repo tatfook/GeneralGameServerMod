@@ -26,7 +26,7 @@ local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable(
 local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
 function ElementUI:ctor()
-    self.windowX, self.windowY = 0, 0;                         -- 窗口内坐标
+    self.winX, self.winY = 0, 0;                         -- 窗口内坐标
 end
 
 -- 是否显示
@@ -112,13 +112,14 @@ end
 -- 绘制背景
 function ElementUI:RenderBackground(painter)
     local style = self:GetStyle();
-    local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor("#ffffff00");
+    local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor();
     local x, y, w, h = self:GetGeometry();
+    backgroundColor = backgroundColor or (background and "#ffffffff" or "#ffffff00");
 
-    -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
+    -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "debug", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
 
     painter:SetPen(backgroundColor);
-	painter:DrawRectTexture(x, y, w, h, background);
+    painter:DrawRectTexture(x, y, w, h, background);
 end
 
 -- 绘制边框
@@ -138,10 +139,19 @@ end
 function ElementUI:RenderContent(painter)
 end
 
-
 -- 获取字体
-function ElementUI:GetFont(defaultValue)
-    return self:GetStyle():GetFont(defaultValue);
+function ElementUI:GetFont()
+    return self:GetStyle():GetFont();
+end
+
+-- 获取字体大小
+function ElementUI:GetFontSize(defaultValue)
+    return self:GetStyle():GetFontSize(defaultValue);
+end
+
+-- 获取行高
+function ElementUI:GetLineHeight(defaultValue)
+    return self:GetStyle():GetLineHeight(defaultValue);
 end
 
 -- 获取字体颜色
@@ -217,7 +227,10 @@ end
 function ElementUI:SetPosition(x, y)
     local oldx, oldy = self:GetPosition();
     self:GetRect():setPosition(x, y);
-    if (oldx ~= x or oldy ~= y) then self:OnSize() end
+    if (oldx ~= x or oldy ~= y) then 
+        self:UpdateWindowPos();
+        self:OnSize();
+    end
 end
 
 function ElementUI:GetPosition()
@@ -236,12 +249,12 @@ end
 
 -- 设置元素相对窗口的坐标
 function ElementUI:SetWindowPos(x, y)
-    self.windowX, self.windowY = x, y;
+    self.winX, self.winY = x, y;
 end
 
 -- 获取元素相对窗口的坐标
 function ElementUI:GetWindowPos()
-    return self.windowX, self.windowY;
+    return self.winX, self.winY;
 end
 -- 全局坐标转窗口坐标
 function ElementUI:GloablToWindowPos()
@@ -258,19 +271,23 @@ end
 function ElementUI:UpdateWindowPos()
     local parentElement = self:GetParentElement();
 	local windowX, windowY = 0, 0;
-	local x, y = self:GetPosition();
+    local x, y = self:GetPosition();
+    local oldWindowX, oldWindowY = self:GetWindowPos();
+    if (parentElement) then windowX, windowY = parentElement:GetWindowPos() end
     windowX, windowY = windowX + x, windowY + y;
     self:SetWindowPos(windowX, windowY);
     -- 更新子元素的窗口位置
-	for child in self:ChildElementIterator() do
-        child:UpdateWindowPos();
+    if (oldWindowX ~= windowX or oldWindowY ~= windowY) then 
+        for child in self:ChildElementIterator() do
+            child:UpdateWindowPos();
+        end
     end
 end
 
 -- 获取元素相对屏幕的坐标
 function ElementUI:GetScreenPos()
     local windowX, windowY = self:GetWindowPos();
-    local screenX, screenY = self:GetWindow():GetScreenPos();
+    local screenX, screenY = self:GetWindow():GetScreenPosition();
     return screenX + windowX, screenY + windowY;
 end
 
@@ -325,6 +342,11 @@ function ElementUI:OnMouseDownCapture(event)
 end
 
 function ElementUI:OnMouseDown(event)
+    local mousedown = self:GetAttrFunctionValue("onmousedown");
+	if (mousedown) then mousedown(event) end
+
+	local click = self:GetAttrFunctionValue("onclick");
+	if (click) then click(event) end
 end
 
 function ElementUI:OnMouseMove(event)
@@ -346,6 +368,23 @@ function ElementUI:IsCanHover()
     return true;
 end
 
+-- 悬浮
+function ElementUI:Hover(event)
+    local point = event:globalPos();
+    local x, y = point:x(), point:y();
+    local ex, ey = self:GetScreenPos();
+    local w, h = self:GetSize();
+    if (ex <= x and x <= (ex + w) and ey <= y and y <= (ey + h)) then
+        self:SelectStyle("OnHover");
+    else 
+        self:SelectStyle("OffHover");
+    end
+
+    for child in self:ChildElementIterator() do
+        child:Hover(event);
+    end
+end
+
 -- 是否是光标元素
 function ElementUI:IsHover()
     return self:GetHover() == self;
@@ -358,10 +397,12 @@ end
 
 -- 鼠标悬浮
 function ElementUI:OnHover()
+
 end
 
 -- 鼠标取消悬浮
 function ElementUI:OffHover()
+
 end
 
 -- 设置光标元素
@@ -436,7 +477,6 @@ function ElementUI:SelectStyle(action)
         if (self:IsFocus()) then action = "FocusIn" end
         if (self:IsHover()) then action = "OnHover" end
     end
-    -- ElementUIDebug.Format("Select Style: Name = %s", self:GetName());
     if (action == "OnHover" or action == "OffHover") then
         if (action == "OnHover") then 
             style:SelectHoverStyle();
@@ -454,6 +494,8 @@ function ElementUI:SelectStyle(action)
     else
         style:SelectNormalStyle();
     end
+    -- ElementUIDebug.If(self:GetAttrValue("id") == "debug", isNeedRefreshLayout, action, style:GetCurStyle());
+
     if (isNeedRefreshLayout) then
         self:UpdateLayout();
     end 

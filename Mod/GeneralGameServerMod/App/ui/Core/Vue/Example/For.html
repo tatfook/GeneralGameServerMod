@@ -1,0 +1,18 @@
+<template>
+    <div v-for="item, index in List">{{item}}</div>
+    <button onclick="Add">Add</button>
+    <button onclick="Sub">Sub</button>
+</template>
+
+<script type="text/lua">
+List = {"List Item 1", "List Item 2", "List Item 3"};
+
+function Add()
+    List:insert(#List + 1, "List Item " .. tostring(#List + 1))
+end
+
+function Sub()
+    if (#List == 0) then return end
+    List:remove(#List);
+end
+</script>

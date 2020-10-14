@@ -33,7 +33,7 @@ local function CopyStyle(dst, src)
 	if (type(src) ~= "table" or type(dst) ~= "table") then return dst end
 	for key, value in pairs(src) do
 		if (not pseudo_class_fields[key]) then
-			dst[string.lower(key)] = Style.GetStyleValue(key, value);
+			Style.AddStyleItem(dst, key, value);
 		end
 	end
 	return dst;
@@ -88,14 +88,16 @@ end
 function Style:ctor()
 	self.RawStyle = {};             -- 原始样式
 	self.NormalStyle = {};          -- 普通样式
-
+	self.InheritStyle = nil;        -- 继承样式
+	self.LastSelectStyle = self.NormalStyle;     -- 上次选择样式
 	-- 伪类样式
 	self.ActiveStyle = {};          -- 激活样式
 	self.HoverStyle = {};           -- 鼠标悬浮样式
 	self.FocusStyle = {};           -- 聚焦样式
 end
 
-function Style:Init(style)
+function Style:Init(style, inheritStyle)
+	self.InheritStyle = inheritStyle;
     self:Merge(style);
     return self;
 end
@@ -105,24 +107,53 @@ function Style:IsNeedRefreshLayout(style)
 	return IsRefreshLayout(style);
 end
 
+-- 选择样式
+function Style:SelectStyle(style)
+	-- 清除上次样式
+	if (self.LastSelectStyle ~= self.NormalStyle) then
+		for key, val in pairs(self.LastSelectStyle) do
+			self[key] = nil;
+		end
+	end
+	-- 写入新选择样式
+	for key, val in pairs(style) do
+		self[key] = val;
+	end
+	-- 记录选择
+	self.LastSelectStyle = style;
+	return self;
+end
+
+-- 当前样式
+function Style:GetCurStyle()
+	local style = {};
+	for key, val in pairs(self) do
+		if (type(val) ~= "table") then
+			style[key] = val;
+		end
+	end
+	return style;
+end
+
 -- 选择默认样式
 function Style:SelectNormalStyle()
-	return CopyStyle(self, self.NormalStyle);
+	return self:SelectStyle(self.NormalStyle);
 end
 
 -- 选择激活样式
 function Style:SelectActiveStyle()
-	return CopyStyle(self, self.ActiveStyle);
+	return self:SelectStyle(self.ActiveStyle);
+
 end
 
 -- 选择悬浮样式
 function Style:SelectHoverStyle()
-	return CopyStyle(self, self.HoverStyle);
+	return self:SelectStyle(self.HoverStyle);
 end
 
 -- 选择聚焦样式
 function Style:SelectFocusStyle()
-	return CopyStyle(self, self.FocusStyle);
+	return self:SelectStyle(self.FocusStyle);
 end
 
 -- 选择默认样式
@@ -176,14 +207,6 @@ local inheritable_fields = {
 	["base-font-size"] = true,
 };
 
--- only merge inheritable style like font, color, etc. 
-function Style:MergeInheritable(style)
-    if(type(style) ~= "table") then return end 
-
-    for field, _ in pairs(inheritable_fields) do
-        self.NormalStyle[field] = self.NormalStyle[field] or style[field];
-    end
-end
 
 local dimension_fields = {
 	["height"] = true, ["min-height"] = true, ["max-height"] = true,
@@ -244,13 +267,11 @@ function Style.GetNumberValue(value)
 	return tonumber(value);
 end
 
-function Style.GetStyleValue(name,value)
+function Style.GetStyleValue(name, value)
 	if (type(name) ~= "string") then return end
 	if (type(value) == "number" and (dimension_fields[name] or number_fields[name])) then return value end
 	if (type(value) ~= "string") then return end
 	
-	name = string_lower(name);
-	value = string_gsub(value, "%s*$", "");
     if(dimension_fields[name]) then
 		local isPercentage = string.match(value, "^[%+%-]?%d+%%$");
 		if (string.match(value, "^[%+%-]?%d+px$")) then   -- 像素值
@@ -308,16 +329,15 @@ local complex_fields = {
 };
 
 
-local function AddStyleItem(style, name, value)
+local function AddSingleStyleItem(style, name, value)
 	value = Style.GetStyleValue(name, value);
 	if (not value) then return end
-	style[string.lower(name)] = value;
-	-- self.NormalStyle[string.lower(name)] = value;
+	style[name] = value;
 end
 
 local function AddComplexStyleItem(style, name, value)
 	local names = commonlib.split(complex_fields[name], "%s");
-    local values = commonlib.split(value, "%s");
+    local values = commonlib.split(tostring(value), "%s");
     
     if (name == "padding" or name == "margin" or name == "border-width") then
 		values[1] = values[1] or 0;
@@ -334,21 +354,25 @@ local function AddComplexStyleItem(style, name, value)
     end
     
     for i = 1, #names do
-		AddStyleItem(style, names[i], values[i]);
+		AddSingleStyleItem(style, names[i], values[i]);
 	end
 end
 
+function Style.AddStyleItem(style, name, value)
+	name = string_lower(name);
+	if (type(value) == "string") then value = string_gsub(value, "%s*$", "") end
+
+	if(complex_fields[name]) then
+		AddComplexStyleItem(style, name, value);
+	else
+		AddSingleStyleItem(style, name, value);
+	end
+end
 
 function Style.ParseString(style_code)
-	local style, name, value = {};
+	local style = {};
 	for name, value in string.gfind(style_code or "", "([%w%-]+)%s*:%s*([^;]*)[;]?") do
-		name = string_lower(name);
-		value = string_gsub(value, "%s*$", "");
-		if(complex_fields[name]) then
-			AddComplexStyleItem(style, name, value);
-		else
-			AddStyleItem(style, name, value);
-		end
+		Style.AddStyleItem(style, name, value);		
 	end
 	return style;
 end
@@ -361,22 +385,36 @@ function Style:AddString(style_code)
 	end
 end
 
+-- 获取样式值
+function Style:GetValue(key, defaultValue)
+	local value, style = self[key], self.InheritStyle;
+	if (value or not inheritable_fields[key]) then return value or defaultValue end
+	while (style and not value) do
+		value = style[key];
+		style = style.InheritStyle;
+	end
+	return value or defaultValue;
+end
 
--- 获取字体
+function Style:GetTextAlign(defaultValue)
+	return self:GetValue("text-align", defaultValue);
+end
+
+-- 获取字体  System;14;norm
 function Style:GetFont()
-	return string.format("%s;%d;%s", self:GetFontFamily(), self:GetFontSize(), self:GetFontWeight());
+	return string.format("%s;%d;%s", self:GetFontFamily("System"), self:GetFontSize(14), self:GetFontWeight("norm"));
 end
 
 function Style:GetFontFamily(defaultValue)
-	return self["font-family"] or defaultValue or "System";
+	return self:GetValue("font-family", defaultValue);
 end
 
 function Style:GetFontWeight(defaultValue)
-	return self["font-weight"] or defaultValue or "norm";
+	return self:GetValue("font-weight", defaultValue);
 end
 
 function Style:GetFontSize(defaultValue)
-	return self["font-size"] or defaultValue or 14;
+	return self:GetValue("font-size", defaultValue);
 end
 
 function Style:GetScale(defaultValue)
@@ -384,27 +422,27 @@ function Style:GetScale(defaultValue)
 end
 
 function Style:GetColor(defaultValue)
-	return self.color or defaultValue;
+	return self:GetValue("color", defaultValue);
 end
 
 function Style:GetBackgroundColor(defaultValue)
-	return self["background-color"] or defaultValue;
+	return self:GetValue("background-color", defaultValue);
 end
 
 function Style:GetBackground(defaultValue)
-	return self["background"] or defaultValue;
+	return self:GetValue("background", defaultValue);
 end
 
 function Style:GetLineHeight(defaultValue)
-	local lineHeight = self["line-height"];
+	local lineHeight = self:GetValue("line-height", defaultValue);
 	if (type(lineHeight) == "number") then return lineHeight end
-
+	local fontSize = self:GetFontSize(14);
 	if (self.IsPx(lineHeight)) then 
 		lineHeight = self.GetPxValue(lineHeight);
 	elseif (self.IsNumber(lineHeight)) then 
-		lineHeight = math.floor(self.GetNumberValue(lineHeight) * self:GetFontSize());
+		lineHeight = math.floor(self.GetNumberValue(lineHeight) * fontSize);
 	else
-		lineHeight = defaultValue or math.floor(1.4 * self:GetFontSize());
+		lineHeight = defaultValue or math.floor(1.4 * fontSize);
 	end
 
 	self["line-height"] = lineHeight;
@@ -413,9 +451,9 @@ function Style:GetLineHeight(defaultValue)
 end
 
 function Style:GetOutlineWidth(defaultValue)
-	return self["outline-width"] or defaultValue;
+	return self:GetValue("outline-width", defaultValue);
 end
 
 function Style:GetOutlineColor(defaultValue)
-	return self["outline-color"] or defaultValue;
+	return self:GetValue("outline-color", defaultValue);
 end

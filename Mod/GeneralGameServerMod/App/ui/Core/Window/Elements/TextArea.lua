@@ -57,8 +57,8 @@ function TextArea:ctor()
 end
 
 -- 初始化完成
-function TextArea:Init(xmlNode, window)
-    TextArea._super.Init(self, xmlNode, window);
+function TextArea:Init(xmlNode, window, parent)
+    TextArea._super.Init(self, xmlNode, window, parent);
 
     self.text = UniString:new(self:GetAttrStringValue("value", ""));
     self:UpdateValue();
