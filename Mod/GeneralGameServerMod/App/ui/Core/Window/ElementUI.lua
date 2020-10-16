@@ -15,7 +15,6 @@ local Mouse = commonlib.gettable("System.Windows.Mouse");
 local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
 local ElementUI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-ElementUI:Property("Value");                                -- 元素值
 ElementUI:Property("Active", false, "IsActive");            -- 是否激活
 ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 ElementUI:Property("Layout");                               -- 元素布局
@@ -53,6 +52,8 @@ end
 
 -- 元素渲染
 function ElementUI:Render(painter)
+    -- ElementUIDebug.If(self:GetAttrValue("id") == "debug" and not self:IsNeedRender(), self:IsVisible(), self:GetWidth(), self:GetHeight());
+
 	if (not self:IsNeedRender()) then return end
     self.isRender = true;  -- 设置渲染标识 避免递归渲染
     -- 渲染元素
@@ -341,12 +342,16 @@ end
 function ElementUI:OnMouseDownCapture(event)
 end
 
+function ElementUI:OnClick(event)
+    local click = self:GetAttrFunctionValue("onclick");
+	if (click) then click(event) end
+end
+
 function ElementUI:OnMouseDown(event)
+    self:OnClick(event);
+
     local mousedown = self:GetAttrFunctionValue("onmousedown");
 	if (mousedown) then mousedown(event) end
-
-	local click = self:GetAttrFunctionValue("onclick");
-	if (click) then click(event) end
 end
 
 function ElementUI:OnMouseMove(event)
@@ -376,8 +381,10 @@ function ElementUI:Hover(event)
     local w, h = self:GetSize();
     if (ex <= x and x <= (ex + w) and ey <= y and y <= (ey + h)) then
         self:SelectStyle("OnHover");
+        self:SetHover(true);
     else 
         self:SelectStyle("OffHover");
+        self:SetHover(false);
     end
 
     for child in self:ChildElementIterator() do
@@ -385,45 +392,25 @@ function ElementUI:Hover(event)
     end
 end
 
--- 是否是光标元素
-function ElementUI:IsHover()
-    return self:GetHover() == self;
-end
-
--- 获取光标元素
-function ElementUI:GetHover()
-    return self:GetWindow() and self:GetWindow():GetHoverElement();
-end
-
--- 鼠标悬浮
-function ElementUI:OnHover()
-
-end
-
--- 鼠标取消悬浮
-function ElementUI:OffHover()
-
-end
-
--- 设置光标元素
-function ElementUI:SetHover(element)
-    local window = self:GetWindow();
-    if (not window) then return end
-    local hoverElement = window:GetHoverElement();
-    if (hoverElement == element) then return end
-    if (hoverElement) then
-        hoverElement:OnMouseLeave(MouseEvent:init("mouseLeaveEvent", window));
-        hoverElement:SelectStyle("OffHover");
-        hoverElement:OffHover();
-    end
-    window:SetHoverElement(element);
-    if (element and element:IsCanHover()) then
-        element:OnMouseEnter(MouseEvent:init("mouseEnterEvent", window));
-        element:OnHover();
-        element:SelectStyle("OnHover");
-        ElementHoverDebug.Format("Hover Element, Name = %s", element:GetName());
-    end
-end
+-- -- 设置光标元素
+-- function ElementUI:SetHover(element)
+--     local window = self:GetWindow();
+--     if (not window) then return end
+--     local hoverElement = window:GetHoverElement();
+--     if (hoverElement == element) then return end
+--     if (hoverElement) then
+--         hoverElement:OnMouseLeave(MouseEvent:init("mouseLeaveEvent", window));
+--         hoverElement:SelectStyle("OffHover");
+--         hoverElement:OffHover();
+--     end
+--     window:SetHoverElement(element);
+--     if (element and element:IsCanHover()) then
+--         element:OnMouseEnter(MouseEvent:init("mouseEnterEvent", window));
+--         element:OnHover();
+--         element:SelectStyle("OnHover");
+--         ElementHoverDebug.Format("Hover Element, Name = %s", element:GetName());
+--     end
+-- end
 
 function ElementUI:OnFocusOut()
 end

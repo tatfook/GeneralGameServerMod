@@ -19,12 +19,14 @@ local Style = NPL.load("./Elements/Style.lua", IsDevEnv);
 local Script = NPL.load("./Elements/Script.lua", IsDevEnv);
 local Div = NPL.load("./Elements/Div.lua", IsDevEnv);
 local Button = NPL.load("./Elements/Button.lua", IsDevEnv);
-local Input = NPL.load("./Elements/Input.lua", IsDevEnv);
+local Radio = NPL.load("./Elements/Radio.lua", IsDevEnv);
+local CheckBox = NPL.load("./Elements/CheckBox.lua", IsDevEnv);
 local Input = NPL.load("./Elements/Input.lua", IsDevEnv);
 local TextArea = NPL.load("./Elements/TextArea.lua", IsDevEnv);
-
+local Canvas = NPL.load("./Elements/Canvas.lua", IsDevEnv);
 
 local Component = NPL.load("../Vue/Component.lua", IsDevEnv);
+local Slot = NPL.load("../Vue/Slot.lua", IsDevEnv);
 
 local ElementManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 local ElementManagerDebug = GGS.Debug.GetModuleDebug("ElementManagerDebug").Disable();   --Enable  Disable
@@ -40,12 +42,15 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("Style", Style);
     ElementManager:RegisterByTagName("Script", Script);
     ElementManager:RegisterByTagName("Div", Div);
-    ElementManager:RegisterByTagName("Button", Button);
+    ElementManager:RegisterByTagName("Button", Button);    
+    ElementManager:RegisterByTagName("Radio", Radio);
+    ElementManager:RegisterByTagName("CheckBox", CheckBox);
     ElementManager:RegisterByTagName("Input", Input);
-    ElementManager:RegisterByTagName("Canvas", Canvas);
     ElementManager:RegisterByTagName("TextArea", TextArea);
+    ElementManager:RegisterByTagName("Canvas", Canvas);
 
     ElementManager:RegisterByTagName("Component", Component);
+    ElementManager:RegisterByTagName("Slot", Slot);
 end
 
 function ElementManager:RegisterByTagName(tagname, class)

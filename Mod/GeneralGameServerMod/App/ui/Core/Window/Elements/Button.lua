@@ -11,7 +11,6 @@ local Button = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Bu
 local Element = NPL.load("../Element.lua", IsDevEnv);
 local Button = commonlib.inherit(Element, NPL.export());
 
-Button:Property("Value");                                -- 按钮文本值
 Button:Property("Active", false, "IsActive");            -- 是否激活
 Button:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 

@@ -32,13 +32,12 @@ Element:Property("Style", nil);                           -- 样式
 Element:Property("StyleSheet");                           -- 元素样式表
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
 Element:Property("Rect");                                 -- 元素几何区域矩形
-Element:Property("Name");                                 -- 元素名
+Element:Property("Name", "Element");                      -- 元素名
 Element:Property("TagName");                              -- 标签名
 
 
 -- 构造函数
 function Element:ctor()
-    self:SetName("Element");
     self.childrens = {};   -- 子元素列表
 
     -- 设置布局
@@ -113,7 +112,7 @@ end
 function Element:InitStyle()
     self:SetStyle(self:CreateStyle());
     self:GetStyle():SelectNormalStyle();
-    ElementDebug.If(self:GetAttrStringValue("id") == "debug", self:GetStyle():GetCurStyle());
+    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", self:GetStyle():GetCurStyle());
 end
 
 -- 初始化子元素
@@ -122,7 +121,12 @@ function Element:InitChildElement(xmlNode, window)
     -- 创建子元素
     for i, childXmlNode in ipairs(xmlNode) do
         local childElement = self:CreateFromXmlNode(childXmlNode, window, self);
-        -- ElementDebug.Format("InitChildElement Child Element Name = %s, TagName = %s", childElement:GetName(), childElement:GetTagName());
+        if (childElement) then 
+            ElementDebug.Format("InitChildElement Child Element Name = %s, TagName = %s", childElement:GetName(), childElement:GetTagName());
+        else 
+            ElementDebug("元素不存在", xmlNode);
+        end
+    
         self:InsertChildElement(childElement);
         -- table.insert(self.childrens, childElement);
         -- childElement:SetParentElement(self);

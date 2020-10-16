@@ -321,7 +321,7 @@ end
 
 function Window:handleMouseEnterLeaveEvent(event)
     if (event:GetType() == "mouseLeaveEvent") then
-        self:SetHover(nil);
+        -- self:SetHover(nil);
     end
 end
 
@@ -424,8 +424,6 @@ function Window:ExecCode(code)
     local result = code_func();
     return result, nil;
 end
-
-
 
 if (_G.Window) then _G.Window:CloseWindow() end
 _G.Window = Window:new();

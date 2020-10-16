@@ -16,22 +16,23 @@ local CompileDebug = GGS.Debug.GetModuleDebug("CompileDebug").Enable();   --Enab
 
 Compile:Property("Component");
 
-local function GenerateDependItem(obj, key)
-    if (key == nil) then return tostring(obj) end
-    return  tostring(obj) .. "[" .. tostring(key) .. "]";
-end
 -- local EventNameMap = {["onclick"] = true, ["onmousedown"] = true, ["onmousemove"] = true, ["onmouseup"] = true};
 local DependItems = {};
 local AllDependItemWatch = {};
 local DependItemUpdateQueue = {};
 local DependItemUpdateQueueTimer = nil;
 
-Scope.__SetIndex(function(obj, key)
+local function GenerateDependItem(obj, key)
+    if (key == nil) then return tostring(obj) end
+    return  tostring(obj) .. "[" .. tostring(key) .. "]";
+end
+
+Scope.__set_global_index__(function(obj, key)
     -- CompileDebug.Format("__Index key = %s", key);
     DependItems[GenerateDependItem(obj, key)] = true;
 end)
 
-Scope.__SetNewIndex(function(obj, key, newVal, oldVal)
+Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     -- CompileDebug.Format("__NewIndex key = %s, newVal = %s, oldVal = %s", key, newVal, oldVal);
     local dependItem = GenerateDependItem(obj, key);
     if (not AllDependItemWatch[dependItem]) then return end
@@ -52,32 +53,47 @@ Scope.__SetNewIndex(function(obj, key, newVal, oldVal)
     end, 10)
 end)
 
-function Compile:ExecCode(code, object, watch, isExecWatch)
-    if (type(code) ~= "string" or code == "") then return end
-
-    local code_func, errmsg = loadstring("return (" .. code .. ")");
-    if (not code_func) then return CompileDebug("Exec Code Error: " .. errmsg) end
-
-    setfenv(code_func, self:GetComponent():GetScope());
-
+local function ExecCode(code, func, object, watch)
     DependItems = {};   -- 清空依赖集
-    local oldVal = code_func();
+    local oldVal = func();
     -- CompileDebug.If(code == "List", code, DependItems);
     if (object and type(watch) == "function") then
+        local OldDependItems = {};
         for dependItem in pairs(DependItems) do
+            OldDependItems[dependItem] = true;   -- 备份依赖项 
             AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};  -- 依赖项的对象集
             AllDependItemWatch[dependItem][object] = AllDependItemWatch[dependItem][object] or {};  -- 对象的监控集
             AllDependItemWatch[dependItem][object][code] = function()  -- 监控集项
-                local newVal = code_func();
+                -- 先清除
+                for dependItem in pairs(OldDependItems) do
+                    AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};  -- 依赖项的对象集
+                    AllDependItemWatch[dependItem][object] = AllDependItemWatch[dependItem][object] or {};  -- 对象的监控集
+                    AllDependItemWatch[dependItem][object][code] = nil;
+                end
+                -- 获取新值
+                local newVal = ExecCode(code, func, object, watch);
+                -- 相同退出
                 if (type(newVal) ~= "table" and newVal == oldVal) then return end
+                -- 不同触发回调
                 watch(newVal, oldVal);
-                oldVal = newVal;
             end
         end
-        if (isExecWatch) then watch(oldVal) end
     end
-
     return oldVal;
+end
+
+function Compile:ExecCode(code, object, watch, isExecWatch)
+    if (type(code) ~= "string" or code == "") then return end
+
+    local func, errmsg = loadstring("return (" .. code .. ")");
+    if (not func) then return CompileDebug("Exec Code Error: " .. errmsg) end
+
+    setfenv(func, self:GetComponent():GetScope());
+
+    local val = ExecCode(code, func, object, watch);
+    if (isExecWatch and type(watch) == "function") then watch(val) end
+
+    return val;
 end
 
 -- 移除监控
@@ -95,13 +111,15 @@ end
 function Compile:Text(element)
     local xmlNode = element:GetXmlNode();
     if (type(xmlNode) ~= "string") then return end
-    local function watch()
-        local text = string.gsub(xmlNode, "{{(.-)}}", function(code)
-            return self:ExecCode(code, element, watch) or "";
-        end)
-        element:SetText(text)
-    end
-    watch();
+    local args = ""
+    local text = string.gsub(xmlNode, "{{(.-)}}", function(code)
+        args = args .. ", " .. code;
+        return "%s";
+    end)
+    local code = string.format([[string.format("%s"%s)]], text, args);
+    self:ExecCode(code, element, function(value)
+        element:SetText(value);
+    end, true);
 end
 
 -- ref
@@ -130,8 +148,8 @@ function Compile:VFor(element)
     local keyexp, listexp = string.match(vfor, "%(?(%a[%w%s,]*)%)?%s+in%s+(%w*)");
     if (not keyexp) then return end
 
-    local val, key = string.match(keyexp, "(%a%w-)%s*,%s*(%a%w-)");
-    if (not val) then val = keyexp end
+    local val, key = string.match(keyexp, "(%a%w-)%s*,%s*(%a%w+)");
+    if (not val) then val = string.gsub(keyexp, "[,%s]*$", "") end
 
     local lastCount, clones, scopes = 0, {}, {};
     local parentElement = element:GetParentElement();
@@ -151,7 +169,7 @@ function Compile:VFor(element)
             end
             -- v-for 产生新scope
             local scope = scopes[i] or {};
-            scope[key or "key"] = i;
+            scope[key or "index"] = i;
             if (type(list) == "table") then
                 scope[val] = list[i];
             else
@@ -223,11 +241,11 @@ function Compile:IsComponent(element)
     return element.IsComponent and element:IsComponent();
 end
 
-function Compile:CompileElement(element, isSkipComponentElement)
+function Compile:CompileElement(element)
     local isComponent = self:IsComponent(element);
-    if (isComponent) then element:OnBeforeCompile() end
+    local isCurrentComponentElement = self:GetComponent() == element;
 
-    if (not isComponent or not isSkipComponentElement) then
+    if (not isCurrentComponentElement) then
         self:VFor(element);
         self:Text(element);
         self:Ref(element);
@@ -235,25 +253,18 @@ function Compile:CompileElement(element, isSkipComponentElement)
         self:VOn(element);
         self:VBind(element);
     end
-    -- 是组件且不为当前组件, 则编译子组件
-    if (isComponent and self:GetComponent() ~= element) then
-        self:Compile(element, true);
-    else 
-        -- 编译子元素
-        for childElement in element:ChildElementIterator() do
-            self:CompileElement(childElement);
-        end
+
+    if (isComponent and not isCurrentComponentElement) then return end
+
+    -- 编译子元素
+    for childElement in element:ChildElementIterator() do
+        self:CompileElement(childElement);
     end
-    
-    if (isComponent) then element:OnAfterCompile() end
 end
 
-function Compile:Compile(compoent, isSkipComponentElement)
+function Compile:Compile(compoent)
     self:SetComponent(compoent);
-    self:CompileElement(compoent, isSkipComponentElement);
-
-    -- 执行组件OnRefresh回调
-    self:ExecCode([[type(OnReady) == "function" and OnReady()]]);
+    self:CompileElement(compoent);
 end
 
 local metatable = getmetatable(Compile);

@@ -350,7 +350,7 @@ function Layout:Update()
 	width = width or (realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight) or 0;
 	height = height or (realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom) or 0;
 
-    LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
+    -- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
 
 	-- 确定元素大小
 	self:SetWidthHeight(width, height);

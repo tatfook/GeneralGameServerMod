@@ -1,18 +1,31 @@
 <template>
-    <div v-for="item, index in List">{{item}}</div>
     <button onclick="Add">Add</button>
     <button onclick="Sub">Sub</button>
+    <button onclick="Replace">Replace</button>
+    <div v-for="item, index in List">item = {{item}} index = {{index}}</div>
 </template>
 
 <script type="text/lua">
-List = {"List Item 1", "List Item 2", "List Item 3"};
+Prefix = "List Item ";
+List = {};
 
 function Add()
-    List:insert(#List + 1, "List Item " .. tostring(#List + 1))
+    local index = #List + 1;
+    <!-- List[index] = Prefix .. tostring(index); -->
+    List:__insert__(index, Prefix .. tostring(index));
 end
 
 function Sub()
     if (#List == 0) then return end
-    List:remove(#List);
+    <!-- List[#List] = nil; -->
+    List:__remove__(#List);
+end
+
+function Replace()
+    List = {}
 end
 </script>
+
+<!-- 
+    RegisterComponent("For", "%ui%/Core/Vue/Example/For.html");
+ -->

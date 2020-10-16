@@ -10,11 +10,13 @@ local Component = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Vue/Component.l
 ]]
 
 local Window = NPL.load("../Window/Window.lua", IsDevEnv);
-local ElementManager = NPL.load("../Window/ElementManager.lua", IsDevEnv);
+local ElementManager = NPL.load("../Window/ElementManager.lua");
 local Component = NPL.load("./Component.lua", IsDevEnv);
+local Slot = NPL.load("./Slot.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 
 ElementManager:RegisterByTagName("Component", Component);
+ElementManager:RegisterByTagName("Slot", Slot);
 
 local Vue = commonlib.inherit(Window, NPL.export());
 
