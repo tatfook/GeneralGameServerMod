@@ -19,7 +19,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Input = commonlib.inherit(Element, NPL.export());
 
-local InputDebug = GGS.Debug.GetModuleDebug("InputDebug");
+local InputDebug = GGS.Debug.GetModuleDebug("InputDebug").Disable(); --Enable  Disable
 local CursorShowHideMaxTickCount = 30;
 
 Input:Property("Name", "Input");
@@ -27,27 +27,43 @@ Input:Property("Value", "");                                -- 按钮文本值
 Input:Property("ShowCursor", false, "IsShowCursor");
 Input:Property("BaseStyle", {
     NormalStyle = {
-        ["border-width"] = 1,
+        ["display"] = "inline-size",
+        ["border-width"] = "1px",
         ["border-color"] = "#cccccc",
         ["color"] = "#000000",
-        ["height"] = 20,
-        ["width"] = 100,
-        ["padding-left"] = 4, 
-        ["padding-right"] = 4, 
-        ["padding-top"] = 2, 
-        ["padding-bottom"] = 2, 
+        ["height"] = "30px",
+        ["width"] = "120px",
+        ["padding"] = "2px 4px",
+        ["background-color"] = "#ffffff",
+        ["font-size"] = "14px",
     }
 });
 
 function Input:ctor()
+    self:Reset();
+end
+
+function Input:Init(xmlNode, window, parent)
+    self:InitElement(xmlNode, window, parent);
+    self.text = UniString:new(xmlNode.attr and xmlNode.attr.value or "");
+    return self;
+end
+
+function Input:Reset()
     self.cursorShowHideTickCount = 0;
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = 0, 0, nil, nil;
     self.cursorAt = 1;    -- 光标位置 占据下一个输入位置
     self.scrollX = 0;     -- 横向滚动的位置 
     self.undoCmds = {};   -- 撤销命令
     self.redoCmds = {};   -- 重做命令
-    self.text = UniString:new();
     self.selectStartAt, self.selectEndAt = nil, nil;  -- 文本选择
+end
+
+function Input:OnAttrValueChange(attrName, attrValue, oldAttrValue)
+    if (attrName ~= "value" or attrValue == self:GetValue()) then return end
+    self:Reset();
+    self.text = UniString:new(attrValue);
+    self:UpdateValue();
 end
 
 -- 是否选择
@@ -282,18 +298,26 @@ function Input:DeleteText(startAt, endAt)
     self:UpdateValue();
 end
 
+function Input:GetText()
+    if (self:GetAttrStringValue("type") == "password") then
+        return UniString:new(string.rep("*", self.text:length()));
+    end
+    return self.text;
+end
+
 function Input:UpdateValue()
     local value = self.text:GetText();
     if (self:GetValue() == value) then return end
     self:SetValue(value);
-    -- self:OnChange(value);
+    self:OnChange(value);
 end
 
 -- 调整光标的位置, 调整前文本需完整, 因此添加需先添加后调整光标, 移除需先调整光标后移除
 function Input:AdjustCursorAt(offset, action)
     if (not offset or offset == 0 or not self.cursorX or not self.cursorWidth) then return end
     InputDebug.Format("AdjustCursorAt Before cursorAt = %s, offset = %s, cursorX = %s", self.cursorAt, offset, self.cursorX);
-    local cursorAt, maxAt = self.cursorAt + offset, self.text:length() + 1;
+    local text = self:GetText();
+    local cursorAt, maxAt = self.cursorAt + offset, text:length() + 1;
     -- 保存光标位置的正确性
     if (cursorAt > maxAt) then offset = maxAt - self.cursorAt end
     if (cursorAt < 1) then offset = 1 - self.cursorAt end
@@ -302,8 +326,8 @@ function Input:AdjustCursorAt(offset, action)
     local x, y, w, h = self:GetContentGeometry();
     local startAt, endAt = self.cursorAt, self.cursorAt + offset;
     if (startAt > endAt) then startAt, endAt = endAt, startAt end
-    local text = self.text:sub(startAt, endAt - 1);
-    local textWidth = text:GetWidth();
+    local text = text:sub(startAt, endAt - 1);
+    local textWidth = text:GetWidth(self:GetFont());
     local maxX = w - self.cursorWidth;
     self.cursorAt = self.cursorAt + offset;
 
@@ -333,14 +357,13 @@ function Input:AdjustCursorAt(offset, action)
             end
         end
     end
-
     InputDebug.Format("AdjustCursorAt After cursorAt = %s, offset = %s, cursorX = %s", self.cursorAt, offset, self.cursorX);
 end
 
 function Input:RenderCursor(painter)
     local x, y, w, h = self:GetContentGeometry();
     local cursorWidth = self.cursorWidth or 1;
-    local cursorHeight = self.cursorHeight or self:GetStyle():GetLineHeight(); 
+    local cursorHeight = h; -- self.cursorHeight or self:GetStyle():GetLineHeight(); 
     local cursorX = self.cursorX or 0;
     local cursorY = self.cursorY or 0;
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = cursorX, cursorY, cursorWidth, cursorHeight;
@@ -363,8 +386,9 @@ end
 
 -- 绘制内容
 function Input:RenderContent(painter)
-    local scrollX, text = self.scrollX, self:GetValue();
+    local scrollX, text = self.scrollX, self:GetText();
     local x, y, w, h = self:GetContentGeometry();
+    local fontSize = self:GetFontSize();
 
     -- painter:Translate(x, y);
     self:RenderCursor(painter);
@@ -377,13 +401,14 @@ function Input:RenderContent(painter)
     if (self:IsSelected()) then
         painter:SetPen("#3390ff");
         local selectStartAt, selectEndAt = self:GetSelected();
-        local selectStartX = self.text:sub(1, selectStartAt - 1):GetWidth(self:GetFont());
-        local selectEndX = self.text:sub(1, selectEndAt):GetWidth(self:GetFont());
+        local selectStartX = text:sub(1, selectStartAt - 1):GetWidth(self:GetFont());
+        local selectEndX = text:sub(1, selectEndAt):GetWidth(self:GetFont());
         painter:DrawRectTexture(x + selectStartX, y + 0, selectEndX - selectStartX, h);
     end
     
+    painter:SetFont(self:GetFont());
     painter:SetPen(self:GetColor());
-    painter:DrawText(x, y, text);
+    painter:DrawText(x, y + (h - fontSize) / 2, tostring(text));
     painter:Translate(scrollX, 0);
     painter:Restore();
     -- painter:Translate(-x, -y);
@@ -391,7 +416,7 @@ end
 
 function Input:GetAtByPos(x, y)
     local cursorX = self.scrollX + x;
-    local text = _guihelper.AutoTrimTextByWidth(self:GetValue(), cursorX, self:GetFont());
+    local text = _guihelper.AutoTrimTextByWidth(tostring(self:GetText()), cursorX, self:GetFont());
     local textlen = ParaMisc.GetUnicodeCharNum(text);
     local textWidth = _guihelper.GetTextWidth(text, self:GetFont());
     while (textWidth > cursorX and textlen > 0) do
@@ -409,6 +434,10 @@ function Input:GloablToContentGeometryPos(x, y)
     local parentScreenX, parentScreenY = self:GetParentElement():GetScreenPos();
     local contentX, contentY = self:GetContentGeometry();
     return x - parentScreenX - contentX, y - parentScreenY - contentY;
+end
+
+function Input:OnClick(event)
+    if (not self:IsFocus()) then self:FocusIn() end
 end
 
 function Input:OnMouseDown(event)

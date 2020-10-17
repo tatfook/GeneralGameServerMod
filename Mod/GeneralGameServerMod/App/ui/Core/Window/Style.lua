@@ -322,7 +322,7 @@ end
 -- 缩写字段
 local complex_fields = {
 	["border"] = "border-width border-style border-color",
-	["border-width"] = "border-top-width border-right-width border-bottom-width border-left-width",
+	-- ["border-width"] = "border-top-width border-right-width border-bottom-width border-left-width",
     ["padding"] = "padding-top padding-right padding-left padding-bottom",
 	["margin"] = "margin-top margin-right margin-left margin-bottom",
 	["overflow"] = "overflow-x, overflow-y",
@@ -414,7 +414,7 @@ function Style:GetFontWeight(defaultValue)
 end
 
 function Style:GetFontSize(defaultValue)
-	return self:GetValue("font-size", defaultValue);
+	return self:GetValue("font-size", defaultValue or 14);
 end
 
 function Style:GetScale(defaultValue)

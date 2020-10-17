@@ -55,9 +55,9 @@ function Scope:__new__()
     end
 
     -- 长度
-    metatable.__len = function(scope)
-        return #(metatable.__data__);
-    end
+    -- metatable.__len = function(scope)
+    --     return #(metatable.__data__);
+    -- end
 
     return setmetatable({}, metatable);
 end
@@ -79,7 +79,11 @@ end
 function Scope:Print()
     print(self)
 end
--- local scope = Scope:__new__();
+local scope = Scope:__new__();
+scope.list = Scope:__new__();
+table.insert(scope.list, 1, 1);
+scope.list[1] = 2;
+print(scope.list[1]);
 -- scope[1] = 2;
 -- scope[2] = 5;
 -- print(#scope, scope[1], scope[2])
@@ -109,23 +113,23 @@ end
 -- print(#obj)
 
 
-local A = setmetatable({}, {
-    __index = function(self)
-        print("A meta function self = ", self);
-    end
-});
+-- local A = setmetatable({}, {
+--     __index = function(self)
+--         print("A meta function self = ", self);
+--     end
+-- });
 
-function A:Self()
-    print("A funcion self = ", self);
-end
+-- function A:Self()
+--     print("A funcion self = ", self);
+-- end
 
-local B = setmetatable({}, {
-    __index = A
-});
+-- local B = setmetatable({}, {
+--     __index = A
+-- });
 
-print("A = ", A);
-print("B = ", B);
-print(B.key, B:Self());
+-- print("A = ", A);
+-- print("B = ", B);
+-- print(B.key, B:Self());
 
 -- A = 	table: 0x1693890
 -- B = 	table: 0x16972d0

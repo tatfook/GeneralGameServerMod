@@ -12,13 +12,15 @@ List = {};
 function Add()
     local index = #List + 1;
     <!-- List[index] = Prefix .. tostring(index); -->
-    List:__insert__(index, Prefix .. tostring(index));
+    <!-- List:__insert__(index, Prefix .. tostring(index)); -->
+    table.insert(List, index, Prefix .. tostring(index));
 end
 
 function Sub()
     if (#List == 0) then return end
     <!-- List[#List] = nil; -->
-    List:__remove__(#List);
+    <!-- List:__remove__(#List); -->
+    table.remove(List, #List);
 end
 
 function Replace()

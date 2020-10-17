@@ -45,6 +45,7 @@ Window:Property("HoverElement");                    -- 光标所在元素
 Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
+-- Window:Property("RadioNameValue");                  -- Radio 元素值集
 
 function Window:ctor()
     --屏幕位置,宽度,高度
@@ -55,6 +56,7 @@ function Window:ctor()
     self:SetTagName("Window");
     self:SetStyleManager(StyleManager:new());
     self:SetG(G(self));                             -- 设置全局G表
+
 end
 
 function Window:IsWindow()
@@ -80,6 +82,9 @@ function Window:Init(params)
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = self:GetNativeWindow():GetAbsPosition();
     self.windowWidth, self.windowHeight = params.width or 600, params.height or 500;
     self.windowX, self.windowY = params.x or math.floor((self.screenWidth - self.windowWidth) / 2), params.y or math.floor((self.screenHeight - self.windowHeight) / 2);
+
+    -- 清空相关数据集
+    -- self:SetRadioNameValue({});  -- radio 组集
 
     -- 设置窗口元素
     self:InitElement({

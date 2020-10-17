@@ -36,11 +36,12 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     -- CompileDebug.Format("__NewIndex key = %s, newVal = %s, oldVal = %s", key, newVal, oldVal);
     local dependItem = GenerateDependItem(obj, key);
     if (not AllDependItemWatch[dependItem]) then return end
-    table.insert(DependItemUpdateQueue, dependItem)
+    DependItemUpdateQueue[dependItem] = true;
+    -- table.insert(DependItemUpdateQueue, dependItem)
 
     if (DependItemUpdateQueueTimer) then return end
     DependItemUpdateQueueTimer = commonlib.TimerManager.SetTimeout(function()  
-        for _, dependItem in ipairs(DependItemUpdateQueue) do
+        for dependItem in pairs(DependItemUpdateQueue) do
             local objects = AllDependItemWatch[dependItem];
             for key, watchs in pairs(objects) do
                 for exp, func in pairs(watchs) do
@@ -74,6 +75,7 @@ local function ExecCode(code, func, object, watch)
                 local newVal = ExecCode(code, func, object, watch);
                 -- 相同退出
                 if (type(newVal) ~= "table" and newVal == oldVal) then return end
+                -- if (newVal == oldVal and type(newVal) ~= "table" or #newVal == #oldVal) then return end
                 -- 不同触发回调
                 watch(newVal, oldVal);
             end
@@ -82,13 +84,17 @@ local function ExecCode(code, func, object, watch)
     return oldVal;
 end
 
+function Compile:GetScope()
+    return self:GetComponent():GetScope();
+end
+
 function Compile:ExecCode(code, object, watch, isExecWatch)
     if (type(code) ~= "string" or code == "") then return end
 
     local func, errmsg = loadstring("return (" .. code .. ")");
     if (not func) then return CompileDebug("Exec Code Error: " .. errmsg) end
 
-    setfenv(func, self:GetComponent():GetScope());
+    setfenv(func, self:GetScope());
 
     local val = ExecCode(code, func, object, watch);
     if (isExecWatch and type(watch) == "function") then watch(val) end
@@ -231,10 +237,27 @@ function Compile:VBind(element)
         local realKey = string.match(key, "^v%-bind:(.+)");
         local realVal = nil;
         if (realKey and realKey ~= "") then
-            realVal = self:ExecCode(val);
-            element:SetAttrValue(realKey, realVal);
+            self:ExecCode(val, element, function(realVal)
+                element:SetAttrValue(realKey, realVal);
+            end, true);
         end
     end
+end
+
+-- v-model
+function Compile:VModel(element)
+    local xmlNode = element:GetXmlNode();
+    if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-model"] == nil) then return end
+    local vmodel = xmlNode.attr["v-model"];
+    if (not string.match(vmodel, "^%a%w*$")) then return end
+    local scope = self:GetScope();
+    self:ExecCode(vmodel, element, function(val)
+        element:SetAttrValue("value", val);
+    end, true);
+    -- 注意死循环
+    element:SetAttrValue("onchange", function(val)
+        scope[vmodel] = val;
+    end)
 end
 
 function Compile:IsComponent(element)
@@ -252,6 +275,7 @@ function Compile:CompileElement(element)
         self:VIf(element);  
         self:VOn(element);
         self:VBind(element);
+        self:VModel(element);
     end
 
     if (isComponent and not isCurrentComponentElement) then return end

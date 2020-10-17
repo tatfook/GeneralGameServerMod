@@ -89,14 +89,9 @@ function Scope:__new__(obj)
     end
 
     -- 遍历
-    metatable.__ipairs = function(scope)
-        return ipairs(metatable.__data__);
-    end
-
-    -- 长度
-    metatable.__len = function(scope)
-        return #(metatable.__data__);
-    end
+    -- metatable.__ipairs = function(scope)
+    --     return ipairs(metatable.__data__);
+    -- end
 
     -- 构建scope对象
     local scope = setmetatable({}, metatable);
@@ -159,12 +154,18 @@ function Scope:__call_global_index_callback__(scope, key)
     if (type(__global_index_callback__) == "function") then __global_index_callback__(scope, key) end
 end
 
+-- Scope自身读取设置回调
+function Scope:__call_index_and_newindex_callback__(scope, key)
+    if (not key) then return end
+    local val = self.__data__[key];
+    if (self:__is_scope__(val)) then 
+        self:__call_global_index_callback__(val, nil);
+        self:__call_global_newindex_callback__(val, nil, val);
+    end
+end
 -- 读取回调
 function Scope:__call_index_callback__(scope, key)
     self:__call_global_index_callback__(scope, key);
-    if (key ~= nil and self:__is_scope__(self.__data__[key])) then self:__call_global_index_callback__(self.__data__[key], nil) end
-    if (self:__is_list_index__(key)) then self:__call_global_index_callback__(scope, nil) end
-
     if (type(self.__index_callback__) == "function") then self.__index_callback__(scope, key) end
 end
 
@@ -175,11 +176,16 @@ end
 
 -- 获取键值
 function Scope:__get__(scope, key)
+    if (type(key) == "number") then return rawget(scope, key) end
+
     -- 内置属性直接返回
     if (self:__is_inner_attr__(key)) then return self[key] end
 
     -- print("__index", scope, key);
 
+    -- 无法正确识别数组更新(rawset, table.insert) 故当对scope类型值操作时, 统一出发当前scope的读取, 设置回调
+    self:__call_index_and_newindex_callback__(scope, key);
+    
     -- 触发回调
     self:__call_index_callback__(scope, key);
 
@@ -198,10 +204,7 @@ end
 
 -- 写入回调   
 function Scope:__call_newindex_callback__(scope, key, newval, oldval)
-    self:__call_global_newindex_callback__(scope, key, newval, oldval)
-    if (key ~= nil and self:__is_scope__(self.__data__[key])) then self:__call_global_newindex_callback__(self.__data__[key], nil, self.__data__[key]) end
-    if (self:__is_list_index__(key)) then self:__call_global_newindex_callback__(scope, nil, scope) end
-
+    self:__call_global_newindex_callback__(scope, key, newval, oldval);
     if (type(self.__newindex_callback__) == "function") then self.__newindex_callback__(scope, key, newval, oldval) end
 end
 
@@ -212,6 +215,8 @@ end
 
 -- 设置键值
 function Scope:__set__(scope, key, val)
+    if (type(key) == "number") then return rawset(scope, key) end
+    
     if (self:__is_inner_attr__(key)) then
         if (self.__inner_can_set_attrs__[key]) then self[key] = val end
         return;
@@ -223,23 +228,13 @@ function Scope:__set__(scope, key, val)
     local oldval = self.__data__[key];
     self.__data__[key] = __get_val__(val);
 
+    -- 无法正确识别数组更新(rawset, table.insert) 故当对scope类型值操作时, 统一出发当前scope的读取, 设置回调
+    self:__call_index_and_newindex_callback__(scope, key);
+
     -- 相同直接退出
     if (oldval == val) then return end
 
     -- 触发更新回调
     self:__call_newindex_callback__(scope, key, val, oldval);
 end
-
--- 插入列表元素
-function Scope:__insert__(pos, val)
-    table.insert(self.__data__, pos, __get_val__(val));
-    self:__call_global_newindex_callback__(self.__scope__, nil);
-end
-
--- 移除列表元素
-function Scope:__remove__(pos)
-    table.remove(self.__data__, pos);
-    self:__call_global_newindex_callback__(self.__scope__, nil);
-end
-
 

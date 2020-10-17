@@ -12,6 +12,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 local Radio = commonlib.inherit(Element, NPL.export());
 
 Radio:Property("Name", "Radio");
+Radio:Property("GroupElement");           -- 所属组元素
 Radio:Property("BaseStyle", {
     ["NormalStyle"] = {
         ["display"] = "inline-block",
@@ -28,15 +29,30 @@ end
 function Radio:Init(xmlNode, window, parent)
     self:InitElement(xmlNode, window, parent);
 
-    self.name = self:GetAttrValue("name", "");
     self.value = self:GetAttrValue("value");
-
+    self.checked = self:GetAttrBoolValue("checked", false);
     return self;
 end
 
 function Radio:OnClick(event)
-    self.checked = not self.checked;
+    local name = self:GetAttrValue("name", "");
+    local groupElement = self:GetGroupElement();
+    if (groupElement) then
+        groupElement:SetValue(self.value);
+    else
+        self:GetWindow():ForEach(function(element)
+            if (element:GetName() == "Radio" and element:GetAttrValue("name", "") == name) then
+                element.checked = false;
+            end
+        end);
+    end
+
+    self.checked = true;
     Radio._super.OnClick(self, event);
+
+    self:OnChange(self.value);
+
+    event:accept();
 end
 
 function Radio:RenderContent(painter)

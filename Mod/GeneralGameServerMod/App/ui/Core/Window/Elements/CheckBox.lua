@@ -2,7 +2,7 @@
 Title: CheckBox
 Author(s): wxa
 Date: 2020/8/14
-Desc: 按钮
+Desc: 复选框
 -------------------------------------------------------
 local CheckBox = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/CheckBox.lua");
 -------------------------------------------------------
@@ -15,6 +15,7 @@ local pen = {width = 2, color = "#000000"};
 local lines = {{}, {}, {}, {}};
 
 CheckBox:Property("Name", "CheckBox");
+CheckBox:Property("GroupElement");           -- 所属组元素
 CheckBox:Property("BaseStyle", {
     ["NormalStyle"] = {
         ["display"] = "inline-block",
@@ -40,6 +41,17 @@ end
 function CheckBox:OnClick(event)
     self.checked = not self.checked;
     CheckBox._super.OnClick(self, event);
+
+    local groupElement = self:GetGroupElement();
+    if (groupElement) then 
+        if (self.checked) then
+            groupElement:AddCheckedValue(self.value); 
+        else
+            groupElement:RemoveCheckedValue(self.value); 
+        end
+    end
+    
+    event:accept();
 end
 
 function CheckBox:RenderContent(painter)

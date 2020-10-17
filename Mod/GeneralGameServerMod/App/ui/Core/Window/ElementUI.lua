@@ -347,6 +347,11 @@ function ElementUI:OnClick(event)
 	if (click) then click(event) end
 end
 
+function ElementUI:OnChange(value)
+    local change = self:GetAttrFunctionValue("onchange");
+    if (change) then change(value) end
+end
+
 function ElementUI:OnMouseDown(event)
     self:OnClick(event);
 
@@ -366,11 +371,6 @@ function ElementUI:OnMouseLeave()
 end
 
 function ElementUI:OnMouseEnter()
-end
-
-
-function ElementUI:IsCanHover()
-    return true;
 end
 
 -- 悬浮

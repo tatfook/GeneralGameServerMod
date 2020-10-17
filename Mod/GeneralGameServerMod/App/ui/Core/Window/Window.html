@@ -1,12 +1,13 @@
 <template class="container">
     <WindowTitleBar title="测试"></WindowTitleBar>
-    <radio></radio>
-    <checkbox></checkbox>
-    <canvas></canvas>
+    <For></For>
+    <Model></Model>
 </template>
 
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%ui%/Core/Vue/Components/WindowTitleBar.html");
+RegisterComponent("For", "%ui%/Core/Vue/Example/For.html");
+RegisterComponent("Model", "%ui%/Core/Vue/Example/Model.html");
 -- 组件解析完成
 function OnReady()
 end

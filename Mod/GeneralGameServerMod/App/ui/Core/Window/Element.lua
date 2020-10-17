@@ -122,7 +122,7 @@ function Element:InitChildElement(xmlNode, window)
     for i, childXmlNode in ipairs(xmlNode) do
         local childElement = self:CreateFromXmlNode(childXmlNode, window, self);
         if (childElement) then 
-            ElementDebug.Format("InitChildElement Child Element Name = %s, TagName = %s", childElement:GetName(), childElement:GetTagName());
+            -- ElementDebug.Format("InitChildElement Child Element Name = %s, TagName = %s", childElement:GetName(), childElement:GetTagName());
         else 
             ElementDebug("元素不存在", xmlNode);
         end
@@ -405,10 +405,16 @@ function Element:GetAttrFunctionValue(attrName, defaultValue)
     return type(value) == "function" and value or nil;
 end
 
+-- 元素属性值更新
+function Element:OnAttrValueChange(attrName, attrValue, oldAttrValue)
+end
+
 -- 设置属性值
 function Element:SetAttrValue(attrName, attrValue)
     local attr = self:GetAttr();
+    local oldAttrValue = attr[attrName];
     attr[attrName] = attrValue;
+    self:OnAttrValueChange(attrName, attrValue, oldAttrValue);
 end
 
 -- 获取内联文本
@@ -423,4 +429,46 @@ function Element:GetInnerText()
         return text;
     end
     return GetInnerText(self:GetXmlNode());
+end
+
+-- 遍历每个元素
+function Element:ForEach(callback)
+    local function forEach(element)
+        callback(element);
+        for child in element:ChildElementIterator() do
+            forEach(child);
+        end
+    end
+    forEach(self);
+end
+
+-- 获取元素通过名称
+function Element:GetElementsByName(name)
+    local list = {};
+
+    self:ForEach(function(element)
+        if (element:GetAttrValue("name") == name) then
+            table.insert(list, element);
+        end
+    end)
+
+    return list;
+end
+
+-- 获取元素通过Id
+function Element:GetElementsById(id)
+    local list = {};
+
+    self:ForEach(function(element)
+        if (element:GetAttrValue("id") == id) then
+            table.insert(list, element);
+        end
+    end)
+
+    return list;
+end
+
+-- 获取元素通过Id
+function Element:GetElementById(id)
+    return self:GetElementsById(id)[1];
 end
