@@ -505,11 +505,7 @@ function Layout:ApplyPositionStyle()
 	if (not width) then width = relWidth - (left or 0) - (right or 0) end 
 	if (not height) then height = relHeight - (top or 0) - (bottom or 0) end 
 	left, top = left or 0, top or 0;
-	if (position == "screen") then
-		self:SetPos(left - WindowX, top - WindowY);
-	else
-		self:SetPos(left, top);
-	end
+	self:SetPos(left, top);
 	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", left, top, right, bottom, width, height, relWidth, relHeight);
 	self:SetWidthHeight(math.max(width, 0), math.max(height, 0));
 end

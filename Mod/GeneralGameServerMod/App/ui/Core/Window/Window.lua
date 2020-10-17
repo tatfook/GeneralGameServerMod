@@ -13,7 +13,6 @@ NPL.load("(gl)script/ide/System/Core/PainterContext.lua");
 NPL.load("(gl)script/ide/System/Windows/MouseEvent.lua");
 NPL.load("(gl)script/ide/System/Windows/KeyEvent.lua");
 NPL.load("(gl)script/ide/System/Windows/Mouse.lua");
-NPL.load("(gl)script/ide/System/Core/Event.lua");
 NPL.load("(gl)script/ide/System/Core/SceneContextManager.lua");
 NPL.load("(gl)script/ide/math/Point.lua");
 NPL.load("(gl)script/ide/math/Rect.lua");
@@ -21,7 +20,6 @@ local PainterContext = commonlib.gettable("System.Core.PainterContext");
 local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
 local KeyEvent = commonlib.gettable("System.Windows.KeyEvent");
 local Mouse = commonlib.gettable("System.Windows.Mouse");
-local Event = commonlib.gettable("System.Core.Event");
 local SceneContextManager = commonlib.gettable("System.Core.SceneContextManager");
 local Point = commonlib.gettable("mathlib.Point");
 local Rect = commonlib.gettable("mathlib.Rect");
@@ -30,6 +28,7 @@ local InputMethodEvent = commonlib.gettable("System.Windows.InputMethodEvent");
 local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
 
 local G = NPL.load("./G.lua", IsDevEnv);
+local Event = NPL.load("./Event.lua", IsDevEnv);
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local StyleManager = NPL.load("./StyleManager.lua", IsDevEnv);
@@ -153,22 +152,22 @@ function Window:CreateNativeWindow(params)
 		self:handleRender();
 	end);
 	_this:SetScript("onmousedown", function()
-		self:handleMouseEvent(MouseEvent:init("mousePressEvent", self));
+		self:handleMouseEvent(Event.MouseEvent:init("mousePressEvent", self));
 	end);
 	_this:SetScript("onmouseup", function()
-		self:handleMouseEvent(MouseEvent:init("mouseReleaseEvent", self));
+		self:handleMouseEvent(Event.MouseEvent:init("mouseReleaseEvent", self));
 	end);
     _this:SetScript("onmousemove", function()
-		self:handleMouseEvent(MouseEvent:init("mouseMoveEvent", self));
+		self:handleMouseEvent(Event.MouseEvent:init("mouseMoveEvent", self));
 	end);
 	_this:SetScript("onmousewheel", function()
-		self:handleMouseEvent(MouseEvent:init("mouseWheelEvent", self));
+		self:handleMouseEvent(Event.MouseEvent:init("mouseWheelEvent", self));
 	end);
 	_this:SetScript("onmouseleave", function()
-		self:handleMouseEnterLeaveEvent(MouseEvent:init("mouseLeaveEvent", self));
+		self:handleMouseEnterLeaveEvent(Event.MouseEvent:init("mouseLeaveEvent", self));
 	end);
     _this:SetScript("onmouseenter", function()
-		self:handleMouseEnterLeaveEvent(MouseEvent:init("mouseEnterEvent", self));
+		self:handleMouseEnterLeaveEvent(Event.MouseEvent:init("mouseEnterEvent", self));
 	end);
 	_this:SetScript("onkeydown", function()
         self:handleKeyEvent(KeyEvent:init("keyPressEvent"));
@@ -362,58 +361,6 @@ end
 
 function Window:handleDestroyEvent()
     self:SetNativeWindow(nil);
-end
-
-function Window:mapFromGlobal(pos)
-    local x, y, w, h = self:GetNativeWindow():GetAbsPosition(); 
-    if((self.uiScalingX or 1) == 1 and (self.uiScalingY or 1) == 1) then
-        return Point:new_from_pool(-x + pos:x(), -y + pos:y());
-    else
-        return Point:new_from_pool(math.floor((-x + pos:x()) / self.uiScalingX + 0.5), math.floor((-y + pos:y()) / self.uiScalingY + 0.5));
-    end
-end
-
-function Window:OnMouseDown(event)
-    if(event:isAccepted()) then return end
-
-    if(self:IsDraggable() and event:button()=="left") then
-        self.isMouseDown = true;
-        self.isDragging = false;
-        local pos = event:screenPos();
-        self.startDragX, self.startDragY = pos:x(), pos:y();
-		event:accept();
-	end
-end
-
-function Window:OnMouseMove(event)
-    if(event:isAccepted()) then return end
-    local pos = event:screenPos();
-	if(self.isMouseDown and self:IsDraggable() and event:button() == "left") then
-		if(not self.isDragging) then
-			if(pos:dist2(self.startDragX, self.startDragY) > 2) then
-                self.isDragging = true;
-                self.startDragWinX, self.startDragWinY = self.windowX, self.windowY;
-				self:CaptureMouse();
-			end
-        elseif(self.isDragging) then
-            self.windowX, self.windowY = pos:x() - self.startDragX + self.startDragWinX, pos:y() - self.startDragY + self.startDragWinY;
-            self:SetPosition(self.windowX, self.windowY);
-		end
-		if(self.isDragging) then
-			event:accept();
-		end
-	end
-end
-
-function Window:OnMouseUp(event)
-    if(event:isAccepted()) then return end
-
-	if(self.isDragging) then
-		self.isDragging = false;
-		self:ReleaseMouseCapture();
-		event:accept();
-	end
-	self.isMouseDown = false;
 end
 
 -- 执行字符串代码  返回 result, errmsg

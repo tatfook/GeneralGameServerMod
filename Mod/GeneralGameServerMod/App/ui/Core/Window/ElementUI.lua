@@ -56,6 +56,18 @@ function ElementUI:Render(painter)
 
 	if (not self:IsNeedRender()) then return end
     self.isRender = true;  -- 设置渲染标识 避免递归渲染
+
+    local style, parentElement = self:GetStyle(), self:GetParentElement() or self;
+    if (style.position == "fixed" or style.position == "screen") then
+        if (style.position == "fixed") then
+            local relWindowX, relWindowY = parentElement:GetRelWindowPos();
+            painter:Translate(-relWindowX, -relWindowY);
+        else 
+            local windowX, windowY = parentElement:GetWindowPos();
+            painter:Translate(-windowX, -windowY);
+        end
+    end
+
     -- 渲染元素
     self:OnRender(painter);  
 
@@ -85,6 +97,17 @@ function ElementUI:Render(painter)
     end
     
     painter:Translate(-self:GetX(), -self:GetY());
+    
+    if (style.position == "fixed" or style.position == "screen") then
+        if (style.position == "fixed") then
+            local relWindowX, relWindowY = parentElement:GetRelWindowPos();
+            painter:Translate(relWindowX, relWindowY);
+        else 
+            local windowX, windowY = parentElement:GetWindowPos();
+            painter:Translate(windowX, windowY);
+        end
+    end
+
     self.isRender = false; -- 清除渲染标识
 end
 
@@ -257,6 +280,14 @@ end
 function ElementUI:GetWindowPos()
     return self.winX, self.winY;
 end
+
+-- 获取元素相对窗口坐标
+function ElementUI:GetRelWindowPos()
+    local windowWindowX, windowWindowY = self:GetWindow():GetWindowPos();
+    local windowX, windowY = self:GetWindowPos();
+    return windowX - windowWindowX, windowY - windowWindowY;
+end
+
 -- 全局坐标转窗口坐标
 function ElementUI:GloablToWindowPos()
 end 
@@ -334,7 +365,9 @@ end
 
 -- 是否可以拖拽
 function ElementUI:IsDraggable()
-    return self:GetAttrValue("draggable") == true and true or false;
+    local style = self:GetStyle();
+    local draggable = self:GetAttrBoolValue("draggable") == true and true or false;
+    return draggable and (self:IsWindow() or style.position == "fixed" or style.position == "screen" or style.position == "absolute");
 end
 
 -- https://developer.mozilla.org/en-US/docs/Web/Events
@@ -356,15 +389,45 @@ function ElementUI:OnMouseDown(event)
     self:OnClick(event);
 
     local mousedown = self:GetAttrFunctionValue("onmousedown");
-	if (mousedown) then mousedown(event) end
+    if (mousedown) then mousedown(event) end
+
+    -- 默认拖拽处理
+    if(event:isAccepted()) then return end
+    if(self:IsDraggable() and event:button()=="left") then
+        self.isMouseDown = true;
+        self.isDragging = false;
+        self.startDragX, self.startDragY = ParaUI.GetMousePosition();
+        self.startDragElementX, self.startDragElementY = self:GetPosition();
+		event:accept();
+	end
 end
 
 function ElementUI:OnMouseMove(event)
-    -- self:SetHoverElement(self);
-    -- event:accept();
+    if(event:isAccepted()) then return end
+    local x, y = ParaUI.GetMousePosition();
+	if(self.isMouseDown and self:IsDraggable() and event:button() == "left") then
+		if(not self.isDragging) then
+			if(math.abs(x - self.startDragX) > 2 or math.abs(y - self.startDragY) > 2) then
+                self.isDragging = true;
+				self:CaptureMouse();
+			end
+        elseif(self.isDragging) then
+            self:SetPosition(x - self.startDragX + self.startDragElementX, y - self.startDragY + self.startDragElementY);
+		end
+		if(self.isDragging) then
+			event:accept();
+		end
+	end
 end
 
 function ElementUI:OnMouseUp(event)
+    if(event:isAccepted()) then return end
+	if(self.isDragging) then
+        self.isDragging = false;
+		self:ReleaseMouseCapture();
+		event:accept();
+	end
+	self.isMouseDown = false;
 end
 
 function ElementUI:OnMouseLeave()
