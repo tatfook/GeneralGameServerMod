@@ -103,13 +103,17 @@ function Compile:ExecCode(code, object, watch, isExecWatch)
 end
 
 -- 移除监控
-function Compile:UnWatch(element)
+function Compile:UnWatch(object)
     if (not object) then return end
     for key, watch in pairs(AllDependItemWatch) do
         AllDependItemWatch[key][object] = nil;
     end
+end
+
+function Compile:UnWatchElement(element)
+    self:UnWatch(element);
     for childElement in element:ChildElementIterator() do
-        self:UnWatch(childElement);
+        self:UnWatchElement(childElement);
     end
 end
 
