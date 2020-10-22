@@ -110,6 +110,7 @@ function Compile:UnWatch(object)
     end
 end
 
+-- 移除元素的监控
 function Compile:UnWatchElement(element)
     self:UnWatch(element);
     for childElement in element:ChildElementIterator() do

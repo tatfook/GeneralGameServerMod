@@ -141,9 +141,9 @@ function clickConfirm()
             return CloseWindow();
         end
         if (not regionId) then
-            page.ShowMessageBoxPage({text = "地区修改成功"});
-        else
             page.ShowMessageBoxPage({text = "地区修改成功, 获得了5知识豆"});
+        else
+            page.ShowMessageBoxPage({text = "地区修改成功"});
         end
         if (type(confirm) == "function") then confirm(county) end
         CloseWindow();
