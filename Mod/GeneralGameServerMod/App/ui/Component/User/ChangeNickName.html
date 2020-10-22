@@ -67,7 +67,7 @@ function confirm()
                     else
                         ShowResultBox("昵称修改成功");
                     end
-                    UserDetail.bean = UserDetail.bean - 10;
+                    if (type(UserDetail) == "table") then UserDetail.bean = (UserDetail.bean or 0) - 10 end
                     FinishCallback(value, true);
                 end);
             end,
