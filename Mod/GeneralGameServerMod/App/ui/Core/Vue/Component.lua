@@ -269,6 +269,8 @@ function Component:InitComponentScope()
     self:SetComponentScope(scope);
     self:SetScope(scope);
 
+    scope.self = scope;
+
     scope.GetComponent = function()
         return self;
     end
@@ -277,12 +279,24 @@ function Component:InitComponentScope()
         return self:GetRef(refname);
     end
 
-    scope.GetGlobalScope = function()
-        return self:GetGlobalScope();
+    scope.GetAttrValue = function(attrName, defaultValue, valueType) 
+        if (valueType == "string") then return self:GetAttrStringValue(attrName, defaultValue)
+        elseif (valueType == "number") then return self:GetAttrNumberValue(attrName, defaultValue)
+        elseif (valueType == "boolean") then return self:GetAttrBoolValue(attrName, defaultValue)
+        elseif (valueType == "function") then return self:GetAttrFunctionValue(attrName, defaultValue)
+        else return self:GetAttrValue(attrName, defaultValue) end
+    end
+
+    scope.SetAttrValue = function(attrName, attrValue) 
+        self:SetAttrValue(attrName, attrValue);
     end
 
     scope.RegisterComponent = function(tagname, filename)
         self:Register(tagname, filename);
+    end
+    
+    scope.GetGlobalScope = function()
+        return self:GetGlobalScope();
     end
 end
 
@@ -290,15 +304,25 @@ end
 function Component:ExecCode(code) 
     if (type(code) ~= "string" or code == "") then return end
     local func, errmsg = loadstring(code);
-    if (not func) then return echo("Exec Code Error: " .. errmsg) end
+    if (not func) then 
+        echo("===============================Exec Code Error=================================");
+        return ComponentDebug("===============================Exec Code Error=================================", errmsg);
+    end
     setfenv(func, self:GetComponentScope());
     return func();
 end
 
 -- 设置属性值
 function Component:SetAttrValue(attrName, attrValue)
+    local oldAttrValue = self:GetAttrValue(attrName);
     Component._super.SetAttrValue(self, attrName, attrValue);
-    self:GetComponentScope():Set(attrName, attrValue);
+    self:OnAttrValueChange(attrName, attrValue, oldAttrValue);
+    -- self:GetComponentScope():Set(attrName, attrValue);
+end
+
+-- 属性值更新
+function Component:OnAttrValueChange(attrName, attrValue)
+    self:ExecCode(string.format([[return type(OnAttrValueChange) == "function" and OnAttrValueChange("%s")]], attrName));
 end
 
 -- 全局注册组件

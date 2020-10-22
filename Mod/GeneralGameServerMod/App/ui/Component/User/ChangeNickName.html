@@ -7,7 +7,10 @@
 </template>
 
 <script type="text/lua">
+local oldnickname = nil;
 function OnRefresh()
+    oldnickname = self.nickname;
+
     self.value = self.nickname;
     
     GetRef("input"):GetControl():setFocus("click");
@@ -59,7 +62,11 @@ function confirm()
                         ShowResultBox(data and data.message or "修改昵称失败");
                         return cancel() 
                     end
-                    ShowResultBox("昵称修改成功, 知识豆扣除 10 个");
+                    if (oldnickname and oldnickname ~= "") then
+                        ShowResultBox("昵称修改成功, 知识豆扣除 10 个");
+                    else
+                        ShowResultBox("昵称修改成功");
+                    end
                     UserDetail.bean = UserDetail.bean - 10;
                     FinishCallback(value, true);
                 end);
@@ -73,21 +80,3 @@ function confirm()
 end 
 
 </script>
-
-<!-- MyCompany.Aries.Chat.BadWordFilter.FilterString -->
-
-<!-- _guihelper.MessageBox("修改昵称将消耗 10 个知识豆, 请确认是否修改", function(res)
-        if( res ~= _guihelper.DialogResult.OK) then return cancel() end
-        keepwork.user.setinfo({
-            router_params = {id = userId},
-            nickname = value,
-        }, function(status, msg, data) 
-            if (status < 200 or status >= 300) then 
-                _guihelper.MessageBox(data and data.message or "修改昵称失败", nil, _guihelper.MessageBoxButtons.Nothing);
-                return cancel() 
-            end
-            _guihelper.MessageBox("修改昵称成功, 知识豆-10", nil, _guihelper.MessageBoxButtons.Nothing);
-            UserDetail.bean = UserDetail.bean - 10;
-            FinishCallback(value, true);
-        end);
-    end, _guihelper.MessageBoxButtons.OKCancel_CustomLabel,nil,nil,nil,nil, {ok = "修改", cancel = "取消"}); -->

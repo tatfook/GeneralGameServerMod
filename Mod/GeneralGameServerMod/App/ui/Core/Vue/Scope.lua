@@ -55,7 +55,6 @@ Scope.__inherit__ = Inherit;
 -- 获取值
 local function __get_val__(val)
     if (type(val) ~= "table" or Scope:__is_scope__(val)) then return val end
-
     return Scope:__new__(val);
 end
 
@@ -95,14 +94,17 @@ function Scope:__new__(obj)
 
     -- 构建scope对象
     local scope = setmetatable({}, metatable);
+    
+    -- 设置scope
+    metatable.__scope__ = scope;
+    metatable.__metatable__ = metatable;
+
+    -- 拷贝原始数据
     if (type(obj) == "table") then 
         for key, val in pairs(obj) do
             scope[key] = val;
         end
     end
-
-    -- 设置scope
-    metatable.__scope__ = scope;
 
     return scope;
 end
@@ -131,9 +133,15 @@ end
 function Scope:__is_scope__(scope)
     return type(scope) == "table" and scope.__scope__ ~= nil;
 end
+
+-- 获取scope元表
+function Scope:__get_scope_metatable__()
+    return self.__metatable__;
+end
+
 -- 是否可以设置
 function Scope:__is_inner_attr__(key)
-    return self[key] ~= nil or self.__inner_can_set_attrs__[key];
+    return (self.__data__[key] == nil and self.__metatable__[key] ~= nil) or self.__inner_can_set_attrs__[key];
 end
 
 function Scope:__set_metatable_index__(__metatable_index__)
@@ -215,7 +223,7 @@ end
 
 -- 设置键值
 function Scope:__set__(scope, key, val)
-    if (type(key) == "number") then return rawset(scope, key) end
+    if (type(key) == "number") then return rawset(scope, key, val) end
     
     if (self:__is_inner_attr__(key)) then
         if (self.__inner_can_set_attrs__[key]) then self[key] = val end
@@ -223,6 +231,8 @@ function Scope:__set__(scope, key, val)
     end
 
     -- print("__newindex", scope, key, val);
+    -- 触发旧值回调, 旧值的表地址可能为监听key 需要先触发一次
+    self:__call_index_and_newindex_callback__(scope, key);
 
     -- 更新值
     local oldval = self.__data__[key];
@@ -238,3 +248,34 @@ function Scope:__set__(scope, key, val)
     self:__call_newindex_callback__(scope, key, val, oldval);
 end
 
+-- 获取原生数据
+function Scope:__get_raw_data__()
+    local data = {};
+    for i, val in ipairs(self) do
+        if (self:__is_scope__(val)) then
+            data[i] = val:__get_raw_data__();
+        else
+            data[i] = val;
+        end
+    end
+
+    for key, val in pairs(self) do
+        if (self:__is_scope__(val)) then
+            data[key] = val:__get_raw_data__();
+        else
+            data[key] = val;
+        end
+    end
+
+    return data;
+end
+
+-- 设置数据
+function Scope:Set(key, val)
+    self:__set__(self.__scope__, key, val);
+end
+
+-- 获取数据
+function Scope:Get(key)
+    return self:__get__(self.__scope__, key);
+end

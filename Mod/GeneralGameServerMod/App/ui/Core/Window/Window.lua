@@ -44,7 +44,6 @@ Window:Property("HoverElement");                    -- 光标所在元素
 Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
--- Window:Property("RadioNameValue");                  -- Radio 元素值集
 
 function Window:ctor()
     --屏幕位置,宽度,高度
@@ -54,8 +53,6 @@ function Window:ctor()
     self:SetName("Window");
     self:SetTagName("Window");
     self:SetStyleManager(StyleManager:new());
-    self:SetG(G(self));                             -- 设置全局G表
-
 end
 
 function Window:IsWindow()
@@ -77,13 +74,12 @@ function Window:LoadXmlNodeByUrl(url)
 end
 
 function Window:Init(params)
+    self:SetG(G(self, params.G));      -- 设置全局G表
+    
     -- 保存窗口大小
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = self:GetNativeWindow():GetAbsPosition();
-    self.windowWidth, self.windowHeight = params.width or 600, params.height or 500;
+    self.windowWidth, self.windowHeight = params.width, params.height;
     self.windowX, self.windowY = params.x or math.floor((self.screenWidth - self.windowWidth) / 2), params.y or math.floor((self.screenHeight - self.windowHeight) / 2);
-
-    -- 清空相关数据集
-    -- self:SetRadioNameValue({});  -- radio 组集
 
     -- 设置窗口元素
     self:InitElement({
@@ -111,6 +107,7 @@ function Window.Show(self, params)
         self = Window:new();
     end
     params = params or {};
+    params.width, params.height = params.width or 600, params.height or 500;
     if (not self:GetNativeWindow()) then
         self:SetNativeWindow(self:CreateNativeWindow(params));
     end
@@ -132,14 +129,18 @@ function Window:CreateNativeWindow(params)
     local RootUIObject = ParaUI.GetUIObject("root");
     local rootX, rootY, rootWidth, rootHeight = RootUIObject:GetAbsPosition();
     -- WindowDebug.Format("CreateNativeWindow rootX = %s, rootY = %s, rootWidth = %s, rootHeight = %s", rootX, rootY, rootWidth, rootHeight);
-    rootWidth = 1000;
+    if (not params.fullscreen) then
+        rootX = (rootWidth - params.width) / 2;
+        rootY = (rootHeight - params.height) / 2;
+        rootWidth, rootHeight = params.width, params.height;
+    end
     -- 创建窗口
     local native_window = ParaUI.CreateUIObject("container", "Window", "_lt", rootX, rootY, rootWidth, rootHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
     native_window:SetField("InputMethodEnabled", true);
     -- 加到有效窗口上
-    if(not native_window.parent or not native_window.parent:IsValid()) then RootUIObject:AddChild(native_window) end
+    native_window:AttachToRoot();
     -- 创建绘图上下文
     self:SetPainterContext(System.Core.PainterContext:new():init(self));
 	
@@ -221,7 +222,8 @@ end
 function Window:handleMouseEvent(event)
     self:Hover(event);
 
-    local point, eventType = event:localPos(), event:GetType();
+    local point, eventType = event:globalPos(), event:GetType();
+    local x, y = point:x(), point:y();
     local captureFuncName, bubbleFuncName = nil, nil;
     if (eventType == "mousePressEvent") then
         captureFuncName, bubbleFuncName = "OnMouseDownCapture", "OnMouseDown";
@@ -238,18 +240,16 @@ function Window:handleMouseEvent(event)
     else 
         captureFuncName = "OnMouseCapture", "OnMouse";
     end
+
     -- 获取点所在的元素
     local function ElementMouseEvent(element)
         -- 无布局的元素忽略
         if (not element:IsVisible()) then return end
 
         -- 检测元素是否包含
-        if (not element:GetRect():contains(point)) then return end
+        if (not element:IsContainPoint(x, y)) then return end
 
         if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Element Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
-
-        -- 偏移元素位置
-        point:sub(element:GetPosition());
 
         -- 触发捕获事件
         if (type(element[captureFuncName]) == "function") then 
@@ -257,13 +257,8 @@ function Window:handleMouseEvent(event)
         end
 
         -- 是否已处理
-        if (event:isAccepted()) then 
-            point:add(element:GetPosition());
-            return target;
-        end
+        if (event:isAccepted()) then return target end
 
-        -- 偏移滚动
-        point:add(element:GetScrollPos()); -- 加上滚动
         -- 子元素
         local target = nil;
         for child in element:ChildElementIterator(false) do
@@ -272,14 +267,8 @@ function Window:handleMouseEvent(event)
         end
         target = target or element;
         
-        -- 还原滚动偏移
-        point:sub(element:GetScrollPos()); -- 减去滚动
-        
         -- 是否已处理
-        if (event:isAccepted()) then 
-            point:add(element:GetPosition());
-            return target;
-        end
+        if (event:isAccepted()) then return target end
         
         if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Element Bubble: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
 
@@ -288,9 +277,6 @@ function Window:handleMouseEvent(event)
             (element[bubbleFuncName])(element, event);
         end
         
-        -- 还原元素位置偏移
-        point:add(element:GetPosition());
-
         return target;
     end
 
@@ -303,7 +289,13 @@ function Window:handleMouseEvent(event)
             (element[bubbleFuncName])(element, event);
         end
     else 
-        element = ElementMouseEvent(self);
+        local positionElements = self:GetPositionElements();
+        for _, el in ipairs(positionElements) do
+            -- MouseDebug.If(false and eventType ~= "mouseMoveEvent", el:GetName());
+            element = ElementMouseEvent(el);
+            if (element) then break end
+        end
+        element = element or ElementMouseEvent(self);
     end
 
     if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Target Element: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element and element:GetName(), eventType, captureFuncName, bubbleFuncName) end
@@ -315,7 +307,7 @@ function Window:handleMouseEvent(event)
     end
 
     -- 系统其它事件处理
-    if(not event:isAccepted() and not element) then
+    if(not event:isAccepted() and not element and not self:GetWindow():IsContainPoint(x, y)) then
         local context = SceneContextManager:GetCurrentContext();
         if(context) then
             context:handleMouseEvent(event);
@@ -351,12 +343,12 @@ function Window:handleKeyEvent(event)
 end
 
 function Window:handleActivateEvent(isActive)
-    if (isActive) then
-        self:SetFocus(self.lastFocusElement);
-    else
-        self.lastFocusElement = self:GetFocus();
-        self:SetFocus(nil);
-    end
+    -- if (isActive) then
+    --     self:SetFocus(self.lastFocusElement);
+    -- else
+    --     self.lastFocusElement = self:GetFocus();
+    --     self:SetFocus(nil);
+    -- end
 end
 
 function Window:handleDestroyEvent()
@@ -376,7 +368,3 @@ function Window:ExecCode(code)
     local result = code_func();
     return result, nil;
 end
-
-if (_G.Window) then _G.Window:CloseWindow() end
-_G.Window = Window:new();
-Window.Test = _G.Window;

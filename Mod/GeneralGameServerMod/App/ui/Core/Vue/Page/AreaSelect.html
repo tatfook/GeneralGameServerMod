@@ -1,0 +1,131 @@
+<template style="height: 242px; width: 500px; background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);">
+    <div style="height: 43px;">
+        <div v-on:click="close" style="float: right; background:url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22); width:22px; height:22px; margin-right: 20px; margin-top: 10px;"></div>
+    </div>
+    <div style="padding-left: 50px; margin-top: 30px;">
+        <div>选择地区:</div>
+        <div style="margin-top: 10px">
+            <select id="state" class="select" v-bind:options="stateOptions" v-bind:value="state and state.name" placeholder="省" onselect=selectState></select>
+            <select id="city" class="select" v-bind:options="cityOptions" v-bind:value="city and city.name" placeholder="区" onselect=selectCity></select>
+            <select id="county" class="select" v-bind:options="countyOptions" v-bind:value="county and county.name" placeholder="市" onselect=selectCounty></select>
+        </div>
+    </div>
+    <div id="btn" style="margin-top: 30px; padding-left: 150px;">
+        <div v-on:click="clickConfirm" style="display: inline-block; text-align: center; line-height: 58px; width:178px; height:58px; font-size: 24px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">确定</div>
+    </div>
+</template>
+
+<script type="text/lua">
+local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
+RegisterComponent("Select", "%ui%/Core/Vue/Components/Select.html");
+local KeepworkServiceSchoolAndOrg = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/SchoolAndOrg.lua");
+local states, citys, countys = {}, {}, {};
+local country = {id = 1, name = "中国"};
+local regionId = nil;
+state, city, county = nil, nil, nil;
+stateOptions = {};
+cityOptions = {};
+countyOptions = {};
+
+if (UserRegion and UserRegion.info) then
+    local info = UserRegion.info;
+    regionId = UserRegion.id;
+    country, state, city, county = info.country, info.state, info.city, info.county
+end
+
+KeepworkServiceSchoolAndOrg:GetSchoolRegion("province", nil, function(data)
+    if type(data) ~= "table" then return end
+    states = data;
+    for key, item in ipairs(states) do
+        table.insert(stateOptions, {value = item.id, label = item.name});
+    end
+end);
+
+function selectState(option)
+    if (state and state.id == option.value) then return end
+    for _, item in ipairs(states) do 
+        if (tostring(item.id) == tostring(option.value)) then
+            state = item;
+            break;
+        end
+    end
+    cityOptions, citys = {}, {};
+    if (state) then
+        KeepworkServiceSchoolAndOrg:GetSchoolRegion("city", state.id, function(data)
+            if type(data) ~= "table" then return end
+            cityOptions, citys = {}, data;
+            for key, item in ipairs(citys) do
+                table.insert(cityOptions, {value = item.id, label = item.name});
+            end
+            local autoCity = citys[1] or {};
+            selectCity({value = autoCity.id, label = autoCity.name});
+        end)
+    end
+end
+
+function selectCity(option)
+    if (city and city.id == option.value) then return end
+
+    for _, item in ipairs(citys) do 
+        if (tostring(item.id) == tostring(option.value)) then
+            city = item;
+            break;
+        end
+    end
+    countyOptions, countys = {}, {};
+    if (city) then
+        KeepworkServiceSchoolAndOrg:GetSchoolRegion("area", city.id, function(data)
+            if type(data) ~= "table" then return end
+            countyOptions, countys = {}, data;
+            for key, item in ipairs(countys) do
+                table.insert(countyOptions, {value = item.id, label = item.name});
+            end
+            local autoCounty = countys[1] or {};
+            selectCounty({value = autoCounty.id, label = autoCounty.name});
+        end)
+    end
+end
+
+function selectCounty(option)
+    if (county and county.id == option.value) then return end
+
+    for _, item in ipairs(countys) do 
+        if (tostring(item.id) == tostring(option.value)) then
+            county = item;
+            break;
+        end
+    end
+end
+
+function close()
+    CloseWindow();
+end
+
+function clickConfirm()
+    if (not county or county.id == regionId) then return close() end
+    local region = county.__get_raw_data__ and county:__get_raw_data__() or county;
+    keepwork.user.setinfo({
+        router_params = {id = userId},
+        regionId = region.id
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then 
+            page.ShowMessageBoxPage({text = data and data.message or "修改地区失败"});
+            return CloseWindow();
+        end
+        if (not regionId) then
+            page.ShowMessageBoxPage({text = "地区修改成功"});
+        else
+            page.ShowMessageBoxPage({text = "地区修改成功, 获得了5知识豆"});
+        end
+        if (type(confirm) == "function") then confirm(county) end
+        CloseWindow();
+    end);
+end
+
+</script>
+
+<style>
+    .select {
+        margin-right: 10px;
+    }
+</style>

@@ -60,9 +60,9 @@ function Input:Reset()
 end
 
 function Input:OnAttrValueChange(attrName, attrValue, oldAttrValue)
-    if (attrName ~= "value" or attrValue == self:GetValue()) then return end
+    if (attrName ~= "value" or tostring(attrValue) == self:GetValue()) then return end
     self:Reset();
-    self.text = UniString:new(attrValue);
+    self.text = UniString:new(tostring(attrValue));
     self:UpdateValue();
 end
 
@@ -361,6 +361,8 @@ function Input:AdjustCursorAt(offset, action)
 end
 
 function Input:RenderCursor(painter)
+    if (self:IsReadOnly()) then return end
+    
     local x, y, w, h = self:GetContentGeometry();
     local cursorWidth = self.cursorWidth or 1;
     local cursorHeight = h; -- self.cursorHeight or self:GetStyle():GetLineHeight(); 
@@ -408,7 +410,13 @@ function Input:RenderContent(painter)
     
     painter:SetFont(self:GetFont());
     painter:SetPen(self:GetColor());
-    painter:DrawText(x, y + (h - fontSize) / 2, tostring(text));
+    local value = tostring(text);
+    if (self:IsFocus() or value ~= "") then
+        painter:DrawText(x, y + (h - fontSize) / 2, tostring(value));
+    else 
+        painter:SetPen("#A8A8A8"); -- placeholder color;
+        painter:DrawText(x, y + (h - fontSize) / 2, self:GetAttrStringValue("placeholder", "测试"));
+    end
     painter:Translate(scrollX, 0);
     painter:Restore();
     -- painter:Translate(-x, -y);

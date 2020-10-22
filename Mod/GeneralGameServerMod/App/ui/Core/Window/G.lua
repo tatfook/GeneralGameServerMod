@@ -24,10 +24,17 @@ function G:Init(window)
     return self;
 end
 
+-- function G:new(g) 
+--     g = g or {};
+--     setmetatable(g, {
+--         __index = G
+--     })
+-- end
+
 setmetatable(G, {
     __index = _G,
-    __call = function(G, window)
-        local self = setmetatable({}, {__index = G}):Init(window);
+    __call = function(G, window, g)
+        local self = setmetatable(g or {}, {__index = G}):Init(window);
 
         self.CloseWindow = function()
             self:GetWindow():CloseWindow();

@@ -301,7 +301,7 @@ function Element:UpdateLayout()
     local isUpdatedChildLayout = self:OnBeforeUpdateChildLayout();
 
     -- 执行子元素布局  子元素布局未更新则进行更新
-	if (not isUpdatedChildLayout) then
+    if (not isUpdatedChildLayout) then
 		for childElement in self:ChildElementIterator() do
 			childElement:UpdateLayout();
 		end
@@ -329,19 +329,25 @@ function Element:OnRealContentSizeChange()
     local contentWidth, contentHeight = layout:GetContentWidthHeight();
     local realContentWidth, realContentHeight = layout:GetRealContentWidthHeight();
     if (layout:IsOverflowX()) then 
-        self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow());
+        -- ElementDebug.Format("contentWidth = %s, realContentWidth = %s", contentWidth, realContentWidth);
+        self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self);
         self.horizontalScrollBar:SetVisible(true);
         self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
     elseif (self.horizontalScrollBar) then
         self.horizontalScrollBar:SetVisible(false);
     end
     if (layout:IsOverflowY()) then 
-        self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow());
+        self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self);
         self.verticalScrollBar:SetVisible(true);
         self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+        -- ElementDebug.Format("contentHeight = %s, realContentHeight = %s, isLayout = %s, isPosition = %s", contentHeight, realContentHeight, self.verticalScrollBar:GetLayout():IsLayout(), self.verticalScrollBar:GetLayout():IsPosition());
     elseif (self.verticalScrollBar) then
         self.verticalScrollBar:SetVisible(false);
     end
+end
+
+function Element:OnScroll(scrollEl)
+    self:UpdateWindowPos(true);
 end
 
 -- 创建样式
@@ -471,4 +477,19 @@ end
 -- 获取元素通过Id
 function Element:GetElementById(id)
     return self:GetElementsById(id)[1];
+end
+
+-- 获取定位元素
+function Element:GetPositionElements()
+    local list = {};
+    local function GetPositionElements(element)
+        if (element:GetLayout():IsPosition()) then
+            table.insert(list, element);
+        end
+        for childElement in element:ChildElementIterator(false) do
+            GetPositionElements(childElement);
+        end
+    end
+    GetPositionElements(self);
+    return list;
 end

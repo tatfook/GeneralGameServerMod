@@ -127,7 +127,7 @@ function Layout:SetRealContentWidthHeight(width, height)
 	local isRealContentWidthHeightChange = self.realContentWidth ~= width or self.realContentHeight ~= height;
     self.realContentWidth, self.realContentHeight = width, height;
 	-- 真实内容发生改变
-	if (isRealContentWidthHeightChange) then self:GetElement():OnRealContentSizeChange() end
+	if (isRealContentWidthHeightChange and self:IsLayoutFinish()) then self:GetElement():OnRealContentSizeChange() end
 end
 -- 获取真实宽高 
 function Layout:GetRealContentWidthHeight()
@@ -222,6 +222,12 @@ function Layout:IsLayout()
     if (not element:IsVisible() or width == 0 or height == 0 or display == "none") then return false end 
     return true;
 end
+-- 是否是定位元素
+function Layout:IsPosition()
+	local position = self:GetStyle().position;
+	return self:IsLayout() and (position == "absolute" or position == "fixed" or position == "screen");
+end
+
 -- 是否溢出
 function Layout:IsOverflow()
 	return self:IsOverflowX() or self:IsOverflowY();
@@ -229,12 +235,14 @@ end
 -- 是否溢出
 function Layout:IsOverflowX()
 	local style = self:GetStyle();
-	return style["overflow-x"] ~= "none" and self:IsFixedWidth() and self.realContentWidth and self.realContentWidth > self.contentWidth;
+	-- return (style["overflow-x"] ~= "none" and style["overflow-x"] ~= "hidden") and self:IsFixedWidth() and self.realContentWidth and self.realContentWidth > self.contentWidth;
+	return (style["overflow-x"] ~= "none" and style["overflow-x"] ~= "hidden") and self.contentWidth and self.realContentWidth and self.realContentWidth > self.contentWidth;
 end
 -- 是否溢出
 function Layout:IsOverflowY()
 	local style = self:GetStyle();
-	return style["overflow-y"] ~= "none" and self:IsFixedHeight() and self.realContentHeight and self.realContentHeight > self.contentHeight;
+	-- return (style["overflow-y"] ~= "none" and style["overflow-y"] ~= "hidden") and self:IsFixedHeight() and self.realContentHeight and self.realContentHeight > self.contentHeight;
+	return (style["overflow-y"] ~= "none" and style["overflow-y"] ~= "hidden") and self.contentHeight and self.realContentHeight and self.realContentHeight > self.contentHeight;
 end
 
 -- 处理布局准备工作, 单位数字化
@@ -319,6 +327,16 @@ function Layout:PrepareLayout()
 	if (width) then self:SetFixedWidth(true) end
 	if (height) then self:SetFixedHeight(true) end
 
+	-- 最大最小宽高
+	minWidth, minHeight = style["min-width"], style["min-height"];
+	minWidth = self:PercentageToNumber(minWidth, parentWidth);
+	minHeight = self:PercentageToNumber(minHeight, parentHeight);
+	self:SetMinWidthHeight(minWidth, minHeight);
+	maxWidth, maxHeight = style["max-width"], style["max-height"];
+	maxWidth = self:PercentageToNumber(maxWidth, parentWidth);
+	maxHeight = self:PercentageToNumber(maxHeight, parentHeight);
+	self:SetMaxWidthHeight(maxWidth, maxHeight);
+
 	-- 数字化位置
 	local left, top, right, bottom = style.left, style.top, style.right, style.bottom;
 	left = self:PercentageToNumber(left, parentWidth);
@@ -337,6 +355,7 @@ end
 -- 更新布局
 function Layout:Update()
 	local width, height = self:GetWidthHeight();
+	local maxWidth, maxHeight = self:GetMaxWidthHeight();
     local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
     local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
 
@@ -350,10 +369,14 @@ function Layout:Update()
 	width = width or (realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight) or 0;
 	height = height or (realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom) or 0;
 
-    -- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
-
 	-- 确定元素大小
+	width, height = math.min(width, maxWidth or width), math.min(height, maxHeight or height);
 	self:SetWidthHeight(width, height);
+
+	-- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
+
+	-- 再次回调
+	self:GetElement():OnRealContentSizeChange();
 	
 	-- 设置布局完成
 	self:SetLayoutFinish(true);
@@ -392,7 +415,7 @@ function Layout:UpdateRealContentWidthHeight()
 		local isRightFloat = childStyle.float == "right";
 		if (childLayout:IsLayout() and childLayout:IsUseSpace()) then
 			LayoutDebug.If(
-				element:GetAttrValue("id") == "debug",
+				false and element:GetAttrValue("id") == "debug",
 				string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 				-- string.format("child margin: %s, %s, %s, %s", childMarginTop, childMarginRight, childMarginBottom, childMarginLeft), childStyle,
@@ -436,7 +459,7 @@ function Layout:UpdateRealContentWidthHeight()
 			end
 			childLayout:SetPos(childLeft, childTop);
 			LayoutDebug.If(
-				element:GetAttrValue("id") == "debug",
+				false and element:GetAttrValue("id") == "debug",
 				string.format("[%s] Layout Add ChildLayout After ", self:GetName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
@@ -456,7 +479,9 @@ function Layout:UpdateRealContentWidthHeight()
 			left = left + paddingLeft + borderLeft
 		end
 		top = top + paddingTop + borderTop;
-		childLayout:SetPos(left, top);
+		if (not childLayout:IsPosition()) then
+			childLayout:SetPos(left, top);
+		end
 		LayoutDebug.If(
 			element:GetAttrValue("id") == "debug",
 			string.format("[%s] Adjust Pos Left = %s, Top = %s ", child:GetName(), left, top)
@@ -506,7 +531,7 @@ function Layout:ApplyPositionStyle()
 	if (not height) then height = relHeight - (top or 0) - (bottom or 0) end 
 	left, top = left or 0, top or 0;
 	self:SetPos(left, top);
-	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", left, top, right, bottom, width, height, relWidth, relHeight);
+	-- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", self:GetName(), left, top, right, bottom, width, height, relWidth, relHeight);
 	self:SetWidthHeight(math.max(width, 0), math.max(height, 0));
 end
 

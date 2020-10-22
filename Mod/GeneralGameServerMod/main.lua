@@ -23,7 +23,7 @@ local GeneralGameClients = {};
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
 
-_G.IsDevEnv = IsDevEnv;
+_G.IsDevEnv = false and IsDevEnv;
 -- _G.IsDevEnv = false;
 local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua");
 

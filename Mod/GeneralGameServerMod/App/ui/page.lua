@@ -11,6 +11,7 @@ page.ShowUserInfoPage({username="用户名", mainasset="人物模型文件名"})
 ]]
 
 local ui = NPL.load("./ui.lua");
+local vue = NPL.load("./Core/Vue/Vue.lua", IsDevEnv);
 local page = NPL.export();
 
 -- 通用信息框
@@ -38,4 +39,29 @@ function page.ShowUserInfoPage(G, params)
 
     UserInfoPageUI:ShowWindow(params);
     return UserInfoPageUI;
+end
+
+
+local UserRegionUpdatePage = vue:new();
+function page.ShowUserRegionUpdatePage(G, params)
+    params = params or {};
+
+    params.url = "%ui%/Core/Vue/Page/AreaSelect.html";
+    params.draggable = false;
+    params.G = G;
+    UserRegionUpdatePage:Show(params);
+
+    return UserRegionUpdatePage;
+end
+
+local MessageBoxPage = vue:new();
+function page.ShowMessageBoxPage(G, params)
+    params = params or {};
+
+    params.url = "%ui%/Core/Vue/Page/MessageBox.html";
+    params.draggable = false;
+    params.G = G;
+    MessageBoxPage:Show(params);
+
+    return MessageBoxPage;
 end

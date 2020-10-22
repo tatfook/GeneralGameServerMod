@@ -26,6 +26,8 @@ local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable(
 
 function ElementUI:ctor()
     self.winX, self.winY = 0, 0;                         -- 窗口内坐标
+    self.AbsoluteElements, self.FixedElements = {}, {};
+    self.RenderCacheList = {}
 end
 
 -- 是否显示
@@ -50,27 +52,99 @@ function ElementUI:IsNeedRender()
     return true;
 end
 
--- 元素渲染
-function ElementUI:Render(painter)
-    -- ElementUIDebug.If(self:GetAttrValue("id") == "debug" and not self:IsNeedRender(), self:IsVisible(), self:GetWidth(), self:GetHeight());
+-- -- 元素渲染
+-- function ElementUI:RenderStaticElement(painter, offsetX, offsetY)
+--     offsetX, offsetY = offsetX or 0, offsetY or 0;
+--     -- ElementUIDebug.If(self:GetAttrValue("id") == "debug" and not self:IsNeedRender(), self:IsVisible(), self:GetWidth(), self:GetHeight());
+--     if (not self:IsNeedRender()) then return end
+--     self.isRender = true;  -- 设置渲染标识 避免递归渲染
 
-	if (not self:IsNeedRender()) then return end
+--     local position = self:GetStyle().position or "static";
+--     local oldOffsetX, oldOffsetY = offsetX, offsetY;
+--     if (position == "fixed" or position == "screen") then
+--         if (position == "fixed") then
+--             local windowX, windowY = self:GetWindow():GetWindowPos();
+--             painter:Translate(-oldOffsetX + windowX, -oldOffsetY + windowY);
+--             offsetX, offsetY = offsetX - oldOffsetX + windowX, offsetY - oldOffsetY + windowY;
+--         else 
+--             painter:Translate(-oldOffsetX, -oldOffsetY);
+--             offsetX, offsetY = offsetX - oldOffsetX, offsetY - oldOffsetY;
+--         end
+--     end
+
+--     -- 渲染元素
+--     self:OnRender(painter);
+    
+--     -- 渲染子元素
+--     painter:Translate(self:GetX(), self:GetY());
+--     offsetX, offsetY = offsetX + self:GetX(), offsetY + self:GetY();
+
+--     -- 存在滚动需要做裁剪
+--     local layout = self:GetLayout();
+--     local width, height = self:GetSize();
+--     local scrollX, scrollY = self:GetScrollPos();
+--     local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
+    
+--     -- 绘制子元素
+--     for childElement in self:ChildElementIterator() do
+--         if (childElement:GetLayout():IsPosition()) then
+--             childElement:RenderStaticElement(painter, offsetX, offsetY);
+--         else 
+--             if (isOverflowX or isOverflowY) then
+--                 -- ElementUIDebug.FormatIf(self:GetName() == "TextArea", "Render ScrollX = %s, ScrollY = %s", scrollX, scrollY);
+--                 painter:Save();
+--                 painter:SetClipRegion(0, 0, width, height);
+--                 painter:Translate(-scrollX, -scrollY);
+--                 offsetX, offsetY = offsetX - scrollX, offsetY - scrollY;
+--             end
+--             childElement:RenderStaticElement(painter, offsetX, offsetY);
+--             -- 恢复裁剪
+--             if (isOverflowX or isOverflowY) then
+--                 painter:Translate(scrollX, scrollY);
+--                 offsetX, offsetY = offsetX + scrollX, offsetY + scrollY;
+--                 painter:Restore();
+--             end
+--         end
+--     end
+
+--     painter:Translate(-self:GetX(), -self:GetY());
+--     offsetX, offsetY = offsetX - self:GetX(), offsetY - self:GetY();
+    
+--     if (position == "fixed" or position == "screen") then
+--         if (position == "fixed") then
+--             local windowX, windowY = self:GetWindow():GetWindowPos();
+--             painter:Translate(oldOffsetX - windowX, oldOffsetY - windowY);
+--             offsetX, offsetY = offsetX + oldOffsetX - windowX, offsetY + oldOffsetY - windowY;
+--         else 
+--             painter:Translate(oldOffsetX, oldOffsetY);
+--             offsetX, offsetY = offsetX + oldOffsetX, offsetY + oldOffsetY;
+--         end
+--     end
+
+--     self.isRender = false; -- 清除渲染标识
+-- end
+-- 元素渲染
+function ElementUI:RenderStaticElement(painter, root)
+    offsetX, offsetY = offsetX or 0, offsetY or 0;
+    -- ElementUIDebug.If(self:GetAttrValue("id") == "debug" and not self:IsNeedRender(), self:IsVisible(), self:GetWidth(), self:GetHeight());
+    if (not self:IsNeedRender()) then return end
+
+    local position = self:GetStyle().position or "static";
+    if (self ~= root and (position == "absolute" or position == "fixed" or position == "screen")) then
+        if (position == "absolute") then 
+            table.insert(root.AbsoluteElements, 1, self);
+        else
+            table.insert(root.FixedElements, 1, self);
+        end
+        return ;
+    end
+    
     self.isRender = true;  -- 设置渲染标识 避免递归渲染
 
-    local style, parentElement = self:GetStyle(), self:GetParentElement() or self;
-    if (style.position == "fixed" or style.position == "screen") then
-        if (style.position == "fixed") then
-            local relWindowX, relWindowY = parentElement:GetRelWindowPos();
-            painter:Translate(-relWindowX, -relWindowY);
-        else 
-            local windowX, windowY = parentElement:GetWindowPos();
-            painter:Translate(-windowX, -windowY);
-        end
-    end
-
     -- 渲染元素
-    self:OnRender(painter);  
-
+    self:OnRender(painter);
+    -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "listitems", "Render");
+  
     -- 渲染子元素
     painter:Translate(self:GetX(), self:GetY());
 
@@ -78,37 +152,97 @@ function ElementUI:Render(painter)
     local layout = self:GetLayout();
     local width, height = self:GetSize();
     local scrollX, scrollY = self:GetScrollPos();
-    if (layout:IsOverflowX() or layout:IsOverflowY()) then
-        -- ElementUIDebug.FormatIf(self:GetName() == "TextArea", "Render ScrollX = %s, ScrollY = %s", scrollX, scrollY);
-        painter:Save();
-        painter:SetClipRegion(0, 0, width, height);
-        painter:Translate(-scrollX, -scrollY);
-    end
-
+    local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
+    
     -- 绘制子元素
     for childElement in self:ChildElementIterator() do
-        childElement:Render(painter);
-    end
-
-    -- 恢复裁剪
-    if (layout:IsOverflowX() or layout:IsOverflowY()) then
-        painter:Translate(scrollX, scrollY);
-        painter:Restore();
-    end
-    
-    painter:Translate(-self:GetX(), -self:GetY());
-    
-    if (style.position == "fixed" or style.position == "screen") then
-        if (style.position == "fixed") then
-            local relWindowX, relWindowY = parentElement:GetRelWindowPos();
-            painter:Translate(relWindowX, relWindowY);
+        if (childElement:GetLayout():IsPosition()) then
+            childElement:RenderStaticElement(painter, root);
         else 
-            local windowX, windowY = parentElement:GetWindowPos();
-            painter:Translate(windowX, windowY);
+            if (isOverflowX or isOverflowY) then
+                -- ElementUIDebug.FormatIf(self:GetName() == "TextArea", "Render ScrollX = %s, ScrollY = %s", scrollX, scrollY);
+                painter:Save();
+                painter:SetClipRegion(0, 0, width, height);
+                painter:Translate(-scrollX, -scrollY);
+            end
+            childElement:RenderStaticElement(painter, root);
+            -- 恢复裁剪
+            if (isOverflowX or isOverflowY) then
+                painter:Translate(scrollX, scrollY);
+                painter:Restore();
+            end
         end
     end
 
+    painter:Translate(-self:GetX(), -self:GetY());
+    
     self.isRender = false; -- 清除渲染标识
+end
+
+function ElementUI:Render(painter, offsetX, offsetY)
+    for i = 1, #self.AbsoluteElements do self.AbsoluteElements[i] = nil end
+    for i = 1, #self.FixedElements do self.FixedElements[i] = nil end
+    self:RenderStaticElement(painter, self);
+    self:RenderAbsoluteElement(painter, self);
+    self:RenderFixedElement(painter, self);
+end
+
+function ElementUI:RenderAbsoluteElement(painter, root)
+    local function render(elements, index)
+        local len = #elements;
+        local element = elements[index];
+
+        offsetX, offsetY = offsetX or 0, offsetY or 0;
+        
+        if (index > len) then return end
+        if (len == index) then return element:Render(painter) end
+
+        painter:Translate(element:GetX(), element:GetY());
+
+        local childElement = elements[index + 1];
+        if (childElement:GetLayout():IsPosition()) then
+            render(elements, index + 1);
+        else
+            -- 存在滚动需要做裁剪
+            local layout = element:GetLayout();
+            local width, height = element:GetSize();
+            local scrollX, scrollY = element:GetScrollPos();
+            local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
+            if (isOverflowX or isOverflowY) then
+                painter:Save();
+                painter:SetClipRegion(0, 0, width, height);
+                painter:Translate(-scrollX, -scrollY);
+            end
+            render(elements, index + 1);
+            if (isOverflowX or isOverflowY) then
+                painter:Translate(scrollX, scrollY);
+                painter:Restore();
+            end
+        end
+
+        painter:Translate(-element:GetX(), -element:GetY());
+    end
+
+    for _, absoulteElement in ipairs(self.AbsoluteElements) do
+        local element, list = absoulteElement, absoulteElement.RenderCacheList;
+        for i = 1, #list do list[i] = nil end
+        while (element) do
+            table.insert(list, 1, element);
+            if (element == root) then break end
+            element = element:GetParentElement();
+        end
+        render(list, 1);
+    end
+end
+
+function ElementUI:RenderFixedElement(painter)
+    if (not self:GetStyle()) then return end
+    local position = self:GetStyle().position;
+    if (position ~= "fixed" and position ~= "screen") then return end
+    local windowX, windowY = self:GetWindow():GetWindowPos();
+    if (position == "fixed") then painter:Translate(windowX, windowY) end
+    self:Render(painter);
+    if (position == "fixed") then painter:Translate(-windowX, -windowY) end
 end
 
 -- 绘制元素
@@ -140,7 +274,7 @@ function ElementUI:RenderBackground(painter)
     local x, y, w, h = self:GetGeometry();
     backgroundColor = backgroundColor or (background and "#ffffffff" or "#ffffff00");
 
-    -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "debug", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
+    -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
 
     painter:SetPen(backgroundColor);
     painter:DrawRectTexture(x, y, w, h, background);
@@ -201,7 +335,8 @@ end
 function ElementUI:SetGeometry(x, y, w, h)
     local oldx, oldy, oldw, oldh = self:GetGeometry();
     self:GetRect():setRect(x, y, w, h);
-    if (oldx ~= x or oldy ~= y or oldw ~= w or oldh ~= h) then
+    if (oldx ~= x or oldy ~= y or oldw ~= w or oldh ~= h) then 
+        self:UpdateWindowPos();
         self:OnSize();
     end
 end
@@ -300,16 +435,25 @@ function ElementUI:GlobalToContentGeometryPos()
 end
 
 -- 更新元素窗口的坐标
-function ElementUI:UpdateWindowPos()
+function ElementUI:UpdateWindowPos(forceUpdate)
     local parentElement = self:GetParentElement();
 	local windowX, windowY = 0, 0;
     local x, y = self:GetPosition();
     local oldWindowX, oldWindowY = self:GetWindowPos();
-    if (parentElement) then windowX, windowY = parentElement:GetWindowPos() end
+    if (parentElement) then 
+        windowX, windowY = parentElement:GetWindowPos();
+        local scrollX, scrollY = parentElement:GetScrollPos();
+        -- ElementUIDebug.FormatIf(parentElement:GetAttrStringValue("id") == "debug", "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
+        if (not self:GetLayout():IsPosition()) then
+            windowX, windowY = windowX - scrollX, windowY - scrollY;
+            -- ElementUIDebug.FormatIf((scrollX > 0 or scrollY > 0), "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
+        end
+    end
     windowX, windowY = windowX + x, windowY + y;
+    -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBar", "windowX = %s, windowY = %s", windowX, windowY);
     self:SetWindowPos(windowX, windowY);
     -- 更新子元素的窗口位置
-    if (oldWindowX ~= windowX or oldWindowY ~= windowY) then 
+    if (forceUpdate or oldWindowX ~= windowX or oldWindowY ~= windowY) then 
         for child in self:ChildElementIterator() do
             child:UpdateWindowPos();
         end
@@ -476,9 +620,13 @@ end
 -- end
 
 function ElementUI:OnFocusOut()
+    local onblur = self:GetAttrFunctionValue("onblur");
+	if (onblur) then onblur() end
 end
 
 function ElementUI:OnFocusIn()
+    local onfocus = self:GetAttrFunctionValue("onfocus");
+	if (onfocus) then onfocus() end
 end
 
 function ElementUI:IsCanFocus()

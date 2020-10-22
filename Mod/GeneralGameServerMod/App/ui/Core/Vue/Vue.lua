@@ -45,7 +45,3 @@ local function StaticInit()
 end
 
 StaticInit();
-
-if (_G.Vue) then _G.Vue:CloseWindow() end
-_G.Vue = Vue:new();
-Vue.Test = _G.Vue;

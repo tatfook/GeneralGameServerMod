@@ -50,8 +50,8 @@ local ScrollBarThumb = commonlib.inherit(Element, {});
 ScrollBarThumb:Property("ScrollBar");  -- 所属ScrollBar
 ScrollBarThumb:Property("BaseStyle", {
     NormalStyle = {
-        ["position"] = "absoulte",
-        ["background-color"] = "#ffffff",
+        ["position"] = "absolute",
+        ["background-color"] = "#A8A8A8",
     }
 });
 
@@ -61,13 +61,12 @@ function ScrollBarThumb:ctor()
     self.maxLeft, self.maxTop, self.maxWidth, self.maxHeight = 1, 1, 0, 0;
 end
 
-function ScrollBarThumb:Init(xmlNode, window)
-    ScrollBarThumb._super.Init(self, xmlNode, window);
-    self:InitStyle();
+function ScrollBarThumb:Init(xmlNode, window, parent)
+    self:InitElement(xmlNode, window, parent);
     return self;
 end
 
-function ScrollBarThumb:OnAfterUpdateLayout()
+function ScrollBarThumb:OnUpdateLayout()
     local width, height = self:GetSize();
     width = if_else(not width or width == 0, self.maxWidth - 2, width);
     height = if_else(not height or height == 0, self.maxHeight - 2, height);
@@ -79,8 +78,11 @@ function ScrollBarThumb:OnAfterUpdateLayout()
         self.width, self.height = math.min(width, self.maxWidth), self.height;
         self.left, self.top = (self.maxWidth - self.width) / 2, math.max(0, math.min(self.top, self.maxTop));
     end
-    
-    self:SetGeometry(self.left, self.top, self.width, self.height);
+    local layout = self:GetLayout();
+    layout:SetPos(self.left, self.top);
+    layout:SetWidthHeight(self.width, self.height);
+
+    ScrollBarThumb._super.OnUpdateLayout(self);
 end
 
 function ScrollBarThumb:OnMouseDown(event)
@@ -139,13 +141,16 @@ function ScrollBarThumb:SetThumbWidthHeight(width, height, scrollBarWidth, scrol
     if (self:GetScrollBar():IsHorizontal()) then
         self.width = width;
         self.height = GetPxValue(style["height"]) or (height > 2 and (height - 2) or height);
+        self.top = (self.maxHeight - self.height) / 2;
         self.maxLeft = math.max(scrollBarWidth - width, 1);
     else
         self.width = GetPxValue(style["width"]) or (width > 2 and (width - 2) or width);
         self.height = height;
+        self.left = (self.maxWidth - self.width) / 2;
         self.maxTop = math.max(scrollBarHeight - height, 1);
     end
     style["width"], style["height"] = self.width, self.height;
+    style["left"], style["top"] = self.left, self.top;
 end
 
 function ScrollBarThumb:ScrollByDelta(delta)
@@ -177,9 +182,8 @@ function ScrollBarTrack:ctor()
     self:SetName("ScrollBarTrack");
 end
 
-function ScrollBarTrack:Init(xmlNode, window)
-    ScrollBarThumb._super.Init(self, xmlNode, window);
-    self:InitStyle();
+function ScrollBarTrack:Init(xmlNode, window, parent)
+    self:InitElement(xmlNode, window, parent);
     return self;
 end
 
@@ -188,8 +192,10 @@ ScrollBar:Property("Direction");  -- 方向
 ScrollBar:Property("DefaultWidth", 10);                      
 ScrollBar:Property("BaseStyle", {
     NormalStyle = {
-        ["position"] = "relative",
-        ["background-color"] = "#000000",
+        ["position"] = "absolute",
+        ["background-color"] = "#F1F1F1",
+        ["bottom"] = "0px",
+        ["right"] = "0px",
     }
 });
 
@@ -205,36 +211,32 @@ function ScrollBar:IsHorizontal()
     return self:GetDirection() == "horizontal";
 end
 
-function ScrollBar:Init(xmlNode, window)
-    ScrollBar._super.Init(self, xmlNode, window);
-    self:InitStyle();
+function ScrollBar:Init(xmlNode, window, parent)
+    self:InitElement(xmlNode, window, parent);
+    self:SetDirection(self:GetAttrStringValue("direction") or "horizontal"); -- horizontal  vertical
 
-    self:SetDirection(self:GetAttrValue("direction") or "horizontal"); -- horizontal  vertical
-    self.prevButton = ScrollBarButton:new():Init({name = "ScrollBarPrevButton", attr = {ScrollBarDirection = self:GetDirection()}}, window);
-    self.track = ScrollBarTrack:new():Init({name = "ScrollBarTrack"}, window);
-    self.thumb = ScrollBarThumb:new():Init({name = "ScrollBarThumb"}, window);
-    self.nextButton = ScrollBarButton:new():Init({name = "ScrollBarNextButton", attr = {ScrollBarDirection = self:GetDirection()}}, window);
+    -- self.prevButton = ScrollBarButton:new():Init({name = "ScrollBarPrevButton", attr = {ScrollBarDirection = self:GetDirection()}}, window);
+    -- self.track = ScrollBarTrack:new():Init({name = "ScrollBarTrack"}, window, self);
+    self.thumb = ScrollBarThumb:new():Init({name = "ScrollBarThumb", attr = {}}, window, self);
+    -- self.nextButton = ScrollBarButton:new():Init({name = "ScrollBarNextButton", attr = {ScrollBarDirection = self:GetDirection()}}, window);
     -- self.trackPiece = Element:new():Init({name = "ScrollBarTrackPiece"}, window);
     -- self.corner = Element:new():Init({name = "ScrollBarTrackCorner"}, window);
     -- self.resizer = Element:new():Init({name = "ScrollBarTrackResizer"}, window);
-    table.insert(self.childrens, self.prevButton);
-    self.prevButton:SetParentElement(self);
-    table.insert(self.childrens, self.track);
-    self.track:SetParentElement(self);
+    -- table.insert(self.childrens, self.prevButton);
+    -- self.prevButton:SetParentElement(self);
+    -- table.insert(self.childrens, self.track);
+    -- self.track:SetParentElement(self);
     table.insert(self.childrens, self.thumb);
     self.thumb:SetParentElement(self);
     self.thumb:SetScrollBar(self);
-    table.insert(self.childrens, self.nextButton);
-    self.nextButton:SetParentElement(self);
+    -- table.insert(self.childrens, self.nextButton);
+    -- self.nextButton:SetParentElement(self);
 
     return self;
 end
 
 function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth, contentHeight, scrollWidth, scrollHeight)
     self.clientWidth, self.clientHeight, self.contentWidth, self.contentHeight, self.scrollWidth, self.scrollHeight = clientWidth or 0, clientHeight or 0, contentWidth or 0, contentHeight or 0, scrollWidth or 0, scrollHeight or 0;
-
-    -- 选择当前样式
-    self:SelectStyle();
 
     local style = self:GetStyle();
     local thumbSize, defaultScrollBarSize = 0, self:GetDefaultWidth();
@@ -264,7 +266,7 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
 
     self:UpdateLayout();
 
-    -- ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s", self:GetDirection(), self.width, self.height, thumbSize);
+    -- ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s, isPosition = %s", self:GetDirection(), self.width, self.height, thumbSize, self:GetLayout():IsPosition());
 end
 
 -- 滚动位置计算
@@ -272,11 +274,10 @@ function ScrollBar:OnScroll()
     local thumb = self.thumb;
     if (self:IsHorizontal()) then
         self.scrollLeft = self.thumb.left / self.thumb.maxLeft * (self.scrollWidth - self.contentWidth);
-        self:SetX(self.scrollLeft);
     else 
         self.scrollTop = self.thumb.top / self.thumb.maxTop * (self.scrollHeight - self.contentHeight);
-        self:SetY(self.scrollTop);
     end
+    self:GetParentElement():OnScroll(self);
 end
 
 -- 布局更新完成重置元素几何大小
@@ -304,7 +305,8 @@ end
 -- 鼠标点击事件
 function ScrollBar:OnMouseDown(event)
     local pos = event:pos();
-    self.thumb:ScrollTo(pos:x() - self.scrollLeft - self.thumbSize / 2, pos:y() - self.scrollTop - self.thumbSize / 2);
+    local windowX, windowY = self:GetWindowPos();
+    self.thumb:ScrollTo(pos:x() - windowX - self.thumbSize / 2, pos:y() - windowY - self.thumbSize / 2);
 end
 
 -- 滚动到指定位置

@@ -1,0 +1,12 @@
+<template>
+    <div id="debug" style="width: 100px; height: 100px;" onclick="click">
+        <div style="width: 100px; height: 100px; background-color: #00ff00;"></div>
+        <div style="width: 100px; height: 100px; background-color: #ff0000;"></div>
+    </div>
+</template>
+
+<script type="text/lua">
+    function click(event)
+        echo({"=======", event.x, event.y})
+    end
+</script>

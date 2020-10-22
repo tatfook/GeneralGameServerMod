@@ -5,7 +5,7 @@ local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keep
 local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
 local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
 local Encoding = commonlib.gettable("System.Encoding");
-local username = self.username or "xiaoyao";
+local username = self.username or System.User.keepworkUsername or "xiaoyao";
 local SelfProjectList = {};
 
 -- 组件全局变量初始化

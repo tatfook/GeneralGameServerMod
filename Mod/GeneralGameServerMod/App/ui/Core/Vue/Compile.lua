@@ -51,7 +51,7 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
         end
         DependItemUpdateQueue = {};
         DependItemUpdateQueueTimer = nil;
-    end, 10)
+    end, 20)
 end)
 
 local function ExecCode(code, func, object, watch)
@@ -141,6 +141,8 @@ function Compile:VIf(element)
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-if"] == nil) then return end
     self:ExecCode(xmlNode.attr["v-if"], element, function(val)
         element:SetVisible(val and true or false);
+        local parentElement = element:GetParentElement();
+        if (parentElement) then parentElement:UpdateLayout() end
     end, true);
 end
 
@@ -160,9 +162,12 @@ function Compile:VFor(element)
     local lastCount, clones, scopes = 0, {}, {};
     local parentElement = element:GetParentElement();
     local pos = parentElement:GetChildElementPos(element);
+    local forComponent = self:GetComponent();
     self:ExecCode(listexp, element, function(list)
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
-        -- CompileDebug.Format("VFor List Count = %s", count);
+        -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count);
+        local oldComponent = self:GetComponent();
+        self:SetComponent(forComponent)
         for i = 1, count do
             if (not clones[i]) then 
                 local cloneXmlNode = commonlib.deepcopy(xmlNode);
@@ -195,7 +200,10 @@ function Compile:VFor(element)
         end
         lastCount = count;
         parentElement:UpdateLayout();
+        self:SetComponent(oldComponent);
     end, true);
+
+    return true;
 end
 
 -- v-on:event=function
@@ -205,14 +213,14 @@ function Compile:VOn(element)
     for key, val in pairs(xmlNode.attr) do
         local realKey = string.match(key, "^v%-on:(%S+)");
         local realVal = val;
-        if (not realKey or realKey == "") then realKey = string.match(key, "on(%S+)") end
+        if (not realKey or realKey == "") then realKey = string.match(key, "^on(%S+)") end
         if (realKey and realKey ~= "" and type(val) == "string") then
             -- 以括号结束则当做函数调用  
             local isFuncCall = string.match(val, "%S+%(.*%)[;%s]*$");
             if (not isFuncCall) then 
                 -- 不是函数调用则获取函数
                 realVal = self:ExecCode(val);
-                if (type(realVal) ~= "function") then echo("invalid function listen") end
+                if (type(realVal) ~= "function") then CompileDebug.Format("invalid function listen, realKey = %s, realVal = %s, key = %s, val = %s", realKey, realVal, key, val) end
             else
                 -- 函数调用则返回字符串函数
                 local code_func, errmsg = loadstring(val);
@@ -267,9 +275,10 @@ end
 function Compile:CompileElement(element)
     local isComponent = self:IsComponent(element);
     local isCurrentComponentElement = self:GetComponent() == element;
-
     if (not isCurrentComponentElement) then
-        self:VFor(element);
+        
+        if (self:VFor(element)) then return end
+
         self:Text(element);
         self:Ref(element);
         self:VIf(element);  

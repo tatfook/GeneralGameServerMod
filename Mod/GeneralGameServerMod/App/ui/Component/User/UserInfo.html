@@ -1,5 +1,5 @@
 <template>
-    <div style="margin-top: 11px; margin-left: 9px; height:529px; width: 339px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwukuang_339X529_32bits.png#0 0 339 529:10 10 10 10);">
+    <div style="margin-top: 11px; margin-left: 9px; height:569px; width: 339px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwukuang_339X529_32bits.png#0 0 339 529:50 300 50 50);">
         <div style="height: 298px; position: relative;">
             <div style="margin-top: 15px;">
                 <div align="center" v-if="not isEditNickName" style="display: inline;">
@@ -22,9 +22,9 @@
             <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
             <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
             <div v-on:click="ClickPersonalPage" style="position: absolute; left: 10px; bottom: 10px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
-            <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 40px;"></ScaleSlider>
+            <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
         </div>
-        <div align="center" style="padding-left: 4px; height: 220px; width: 316px;">
+        <div align="center" style="padding-left: 4px; width: 316px; height: 360px;">
             <div style="margin-top: 20px; height: 38px; width: 310px; background-color: #c1c2c2; font-size: 14px; base-font-size: 14px; color: #313131;">
                 <div style="display: inline; width: 154px; height:38px;">
                     <div align="center" style="display: inline; height:38px;">
@@ -62,12 +62,27 @@
                     </div>
                     <div  style="display: inline; padding-left:10px; height: 24px; line-height: 24;">{{schoolName}}</div>
                 </div>
+                <div style="margin-top: 16px; height: 24px;">
+                    <div style="position: relative; width: 70px; height: 24px; display: inline;">
+                        <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
+                        <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 33px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_diqu_33X16_32bits.png#0 0 33 16);"></div>
+                    </div>
+                    <div style="max-width: 180px; display: inline; padding-left:10px; height: 24px; line-height: 24;">{{regionname}}</div>
+                    <div v-if="isAuthUser" v-on:click="ClickRegionEdit" style="display: inline; margin-left: 6px; width: 20px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/bianji_20X20_32bits.png#0 0 20 20);"></div>
+                </div>
+
                 <div v-if="isAuthUser" style="margin-top: 16px; height: 24px;">
                     <div style="position: relative; width: 70px; height: 24px; display: inline;">
                         <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
                         <div style="position: absolute; left: 10px; top: 4px; display: inline; width: 50px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_zhishidou_50X16_32bits.png#0 0 50 16);"></div>
                     </div>
                     <div  style="display: inline; padding-left:10px; height: 24px; line-height: 24;">{{bean or 0}}</div>
+                </div>
+
+                <div v-if="isNeedUpdateRegion and isAuthUser and isShowUpdateRegionTip" style="position: absolute; top: 165px; left: 10px; height: 34px; width: 280px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tipbj_32bits.png:8 8 8 8);">
+                    <div style="display: inline-block; font-size: 12px; base-font-size: 12px; color: #ffffff; padding-top: 8px; padding-left: 16px;">完善地区信息, 获取知识豆奖励</div>
+                    <div v-on:click="ClickRegionEdit" style="display: inline-block; margin-left: 8px; margin-top: 5px; font-size: 14px; base-font-size: 14px; text-align: center; width: 55px; height: 24px; line-height: 22px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_guanzhu_32X32_32bits.png#0 0 32 32:8 8 8 8);">编辑</div>
+                    <div v-on:click="ClickCloseRegionEditTip" style="display: inline-block; margin-left: 8px; margin-top: 5px; width: 19px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tipX_19X20_32bits.png#0 0 19 20);"></div>
                 </div>
             </div>
         </div>
@@ -82,6 +97,8 @@ RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
 local UniString = commonlib.gettable("System.Core.UniString");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
+local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
+
 local assets = {
     "character/CC/02human/paperman/boy01.x",
     "character/CC/02human/paperman/boy02.x",
@@ -99,8 +116,11 @@ local assets = {
 local curAssetIndex = 1;
 
 self.isEditNickName = false;
+self.isNeedUpdateRegion = nil;
+self.isShowUpdateRegionTip = true;
 
 function OnRefresh()
+    local region = UserDetail.region or {};
     self.bean = tostring(UserDetail.bean or 0);
     self.schoolName = UserDetail.school and UserDetail.school.name or "";
     self.userId = UserDetail.id;
@@ -109,11 +129,13 @@ function OnRefresh()
     self.isFollow = UserDetail.isFollow or false;
     self.follow = UserDetail.rank.follow or 0;
     self.fans = UserDetail.rank.fans or 0;
-
     self.isCrown = UserDetail.vip == 1;
     self.isTeacher = UserDetail.tLevel == 1;
     self.isStudent = UserDetail.student == 1;
-
+    self.isNeedUpdateRegion = not (region and region.info and region.info.county and region.info.county.id);
+    local fullname = UniString:new(region.fullname or "");
+    self.regionname = fullname:sub(1, 11):GetText() .. (fullname:length() > 11 and "..." or "");
+    
     -- 格式化注册时间
     local datetime = UserDetail.createdAt;
     local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
@@ -122,6 +144,21 @@ end
 
 function ClickEditNickName()
     self.isEditNickName = not self.isEditNickName;
+end
+
+function ClickRegionEdit()
+    page.ShowUserRegionUpdatePage({
+        UserRegion = UserDetail.region, 
+        userId = UserDetail.id,
+        confirm = function(region) 
+            UserDetail.region = region;
+            self.regionname = region and region.fullname;
+        end
+    });
+end
+
+function ClickCloseRegionEditTip()
+    isShowUpdateRegionTip = false;
 end
 
 function OnEditNickNameFinish(nickname)
