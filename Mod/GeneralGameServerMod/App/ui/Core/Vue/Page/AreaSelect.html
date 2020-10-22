@@ -141,6 +141,7 @@ function clickConfirm()
             return CloseWindow();
         end
         if (not regionId) then
+            if (UserDetail) then UserDetail.bean = (UserDetail.bean or 0) + 5 end    
             page.ShowMessageBoxPage({text = "地区修改成功, 获得了5知识豆"});
         else
             page.ShowMessageBoxPage({text = "地区修改成功"});

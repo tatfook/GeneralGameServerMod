@@ -148,6 +148,7 @@ end
 
 function ClickRegionEdit()
     page.ShowUserRegionUpdatePage({
+        UserDetail = UserDetail,
         UserRegion = UserDetail.region, 
         userId = UserDetail.id,
         confirm = function(region) 
