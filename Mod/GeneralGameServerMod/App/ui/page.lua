@@ -41,6 +41,22 @@ function page.ShowUserInfoPage(G, params)
     return UserInfoPageUI;
 end
 
+local VueTestPage = vue:new();
+function page.ShowVueTestPage(G, params)
+    if (IsDevEnv) then
+        if (_G.VueTestPage) then
+            _G.VueTestPage:CloseWindow();
+        end        
+        _G.VueTestPage = VueTestPage;
+    end
+
+    params = params or {};
+    params.url = "%ui%/Core/Vue/Example/Test.html";
+    params.G = G;
+    VueTestPage:Show(params);
+
+    return VueTestPage;
+end
 
 local UserRegionUpdatePage = vue:new();
 function page.ShowUserRegionUpdatePage(G, params)
@@ -65,3 +81,4 @@ function page.ShowMessageBoxPage(G, params)
 
     return MessageBoxPage;
 end
+

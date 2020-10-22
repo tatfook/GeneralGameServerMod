@@ -34,7 +34,7 @@ local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local StyleManager = NPL.load("./StyleManager.lua", IsDevEnv);
 local Window = commonlib.inherit(Element, NPL.export());
 local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug");
-local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();
+local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();  -- --Enable  Disable
 
 Window:Property("NativeWindow");                    -- 原生窗口
 Window:Property("PainterContext");                  -- 绘制上下文
@@ -44,6 +44,7 @@ Window:Property("HoverElement");                    -- 光标所在元素
 Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
+Window:Property("FullScreen", false, "IsFullScreen");  -- 是否全屏窗口
 
 function Window:ctor()
     --屏幕位置,宽度,高度
@@ -108,6 +109,7 @@ function Window.Show(self, params)
     end
     params = params or {};
     params.width, params.height = params.width or 600, params.height or 500;
+    self:SetFullScreen(if_else(params.fullscreen == true, true, false));
     if (not self:GetNativeWindow()) then
         self:SetNativeWindow(self:CreateNativeWindow(params));
     end
@@ -129,7 +131,7 @@ function Window:CreateNativeWindow(params)
     local RootUIObject = ParaUI.GetUIObject("root");
     local rootX, rootY, rootWidth, rootHeight = RootUIObject:GetAbsPosition();
     -- WindowDebug.Format("CreateNativeWindow rootX = %s, rootY = %s, rootWidth = %s, rootHeight = %s", rootX, rootY, rootWidth, rootHeight);
-    if (not params.fullscreen) then
+    if (not self:IsFullScreen()) then
         rootX = (rootWidth - params.width) / 2;
         rootY = (rootHeight - params.height) / 2;
         rootWidth, rootHeight = params.width, params.height;
@@ -283,8 +285,7 @@ function Window:handleMouseEvent(event)
     -- 如果鼠标事件已被锁定则直接执行事件回调
     local element = self:GetMouseCapture();
     if (element) then
-        -- if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Mouse Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
-
+        if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Mouse Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
         if (type(element[bubbleFuncName]) == "function") then
             (element[bubbleFuncName])(element, event);
         end
@@ -308,10 +309,9 @@ function Window:handleMouseEvent(event)
 
     -- 系统其它事件处理
     if(not event:isAccepted() and not element and not self:GetWindow():IsContainPoint(x, y)) then
+        -- WindowDebug(string.format("x = %s, y = %s", x, y), self:GetWindow():GetWindowPosition());
         local context = SceneContextManager:GetCurrentContext();
-        if(context) then
-            context:handleMouseEvent(event);
-        end
+        if(context) then context:handleMouseEvent(event) end
     end
 end
 

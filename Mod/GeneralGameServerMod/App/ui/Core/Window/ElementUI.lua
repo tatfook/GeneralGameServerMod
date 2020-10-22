@@ -542,6 +542,7 @@ function ElementUI:OnMouseDown(event)
         self.isDragging = false;
         self.startDragX, self.startDragY = ParaUI.GetMousePosition();
         self.startDragElementX, self.startDragElementY = self:GetPosition();
+        self.startDragScreenX, self.startDragScreenY = self:GetWindow():GetScreenPosition();
 		event:accept();
 	end
 end
@@ -556,7 +557,18 @@ function ElementUI:OnMouseMove(event)
 				self:CaptureMouse();
 			end
         elseif(self.isDragging) then
-            self:SetPosition(x - self.startDragX + self.startDragElementX, y - self.startDragY + self.startDragElementY);
+            local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
+            self:SetPosition(self.startDragElementX + offsetX, self.startDragElementY + offsetY);
+            if (self:IsWindow() and not self:IsFullScreen()) then
+                local left, top = self:GetPosition();
+                local width, height = self:GetSize();
+                local right, bottom = left + width, top + height;
+                local x, y, w, h = self:GetScreenPosition();
+                if (left < 0 or top < 0 or right > w or bottom > h) then
+                    self:SetPosition(self.startDragElementX, self.startDragElementY);
+                    self:GetWindow():GetNativeWindow():Reposition("_lt", self.startDragScreenX + offsetX, self.startDragScreenY + offsetY, w, h);
+                end
+            end
 		end
 		if(self.isDragging) then
 			event:accept();

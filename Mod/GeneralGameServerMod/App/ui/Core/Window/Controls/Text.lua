@@ -87,15 +87,34 @@ local function CalculateTextLayout(self, text, width, left, top)
 end
 
 function Text:OnUpdateLayout()
-	local layout = self:GetLayout();
+	local layout, style = self:GetLayout(), self:GetStyle();
 	local parentLayout = self:GetParentElement():GetLayout();
 	local parentContentWidth, parentContentHeight = parentLayout:GetContentWidthHeight();
 	local width, height = layout:GetWidthHeight();
 	local left, top = 0, 0;
+	local text = self:GetValue();
 
 	self.texts = {};
 
-	width, height = CalculateTextLayout(self, self:GetValue(), width or parentContentWidth, left, top);
+	if (style["text-wrap"] == "none") then
+		--  不换行
+		local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
+		local textObject = {text = text, x = 0, y = 0, w = textWidth, h = textHeight}
+		table.insert(self.texts, textObject);
+		height = height or textHeight;
+		width = width or textWidth;
+		if (width < textWidth) then
+			if (style["text-overflow"] == "ellipsis") then
+				textObject.text = _guihelper.AutoTrimTextByWidth(text, width - 16, self:GetFont()) .. "...";
+			else
+				textObject.text = _guihelper.AutoTrimTextByWidth(text, width, self:GetFont());
+			end
+			textObject.width = width;
+		end
+	else
+		-- 自动换行
+		width, height = CalculateTextLayout(self, text, width or parentContentWidth, left, top);
+	end
 
 	TextElementDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 

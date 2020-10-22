@@ -24,13 +24,6 @@ function G:Init(window)
     return self;
 end
 
--- function G:new(g) 
---     g = g or {};
---     setmetatable(g, {
---         __index = G
---     })
--- end
-
 setmetatable(G, {
     __index = _G,
     __call = function(G, window, g)
@@ -43,3 +36,19 @@ setmetatable(G, {
         return self;
     end
 });
+
+
+-- function G.CloseWindow()
+--     GetWindow():CloseWindow();
+-- end
+
+-- setmetatable(G, {
+--     __index = _G,
+--     __call = function(G, window, g)
+--         g = setmetatable(g or {}, {__index = G});
+--         g.GetWindow = function() 
+--             return window;
+--         end
+--         return g;
+--     end
+-- });
