@@ -29,7 +29,7 @@ countyOptions = {};
 
 if (UserRegion and UserRegion.info) then
     local info = UserRegion.info;
-    regionId = UserRegion.id;
+    regionId = info and info.county and info.county.id;
     country, state, city, county = info.country, info.state, info.city, info.county;
 end
 
