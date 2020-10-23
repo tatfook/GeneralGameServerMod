@@ -74,8 +74,10 @@
             SelectOptions = OptionsAttrValue;
         elseif (attrName == "value") then
             local value = GetAttrValue("value");
-            if (not value) then return end
-            inputValue = type(value) == "table" and value.value or value;
+            if (not value) then  
+                value = SelectOptions[1] or {};
+            end
+            inputValue = type(value) == "table" and (value.value or "") or value;
             if (GetRef("input")) then
                 local curValue = GetRef("input"):GetValue();
                 if (inputValue ~= curValue) then GetRef("input"):SetAttrValue("value", tostring(inputValue)) end
