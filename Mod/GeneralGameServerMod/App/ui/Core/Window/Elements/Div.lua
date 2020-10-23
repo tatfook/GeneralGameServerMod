@@ -12,6 +12,7 @@ local Div = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Div.l
 local Element = NPL.load("../Element.lua");
 local Div = commonlib.inherit(Element, NPL.export());
 
+Div:Property("Name", "Div");
+
 function Div:ctor()
-    self:SetName("Div");
 end

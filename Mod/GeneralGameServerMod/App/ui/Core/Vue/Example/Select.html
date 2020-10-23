@@ -1,0 +1,20 @@
+<template>
+    <select v-bind:options="options" value="湖北省">
+    </select>
+    <button onclick="click">切换省份</button>
+    <select placeholder="省">
+        <option value="广东省">广东省</option>
+        <option value="湖北省">湖北省</option>
+        <option value="湖南省">湖南省</option>
+    </select>
+</template>
+
+<script type="text/lua">
+options = {"广东省", "湖北省", "湖南省"};
+function click()
+    options = {"福建省", "江西省"};
+end
+</script>
+
+<style>
+</style>

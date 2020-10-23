@@ -26,6 +26,21 @@ local UIWindow = commonlib.inherit(commonlib.gettable("System.Windows.Window"), 
 UIWindow:Property("UIWindow", true, "IsUIWindow");    -- 是否是UIWindow
 UIWindow:Property("UI");                              -- 窗口绑定的UI对象
 
+local __session_storage__ = {};
+local SessionStorage = {};
+
+function SessionStorage.SetItem(key, val)
+    __session_storage__[key] = val;
+end
+
+function SessionStorage.GetItem(key)
+    return __session_storage__[key];
+end
+
+function SessionStorage.Clear()
+    __session_storage__ = {};
+end
+
 -- 当前窗口
 ui.window = nil; 
 
@@ -65,7 +80,7 @@ function ui:GetGlobalTable(G, bReset)
     self.global.ui = self;
     self.global._G = self.global;
     self.global.self = self.global;
-
+    self.global.SessionStorage = SessionStorage;
     -- 更新全局Scope的元表
     self:GetGlobalScope():SetMetaTable(self.global);
 

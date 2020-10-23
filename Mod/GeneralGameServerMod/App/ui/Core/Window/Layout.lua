@@ -345,11 +345,12 @@ function Layout:PrepareLayout()
 	bottom = self:PercentageToNumber(bottom, parentHeight);
 	self:SetPosition(top, right, bottom, left);
 
-    -- LayoutDebug(
-    --     "PrepareLayout:" .. self:GetElement():GetName(), 
-    --     string.format("Element nid = %s, width = %s, height = %s", nid, width, height),
-    --     parentLayout and string.format("ParentElement nid = %s, width = %s, height = %s", parentLayout.nid, parentWidth, parentHeight)
-    -- );
+    LayoutDebug.If(
+		self:GetElement():GetAttrValue("id") == "debug",
+        "PrepareLayout:" .. self:GetElement():GetName(), 
+        string.format("Element nid = %s, width = %s, height = %s", nid, width, height),
+        parentLayout and string.format("ParentElement nid = %s, width = %s, height = %s", parentLayout.nid, parentWidth, parentHeight)
+    );
 end
 
 -- 更新布局
@@ -415,7 +416,7 @@ function Layout:UpdateRealContentWidthHeight()
 		local isRightFloat = childStyle.float == "right";
 		if (childLayout:IsLayout() and childLayout:IsUseSpace()) then
 			LayoutDebug.If(
-				false and element:GetAttrValue("id") == "debug",
+				true and element:GetAttrValue("id") == "debug",
 				string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 				-- string.format("child margin: %s, %s, %s, %s", childMarginTop, childMarginRight, childMarginBottom, childMarginLeft), childStyle,
@@ -459,7 +460,7 @@ function Layout:UpdateRealContentWidthHeight()
 			end
 			childLayout:SetPos(childLeft, childTop);
 			LayoutDebug.If(
-				false and element:GetAttrValue("id") == "debug",
+				true and element:GetAttrValue("id") == "debug",
 				string.format("[%s] Layout Add ChildLayout After ", self:GetName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)

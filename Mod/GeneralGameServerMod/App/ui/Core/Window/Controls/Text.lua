@@ -15,7 +15,7 @@ local Text = commonlib.inherit(Element, NPL.export());
 local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug").Disable();
 
 Text:Property("Value");  -- 文本值
-
+Text:Property("Name", "Text");
 Text:Property("BaseStyle", {
 	NormalStyle = {
 		["display"] = "inline",
@@ -29,7 +29,6 @@ local function ReplaceEntityReference(value)
 end
 
 function Text:ctor()
-	self:SetName("Text");
 end
 
 -- public:

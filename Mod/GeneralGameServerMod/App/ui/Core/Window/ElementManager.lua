@@ -24,6 +24,7 @@ local Radio = NPL.load("./Elements/Radio.lua", IsDevEnv);
 local RadioGroup = NPL.load("./Elements/RadioGroup.lua", IsDevEnv);
 local CheckBox = NPL.load("./Elements/CheckBox.lua", IsDevEnv);
 local CheckBoxGroup = NPL.load("./Elements/CheckBoxGroup.lua", IsDevEnv);
+local Select = NPL.load("./Elements/Select.lua", IsDevEnv);
 local Input = NPL.load("./Elements/Input.lua", IsDevEnv);
 local TextArea = NPL.load("./Elements/TextArea.lua", IsDevEnv);
 local Canvas = NPL.load("./Elements/Canvas.lua", IsDevEnv);
@@ -51,6 +52,7 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("RadioGroup", RadioGroup);
     ElementManager:RegisterByTagName("CheckBox", CheckBox);
     ElementManager:RegisterByTagName("CheckBoxGroup", CheckBoxGroup);
+    ElementManager:RegisterByTagName("Select", Select);
     ElementManager:RegisterByTagName("Input", Input);
     ElementManager:RegisterByTagName("TextArea", TextArea);
     ElementManager:RegisterByTagName("Canvas", Canvas);

@@ -7,12 +7,12 @@
 </template>
 
 <script type="text/lua">
-local oldnickname = nil;
-function OnRefresh()
-    oldnickname = self.nickname;
+local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
+local IsExistNicknameGSItem = SessionStorage.GetItem("IsExistNicknameGSItem");
+if (IsExistNicknameGSItem == nil) then IsExistNicknameGSItem = KeepWorkItemManager.HasGSItem(129) end
 
+function OnRefresh()
     self.value = self.nickname;
-    
     GetRef("input"):GetControl():setFocus("click");
 end
 
@@ -62,10 +62,12 @@ function confirm()
                         ShowResultBox(data and data.message or "修改昵称失败");
                         return cancel() 
                     end
-                    if (oldnickname and oldnickname ~= "") then
+                    if (IsExistNicknameGSItem) then
                         ShowResultBox("昵称修改成功, 知识豆扣除 10 个");
                     else
                         ShowResultBox("昵称修改成功");
+                        IsExistNicknameGSItem = true;
+                        SessionStorage.SetItem("IsExistNicknameGSItem", IsExistNicknameGSItem);
                     end
                     if (type(UserDetail) == "table") then UserDetail.bean = (UserDetail.bean or 0) - 10 end
                     FinishCallback(value, true);

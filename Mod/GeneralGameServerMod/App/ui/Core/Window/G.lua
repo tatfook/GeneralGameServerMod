@@ -11,6 +11,8 @@ local G = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/G.lua");
 
 local G = NPL.export();
 
+local Storage = NPL.load("./Storage.lua", IsDevEnv);
+
 function G:SetWindow(window)
     self.window = window;
 end
@@ -29,6 +31,8 @@ setmetatable(G, {
     __call = function(G, window, g)
         local self = setmetatable(g or {}, {__index = G}):Init(window);
 
+        self.SessionStorage = Storage.SessionStorage;
+        
         self.CloseWindow = function()
             self:GetWindow():CloseWindow();
         end

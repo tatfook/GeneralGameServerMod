@@ -641,10 +641,6 @@ function ElementUI:OnFocusIn()
 	if (onfocus) then onfocus() end
 end
 
-function ElementUI:IsCanFocus()
-    return false;
-end
-
 -- 是否是聚焦元素
 function ElementUI:IsFocus()
     return self:GetFocus() == self;
@@ -671,7 +667,7 @@ function ElementUI:SetFocus(element)
         focusElement:SelectStyle("FocusOut");
     end
     window:SetFocusElement(element);
-    if (element and element:IsCanFocus()) then
+    if (element) then
         element:OnFocusIn();
         element:SelectStyle("FocusIn");
         ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());

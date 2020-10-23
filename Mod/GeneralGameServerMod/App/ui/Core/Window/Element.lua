@@ -88,14 +88,17 @@ function Element:InitElement(xmlNode, window, parent)
     self:ClearChildElement();
 
     -- 设置元素属性
+    self:SetAttr({});
     if (type(xmlNode) ~= "table") then 
         self:SetTagName(nil);
         self:SetAttr({});
         self:SetXmlNode(xmlNode);
     else 
         self:SetTagName(xmlNode.name);
-        self:SetAttr(xmlNode.attr or {});
         self:SetXmlNode(xmlNode);
+        if (type(xmlNode.attr) == "table") then
+            for key, val in pairs(xmlNode.attr) do self:GetAttr()[key] = val end
+        end
     end
 
     -- 初始化样式表
@@ -268,7 +271,6 @@ function Element:OnAfterUpdateChildLayout()
 end
 -- 元素布局更新回调
 function Element:OnUpdateLayout()
-    self:GetLayout():Update();
 end
 
 -- 元素布局更新后回调
@@ -312,7 +314,10 @@ function Element:UpdateLayout()
 
     -- 更新元素布局
     self:OnUpdateLayout();
-    
+
+    -- 调整布局
+    self:GetLayout():Update();
+
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
 
@@ -409,6 +414,13 @@ function Element:GetAttrFunctionValue(attrName, defaultValue)
     end
 
     return type(value) == "function" and value or nil;
+end
+
+-- 调用事件函数
+function Element:CallAttrFunction(attrName, defaultValue, ...)
+    local func = self:GetAttrFunctionValue(attrName, defaultValue);
+    if (not func) then return end
+    func(...)
 end
 
 -- 元素属性值更新

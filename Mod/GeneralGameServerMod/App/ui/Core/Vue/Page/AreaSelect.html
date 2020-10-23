@@ -16,6 +16,7 @@
 </template>
 
 <script type="text/lua">
+local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
 RegisterComponent("Select", "%ui%/Core/Vue/Components/Select.html");
 local KeepworkServiceSchoolAndOrg = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/SchoolAndOrg.lua");
@@ -26,6 +27,9 @@ state, city, county = {}, {}, {};
 stateOptions = {};
 cityOptions = {};
 countyOptions = {};
+
+local IsExistRegionGSItem = SessionStorage.GetItem("IsExistRegionGSItem");
+if (IsExistRegionGSItem == nil) then IsExistRegionGSItem = KeepWorkItemManager.HasGSItem(130) end
 
 if (UserRegion and UserRegion.info) then
     local info = UserRegion.info;
@@ -154,13 +158,15 @@ function clickConfirm()
             page.ShowMessageBoxPage({text = data and data.message or "修改地区失败"});
             return CloseWindow();
         end
-        if (not regionId) then
+        if (not IsExistRegionGSItem) then
             if (UserDetail) then UserDetail.bean = (UserDetail.bean or 0) + 5 end    
             page.ShowMessageBoxPage({text = "地区修改成功, 获得了5知识豆"});
+            IsExistRegionGSItem = true;
+            SessionStorage.SetItem("IsExistRegionGSItem", IsExistRegionGSItem);
         else
             page.ShowMessageBoxPage({text = "地区修改成功"});
         end
-        if (type(confirm) == "function") then confirm(county) end
+        if (type(confirm) == "function") then confirm(county.id and county or city) end
         CloseWindow();
     end);
 end

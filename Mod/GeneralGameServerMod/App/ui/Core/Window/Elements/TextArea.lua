@@ -89,10 +89,6 @@ function TextArea:ClearSelected()
     self.selectStartAt, self.selectEndAt = nil, nil;
 end
 
-function TextArea:IsCanFocus()
-    return true;
-end
-
 function TextArea:IsReadOnly()
     return self:GetAttrBoolValue("readonly");
 end
