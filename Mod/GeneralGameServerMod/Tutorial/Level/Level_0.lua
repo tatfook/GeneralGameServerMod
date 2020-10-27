@@ -52,8 +52,8 @@ function Level_0:InitEvent()
         end
     end);
 
+    -- 这个需要自己补事件触发
     CodeBlock:RegisterTextEvent("mouseReleaseEvent", function(event)
         log("mouseReleaseEvent")
     end);
-    echo("-------------------")
 end

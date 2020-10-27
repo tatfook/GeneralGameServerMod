@@ -35,6 +35,7 @@ function page.ShowUserInfoPage(G, params)
 
     params.url = "%ui%/Page/UserInfoPage.html";
     params.G = G;
+    params.allowDrag = false;
     params.OnClose = function() end
 
     UserInfoPageUI:ShowWindow(params);

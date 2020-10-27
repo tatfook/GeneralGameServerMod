@@ -22,6 +22,7 @@
             <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
             <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
             <div v-on:click="ClickPersonalPage" style="position: absolute; left: 10px; bottom: 10px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
+            <div v-on:click="ClickChangeSkinBtn" style="position: absolute; left: 130px; bottom: 10px; line-height: 25px; height:28px; width: 80px; text-align: center; color: #000000; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_cancel_16X16_32bits.png#0 0 16 16: 5 5 5 5);">更换装扮</div>
             <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
         </div>
         <div align="center" style="padding-left: 4px; width: 316px; height: 360px;">
@@ -166,6 +167,13 @@ function OnEditNickNameFinish(nickname)
     UserDetail.nickname = nickname;
     self.isEditNickName = false;
 end 
+
+function ClickChangeSkinBtn()
+    ui:CloseWindow();
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/SkinPage.lua");
+    local SkinPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.SkinPage");
+    SkinPage.ShowPage();
+end
 
 -- 获取昵称
 function GetNickName(text)
