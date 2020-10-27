@@ -104,11 +104,14 @@ function AppGeneralGameClient:CopyKpUserInfo(userinfo)
     local ParacraftPlayerEntityInfo = (userinfo.extra or {}).ParacraftPlayerEntityInfo or {};
     self.userinfo.scale = ParacraftPlayerEntityInfo.scale or 1;
     self.userinfo.asset = ParacraftPlayerEntityInfo.asset or "character/CC/02human/paperman/boy01.x";
+    self.userinfo.skin = ParacraftPlayerEntityInfo.skin;
     self:SetMainPlayerEntityScale(self.userinfo.scale);
     self:SetMainPlayerEntityAsset(self.userinfo.asset);
+    self:SetMainPlayerEntitySkin(self.userinfo.skin);
     local oldPlayerEntity = EntityManager.GetPlayer();
     if (oldPlayerEntity and self:GetMainPlayerEntityScale()) then oldPlayerEntity:SetScaling(self:GetMainPlayerEntityScale()) end
     if (oldPlayerEntity and self:GetMainPlayerEntityAsset()) then oldPlayerEntity:SetMainAssetPath(self:GetMainPlayerEntityAsset()) end
+    if (oldPlayerEntity and self:GetMainPlayerEntitySkin()) then oldPlayerEntity:SetSkin(self:GetMainPlayerEntitySkin()) end
 end
 
 -- 用户登录回调

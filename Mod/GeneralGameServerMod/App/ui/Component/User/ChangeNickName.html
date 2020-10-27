@@ -53,12 +53,12 @@ function UpdateNickName(value)
         end
         if (IsExistNicknameGSItem) then
             ShowResultBox("昵称修改成功, 知识豆扣除 10 个");
+            if (type(UserDetail) == "table") then UserDetail.bean = (UserDetail.bean or 0) - 10 end
         else
             ShowResultBox("昵称修改成功");
             IsExistNicknameGSItem = true;
             SessionStorage.SetItem("IsExistNicknameGSItem", IsExistNicknameGSItem);
         end
-        if (type(UserDetail) == "table") then UserDetail.bean = (UserDetail.bean or 0) - 10 end
         FinishCallback(value, true);
     end);
 end

@@ -36,6 +36,7 @@ local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.Tool
 GeneralGameClient:Property("World", nil);  -- 当前世界
 GeneralGameClient:Property("MainPlayerEntityScale", nil);  -- 玩家实体大小
 GeneralGameClient:Property("MainPlayerEntityAsset", nil);  -- 玩家实体模型
+GeneralGameClient:Property("MainPlayerEntitySkin", nil);   -- 玩家实体模型皮肤
 
 -- 类共享变量 强制同步块列表
 GeneralGameClient.syncForceBlockList = commonlib.UnorderedArraySet:new();

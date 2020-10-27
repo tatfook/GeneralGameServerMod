@@ -21,8 +21,8 @@
             <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div>
             <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
             <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
-            <div v-on:click="ClickPersonalPage" style="position: absolute; left: 10px; bottom: 10px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
-            <div v-on:click="ClickChangeSkinBtn" style="position: absolute; left: 130px; bottom: 10px; line-height: 25px; height:28px; width: 80px; text-align: center; color: #000000; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_cancel_16X16_32bits.png#0 0 16 16: 5 5 5 5);">更换装扮</div>
+            <div v-on:click="ClickPersonalPage" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
+            <div v-on:click="ClickChangeSkinBtn" style="position: absolute; right: 15px; bottom: 15px; height:39px; width: 38px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_genghuan_38X39_32bits.png#0 0 38 39);"></div>
             <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
         </div>
         <div align="center" style="padding-left: 4px; width: 316px; height: 360px;">
@@ -170,9 +170,12 @@ end
 
 function ClickChangeSkinBtn()
     ui:CloseWindow();
-    NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/SkinPage.lua");
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/SkinPage.lua", true);
     local SkinPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.SkinPage");
-    SkinPage.ShowPage();
+    
+    SkinPage.ShowPage(nil, function()
+        UpdatePlayerInfo();
+    end);
 end
 
 -- 获取昵称
@@ -194,6 +197,9 @@ function ClickPrevAsset()
     end 
     mainasset = assets[curAssetIndex];
     GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
+    GameLogic.options:SetMainPlayerAssetName(mainasset);
+
+    UpdatePlayerInfo();
 end
 
 function ClickNextAsset()
@@ -206,18 +212,27 @@ function ClickNextAsset()
     GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
     GameLogic.options:SetMainPlayerAssetName(mainasset);
 
+    UpdatePlayerInfo();
+end
+
+function UpdatePlayerInfo()
     -- 更新用户信息
     if (not isAuthUser) then return end
+    local player = GameLogic.GetPlayerController():GetPlayer();
+    local asset = player:GetMainAssetPath();
+    local skin = player:GetSkin();
     local extra = UserDetail.extra or {};
     extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
-    extra.ParacraftPlayerEntityInfo.asset = mainasset;
+    extra.ParacraftPlayerEntityInfo.asset = asset;
+    extra.ParacraftPlayerEntityInfo.skin = skin;
     keepwork.user.setinfo({
         router_params = {id = AuthUserId},
         extra = extra,
     }, function(status, msg, data) 
         if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
     end);
-end
+
+end 
 
 function ClickPrevRotate()
 end 
