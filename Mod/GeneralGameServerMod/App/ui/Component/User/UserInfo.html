@@ -22,7 +22,7 @@
             <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
             <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
             <div v-on:click="ClickPersonalPage" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
-            <div v-on:click="ClickChangeSkinBtn" style="position: absolute; right: 15px; bottom: 15px; height:39px; width: 38px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_genghuan_38X39_32bits.png#0 0 38 39);"></div>
+            <div v-if="isAuthUser" v-on:click="ClickChangeSkinBtn" style="position: absolute; right: 15px; bottom: 15px; height:39px; width: 38px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_genghuan_38X39_32bits.png#0 0 38 39);"></div>
             <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
         </div>
         <div align="center" style="padding-left: 4px; width: 316px; height: 360px;">
