@@ -30,7 +30,7 @@ function LoadUserInfo(username)
     }, function(status, msg, data) 
         if (status ~= 200) then return echo("获取用户详情失败...") end
         local UserDetail = data;
-
+        echo(UserDetail)
         -- 设置知识豆
         _, _, _, UserDetail.bean = KeepWorkItemManager.HasGSItem(998);
 

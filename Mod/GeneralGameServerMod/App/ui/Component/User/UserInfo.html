@@ -132,8 +132,8 @@ function OnRefresh()
     self.isCrown = UserDetail.vip == 1;
     self.isTeacher = UserDetail.tLevel == 1;
     self.isStudent = UserDetail.student == 1;
-    self.isNeedUpdateRegion = not (region and region.info and region.info.county and region.info.county.id);
-    local fullname = UniString:new(region.fullname or "");
+    self.isNeedUpdateRegion = region.hasChildren == 1 and true or false;
+    local fullname = UniString:new(region.displayName or region.fullname or "");
     self.regionname = fullname:sub(1, 11):GetText() .. (fullname:length() > 11 and "..." or "");
     
     -- 格式化注册时间

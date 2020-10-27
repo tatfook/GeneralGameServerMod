@@ -26,6 +26,4 @@ function SessionStorage.Clear()
     __session_storage__ = {};
 end
 
-
-
 Storage.SessionStorage = SessionStorage;
