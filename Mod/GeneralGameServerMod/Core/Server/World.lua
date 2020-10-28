@@ -13,11 +13,13 @@ local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 NPL.load("(gl)script/sqlite/sqlite3.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/Track.lua");
 -- NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
 -- local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
+local Track = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Track");
 local World = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
 
 World:Property("WorldKey");            -- 世界key
@@ -25,7 +27,8 @@ World:Property("WorldId");             -- 世界id
 World:Property("WorldType");           -- 世界类型
 World:Property("WorldName");           -- 世界名
 World:Property("PlayerManager");       -- 玩家管理器
-World:Property("BlockManager");       -- 玩家管理器
+World:Property("BlockManager");        -- 玩家管理器
+World:Property("Track");               -- 世界轨迹
 World:Property("DB");                  -- 数据库
 
 -- 一个世界对象, 应该包含世界的所有数据
@@ -40,6 +43,9 @@ function World:Init(worldId, WorldName, worldType, worldKey)
     self:SetWorldName(WorldName);
     self:SetWorldKey(worldKey);
     self:SetWorldType(worldType or "World");
+
+    -- 轨迹
+    self:SetTrack(Track:new():Init(self));
 
     -- 玩家管理器
     self:SetPlayerManager(PlayerManager:new():Init(self));

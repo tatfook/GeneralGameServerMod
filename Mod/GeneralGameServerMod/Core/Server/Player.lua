@@ -33,6 +33,7 @@ function Player:ctor()
     self.areaX = 0;
     self.areaY = 0;
     self.areaZ = 0;
+    self.lastBX, self.lastBY, self.lastBZ = nil, nil, nil;
 end
 
 function Player:Init(player, playerManager, netHandler)
@@ -111,9 +112,8 @@ end
 
 -- 是否保持离线
 function Player:IsKeepworkOffline()
-    -- if (IsDevEnv) then return true end
-
-    if (self:IsAnonymousUser()) then return false; end
+    if (self:IsAnonymousUser()) then return false end
+    if (IsDevEnv) then return true end
     if (self.aliveTime < Config.Player.minAliveTime) then return false; end
     local userinfo = self:GetUserInfo();
     if (not userinfo or not userinfo.worldCount or userinfo.worldCount < 3) then return false end
@@ -163,8 +163,30 @@ function Player:GetBlockPos()
     return entityInfo.bx or 0,  entityInfo.by or 0, entityInfo.bz or 0;
 end
 
+function Player:SetBlockPos(bx, by, bz)
+    local entityInfo = self:GetEntityInfo();
+    entityInfo.bx,  entityInfo.by, entityInfo.bz = bx, by, bz;
+end
+
+function Player:GetPos()
+    local entityInfo = self:GetEntityInfo();
+    return entityInfo.x, entityInfo.y, entityInfo.z;
+end
+
+function Player:SetPos(x, y, z)
+    local entityInfo = self:GetEntityInfo();
+    entityInfo.x, entityInfo.y, entityInfo.z = x, y, z;
+end
+
 function Player:UpdatePosInfo()
     local bx, by, bz = self:GetBlockPos();
+    local x, y, z = self:GetPos();
+    local distance = 3;
+    if (self.lastBX == nil or math.abs(bx - self.lastBX) > distance or math.abs(bz - self.lastBZ) > distance) then
+        self.lastBX, self.lastBY, self.lastBZ = bx, by, bz;
+        self:GetWorld():GetTrack():AddPosition(bx, by, bz, x, y, z);
+    end
+
     if (not self:IsEnableArea()) then return end
     if (bx == self.oldBX and by == self.oldBY and bz == self.oldBZ) then return end
     self.oldBX, self.oldBY, self.oldBZ = bx, by, bz;

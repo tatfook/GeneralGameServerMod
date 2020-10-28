@@ -21,6 +21,7 @@ local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.G
 local maxMotionUpdateTickCount = 33;
 
 EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
+EntityMainPlayer:Property("World");
 
 -- 构造函数
 function EntityMainPlayer:ctor()
@@ -37,7 +38,10 @@ end
 -- 初始化函数
 function EntityMainPlayer:init(world, netHandler, entityId)
     EntityMainPlayer._super.init(self, world, netHandler, entityId);
+    
     self:SetSkipPicking(not self:IsCanClick());
+    self:SetWorld(world);
+
     return self;
 end
 

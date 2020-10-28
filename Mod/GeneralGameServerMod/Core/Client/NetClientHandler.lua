@@ -214,7 +214,6 @@ end
 -- 用户实体信息
 function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     if (not packetPlayerEntityInfo) then return end
-
     local entityId, username = packetPlayerEntityInfo.entityId, packetPlayerEntityInfo.username;
     local x, y, z, facing, pitch, tick = packetPlayerEntityInfo.x, packetPlayerEntityInfo.y, packetPlayerEntityInfo.z, packetPlayerEntityInfo.facing, packetPlayerEntityInfo.pitch, packetPlayerEntityInfo.tick or 5;
     local bx, by, bz = packetPlayerEntityInfo.bx, packetPlayerEntityInfo.by, packetPlayerEntityInfo.bz;

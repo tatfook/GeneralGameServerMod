@@ -225,6 +225,9 @@ end
 -- 下线玩家
 function PlayerManager:Offline(player, reason)
     if (not player) then return end
+    -- 设置玩家离线位置
+    self:GetWorld():GetTrack():AddOfflinePlayer(player);
+
     -- 置玩家登出状态
     player:Logout();
     
@@ -251,6 +254,8 @@ end
 -- 踢出玩家
 function PlayerManager:Logout(player, reason)
     if (not player) then return end
+    self:GetWorld():GetTrack():RemoveOfflinePlayer(player);
+
     -- 置玩家登出状态
     player:Logout();
     -- 获取对应的当前玩家

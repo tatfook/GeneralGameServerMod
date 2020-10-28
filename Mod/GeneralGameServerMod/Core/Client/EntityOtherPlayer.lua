@@ -19,6 +19,8 @@ local EntityOtherPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.
 
 local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer";
 
+EntityOtherPlayer:Property("World");
+
 function EntityOtherPlayer:ctor()
     self.playerInfo = {};
     self.packetPlayerEntityInfoQueue = commonlib.Queue:new();  -- 移动队列
@@ -27,6 +29,7 @@ end
 function EntityOtherPlayer:init(world, username, entityId)
     EntityOtherPlayer._super.init(self, world, username, entityId);
 
+    self:SetWorld(world);
     self:SetSkipPicking(not self:IsCanClick());
 
     return self;
@@ -83,6 +86,25 @@ function EntityOtherPlayer:FrameMove(deltaTime)
 
     self:OnUpdate();
 end
+
+-- -- 离线人物位置调整
+-- function EntityOtherPlayer:AdjustOfflinePlayerPosition()
+--     if (self:IsOnline()) then return end
+
+--     local players = self:GetWorld():GetPlayerManager():GetPlayers();
+--     local bx, by, bz = self:GetBlockPos();
+--     local areaSize, playerCount, maxPlayerCount = 5, 0, 5;
+--     for key, player in pairs(players) do 
+--         if (player.IsOnline and not player:IsOnline() and player ~= self) then 
+--             local pbx, pby, pbz = player:GetBlockPos();
+--             local isInnerAreaSize = math.abs(bx - pbx) <= areaSize and math.abs(bz - pbz) <= areaSize;
+--             if (isInnerAreaSize) then playerCount = playerCount + 1 end
+--             if (playerCount > maxPlayerCount) then
+
+--             end
+--         end
+--     end
+-- end
 
 -- 更改人物外观
 function EntityOtherPlayer:UpdateEntityActionState()

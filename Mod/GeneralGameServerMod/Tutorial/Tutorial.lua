@@ -40,6 +40,7 @@ function Tutorial:Init(codeblock);
     return self;
 end
 
+
 -- 获取块ID
 function Tutorial:GetBlockId(...)
     return ParaTerrain.GetBlockTemplateByIdx(...);
