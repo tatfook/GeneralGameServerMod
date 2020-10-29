@@ -35,6 +35,7 @@ function Block:ctor()
 
     self.contentWidthUnitCount, self.contentHeightUnitCount = 0, 0;
     self.widthUnitCount, self.heightUnitCount = 0, 0;
+    self.leftUnitCount, self.topUnitCount = 0, 0;
 end
 
 function Block:Init(blockly, opt)
@@ -250,7 +251,11 @@ function Block:UpdateLayout()
     elseif (self:IsStatement()) then self.heightUnitCount = self.contentHeightUnitCount + 4
     end
 
-    if (self.nextBlock) then self.nextBlock:UpdateLayout() end
+    if (self.nextBlock) then 
+        self.nextBlock.leftUnitCount = self.leftUnitCount;
+        self.nextBlock.topUnitCount = self.topUnitCount + self.heightUnitCount;
+        self.nextBlock:UpdateLayout();
+    end
 
     return self.widthUnitCount, self.heightUnitCount;
 end

@@ -52,8 +52,8 @@ function Blockly:ctor()
     self.blocks = {block};
 end
 
-function Blockly:OnRender(painter)
-    local x, y, w, h = self:GetGeometry();
+function Blockly:RenderContent(painter)
+    local x, y, w, h = self:GetContentGeometry();
     painter:Translate(x, y);
 
     for _, block in ipairs(self.blocks) do
