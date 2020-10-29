@@ -15,7 +15,7 @@ local Track = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), comm
 Track:Property("World");
 
 local AreaSize = 5;
-local AreaMaxPositionCount = 3;
+local AreaMaxPositionCount = 1;
 local MaxPositionCount = 2000;
 local Area = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
 
@@ -49,6 +49,7 @@ function Track:ctor()
     self.positions = {};                 -- 位置
     self.positionPlayer = {};            -- 位置对应的玩家
     self.positionCount = 0;              -- 位置的数量
+    self.unpositionPlayerList = {};      -- 未分配位置的玩家列表
 end
 
 function Track:Init(world)
@@ -81,6 +82,12 @@ function Track:AddPosition(bx, by, bz, x, y, z)
     self.positions[blockIndex] = {x = x, y = y, z = z, bx = bx, by = by, bz = bz, blockIndex = blockIndex, id = self.positionCount};
 
     area:AddPositionCount();
+
+    if (#(self.unpositionPlayerList) ~= 0) then
+        local player = self.unpositionPlayerList[1];
+        table.remove(self.unpositionPlayerList, 1);
+        self:AddOfflinePlayer(player);
+    end
 end
 
 function Track:GetAvailablePos()
@@ -93,16 +100,23 @@ end
 
 function Track:AddOfflinePlayer(offlinePlayer)
     local pos, index = self:GetAvailablePos();
-    if (not pos) then return end
+    if (not pos) then return table.insert(self.unpositionPlayerList, offlinePlayer) end
     self.positionPlayer[index] = offlinePlayer;
     offlinePlayer:SetPos(pos.x, pos.y, pos.z);
     offlinePlayer:SetBlockPos(pos.bx, pos.by, pos.bz);
+    -- 可以主动再通知在线玩家, 离线玩家位置更新
 end
 
 function Track:RemoveOfflinePlayer(offlinePlayer)
     for index, player in pairs(self.positionPlayer) do
         if (player == offlinePlayer) then
             self.positionPlayer[index] = nil;
+            break;
+        end
+    end
+    for index, player in ipairs(self.unpositionPlayerList) do
+        if (player == offlinePlayer) then
+            table.remove(self.unpositionPlayerList, index);
             break;
         end
     end

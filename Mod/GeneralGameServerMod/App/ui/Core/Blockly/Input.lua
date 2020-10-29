@@ -23,3 +23,13 @@ function Input:Init(block)
 
     return self;
 end
+
+function Input:GetUnitSize()
+    return self:GetBlock():GetUnitSize();
+end
+
+
+function Input:Render(painter)
+    for _, field in ipairs(self.fields) do
+    end
+end

@@ -120,7 +120,7 @@
   </Server>
   <World 
     areaSize=0
-    minClientCount=5 
+    minClientCount=10 
     maxClientCount=200>
   </World>
   <Player>

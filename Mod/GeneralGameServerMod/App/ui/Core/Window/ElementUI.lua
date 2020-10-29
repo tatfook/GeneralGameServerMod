@@ -52,77 +52,14 @@ function ElementUI:IsNeedRender()
     return true;
 end
 
--- -- 元素渲染
--- function ElementUI:RenderStaticElement(painter, offsetX, offsetY)
---     offsetX, offsetY = offsetX or 0, offsetY or 0;
---     -- ElementUIDebug.If(self:GetAttrValue("id") == "debug" and not self:IsNeedRender(), self:IsVisible(), self:GetWidth(), self:GetHeight());
---     if (not self:IsNeedRender()) then return end
---     self.isRender = true;  -- 设置渲染标识 避免递归渲染
+function ElementUI:Render(painter, offsetX, offsetY)
+    for i = 1, #self.AbsoluteElements do self.AbsoluteElements[i] = nil end
+    for i = 1, #self.FixedElements do self.FixedElements[i] = nil end
+    self:RenderStaticElement(painter, self);
+    self:RenderAbsoluteElement(painter, self);
+    self:RenderFixedElement(painter, self);
+end
 
---     local position = self:GetStyle().position or "static";
---     local oldOffsetX, oldOffsetY = offsetX, offsetY;
---     if (position == "fixed" or position == "screen") then
---         if (position == "fixed") then
---             local windowX, windowY = self:GetWindow():GetWindowPos();
---             painter:Translate(-oldOffsetX + windowX, -oldOffsetY + windowY);
---             offsetX, offsetY = offsetX - oldOffsetX + windowX, offsetY - oldOffsetY + windowY;
---         else 
---             painter:Translate(-oldOffsetX, -oldOffsetY);
---             offsetX, offsetY = offsetX - oldOffsetX, offsetY - oldOffsetY;
---         end
---     end
-
---     -- 渲染元素
---     self:OnRender(painter);
-    
---     -- 渲染子元素
---     painter:Translate(self:GetX(), self:GetY());
---     offsetX, offsetY = offsetX + self:GetX(), offsetY + self:GetY();
-
---     -- 存在滚动需要做裁剪
---     local layout = self:GetLayout();
---     local width, height = self:GetSize();
---     local scrollX, scrollY = self:GetScrollPos();
---     local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
-    
---     -- 绘制子元素
---     for childElement in self:ChildElementIterator() do
---         if (childElement:GetLayout():IsPosition()) then
---             childElement:RenderStaticElement(painter, offsetX, offsetY);
---         else 
---             if (isOverflowX or isOverflowY) then
---                 -- ElementUIDebug.FormatIf(self:GetName() == "TextArea", "Render ScrollX = %s, ScrollY = %s", scrollX, scrollY);
---                 painter:Save();
---                 painter:SetClipRegion(0, 0, width, height);
---                 painter:Translate(-scrollX, -scrollY);
---                 offsetX, offsetY = offsetX - scrollX, offsetY - scrollY;
---             end
---             childElement:RenderStaticElement(painter, offsetX, offsetY);
---             -- 恢复裁剪
---             if (isOverflowX or isOverflowY) then
---                 painter:Translate(scrollX, scrollY);
---                 offsetX, offsetY = offsetX + scrollX, offsetY + scrollY;
---                 painter:Restore();
---             end
---         end
---     end
-
---     painter:Translate(-self:GetX(), -self:GetY());
---     offsetX, offsetY = offsetX - self:GetX(), offsetY - self:GetY();
-    
---     if (position == "fixed" or position == "screen") then
---         if (position == "fixed") then
---             local windowX, windowY = self:GetWindow():GetWindowPos();
---             painter:Translate(oldOffsetX - windowX, oldOffsetY - windowY);
---             offsetX, offsetY = offsetX + oldOffsetX - windowX, offsetY + oldOffsetY - windowY;
---         else 
---             painter:Translate(oldOffsetX, oldOffsetY);
---             offsetX, offsetY = offsetX + oldOffsetX, offsetY + oldOffsetY;
---         end
---     end
-
---     self.isRender = false; -- 清除渲染标识
--- end
 -- 元素渲染
 function ElementUI:RenderStaticElement(painter, root)
     offsetX, offsetY = offsetX or 0, offsetY or 0;
@@ -177,14 +114,6 @@ function ElementUI:RenderStaticElement(painter, root)
     painter:Translate(-self:GetX(), -self:GetY());
     
     self.isRender = false; -- 清除渲染标识
-end
-
-function ElementUI:Render(painter, offsetX, offsetY)
-    for i = 1, #self.AbsoluteElements do self.AbsoluteElements[i] = nil end
-    for i = 1, #self.FixedElements do self.FixedElements[i] = nil end
-    self:RenderStaticElement(painter, self);
-    self:RenderAbsoluteElement(painter, self);
-    self:RenderFixedElement(painter, self);
 end
 
 function ElementUI:RenderAbsoluteElement(painter, root)

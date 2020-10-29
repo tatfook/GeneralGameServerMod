@@ -112,8 +112,8 @@ end
 
 -- 是否保持离线
 function Player:IsKeepworkOffline()
-    if (self:IsAnonymousUser()) then return false end
     if (IsDevEnv) then return true end
+    if (self:IsAnonymousUser()) then return false end
     if (self.aliveTime < Config.Player.minAliveTime) then return false; end
     local userinfo = self:GetUserInfo();
     if (not userinfo or not userinfo.worldCount or userinfo.worldCount < 3) then return false end

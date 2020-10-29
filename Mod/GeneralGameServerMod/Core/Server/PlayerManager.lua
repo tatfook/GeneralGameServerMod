@@ -206,6 +206,7 @@ function PlayerManager:RemovePlayer(player)
     local logoutUsername = self.offlinePlayerQueue:popleft();
     -- 同时移除区间用户
     self.offlineQuadtree:RemoveObject(logoutUsername);
+    self:RemoveOfflinePlayer(logoutUsername);
     self:Logout(self.players[logoutUsername], "玩家下线, 踢出最早下线玩家");
 end
 
@@ -437,7 +438,9 @@ function PlayerManager:GetPlayerEntityInfoList(player)
     for i = 1, #onlinePlayerList do 
         local username = onlinePlayerList[i];
         local player = self.players[username];
-        table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
+        if (player) then
+            table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
+        end
     end
 
     -- 获取离线用户列表
@@ -445,7 +448,11 @@ function PlayerManager:GetPlayerEntityInfoList(player)
     for i = 1, #offlinePlayerList do 
         local username = offlinePlayerList[i];
         local player = self.players[username];
-        table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
+        if (player) then
+            table.insert(playerEntityInfoList, player:GetPlayerEntityInfo());
+        else 
+            self:RemoveOfflinePlayer(username);
+        end
     end
 
     return playerEntityInfoList;

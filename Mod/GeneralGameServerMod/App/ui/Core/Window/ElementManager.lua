@@ -32,8 +32,10 @@ local Canvas = NPL.load("./Elements/Canvas.lua", IsDevEnv);
 local Component = NPL.load("../Vue/Component.lua", IsDevEnv);
 local Slot = NPL.load("../Vue/Slot.lua", IsDevEnv);
 
+local Blockly = NPL.load("../Blockly/Blockly.lua", IsDevEnv);
+
 local ElementManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-local ElementManagerDebug = GGS.Debug.GetModuleDebug("ElementManagerDebug").Disable();   --Enable  Disable
+local ElementManagerDebug = GGS.Debug.GetModuleDebug("ElementManagerDebug").Enable();   --Enable  Disable
 
 ElementManager.ScrollBar = NPL.load("./Controls/ScrollBar.lua", IsDevEnv);
 ElementManager.Text = NPL.load("./Controls/Text.lua", IsDevEnv);
@@ -59,15 +61,18 @@ function ElementManager:ctor()
 
     ElementManager:RegisterByTagName("Component", Component);
     ElementManager:RegisterByTagName("Slot", Slot);
+
+    ElementManager:RegisterByTagName("Blockly", Blockly);
 end
 
 function ElementManager:RegisterByTagName(tagname, class)
     ElementClassMap[string.lower(tagname)] = class;
-    ElementManagerDebug.Format("Register TagElement %s", tagname);
+    -- ElementManagerDebug.Format("Register TagElement %s", tagname);
 end
 
 function ElementManager:GetElementByTagName(tagname)
     local TagElement = ElementClassMap[string.lower(tagname)];
+    -- ElementManagerDebug.Format("GetElementByTagName TagName = %s", tagname);
     if (not TagElement) then ElementManagerDebug.Format("TagElement Not Exist, TagName = %s", tagname) end
     return TagElement or Element;
 end
