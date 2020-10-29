@@ -15,7 +15,7 @@ Input:Property("Block");                    -- 所属块
 Input:Property("Type");                     -- statement value dummy
 
 function Input:ctor()
-    self.fields = {};
+    self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount = 0, 0, 0, 0;
 end
 
 function Input:Init(block)
@@ -27,7 +27,6 @@ end
 function Input:GetUnitSize()
     return self:GetBlock():GetUnitSize();
 end
-
 
 function Input:Render(painter)
     for _, field in ipairs(self.fields) do

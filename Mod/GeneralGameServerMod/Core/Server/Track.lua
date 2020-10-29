@@ -14,8 +14,8 @@ local Track = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), comm
 
 Track:Property("World");
 
-local AreaSize = 5;
-local AreaMaxPositionCount = 1;
+local AreaSize = 10;
+local AreaMaxPositionCount = 5;
 local MaxPositionCount = 2000;
 local Area = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
 

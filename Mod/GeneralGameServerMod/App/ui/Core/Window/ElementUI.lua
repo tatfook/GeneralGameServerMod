@@ -404,6 +404,12 @@ function ElementUI:IsContainPoint(screenX, screenY)
     return left <= screenX and screenX <= right and top <= screenY and screenY <= bottom;
 end
 
+-- 获取指定点相对元素位置
+function ElementUI:GetRelPoint(screenX, screenY)
+    local sx, sy = self:GetScreenPos();
+    return screenX - sx, screenY - sy;
+end
+
 -- 获取滚动条的位置
 function ElementUI:GetScrollPos()
     local scrollX, scrollY = 0, 0;
