@@ -22,12 +22,14 @@ local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
 local Levels = NPL.load("./Level/Levels.lua", IsDevEnv);
+local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
+
 local Tutorial = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 Tutorial:Property("CodeEnv");          -- 代码执行环境
 Tutorial:Property("CodeBlock");        -- 代码方块
 Tutorial:Property("Level");
-
+Tutorial:Property("Context");
 function Tutorial:ctor()
     self.entities = {};  -- 实体列表
 end
@@ -35,7 +37,7 @@ end
 function Tutorial:Init(codeblock);
     self:SetCodeBlock(codeblock);
     self:SetCodeEnv(codeblock:GetCodeEnv());
-    
+    self:SetContext(TutorialContext:new());
     self:SetLevel(Levels.GetLevel("Level_0"):new():Init(self));
     return self;
 end

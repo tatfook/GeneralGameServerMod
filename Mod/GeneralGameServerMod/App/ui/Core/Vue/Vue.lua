@@ -39,9 +39,14 @@ function Vue.Register(tagname, tagclass)
     ElementManager:RegisterByTagName(tagname, Component.Extend(tagclass))
 end
 
+function Vue.SetPathAlias(alias, path)
+    Helper.SetPathAlias(alias, path);
+end
+
 -- 静态初始化
 local function StaticInit()
     Vue.Register("WindowTitleBar", "%ui%/Core/Components/WindowTitleBar.html");
 end
+
 
 StaticInit();

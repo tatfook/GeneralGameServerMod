@@ -125,19 +125,53 @@ function Window:CloseWindow()
 	end
 end
 
+function Window:InitWindowPosition(params)
+    -- 保存窗口大小
+    local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
+    if (self:IsFullScreen()) then return screenX, screenY, screenWidth, screenHeight end
+    local windoX, windowY, windowWidth, windowHeight = 0, 0, params.width or 600, params.height or 500;
+    local offsetX, offsetY = params.x or 0, params.y or 0;
+    -- *	- "_lt" align to left top of the screen
+    -- *	- "_lb" align to left bottom of the screen
+    -- *	- "_ct" align to center of the screen
+    -- *	- "_ctt": align to center top of the screen
+    -- *	- "_ctb": align to center bottom of the screen
+    -- *	- "_ctl": align to center left of the screen
+    -- *	- "_ctr": align to center right of the screen
+    -- *	- "_rt" align to right top of the screen
+    -- *	- "_rb" align to right bottom of the screen
+    -- *	- "_mt": align to middle top
+    -- *	- "_ml": align to middle left
+    -- *	- "_mr": align to middle right
+    -- *	- "_mb": align to middle bottom
+    -- *	- "_fi": align to left top and right bottom. This is like fill in the parent window.
+    -- *
+    -- *	the layout is given below:
+    -- *	_lt _mt _rt	
+    -- *	_ml _ct _mr 
+    -- *	_lb _mb _rb 
+    if (params.alignment == "_ctb") then
+        windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
+    elseif (params.alignment == "_ctt") then
+        windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY;
+    elseif (params.alignment == "_ctl") then
+        windowX, windowY = offsetX, offsetY + math.floor((screenHeight - windowHeight) / 2);
+    elseif (params.alignment == "_ctr") then
+        windowX, windowY = offsetX + screenWidth - windowWidth , offsetY + math.floor((screenHeight - windowHeight) / 2);
+    else
+        windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + math.floor((screenHeight - windowHeight) / 2);
+    end
+    return windowX, windowY, windowWidth, windowHeight;
+end
+
 -- 创建原生窗口
 function Window:CreateNativeWindow(params)
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
     local RootUIObject = ParaUI.GetUIObject("root");
-    local rootX, rootY, rootWidth, rootHeight = RootUIObject:GetAbsPosition();
-    -- WindowDebug.Format("CreateNativeWindow rootX = %s, rootY = %s, rootWidth = %s, rootHeight = %s", rootX, rootY, rootWidth, rootHeight);
-    if (not self:IsFullScreen()) then
-        rootX = (rootWidth - params.width) / 2;
-        rootY = (rootHeight - params.height) / 2;
-        rootWidth, rootHeight = params.width, params.height;
-    end
     -- 创建窗口
-    local native_window = ParaUI.CreateUIObject("container", "Window", "_lt", rootX, rootY, rootWidth, rootHeight);
+    local windoX, windowY, windowWidth, windowHeight = self:InitWindowPosition(params);
+    local native_window = ParaUI.CreateUIObject("container", "Window", "_lt", windoX, windowY, windowWidth, windowHeight);
+    -- WindowDebug.Format("CreateNativeWindow windoX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", windoX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
     native_window:SetField("InputMethodEnabled", true);

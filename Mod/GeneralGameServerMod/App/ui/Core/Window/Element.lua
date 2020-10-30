@@ -281,6 +281,7 @@ function Element:UpdateLayout()
     -- 是否正在更新布局
     if (self.isUpdateLayout) then return end
     self.isUpdateLayout = true;
+
     -- 布局更新前回调
     if (self:OnBeforeUpdateLayout()) then 
         self.isUpdateLayout = false;

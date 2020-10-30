@@ -5,14 +5,24 @@
 
 <script type="text/lua">
 -- 标题属性
-title = title or "窗口标题";
+title = GetAttrValue("title", "窗口标题", "string");
+
 -- 关闭窗口
 function close()
     CloseWindow();
 end
+
 -- 组件解析完成
 function OnReady()
 end
+
+-- 监听属性变更
+function OnAttrValueChange(attrName, attrValue)
+    if (attrName == "title") then
+        title = attrValue or "";
+    end
+end
+
 </script>
 
 <style>

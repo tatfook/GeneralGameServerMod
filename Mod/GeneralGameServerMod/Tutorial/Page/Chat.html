@@ -1,0 +1,49 @@
+<template class="container">
+    <WindowTitleBar v-bind:title="username"></WindowTitleBar>
+    <div style="columns: #000000;">{{text}}</div>
+    <div v-if="IsCanContinue()" onclick=ClickContinue>继续</div>
+</template>
+
+<script type="text/lua">
+RegisterComponent("WindowTitleBar", "%ui%/Core/Vue/Components/WindowTitleBar.html");
+-- 组件解析完成
+local index = 1;
+local DialogList = DialogList or {};
+
+-- 定义响应式变量
+username = "Paracraft";
+text = "";
+
+function ClickContinue()
+    local dialog = DialogList[index];
+    if (not IsCanContinue()) then return end
+    if (type(dialog) == "string") then 
+        username = "Paracraft";
+        text = dialog;
+    end
+    if (type(dialog) == "table") then
+        username = dialog.username or "Paracraft";
+        text = dialog.text or "";
+    end
+    index = index + 1;
+end
+
+function IsCanContinue()
+    return index <= (#DialogList);
+end
+
+function OnReady()
+    ClickContinue();
+end
+
+
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    padding: 0px 2px 2px 2px;
+    background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);
+}
+</style>

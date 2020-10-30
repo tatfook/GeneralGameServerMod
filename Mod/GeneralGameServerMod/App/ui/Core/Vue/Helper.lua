@@ -14,6 +14,7 @@ local Helper = (NPL and NPL.export) and NPL.export() or {};
 -- 路径简写
 local PathAliasMap = {
     ["ui"] = "Mod/GeneralGameServerMod/App/ui",
+    ["tutorial"] = "Mod/GeneralGameServerMod/Tutorial",
 }; 
 local FileCacheMap = {};
 

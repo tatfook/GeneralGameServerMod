@@ -118,9 +118,6 @@ function Text:OnUpdateLayout()
 	TextElementDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 
 	self:GetLayout():SetWidthHeight(width, height);
-
-	Text._super.OnUpdateLayout(self);
-	
     return true; 
 end
 

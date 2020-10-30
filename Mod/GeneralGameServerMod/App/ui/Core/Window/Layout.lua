@@ -219,7 +219,8 @@ function Layout:IsLayout()
 	local element = self:GetElement();
     local display = self:GetStyle().display;
     local width, height = self:GetWidthHeight();
-    if (not element:IsVisible() or width == 0 or height == 0 or display == "none") then return false end 
+    -- if (not element:IsVisible() or width == 0 or height == 0 or display == "none") then return false end 
+    if (not element:IsVisible() or display == "none") then return false end 
     return true;
 end
 -- 是否是定位元素
@@ -264,11 +265,16 @@ function Layout:PrepareLayout()
 	
 	-- 获取父元素宽高
 	local parentWidth, parentHeight = nil, nil;
-	if (parentLayout) then parentWidth, parentHeight = parentLayout:GetWidthHeight() end
-	
-    -- 父元素无宽高则不布局
-    if (parentWidth == 0 or parentHeight == 0) then return self:SetWidthHeight(0, 0) end 
+	if (parentLayout) then
+		parentWidth, parentHeight = parentLayout:GetWidthHeight();
+		if (not parentLayout:IsFixedSize()) then
+			parentWidth = parentLayout:IsFixedWidth() and parentWidth or nil;
+			parentHeight = parentLayout:IsFixedHeight() and parentHeight or nil;
+		end
+	end
 
+    -- 父元素无宽高则不布局
+    -- if (parentWidth == 0 or parentHeight == 0) then return self:SetWidthHeight(0, 0) end 
     -- 获取元素样式
 	local style = self:GetStyle();
    -- 数字最大最小宽高
@@ -354,7 +360,7 @@ function Layout:PrepareLayout()
 end
 
 -- 更新布局
-function Layout:Update()
+function Layout:Update(isUpdateWidthHeight)
 	local width, height = self:GetWidthHeight();
 	local maxWidth, maxHeight = self:GetMaxWidthHeight();
     local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
@@ -367,14 +373,18 @@ function Layout:Update()
 	self:UpdateRealContentWidthHeight();
 	local realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
 
-	width = width or (realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight) or 0;
-	height = height or (realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom) or 0;
+	if (isUpdateWidthHeight) then
+		width = if_else(self:IsFixedWidth(), width, realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight);
+		height = if_else(self:IsFixedHeight(), height, realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom);
+	else
+		width = width or (realContentWidth + paddingLeft + paddingRight + borderLeft + borderRight);
+		height = height or (realContentHeight + paddingTop + paddingBottom + borderTop + borderBottom);
+	end
 
-	-- 确定元素大小
 	width, height = math.min(width, maxWidth or width), math.min(height, maxHeight or height);
 	self:SetWidthHeight(width, height);
 
-	-- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
+	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
 
 	-- 再次回调
 	self:GetElement():OnRealContentSizeChange();
@@ -388,7 +398,7 @@ function Layout:Update()
 	if (parentLayout and not parentLayout:IsLayoutFinish()) then return end
 	
 	-- 父布局存在且不为固定宽高则需更新父布局重新计算宽高 
-	if (parentLayout and not parentLayout:IsFixedSize()) then return parentLayout:Update() end
+	if (parentLayout and not parentLayout:IsFixedSize()) then return parentLayout:Update(true) end
 
 	-- 父布局存在且为固定宽高则直接更新父布局的真实宽高即可
 	if (parentLayout and parentLayout:IsFixedSize()) then parentLayout:UpdateRealContentWidthHeight() end

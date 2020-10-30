@@ -264,7 +264,7 @@ end
 
 -- 初始化组件Scope
 function Component:InitComponentScope()
-    local scope = Scope:__new__(self:GetAttr()); 
+    local scope = Scope:__new__(); 
     scope:__set_metatable_index__(self:GetGlobalScope());
     self:SetComponentScope(scope);
     self:SetScope(scope);
@@ -305,7 +305,6 @@ function Component:ExecCode(code)
     if (type(code) ~= "string" or code == "") then return end
     local func, errmsg = loadstring(code);
     if (not func) then 
-        echo("===============================Exec Code Error=================================");
         return ComponentDebug("===============================Exec Code Error=================================", errmsg);
     end
     setfenv(func, self:GetComponentScope());
@@ -322,7 +321,7 @@ end
 
 -- 属性值更新
 function Component:OnAttrValueChange(attrName, attrValue)
-    self:ExecCode(string.format([[return type(OnAttrValueChange) == "function" and OnAttrValueChange("%s")]], attrName));
+    self:ExecCode(string.format([[return type(OnAttrValueChange) == "function" and OnAttrValueChange("%s", GetAttrValue("%s"))]], attrName, attrName));
 end
 
 -- 全局注册组件
