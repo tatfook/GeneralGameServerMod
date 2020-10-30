@@ -15,9 +15,9 @@ local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local TutorialContext = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.SceneContext.EditContext"), NPL.export());
 
 TutorialContext:Property({"Name", "TutorialContext"});
-TutorialContext:Property("HelperBlockId", 155);
+-- TutorialContext:Property("HelperBlockId", 155);
 -- following property is used by GameMode 
-TutorialContext:Property({"ModeHasJumpRestriction", true});
+-- TutorialContext:Property({"ModeHasJumpRestriction", true});
 
 function TutorialContext:ctor()
 	-- use the ending block (155) as the maker block
