@@ -14,8 +14,10 @@ local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Input = NPL.load("./Inputs/Input.lua", IsDevEnv);
 local Connection = NPL.load("./Connection.lua", IsDevEnv);
 
+local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
+local InputValue = NPL.load("./Inputs/Value.lua", IsDevEnv);
 
 local Block = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -26,7 +28,6 @@ Block:Property("Output");                   -- 输出链接
 Block:Property("PreviousStatement");        -- 上一条语句  nil "null", "string", "number", "boolean", ["string"]
 Block:Property("NextStatement");            -- 下一条语句
 Block:Property("Color");
-Block:Property("SpaceUnitCount", 2);        -- 字段间间距
 
 function Block:ctor()
     self.inputAndFields = {};                       -- 块内输入
@@ -36,6 +37,7 @@ function Block:ctor()
     self.contentWidthUnitCount, self.contentHeightUnitCount = 0, 0;
     self.widthUnitCount, self.heightUnitCount = 0, 0;
     self.leftUnitCount, self.topUnitCount = 0, 0;
+    self.left, self.top, self.width, self.height = 0, 0, 0, 0;
 end
 
 function Block:Init(blockly, opt)
@@ -45,7 +47,7 @@ function Block:Init(blockly, opt)
             {
                 name = "x",
                 type = "field_input",
-                text = ""
+                text = "输入框"
             }
         }, 
         color = StyleColor.ConvertTo16("rgb(37,175,244)"),
@@ -73,6 +75,7 @@ function Block:ParseMessageAndArg(opt)
     local message, arg = opt[messageIndex], opt[argIndex];
     while (message) do
         local startPos, len = 1, string.len(message);
+        table.insert(self.inputAndFields, FieldSpace:new():Init(self));     -- 起始加空白
         while(startPos <= len) do
             local pos = string.find(message, "%%", startPos);
             if (not pos) then pos = len + 1 end
@@ -84,30 +87,54 @@ function Block:ParseMessageAndArg(opt)
              -- 添加FieldLabel
             if (text ~= "") then
                 table.insert(self.inputAndFields, FieldLabel:new():Init(self, text));
+                table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
             end
             if (no and arg and arg[no]) then
                 -- 添加InputAndField
                 local inputField = arg[no];
                 if (inputField.type == "field_input" or inputField.type == "field_number") then
                     table.insert(self.inputAndFields, FieldInput:new():Init(self, inputField));
+                    table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
                 elseif (inputField.type == "input_dummy") then
                     table.insert(self.inputAndFields, InputDummy:new():Init(self, inputField));
                 elseif (inputField.type == "input_value") then
                     table.insert(self.inputAndFields, InputValue:new():Init(self, inputField));
+                    table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
                 elseif (inputField.type == "input_statement") then
                     table.insert(self.inputAndFields, InputStatement:new():Init(self, inputField));
                 end
             end
             startPos = pos + 1 + nolen;
         end
+        
         index = index + 1;
         messageIndex, argIndex = "message" .. tostring(index), "arg" .. tostring(index);
         message, arg = opt[messageIndex], opt[argIndex];
     end
 end
 
+function Block:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
+    local UnitSize = self:GetUnitSize();
+    self.widthUnitCount, self.heightUnitCount = widthUnitCount, heightUnitCount;
+    self.width, self.height = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
+end
+
+function Block:SetLeftTopUnitCount(leftUnitCount, topUnitCount)
+    local UnitSize = self:GetUnitSize();
+    self.leftUnitCount, self.topUnitCount = leftUnitCount, topUnitCount;
+    self.left, self.top = leftUnitCount * UnitSize, topUnitCount * UnitSize;
+end
+
 function Block:GetUnitSize()
     return self:GetBlockly():GetUnitSize();
+end
+
+function Block:GetSpaceUnitCount() 
+    return self:GetBlockly():GetSpaceUnitCount()
+end
+
+function Block:GetLineHeightUnitCount()
+    return self:GetBlockly():GetLineHeightUnitCount();
 end
 
 function Block:IsOutput()
@@ -134,8 +161,6 @@ function Block:Render(painter)
     local offsetX, offsetY = 0, 0;
     local UnitSize = self:GetUnitSize();
     local WidthUnitCount, HeightUnitCount = self.widthUnitCount, self.heightUnitCount;    
-    WidthUnitCount = math.max(WidthUnitCount, (self:GetPreviousStatement() or self:GetNextStatement()) and 16 or 8);
-    HeightUnitCount = math.max(HeightUnitCount, (self:GetPreviousStatement() or self:GetNextStatement()) and 12 or 10);
     -- 绘制凹陷部分
     painter:SetPen(self:GetColor());
     if (self:IsOutput()) then
@@ -170,10 +195,7 @@ function Block:Render(painter)
     end
 
     -- 内容区
-    local SpaceUnitCount= self:GetSpaceUnitCount();
-    painter:Translate(SpaceUnitCount * UnitSize, 0);   -- 上边
     self:RenderInputAndField(painter);
-    painter:Translate(-SpaceUnitCount * UnitSize, 0);   -- 上边
     painter:Translate(0, self.contentHeightUnitCount * UnitSize);
     offsetY = offsetY + self.contentHeightUnitCount * UnitSize;
 
@@ -216,7 +238,6 @@ end
 
 function Block:UpdateLayout()
     local UnitSize = self:GetUnitSize();
-    local SpaceUnitCount= self:GetSpaceUnitCount();
     local maxWidthUnitCount, maxHeightUnitCount = 0, 0;
     local curMaxWidthUnitCount, curMaxHeightUnitCount = 0, 0;
     local inputAndFieldCount = #(self.inputAndFields);
@@ -245,17 +266,28 @@ function Block:UpdateLayout()
         end
     end
 
-    self.contentWidthUnitCount, self.contentHeightUnitCount = maxWidthUnitCount + SpaceUnitCount, maxHeightUnitCount;
-    self.widthUnitCount = self.contentWidthUnitCount;
-    if (self:IsOutput()) then self.heightUnitCount = self.contentHeightUnitCount + 2;
-    elseif (self:IsStatement()) then self.heightUnitCount = self.contentHeightUnitCount + 4
+    self.contentWidthUnitCount, self.contentHeightUnitCount = maxWidthUnitCount, maxHeightUnitCount;
+
+    if (self:IsOutput()) then maxHeightUnitCount = maxHeightUnitCount + 2
+    elseif (self:IsStatement()) then maxHeightUnitCount = maxHeightUnitCount + 4
     end
 
+    maxWidthUnitCount = math.max(maxWidthUnitCount, self:IsStatement() and 16 or 8);
+    maxHeightUnitCount = math.max(maxHeightUnitCount, self:IsStatement() and 12 or 10);
+    self:SetWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
+    -- echo({self.contentWidthUnitCount, self.contentHeightUnitCount, self.widthUnitCount, self.heightUnitCount});
     if (self.nextBlock) then 
-        self.nextBlock.leftUnitCount = self.leftUnitCount;
-        self.nextBlock.topUnitCount = self.topUnitCount + self.heightUnitCount;
+        local leftUnitCount = self.leftUnitCount;
+        local topUnitCount = self.topUnitCount + self.heightUnitCount;
+        self.nextBlock:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
         self.nextBlock:UpdateLayout();
     end
 
-    return self.widthUnitCount, self.heightUnitCount;
+    return maxWidthUnitCount, maxHeightUnitCount;
+end
+
+
+function Block:GetMouseUI(x, y)
+    if (x < self.top or x > (self.top + self.height) or x < self.left or x > (self.left + self.height)) then return end
+
 end

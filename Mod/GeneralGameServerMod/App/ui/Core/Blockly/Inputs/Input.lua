@@ -5,30 +5,23 @@ Date: 2020/6/30
 Desc: G
 use the lib:
 -------------------------------------------------------
-local Input = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Input.lua");
+local Input = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Input.lua");
 -------------------------------------------------------
 ]]
+local InputField = NPL.load("../InputField.lua", IsDevEnv);
+local Input = commonlib.inherit(InputField, NPL.export());
 
-local Input = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-
-Input:Property("Block");                    -- 所属块
-Input:Property("Type");                     -- statement value dummy
+Input:Property("InputBlock");               -- 输入块
+Input:Property("Color");
 
 function Input:ctor()
-    self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount = 0, 0, 0, 0;
 end
 
 function Input:Init(block)
-    self:SetBlock(block);
-
+    Input._super.Init(self, block);
+    
     return self;
 end
 
-function Input:GetUnitSize()
-    return self:GetBlock():GetUnitSize();
-end
-
 function Input:Render(painter)
-    for _, field in ipairs(self.fields) do
-    end
 end

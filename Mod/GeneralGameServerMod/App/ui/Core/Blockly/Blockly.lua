@@ -18,16 +18,27 @@ local Block = NPL.load("./Block.lua", IsDevEnv);
 local Blockly = commonlib.inherit(Element, NPL.export());
 
 Blockly:Property("Name", "Blockly");
-Blockly:Property("UnitSize", 4);   -- 一个单元格4px  默认为4
+Blockly:Property("UnitSize", 4);              -- 一个单元格4px  默认为4
+Blockly:Property("SpaceUnitCount", 2);        -- 字段间间距
+Blockly:Property("LineHeightUnitCount", 8);   -- 每行内容高为8
 
 function Blockly:ctor()
     local block = Block:new():Init(self, {
-        message0 = "测 %1 你好",
+        message0 = "测 %1 你好 %2",
         arg0 = {
             {
                 name = "x",
                 type = "field_input",
-                text = ""
+                text = "输入框"
+            }, 
+            {
+                name = "x",
+                type = "input_value",
+                text = "输入框",
+                shadow = {
+                    type = "",
+                    value = "",
+                }
             }
         }, 
         color = StyleColor.ConvertTo16("rgb(37,175,244)"),
@@ -50,6 +61,8 @@ function Blockly:ctor()
         nextStatement = true,
     });
     self.blocks = {block};
+    self.offsetX = 0;
+    self.offsetY = 0;
 end
 
 function Blockly:RenderContent(painter)
@@ -63,14 +76,19 @@ function Blockly:RenderContent(painter)
     painter:Translate(-x, -y);
 end
 
-
 function Blockly:OnAfterUpdateLayout()
     for _, block in ipairs(self.blocks) do
         block:UpdateLayout();
     end
 end
 
-
 function Blockly:OnMouseDown(event)
-    local x, y = event.x, event.y;
+    local x, y = self:GetRelPoint(event.x, event.y);
+    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y);
+end
+
+function Blockly:GetMouseUI(x, y)
+    -- for _, block in ipairs(self.blocks) do
+    --     block:GetMouseUI();
+    -- end
 end

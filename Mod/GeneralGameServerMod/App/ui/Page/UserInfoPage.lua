@@ -5,7 +5,6 @@ local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keep
 local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
 local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
 local Encoding = commonlib.gettable("System.Encoding");
-local username = self.username or System.User.keepworkUsername or "xiaoyao";
 local SelfProjectList = {};
 
 -- 组件全局变量初始化
@@ -21,8 +20,12 @@ GetGlobalScope():Set("ProjectList", {});
 -- end, "ONLINE");
 
 -- 加载用户信息
-function LoadUserInfo(username)
-    local id = "kp" .. Encoding.base64(commonlib.Json.Encode({username=username}));
+function LoadUserInfo()
+    local payload = {};
+    if (self.userId) then payload.userId = self.userId 
+    elseif (self.username) then payload.username = self.username 
+    else  payload.username = System.User.keepworkUsername or "xiaoyao" end
+    local id = "kp" .. Encoding.base64(commonlib.Json.Encode(payload));
     -- 获取用户信息
     keepwork.user.getinfo({
         cache_policy = "access plus 0",
@@ -30,7 +33,7 @@ function LoadUserInfo(username)
     }, function(status, msg, data) 
         if (status ~= 200) then return echo("获取用户详情失败...") end
         local UserDetail = data;
-        echo(UserDetail)
+        -- echo(UserDetail)
         -- 设置知识豆
         _, _, _, UserDetail.bean = KeepWorkItemManager.HasGSItem(998);
 
@@ -89,4 +92,4 @@ function LoadUserInfo(username)
     end)
 end
 
-LoadUserInfo(username);
+LoadUserInfo();
