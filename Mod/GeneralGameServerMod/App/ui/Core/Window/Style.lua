@@ -323,8 +323,8 @@ end
 local complex_fields = {
 	["border"] = "border-width border-style border-color",
 	-- ["border-width"] = "border-top-width border-right-width border-bottom-width border-left-width",
-    ["padding"] = "padding-top padding-right padding-left padding-bottom",
-	["margin"] = "margin-top margin-right margin-left margin-bottom",
+    ["padding"] = "padding-top padding-right padding-bottom padding-left",
+	["margin"] = "margin-top margin-right margin-bottom margin-left ",
 	["overflow"] = "overflow-x, overflow-y",
 };
 
@@ -339,7 +339,7 @@ local function AddComplexStyleItem(style, name, value)
 	local names = commonlib.split(complex_fields[name], "%s");
     local values = commonlib.split(tostring(value), "%s");
     
-    if (name == "padding" or name == "margin" or name == "border-width") then
+	if (name == "padding" or name == "margin" or name == "border-width") then
 		values[1] = values[1] or 0;
 		values[4] = values[4] or values[2] or values[1];
         values[3] = values[3] or values[1];

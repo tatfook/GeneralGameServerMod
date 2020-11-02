@@ -122,7 +122,10 @@ function Window:CloseWindow()
     if(self:GetNativeWindow()) then
 		ParaUI.Destroy(self:GetNativeWindow().id);
 		self:SetNativeWindow(nil);
-	end
+    end
+    
+    local G = self:GetG();
+    if (type(G.OnClose) == "function") then G.OnClose() end
 end
 
 function Window:InitWindowPosition(params)
@@ -235,16 +238,19 @@ end
 function Window:GetWindowPosition()
     return self.windowX, self.windowY, self.windowWidth, self.windowHeight;
 end
+
 -- 设置窗口位置
 function Window:SetWindowPosition(x, y, w, h)
     local isChangeSize = self.windowWidth ~= w or self.windowHeight ~= h;
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = x, y, w, h;
     if (isChangeSize) then self:UpdateLayout() end
 end
+
 -- 获取元素相对屏幕的坐标
 function Window:GetScreenPosition()
     return self.screenX, self.screenY, self.screenWidth, self.screenHeight;
 end
+
 -- 窗口大小改变
 function Window:handleGeometryChangeEvent()
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = self:GetNativeWindow():GetAbsPosition();

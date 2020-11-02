@@ -12,7 +12,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Text = commonlib.inherit(Element, NPL.export());
 
-local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug").Disable();
+local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug").Disable();  -- Enable() Disable;
 
 Text:Property("Value");  -- 文本值
 Text:Property("Name", "Text");
@@ -89,12 +89,13 @@ function Text:OnUpdateLayout()
 	local layout, style = self:GetLayout(), self:GetStyle();
 	local parentLayout = self:GetParentElement():GetLayout();
 	local parentContentWidth, parentContentHeight = parentLayout:GetContentWidthHeight();
-	local width, height = layout:GetWidthHeight();
+	local width, height = layout:GetFixedWidthHeight();
 	local left, top = 0, 0;
 	local text = self:GetValue();
 
 	self.texts = {};
 
+	TextElementDebug("OnBeforeUpdateChildElementLayout", width, parentContentWidth);
 	if (style["text-wrap"] == "none") then
 		--  不换行
 		local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();

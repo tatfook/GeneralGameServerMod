@@ -8,9 +8,9 @@ use the lib:
 local Compile = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Vue/Compile.lua");
 -------------------------------------------------------
 ]]
+NPL.load("(gl)script/ide/timer.lua");
 
 local Scope = NPL.load("./Scope.lua");
-
 local Compile = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 local CompileDebug = GGS.Debug.GetModuleDebug("CompileDebug").Enable();   --Enable  Disable
 
@@ -33,15 +33,19 @@ Scope.__set_global_index__(function(obj, key)
 end)
 
 Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
-    -- CompileDebug.Format("__NewIndex key = %s, newVal = %s, oldVal = %s", key, newVal, oldVal);
     local dependItem = GenerateDependItem(obj, key);
+    -- CompileDebug.Format("__NewIndex key = %s, dependItem = %s, newVal = %s, oldVal = %s", key, dependItem, newVal, oldVal);
     if (not AllDependItemWatch[dependItem]) then return end
+    -- CompileDebug.Format("__NewIndex key = %s, dependItem = %s, newVal = %s, oldVal = %s", key, dependItem, newVal, oldVal);
     DependItemUpdateQueue[dependItem] = true;
     -- table.insert(DependItemUpdateQueue, dependItem)
-
     if (DependItemUpdateQueueTimer) then return end
     DependItemUpdateQueueTimer = commonlib.TimerManager.SetTimeout(function()  
-        for dependItem in pairs(DependItemUpdateQueue) do
+        DependItemUpdateQueueTimer = nil;   -- 定时并行执行的
+        local DependItemUpdateMap  = {};
+        for dependItem in pairs(DependItemUpdateQueue) do DependItemUpdateMap[dependItem] = true end
+        for dependItem in pairs(DependItemUpdateMap) do
+            DependItemUpdateQueue[dependItem] = nil;
             local objects = AllDependItemWatch[dependItem];
             for key, watchs in pairs(objects) do
                 for exp, func in pairs(watchs) do
@@ -49,8 +53,6 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
                 end
             end
         end
-        DependItemUpdateQueue = {};
-        DependItemUpdateQueueTimer = nil;
     end, 20)
 end)
 

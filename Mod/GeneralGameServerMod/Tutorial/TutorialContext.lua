@@ -15,73 +15,33 @@ local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local TutorialContext = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.SceneContext.EditContext"), NPL.export());
 
 TutorialContext:Property({"Name", "TutorialContext"});
--- TutorialContext:Property("HelperBlockId", 155);
--- following property is used by GameMode 
--- TutorialContext:Property({"ModeHasJumpRestriction", true});
-
-function TutorialContext:ctor()
-	-- use the ending block (155) as the maker block
-	-- mouse block picking is only valid when there is a marker block below. 
-	self:SetEditMarkerBlockId(155);
-end
-
--- virtual function: 
--- try to select this context. 
-function TutorialContext:OnSelect()
-	TutorialContext._super.OnSelect(self);
-end
-
--- virtual function: 
--- return true if we are not in the middle of any operation and fire unselected signal. 
--- or false, if we can not unselect the scene tool context at the moment. 
-function TutorialContext:OnUnselect()
-	TutorialContext._super.OnUnselect(self);
-	return true;
-end
-
-function TutorialContext:OnLeftLongHoldBreakBlock()
-	self:TryDestroyBlock(SelectionManager:GetPickingResult());
-end
+TutorialContext:Property("Tutorial");
 
 
--- virtual: 
-function TutorialContext:mousePressEvent(event)
-	TutorialContext._super.mousePressEvent(self, event);
-	if(event:isAccepted()) then
-		return
-	end
-
-	local click_data = self:GetClickData();
-	
-end
-
--- virtual: 
-function TutorialContext:mouseMoveEvent(event)
-	TutorialContext._super.mouseMoveEvent(self, event);
-	if(event:isAccepted()) then
-		return
-	end
-	local result = self:CheckMousePick();
+function TutorialContext:Init(tutorial)
+	self:SetTutorial(tutorial);
+	return self;
 end
 
 function TutorialContext:handleLeftClickScene(event, result)
-	TutorialContext._super.handleLeftClickScene(self, event, result);
-	local click_data = self:GetClickData();
+	local result = result or self:CheckMousePick()
+	local shift_pressed = event.shift_pressed;
+	local ctrl_pressed = event.ctrl_pressed;
+	local alt_pressed = event.alt_pressed;
+
+	-- 删除逻辑
+	if(not shift_pressed and not alt_pressed and not ctrl_pressed and result and result.blockX) then
+		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id};
+		if (not self:GetTutorial():IsCanLeftClickToDestroyBlock(data)) then return end
+	end
+
+	return TutorialContext._super.handleLeftClickScene(self, event, result);
 end
 
--- virtual: 
-function TutorialContext:mouseReleaseEvent(event)
-	TutorialContext._super.mouseReleaseEvent(self, event);
-	if(event:isAccepted()) then
-		return
+function TutorialContext:handleRightClickScene(event, result)
+	result = result or SelectionManager:GetPickingResult();
+	if(self.click_data.right_holding_time < 400 and result and result.blockX) then
+		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id};
+		if(not self:GetTutorial():IsCanRightClickToCreateBlock(data)) then return end
 	end
-end
-
-function TutorialContext:HandleGlobalKey(event)
-	local dik_key = event.keyname;
-	if(dik_key == "DIK_TAB") then
-		-- disable tab and shift tab key in tutorial mode.
-		event:accept();
-	end
-	return TutorialContext._super.HandleGlobalKey(self, event);
 end

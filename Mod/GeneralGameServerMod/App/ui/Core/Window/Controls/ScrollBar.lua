@@ -196,6 +196,8 @@ ScrollBar:Property("BaseStyle", {
         ["background-color"] = "#F1F1F1",
         ["bottom"] = "0px",
         ["right"] = "0px",
+        ["overflow-x"] = "none",
+        ["overflow-y"] = "none",
     }
 });
 
@@ -236,7 +238,11 @@ function ScrollBar:Init(xmlNode, window, parent)
 end
 
 function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth, contentHeight, scrollWidth, scrollHeight)
+    if (self.clientWidth == clientWidth and self.clientHeight == clientHeight and self.contentWidth == contentWidth and self.contentHeight == contentHeight and self.scrollWidth == scrollWidth and self.scrollHeight == scrollHeight) then return end
+    if (clientWidth < 0 or clientHeight < 0 or contentWidth < 0 or contentHeight < 0 or scrollWidth < 0 or scrollHeight < 0) then return end
+    
     self.clientWidth, self.clientHeight, self.contentWidth, self.contentHeight, self.scrollWidth, self.scrollHeight = clientWidth or 0, clientHeight or 0, contentWidth or 0, contentHeight or 0, scrollWidth or 0, scrollHeight or 0;
+    ScrollBarDebug.Format("SetScrollWidthHeight clientWidth = %s, clientHeight = %s, contentWidth = %s, contentHeight = %s, scrollWidth = %s, scrollHeight = %s", clientWidth, clientHeight, contentWidth, contentHeight, scrollWidth, scrollHeight);
 
     local style = self:GetStyle();
     local thumbSize, defaultScrollBarSize = 0, self:GetDefaultWidth();
@@ -266,7 +272,7 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
 
     self:UpdateLayout();
 
-    -- ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s, isPosition = %s", self:GetDirection(), self.width, self.height, thumbSize, self:GetLayout():IsPosition());
+    ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s, isPosition = %s", self:GetDirection(), self.width, self.height, thumbSize, self:GetLayout():IsPosition());
 end
 
 -- 滚动位置计算
@@ -278,6 +284,7 @@ function ScrollBar:OnScroll()
         self.scrollTop = self.thumb.top / self.thumb.maxTop * (self.scrollHeight - self.contentHeight);
     end
     self:GetParentElement():OnScroll(self);
+    -- DebugStack();
 end
 
 -- 布局更新完成重置元素几何大小

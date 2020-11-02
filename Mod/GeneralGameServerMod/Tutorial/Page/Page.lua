@@ -13,23 +13,23 @@ local Page = NPL.export();
 
 Vue.SetPathAlias("tutorial", "Mod/GeneralGameServerMod/Tutorial");
 
-local ChatPage = Vue:new();
-function Page.ShowChatPage(G, params)
+local DialogPage = Vue:new();
+function Page.ShowDialogPage(G, params)
     if (IsDevEnv) then
         if (_G.VuePage) then
             _G.VuePage:CloseWindow();
         end        
-        _G.VuePage = ChatPage;
+        _G.VuePage = DialogPage;
     end
 
     params = params or {};
-    params.url = "%tutorial%/Page/Chat.html";
+    params.url = "%tutorial%/Page/Dialog.html";
     params.G = G;
     params.alignment = "_ctb";
-    params.height = 200;
+    params.height = 240;
     params.width = 1000;
     params.draggable = false;
-    ChatPage:Show(params);
+    DialogPage:Show(params);
 
-    return ChatPage;
+    return DialogPage;
 end

@@ -98,6 +98,14 @@ end
 function Layout:GetSpaceWidthHeight(width, height)
 	return self.spaceWidth, self.spaceHeight;
 end
+-- 获取固定宽高
+function Layout:GetFixedWidthHeight()
+	local width, height = self:GetWidthHeight();
+	if (self:IsFixedSize()) then return width, height end
+	if (not self:IsFixedWidth()) then width = nil end
+	if (not self:IsFixedHeight()) then height = nil end
+	return width, height;
+end
 -- 设置区域宽高 非坐标 包含 padding border content
 function Layout:SetWidthHeight(width, height)
 	self.width, self.height = width, height;
@@ -392,6 +400,7 @@ function Layout:Update(isUpdateWidthHeight)
 	-- 设置布局完成
 	self:SetLayoutFinish(true);
 	
+	if (not self:IsUseSpace()) then return end
 	-- 子元素更新完成, 当父元素存在,非固定宽高时, 需要更新父布局使其有正确的宽高 
 	local parentLayout = self:GetParentLayout();
 	-- 父布局存在且在布局中则直接跳出
