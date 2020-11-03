@@ -38,11 +38,11 @@ function Tutorial:ctor()
     self.entities = {};  -- 实体列表
 end
 
-function Tutorial:Init(codeblock);
+function Tutorial:Init(codeblock)
     self:SetCodeBlock(codeblock);
     self:SetCodeEnv(codeblock:GetCodeEnv());
     self:SetContext(TutorialContext:new():Init(self));
-    self:SetLevel(Levels.GetLevel("Level_0"):new():Init(self));
+    -- self:SetLevel(Levels.GetLevel("Level_0"):new():Init(self));
 
     self.canDestroyBlockStrategy = {};
 

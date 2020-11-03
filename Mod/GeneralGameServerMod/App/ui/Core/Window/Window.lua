@@ -119,13 +119,13 @@ end
 
 -- 窗口关闭
 function Window:CloseWindow()
-    if(self:GetNativeWindow()) then
-		ParaUI.Destroy(self:GetNativeWindow().id);
-		self:SetNativeWindow(nil);
-    end
+    if (not self:GetNativeWindow()) then return end
+
+    ParaUI.Destroy(self:GetNativeWindow().id);
+    self:SetNativeWindow(nil);
     
     local G = self:GetG();
-    if (type(G.OnClose) == "function") then G.OnClose() end
+    if (G and type(G.OnClose) == "function") then G.OnClose() end
 end
 
 function Window:InitWindowPosition(params)

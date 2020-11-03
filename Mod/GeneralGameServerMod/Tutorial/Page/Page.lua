@@ -13,14 +13,10 @@ local Page = NPL.export();
 
 Vue.SetPathAlias("tutorial", "Mod/GeneralGameServerMod/Tutorial");
 
-local DialogPage = Vue:new();
-function Page.ShowDialogPage(G, params)
-    if (IsDevEnv) then
-        if (_G.VuePage) then
-            _G.VuePage:CloseWindow();
-        end        
-        _G.VuePage = DialogPage;
-    end
+function Page:ShowDialogPage(G, params)
+    if (not self.DialogPage) then self.DialogPage = Vue:new() end
+
+    self.DialogPage:CloseWindow();
 
     params = params or {};
     params.url = "%tutorial%/Page/Dialog.html";
@@ -29,7 +25,7 @@ function Page.ShowDialogPage(G, params)
     params.height = 240;
     params.width = 1000;
     params.draggable = false;
-    DialogPage:Show(params);
+    self.DialogPage:Show(params);
 
-    return DialogPage;
+    return self.DialogPage;
 end
