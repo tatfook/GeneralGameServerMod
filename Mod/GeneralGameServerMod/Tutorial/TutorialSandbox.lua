@@ -11,6 +11,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 local SceneContextManager = commonlib.gettable("System.Core.SceneContextManager");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
+local BlockStrategy = NPL.load("./BlockStrategy.lua", IsDevEnv);
 local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
 local Page = NPL.load("./Page/Page.lua", IsDevEnv);
 
@@ -95,7 +96,9 @@ end
 
 -- 添加清除策略
 function TutorialSandbox:AddLeftClickToDestroyBlockStrategy(strategy)
+    strategy = BlockStrategy:new():Init(strategy);
     self:GetLeftClickToDestroyBlockStrategy()[strategy] = strategy;
+    return strategy;
 end
 
 -- 移除清除策略
@@ -105,7 +108,9 @@ end
 
 -- 添加创建策略
 function TutorialSandbox:AddRightClickToCreateBlockStrategy(strategy)
+    strategy = BlockStrategy:new():Init(strategy);
     self:GetRightClickToCreateBlockStrategy()[strategy] = strategy;
+    return strategy;
 end
 
 -- 移除创建策略
@@ -131,19 +136,8 @@ end
 function TutorialSandbox:IsCanLeftClickToDestroyBlock(data)
     local strategy = self:GetLeftClickToDestroyBlockStrategy();
     if (type(strategy) ~= "table") then return end
-    for _, obj in pairs(strategy) do 
-        if (obj.type == "BlockPos" and obj.blockX == data.blockX and obj.blockY == data.blockY and obj.blockZ == data.blockZ) then return true end
-        if (obj.type == "BlockId" and obj.blockId == data.blockId) then return true end
-        if (obj.type == "BlockPosId" and obj.blockId == data.blockId and obj.blockX == data.blockX and obj.blockY == data.blockY and obj.blockZ == data.blockZ) then return true end
-        if (obj.type == "BlockIdRange") then
-            local id, min, max = data.blockId or 0, obj.minBlockId or 0, obj.maxBlockId or 0;
-            if (id >= min and id <= max) then return true end
-        end 
-        if (obj.type == "BlockPosRange") then
-            local minX, maxX, minY, maxY, minZ, maxZ = obj.minBlockX or 0, obj.maxBlockX or 0, obj.minBlockY or 0, obj.maxBlockY or 0, obj.minBlockZ or 0, obj.maxBlockZ or 0;
-            local x, y, z = data.blockX or 0, data.blockY or 0, data.blockZ or 0;
-            if (x >= minX and x <= maxX and y >= minY and y <= maxY and z >= minZ and z <= maxZ) then return true end
-        end
+    for _, item in pairs(strategy) do 
+        if (item:IsMatch(data)) then return true end
     end
 
     return false;
@@ -153,19 +147,8 @@ end
 function TutorialSandbox:IsCanRightClickToCreateBlock(data)
     local strategy = self:GetRightClickToCreateBlockStrategy();
     if (type(strategy) ~= "table") then return end
-    for _, obj in pairs(strategy) do 
-        if (obj.type == "BlockPos" and obj.blockX == data.blockX and obj.blockY == data.blockY and obj.blockZ == data.blockZ) then return true end
-        if (obj.type == "BlockId" and obj.blockId == data.blockId) then return true end
-        if (obj.type == "BlockPosId" and obj.blockId == data.blockId and obj.blockX == data.blockX and obj.blockY == data.blockY and obj.blockZ == data.blockZ) then return true end
-        if (obj.type == "BlockIdRange") then
-            local id, min, max = data.blockId or 0, obj.minBlockId or 0, obj.maxBlockId or 0;
-            if (id >= min and id <= max) then return true end
-        end 
-        if (obj.type == "BlockPosRange") then
-            local minX, maxX, minY, maxY, minZ, maxZ = obj.minBlockX or 0, obj.maxBlockX or 0, obj.minBlockY or 0, obj.maxBlockY or 0, obj.minBlockZ or 0, obj.maxBlockZ or 0;
-            local x, y, z = data.blockX or 0, data.blockY or 0, data.blockZ or 0;
-            if (x >= minX and x <= maxX and y >= minY and y <= maxY and z >= minZ and z <= maxZ) then return true end
-        end
+    for _, item in pairs(strategy) do 
+        if (item:IsMatch(data)) then return true end
     end
 
     return false;
