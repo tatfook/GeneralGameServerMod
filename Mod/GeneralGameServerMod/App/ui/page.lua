@@ -52,10 +52,9 @@ function page.ShowVueTestPage(G, params)
     end
 
     params = params or {};
-    params.url = "%ui%/Core/Vue/Example/Test.html";
+    params.url = params.url or "%ui%/Core/Vue/Example/Test.html";
     params.G = G;
     VueTestPage:Show(params);
-
     return VueTestPage;
 end
 

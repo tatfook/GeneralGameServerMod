@@ -171,6 +171,7 @@ function Scope:__call_index_and_newindex_callback__(scope, key)
         self:__call_global_newindex_callback__(val, nil, val);
     end
 end
+
 -- 读取回调
 function Scope:__call_index_callback__(scope, key)
     self:__call_global_index_callback__(scope, key);
@@ -192,7 +193,7 @@ function Scope:__get__(scope, key)
     -- print("__index", scope, key);
 
     -- 无法正确识别数组更新(rawset, table.insert) 故当对scope类型值操作时, 统一出发当前scope的读取, 设置回调
-    self:__call_index_and_newindex_callback__(scope, key);
+    -- self:__call_index_and_newindex_callback__(scope, key);
     
     -- 触发回调
     self:__call_index_callback__(scope, key);
@@ -229,7 +230,6 @@ function Scope:__set__(scope, key, val)
         if (self.__inner_can_set_attrs__[key]) then self[key] = val end
         return;
     end
-
     -- print("__newindex", scope, key, val);
     -- 触发旧值回调, 旧值的表地址可能为监听key 需要先触发一次
     self:__call_index_and_newindex_callback__(scope, key);
@@ -242,7 +242,7 @@ function Scope:__set__(scope, key, val)
     self:__call_index_and_newindex_callback__(scope, key);
 
     -- 相同直接退出
-    if (oldval == val) then return end
+    if (oldval == val and type(val) ~= "table") then return end
 
     -- 触发更新回调
     self:__call_newindex_callback__(scope, key, val, oldval);

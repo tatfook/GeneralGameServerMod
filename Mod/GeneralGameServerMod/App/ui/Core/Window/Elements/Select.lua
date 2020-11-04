@@ -78,7 +78,7 @@ Select:Property("BaseStyle", {
         ["background-color"] = "#ffffff",
         ["width"] = "120px",
         ["height"] = "28px",
-        ["padding"] = "4px 0px"
+        ["padding"] = "4px"
     }
 });
 

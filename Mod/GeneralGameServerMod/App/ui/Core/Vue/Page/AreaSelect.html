@@ -16,9 +16,10 @@
 </template>
 
 <script type="text/lua">
+RegisterComponent("Select", "%ui%/Core/Vue/Components/Select.html");
+
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
-RegisterComponent("Select", "%ui%/Core/Vue/Components/Select.html");
 local KeepworkServiceSchoolAndOrg = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/SchoolAndOrg.lua");
 local states, citys, countys = {}, {}, {};
 local country = {id = 1, name = "中国"};
@@ -45,6 +46,7 @@ local function loadStates(callback)
         for key, item in ipairs(states) do
             table.insert(stateOptions, {value = item.id, label = item.name});
         end
+        stateOptions = stateOptions;
         if (callback) then callback() end
     end);
 end
@@ -57,6 +59,7 @@ local function loadCitys(callback)
         for key, item in ipairs(citys) do
             table.insert(cityOptions, {value = item.id, label = item.name});
         end
+        cityOptions = cityOptions;
         if (callback) then callback() end
     end)
 end
@@ -69,6 +72,7 @@ local function loadCountys(callback)
         for key, item in ipairs(countys) do
             table.insert(countyOptions, {value = item.id, label = item.name});
         end
+        countyOptions = countyOptions;
         if (callback) then callback() end
     end)
 end
