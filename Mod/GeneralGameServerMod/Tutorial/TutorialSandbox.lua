@@ -140,7 +140,7 @@ function TutorialSandbox:IsCanLeftClickToDestroyBlock(data)
             if (id >= min and id <= max) then return true end
         end 
         if (obj.type == "BlockPosRange") then
-            local minX, maxX, minY, maxY, minZ, maxZ = obj.minX or 0, obj.maxX or 0, obj.minY or 0, obj.maxY or 0, obj.minZ or 0, obj.maxZ or 0;
+            local minX, maxX, minY, maxY, minZ, maxZ = obj.minBlockX or 0, obj.maxBlockX or 0, obj.minBlockY or 0, obj.maxBlockY or 0, obj.minBlockZ or 0, obj.maxBlockZ or 0;
             local x, y, z = data.blockX or 0, data.blockY or 0, data.blockZ or 0;
             if (x >= minX and x <= maxX and y >= minY and y <= maxY and z >= minZ and z <= maxZ) then return true end
         end
@@ -162,7 +162,7 @@ function TutorialSandbox:IsCanRightClickToCreateBlock(data)
             if (id >= min and id <= max) then return true end
         end 
         if (obj.type == "BlockPosRange") then
-            local minX, maxX, minY, maxY, minZ, maxZ = obj.minX or 0, obj.maxX or 0, obj.minY or 0, obj.maxY or 0, obj.minZ or 0, obj.maxZ or 0;
+            local minX, maxX, minY, maxY, minZ, maxZ = obj.minBlockX or 0, obj.maxBlockX or 0, obj.minBlockY or 0, obj.maxBlockY or 0, obj.minBlockZ or 0, obj.maxBlockZ or 0;
             local x, y, z = data.blockX or 0, data.blockY or 0, data.blockZ or 0;
             if (x >= minX and x <= maxX and y >= minY and y <= maxY and z >= minZ and z <= maxZ) then return true end
         end
