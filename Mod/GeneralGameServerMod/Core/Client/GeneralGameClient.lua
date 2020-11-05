@@ -357,8 +357,10 @@ function GeneralGameClient:handleWorldServer(packetWorldServer)
     end
 
     -- 登录世界
-    self:GetWorld():Login(options);
-
+    if (self:GetWorld()) then 
+        self:GetWorld():Login(options);
+    end
+    
     -- 关闭控制服务器的链接
     self.controlServerConnection:CloseConnection();
 end

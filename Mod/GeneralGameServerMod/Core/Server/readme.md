@@ -64,3 +64,101 @@ GeneralGameServer.Server.WorkerServer.outerPort 工作节点的内网端口
 **tips**: 当只有一个节点时isControlServer,isWorkerServer应同时为真, ControlServer, WorkerServer 相应IP应该是相同的.
 
 ## 负载策略
+
+```xml
+<!-- 控制主机 isWorkerServer=true同时也是工作主机, 集群方式建议关闭, 单独开工作进程-->
+<Server 
+    isControlServer=true
+    isWorkerServer=true
+    maxClientCount=8000
+    maxWorldCount=200>
+    <!-- 控制节点配置  内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
+      innerIp 内网IP 
+      innerPort 内网端口 
+      outerIp 外网IP
+      outerPort 外网端口 
+    -->
+    <ControlServer
+      innerIp="129.204.55.98"
+      innerPort="9900"
+      outerIp="129.204.55.98"
+      outerPort="9900">
+    </ControlServer>   
+    <!-- 控制节点配置 内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
+      innerIp 内网IP 
+      innerPort 内网端口 
+      outerIp 外网IP
+      outerPort 外网端口 
+    -->
+    <WorkerServer
+      innerIp="129.204.55.98"
+      innerPort="9900"
+      outerIp="129.204.55.98"
+      outerPort="9900">
+    </WorkerServer>
+</Server>
+
+<!-- 工作主机1 -->
+<Server 
+    isControlServer=false
+    isWorkerServer=true
+    maxClientCount=1000
+    maxWorldCount=200>
+    <!-- 控制节点配置  内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
+      innerIp 内网IP 
+      innerPort 内网端口 
+      outerIp 外网IP
+      outerPort 外网端口 
+    -->
+    <ControlServer
+      innerIp="129.204.55.98"
+      innerPort="9900"
+      outerIp="129.204.55.98"
+      outerPort="9900">
+    </ControlServer>   
+    <!-- 控制节点配置 内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
+      innerIp 内网IP 
+      innerPort 内网端口 
+      outerIp 外网IP
+      outerPort 外网端口 
+    -->
+    <WorkerServer
+      innerIp="129.204.55.98"
+      innerPort="9901"
+      outerIp="129.204.55.98"
+      outerPort="9901">
+    </WorkerServer>
+</Server>
+
+<!-- 工作主机2 -->
+<Server 
+    isControlServer=false
+    isWorkerServer=true
+    maxClientCount=1000
+    maxWorldCount=200>
+    <!-- 控制节点配置  内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
+      innerIp 内网IP 
+      innerPort 内网端口 
+      outerIp 外网IP
+      outerPort 外网端口 
+    -->
+    <ControlServer
+      innerIp="129.204.55.98"
+      innerPort="9900"
+      outerIp="129.204.55.98"
+      outerPort="9900">
+    </ControlServer>   
+    <!-- 控制节点配置 内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
+      innerIp 内网IP 
+      innerPort 内网端口 
+      outerIp 外网IP
+      outerPort 外网端口 
+    -->
+    <WorkerServer
+      innerIp="129.204.55.98"
+      innerPort="9902"
+      outerIp="129.204.55.98"
+      outerPort="9902">
+    </WorkerServer>
+</Server>
+```

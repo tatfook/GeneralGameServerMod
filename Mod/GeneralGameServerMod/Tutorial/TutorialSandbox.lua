@@ -39,6 +39,10 @@ function TutorialSandbox:Reset()
     self.allLoadFinishCallback = nil;      -- 全部加载完成回调
 
     GameLogic.GetCodeGlobal():GetCurrentGlobals()["TutorialSandbox"] = self;
+
+    GameLogic.options.CanJumpInWater = true;
+    GameLogic.options.CanJump = true;
+    GameLogic.options.CanJumpInAir = true;
 end
 
 function TutorialSandbox:OnWorldLoaded()
@@ -46,6 +50,14 @@ function TutorialSandbox:OnWorldLoaded()
 end
 
 function TutorialSandbox:OnWorldUnloaded()
+end
+
+function TutorialSandbox:SetCanFly(bFly)
+    self:GetContext():SetCanFly(bFly);
+end
+
+function TutorialSandbox:SetCanJump(bJump)
+    self:GetContext():SetCanJump(bJump);
 end
 
 function TutorialSandbox:SetLoadItems(loadItems, callback)
@@ -94,6 +106,11 @@ function TutorialSandbox:GetPlayer()
     return EntityManager.GetPlayer();
 end
 
+-- 获取玩家库存
+function TutorialSandbox:GetPlayerInventory()
+    return self:GetPlayer().inventory;
+end
+
 -- 添加清除策略
 function TutorialSandbox:AddLeftClickToDestroyBlockStrategy(strategy)
     strategy = BlockStrategy:new():Init(strategy);
@@ -121,7 +138,7 @@ end
 -- 激活教学上下文
 function TutorialSandbox:ActiveTutorialContext()
     local context = SceneContextManager:GetCurrentContext();
-    if (context ~= self:GetContext()) then self:SetLastContext(context) end
+    if (not context:isa(TutorialContext)) then self:SetLastContext(context) end
     self:GetContext():activate();
 end
 
