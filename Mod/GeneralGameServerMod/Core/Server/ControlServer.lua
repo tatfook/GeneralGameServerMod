@@ -67,7 +67,6 @@ function ControlServer:handleWorldServer(packetWorldServer)
     -- 最后选择控制服务器
     local server, workServer, controlServer = nil, nil, nil; -- 设置最大值
     local serverMaxClientCount = Config.Server.maxClientCount;
-    local worldMaxClientCount = Config.World.maxClientCount;
     local curTick = os.time();
     local realWorldKey, worldClientCount = worldKey, nil;
     for key, svr in pairs(servers) do
@@ -76,7 +75,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
         if (isAlive and svr.totalClientCount < svr.maxClientCount) then 
             -- 优先找已存在的世界 且世界人数未满 世界人数最少
             for key, count in pairs(svr.totalWorldClientCounts) do
-                if (string.sub(key, 1, worldKeyLength) == worldKey and count < worldMaxClientCount and (not worldClientCount or worldClientCount > count)) then
+                if (string.sub(key, 1, worldKeyLength) == worldKey and (not worldClientCount or worldClientCount > count)) then
                     worldClientCount = count;
                     server = svr;
                     realWorldKey = key;
@@ -92,7 +91,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
     if (server) then
         packetWorldServer.ip = server.outerIp;
         packetWorldServer.port = server.outerPort;
-        packetWorldServer.worldKey = realWorldKey;
+        -- packetWorldServer.worldKey = realWorldKey;
     else 
         GGS.WARN.Format("世界key: %s 无可用服务", worldKey);
     end
