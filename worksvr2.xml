@@ -11,6 +11,7 @@
   -->
   <Server 
     listenIp="0.0.0.0" 
+    listenPort="9000"
     isControlServer=true
     isWorkerServer=true
     maxClientCount=8000
@@ -99,9 +100,9 @@
 <GeneralGameServerDev>
   <Server 
     listenIp="0.0.0.0" 
-    isControlServer=true
-    isWorkerServer=false
-    maxClientCount=100
+    isControlServer=false
+    isWorkerServer=true
+    maxClientCount=2
     maxWorldCount=200>
     <ControlServer
       innerIp="127.0.0.1"
@@ -111,9 +112,9 @@
     </ControlServer>
     <WorkerServer
       innerIp="127.0.0.1"
-      innerPort="9000"
+      innerPort="9002"
       outerIp="127.0.0.1"
-      outerPort="9000">
+      outerPort="9002">
     </WorkerServer>
   </Server>
   <World 

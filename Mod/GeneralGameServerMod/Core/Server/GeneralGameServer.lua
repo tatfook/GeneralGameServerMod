@@ -65,11 +65,11 @@ function GeneralGameServer:Start()
 	local listenIp = Config.Server.listenIp;
 	local listenPort = Config.Server.listenPort;
 	if (Config.Server.isControlServer) then
-		listenIp = listenIp or Config.Server.ControlServer.innerIp or Config.Server.ControlServer.outerIp;
-		listenPort = listenPort or Config.Server.ControlServer.listenPort or Config.Server.ControlServer.listenPort;
+		listenIp = listenIp or Config.ControlServer.innerIp or Config.ControlServer.outerIp;
+		listenPort = listenPort or Config.ControlServer.innerPort or Config.ControlServer.outerPort;
 	else
-		listenIp = listenIp or Config.Server.WorkerServer.innerIp or Config.Server.WorkerServer.outerIp;
-		listenPort = listenPort or Config.Server.WorkerServer.listenPort or Config.Server.WorkerServer.listenPort;
+		listenIp = listenIp or Config.WorkerServer.innerIp or Config.WorkerServer.outerIp;
+		listenPort = listenPort or Config.WorkerServer.innerPort or Config.WorkerServer.outerPort;
 	end
 
     NPL.StartNetServer(listenIp, tostring(listenPort));

@@ -21,7 +21,6 @@ function Config:StaticInit()
     -- 服务配置
     self.Server = {
         listenIp="0.0.0.0", 
-        listenPort="9000",
         isControlServer=true,
         isWorkerServer=true,
         maxClientCount=8000,
@@ -91,11 +90,11 @@ end
 -- 加载配置文件
 function Config:LoadConfig(filename)
     filename = filename or "config.xml"; -- 取当前目录下config.xml
-
+    GGS.INFO.Format("----------------load config file: %s--------------", filename);
     -- 加载配置文件
     local xmlRoot = ParaXML.LuaXML_ParseFile(filename);
     local pathPrefix = GGS.IsDevEnv and "/GeneralGameServerDev" or "/GeneralGameServer";
-    if (not xmlRoot) then return GGS.Error.Format("failed loading paracraft server config file %s", filename) end
+    if (not xmlRoot) then return GGS.ERROR.Format("failed loading paracraft server config file %s", filename) end
 
     -- 服务器配置
     local Server = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Server");
@@ -128,7 +127,6 @@ function Config:LoadConfig(filename)
             GGS.Debug.DisableModule(key);
         end
     end
-    echo(GGS.Debug.GetModuleLogEnableMap());
 end
 
 -- 加载配置

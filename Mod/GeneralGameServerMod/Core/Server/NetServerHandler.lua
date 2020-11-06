@@ -129,6 +129,9 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     if (self:GetPlayer():IsSyncBlock()) then
         self:SendPacketToPlayer(Packets.PacketGeneral:new():Init({action = "SyncBlock", data = {state = "SyncBlock_Begin"}}));
     end
+
+    -- 更新服务器信息到控制节点
+    self:GetWorkerServer():SendServerInfo();
 end
 
 -- 同步玩家信息列表

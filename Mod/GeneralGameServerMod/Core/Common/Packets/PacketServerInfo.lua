@@ -24,8 +24,10 @@ function PacketServerInfo:Init(svrInfo)
     self.outerIp = svrInfo.outerIp;                 -- 外网IP
 	self.outerPort = svrInfo.outerPort;             -- 外网Port 
 	self.totalWorldClientCounts = svrInfo.totalWorldClientCounts;                   -- 服务器世界 
-	self.totalWorldCount = svrInfo.totalWorldCount;           -- 世界的数量
-	self.totalClientCount = svrInfo.totalClientCount;         -- 客户端的数量
+	self.totalWorldCount = svrInfo.totalWorldCount;                                 -- 世界的数量
+	self.totalClientCount = svrInfo.totalClientCount;                               -- 客户端的数量
+	self.maxClientCount = svrInfo.maxClientCount;                                   -- 最大客户端数
+	
 	return self;
 end
 

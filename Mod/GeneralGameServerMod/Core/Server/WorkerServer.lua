@@ -80,6 +80,7 @@ function WorkerServer:SendServerInfo()
         innerPort = self.innerPort,             -- 内网Port
         outerIp = self.outerIp,                 -- 外网IP
         outerPort = self.outerPort,             -- 外网Port 
+        maxClientCount = Config.Server.maxClientCount, 
     }));
 end
 

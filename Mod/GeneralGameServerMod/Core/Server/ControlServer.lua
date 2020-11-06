@@ -41,6 +41,7 @@ function ControlServer:handleServerInfo(packetServerInfo)
 
     server.isControlServer = packetServerInfo.isWorkerServer == nil and false or packetServerInfo.isWorkerServer;
     server.isWorkerServer = packetServerInfo.isWorkerServer == nil and true or packetServerInfo.isWorkerServer;
+    server.maxClientCount = packetServerInfo.maxClientCount or Config.Server.maxClientCount;
     server.totalWorldCount = packetServerInfo.totalWorldCount or 0;
     server.totalClientCount = packetServerInfo.totalClientCount or 0;
     server.totalWorldClientCounts = packetServerInfo.totalWorldClientCounts or 0;
@@ -65,14 +66,14 @@ function ControlServer:handleWorldServer(packetWorldServer)
     -- 其次选择客户端最少的服务器
     -- 最后选择控制服务器
     local server, workServer, controlServer = nil, nil, nil; -- 设置最大值
-    local serverMaxClientCount = tonumber(Config.Server.maxClientCount);
-    local worldMaxClientCount = tonumber(Config.World.maxClientCount);
+    local serverMaxClientCount = Config.Server.maxClientCount;
+    local worldMaxClientCount = Config.World.maxClientCount;
     local curTick = os.time();
     local realWorldKey, worldClientCount = worldKey, nil;
     for key, svr in pairs(servers) do
         local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
         -- 忽略已挂服务器或超负荷服务器
-        if (isAlive and svr.totalClientCount < serverMaxClientCount) then 
+        if (isAlive and svr.totalClientCount < svr.maxClientCount) then 
             -- 优先找已存在的世界 且世界人数未满 世界人数最少
             for key, count in pairs(svr.totalWorldClientCounts) do
                 if (string.sub(key, 1, worldKeyLength) == worldKey and count < worldMaxClientCount and (not worldClientCount or worldClientCount > count)) then
