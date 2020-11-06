@@ -20,34 +20,41 @@ local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 -- 对象定义
 local WorldManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager"));
 
--- 生成世界KEY
-function WorldManager:GenerateWorldKey(worldId, worldName)
-    return string.format("%s_%s", worldId, worldName or "");
-end
-
 -- 世界管理对象
 function WorldManager:ctor()
     self.worldMap = {};
 end
 
--- 获取世界KEY
-function WorldManager:GetWorldKey(worldId, worldName, no)        
-    local worldKey = self:GenerateWorldKey(worldId, worldName);
-    if (no) then
-        worldKey = string.format("%s_%s", worldKey, no);
-    end
+-- 生成世界KEY
+function WorldManager:GenerateWorldKey(worldId, worldName)
+    return string.format("%s_%s", worldId, worldName or "");
+end
 
+-- 世界Key是否可用
+function WorldManager:IsAvailableWorldKey(worldKey)
     local world = self.worldMap[worldKey];
     if (world and world:GetOnlineClientCount() >= world:GetMaxClientCount()) then
-        return self:GetWorldKey(worldId, worldName, (no or 0) + 1);
+        return false;
     end
+    return true;
+end
+
+-- 获取世界KEY
+function WorldManager:GetWorldKey(worldId, worldName, no, IsAvailableWorldKey)        
+    local worldKey = self:GenerateWorldKey(worldId, worldName);
+    if (no) then worldKey = string.format("%s_%s", worldKey, no) end
+
+    -- 优先使用自定义识别函数
+    local isAvailable = self:IsAvailableWorldKey(worldKey); 
+    if (type(IsAvailableWorldKey) == "function") then isAvailable = IsAvailableWorldKey(worldKey) end
+    if (not isAvailable) then return self:GetWorldKey(worldId, worldName, (no or 0) + 1, IsAvailableWorldKey) end
 
     return worldKey;
 end
 
 -- 获取指定世界
-function WorldManager:GetWorld(worldId, worldName, worldType, isNewNoExist)
-    local worldKey = self:GetWorldKey(worldId, worldName);
+function WorldManager:GetWorld(worldId, worldName, worldType, isNewNoExist, worldKey)
+    worldKey = worldKey or self:GetWorldKey(worldId, worldName);
     if (not self.worldMap[worldKey] and isNewNoExist) then
         self.worldMap[worldKey] = World:new():Init(worldId, worldName, worldType, worldKey);
     end

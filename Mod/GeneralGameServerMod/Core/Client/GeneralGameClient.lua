@@ -351,6 +351,8 @@ function GeneralGameClient:handleWorldServer(packetWorldServer)
     local options = self:GetOptions();
     options.ip = packetWorldServer.ip;
     options.port = packetWorldServer.port;
+    options.worldKey = packetWorldServer.worldKey;
+
     if (not options.ip or not options.port) then
         GGS.INFO("服务器繁忙, 暂无合适的世界服务器提供");
         return;

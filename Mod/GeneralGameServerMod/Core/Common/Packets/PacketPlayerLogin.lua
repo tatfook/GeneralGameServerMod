@@ -29,6 +29,7 @@ function PacketPlayerLogin:Init(packet)
 	self.worldId = packet.worldId;    -- 世界ID
 	self.worldName = packet.worldName; -- 世界名
 	self.worldType = packet.worldType; -- 世界类型
+	self.worldKey = packet.worldKey;   -- 世界Key
 	self.options = packet.options;     -- 玩家选项信息
 
 	return self;

@@ -51,9 +51,9 @@ end
 function NetServerHandler:IsAllowLoginWorld(worldId)
     local totalClientCount = self:GetWorldManager():GetOnlineClientCount();
     local worldClientCount = self:GetWorld() and self:GetWorld():GetOnlineClientCount() or 0;
-    if (totalClientCount >= self:GetWorkerServer():GetMaxClientCount()) then return false end
-    if (worldClientCount >= self:GetWorld():GetMaxClientCount()) then return false end
-    return true;
+    if (totalClientCount >= self:GetWorkerServer():GetMaxClientCount()) then return false, totalClientCount, worldClientCount end
+    if (worldClientCount >= self:GetWorld():GetMaxClientCount()) then return false, totalClientCount, worldClientCount end
+    return true, totalClientCount, worldClientCount;
 end
 
 -- 用户认证成功
@@ -63,12 +63,13 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldId = tostring(packetPlayerLogin.worldId);
     local worldName = packetPlayerLogin.worldName or "";
     local worldType = packetPlayerLogin.worldType;
+    local worldKey = packetPlayerLogin.worldKey;
     local options = packetPlayerLogin.options;
 
-    PlayerLoginLogoutDebug(string.format("玩家请求登录 username : %s, worldId: %s, worldName: %s, worldType: %s, nid: %s", username, worldId, worldName, worldType, self:GetPlayerConnection():GetNid()));
+    PlayerLoginLogoutDebug(string.format("玩家请求登录 username : %s, worldId: %s, worldName: %s, worldType: %s, worldKey: %s, nid: %s", username, worldId, worldName, worldType, worldkey, self:GetPlayerConnection():GetNid()));
 
     -- 获取并设置世界
-    self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, worldType, true));
+    self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, worldType, true, worldKey));
     -- 设置玩家管理器
     self:SetPlayerManager(self:GetWorld():GetPlayerManager());
     -- 获取并设置玩家
@@ -78,11 +79,12 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
 
     -- TODO 认证逻辑
     -- 检测是否达到最大处理量
-    if (not self:IsAllowLoginWorld(worldId)) then
-        GGS.WARN("服务器连接数已到上限");
-        packetPlayerLogin.result = "failed";
-        packetPlayerLogin.errmsg = "服务器连接数已到上限";
-        return self:SendPacketToPlayer(packetPlayerLogin);
+    local isOk, totalClientCount, worldClientCount = self:IsAllowLoginWorld(worldId);
+    if (not isOk) then 
+        GGS.WARN.Format("服务器连接数已到上限, 服务器总人数: %s,  世界总人数: %s", totalClientCount, worldClientCount);
+        -- packetPlayerLogin.result = "failed";
+        -- packetPlayerLogin.errmsg = "服务器连接数已到上限";
+        -- return self:SendPacketToPlayer(packetPlayerLogin);
     end
 
     -- 认证通过
