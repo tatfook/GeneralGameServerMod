@@ -20,6 +20,8 @@ function Config:StaticInit()
     
     -- 服务配置
     self.Server = {
+        threadCount = 3,
+        threadMaxClientCount = 500,
         listenIp="0.0.0.0", 
         isControlServer=true,
         isWorkerServer=true,

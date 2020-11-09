@@ -426,7 +426,8 @@ function NetClientHandler:Connect()
     self.isConnecting = true;
 
     -- 获取连接
-    self.connection = Connection:new():InitByIpPort(options.ip, options.port, self);
+    self.connection = Connection:new():InitByIpPort(options.ip, options.port, options.threadName, self);
+    GGS.DEBUG.Format(self.connection:GetRemoteAddress());
     -- 连接成功
     if (self.connection:Connect() == 0) then 
         self:Login();

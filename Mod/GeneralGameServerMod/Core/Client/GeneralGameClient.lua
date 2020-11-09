@@ -308,7 +308,7 @@ function GeneralGameClient:ConnectControlServer()
 
     GGS.DEBUG(string.format("control server ServerIp: %s, ServerPort: %s", serverIp, serverPort));
 
-    self.controlServerConnection = Connection:new():InitByIpPort(serverIp, serverPort, self);
+    self.controlServerConnection = Connection:new():InitByIpPort(serverIp, serverPort, nil, self);
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
@@ -352,6 +352,7 @@ function GeneralGameClient:handleWorldServer(packetWorldServer)
     options.ip = packetWorldServer.ip;
     options.port = packetWorldServer.port;
     options.worldKey = packetWorldServer.worldKey;
+    options.threadName = packetWorldServer.threadName;
 
     if (not options.ip or not options.port) then
         GGS.INFO("服务器繁忙, 暂无合适的世界服务器提供");

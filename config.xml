@@ -2,6 +2,7 @@
 <!-- GGS 后端配置 -->
 <GeneralGameServer>
   <!--服务器配置
+    threadCount 工作线程数量 可设置cpu数+2
     listenIp 服务器监听的IP
     listenPort 服务器监听的端口
     isControlServer 是否为控制节点
@@ -10,6 +11,7 @@
     maxWorldCount 可接受的最大世界数
   -->
   <Server 
+    threadCount=3
     listenIp="0.0.0.0" 
     isControlServer=true
     isWorkerServer=true
@@ -98,9 +100,10 @@
 <!--开发环境配置-->
 <GeneralGameServerDev>
   <Server 
+    threadCount=3
     listenIp="0.0.0.0" 
     isControlServer=true
-    isWorkerServer=false
+    isWorkerServer=true
     maxClientCount=100
     maxWorldCount=200>
     <ControlServer

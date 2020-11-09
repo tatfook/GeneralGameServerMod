@@ -9,9 +9,13 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 -------------------------------------------------------
 ]]
+local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
+
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ConnectionBase.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketTypes.lua");
+
 local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
@@ -24,20 +28,27 @@ Connection.default_neuron_file = defaultNeuronFile;
 
 local NetDebug = GGS.NetDebug;
 
+-- 初始化网络包
+PacketTypes:StaticInit();
+-- 初始化网络连接
+Connections:Init();
+
 -- 服务端初始化方式
-function Connection:Init(nid, net_handler)
+function Connection:Init(nid, thread, net_handler)
+	self.thread = thread;
+
 	self:SetNid(nid);
 	self:SetNetHandler(net_handler);
 	return self;
 end
 
 -- 客户端初始化方式
-function Connection:InitByIpPort(ip, port, net_handler)
+function Connection:InitByIpPort(ip, port, thread, net_handler)
 	nextNid = nextNid + 1;
 	local nid = "ggs_" .. tostring(nextNid);
 	NPL.AddNPLRuntimeAddress({host = tostring(ip), port = tostring(port), nid = nid});
 	
-	return self:Init(nid, net_handler, neuron_file);
+	return self:Init(nid, thread, net_handler);
 end
 
 -- 获取连接ID
@@ -61,7 +72,6 @@ end
 
 -- 接受数据包
 function Connection:OnNetReceive(msg)
-	
 	-- 读取数据包
 	local packet = PacketTypes:GetNewPacket(msg.id);
 	if (packet) then packet:ReadPacket(msg) end

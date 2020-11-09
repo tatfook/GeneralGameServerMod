@@ -19,43 +19,7 @@ GeneralGameServerMod:init();
 ]]
 
 --  全局变量初始化
-local GeneralGameClients = {};
-local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
-local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
-
-_G.IsDevEnv = true and IsDevEnv;
--- _G.IsDevEnv = false;
-local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua");
-
-_G.GGS = {
-	-- 环境识别
-	IsDevEnv = IsDevEnv,
-	IsServer = servermode,
-	
-	-- DEBUG 调试类以及调试函数
-	Debug = Debug,
-	DEBUG = Debug.GetModuleDebug("DEBUG"),
-	INFO = Debug.GetModuleDebug("INFO"),
-	WARN = Debug.GetModuleDebug("WARN"),
-	ERROR= Debug.GetModuleDebug("ERROR"),
-	FATAL= Debug.GetModuleDebug("FATAL"),
-	-- 业务逻辑DEBUG
-	PlayerLoginLogoutDebug = Debug.GetModuleDebug("PlayerLoginLogoutDebug"),   -- 玩家登录登出日志
-	NetDebug = Debug.GetModuleDebug("NetDebug"),                               -- 发送接收数据包日志
-	BlockSyncDebug = Debug.GetModuleDebug("BlockSyncDebug"),                   -- 方块同步日志
-	AreaSyncDebug = Debug.GetModuleDebug("AreaSyncDebug"),                     -- 区域同步日志
-	-- 配置
-	MaxEntityId =  1000000,                                                    -- 服务器统一分配的最大实体ID数
-	-- 注册主客户端类
-	RegisterClientClass = function(appName, clientClass)
-		GeneralGameClients[appName] = clientClass;
-	end,
-	GetClientClass = function(appName)
-		return GeneralGameClients[appName];
-	end,
-};
-
-NPL.load("(gl)script/ide/System/System.lua");
+local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
 local inited = false;
 
@@ -80,7 +44,7 @@ function GeneralGameServerMod:init()
 	GGS.INFO.Format("===============================================GGS[%s] init===========================================", servermode and "server" or "client");
 
 	-- 启动插件
-	if (servermode) then
+	if (GGS.IsServer) then
 		-- server
 		NPL.load("Mod/GeneralGameServerMod/Core/Server/GeneralGameServer.lua");
 		local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.GeneralGameServer");
@@ -140,6 +104,6 @@ local function activate()
 	GeneralGameServerMod:init();
 end
 
-if (servermode) then
+if (GGS.IsServer) then
 	NPL.this(activate);
 end

@@ -9,7 +9,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 local Common = commonlib.gettable("Mod.GeneralGameServerMod.Common.Common");
 -------------------------------------------------------
 ]]
-
+NPL.load("(gl)script/ide/System/System.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketTypes.lua");
 

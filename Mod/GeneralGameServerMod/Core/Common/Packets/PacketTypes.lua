@@ -18,7 +18,12 @@ local PacketTypes = commonlib.inherit(nil, commonlib.gettable("Mod.GeneralGameSe
 PacketTypes.packetIdToClassMap = {}
 PacketTypes.packetClassToIdMap = {}
 
+local inited = false;
+
 function PacketTypes:StaticInit()
+    if (inited) then return end
+    inited = true;
+    
     Packet_Types:StaticInit();
 
     NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketPlayerLogin.lua");
@@ -35,9 +40,6 @@ function PacketTypes:StaticInit()
 
     NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketBlock.lua");
     self:AddIdClassMapping(104, Packets.PacketBlock);
-
-    NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketServerInfo.lua");
-    self:AddIdClassMapping(105, Packets.PacketServerInfo);
 
     NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketWorldServer.lua");
     self:AddIdClassMapping(106, Packets.PacketWorldServer);

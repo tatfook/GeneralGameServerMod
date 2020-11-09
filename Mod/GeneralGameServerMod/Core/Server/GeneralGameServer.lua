@@ -43,7 +43,7 @@ function GeneralGameServer:LoadNetworkSettings()
 	att:SetField("UDPCompressionLevel", -1);
 	att:SetField("UDPCompressionThreshold", 1024*16);
 	-- npl message queue size is set to really large
-	__rts__:SetMsgQueueSize(5000);
+	__rts__:SetMsgQueueSize(500);
 end
 
 -- 启动服务
@@ -76,10 +76,12 @@ function GeneralGameServer:Start()
 
     GGS.INFO.Format(string.format("服务器启动: listenIp: %s, listenPort: %s", listenIp, listenPort));
 
+	local threadCount = Config.Server.threadCount;
+	for i = 1, threadCount do NPL.CreateRuntimeState("T" .. tostring(i), 0):Start() end
+
 	-- 控制服务
 	if (Config.Server.isControlServer) then
-		-- 暴露接口文件
-		NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 402);
+		NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 402);  -- 暴露接口文件
 	end
 
 	-- 工作服务
@@ -89,6 +91,10 @@ function GeneralGameServer:Start()
 		WorkerServer:Init();
 	end
 
+	-- NPL.activate("(T1)Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"); 
+	-- NPL.activate("(T2)Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"); 
+	-- NPL.activate("(T3)Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"); 
+	
 	-- 定时器
 	local tickDuratin = 1000 * 60 * 2; 
 	self.timer = commonlib.Timer:new({callbackFunc = function(timer)

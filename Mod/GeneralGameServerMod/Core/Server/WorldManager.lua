@@ -110,6 +110,22 @@ function WorldManager:GetWorldClientCount()
     return totalWorldCount, totalClientCount, totalWorldClientCounts;
 end
 
+
+-- 获取世界信息
+function WorldManager:GetWorldInfo(worldKey)
+    local world = self:GetWorldByKey(worldKey);
+    return world and world:GetWorldInfo();
+end
+
+-- 获取所有世界信息
+function WorldManager:GetAllWorldInfo()
+    local worlds = {};
+    for worldKey, world in pairs(self.worldMap) do 
+        worlds[worldKey] = world:GetWorldInfo();
+    end
+    return worlds;
+end
+
 -- timer function
 function WorldManager:Tick()
     local deleted = {};  -- 删除无用户的世界

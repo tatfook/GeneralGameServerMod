@@ -537,7 +537,7 @@ end
 -- 清理离线用户, 移除离线时间超过48小时的用户
 function PlayerManager:CleanOfflinePlayer()
     local offlines = self:GetOfflinePlayerList();
-    local curTime = ParaGlobal.timeGetTime();
+    local curTime = os.time();
     local maxOfflineTime = 1000 * 60 * 60 * 48; -- 48 hour
     for i = 1, #offlines do
         local username = offlines[i];

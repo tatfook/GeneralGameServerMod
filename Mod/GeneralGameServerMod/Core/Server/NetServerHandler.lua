@@ -38,7 +38,7 @@ end
 
 -- @param tid: this is temporary identifier of the socket connnection
 function NetServerHandler:Init(tid)
-	self:SetPlayerConnection(Connection:new():Init(tid, self));
+	self:SetPlayerConnection(Connection:new():Init(tid, nil, self));
 	return self;
 end
 

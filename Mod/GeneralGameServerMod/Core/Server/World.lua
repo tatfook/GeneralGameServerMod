@@ -26,6 +26,7 @@ World:Property("WorldKey");            -- 世界key
 World:Property("WorldId");             -- 世界id
 World:Property("WorldType");           -- 世界类型
 World:Property("WorldName");           -- 世界名
+World:Property("ThreadName");          -- 线程名
 World:Property("PlayerManager");       -- 玩家管理器
 World:Property("BlockManager");        -- 玩家管理器
 World:Property("Track");               -- 世界轨迹
@@ -43,6 +44,8 @@ function World:Init(worldId, WorldName, worldType, worldKey)
     self:SetWorldName(WorldName);
     self:SetWorldKey(worldKey);
     self:SetWorldType(worldType or "World");
+    
+    self:SetThreadName(__rts__:GetName());
 
     -- 轨迹
     self:SetTrack(Track:new():Init(self));
@@ -130,6 +133,16 @@ end
 -- Tick
 function World:Tick()
     self:GetPlayerManager():Tick();
+end
+
+-- 获取世界信息
+function World:GetWorldInfo(worldKey)
+    return {
+        clientCount = self:GetOnlineClientCount(),
+        maxClientCount = self:GetMaxClientCount(),
+        threadName = self:GetThreadName(),
+        worldKey = self:GetWorldKey(),
+    }
 end
 
 -- 获取调试信息

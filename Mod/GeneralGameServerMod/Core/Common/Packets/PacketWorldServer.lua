@@ -26,6 +26,8 @@ function PacketWorldServer:Init(packet)
 	-- server
 	self.ip = packet.ip;
 	self.port = packet.port;
+	self.worldKey = packet.worldKey;
+	self.threadName = packet.threadName;
 
 	return self;
 end

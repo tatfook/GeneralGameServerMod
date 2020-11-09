@@ -25,8 +25,8 @@ function Player:ctor()
     self.entityInfo = {};  -- 实体信息 UI信息
     self.playerInfo = {};   -- 玩家信息 数据信息
     self.dataWatcher = DataWatcher:new();
-    self.loginTick = ParaGlobal.timeGetTime();
-    self.lastTick = ParaGlobal.timeGetTime();
+    self.loginTick = os.time();
+    self.lastTick = os.time();
     self.aliveTime = 0;
     self.state = "online";
     self.options = {};
@@ -69,7 +69,7 @@ end
 -- 设置块同步完成
 function Player:SetSyncBlockFinish()
     self.isSyncBlockFinish = true;
-    self.syncBlockTime = ParaGlobal.timeGetTime();
+    self.syncBlockTime = os.time();
 end
 
 -- 是否块同步完成
@@ -241,7 +241,7 @@ function Player:SendPacketToPlayer(packet)
 end
 
 function Player:UpdateTick() 
-    self.lastTick = ParaGlobal.timeGetTime();
+    self.lastTick = os.time();
     self.aliveTime = self.lastTick - self.loginTick;
 end
 
@@ -272,7 +272,7 @@ function Player:IsAlive()
     
     -- 不能直接使用tick 可能刚登录就退出, 这种tick检测不出
     local aliveDuration = Config.Player.aliveDuration or 500000; 
-    local curTime = ParaGlobal.timeGetTime();
+    local curTime = os.time();
     if ((curTime - self.lastTick) > aliveDuration) then
         return  false;
     end
@@ -282,13 +282,13 @@ end
 
 -- 玩家登录
 function Player:Login()
-    self.loginTick = ParaGlobal.timeGetTime();
+    self.loginTick = os.time();
     self.state = "online";
 end
 
 -- 玩家退出
 function Player:Logout() 
-    self.logoutTick = ParaGlobal.timeGetTime();
+    self.logoutTick = os.time();
     self.aliveTime = self.logoutTick - self.loginTick;  -- 本次活跃时间
     self.state = "offline";                             -- 状态置为下线
 
