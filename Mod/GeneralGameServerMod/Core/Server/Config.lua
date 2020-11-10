@@ -12,12 +12,15 @@ local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config")
 ]]
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 
-Config.ConfigFile = ParaEngine.GetAppCommandLineByParam("ConfigFile", nil);
+Config.ConfigFile = ParaEngine.GetAppCommandLineByParam("ConfigFile", "config.xml");
+
+local inited = false;
 
 -- 初始化
 function Config:StaticInit()
-    GGS.INFO.Format("--------------------- load config----------------");
-    
+    if (inited) then return end
+    inited = true;
+
     -- 服务配置
     self.Server = {
         threadCount = 3,
@@ -64,14 +67,16 @@ function Config:StaticInit()
         aliveDuration = 300000,  -- 玩家心跳时间 判断玩家是否存活
     }
     self.Debug = {
-        Net = false,
+        NetDebug = false,
         PlayerLoginLogoutDebug = true,
     }
 
+    self.IsDevEnv = IsDevEnv;
+    
     -- 服务端才需要配置文件, 加载配置
     self:LoadConfig(self.ConfigFile);
 
-    GGS.INFO(self);
+    -- GGS.INFO(self);
 end
 
 -- 拷贝XML节点属性
@@ -91,11 +96,9 @@ end
 
 -- 加载配置文件
 function Config:LoadConfig(filename)
-    filename = filename or "config.xml"; -- 取当前目录下config.xml
-    GGS.INFO.Format("----------------load config file: %s--------------", filename);
     -- 加载配置文件
     local xmlRoot = ParaXML.LuaXML_ParseFile(filename);
-    local pathPrefix = GGS.IsDevEnv and "/GeneralGameServerDev" or "/GeneralGameServer";
+    local pathPrefix = IsDevEnv and "/GeneralGameServerDev" or "/GeneralGameServer";
     if (not xmlRoot) then return GGS.ERROR.Format("failed loading paracraft server config file %s", filename) end
 
     -- 服务器配置
@@ -132,4 +135,4 @@ function Config:LoadConfig(filename)
 end
 
 -- 加载配置
--- Config:StaticInit();
+Config:StaticInit();

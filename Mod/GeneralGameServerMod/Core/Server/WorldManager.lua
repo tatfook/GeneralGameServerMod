@@ -12,6 +12,7 @@ WorldManager.GetSingleton();
 ]]
 
 -- 文件加载
+NPL.load("(gl)script/ide/timer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
@@ -25,9 +26,18 @@ function WorldManager:ctor()
     self.worldMap = {};
 end
 
+-- 初始化
+function WorldManager:Init()
+    -- 定时器
+    local tickDuratin = 1000 * 60 * 2; 
+	commonlib.Timer:new({callbackFunc = function(timer)
+		self:Tick();
+	end}):Change(tickDuratin, tickDuratin); -- 两分钟触发一次
+end
+
 -- 生成世界KEY
-function WorldManager:GenerateWorldKey(worldId, worldName)
-    return string.format("%s_%s", worldId, worldName or "");
+function WorldManager:GenerateWorldKey(worldId, worldName, no)
+    return string.format("%s_%s_%s", worldId, worldName or "", no or "");
 end
 
 -- 世界Key是否可用
@@ -41,8 +51,7 @@ end
 
 -- 获取世界KEY
 function WorldManager:GetWorldKey(worldId, worldName, no, IsAvailableWorldKey)        
-    local worldKey = self:GenerateWorldKey(worldId, worldName);
-    if (no) then worldKey = string.format("%s_%s", worldKey, no) end
+    local worldKey = self:GenerateWorldKey(worldId, worldName, no);
 
     -- 优先使用自定义识别函数
     local isAvailable = self:IsAvailableWorldKey(worldKey); 
@@ -144,4 +153,4 @@ function WorldManager:Tick()
 end
 
 -- 初始化成单列模式
-WorldManager:InitSingleton();
+WorldManager:InitSingleton():Init();

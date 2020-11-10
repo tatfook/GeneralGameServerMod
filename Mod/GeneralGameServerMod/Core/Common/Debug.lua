@@ -17,7 +17,7 @@ local ModuleLogEnableMap = {
     ERROR = true,
     WARN = true,
     INFO = true,
-    DEBUG = IsDevEnv and true or false,
+    DEBUG = true,
 }
 
 -- debug 实例

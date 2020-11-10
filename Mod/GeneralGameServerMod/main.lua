@@ -18,6 +18,12 @@ GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
 
+NPL.load("(gl)script/ide/System/System.lua");
+-- NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
+-- NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketTypes.lua");
+-- local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
+-- local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
+
 --  全局变量初始化
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
@@ -41,6 +47,7 @@ end
 function GeneralGameServerMod:init()
 	if (inited) then return end;
 	inited = true;
+	
 	GGS.INFO.Format("===============================================GGS[%s] init===========================================", servermode and "server" or "client");
 
 	-- 启动插件

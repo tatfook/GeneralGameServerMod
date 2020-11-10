@@ -13,15 +13,11 @@ local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/ConnectionBase.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketTypes.lua");
-
 local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
 local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
-local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
 local Connection = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.ConnectionBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"));
 local defaultNeuronFile = "Mod/GeneralGameServerMod/Core/Common/Connection.lua";
-local moduleName = "Mod.GeneralGameServerMod.Core.Common.Connection";
 local nextNid = 100;
 
 Connection.default_neuron_file = defaultNeuronFile;
@@ -88,7 +84,7 @@ function Connection:OnNetReceive(msg)
 		packet:ProcessPacket(self.net_handler);
 	else
 		GGS.INFO("invalid packet");
-		if (self.net_handler.handleMsg) then
+		if (self.net_handler and self.net_handler.handleMsg) then
 			self.net_handler:handleMsg(msg);
 		else 
 			GGS.INFO("invalid msg");
@@ -102,16 +98,32 @@ function Connection:OnNetReceive(msg)
 	end
 end
 
-local function activate()
-	local msg = msg;
+-- 新链接触发回调
+function Connection.OnConnection(msg)
+	-- 兼容旧版本实现
+	if (GGS.IsServer) then
+		NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
+		local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
+		return NetServerHandler:new():Init(msg.nid or msg.tid):GetPlayerConnection();
+	end
+
+	return nil;
+end
+
+function Connection.OnActivate(msg)
 	local id = msg.nid or msg.tid;
+	if (not id) then return end
 
 	local connection = Connections:GetConnection(id);
-	if (connection) then
+	if (connection) then 
 		connection:OnNetReceive(msg);
 	else 
-		NetServerHandler:new():Init(id);
+		Connection.OnConnection(msg);
 	end
+end
+
+local function activate()
+	Connection.OnActivate(msg);
 end
 
 NPL.this(activate);

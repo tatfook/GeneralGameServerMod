@@ -35,6 +35,44 @@ function ControlServer:GetWorldManager()
     return WorldManager;
 end
 
+-- 获取统计信息
+function ControlServer:GetStatisticsInfo()
+    local totalClientCount = 0;
+    local totalWorldCount = 0;
+    local worldClientCounts = {};
+    local totalServerCount = 0;
+    local serverClientCounts = {};
+    for svrkey, svr in pairs(servers) do
+        if (not serverClientCounts[svrkey]) then
+            serverClientCounts[svrkey] = 0;
+            totalServerCount = totalServerCount + 1;
+        end
+
+        for _, thread in pairs(svr.threads) do
+            totalClientCount = totalClientCount + thread.clientCount;
+            serverClientCounts[svrkey] = serverClientCounts[svrkey] + thread.clientCount;
+        end
+
+        for worldkey, world in pairs(svr.worlds) do
+            if (not worldClientCounts[worldkey]) then
+                worldClientCounts[worldkey] = 0;
+                totalWorldCount = totalWorldCount + 1;
+            end
+
+            worldClientCounts[worldkey] = worldClientCounts[worldkey] + world.clientCount;
+        end
+
+    end
+
+    return {
+        totalClientCount = totalClientCount,              -- 存在线客户端数
+        totalWorldCount = totalWorldCount,                -- 存在的世界数
+        totalServerCount = totalServerCount,              -- 存在服务数
+        worldClientCounts = worldClientCounts,            -- 每个世界客户端数
+        serverClientCounts = serverClientCounts,          -- 每个服务器客户端数
+    }
+end
+
 function ControlServer:GetServer(isNewNotExist)
     local connectionId = self.connection:GetId();
     if (not servers[connectionId] and isNewNotExist) then servers[connectionId] = {} end
@@ -52,12 +90,9 @@ function ControlServer:UpdateServerInfo()
         thread.clientCount = 0;
         thread.threadName = threadName;
         server.threads[threadName] = thread;
-        server.thread = server.thread or thread;
     end
-    for i = 1, server.threadCount do resetThread("T" .. tostring(i)) end
+    for i = 1, server.threadCount do resetThread(GGS.WorkerThreadName  .. tostring(i)) end
     resetThread("main");   -- 重置主线程
-
-    local thread = nil;  
     for worldKey, world in pairs(server.worlds) do
         server.totalWorldCount = server.totalWorldCount + 1;
         server.totalClientCount = server.totalClientCount + world.clientCount;
@@ -68,10 +103,18 @@ function ControlServer:UpdateServerInfo()
             server.threads[world.threadName] = worldThread;
         end
         worldThread.clientCount = worldThread.clientCount + world.clientCount;
-        if (not thread or thread.clientCount > worldThread.clientCount) then thread = worldThread end
     end
-
-    server.thread = thread or server.thread; -- 默认线程 取数量最小的线程
+    local minThreadClientCount, defaultThreadName = nil, "main";
+    for threadName, thread in pairs(server.threads) do
+        if(threadName ~= "main") then  -- 避免选择主线程
+            if (not minThreadClientCount or minThreadClientCount > thread.clientCount) then
+                minThreadClientCount = thread.clientCount;
+                defaultThreadName = threadName;
+            end
+        end
+    end
+    server.defaultThreadName = defaultThreadName; -- 默认线程名 取数量最小的线程
+    -- GGS.DEBUG(server);
 end
 
 -- 处理服务器信息上报
@@ -87,14 +130,13 @@ function ControlServer:handleServerInfo(serverInfo)
     server.innerPort = serverInfo.innerPort or server.innerPort;             -- 内网Port
     server.outerIp = serverInfo.outerIp or server.outerPort;                 -- 外网IP
     server.outerPort = serverInfo.outerPort or server.outerPort;             -- 外网Port 
-    server.worlds = serverInfo.worlds or {};                                 -- 世界信息
+    server.worlds = server.worlds or {};                                     -- 世界信息
     server.threads = server.threads or {};                                   -- 线程信息
     server.lastTick = os.time();                                             -- 上次发送时间
     
     self:UpdateServerInfo();
 
-    -- 将可用的服务器信息返回给server
-    self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerWorldList", data = self:GetAvailableServers()}));
+    return server;
 end
 
 -- 处理客户端请求连接世界的服务器
@@ -116,8 +158,8 @@ function ControlServer:handleWorldServer(packetWorldServer)
         if (isAlive and svr.totalClientCount < svr.maxClientCount) then 
             -- 优先找已存在的世界 且世界人数未满 世界人数最少
             for key, world in pairs(svr.worlds) do
-                if (string.sub(key, 1, worldKeyLength) == worldKey
-                    and world.clientCount < world.worldMaxClient 
+                if ((string.gsub(key, "%d*$", "")) == worldKey
+                    and world.clientCount < world.maxClientCount 
                     and svr.threads[world.threadName].clientCount < svr.threadMaxClientCount
                     and (not worldClientCount or worldClientCount > world.clientCount)) then
                     worldClientCount = world.clientCount;
@@ -137,8 +179,8 @@ function ControlServer:handleWorldServer(packetWorldServer)
         packetWorldServer.ip = server.outerIp;
         packetWorldServer.port = server.outerPort;
         packetWorldServer.worldKey = realWorldKey;
-        packetWorldServer.threadName = threadName or (server.thread and server.thread.threadName) or "main";
-        GGS.DEBUG.Format("客户端接入请求, worldId = %s, worldName = %s, worldKey = %s, ip = %s, port = %s, threadName = %s", worldId, worldName, realWorldKey, server.outerIp, server.outerPort, packetWorldServer.threadName);
+        packetWorldServer.threadName = threadName or server.defaultThreadName;
+        GGS.INFO.Format("客户端接入请求, worldId = %s, worldName = %s, worldKey = %s, ip = %s, port = %s, threadName = %s", worldId, worldName, realWorldKey, server.outerIp, server.outerPort, packetWorldServer.threadName);
     else 
         GGS.WARN.Format("世界key: %s 无可用服务", worldKey);
     end
@@ -165,23 +207,27 @@ end
 function ControlServer:handleWorldInfo(world)
     local server = self:GetServer();
     if (not server or not world) then return end;
-
     server.lastTick = os.time();                                                   -- 上次发送时间
     server.worlds[world.worldKey] = server.worlds[world.worldKey] or {}; 
     commonlib.partialcopy(server.worlds[world.worldKey], world);
     self:UpdateServerInfo();
+    return server;
 end
 
 -- 处理通用数据包
 function ControlServer:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
-    if (action == "ServerWorldList") then 
+    if (action == "ServerList") then 
         packetGeneral.data = self:GetAvailableServers();
         self.connection:AddPacketToSendQueue(packetGeneral);
     elseif (action == "ServerInfo") then
-        self:handleServerInfo(packetGeneral.data);
+        local server = self:handleServerInfo(packetGeneral.data);
+        self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerInfo", data = server}));
+        self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerList", data = self:GetAvailableServers()}));
     elseif (action == "WorldInfo") then
-        self:handleWorldInfo(packetGeneral.data);
+        local server = self:handleWorldInfo(packetGeneral.data);
+    elseif (action == "StatisticsInfo") then
+        self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "StatisticsInfo", data = self:GetStatisticsInfo()}));
     end
 end
 

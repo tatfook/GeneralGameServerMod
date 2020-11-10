@@ -401,6 +401,7 @@ end
 
 -- 登录
 function NetClientHandler:Login()
+    GGS.INFO("======================login ggs===================");
     local options = self:GetClient():GetOptions();
     self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init({
         username = options.username,
@@ -408,6 +409,7 @@ function NetClientHandler:Login()
         worldId = options.worldId,
         worldName = options.worldName,
         worldType = options.worldType,
+        worldKey = options.worldKey,
         options = {
             isSyncBlock = options.isSyncBlock,
             isSyncForceBlock = options.isSyncForceBlock,
@@ -427,6 +429,7 @@ function NetClientHandler:Connect()
 
     -- 获取连接
     self.connection = Connection:new():InitByIpPort(options.ip, options.port, options.threadName, self);
+    self.connection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/Connection.lua");
     GGS.DEBUG.Format(self.connection:GetRemoteAddress());
     -- 连接成功
     if (self.connection:Connect() == 0) then 

@@ -27,7 +27,6 @@ local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
-local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
@@ -60,8 +59,11 @@ end
 function GeneralGameClient:Init() 
     if (self.inited) then return self end;
     
-    -- 公共文件初始化
-    Common:Init(false);
+    -- 设置随机种子
+	math.randomseed(ParaGlobal.timeGetTime());
+    
+    -- 暴露接口文件
+    NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
 
     -- 设置实体ID起始值
     Entity:SetEntityId(GGS.MaxEntityId);
@@ -409,11 +411,15 @@ function GeneralGameClient:Debug(action, cmd_text)
 
     local netHandler = self:GetWorldNetHandler();
     if (not netHandler) then return end
-
+    
     if (action == "worldinfo") then
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "WorldInfo"}}));
     elseif (action == "serverinfo") then
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ServerInfo"}}));
+    elseif (action == "serverlist") then
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ServerList"}}));
+    elseif (action == "statistics") then
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "StatisticsInfo"}}));
     elseif (action == "ping") then
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ping"}}));
     elseif (action == "serverdebug") then

@@ -9,13 +9,12 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
 local NetServerHandler = commonlib.gettable("GeneralGameServerMod.Core.Server.NetServerHandler");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/NetHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
-local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
+local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
@@ -30,6 +29,8 @@ NetServerHandler:Property("WorkerServer");                             -- 工作
 NetServerHandler:Property("PlayerConnection");                         -- 玩家链接
 
 local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
+
+Config:StaticInit();
 
 function NetServerHandler:ctor() 
     self:SetWorkerServer(WorkerServer);
@@ -47,15 +48,6 @@ function NetServerHandler:SendPacketToPlayer(packet)
     return self:GetPlayerConnection():AddPacketToSendQueue(packet);
 end
 
--- 服务器是否已达到峰值
-function NetServerHandler:IsAllowLoginWorld(worldId)
-    local totalClientCount = self:GetWorldManager():GetOnlineClientCount();
-    local worldClientCount = self:GetWorld() and self:GetWorld():GetOnlineClientCount() or 0;
-    if (totalClientCount >= self:GetWorkerServer():GetMaxClientCount()) then return false, totalClientCount, worldClientCount end
-    if (worldClientCount >= self:GetWorld():GetMaxClientCount()) then return false, totalClientCount, worldClientCount end
-    return true, totalClientCount, worldClientCount;
-end
-
 -- 用户认证成功
 function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local username = packetPlayerLogin.username;
@@ -66,7 +58,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldKey = packetPlayerLogin.worldKey;
     local options = packetPlayerLogin.options;
 
-    PlayerLoginLogoutDebug(string.format("玩家请求登录 username : %s, worldId: %s, worldName: %s, worldType: %s, worldKey: %s, nid: %s", username, worldId, worldName, worldType, worldkey, self:GetPlayerConnection():GetNid()));
+    PlayerLoginLogoutDebug(string.format("玩家请求登录 username : %s, worldId: %s, worldName: %s, worldType: %s, worldKey: %s, nid: %s, threadName: %s", username, worldId, worldName, worldType, worldkey, self:GetPlayerConnection():GetNid(), __rts__:GetName()));
 
     -- 获取并设置世界
     self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, worldType, true, worldKey));
@@ -78,14 +70,6 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     if (options) then self:GetPlayer():SetOptions(options) end         
 
     -- TODO 认证逻辑
-    -- 检测是否达到最大处理量
-    local isOk, totalClientCount, worldClientCount = self:IsAllowLoginWorld(worldId);
-    if (not isOk) then 
-        GGS.WARN.Format("服务器连接数已到上限, 服务器总人数: %s,  世界总人数: %s", totalClientCount, worldClientCount);
-        -- packetPlayerLogin.result = "failed";
-        -- packetPlayerLogin.errmsg = "服务器连接数已到上限";
-        -- return self:SendPacketToPlayer(packetPlayerLogin);
-    end
 
     -- 认证通过
     self:SetAuthenticated();
@@ -130,8 +114,8 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
         self:SendPacketToPlayer(Packets.PacketGeneral:new():Init({action = "SyncBlock", data = {state = "SyncBlock_Begin"}}));
     end
 
-    -- 更新服务器信息到控制节点
-    self:GetWorkerServer():SendServerInfo();
+    -- 更新世界信息
+    self:GetWorkerServer():SendWorldInfo(self:GetWorld():GetWorldInfo());
 end
 
 -- 同步玩家信息列表
@@ -149,6 +133,7 @@ end
 -- 玩家重新登录, 当连接存在玩家丢失需要重新等陆, 这个问题与TCP自身自动重连有关(玩家第一次登录, 登录切后台, tcp自行断开, 程序恢复前台, tcp自行重连, 这样跳过了登录步骤,导致用户丢失, 这种发送客户端重连数据包)
 function NetServerHandler:handlePlayerRelogin()
     PlayerLoginLogoutDebug("玩家丢失重新登录: " .. tostring(self:GetPlayerConnection():GetIPAddress()));
+   
     self:SendPacketToPlayer(Packets.PacketGeneral:GetReloginPacket());
 end
 
@@ -166,6 +151,8 @@ function NetServerHandler:handleErrorMessage(text, data)
     -- 下线走离线流程 登出直接踢出服务器
     self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家主动下线");
   
+    -- 更新世界信息
+    self:GetWorkerServer():SendWorldInfo(self:GetWorld():GetWorldInfo());
 end
 
 -- 监听包处理后
@@ -217,14 +204,21 @@ end
 function NetServerHandler:handleGeneral_Debug(packetGeneral)
     -- 用户不存在
     if (not self:GetPlayer()) then return self:handlePlayerRelogin() end
-
+    
     local cmd = packetGeneral.data.cmd;
     local debug = packetGeneral.data.debug;
     if (cmd == "WorldInfo") then
         packetGeneral.data.debug = self:GetWorld():GetDebugInfo();
         self:SendPacketToPlayer(packetGeneral);
     elseif (cmd == "ServerInfo") then
+        packetGeneral.data.debug = self:GetWorkerServer():GetServerInfo();
+        self:SendPacketToPlayer(packetGeneral);
+    elseif (cmd == "ServerList") then
         packetGeneral.data.debug = self:GetWorkerServer():GetServerList();
+        self:SendPacketToPlayer(packetGeneral);
+    elseif (cmd == "StatisticsInfo") then
+        self:GetWorkerServer():UpdateStatisticsInfo();
+        packetGeneral.data.debug = self:GetWorkerServer():GetStatisticsInfo();
         self:SendPacketToPlayer(packetGeneral);
     elseif (cmd == "ping") then
         packetGeneral.data.debug = self:GetPlayer():IsValid();

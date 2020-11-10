@@ -20,6 +20,8 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 local WorkerServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer"));
 
 WorkerServer:Property("ServerList", {});                    -- 服务器列表
+WorkerServer:Property("ServerInfo", {});                    -- 服务器信息
+WorkerServer:Property("StatisticsInfo", {});                -- 统计信息
 
 -- 构造函数
 function WorkerServer:ctor()
@@ -36,8 +38,10 @@ function WorkerServer:ctor()
 end
 
 -- 初始化函数
-function WorkerServer:Init(server)
-    if (self.inited) then return; end
+function WorkerServer:Init()
+    if (__rts__:GetName() ~= "main") then return end 
+
+    if (self.inited) then return end
     self.inited = true;
 
     -- 定时上报服务器信息
@@ -64,15 +68,6 @@ function WorkerServer:Init(server)
     ConnectControlServer();
 end
 
--- 获取服务器最大客户端数
-function WorkerServer:GetMaxClientCount()
-    return Config.WorkerServer.maxClientCount or Config.Server.maxClientCount;
-end
-
-function WorkerServer:SendMsgToMainThread(msg)
-	NPL.activate("(gl)Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua", msg);
-end
-
 -- 发送服务器信息
 function WorkerServer:SendServerInfo()
     if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "SendServerInfo"}) end
@@ -80,37 +75,45 @@ function WorkerServer:SendServerInfo()
     self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
         action = "ServerInfo",
         data = {
-            isWorkerServer = true,
-            worlds = WorldManager:GetAllWorldInfo(),               -- 所有世界信息
-            innerIp = self.innerIp,                                -- 内网IP 
-            innerPort = self.innerPort,                            -- 内网Port
-            outerIp = self.outerIp,                                -- 外网IP
-            outerPort = self.outerPort,                            -- 外网Port 
-            maxClientCount = Config.Server.maxClientCount,         -- 服务器最大客户端数
-            threadCount = Config.Server.threadCount,               -- 服务器的线程数
-            threadMaxClientCount = Config.Server.threadMaxClientCount; -- 单个线程最大客户端数
+            isWorkerServer = true,                                       -- 是否是工作线程
+            innerIp = self.innerIp,                                      -- 内网IP 
+            innerPort = self.innerPort,                                  -- 内网Port
+            outerIp = self.outerIp,                                      -- 外网IP
+            outerPort = self.outerPort,                                  -- 外网Port 
+            maxClientCount = Config.Server.maxClientCount,               -- 服务器最大客户端数
+            threadCount = Config.Server.threadCount,                     -- 服务器的线程数
+            threadMaxClientCount = Config.Server.threadMaxClientCount;   -- 单个线程最大客户端数
         }
     }));
 end
 
 -- 发送世界信息
-function WorkerServer:SendWorldInfo(worldKey)
-    if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "SendWorldInfo", worldKey = worldKey}) end
+function WorkerServer:SendWorldInfo(world)
+    if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "SendWorldInfo", data = world}) end
+    
+    self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "WorldInfo", data  = world}));
+end
 
-    local world = WorldManager:GetWorldInfo(worldKey);
-    if (not world) then return end
+-- 更新统计信息
+function WorkerServer:UpdateStatisticsInfo()
+    echo("-------------------------------")
+    if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "UpdateStatisticsInfo"}) end
 
-    self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
-        action = "WorldInfo", 
-        data  = world
-    }));
+    self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "StatisticsInfo"}));
 end
 
 -- 处理通用数据包
 function WorkerServer:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
-    if (action == "ServerWorldList") then 
-        self:SetServerList(packetGeneral.data);
+    local data = packetGeneral.data;
+    if (action == "ServerList") then 
+        self:SetServerList(data);
+    elseif (action == "ServerInfo") then
+        self:SetServerInfo(data);
+        self:SendMsgToWorkerThread({action="SetServerInfo", data = data});
+    elseif (action == "StatisticsInfo") then
+        self:SetStatisticsInfo(data);
+        self:SendMsgToWorkerThread({action="SetStatisticsInfo", data = data});
     end
 end
 
@@ -119,16 +122,43 @@ function WorkerServer:handleErrorMessage(text, connection)
     GGS.INFO.Format("断开与控制服务器的连接");
 end
 
+-- 工作线程转主线程发送信息
+function WorkerServer:SendMsgToMainThread(msg)
+	NPL.activate("(main)Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua", msg);
+end
+
+-- 信息同步至工作线程
+function WorkerServer:SendMsgToWorkerThread(msg)
+    local serverinfo = self:GetServerInfo();
+    if (type(serverinfo) ~= "table" or type(serverinfo.threads) ~= "table" or __rts__:GetName() ~= "main") then return end
+    for threadName, _ in pairs(serverinfo.threads) do 
+        if (threadName ~= "main") then
+            NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua", threadName), msg);
+        end
+    end
+end
+
+-- 单列化
+WorkerServer:InitSingleton():Init();
+
 -- 激活函数
 local function activate()
 	local action = msg and msg.action;
+    local data = msg and msg.data;
 
     if (action == "SendServerInfo") then 
         return WorkerServer:SendServerInfo();
+    elseif (action == "UpdateStatisticsInfo") then
+        return WorkerServer:UpdateStatisticsInfo();
     elseif (action == "SendWorldInfo") then
-        return WorkerServer:SendWorldInfo(msg.worldKey);
+        return WorkerServer:SendWorldInfo(data);
+    elseif (action == "SetServerInfo") then
+        return WorkerServer:SetServerInfo(data);
+    elseif (action == "SetServerList") then
+        return WorkerServer:SetServerList(data)
+    elseif (action == "SetStatisticsInfo") then
+        return WorkerServer:SetStatisticsInfo(data);
     end
-
 end
 
 NPL.this(activate);

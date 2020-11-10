@@ -11,19 +11,16 @@ local GeneralGameServer = commonlib.gettable("GeneralGameServerMod.Core.Server.G
 GeneralGameServer.Start();
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/timer.lua");
 NPL.load("(gl)script/ide/System/System.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
-local Common = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Common");
-local ControlServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer");
-local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
+local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
 local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.GeneralGameServer");
+
+-- local ThreadHelper = NPL.load("./ThreadHelper.lua");
 
 function GeneralGameServer:ctor() 
     self.isStart = false;
@@ -44,18 +41,20 @@ function GeneralGameServer:LoadNetworkSettings()
 	att:SetField("UDPCompressionThreshold", 1024*16);
 	-- npl message queue size is set to really large
 	__rts__:SetMsgQueueSize(500);
+
+	-- 暴露接口文件
+	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
+	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/Connection.lua", 402);
+	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 403);  
+	-- NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/ThreadHelper.lua", 404);
 end
 
 -- 启动服务
 function GeneralGameServer:Start() 
 	if (self.isStart) then return end;
-	
-	-- 配置初始化
-	Config:StaticInit();
+	-- 初始化
+	-- ThreadHelper:Init();
 
-	-- 公共模块初始化
-	Common:Init(true);
-	
     -- 设置系统属性
     self:LoadNetworkSettings();
 
@@ -75,33 +74,13 @@ function GeneralGameServer:Start()
     NPL.StartNetServer(listenIp, tostring(listenPort));
 
     GGS.INFO.Format(string.format("服务器启动: listenIp: %s, listenPort: %s", listenIp, listenPort));
-
+	
 	local threadCount = Config.Server.threadCount;
-	for i = 1, threadCount do NPL.CreateRuntimeState("T" .. tostring(i), 0):Start() end
-
-	-- 控制服务
-	if (Config.Server.isControlServer) then
-		NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 402);  -- 暴露接口文件
+	for i = 1, threadCount do 
+		local threadName = GGS.WorkerThreadName .. tostring(i);
+		NPL.CreateRuntimeState(threadName, 0):Start(); 
+		-- NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Server/ThreadHelper.lua", threadName), {action = "Init"});
 	end
-
-	-- 工作服务
-	if (Config.Server.isWorkerServer) then
-		-- 初始化成单列模式
-		WorkerServer:InitSingleton();
-		WorkerServer:Init();
-	end
-
-	-- NPL.activate("(T1)Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"); 
-	-- NPL.activate("(T2)Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"); 
-	-- NPL.activate("(T3)Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"); 
-	
-	-- 定时器
-	local tickDuratin = 1000 * 60 * 2; 
-	self.timer = commonlib.Timer:new({callbackFunc = function(timer)
-		self:Tick();
-	end});
-	
-	self.timer:Change(tickDuratin, tickDuratin); -- 两分钟触发一次
 
 	self.isStart = true;
 end
