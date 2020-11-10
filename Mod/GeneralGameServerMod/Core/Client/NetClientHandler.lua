@@ -299,7 +299,8 @@ function NetClientHandler:handleGeneral_SyncBlock(packetGeneral)
     elseif (state == "SyncBlock_ResponseSyncBlock") then
         self:GetBlockManager():handleSyncBlock_ResponseSyncBlock(packetGeneral);
     elseif (state == "SyncBlock_Finish") then
-        self:GetBlockManager():handleSyncBlock_Finish();else
+        self:GetBlockManager():handleSyncBlock_Finish();
+    else
     end
 end
 
