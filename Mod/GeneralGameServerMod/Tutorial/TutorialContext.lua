@@ -23,6 +23,7 @@ TutorialContext:Property("ModeCanRightClickToCreateBlock", true);
 TutorialContext:Property("ModeHasJumpRestriction", true);
 TutorialContext:Property("CanFly", false, "IsCanFly");
 TutorialContext:Property("CanJump", false, "IsCanJump");
+TutorialContext:Property("CanClickScene", true, "IsCanClickScene");
 
 function TutorialContext:Init(tutorialSandbox)
 	self:SetTutorialSandbox(tutorialSandbox);
@@ -36,9 +37,19 @@ function TutorialContext:handleCodeGlobalKeyPressEvent(event)
 	end
 end 
 
+function TutorialContext:HandleGlobalKey(event)
+	-- 禁用全局按键行为
+end
+
+function TutorialContext:handlePlayerKeyEvent(event)
+	TutorialContext._super.handlePlayerKeyEvent(self, event);
+end
+
 function TutorialContext:keyPressEvent(event)
-	local dik_key, ctrl_pressed, alt_pressed = event.keyname, event.ctrl_pressed, event.alt_pressed;
-	if(not ctrl_pressed and not alt_pressed) then
+	if (self:GetTutorialSandbox():OnKeyPressEvent(event)) then return end
+
+	local dik_key, ctrl_pressed, shift_pressed, alt_pressed = event.keyname, event.ctrl_pressed, event.shift_pressed, event.alt_pressed;
+	if(not ctrl_pressed and not alt_pressed and not shift_pressed) then
 		if(dik_key == "DIK_SPACE") then
 			if (self:IsCanJump()) then GameLogic.DoJump() end
 			return self:handleCodeGlobalKeyPressEvent(event);
@@ -54,6 +65,24 @@ function TutorialContext:keyPressEvent(event)
 	end
 
 	TutorialContext._super.keyPressEvent(self, event);
+end
+
+function TutorialContext:mousePressEvent(event)
+	if (not self:IsCanClickScene()) then return end
+
+	TutorialContext._super.mousePressEvent(self, event);
+end
+
+function TutorialContext:mouseMoveEvent(event)
+	if (not self:IsCanClickScene()) then return end
+	
+	TutorialContext._super.mousePressEvent(self, event);
+end
+
+function TutorialContext:mouseReleaseEvent(event)
+	if (not self:IsCanClickScene()) then return end
+	
+	TutorialContext._super.mousePressEvent(self, event);
 end
 
 function TutorialContext:handleLeftClickScene(event, result)

@@ -38,11 +38,15 @@ function TutorialSandbox:Reset()
     self.loadItems = {};                   -- 代码方块加载表
     self.allLoadFinishCallback = nil;      -- 全部加载完成回调
 
+    self.keyPressEvent = {};
+
     GameLogic.GetCodeGlobal():GetCurrentGlobals()["TutorialSandbox"] = self;
 
     GameLogic.options.CanJumpInWater = true;
     GameLogic.options.CanJump = true;
     GameLogic.options.CanJumpInAir = true;
+
+    -- self:ActiveTutorialContext();
 end
 
 function TutorialSandbox:OnWorldLoaded()
@@ -82,7 +86,13 @@ end
 
 -- 下一步
 function TutorialSandbox:NextStep(isExecStepTask, ...)
-    self:SetStep(self:GetStep() + 1);
+    self:GoStep(self:GetStep() + 1, isExecStepTask, ...);
+end
+
+-- 调转至第几步
+function TutorialSandbox:GoStep(step, isExecStepTask, ...)
+    if (type(step) ~= "number") then return end
+    self:SetStep(step);
     if (isExecStepTask) then
         local task = self.stepTasks[self:GetStep()];
         if (type(task) == "function") then
@@ -111,7 +121,7 @@ function TutorialSandbox:GetPlayerInventory()
     return self:GetPlayer().inventory;
 end
 
--- 添加清除策略
+-- 左击清除方块策略
 function TutorialSandbox:AddLeftClickToDestroyBlockStrategy(strategy)
     strategy = BlockStrategy:new():Init(strategy);
     self:GetLeftClickToDestroyBlockStrategy()[strategy] = strategy;
@@ -123,7 +133,7 @@ function TutorialSandbox:RemoveLeftClickToDestroyBlockStrategy(strategy)
     self:GetLeftClickToDestroyBlockStrategy()[strategy] = nil;
 end
 
--- 添加创建策略
+-- 右击添加方块策略
 function TutorialSandbox:AddRightClickToCreateBlockStrategy(strategy)
     strategy = BlockStrategy:new():Init(strategy);
     self:GetRightClickToCreateBlockStrategy()[strategy] = strategy;
@@ -138,7 +148,7 @@ end
 -- 激活教学上下文
 function TutorialSandbox:ActiveTutorialContext()
     local context = SceneContextManager:GetCurrentContext();
-    if (not context:isa(TutorialContext)) then self:SetLastContext(context) end
+    if (context and not context:isa(TutorialContext)) then self:SetLastContext(context) end
     self:GetContext():activate();
 end
 
@@ -146,6 +156,8 @@ end
 function TutorialSandbox:DeactiveTutorialContext()
     if (self:GetLastContext()) then 
         self:GetLastContext():activate();
+    else
+        GameLogic.ActivateDefaultContext();
     end
 end
 
@@ -169,6 +181,36 @@ function TutorialSandbox:IsCanRightClickToCreateBlock(data)
     end
 
     return false;
+end
+
+-- 获取玩家右手中方块
+function TutorialSandbox:GetBlockInRightHand()
+    return self:GetPlayer():GetBlockInRightHand();
+end
+
+-- 设置玩家右手中方块
+function TutorialSandbox:SetBlockInRightHand(blockid_or_item_stack)
+    return self:GetPlayer():SetBlockInRightHand(blockid_or_item_stack);
+end
+
+-- 是否可以点击3D场景
+function TutorialSandbox:SetCanClickScene(bCan)
+    return self:GetContext():SetCanClickScene(bCan);
+end
+
+-- 注册按键事件
+function TutorialSandbox:RegisterKeyPressedEvent(func, name)
+    if (type(func) ~= "function") then return end
+    self.keyPressEvent[name or func] = func;
+end
+
+-- 触发按键事件
+function TutorialSandbox:OnKeyPressEvent(event)
+    local accept = false;
+    for _, func in pairs(self.keyPressEvent) do
+        accept = accept or func(event);
+    end
+    return accept;
 end
 
 -- 初始化成单列模式
