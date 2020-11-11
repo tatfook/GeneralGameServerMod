@@ -10,6 +10,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 -------------------------------------------------------
 ]]
+local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
+
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 
 Config.ConfigFile = ParaEngine.GetAppCommandLineByParam("ConfigFile", "config.xml");

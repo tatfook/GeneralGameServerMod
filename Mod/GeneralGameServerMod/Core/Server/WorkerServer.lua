@@ -50,7 +50,7 @@ function WorkerServer:Init()
     end});
 
     -- 连接控制器
-    self.connection = Connection:new():InitByIpPort(self.controlServerIp, self.controlServerPort, nil, self);
+    self.connection = Connection:new():Init({ip = self.controlServerIp, port = self.controlServerPort, netHandler = self});
     self.connection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     local function ConnectControlServer()
         self.connection:Connect(5, function(success)

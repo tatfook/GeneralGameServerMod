@@ -310,7 +310,7 @@ function GeneralGameClient:ConnectControlServer()
 
     GGS.DEBUG(string.format("control server ServerIp: %s, ServerPort: %s", serverIp, serverPort));
 
-    self.controlServerConnection = Connection:new():InitByIpPort(serverIp, serverPort, nil, self);
+    self.controlServerConnection = Connection:new():Init({ip = serverIp, port = serverPort, netHandler = self});
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
@@ -432,7 +432,6 @@ end
 function GeneralGameClient:ShowDebugInfo(debug)
     _guihelper.MessageBox(commonlib.serialize(debug));
 end
-
 
 -- 初始化成单列模式
 GeneralGameClient:InitSingleton();

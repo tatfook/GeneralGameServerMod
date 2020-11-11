@@ -44,7 +44,7 @@ function GeneralGameServer:LoadNetworkSettings()
 
 	-- 暴露接口文件
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
-	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/Connection.lua", 402);
+	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua", 402);
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 403);  
 	-- NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/ThreadHelper.lua", 404);
 end

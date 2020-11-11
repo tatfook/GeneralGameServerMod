@@ -291,8 +291,6 @@ function Player:Logout()
     self.logoutTick = os.time();
     self.aliveTime = self.logoutTick - self.loginTick;  -- 本次活跃时间
     self.state = "offline";                             -- 状态置为下线
-
-
 end
 
 -- 玩家发送数据包
@@ -303,8 +301,5 @@ end
 -- 关闭连接
 function Player:CloseConnection()
     -- 关闭玩家链接  服务器主动关闭可以导致玩家活跃后进行重连
-    if (self.playerNetHandler:GetPlayerConnection()) then
-        self.playerNetHandler:GetPlayerConnection():CloseConnection();
-        self.playerNetHandler:SetPlayerConnection(nil);
-    end
+    self.playerNetHandler:CloseConnection();
 end

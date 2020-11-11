@@ -13,7 +13,7 @@ local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
 local BlockStrategy = NPL.load("./BlockStrategy.lua", IsDevEnv);
 local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
-local Page = NPL.load("./Page/Page.lua", IsDevEnv);
+-- local Page = NPL.load("./Page/Page.lua", IsDevEnv);
 
 local TutorialSandbox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 

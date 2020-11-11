@@ -12,31 +12,39 @@ local ConnectionBase = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.
 
 local ConnectionBase = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-local AllConnections = {};
+local ConnectionThread = {};  -- 链接所在线程
+local AllConnections = {};    -- 线程所有链接
 local NextConnectionId = 0;
 
 ConnectionBase:Property("ConnectionId", 0);
-ConnectionBase:Property("Nid");
+ConnectionBase:Property("Nid", "");
 ConnectionBase:Property("ThreadName", "gl");
 ConnectionBase:Property("DefaultNeuronFile", "Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");
-ConnectionBase:Property("NetHandler");
 ConnectionBase:Property("ConnectionClosed", false, "IsConnectionClosed");
 
 function ConnectionBase:ctor()
     NextConnectionId = NextConnectionId + 1;
-    self:SetConnectionId(NextConnectionId);
+	self:SetConnectionId(NextConnectionId);
+end
+
+-- get ip address. return nil or ip address
+function ConnectionBase:GetIPAddress()
+	return NPL.GetIP(self:GetNid());
 end
 
 function ConnectionBase:Init(opts)
     if (type(opts) ~= "table") then return self end
     if (opts.threadName) then self:SetThreadName(opts.threadName) end
     if (opts.defaultNeuronFile) then self:SetDefaultNeuronFile(opts.defaultNeuronFile) end
-    if (opts.netHandler) then self:SetNetHandler(opts.netHandler) end
     
     if (opts.nid) then 
         self:SetNid(opts.nid);
-        AllConnections[self:GetNid()] = self;
+    elseif (opts.ip and opts.port) then
+        self:SetNid("ggs_" .. tostring(self:GetConnectionId()));
+        NPL.AddNPLRuntimeAddress({host = tostring(opts.ip), port = tostring(opts.port), nid = self:GetNid()});
     end
+
+    AllConnections[self:GetNid()] = self;
 
     return self;
 end
@@ -62,6 +70,7 @@ function ConnectionBase:Connect(timeout, callback_func)
 		else
 			self.is_connecting = nil;
 			LOG.std("", "warn", "Connection", "connection with %s is established", self:GetNid());	
+			self:SetConnectionClosed(false);
 			return 0;
 		end
 	else
@@ -78,11 +87,12 @@ function ConnectionBase:Connect(timeout, callback_func)
 					-- timed out. 
 					self.is_connecting = nil;
 					callback_func(false);
-					self:OnError("ConnectionNotEstablished");
+					self:CloseConnection("ConnectionNotEstablished");
 				end	
 			else
 				-- connected 
 				self.is_connecting = nil;
+				self:SetConnectionClosed(false);
 				callback_func(true)
 			end
 		end})
@@ -91,89 +101,82 @@ function ConnectionBase:Connect(timeout, callback_func)
 	end
 end
 
--- inform the netServerHandler about an error.
--- @param text: this is usually "OnConnectionLost" from ServerListener. or "ConnectionNotEstablished" from client
-function ConnectionBase:OnError(type, reason)
-    local netHandler = self:GetNetHandler();
-	if(netHandler and netHandler.handleErrorMessage) then
-		netHandler:handleErrorMessage(type, reason);
-	end
-end
-
 -- send message immediately to c++ queue
 -- @param msg: the raw message table {id=packet_id, .. }. 
 -- @param neuronfile: should be nil. By default, it is this file. 
 function ConnectionBase:Send(msg, neuronfile)
+    self:OnSend(msg, neuronfile);
+end
+
+-- 关闭连接
+function ConnectionBase:CloseConnection(reason)
+	NPL.reject({["nid"] = self:GetNid(), ["reason"] = reason});
+	AllConnections[self:GetNid()] = nil;
+    self:SetConnectionClosed(true);
+    self:OnClose(reason);
+end
+
+-- 发送消息
+function ConnectionBase:OnSend(msg, neuronfile)
     if (self:IsConnectionClosed()) then return end
 	local address = self:GetRemoteAddress(neuronfile);
-    if(NPL.activate(address, self:OnSend(msg)) ~= 0) then
+    if(NPL.activate(address, msg) ~= 0) then
         LOG.std(nil, "warn", "Connection", "unable to send to %s.", self:GetNid());
         self:CloseConnection("发包失败");
     end
 end
 
--- 关闭连接
-function ConnectionBase:CloseConnection(reason)
-    if (self:GetNid()) then 
-        NPL.reject({["nid"] = self:GetNid(), ["reason"] = reason});
-        AllConnections[self:GetNid()] = nil;
-    end
-    self:SetConnectionClosed(true);
-    connection:OnError("OnConnectionLost", reason);
-    self:OnClose();
-end
-
-function ConnectionBase:OnSend(msg)
-    return msg;
-end
-
+-- 接受消息
 function ConnectionBase:OnReceive(msg)
-	-- local packet = Packet_Types:GetNewPacket(msg.id);
-	-- if(packet) then
-	-- 	packet:ReadPacket(msg);
-	-- 	packet:ProcessPacket(self.net_handler);
-	-- else
-	-- 	self.net_handler:handleMsg(msg);
-	-- end
 end
 
+-- 链接关闭
 function ConnectionBase:OnClose()
+end
+
+-- 新链接
+function ConnectionBase:OnConnection()
 end
 
 -- 网络事件
 commonlib.setfield("ConnectionBase_", ConnectionBase);
 NPL.RegisterEvent(0, "_n_Connections_network", ";ConnectionBase_.OnNetworkEvent();");
+-- NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", 400);
+
 -- c++ callback function. 
 function ConnectionBase.OnNetworkEvent()
     local nid = msg.nid or msg.tid;
-    local msg_code = msg.code;
-    local msg_msg = msg.msg or "网络事件触发";
-    local connection = AllConnections[nid];
-    if (not connection) then return end
-
-    if(msg_code == NPLReturnCode.NPL_ConnectionDisconnected) then
-        connection:CloseConnection("OnConnectionLost: " .. msg_msg);
+	local threadName = ConnectionThread[nid] or "main";
+	if(msg.code == NPLReturnCode.NPL_ConnectionDisconnected) then
+		NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", threadName), {action = "ConnectionDisconnected", ConnectionNid = nid});
+	else
 	end
 end
 
--- 连接回调
-function ConnectionBase.OnConnection(id)
+function ConnectionBase:OnActivate(msg)
+	local nid = msg and (msg.nid or msg.tid);
+	if (not nid) then return end
+	
+	local connection = AllConnections[nid];
+    if(connection) then return connection:OnReceive(msg) end
+	
+	self:new():Init({nid=nid}):OnConnection();
+	
+	NPL.activate("(main)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", {action = "ConnectionEstablished", threadName = __rts__:GetName(), ConnectionNid = nid});
 end
 
-function ConnectionBase.OnActivate(msg)
-	local id = msg.nid or msg.tid;
-    if (not id) then return end
 
-    local connection = AllConnections[id];
-    if(connection) then
-        connection:OnReceive(msg);
-    else 
-        ConnectionBase.OnConnection(id);
-    end
-end
+NPL.this(function() 
+	local nid = msg and (msg.nid or msg.tid);
+	local action = msg and msg.action;
+	local threadName = __rts__:GetName();
 
-local function activate()
-    ConnectionBase.OnActivate(msg);
-end
+	if (nid) then return ConnectionBase:OnActivate(msg) end
 
-NPL.this(activate);
+	if (action == "ConnectionEstablished") then
+		ConnectionThread[msg.ConnectionNid] = msg.threadName; 
+	elseif (action == "ConnectionDisconnected") then
+		local connection = AllConnections[msg.ConnectionNid];
+		if (connection) then connection:CloseConnection("链接断开") end
+	end
+end);

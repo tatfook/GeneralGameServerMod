@@ -15,20 +15,15 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
-local Connections = commonlib.gettable("MyCompany.Aries.Game.Network.Connections");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
-local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
-local ControlServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
+local ControlServer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
 
 local servers = {};  -- 服务器信息集
 local ServerAliveDuration = 1000 * 60 * 5;  -- 5min
 
 function ControlServer:ctor()
-end
-
-function ControlServer:Init(nid)
-    self.connection = Connection:new():Init(nid, nil, self);
+    self:SetNetHandler(self);
 end
 
 function ControlServer:GetWorldManager()
@@ -74,9 +69,9 @@ function ControlServer:GetStatisticsInfo()
 end
 
 function ControlServer:GetServer(isNewNotExist)
-    local connectionId = self.connection:GetId();
-    if (not servers[connectionId] and isNewNotExist) then servers[connectionId] = {} end
-    return servers[connectionId];
+    local nid = self:GetNid();
+    if (not servers[nid] and isNewNotExist) then servers[nid] = {} end
+    return servers[nid];
 end
 
 function ControlServer:UpdateServerInfo()
@@ -185,7 +180,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
         GGS.WARN.Format("世界key: %s 无可用服务", worldKey);
     end
 
-    self.connection:AddPacketToSendQueue(packetWorldServer);
+    self:AddPacketToSendQueue(packetWorldServer);
 end
 
 -- 获取可用的服务器列表
@@ -219,36 +214,23 @@ function ControlServer:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
     if (action == "ServerList") then 
         packetGeneral.data = self:GetAvailableServers();
-        self.connection:AddPacketToSendQueue(packetGeneral);
+        self:AddPacketToSendQueue(packetGeneral);
     elseif (action == "ServerInfo") then
         local server = self:handleServerInfo(packetGeneral.data);
-        self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerInfo", data = server}));
-        self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerList", data = self:GetAvailableServers()}));
+        self:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerInfo", data = server}));
+        self:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerList", data = self:GetAvailableServers()}));
     elseif (action == "WorldInfo") then
         local server = self:handleWorldInfo(packetGeneral.data);
     elseif (action == "StatisticsInfo") then
-        self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "StatisticsInfo", data = self:GetStatisticsInfo()}));
+        self:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "StatisticsInfo", data = self:GetStatisticsInfo()}));
     end
 end
 
 -- 连接丢失
-function ControlServer:handleErrorMessage(text, connection)
-    local connectionId = self.connection:GetId();
-    servers[connectionId] = nil;
+function ControlServer:handleDisconnection()
+    servers[self:GetNid()] = nil;
 end
 
--- 激活函数
-local function activate()
-    if (not msg) then return end
-	local id = msg.nid or msg.tid;
-    if (not id) then return end
-
-    local connection = Connections:GetConnection(id)
-    if(connection) then
-        connection:OnNetReceive(msg);
-    else
-        ControlServer:new():Init(id)
-    end
-end
-
-NPL.this(activate);
+NPL.this(function() 
+	ControlServer:OnActivate(msg);
+end);

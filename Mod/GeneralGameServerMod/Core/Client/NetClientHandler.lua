@@ -35,7 +35,7 @@ NetClientHandler:Property("World");          -- 世界
 NetClientHandler:Property("Client");         -- 客户端
 NetClientHandler:Property("BlockManager");   -- 方块管理器
 NetClientHandler:Property("PlayerManager");  -- 玩家管理器
-
+NetClientHandler:Property("Logout", false, "IsLogout");  -- 是否退出
 local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
 function NetClientHandler:ctor() 
@@ -304,7 +304,6 @@ function NetClientHandler:handleGeneral_SyncBlock(packetGeneral)
     end
 end
 
-
 -- 处理方块点击
 function NetClientHandler:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
@@ -425,12 +424,11 @@ function NetClientHandler:Connect()
     local options = self:GetClient():GetOptions();
 
     -- 在连接中直接返回
-    if (self.isConnecting) then return end;
+    if (self.isConnecting or self:IsLogout()) then return end;
     self.isConnecting = true;
 
     -- 获取连接
-    self.connection = Connection:new():InitByIpPort(options.ip, options.port, options.threadName, self);
-    self.connection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/Connection.lua");
+    self.connection = Connection:new():Init({ip = options.ip, port = options.port, threadName = options.threadName, netHandler = self, defaultNeuronFile = "Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua"});
     GGS.DEBUG.Format(self.connection:GetRemoteAddress());
     -- 连接成功
     if (self.connection:Connect() == 0) then 
@@ -455,7 +453,9 @@ function NetClientHandler:Connect()
 end
 
 -- 处理错误信息
-function NetClientHandler:handleErrorMessage(text)
+function NetClientHandler:handleDisconnection(text)
+    if (self:IsLogout()) then return end
+    
     -- 连接已清说已做过错误处理
     PlayerLoginLogoutDebug(string.format("client connection error %s and nid: %s, isConntectionWorld: %s", text or "", self.connection and self.connection:GetNid() or 0, GameLogic.GetWorld() == self:GetWorld()));
     
@@ -477,9 +477,11 @@ end
 
 -- clean up connection. 
 function NetClientHandler:Cleanup()
+    self:SetLogout(true);
+
     -- 关闭连接
     if (self.connection) then
-        self.connection:NetworkShutdown();
+        self.connection:CloseConnection();
         self.connection = nil;
     end
 

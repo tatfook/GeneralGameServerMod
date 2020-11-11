@@ -9,6 +9,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
 local NetServerHandler = commonlib.gettable("GeneralGameServerMod.Core.Server.NetServerHandler");
 -------------------------------------------------------
 ]]
+local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
+NPL.load("(gl)script/ide/System/System.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
@@ -16,9 +18,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
-local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local NetServerHandler = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler"));
+local NetServerHandler = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler"));
 
 NetServerHandler:Property("Authenticated", false, "IsAuthenticated");  -- 是否认证
 NetServerHandler:Property("Player");                                   -- 当前玩家
@@ -26,26 +27,17 @@ NetServerHandler:Property("World");                                    -- 当前
 NetServerHandler:Property("PlayerManager");                            -- 世界玩家管理器
 NetServerHandler:Property("WorldManager");                             -- 世界管理器
 NetServerHandler:Property("WorkerServer");                             -- 工作服务器
-NetServerHandler:Property("PlayerConnection");                         -- 玩家链接
 
 local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
-
-Config:StaticInit();
 
 function NetServerHandler:ctor() 
     self:SetWorkerServer(WorkerServer);
     self:SetWorldManager(WorldManager);
-end
-
--- @param tid: this is temporary identifier of the socket connnection
-function NetServerHandler:Init(tid)
-	self:SetPlayerConnection(Connection:new():Init(tid, nil, self));
-	return self;
+    self:SetNetHandler(self);
 end
 
 function NetServerHandler:SendPacketToPlayer(packet)
-    if (not self:GetPlayerConnection()) then return end
-    return self:GetPlayerConnection():AddPacketToSendQueue(packet);
+    return self:AddPacketToSendQueue(packet);
 end
 
 -- 用户认证成功
@@ -58,7 +50,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     local worldKey = packetPlayerLogin.worldKey;
     local options = packetPlayerLogin.options;
 
-    PlayerLoginLogoutDebug(string.format("玩家请求登录 username : %s, worldId: %s, worldName: %s, worldType: %s, worldKey: %s, nid: %s, threadName: %s", username, worldId, worldName, worldType, worldkey, self:GetPlayerConnection():GetNid(), __rts__:GetName()));
+    PlayerLoginLogoutDebug(string.format("玩家请求登录 username : %s, worldId: %s, worldName: %s, worldType: %s, worldKey: %s, nid: %s, threadName: %s", username, worldId, worldName, worldType, worldkey, self:GetNid(), __rts__:GetName()));
 
     -- 获取并设置世界
     self:SetWorld(self:GetWorldManager():GetWorld(worldId, worldName, worldType, true, worldKey));
@@ -132,21 +124,16 @@ end
 
 -- 玩家重新登录, 当连接存在玩家丢失需要重新等陆, 这个问题与TCP自身自动重连有关(玩家第一次登录, 登录切后台, tcp自行断开, 程序恢复前台, tcp自行重连, 这样跳过了登录步骤,导致用户丢失, 这种发送客户端重连数据包)
 function NetServerHandler:handlePlayerRelogin()
-    PlayerLoginLogoutDebug("玩家丢失重新登录: " .. tostring(self:GetPlayerConnection():GetIPAddress()));
+    PlayerLoginLogoutDebug("玩家丢失重新登录: " .. tostring(self:GetIPAddress()));
    
     self:SendPacketToPlayer(Packets.PacketGeneral:GetReloginPacket());
 end
 
 -- 链接出错 玩家退出
-function NetServerHandler:handleErrorMessage(text, data)
-    -- 链接出错关闭, 关闭连接
-    if (self:GetPlayerConnection()) then
-        self:GetPlayerConnection():CloseConnection();
-        self:SetPlayerConnection(nil);
-    end
-
+function NetServerHandler:handlePlayerLogout(text)
     -- 玩家不存在, 直接退出    
     if (not self:GetPlayer()) then return end
+    PlayerLoginLogoutDebug.Format("玩家链接断开: UserName = %s", self:GetPlayer():GetUserName());
    
     -- 下线走离线流程 登出直接踢出服务器
     self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家主动下线");
@@ -257,3 +244,12 @@ function NetServerHandler:handleMultiple(packetMultiple)
         self:GetPlayerManager():SendPacketToAllPlayers(packetMultiple, self:GetPlayer());
     end
 end
+
+-- 处理链接关闭
+function NetServerHandler:handleDisconnection(reason)
+    self:handlePlayerLogout(reason);
+end
+
+NPL.this(function() 
+	NetServerHandler:OnActivate(msg);
+end);
