@@ -96,7 +96,6 @@ end
 
 -- 更新统计信息
 function WorkerServer:UpdateStatisticsInfo()
-    echo("-------------------------------")
     if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "UpdateStatisticsInfo"}) end
 
     self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "StatisticsInfo"}));
