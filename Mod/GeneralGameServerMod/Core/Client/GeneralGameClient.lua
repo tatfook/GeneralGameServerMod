@@ -209,7 +209,7 @@ function GeneralGameClient:LoadWorld(opts, loadworld)
     options.worldId = tostring(opts.worldId or curWorldId or options.defaultWorldId);
     options.username = options.username or self:GetUserInfo().username;
     options.ip = opts.ip;            -- ip port 每次重写
-    options.port = options.port;     -- 以便动态获取
+    options.port = opts.port;     -- 以便动态获取
   
     -- 打印选项值
     GGS.INFO(options);
