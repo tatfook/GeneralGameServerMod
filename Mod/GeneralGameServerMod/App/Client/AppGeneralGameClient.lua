@@ -25,6 +25,7 @@ local AppGeneralGameClient = commonlib.inherit(commonlib.gettable("Mod.GeneralGa
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
 local AppClientDataHandler = NPL.load("Mod/GeneralGameServerMod/App/Client/AppClientDataHandler.lua");
+local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 
 -- 构造函数
 function AppGeneralGameClient:ctor()
@@ -55,11 +56,22 @@ function AppGeneralGameClient:Init()
     -- 基类初始化
     AppGeneralGameClient._super.Init(self);
 
-    -- 配置GGS的默认选项值
-    -- self:GetOptions().isSyncBlock = true;
-    -- self:GetOptions().serverIp = "127.0.0.1";
-    -- self:GetOptions().serverPort = "9000";
-    -- self:GetOptions().defaultWorldId = 1;
+    if (GGS.IsTestEnv) then
+        self:SetOptions({
+            serverIp = "ggs.keepwork.com";
+            serverPort = "9001";
+        });
+    elseif (GGS.IsDevEnv) then
+        self:SetOptions({
+            serverIp = "127.0.0.1";
+            serverPort = "9000";
+        });
+    else 
+        self:SetOptions({
+            serverIp = "ggs.keepwork.com";
+            serverPort = "9000";
+        });
+    end
 
     self.inited = true;
 end
@@ -168,31 +180,6 @@ function AppGeneralGameClient:IsAnonymousUser()
     if (isAnonymousUser ~= nil) then return isAnonymousUser end
 
     return self:GetOptions().username ~= System.User.keepworkUsername;  -- 匿名用户不支持离线缓存
-end
-
--- 动态设置客户端环境
-function AppGeneralGameClient:SetEnv(env)
-    AppGeneralGameClient._super.SetEnv(self, env);
-
-    if (env == "test") then
-        self:SetOptions({
-            serverIp = "ggs.keepwork.com";
-            serverPort = "9001";
-        });
-        GGS.INFO("切换到测试环境");
-    elseif (env == "dev") then
-        self:SetOptions({
-            serverIp = "127.0.0.1";
-            serverPort = "9000";
-        });
-        GGS.INFO("切换到开发环境");
-    else 
-        self:SetOptions({
-            serverIp = "ggs.keepwork.com";
-            serverPort = "9000";
-        });
-        GGS.INFO("切换到正式环境");
-    end
 end
 
 -- 初始化成单列模式

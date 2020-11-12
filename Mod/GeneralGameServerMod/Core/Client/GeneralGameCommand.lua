@@ -152,23 +152,6 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 	-- 设置客户端
 	self:SetGeneralGameClient(GeneralGameServerMod:GetClientClass(options.app) or AppGeneralGameClient);
 
-	if (IsDevEnv) then options.dev = true end
-	
-	-- 设置环境
-	if (options.dev) then 
-		self:GetGeneralGameClient():SetEnv("dev"); 
-	elseif (options.test) then
-		self:GetGeneralGameClient():SetEnv("test");
-	elseif (options.prod) then
-		self:GetGeneralGameClient():SetEnv("prod");
-	else
-		if (GGS.IsDevEnv) then
-			self:GetGeneralGameClient():SetEnv("dev");
-		else
-			self:GetGeneralGameClient():SetEnv("prod");
-		end
-	end
-	
 	self:GetGeneralGameClient():LoadWorld(options);
 end
 

@@ -92,17 +92,6 @@ function GeneralGameClient:Exit()
     self:OnWorldUnloaded();
 end
 
--- 动态设置客户端环境
-function GeneralGameClient:SetEnv(env)
-    if (env == "test") then
-        GGS.IsTestEnv = true;
-    elseif (env == "dev") then
-        GGS.IsDevEnv = true;
-    else 
-        GGS.IsDevEnv, GGS.IsTestEnv = false, false;
-    end
-end
-
 -- 获取玩家支持的形象列表
 function GeneralGameClient:GetAssetsWhiteList()
     return AssetsWhiteList;

@@ -5,8 +5,7 @@ Date: 2020/6/19
 Desc: GGS 全局对象
 use the lib:
 -------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
-local GGS = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.GGS");
+local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 -------------------------------------------------------
 ]]
 
@@ -18,10 +17,15 @@ local GGS = NPL.export();
 local GeneralGameClients = {};
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local servermode = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
+local env = ParaEngine.GetAppCommandLineByParam("env", "online");  -- online release stage local
 
 _G.IsDevEnv = true and IsDevEnv;
+_G.Env = Env;
 
 GGS.IsDevEnv = IsDevEnv;
+GGS.IsTestEnv = env == "release";
+GGS.IsProdEnv = env == "online";
+
 GGS.IsServer = servermode;
 
 	
