@@ -136,6 +136,12 @@ end
 
 -- 新链接
 function ConnectionBase:OnConnection()
+	NPL.activate("(main)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", {action = "ConnectionEstablished", threadName = __rts__:GetName(), ConnectionNid = nid});
+end
+
+-- 获取连接
+function ConnectionBase:GetConnectionByNid(nid)
+	return AllConnections[nid];
 end
 
 -- 网络事件
@@ -156,13 +162,10 @@ end
 function ConnectionBase:OnActivate(msg)
 	local nid = msg and (msg.nid or msg.tid);
 	if (not nid) then return end
-	
 	local connection = AllConnections[nid];
     if(connection) then return connection:OnReceive(msg) end
 	
 	self:new():Init({nid=nid}):OnConnection();
-	
-	NPL.activate("(main)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", {action = "ConnectionEstablished", threadName = __rts__:GetName(), ConnectionNid = nid});
 end
 
 

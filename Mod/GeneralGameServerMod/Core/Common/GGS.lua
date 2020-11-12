@@ -33,6 +33,8 @@ GGS.WARN = Debug.GetModuleDebug("WARN");
 GGS.ERROR= Debug.GetModuleDebug("ERROR");
 GGS.FATAL= Debug.GetModuleDebug("FATAL");
 
+if (not IsDevEnv) then GGS.DEBUG.Disable() end
+
 -- 业务逻辑DEBUG
 GGS.PlayerLoginLogoutDebug = Debug.GetModuleDebug("PlayerLoginLogoutDebug");   -- 玩家登录登出日志
 GGS.NetDebug = Debug.GetModuleDebug("NetDebug");                               -- 发送接收数据包日志

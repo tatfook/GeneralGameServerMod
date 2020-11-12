@@ -44,6 +44,10 @@
       outerPort="9000">
     </WorkerServer>
   </Server>
+  <!-- filename: 数据处理脚本 文件名必须为NPL.load支持的路径 -->
+  <DataHandler 
+    filename="Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua">
+  </DataHandler>
   <!-- 世界相关信息配置
   areaSize: 世界区域大小 推荐值64, 128 (玩家视区最大40方块, 世界区域大小通常为视区的2倍) 设置此值后, 玩家信息同步只会同步当前玩家该范围内的玩家数据, 是一种优化选项, 禁用区域优化填0, 世界玩家数量不多时不建议开启
   minClientCount: 最少玩家数 当玩家数量小于此值会保留离线玩家
@@ -121,6 +125,9 @@
       outerPort="9000">
     </WorkerServer>
   </Server>
+  <DataHandler 
+    filename="Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua">
+  </DataHandler>
   <World 
     areaSize=0
     minClientCount=10 

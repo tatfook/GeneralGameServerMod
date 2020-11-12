@@ -6,7 +6,7 @@ Desc: 网络处理程序
 use the lib:
 -------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
-local NetServerHandler = commonlib.gettable("GeneralGameServerMod.Core.Server.NetServerHandler");
+local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
 -------------------------------------------------------
 ]]
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
@@ -20,6 +20,7 @@ local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Wo
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
 local NetServerHandler = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler"));
+local ServerDataHandler = NPL.load("Mod/GeneralGameServerMod/Core/Server/ServerDataHandler.lua");
 
 NetServerHandler:Property("Authenticated", false, "IsAuthenticated");  -- 是否认证
 NetServerHandler:Property("Player");                                   -- 当前玩家
@@ -27,13 +28,20 @@ NetServerHandler:Property("World");                                    -- 当前
 NetServerHandler:Property("PlayerManager");                            -- 世界玩家管理器
 NetServerHandler:Property("WorldManager");                             -- 世界管理器
 NetServerHandler:Property("WorkerServer");                             -- 工作服务器
+NetServerHandler:Property("DataHandler");                              -- 数据处理
 
 local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
+
+local function GetDataHandler(netHandler)
+    local DataHandler = NPL.load(Config.DataHandler.filename) or ServerDataHandler;
+    return DataHandler:new():Init(netHandler);
+end
 
 function NetServerHandler:ctor() 
     self:SetWorkerServer(WorkerServer);
     self:SetWorldManager(WorldManager);
     self:SetNetHandler(self);
+    self:SetDataHandler(GetDataHandler(self));
 end
 
 function NetServerHandler:SendPacketToPlayer(packet)
@@ -125,7 +133,7 @@ end
 -- 玩家重新登录, 当连接存在玩家丢失需要重新等陆, 这个问题与TCP自身自动重连有关(玩家第一次登录, 登录切后台, tcp自行断开, 程序恢复前台, tcp自行重连, 这样跳过了登录步骤,导致用户丢失, 这种发送客户端重连数据包)
 function NetServerHandler:handlePlayerRelogin()
     PlayerLoginLogoutDebug("玩家丢失重新登录: " .. tostring(self:GetIPAddress()));
-   
+
     self:SendPacketToPlayer(Packets.PacketGeneral:GetReloginPacket());
 end
 
@@ -133,6 +141,7 @@ end
 function NetServerHandler:handlePlayerLogout(text)
     -- 玩家不存在, 直接退出    
     if (not self:GetPlayer()) then return end
+    
     PlayerLoginLogoutDebug.Format("玩家链接断开: UserName = %s", self:GetPlayer():GetUserName());
    
     -- 下线走离线流程 登出直接踢出服务器
@@ -228,6 +237,8 @@ function NetServerHandler:handleGeneral(packetGeneral)
         self:handleGeneral_SyncBlock(packetGeneral);
     elseif (packetGeneral.action == "Debug") then
         self:handleGeneral_Debug(packetGeneral);
+    elseif (packetGeneral.action == "DATA") then
+        self:GetDataHandler():RecvData(packetGeneral.data);
     else
         self:GetPlayerManager():SendPacketToAllPlayers(packetGeneral, self:GetPlayer());
     end

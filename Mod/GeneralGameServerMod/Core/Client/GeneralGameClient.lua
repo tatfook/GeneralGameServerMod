@@ -12,9 +12,9 @@ GeneralGameClient:LoadWorld({ip = "127.0.0.1", port = "9000", worldId = "12348"}
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/Entity.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldMain.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Common.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/ClientDataHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/NetClientHandler.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
@@ -27,8 +27,9 @@ local Entity = commonlib.gettable("MyCompany.Aries.Game.EntityManager.Entity");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
-local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
+local ClientDataHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.ClientDataHandler");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
+local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
 
@@ -122,6 +123,10 @@ end
 -- 获取其它玩家类
 function GeneralGameClient:GetEntityOtherPlayerClass()
     return EntityOtherPlayer;
+end
+-- 获取网络数据处理类
+function GeneralGameClient:GetClientDataHandlerClass()
+    return ClientDataHandler;
 end
 
 -- 获取强制同步块列表

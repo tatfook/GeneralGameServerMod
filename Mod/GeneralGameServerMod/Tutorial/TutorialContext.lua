@@ -39,6 +39,7 @@ end
 
 function TutorialContext:HandleGlobalKey(event)
 	-- 禁用全局按键行为
+	TutorialContext._super.HandleGlobalKey(self, event);
 end
 
 function TutorialContext:handlePlayerKeyEvent(event)

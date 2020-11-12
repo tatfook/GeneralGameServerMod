@@ -17,6 +17,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameWorld.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/ClientDataHandler.lua");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
@@ -27,6 +28,7 @@ local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clien
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
+local ClientDataHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.ClientDataHandler");
 local NetClientHandler = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler"));
 
 NetClientHandler:Property("UserName");       -- 用户名
@@ -35,6 +37,7 @@ NetClientHandler:Property("World");          -- 世界
 NetClientHandler:Property("Client");         -- 客户端
 NetClientHandler:Property("BlockManager");   -- 方块管理器
 NetClientHandler:Property("PlayerManager");  -- 玩家管理器
+NetClientHandler:Property("DataHandler");    -- 数据处理
 NetClientHandler:Property("Logout", false, "IsLogout");  -- 是否退出
 local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
@@ -62,6 +65,8 @@ function NetClientHandler:Init(world)
     self:SetBlockManager(self:GetWorld():GetBlockManager());
     -- 设置用户名
     self:SetUserName(self:GetClient():GetOptions().username);
+    
+    self:SetDataHandler((self:GetClient():GetClientDataHandlerClass() or ClientDataHandler):new():Init(self));
 
     -- 连接服务器
     self:Connect();
@@ -315,6 +320,8 @@ function NetClientHandler:handleGeneral(packetGeneral)
         self:GetClient():handleServerWorldList(packetGeneral);
     elseif (action == "Debug") then
         self:handleGeneral_Debug(packetGeneral);
+    elseif (action == "DATA") then
+        self:GetDataHandler():RecvData(packetGeneral.data);
     end
     -- 直接重新登录
     if (packetGeneral:IsReloginPacket()) then
@@ -428,7 +435,9 @@ function NetClientHandler:Connect()
     self.isConnecting = true;
 
     -- 获取连接
-    self.connection = Connection:new():Init({ip = options.ip, port = options.port, threadName = options.threadName, netHandler = self, defaultNeuronFile = "Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua"});
+    self.connection = Connection:new():Init({ip = options.ip, port = options.port, threadName = options.threadName, netHandler = self});
+    self.connection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
+
     GGS.DEBUG.Format(self.connection:GetRemoteAddress());
     -- 连接成功
     if (self.connection:Connect() == 0) then 

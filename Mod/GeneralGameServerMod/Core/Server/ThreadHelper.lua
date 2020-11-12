@@ -30,7 +30,11 @@ ThreadHelper:InitSingleton():Init();
 
 -- 激活函数
 local function activate()
-	local action = msg and msg.action;
+    local nid = msg and (msg.nid or msg.tid);
+    local action = msg and msg.action;
+    if (not nid) then return end
+    echo(msg);
+    
 end
 
 print(string.format("========================Thread(%s) Load======================", __rts__:GetName()));

@@ -12,6 +12,7 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 NPL.load("(gl)script/ide/System/System.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketTypes.lua");
 local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
+local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 local ConnectionBase = NPL.load("Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");
 local Connection = commonlib.inherit(ConnectionBase, commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"));
@@ -31,6 +32,8 @@ function Connection:Init(opts)
 end
 
 function Connection:OnConnection()
+	
+	
 	local netHandler = self:GetNetHandler();
 	if(netHandler and netHandler.handleConnection) then
 		netHandler:handleConnection();
@@ -49,8 +52,12 @@ function Connection:AddPacketToSendQueue(packet)
 	return self:Send(packet);
 end
 
+function Connection:SendData(data)
+	self:Send(Packets.PacketGeneral:GetDataPacket(data));
+end
+
 function Connection:OnSend(packet, neuronfile)
-	return Connection._super.OnSend(self, packet:WritePacket(), neuronfile);
+	return Connection._super.OnSend(self, type(packet.WritePacket) == "function" and packet:WritePacket() or packet, neuronfile);
 end
 
 -- 接受数据包
@@ -84,6 +91,20 @@ function Connection:OnReceive(msg)
 	if (netHandler and netHandler.OnAfterProcessPacket) then
 		netHandler:OnAfterProcessPacket(packet or msg, msg);
 	end
+end
+
+-- 版本兼容, 升级几个小版本后可以移除
+function Connection:OnActivate(msg)
+	if (not GGS.IsServer or self ~= Connection) then return Connection._super.OnActivate(self, msg) end
+
+	local nid = msg and (msg.nid or msg.tid);
+	local connection = self:GetConnectionByNid(nid);
+	if(connection) then return connection:OnReceive(msg) end
+
+
+	NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
+	local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
+	NetServerHandler:new():Init({nid = nid}):OnConnection();
 end
 
 NPL.this(function() 

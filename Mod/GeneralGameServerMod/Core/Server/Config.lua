@@ -72,6 +72,9 @@ function Config:StaticInit()
         NetDebug = false,
         PlayerLoginLogoutDebug = true,
     }
+    self.DataHandler = {
+        filename = "Mod/GeneralGameServerMod/Core/Server/ServerDataHandler.lua",
+    }
 
     self.IsDevEnv = IsDevEnv;
     
@@ -123,6 +126,10 @@ function Config:LoadConfig(filename)
     -- 玩家配置
     local Player = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Player");
     CopyXmlAttr(self.Player, Player and Player.attr);
+
+    -- 玩家配置
+    local DataHandler = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/DataHandler");
+    CopyXmlAttr(self.DataHandler, DataHandler and DataHandler.attr);
 
     -- Debug
     local Debug = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Debug");

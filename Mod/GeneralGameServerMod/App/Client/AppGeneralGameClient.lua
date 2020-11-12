@@ -24,6 +24,7 @@ local AppEntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Cli
 local AppGeneralGameClient = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient"));
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
+local AppClientDataHandler = NPL.load("Mod/GeneralGameServerMod/App/Client/AppClientDataHandler.lua");
 
 -- 构造函数
 function AppGeneralGameClient:ctor()
@@ -88,6 +89,10 @@ end
 -- 获取其它玩家类
 function AppGeneralGameClient:GetEntityOtherPlayerClass()
     return AppEntityOtherPlayer;
+end
+-- 获取网络数据处理类
+function AppGeneralGameClient:GetClientDataHandlerClass()
+    return AppClientDataHandler;
 end
 
 -- 拷贝KeepWork用户信息

@@ -3,11 +3,12 @@
 
 客户端由一下五个主类文件实现:
 
-- EntityMainPlayer: 主玩家类
+- EntityMainPlayer:  主玩家类
 - EntityOtherPlayer: 非主玩家类 
 - GeneralGameClient: 主类(入口类)  其它四类由主类提供
-- GeneralGameWorld: 世界类
-- NetClientHandler: 网络请求处理类
+- GeneralGameWorld:  世界类
+- NetClientHandler:  网络请求处理类
+- ClientDataHandler: 业务网络数据处理类
 
 ## 业务派生
 

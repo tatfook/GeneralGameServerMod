@@ -46,7 +46,7 @@ function GeneralGameServer:LoadNetworkSettings()
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua", 402);
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 403);  
-	-- NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/ThreadHelper.lua", 404);
+	-- NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ThreadHelper.lua", 404);
 end
 
 -- 启动服务

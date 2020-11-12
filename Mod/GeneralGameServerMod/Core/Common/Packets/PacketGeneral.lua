@@ -26,9 +26,18 @@ end
 
 -- Passes this Packet on to the NetHandler for processing.
 function PacketGeneral:ProcessPacket(net_handler)
-	if(net_handler.handleGeneral) then
+	if (self.action == "DATA" and type(net_handler.handleData) == "function") then
+		net_handler:handleData(self.data);
+	elseif(net_handler.handleGeneral) then
 		net_handler:handleGeneral(self);
 	end
+end
+
+function PacketGeneral:GetDataPacket(data)
+	return PacketGeneral:new():Init({
+		action = "DATA",
+		data = data,
+	})
 end
 
 function PacketGeneral:GetReloginPacket(data)
