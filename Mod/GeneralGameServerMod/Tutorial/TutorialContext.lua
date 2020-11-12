@@ -77,13 +77,13 @@ end
 function TutorialContext:mouseMoveEvent(event)
 	if (not self:IsCanClickScene()) then return end
 	
-	TutorialContext._super.mousePressEvent(self, event);
+	TutorialContext._super.mouseMoveEvent(self, event);
 end
 
 function TutorialContext:mouseReleaseEvent(event)
 	if (not self:IsCanClickScene()) then return end
 	
-	TutorialContext._super.mousePressEvent(self, event);
+	TutorialContext._super.mouseReleaseEvent(self, event);
 end
 
 function TutorialContext:handleLeftClickScene(event, result)

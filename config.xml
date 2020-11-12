@@ -107,6 +107,7 @@
 <GeneralGameServerDev>
   <Server 
     threadCount=3
+    threadMaxClientCount=2
     listenIp="0.0.0.0" 
     isControlServer=true
     isWorkerServer=true
@@ -130,8 +131,8 @@
   </DataHandler>
   <World 
     areaSize=0
-    minClientCount=10 
-    maxClientCount=200>
+    minClientCount=0 
+    maxClientCount=1>
   </World>
   <Player>
   </Player>
