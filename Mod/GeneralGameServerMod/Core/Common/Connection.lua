@@ -76,7 +76,11 @@ function Connection:OnReceive(msg)
 
 	-- 处理数据包
 	if(packet) then
-		packet:ProcessPacket(netHandler);
+		if (netHandler) then 
+			packet:ProcessPacket(netHandler);
+		else
+			GGS.INFO("net handler no exist");
+		end
 	else
 		GGS.INFO("invalid packet");
 		if (netHandler and netHandler.handleMsg) then
