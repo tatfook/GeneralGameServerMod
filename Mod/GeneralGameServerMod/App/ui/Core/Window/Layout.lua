@@ -10,6 +10,7 @@ local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout.lua"
 ]]
 
 local Layout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+local LayoutFlex = NPL.load("./LayoutFlex.lua", IsDevEnv);
 
 local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Enable(); --Enable  Disable
 
@@ -472,26 +473,7 @@ local function LayoutElementFilter(el)
 end 
 
 function Layout:UpdateFlexLayoutRealContentWidthHeight()
-	local width, height = self:GetWidthHeight();
-	local availableX, availableY, rightAvailableX, rightAvailableY, realContentWidth, realContentHeight = 0, 0, 0, 0, 0, 0;
-	local lines, line = {}, {elements = {}, width = 0, height = 0, flex = 0};
-	table.insert(lines, line);
-	for child in self:GetElement():ChildElementIterator(true, LayoutElementFilter) do
-		local childLayout, childStyle = child:GetLayout(), child:GetStyle();
-		local childSpaceWidth, childSpaceHeight = childLayout:GetSpaceWidthHeight();
-
-		if (width and (line.width + childSpaceWidth) > width) then
-			line = {elements = {}, width = 0, height = 0, flex = 0};
-			table.insert(lines, line);
-		end
-
-		line.flex = line.flex + (childStyle.flex or 0);
-		line.width = line.width + childSpaceWidth;
-		line.height = math.max(line.height, childSpaceHeight);
-		table.insert(lien.elements, child);
-
-	end
-
+	return LayoutFlex.Update(self);
 end
 
 -- 更新盒子内容宽高
