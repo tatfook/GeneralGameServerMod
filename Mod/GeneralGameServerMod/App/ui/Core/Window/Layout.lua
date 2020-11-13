@@ -218,6 +218,10 @@ function Layout:IsBlock()
 	local style = self:GetStyle();
 	return (not style.display or style.display == "block") and not style.float;
 end
+-- 弹性元素识别
+function Layout:IsFlex()
+	return self:GetStyle().display == "flex";
+end
 -- 是定位元素
 function Layout:IsPosition()
 	local style = self:GetStyle();
@@ -327,8 +331,8 @@ function Layout:PrepareLayout()
     end
 
 	-- 数字化宽高
-	local width, height = style.width, style.height;                                                     -- 支持百分比, px
-	if (self:IsBlock() and not self:IsPosition() and not width and parentLayout) then                    -- 块元素默认为父元素宽
+	local width, height = style.width, style.height;                                                                                   -- 支持百分比, px
+	if (self:IsBlock() and not self:IsPosition() and not width and parentLayout and not parentLayout:IsFlex()) then                    -- 块元素默认为父元素宽
 		width = parentLayout:GetContentWidthHeight();
 	end             
 	width = self:PercentageToNumber(width, parentWidth);
@@ -467,10 +471,6 @@ function Layout:UpdateRealContentWidthHeight()
 	end
 end
 
-local function LayoutElementFilter(el)
-	local layout = el:GetLayout();
-	return layout:IsLayout() and layout:IsUseSpace();
-end 
 
 function Layout:UpdateFlexLayoutRealContentWidthHeight()
 	return LayoutFlex.Update(self);

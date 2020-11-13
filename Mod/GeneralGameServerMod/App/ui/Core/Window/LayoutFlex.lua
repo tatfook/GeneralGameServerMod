@@ -10,7 +10,7 @@ local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout.lua"
 ]]
 
 local LayoutFlex = NPL.export();
-
+local LayoutFlexDebug = GGS.Debug.GetModuleDebug("LayoutFlexDebug").Enable(); --Enable  Disable
 
 local function LayoutElementFilter(el)
 	local layout = el:GetLayout();
@@ -18,7 +18,7 @@ local function LayoutElementFilter(el)
 end 
 
 local function UpdateRow(layout, style)
-    local width, height = layout:GetWidthHeight();
+    local width, height = layout:GetContentWidthHeight();
 	local lines, line = {}, {layouts = {}, width = 0, height = 0, flexGrow = 0};
 	table.insert(lines, line);
 	for child in layout:GetElement():ChildElementIterator(true, LayoutElementFilter) do
@@ -64,7 +64,9 @@ local function UpdateRow(layout, style)
             offsetTop = VGap;
         end 
     end
-    
+	
+	-- LayoutFlexDebug(lines);
+	
 	for _, line in ipairs(lines) do
 		if (width) then
 			local remainWidth = width - line.width;
@@ -73,7 +75,7 @@ local function UpdateRow(layout, style)
 					childLayout:SetPos(offsetLeft, offsetTop);
 					local spaceWidth = childLayout:GetSpaceWidthHeight();
 					local flexGrow = childLayout:GetStyle()["flex-grow"] or 0;
-					if (childLayout:IsFixedWidth() or flex == 0) then
+					if (childLayout:IsFixedWidth() or flexGrow == 0) then
 						offsetLeft = offsetLeft + spaceWidth;
 					else 
 						local autoWidth= remainWidth * flexGrow / line.flexGrow;
@@ -110,7 +112,7 @@ local function UpdateRow(layout, style)
 end
 
 local function UpdateCol(layout, style)
-    local width, height = layout:GetWidthHeight();
+    local width, height = layout:GetContentWidthHeight();
 	local lines, line = {}, {layouts = {}, width = 0, height = 0, flexGrow = 0};
 	table.insert(lines, line);
 	for child in layout:GetElement():ChildElementIterator(true, LayoutElementFilter) do
@@ -163,40 +165,40 @@ local function UpdateCol(layout, style)
 			if (line.flexGrow > 0) then
 				for _, childLayout in ipairs(line.layouts) do
 					childLayout:SetPos(offsetLeft, offsetTop);
-					local spaceWidth = childLayout:GetSpaceWidthHeight();
+					local spaceWidth, spaceHeight = childLayout:GetSpaceWidthHeight();
 					local flexGrow = childLayout:GetStyle()["flex-grow"] or 0;
-					if (childLayout:IsFixedWidth() or flex == 0) then
-						offsetLeft = offsetLeft + spaceWidth;
+					if (childLayout:IsFixedHeight() or flexGrow == 0) then
+						offsetTop = offsetTop + spaceHeight;
 					else 
-						local autoWidth= remainWidth * flexGrow / line.flexGrow;
-						offsetLeft = offsetLeft + spaceWidth + autoWidth;
+						local autoHeight= remainHeight * flexGrow / line.flexGrow;
+						offsetTop = offsetTop + spaceHeight + autoHeight;
 						local width, height = childLayout:GetWidthHeight();
-						childLayout:SetWidthHeight(width + autoWidth, height); 
+						childLayout:SetWidthHeight(width, height + autoHeight); 
 						-- 是否重新更新子布局
 					end
 				end
 			else
                 if (style["justify-content"] == "center") then 
-                    offsetLeft = remainWidth / 2; 
+                    offsetTop = remainHeight / 2; 
                 elseif (style["justify-content"] == "flex-end") then 
-                    offsetLeft = remainWidth; 
+                    offsetTop = remainHeight; 
 				elseif (style["justify-content"] == "space-between") then 
 					local gapCount = #(line.layouts) - 1;
-					if (gapCount > 0) then HGap = remainWidth / gapCount end
+					if (gapCount > 0) then VGap = remainHeight / gapCount end
                 elseif (style["justify-content"] == "space-around") then 
 					local gapCount = #(line.layouts) + 1;
-					HGap = remainWidth / gapCount;
-					offsetLeft = HGap;
+					VGap = remainHeight / gapCount;
+					offsetTop = VGap;
 				end 
 				UpdateChildLayoutPos(line.layouts);
 			end
 		else 
 			UpdateChildLayoutPos(line.layouts);
         end
-        contentWidth = math.max(contentWidth, offsetLeft - HGap);
-		offsetLeft, HGap = 0, 0;
-        offsetTop = offsetTop + line.height + VGap;
         contentHeight = math.max(contentHeight, offsetTop - VGap);
+        offsetTop, VGap = 0, 0;
+        offsetLeft = offsetLeft + line.width + HGap;
+        contentWidth = math.max(contentWidth, offsetLeft - HGap);
     end
     layout:SetRealContentWidthHeight(contentWidth, contentHeight);
 end
@@ -205,11 +207,12 @@ local function Update(layout)
     local style = layout:GetStyle();
     if (style.display ~= "flex") then return end
 
-    if (style["flex-direction"] == "row" or style["flex-direction"] == "row-reverse") then
+	local flexDirection = style["flex-direction"] or "row";
+    if (flexDirection == "row" or flexDirection == "row-reverse") then
         UpdateRow(layout, style);
     end
 
-    if (style["flex-direction"] == "column" or style["flex-direction"] == "column-reverse") then
+    if (flexDirection == "column" or flexDirection == "column-reverse") then
         UpdateCol(layout, style);
     end
 end

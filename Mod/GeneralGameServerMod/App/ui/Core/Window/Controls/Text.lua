@@ -12,7 +12,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Text = commonlib.inherit(Element, NPL.export());
 
-local TextDebug = GGS.Debug.GetModuleDebug("TextDebug").Enable();  -- Enable() Disable;
+local TextDebug = GGS.Debug.GetModuleDebug("TextDebug").Disable();  -- Enable() Disable;
 
 Text:Property("Value");  -- 文本值
 Text:Property("Name", "Text");
@@ -110,7 +110,7 @@ function Text:OnUpdateLayout()
 
 	self.texts = {};
 
-	TextDebug("OnBeforeUpdateChildElementLayout", width, parentContentWidth);
+	-- TextDebug("OnBeforeUpdateChildElementLayout", width, parentContentWidth);
 	if (style["text-wrap"] == "none") then
 		--  不换行
 		local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
@@ -135,10 +135,10 @@ function Text:OnUpdateLayout()
 			textHeight = textHeight + lineheight;
 			top = top + lineheight;
 		end
-		TextDebug(text, self.texts);
+		-- TextDebug(text, self.texts);
 	end
 
-	TextDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
+	-- TextDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 
 	self:GetLayout():SetWidthHeight(width or textWidth, height or textHeight);
     return true; 
