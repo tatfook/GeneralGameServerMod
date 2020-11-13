@@ -145,6 +145,7 @@ function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
     keepwork.user.school(nil, function(statusCode, msg, data) 
         if (not data) then return end
         self.userinfo.school = data.name;
+        GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateUserInfo", userinfo = self.userinfo});
     end)
     -- 拉取作品数
     local id = "kp" .. Encoding.base64(commonlib.Json.Encode({username=userinfo.username}));
