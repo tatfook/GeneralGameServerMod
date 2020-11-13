@@ -75,7 +75,7 @@ function Connection:OnReceive(msg)
 	end
 
 	-- 处理数据包
-	if(packet) then
+	if(packet and netHandler) then
 		packet:ProcessPacket(netHandler);
 	else
 		GGS.INFO("invalid packet");

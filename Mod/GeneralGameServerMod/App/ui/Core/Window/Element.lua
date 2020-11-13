@@ -227,7 +227,7 @@ function Element:GetChildElementList()
 end
 
 -- 遍历 默认渲染序  false 事件序
-function Element:ChildElementIterator(isRender)
+function Element:ChildElementIterator(isRender, filter)
     local childrens, list = self:GetChildElementList(), {};
     for i = 1, #childrens do  list[i] = childrens[i] end
 
@@ -253,11 +253,17 @@ function Element:ChildElementIterator(isRender)
     if (self.verticalScrollBar) then table.insert(list, isRender and (#list + 1) or 1, self.verticalScrollBar) end
 
     local i, size = 0, #list;
-    return function() 
+    local function iterator() 
         i = i + 1;
+        
         if (i > size) then return end
+        
+        if (type(filter) == "function" and not filter(list[i])) then return iterator() end
+
         return list[i];
     end
+
+    return iterator;
 end
 
 -- 元素布局更新前回调
