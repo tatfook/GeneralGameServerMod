@@ -22,10 +22,10 @@ local env = ParaEngine.GetAppCommandLineByParam("env", "online");  -- online rel
 _G.IsDevEnv = true and IsDevEnv;
 _G.Env = Env;
 
+-- ENV
 GGS.IsDevEnv = IsDevEnv;
 GGS.IsTestEnv = env == "release";
 GGS.IsProdEnv = env == "online";
-
 GGS.IsServer = servermode;
 
 	
@@ -45,6 +45,9 @@ GGS.NetDebug = Debug.GetModuleDebug("NetDebug");                               -
 GGS.BlockSyncDebug = Debug.GetModuleDebug("BlockSyncDebug");                   -- 方块同步日志
 GGS.AreaSyncDebug = Debug.GetModuleDebug("AreaSyncDebug");                     -- 区域同步日志
 
+-- Util
+GGS.ToString = Debug.ToString;
+
 -- 配置
 GGS.MaxEntityId =  1000000;                                                    -- 服务器统一分配的最大实体ID数
 GGS.WorkerThreadName = "WorkerThread";                                         -- 工作线程名
@@ -58,3 +61,5 @@ function GGS.GetClientClass(appName)
 end
 
 _G.GGS = GGS;
+
+

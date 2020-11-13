@@ -12,7 +12,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Text = commonlib.inherit(Element, NPL.export());
 
-local TextElementDebug = GGS.Debug.GetModuleDebug("TextElementDebug").Disable();  -- Enable() Disable;
+local TextDebug = GGS.Debug.GetModuleDebug("TextDebug").Enable();  -- Enable() Disable;
 
 Text:Property("Value");  -- 文本值
 Text:Property("Name", "Text");
@@ -36,13 +36,27 @@ function Text:Init(xmlNode, window, parent)
 	self:InitElement(xmlNode, window, parent);
 
 	-- 处理实体字符
-	self:SetValue(ReplaceEntityReference(self:GetInnerText()));
+	self:SetValue(self:FormatText(self:GetInnerText()));
 
 	return self;
 end
 
+function Text:FormatText(text)
+	text = ReplaceEntityReference(text);
+
+	local whiteSpace = self:GetStyle():GetWhiteSpace();
+
+	text = string.gsub(text, "\r\n", "\n");
+	if (whiteSpace == "pre") then
+	else  -- normal
+		text = string.gsub(text, "%s", " ");
+	end
+
+	return text;
+end
+
 function Text:SetText(value)
-	local value = ReplaceEntityReference(value);
+	local value = self:FormatText(value);
 	if (value == self:GetValue()) then return end
 	self:SetValue(value);
 	self:UpdateLayout();
@@ -53,7 +67,7 @@ function Text:GetTextAlign()
 end
 
 local function CalculateTextLayout(self, text, width, left, top)
-	TextElementDebug.Format("CalculateTextLayout, text = %s, width = %s, left = %s, top = %s", text, width, left, top);
+	TextDebug.Format("CalculateTextLayout, text = %s, width = %s, left = %s, top = %s", text, width, left, top);
 	if(not text or text =="") then return 0, 0 end
 
 	local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
@@ -64,7 +78,7 @@ local function CalculateTextLayout(self, text, width, left, top)
 		textWidth = _guihelper.GetTextWidth(text, self:GetFont());
 	end
 
-	TextElementDebug.Format("text = %s, x = %s, y = %s, w = %s, h = %s", text, left, top, textWidth, textHeight);
+	TextDebug.Format("text = %s, x = %s, y = %s, w = %s, h = %s", text, left, top, textWidth, textHeight);
 	local textObject = {text = text, x = left, y = top, w = textWidth, h = textHeight};
 	table.insert(self.texts, textObject);
 	
@@ -91,11 +105,12 @@ function Text:OnUpdateLayout()
 	local parentContentWidth, parentContentHeight = parentLayout:GetContentWidthHeight();
 	local width, height = layout:GetFixedWidthHeight();
 	local left, top = 0, 0;
+	local textWidth, textHeight = 0, 0;
 	local text = self:GetValue();
 
 	self.texts = {};
 
-	TextElementDebug("OnBeforeUpdateChildElementLayout", width, parentContentWidth);
+	TextDebug("OnBeforeUpdateChildElementLayout", width, parentContentWidth);
 	if (style["text-wrap"] == "none") then
 		--  不换行
 		local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
@@ -113,12 +128,19 @@ function Text:OnUpdateLayout()
 		end
 	else
 		-- 自动换行
-		width, height = CalculateTextLayout(self, text, width or parentContentWidth, left, top);
+		local textlines = commonlib.split(text, "\n");
+		for _, textline in ipairs(textlines) do
+			local linewidth, lineheight = CalculateTextLayout(self, textline, width or parentContentWidth, left, top);
+			textWidth = math.max(linewidth, textWidth);
+			textHeight = textHeight + lineheight;
+			top = top + lineheight;
+		end
+		TextDebug(text, self.texts);
 	end
 
-	TextElementDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
+	TextDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 
-	self:GetLayout():SetWidthHeight(width, height);
+	self:GetLayout():SetWidthHeight(width or textWidth, height or textHeight);
     return true; 
 end
 

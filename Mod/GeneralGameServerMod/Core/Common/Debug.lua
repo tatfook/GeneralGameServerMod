@@ -61,6 +61,19 @@ local function Print(val, key, output, indent, OutputTable)
     output(string.format("%s}", indent));
 end
 
+local function ToString(val, key)
+    local text = "";
+    local function output(str)
+        text = text .. str .. "\n";
+    end
+
+    Print(val,key, output);
+
+    return text;
+end
+Debug.ToString = ToString;
+
+
 local function DebugCall(module, ...)
     module = FormatModuleName(module);
 

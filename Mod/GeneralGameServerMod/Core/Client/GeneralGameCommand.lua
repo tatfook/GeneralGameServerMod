@@ -89,13 +89,13 @@ debug 调试命令
 	/ggs debug [action]
 	/ggs debug debug module 开启或关闭指定客户端模块日志
 	/ggs debug serverdebug module 开启或关闭指定服务端模块日志
-	/ggs debug options 显示客户端选项信息
-	/ggs debug players 显示客户端玩家列表
-	/ggs debug worldinfo 显示客户端连接的世界服务器信息
-	/ggs debug serverinfo 显示所在服务器信息	
-	/ggs debug serverlist 显示世界服务列表
-	/ggs debug statistics 显示统计信息
-	/ggs debug ping 验证是否是有效联机玩家
+	/ggs debug options       显示客户端选项信息
+	/ggs debug playerinfo    显示客户端所在世界的玩家信息
+	/ggs debug worldinfo     显示客户端所在世界的信息
+	/ggs debug serverinfo    显示客户端所在服务器信息	
+	/ggs debug serverlist    显示全网服务器列表
+	/ggs debug statistics    显示全网统计信息
+	/ggs debug ping          验证是否是有效联机玩家
 	/ggs debug syncForceBlockList 显示强制同步块列表
 		]],
 -- sync 世界同步

@@ -57,7 +57,7 @@ function GeneralGameServerMod:init()
 		GeneralGameCommand:init();
 
 		-- tutorial
-		NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua");
+		-- NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua");
 	end
 end
 

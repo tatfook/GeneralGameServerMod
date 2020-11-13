@@ -33,6 +33,8 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
 
+local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
+
 GeneralGameClient:Property("World", nil);  -- 当前世界
 GeneralGameClient:Property("MainPlayerEntityScale", nil);  -- 玩家实体大小
 GeneralGameClient:Property("MainPlayerEntityAsset", nil);  -- 玩家实体模型
@@ -408,6 +410,8 @@ function GeneralGameClient:Debug(action, cmd_text)
     
     if (action == "worldinfo") then
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "WorldInfo"}}));
+    elseif (action == "playerinfo") then
+        netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "PlayerInfo"}}));
     elseif (action == "serverinfo") then
         netHandler:AddToSendQueue(Packets.PacketGeneral:new():Init({action = "Debug", data = { cmd = "ServerInfo"}}));
     elseif (action == "serverlist") then
@@ -424,7 +428,7 @@ end
 
 -- 显示调试信息
 function GeneralGameClient:ShowDebugInfo(debug)
-    _guihelper.MessageBox(commonlib.serialize(debug));
+    page.ShowDebugInfoPage({text = GGS.ToString(debug)});
 end
 
 -- 初始化成单列模式

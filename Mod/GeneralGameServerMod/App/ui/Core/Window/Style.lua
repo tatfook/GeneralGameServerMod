@@ -205,6 +205,7 @@ local inheritable_fields = {
 	["caret-color"] = true,
 	["text-singleline"] = true,
 	["base-font-size"] = true,
+	["white-space"] = true,
 };
 
 
@@ -456,4 +457,8 @@ end
 
 function Style:GetOutlineColor(defaultValue)
 	return self:GetValue("outline-color", defaultValue);
+end
+
+function Style:GetWhiteSpace()
+	return self:GetValue("white-space", "normal");
 end

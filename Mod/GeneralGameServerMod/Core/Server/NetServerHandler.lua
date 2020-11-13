@@ -204,7 +204,10 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
     local cmd = packetGeneral.data.cmd;
     local debug = packetGeneral.data.debug;
     if (cmd == "WorldInfo") then
-        packetGeneral.data.debug = self:GetWorld():GetDebugInfo();
+        packetGeneral.data.debug = self:GetWorld():GetDebugWorldInfo();
+        self:SendPacketToPlayer(packetGeneral);
+    elseif (cmd == "PlayerInfo") then
+        packetGeneral.data.debug = self:GetWorld():GetDebugPlayerInfo();
         self:SendPacketToPlayer(packetGeneral);
     elseif (cmd == "ServerInfo") then
         packetGeneral.data.debug = self:GetWorkerServer():GetServerInfo();

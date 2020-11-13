@@ -146,7 +146,19 @@ function World:GetWorldInfo(worldKey)
 end
 
 -- 获取调试信息
-function World:GetDebugInfo()
+function World:GetDebugWorldInfo()
+    return {
+        worldKey = self:GetWorldKey(),
+        worldId = self:GetWorldId(),
+        worldType = self:GetWorldType(),
+        worldName = self:GetWorldName(),
+        playerCount = self:GetPlayerManager():GetPlayerCount(),
+        onlinePlayerCount = self:GetPlayerManager():GetOnlinePlayerCount(),
+        config = self:GetConfig(),
+    }
+end
+
+function World:GetDebugPlayerInfo()
     local allPlayers = self:GetPlayerManager():GetPlayers();
     local players = {};
 
@@ -159,14 +171,5 @@ function World:GetDebugInfo()
         }
     end
 
-    return {
-        players = players,
-        worldKey = self:GetWorldKey(),
-        worldId = self:GetWorldId(),
-        worldType = self:GetWorldType(),
-        worldName = self:GetWorldName(),
-        playerCount = self:GetPlayerManager():GetPlayerCount(),
-        onlinePlayerCount = self:GetPlayerManager():GetOnlinePlayerCount(),
-        config = self:GetConfig(),
-    }
+    return players;
 end
