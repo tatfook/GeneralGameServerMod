@@ -129,6 +129,8 @@ function AppGeneralGameClient:CopyKpUserInfo(userinfo)
     if (oldPlayerEntity and self:GetMainPlayerEntityScale()) then oldPlayerEntity:SetScaling(self:GetMainPlayerEntityScale()) end
     if (oldPlayerEntity and self:GetMainPlayerEntityAsset()) then oldPlayerEntity:SetMainAssetPath(self:GetMainPlayerEntityAsset()) end
     if (oldPlayerEntity and self:GetMainPlayerEntitySkin()) then oldPlayerEntity:SetSkin(self:GetMainPlayerEntitySkin()) end
+
+    GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateUserInfo", userinfo = self:GetUserInfo()});
 end
 
 -- 用户登录回调
