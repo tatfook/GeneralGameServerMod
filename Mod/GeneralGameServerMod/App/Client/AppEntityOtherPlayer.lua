@@ -53,4 +53,7 @@ function AppEntityOtherPlayer:SetSuperPlayerInfo(playerInfo)
     AppEntityOtherPlayer._super.SetPlayerInfo(self, playerInfo);
 end
 
-
+-- 动画缓冲时间
+function AppEntityOtherPlayer:GetMotionBufferTickCount()
+    return 0;
+end

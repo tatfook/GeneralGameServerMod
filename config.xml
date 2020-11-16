@@ -94,9 +94,9 @@
     aliveDuration 玩家是否存活心跳时间上限, 默认5分, 超过该值未收到玩家的数据包就认为玩家离线
   -->
   <Player
-    sendPacketFrequency=0
-    minAliveTime=60
-    aliveDuration=300>
+    sendPacketFrequency=200ms
+    minAliveTime=60s
+    aliveDuration=300s>
   </Player>
   <!-- Debug 配置项, 模块日志按业务分模块打印 
     Net 网络发包收包日志, 生产环境强烈建议关闭 设成false
@@ -248,7 +248,9 @@
     maxClientCount=1>
   </World>
   <Player
-    sendPacketFrequency=2>
+    sendPacketFrequency=500ms
+    minAliveTime=60s
+    aliveDuration=300ms>
   </Player>
   <Debug
     NetDebug=false

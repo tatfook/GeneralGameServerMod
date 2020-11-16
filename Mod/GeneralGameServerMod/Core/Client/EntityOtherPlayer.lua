@@ -24,6 +24,7 @@ EntityOtherPlayer:Property("World");
 function EntityOtherPlayer:ctor()
     self.playerInfo = {};
     self.packetPlayerEntityInfoQueue = commonlib.Queue:new();  -- 移动队列
+    self.motionBufferTickCount = 0;
 end
 
 function EntityOtherPlayer:init(world, username, entityId)
@@ -147,16 +148,34 @@ function EntityOtherPlayer:UpdateEntityActionState()
     end
 end
 
+-- 动画缓冲时间
+function EntityOtherPlayer:GetMotionBufferTickCount()
+    return 0;
+end
+
 -- 帧函数
 function EntityOtherPlayer:OnLivingUpdate()
     EntityOtherPlayer._super.OnLivingUpdate(self);
-    if (self.smoothFrames > 0 or self.packetPlayerEntityInfoQueue:empty()) then return end
+    -- 正在播放帧动画
+    if (self.smoothFrames > 0) then return end
+    -- 无动画播放
+    if (self.packetPlayerEntityInfoQueue:empty()) then return end
+    -- 动画前播放前缓存时间
+    if (self.motionBufferTickCount > 0) then 
+        self.motionBufferTickCount = self.motionBufferTickCount - 1;
+        return 
+    end
     local packetPlayerEntityInfo = self.packetPlayerEntityInfoQueue:pop();
     self:UpdatePlayerEntityInfo(packetPlayerEntityInfo);
 end 
 
 -- 添加移动帧
 function EntityOtherPlayer:AddPlayerEntityInfo(packetPlayerEntityInfo)
+    -- 第一个运动帧过来设置缓冲时间
+    if (self.smoothFrames == 0 and self.motionBufferTickCount == 0 and self.packetPlayerEntityInfoQueue:empty()) then
+        self.motionBufferTickCount = self:GetMotionBufferTickCount();
+    end
+
     self.packetPlayerEntityInfoQueue:push(packetPlayerEntityInfo);
 end
 

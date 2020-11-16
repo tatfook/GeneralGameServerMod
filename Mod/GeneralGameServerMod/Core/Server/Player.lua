@@ -20,6 +20,8 @@ local Player = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), com
 
 Player:Property("Valid", false, "IsValid");
 
+local OneSecond = 1000; -- ms
+
 -- 构造函数
 function Player:ctor() 
     self.entityInfo = {};                    -- 实体信息 UI信息
@@ -35,7 +37,7 @@ function Player:ctor()
     self.areaZ = 0;
     self.lastBX, self.lastBY, self.lastBZ = nil, nil, nil;
     self.packets = {};    
-    self.lastSendPacketTime = os.time();
+    self.lastSendPacketTime = ParaGlobal.timeGetTime();
 end
 
 function Player:Init(player, playerManager, netHandler)
@@ -116,7 +118,7 @@ end
 function Player:IsKeepworkOffline()
     if (IsDevEnv) then return true end
     if (self:IsAnonymousUser()) then return false end
-    if (self.aliveTime < Config.Player.minAliveTime) then return false; end
+    if (self.aliveTime < (Config.Player.minAliveTime / OneSecond)) then return false; end
     local userinfo = self:GetUserInfo();
     if (not userinfo or not userinfo.worldCount or userinfo.worldCount < 3) then return false end
     
@@ -260,11 +262,8 @@ function Player:IsAlive()
     if (self.state == "offline") then return false; end
     
     -- 不能直接使用tick 可能刚登录就退出, 这种tick检测不出
-    local aliveDuration = Config.Player.aliveDuration or 500; 
-    local curTime = os.time();
-    if ((curTime - self.lastTick) > aliveDuration) then
-        return  false;
-    end
+    local interval = (os.time() - self.lastTick) * OneSecond;
+    if (interval > Config.Player.aliveDuration) then return false end
 
     return true;
 end
@@ -292,13 +291,14 @@ end
 
 -- 添加到发包队列
 function Player:AddPacketToSendQueue(packet, force)
-    local curTime = os.time();
+    local curTime = ParaGlobal.timeGetTime();
     
     if (packet) then table.insert(self.packets, packet) end
     if (#(self.packets) == 0) then return end
 
+    local interval = curTime - self.lastSendPacketTime;
     -- 非强制发送, 则合并一秒内数据包
-    if (not force and (curTime - self.lastSendPacketTime) < Config.Player.sendPacketFrequency) then return end
+    if (not force and interval < Config.Player.sendPacketFrequency) then return end
     self.playerNetHandler:SendPacketToPlayer(Packets.PacketMultiple:new():Init(self.packets));
     self.packets = {};
     self.lastSendPacketTime = curTime;

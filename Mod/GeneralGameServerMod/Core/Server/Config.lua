@@ -85,6 +85,21 @@ function Config:StaticInit()
     -- GGS.INFO(self);
 end
 
+local function GetTimeValue(val)
+    if (type(val) ~= "string") then return val end
+    local ms = string.match(val, "^(%d+)ms$");
+    if (ms) then return tonumber(ms) end
+    local second = string.match(val, "^(%d+)s$");
+    if (second) then return tonumber(second) * 1000 end
+    local minute = string.match(val, "^(%d+)m$");
+    if (minute) then return tonumber(minute) * 1000 * 60 end
+    local hour = string.match(val, "^(%d+)h$");
+    if (hour) then return tonumber(hour) * 1000 * 60 * 60 end
+    local day = string.match(val, "^(%d+)d$");
+    if (day) then return tonumber(day) * 1000 * 60 * 60 * 24 end
+    return val;
+end
+
 -- 拷贝XML节点属性
 local function CopyXmlAttr(dst, src)
     if (type(dst) ~= "table" or type(src) ~= "table") then return end
@@ -95,7 +110,7 @@ local function CopyXmlAttr(dst, src)
         elseif (string.match(val, "^%-?%d+$")) then
             dst[key] = tonumber(val) or dst[key];
         else
-            dst[key] = val;
+            dst[key] = GetTimeValue(val);
         end
     end
 end
@@ -150,6 +165,7 @@ function Config:LoadConfig(filename)
         if (filename) then table.insert(self.PublicFiles, #(self.PublicFiles) + 1, filename) end
     end
     
+    GGS.INFO(self);
 end
 
 -- 加载配置
