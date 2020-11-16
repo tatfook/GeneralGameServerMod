@@ -144,13 +144,11 @@ function EntityMainPlayer:SendMotionUpdates()
 
         if (hasMoved or hasRotation) then
             packet.x, packet.y, packet.z = self.x, self.y, self.z; 
-            packet.facing, packet.pitch = self.facing, self.rotationPitch;
             packet.bx, packet.by, packet.bz = self:GetBlockPos();
         end
         
-        if (hasHeadRotation) then
-            packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
-        end
+        if (hasHeadRotation) then packet.facing, packet.pitch = self.facing, self.rotationPitch end 
+        if (hasHeadRotation) then packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch end
 
         -- 记录上一个包的状态
         self.oldXYZ = xyz;

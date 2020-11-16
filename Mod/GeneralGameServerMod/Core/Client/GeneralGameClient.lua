@@ -59,15 +59,25 @@ function GeneralGameClient:ctor()
     self.netCmdList = commonlib.UnorderedArraySet:new();  -- 网络命令列表, 禁止命令重复运行 
 end
 
+function GeneralGameClient:InitNetSetting()
+    local attr = NPL.GetAttributeObject();
+    NPL.SetUseCompression(true, true);
+	attr:SetField("CompressionLevel", -1);
+	attr:SetField("CompressionThreshold", 1024 * 2);
+	
+    -- 暴露接口文件
+    NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
+end
+
 function GeneralGameClient:Init() 
     if (self.inited) then return self end;
     
+    -- 初始化网络配置
+    self:InitNetSetting();
+
     -- 设置随机种子
 	math.randomseed(ParaGlobal.timeGetTime());
     
-    -- 暴露接口文件
-    NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
-
     -- 设置实体ID起始值
     Entity:SetEntityId(GGS.MaxEntityId);
 

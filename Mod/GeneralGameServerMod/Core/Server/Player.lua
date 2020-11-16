@@ -22,8 +22,8 @@ Player:Property("Valid", false, "IsValid");
 
 -- 构造函数
 function Player:ctor() 
-    self.entityInfo = {};  -- 实体信息 UI信息
-    self.playerInfo = {};   -- 玩家信息 数据信息
+    self.entityInfo = {};                    -- 实体信息 UI信息
+    self.playerInfo = {};                    -- 玩家信息 数据信息
     self.dataWatcher = DataWatcher:new();
     self.loginTick = os.time();
     self.lastTick = os.time();
@@ -34,6 +34,8 @@ function Player:ctor()
     self.areaY = 0;
     self.areaZ = 0;
     self.lastBX, self.lastBY, self.lastBZ = nil, nil, nil;
+    self.packets = {};    
+    self.lastSendPacketTime = os.time();
 end
 
 function Player:Init(player, playerManager, netHandler)
@@ -232,22 +234,9 @@ function Player:GetUserInfo()
     return self:GetPlayerInfo().userinfo;
 end
 
-function Player:KickPlayerFromServer(reason)
-    return self.playerNetHandler:KickPlayerFromServer(reason);
-end
-
-function Player:SendPacketToPlayer(packet)
-    self.playerNetHandler:SendPacketToPlayer(packet);
-end
-
 function Player:UpdateTick() 
     self.lastTick = os.time();
     self.aliveTime = self.lastTick - self.loginTick;
-end
-
--- 玩家链接是否存在
-function Player:IsConnection()
-    return self.playerNetHandler:GetPlayerConnection();
 end
 
 -- 是否有效
@@ -293,9 +282,27 @@ function Player:Logout()
     self.state = "offline";                             -- 状态置为下线
 end
 
--- 玩家发送数据包
-function Player:SendPacket(packet)
+-- 立即发送
+function Player:SendPacketToPlayer(packet)
+    -- 清空发送队列
+    self:AddPacketToSendQueue(nil, true); 
+    -- 发送数据包
     self.playerNetHandler:SendPacketToPlayer(packet);
+end
+
+-- 添加到发包队列
+function Player:AddPacketToSendQueue(packet, force)
+    local curTime = os.time();
+    
+    if (packet) then table.insert(self.packets, packet) end
+    if (#(self.packets) == 0) then return end
+
+    -- 非强制发送, 则合并一秒内数据包
+    if (not force and (curTime - self.lastSendPacketTime) < 60) then return end
+
+    self:SendPacketToPlayer(Packets.PacketMultiple:new():Init(self.packets));
+    self.packets = {};
+    self.lastSendPacketTime = curTime;
 end
 
 -- 关闭连接

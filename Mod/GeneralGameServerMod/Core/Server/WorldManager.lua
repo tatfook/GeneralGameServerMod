@@ -29,7 +29,7 @@ end
 -- 初始化
 function WorldManager:Init()
     -- 定时器
-    local tickDuratin = 1000 * 60 * 2; 
+    local tickDuratin = 1000 * 60; 
 	commonlib.Timer:new({callbackFunc = function(timer)
 		self:Tick();
 	end}):Change(tickDuratin, tickDuratin); -- 两分钟触发一次

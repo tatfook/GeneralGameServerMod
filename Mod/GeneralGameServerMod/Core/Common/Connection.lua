@@ -32,8 +32,6 @@ function Connection:Init(opts)
 end
 
 function Connection:OnConnection()
-	
-	
 	local netHandler = self:GetNetHandler();
 	if(netHandler and netHandler.handleConnection) then
 		netHandler:handleConnection();
@@ -67,7 +65,8 @@ function Connection:OnReceive(msg)
 	if (packet) then packet:ReadPacket(msg) end
 
 	NetDebug(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
-	
+	-- GGS.INFO.Format("packetId = %s packetSize = %s", msg.id, string.len(commonlib.serialize_compact(msg)));
+
 	-- 处理数据包前回调
 	local netHandler = self:GetNetHandler();
 	if (netHandler and netHandler.OnBeforeProcessPacket) then

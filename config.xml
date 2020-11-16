@@ -247,6 +247,7 @@
   <Player>
   </Player>
   <Debug
+    NetDebug=true
     PlayerLoginLogoutDebug=true>
   </Debug>
 </GeneralGameServerDev>

@@ -293,7 +293,7 @@ function PlayerManager:SendPacketPlayerLogout(player, reason)
     self:SendPacketToAllPlayers(packet, player);              -- 通知其它人退出
 
     -- 发送退出包给自己
-    player:SendPacket(packet);                                -- 单独发, 确保自己一定知道自己退出
+    player:SendPacketToPlayer(packet);                                -- 单独发, 确保自己一定知道自己退出
     
     -- 打印日志
     GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("发送玩家退出数据包, reason: %s username : %s, worldkey: %s, entityId: %s", tostring(reason), player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
@@ -560,7 +560,7 @@ function PlayerManager:RemoveInvalidPlayer()
         local username = self.onlinePlayerList[i];
         local player = self.players[username];
         -- 玩家不活跃但链接还在则踢出玩家
-        if (not player:IsAlive() and player:IsConnection()) then
+        if (not player:IsAlive()) then
             table.insert(deleted, player);
         end
     end
