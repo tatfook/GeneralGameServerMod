@@ -75,7 +75,7 @@ function Config:StaticInit()
     self.DataHandler = {
         filename = "Mod/GeneralGameServerMod/Core/Server/ServerDataHandler.lua",
     }
-
+    self.PublicFiles = {};
     self.IsDevEnv = IsDevEnv;
     
     -- 服务端才需要配置文件, 加载配置
@@ -141,6 +141,14 @@ function Config:LoadConfig(filename)
             GGS.Debug.DisableModule(key);
         end
     end
+
+    -- public file
+    local PublicFileNodes = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/PublicFile") or {};
+    for _, node in ipairs(PublicFileNodes) do
+        local filename = node.attr and node.attr.filename;
+        if (filename) then table.insert(self.PublicFiles, #(self.PublicFiles) + 1, filename) end
+    end
+    
 end
 
 -- 加载配置
