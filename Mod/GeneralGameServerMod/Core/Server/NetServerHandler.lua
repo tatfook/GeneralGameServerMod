@@ -153,10 +153,11 @@ end
 
 -- 监听包处理后
 function NetServerHandler:OnAfterProcessPacket(packet)
+    if (not self:GetPlayer()) then return end
     -- 更新玩家心跳
-    if (self:GetPlayer()) then 
-        self:GetPlayer():UpdateTick();
-    end
+    self:GetPlayer():UpdateTick();
+    -- 清空玩家数据队列
+    self:GetPlayer():AddPacketToSendQueue(nil, true);
 end
 
 -- 转发聊天消息

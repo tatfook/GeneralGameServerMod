@@ -136,9 +136,9 @@ function WorldManager:GetAllWorldInfo()
 end
 
 -- timer function
+local deleted = {};  -- 删除无用户的世界
 function WorldManager:Tick()
-    local deleted = {};  -- 删除无用户的世界
-    
+    deleted = {};
     for worldKey, world in pairs(self.worldMap) do 
         if (world:GetClientCount() == 0) then
             table.insert(deleted, worldKey);

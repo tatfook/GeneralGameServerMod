@@ -311,7 +311,7 @@ function PlayerManager:SendPacketToAllPlayers(packet, curPlayer, filter)
         local username = self.onlinePlayerList[i];
         local player = self.players[username];
         if (player and player ~= curPlayer and (not filter or filter(player))) then
-            player:SendPacketToPlayer(packet);
+            player:AddPacketToSendQueue(packet);
         end
     end
 end
@@ -352,7 +352,7 @@ function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, isCurPlayerCen
             local username = onlinePlayerList[i];
             local player = self.players[username];
             if (player and player ~= curPlayer and (not filter or filter(player))) then 
-                player:SendPacketToPlayer(packet);
+                player:AddPacketToSendQueue(packet);
             end
         end
     else 
@@ -361,7 +361,7 @@ function PlayerManager:SendPacketToAreaPlayers(packet, curPlayer, isCurPlayerCen
             local username = self.onlinePlayerList[i];
             local player = self.players[username];
             if (player and player ~= curPlayer and areaFilter(player) and (not filter or filter(player))) then
-                player:SendPacketToPlayer(packet);
+                player:AddPacketToSendQueue(packet);
             end
         end
     end
@@ -511,8 +511,6 @@ function PlayerManager:GetOnlinePlayerCount()
     return count;
 end
 
-
-
 -- 获取最旧的方块同步玩家
 function PlayerManager:GetSyncBlockOldestPlayer()
     local oldestPlayer = nil
@@ -538,7 +536,7 @@ end
 function PlayerManager:CleanOfflinePlayer()
     local offlines = self:GetOfflinePlayerList();
     local curTime = os.time();
-    local maxOfflineTime = 1000 * 60 * 60 * 48; -- 48 hour
+    local maxOfflineTime = 60 * 60 * 48; -- 48 hour
     for i = 1, #offlines do
         local username = offlines[i];
         local player = self.players[username];
@@ -554,8 +552,9 @@ function PlayerManager:CleanOfflinePlayer()
 end
 
 -- 移除没有心跳的玩家
+local deleted = {};
 function PlayerManager:RemoveInvalidPlayer()
-    local deleted = {};
+    deleted = {};
     for i = 1, #(self.onlinePlayerList) do 
         local username = self.onlinePlayerList[i];
         local player = self.players[username];

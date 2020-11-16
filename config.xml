@@ -89,12 +89,14 @@
     maxClientCount=200>
   </ParaWorldMini>
   <!-- 玩家配置
+    sendPacketFrequency 合并多少秒内用户数据包 用户接受数据包频率, 
     minAliveTime 最小存活时间 默认1分钟, 为玩家离线缓存的必要条件. 不支持离线缓存可忽略
     aliveDuration 玩家是否存活心跳时间上限, 默认5分, 超过该值未收到玩家的数据包就认为玩家离线
   -->
   <Player
-    minAliveTime=60000
-    aliveDuration=300000>
+    sendPacketFrequency=0
+    minAliveTime=60
+    aliveDuration=300>
   </Player>
   <!-- Debug 配置项, 模块日志按业务分模块打印 
     Net 网络发包收包日志, 生产环境强烈建议关闭 设成false
@@ -198,8 +200,9 @@
     aliveDuration 玩家是否存活心跳时间上限, 默认5分, 超过该值未收到玩家的数据包就认为玩家离线
   -->
   <Player
-    minAliveTime=60000
-    aliveDuration=300000>
+    sendPacketFrequency=0
+    minAliveTime=60
+    aliveDuration=300>
   </Player>
   <!-- Debug 配置项, 模块日志按业务分模块打印 
     Net 网络发包收包日志, 生产环境强烈建议关闭 设成false
@@ -215,8 +218,8 @@
 <!--开发环境配置-->
 <GeneralGameServerDev>
   <Server 
-    threadCount=3
-    threadMaxClientCount=2
+    threadCount=1
+    threadMaxClientCount=200
     listenIp="0.0.0.0" 
     isControlServer=true
     isWorkerServer=true
@@ -244,10 +247,11 @@
     minClientCount=0 
     maxClientCount=1>
   </World>
-  <Player>
+  <Player
+    sendPacketFrequency=2>
   </Player>
   <Debug
-    NetDebug=true
+    NetDebug=false
     PlayerLoginLogoutDebug=true>
   </Debug>
 </GeneralGameServerDev>

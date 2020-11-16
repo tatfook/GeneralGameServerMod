@@ -260,7 +260,7 @@ function Player:IsAlive()
     if (self.state == "offline") then return false; end
     
     -- 不能直接使用tick 可能刚登录就退出, 这种tick检测不出
-    local aliveDuration = Config.Player.aliveDuration or 500000; 
+    local aliveDuration = Config.Player.aliveDuration or 500; 
     local curTime = os.time();
     if ((curTime - self.lastTick) > aliveDuration) then
         return  false;
@@ -298,9 +298,8 @@ function Player:AddPacketToSendQueue(packet, force)
     if (#(self.packets) == 0) then return end
 
     -- 非强制发送, 则合并一秒内数据包
-    if (not force and (curTime - self.lastSendPacketTime) < 60) then return end
-
-    self:SendPacketToPlayer(Packets.PacketMultiple:new():Init(self.packets));
+    if (not force and (curTime - self.lastSendPacketTime) < Config.Player.sendPacketFrequency) then return end
+    self.playerNetHandler:SendPacketToPlayer(Packets.PacketMultiple:new():Init(self.packets));
     self.packets = {};
     self.lastSendPacketTime = curTime;
 end
