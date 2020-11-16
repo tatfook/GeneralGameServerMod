@@ -44,6 +44,8 @@
       outerPort="9000">
     </WorkerServer>
   </Server>
+  <!-- 客户端可激活的脚本文件, 可配置多个 -->
+  <PublicFile filename="Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua"></PublicFile>
   <!-- filename: 数据处理脚本 文件名必须为NPL.load支持的路径 -->
   <DataHandler 
     filename="Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua">
@@ -233,6 +235,7 @@
       outerPort="9000">
     </WorkerServer>
   </Server>
+  <PublicFile filename="Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua"></PublicFile>
   <DataHandler 
     filename="Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua">
   </DataHandler>

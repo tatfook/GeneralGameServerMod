@@ -230,6 +230,8 @@ local number_fields = {
 	["font-size"] = true, ["base-font-size"] = true,
 	["z-index"] = true,
 	["scale"] = true,
+	["flex-grow"] = true,
+	["flex-shrink"] = true,
 };
 
 local color_fields = {
@@ -326,7 +328,8 @@ local complex_fields = {
 	-- ["border-width"] = "border-top-width border-right-width border-bottom-width border-left-width",
     ["padding"] = "padding-top padding-right padding-bottom padding-left",
 	["margin"] = "margin-top margin-right margin-bottom margin-left ",
-	["overflow"] = "overflow-x, overflow-y",
+	["overflow"] = "overflow-x overflow-y",
+	["flex"] = "flex-grow flex-shrink flex-basis",
 };
 
 
@@ -352,6 +355,10 @@ local function AddComplexStyleItem(style, name, value)
 	elseif (name == "overflow") then
 		values[1] = values[1] or "hidden";
 		values[2] = values[2] or values[1];
+	elseif (name == "flex") then
+		values[1] = values[1] or 1;
+		values[2] = values[2] or 1;
+		values[3] = values[3] or "auto";
     end
     
     for i = 1, #names do

@@ -10,6 +10,7 @@ local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout.lua"
 ]]
 
 local Layout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+local LayoutFlex = NPL.load("./LayoutFlex.lua", IsDevEnv);
 
 local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Enable(); --Enable  Disable
 
@@ -217,6 +218,10 @@ function Layout:IsBlock()
 	local style = self:GetStyle();
 	return (not style.display or style.display == "block") and not style.float;
 end
+-- 弹性元素识别
+function Layout:IsFlex()
+	return self:GetStyle().display == "flex";
+end
 -- 是定位元素
 function Layout:IsPosition()
 	local style = self:GetStyle();
@@ -326,8 +331,8 @@ function Layout:PrepareLayout()
     end
 
 	-- 数字化宽高
-	local width, height = style.width, style.height;                                                     -- 支持百分比, px
-	if (self:IsBlock() and not self:IsPosition() and not width and parentLayout) then                    -- 块元素默认为父元素宽
+	local width, height = style.width, style.height;                                                                                   -- 支持百分比, px
+	if (self:IsBlock() and not self:IsPosition() and not width and parentLayout and not parentLayout:IsFlex()) then                    -- 块元素默认为父元素宽
 		width = parentLayout:GetContentWidthHeight();
 	end             
 	width = self:PercentageToNumber(width, parentWidth);
@@ -365,6 +370,50 @@ function Layout:PrepareLayout()
         string.format("Element nid = %s, width = %s, height = %s", nid, width, height),
         parentLayout and string.format("ParentElement nid = %s, width = %s, height = %s", parentLayout.nid, parentWidth, parentHeight)
     );
+end
+
+
+-- 应用CSS的定位样式
+function Layout:ApplyPositionStyle()
+	local style = self:GetStyle();
+	local width, height = self:GetWidthHeight();
+	local WindowX, WindowY, WindowWidth, WindowHeight = self:GetWindowPosition();
+	local ScreenX, ScreenY, ScreenWidth, ScreenHeight = self:GetScreenPosition();
+	local top, right, bottom, left = self:GetPosition()
+	local float, position  = style.float, style.position;
+	-- 浮动与定位不共存
+	if (float or not position or position == "static") then return end
+	-- 相对定位
+	if (position == "relative") then return end  -- self:OffsetPos(left or 0, top or 0)
+	-- 不使用文档流
+	self:SetUseSpace(false);
+	-- 计算定位
+	local relLayout = self:GetParentLayout();
+	
+	if (position == "absolute") then
+		-- 绝对定位 取已定位的父元素
+		-- while (relLayout and relLayout:GetParentLayout()) do
+		-- 	local relStyle = relLayout:GetStyle();
+		-- 	if (relStyle.position and (relStyle.position == "relative" or relStyle.position == "absolute" or relStyle.position == "fixed" or relStyle.position == "screen")) then break end
+		-- 	relLayout = relLayout:GetParentLayout();
+		-- end
+	elseif (position == "fixed") then
+		-- 固定定位 取根元素
+		relLayout = self:GetRootLayout();
+	end
+
+	local relWidth, relHeight = nil, nil;
+	if (relLayout) then relWidth, relHeight = relLayout:GetWidthHeight() end
+	if (position == "screen") then relWidth, relHeight = ScreenWidth, ScreenHeight end
+	relWidth, relHeight = relWidth or 0, relHeight or 0;
+	if (right and width and not left) then left = relWidth - right - width end
+	if (bottom and height and not top) then top = relHeight - bottom - height end
+	if (not width) then width = relWidth - (left or 0) - (right or 0) end 
+	if (not height) then height = relHeight - (top or 0) - (bottom or 0) end 
+	left, top = left or 0, top or 0;
+	self:SetPos(left, top);
+	-- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", self:GetName(), left, top, right, bottom, width, height, relWidth, relHeight);
+	self:SetWidthHeight(math.max(width, 0), math.max(height, 0));
 end
 
 -- 更新布局
@@ -413,8 +462,22 @@ function Layout:Update(isUpdateWidthHeight)
 	if (parentLayout and parentLayout:IsFixedSize()) then parentLayout:UpdateRealContentWidthHeight() end
 end
 
--- 更新内容宽高
 function Layout:UpdateRealContentWidthHeight()
+	local display = self:GetStyle().display;
+	if (display == "flex") then
+		self:UpdateFlexLayoutRealContentWidthHeight();
+	else
+		self:UpdateBoxLayoutRealContentWidthHeight();
+	end
+end
+
+
+function Layout:UpdateFlexLayoutRealContentWidthHeight()
+	return LayoutFlex.Update(self);
+end
+
+-- 更新盒子内容宽高
+function Layout:UpdateBoxLayoutRealContentWidthHeight()
 	local availableX, availableY, rightAvailableX, rightAvailableY, realContentWidth, realContentHeight = 0, 0, 0, 0, 0, 0;
 	local width, height = self:GetWidthHeight();
 	local element = self:GetElement();
@@ -512,46 +575,4 @@ function Layout:UpdateRealContentWidthHeight()
 	self:SetRealContentWidthHeight(realContentWidth, realContentHeight);
 end
 
--- 应用CSS的定位样式
-function Layout:ApplyPositionStyle()
-	local style = self:GetStyle();
-	local width, height = self:GetWidthHeight();
-	local WindowX, WindowY, WindowWidth, WindowHeight = self:GetWindowPosition();
-	local ScreenX, ScreenY, ScreenWidth, ScreenHeight = self:GetScreenPosition();
-	local top, right, bottom, left = self:GetPosition()
-	local float, position  = style.float, style.position;
-	-- 浮动与定位不共存
-	if (float or not position or position == "static") then return end
-	-- 相对定位
-	if (position == "relative") then return end  -- self:OffsetPos(left or 0, top or 0)
-	-- 不使用文档流
-	self:SetUseSpace(false);
-	-- 计算定位
-	local relLayout = self:GetParentLayout();
-	
-	if (position == "absolute") then
-		-- 绝对定位 取已定位的父元素
-		-- while (relLayout and relLayout:GetParentLayout()) do
-		-- 	local relStyle = relLayout:GetStyle();
-		-- 	if (relStyle.position and (relStyle.position == "relative" or relStyle.position == "absolute" or relStyle.position == "fixed" or relStyle.position == "screen")) then break end
-		-- 	relLayout = relLayout:GetParentLayout();
-		-- end
-	elseif (position == "fixed") then
-		-- 固定定位 取根元素
-		relLayout = self:GetRootLayout();
-	end
-
-	local relWidth, relHeight = nil, nil;
-	if (relLayout) then relWidth, relHeight = relLayout:GetWidthHeight() end
-	if (position == "screen") then relWidth, relHeight = ScreenWidth, ScreenHeight end
-	relWidth, relHeight = relWidth or 0, relHeight or 0;
-	if (right and width and not left) then left = relWidth - right - width end
-	if (bottom and height and not top) then top = relHeight - bottom - height end
-	if (not width) then width = relWidth - (left or 0) - (right or 0) end 
-	if (not height) then height = relHeight - (top or 0) - (bottom or 0) end 
-	left, top = left or 0, top or 0;
-	self:SetPos(left, top);
-	-- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", self:GetName(), left, top, right, bottom, width, height, relWidth, relHeight);
-	self:SetWidthHeight(math.max(width, 0), math.max(height, 0));
-end
 
