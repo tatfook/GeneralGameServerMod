@@ -182,6 +182,7 @@ function Component:GetComponentScope()
         self.ComponentScope.__newvalue = function(t, key, val)
             if (not self:IsAutoRefresh() or key == "__newvalue") then return end
             -- print(string.format("[component:%s] [info] set component scope value, key = %s, ", self.name, key));
+            if (not self:GetUI()) then return end
             self:GetUI():RefreshWindow();
         end
         self.ComponentScope:SetMetaTable(self:GetGlobalScope());

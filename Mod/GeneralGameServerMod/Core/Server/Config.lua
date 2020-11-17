@@ -66,8 +66,8 @@ function Config:StaticInit()
     }
     self.Player = {
         sendPacketFrequency = 0,
-        minAliveTime = 60,    -- 最小存活时间, 大于此值才可以进行离线缓存
-        aliveDuration = 300,  -- 玩家心跳时间 判断玩家是否存活
+        minAliveTime = 60000,    -- 最小存活时间, 大于此值才可以进行离线缓存
+        aliveDuration = 300000,  -- 玩家心跳时间 判断玩家是否存活
     }
     self.Debug = {
         NetDebug = false,

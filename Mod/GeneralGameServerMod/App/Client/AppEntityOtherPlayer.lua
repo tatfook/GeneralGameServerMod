@@ -55,5 +55,5 @@ end
 
 -- 动画缓冲时间
 function AppEntityOtherPlayer:GetMotionBufferTickCount()
-    return 0;
+    return 0; -- 30 = 1s
 end

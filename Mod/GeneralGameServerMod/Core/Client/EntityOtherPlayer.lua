@@ -111,6 +111,9 @@ end
 function EntityOtherPlayer:UpdateEntityActionState()
     local curAnimId = self:GetAnimId();
     
+    -- 没有运动却在走路或跑步则重置为待机动作
+    if (self.smoothFrames == 0 and (curAnimId == 4 or curAnimId == 5)) then curAnimId = 0 end
+
 	if(self.lastAnimId ~= curAnimId and curAnimId) then
 		self.lastAnimId = curAnimId;
 		local obj = self:GetInnerObject();
