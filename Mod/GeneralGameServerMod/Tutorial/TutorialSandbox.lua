@@ -238,6 +238,7 @@ function TutorialSandbox:GetCamera()
 end
 
 -- 设置相机模式  ThirdPersonFreeLooking = 0, FirstPerson = 1, ThirdPersonLookCamera = 2,
+-- 禁止人物随鼠标转向可以设置模式为1或2 
 function TutorialSandbox:SetCameraMode(mode)
     local cameraMode = if_else(mode == 2, CameraController.ThirdPersonLookCamera, if_else(mode == 1, CameraController.FirstPerson, CameraController.ThirdPersonFreeLooking));
     CameraController:SetMode(cameraMode);
