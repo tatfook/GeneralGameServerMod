@@ -162,3 +162,18 @@ GeneralGameServer.Server.WorkerServer.outerPort 工作节点的内网端口
     </WorkerServer>
 </Server>
 ```
+
+## 选服 & 选联机世界
+
+每个联机世界都是需要一个世界服来提供联机支持, 选服是定向选择世界服的需求, 选联机世界是定向选择指定联机世界的需求.
+ggs 为每一个联机世界都生成一种唯一的worldkey, 当需要选择指定联机世界时, 只需要通过worldkey进入即可, 如 `ggs connect -worldKey=worldkeyxxx`
+选服是对选联机世界进一步的确定化, 将联机世界选定指定世界服, 对此需要配置指定联机世界对应世界服, 需在服务器配置文件中引入如下配置项:
+
+```xml
+<!-- 配置世界服 可配置多项
+  worldKey 世界KEY 唯一
+  threadNo 所属线程序号, 最小为1 最大值为线程数 Server.threadCount, 为空则随机分配
+-->
+<WorldServer worldKey="世界KEY_1" threadNo=1></WorldServer>
+<WorldServer worldKey="世界KEY_2" threadNo=2></WorldServer> 
+```

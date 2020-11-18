@@ -24,6 +24,8 @@ local WorldManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"
 -- 世界管理对象
 function WorldManager:ctor()
     self.worldMap = {};
+
+    self.worldKeyPrefix = string.format("%s_%s_%s", Config.WorkerServer.outerIp, Config.WorkerServer.outerPort, __rts__:GetName());
 end
 
 -- 初始化
@@ -37,7 +39,7 @@ end
 
 -- 生成世界KEY
 function WorldManager:GenerateWorldKey(worldId, worldName, no)
-    return string.format("%s_%s_%s", worldId, worldName or "", no or "");
+    return string.format("%s_%s_%s_%s", self.worldKeyPrefix, worldId, worldName or "", no or "");
 end
 
 -- 世界Key是否可用

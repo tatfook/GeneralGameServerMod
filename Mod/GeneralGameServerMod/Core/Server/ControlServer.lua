@@ -110,7 +110,7 @@ function ControlServer:UpdateServerInfo()
     end
     server.defaultThreadName = defaultThreadName; -- 默认线程名 取数量最小的线程
     
-    GGS.DEBUG(server);
+    -- GGS.DEBUG(server);
 end
 
 -- 处理服务器信息上报
@@ -204,7 +204,7 @@ function ControlServer:handleWorldServer(packetWorldServer)
     local worldName = packetWorldServer.worldName;
     local worldKey = packetWorldServer.worldKey;
     GGS.INFO.Format("客户端接入请求, worldId = %s, worldName = %s, worldKey = %s", worldId, worldName, worldKey);
-    local worldServer = self:SelectWorldServerByWorldKey(worldKey) or self:SelectWorldServerByAutoWorldKey(worldId, worldName);
+    local worldServer = self:SelectWorldServerByWorldKey(worldKey) or self:SelectWorldServerByWorldIdAndName(worldId, worldName);
 
     if (worldServer) then
         packetWorldServer.ip = worldServer.ip;
