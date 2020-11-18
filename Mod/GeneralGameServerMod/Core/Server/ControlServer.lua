@@ -20,7 +20,7 @@ local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config")
 local ControlServer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
 
 local servers = {};  -- 服务器信息集
-local ServerAliveDuration = 1000 * 60 * 5;  -- 5min
+local ServerAliveDuration = 60 * 5;  -- 5min
 
 function ControlServer:ctor()
     self:SetNetHandler(self);
@@ -109,7 +109,8 @@ function ControlServer:UpdateServerInfo()
         end
     end
     server.defaultThreadName = defaultThreadName; -- 默认线程名 取数量最小的线程
-    -- GGS.DEBUG(server);
+    
+    GGS.DEBUG(server);
 end
 
 -- 处理服务器信息上报
@@ -125,6 +126,7 @@ function ControlServer:handleServerInfo(serverInfo)
     server.innerPort = serverInfo.innerPort or server.innerPort;             -- 内网Port
     server.outerIp = serverInfo.outerIp or server.outerPort;                 -- 外网IP
     server.outerPort = serverInfo.outerPort or server.outerPort;             -- 外网Port 
+    server.worldServers = serverInfo.worldServers or {};                     -- 自定义世界服
     server.worlds = server.worlds or {};                                     -- 世界信息
     server.threads = server.threads or {};                                   -- 线程信息
     server.lastTick = os.time();                                             -- 上次发送时间
@@ -134,32 +136,44 @@ function ControlServer:handleServerInfo(serverInfo)
     return server;
 end
 
--- 处理客户端请求连接世界的服务器
-function ControlServer:handleWorldServer(packetWorldServer)
-    local worldId = packetWorldServer.worldId;
-    local worldName = packetWorldServer.worldName;
-    local worldKey = self:GetWorldManager():GenerateWorldKey(worldId, worldName);
-    local worldKeyLength = string.len(worldKey);
+-- 通过指定世界key查找世界服
+function ControlServer:SelectWorldServerByWorldKey(worldKey)
+    if (not worldKey) then return end
+
+    local curTick = os.time();
+    for key, svr in pairs(servers) do
+        local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
+        if (isAlive) then 
+            local worldServer = svr.worldServers[worldKey];
+            if (worldServer) then return {ip = svr.outerIp, port = svr.outerPort, worldKey = worldKey, threadName = worldServer.threadName} end
+            local world = svr.worlds[worldKey];
+            if (world) then return {ip = svr.outerIp, port = svr.outerPort, worldKey = worldKey, threadName = world.threadName} end
+        end
+    end
+    return ;
+end
+
+-- 通过指定世界key查找世界服
+function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
     -- 优先选择已存在世界的服务器
     -- 其次选择客户端最少的服务器
     -- 最后选择控制服务器
     local server, workerServer, controlServer = nil, nil, nil; -- 设置最大值
-    local serverMaxClientCount = Config.Server.maxClientCount;
     local curTick = os.time();
-    local realWorldKey, worldClientCount, threadName = worldKey, nil, nil;
+    local worldKey, worldClientCount, threadName = nil, nil, nil;
     for key, svr in pairs(servers) do
         local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
         -- 忽略已挂服务器或超负荷服务器
         if (isAlive and svr.totalClientCount < svr.maxClientCount) then 
             -- 优先找已存在的世界 且世界人数未满 世界人数最少
             for key, world in pairs(svr.worlds) do
-                if ((string.gsub(key, "%d*$", "")) == worldKey
+                if (world.worldId == worldId and world.worldName == worldName 
                     and world.clientCount < world.maxClientCount 
                     and svr.threads[world.threadName].clientCount < svr.threadMaxClientCount
                     and (not worldClientCount or worldClientCount > world.clientCount)) then
                     worldClientCount = world.clientCount;
                     server = svr;
-                    realWorldKey = key;
+                    worldKey = key;
                     threadName = world.threadName;
                 end
             end
@@ -169,15 +183,37 @@ function ControlServer:handleWorldServer(packetWorldServer)
             controlServer = (svr.isControlServer and (not controlServer or controlServer.totalClientCount > svr.totalClientCount)) and svr or controlServer;
         end
     end
+    -- 当autowoldkey不存在优先选工作节点
     server = server or workerServer or controlServer;
-    if (server) then
-        packetWorldServer.ip = server.outerIp;
-        packetWorldServer.port = server.outerPort;
-        packetWorldServer.worldKey = realWorldKey;
-        packetWorldServer.threadName = threadName or server.defaultThreadName;
-        GGS.INFO.Format("客户端接入请求, worldId = %s, worldName = %s, worldKey = %s, ip = %s, port = %s, threadName = %s", worldId, worldName, realWorldKey, server.outerIp, server.outerPort, packetWorldServer.threadName);
+    
+    -- 若找不到服务器则反回空
+    if (not server) then return end
+
+    -- 返回查找结果
+    return {
+        worldKey = worldKey,
+        ip = server.outerIp,
+        port = server.outerPort,
+        threadName = threadName or server.defaultThreadName,
+    }
+end
+
+-- 处理客户端请求连接世界的服务器
+function ControlServer:handleWorldServer(packetWorldServer)
+    local worldId = packetWorldServer.worldId;
+    local worldName = packetWorldServer.worldName;
+    local worldKey = packetWorldServer.worldKey;
+    GGS.INFO.Format("客户端接入请求, worldId = %s, worldName = %s, worldKey = %s", worldId, worldName, worldKey);
+    local worldServer = self:SelectWorldServerByWorldKey(worldKey) or self:SelectWorldServerByAutoWorldKey(worldId, worldName);
+
+    if (worldServer) then
+        packetWorldServer.ip = worldServer.ip;
+        packetWorldServer.port = worldServer.port;
+        packetWorldServer.worldKey = worldServer.worldKey;
+        packetWorldServer.threadName = worldServer.threadName;
+        GGS.INFO.Format("客户端接入响应, worldId = %s, worldName = %s, worldKey = %s, ip = %s, port = %s, threadName = %s", worldId, worldName, packetWorldServer.worldKey, packetWorldServer.ip, packetWorldServer.port, packetWorldServer.threadName);
     else 
-        GGS.WARN.Format("世界key: %s 无可用服务", worldKey);
+        GGS.WARN.Format("无可用服务 worldId = %s, worldName = %s, worldKey = %s", worldId, worldName, worldKey);
     end
 
     self:AddPacketToSendQueue(packetWorldServer);

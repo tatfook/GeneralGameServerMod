@@ -17,8 +17,8 @@ local ElementUI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), 
 
 ElementUI:Property("Active", false, "IsActive");            -- 是否激活
 ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
-ElementUI:Property("Layout");                               -- 元素布局
 ElementUI:Property("Visible", true);                        -- 可见性
+ElementUI:Property("Render", false, "IsRender");            -- 是否渲染
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
 local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable();
@@ -32,27 +32,15 @@ end
 
 -- 是否显示
 function ElementUI:IsVisible()
-    if (not self:GetVisible()) then return false end
-    local style = self:GetStyle();
-    return not style or style.display ~= "none";
+    return self:GetVisible() and self:GetLayout():IsVisible();
 end
 
 -- 是否需要渲染
 function ElementUI:IsNeedRender()
-    local style = self:GetStyle();
-    if (self.isRender 
-        or not self:IsVisible() 
-        or not style 
-        or style.display == "none" 
-        or style.visibility == "hidden" 
-        or self:GetWidth() == 0 
-        or self:GetHeight() == 0) then 
-            return false; 
-        end
-    return true;
+    return not (self:IsRender() or not self:IsVisible() or self:GetWidth() == 0 or self:GetHeight() == 0);
 end
 
-function ElementUI:Render(painter, offsetX, offsetY)
+function ElementUI:Render(painter)
     for i = 1, #self.AbsoluteElements do self.AbsoluteElements[i] = nil end
     for i = 1, #self.FixedElements do self.FixedElements[i] = nil end
     self:RenderStaticElement(painter, self);
@@ -62,11 +50,10 @@ end
 
 -- 元素渲染
 function ElementUI:RenderStaticElement(painter, root)
-    offsetX, offsetY = offsetX or 0, offsetY or 0;
     -- ElementUIDebug.If(self:GetAttrValue("id") == "debug" and not self:IsNeedRender(), self:IsVisible(), self:GetWidth(), self:GetHeight());
     if (not self:IsNeedRender()) then return end
 
-    local position = self:GetStyle().position or "static";
+    local position = self:GetLayout():GetPositionStyle();
     if (self ~= root and (position == "absolute" or position == "fixed" or position == "screen")) then
         if (position == "absolute") then 
             table.insert(root.AbsoluteElements, 1, self);
@@ -76,7 +63,7 @@ function ElementUI:RenderStaticElement(painter, root)
         return ;
     end
     
-    self.isRender = true;  -- 设置渲染标识 避免递归渲染
+    self:SetRender(true);  -- 设置渲染标识 避免递归渲染
 
     -- 渲染元素
     self:OnRender(painter);
@@ -93,19 +80,19 @@ function ElementUI:RenderStaticElement(painter, root)
     
     -- 绘制子元素
     for childElement in self:ChildElementIterator() do
-        if (childElement:GetLayout():IsPosition()) then
+        if (childElement:GetLayout():IsPositionElement()) then
             childElement:RenderStaticElement(painter, root);
         else 
-            if (isOverflowX or isOverflowY) then
+            if (layout.overflowX == "hidden" or layout.overflowY == "hidden" or isOverflowX or isOverflowY) then
                 -- ElementUIDebug.FormatIf(self:GetName() == "TextArea", "Render ScrollX = %s, ScrollY = %s", scrollX, scrollY);
                 painter:Save();
                 painter:SetClipRegion(0, 0, width, height);
-                painter:Translate(-scrollX, -scrollY);
+                if (isOverflowX or isOverflowY) then painter:Translate(-scrollX, -scrollY) end
             end
             childElement:RenderStaticElement(painter, root);
             -- 恢复裁剪
-            if (isOverflowX or isOverflowY) then
-                painter:Translate(scrollX, scrollY);
+            if (layout.overflowX == "hidden" or layout.overflowY == "hidden" or isOverflowX or isOverflowY) then
+                if (isOverflowX or isOverflowY) then painter:Translate(scrollX, scrollY) end
                 painter:Restore();
             end
         end
@@ -113,7 +100,7 @@ function ElementUI:RenderStaticElement(painter, root)
 
     painter:Translate(-self:GetX(), -self:GetY());
     
-    self.isRender = false; -- 清除渲染标识
+    self:SetRender(false); -- 清除渲染标识
 end
 
 function ElementUI:RenderAbsoluteElement(painter, root)
@@ -129,7 +116,7 @@ function ElementUI:RenderAbsoluteElement(painter, root)
         painter:Translate(element:GetX(), element:GetY());
 
         local childElement = elements[index + 1];
-        if (childElement:GetLayout():IsPosition()) then
+        if (childElement:GetLayout():IsPositionElement()) then
             render(elements, index + 1);
         else
             -- 存在滚动需要做裁剪
@@ -373,7 +360,7 @@ function ElementUI:UpdateWindowPos(forceUpdate)
         windowX, windowY = parentElement:GetWindowPos();
         local scrollX, scrollY = parentElement:GetScrollPos();
         -- ElementUIDebug.FormatIf(parentElement:GetAttrStringValue("id") == "debug", "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
-        if (not self:GetLayout():IsPosition()) then
+        if (not self:GetLayout():IsPositionElement()) then
             windowX, windowY = windowX - scrollX, windowY - scrollY;
             -- ElementUIDebug.FormatIf((scrollX > 0 or scrollY > 0), "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
         end
@@ -413,8 +400,8 @@ end
 -- 获取滚动条的位置
 function ElementUI:GetScrollPos()
     local scrollX, scrollY = 0, 0;
-    if (self.horizontalScrollBar and self.horizontalScrollBar:IsVisible()) then scrollX = self.horizontalScrollBar.scrollLeft end
-    if (self.verticalScrollBar and self.verticalScrollBar:IsVisible()) then scrollY = self.verticalScrollBar.scrollTop end
+    if (self.horizontalScrollBar and self:GetLayout():IsOverflowX()) then scrollX = self.horizontalScrollBar.scrollLeft end
+    if (self.verticalScrollBar and self:GetLayout():IsOverflowY()) then scrollY = self.verticalScrollBar.scrollTop end
     return scrollX, scrollY;
 end
 
@@ -644,7 +631,11 @@ end
 
 -- 鼠标滚动事件
 function ElementUI:OnMouseWheel(event)
-    if (self.verticalScrollBar and self.verticalScrollBar:IsVisible()) then self.verticalScrollBar:OnMouseWheel(event) end
+    if (self:GetLayout():IsOverflowY()) then 
+        if (self.verticalScrollBar) then
+            self.verticalScrollBar:OnMouseWheel(event);
+        end
+    end
 end
 
 function ElementUI:OnKeyDown(event)

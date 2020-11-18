@@ -83,6 +83,7 @@ function WorkerServer:SendServerInfo()
             maxClientCount = Config.Server.maxClientCount,               -- 服务器最大客户端数
             threadCount = Config.Server.threadCount,                     -- 服务器的线程数
             threadMaxClientCount = Config.Server.threadMaxClientCount;   -- 单个线程最大客户端数
+            worldServers = Config.WorldServers,                          -- 世界服
         }
     }));
 end

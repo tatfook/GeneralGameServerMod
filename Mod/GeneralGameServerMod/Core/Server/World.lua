@@ -142,6 +142,8 @@ function World:GetWorldInfo(worldKey)
         maxClientCount = self:GetMaxClientCount(),
         threadName = self:GetThreadName(),
         worldKey = self:GetWorldKey(),
+        worldId = self:GetWorldId(),
+        worldName = self:GetWorldName(),
     }
 end
 

@@ -1,16 +1,16 @@
 --[[
-Title: LayoutFlex
+Title: Flex
 Author(s): wxa
 Date: 2020/6/30
 Desc: 弹性布局类
 use the lib:
 -------------------------------------------------------
-local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout.lua");
+local Flex = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout/Flex.lua");
 -------------------------------------------------------
 ]]
 
-local LayoutFlex = NPL.export();
-local LayoutFlexDebug = GGS.Debug.GetModuleDebug("LayoutFlexDebug").Enable(); --Enable  Disable
+local Flex = NPL.export();
+local FlexDebug = GGS.Debug.GetModuleDebug("FlexDebug").Enable(); --Enable  Disable
 
 local function LayoutElementFilter(el)
 	local layout = el:GetLayout();
@@ -18,7 +18,7 @@ local function LayoutElementFilter(el)
 end 
 
 local function UpdateRow(layout, style)
-    local width, height = layout:GetContentWidthHeight();
+    local left, top, width, height = layout:GetContentGeometry();
 	local lines, line = {}, {layouts = {}, width = 0, height = 0, flexGrow = 0};
 	table.insert(lines, line);
 	for child in layout:GetElement():ChildElementIterator(true, LayoutElementFilter) do
@@ -37,7 +37,7 @@ local function UpdateRow(layout, style)
 	end
 
 	-- local totalHeight = 0;
-    local offsetLeft, offsetTop, HGap, VGap = 0, 0, 0, 0;
+    local offsetLeft, offsetTop, HGap, VGap = left, top, 0, 0;
     local contentWidth, contentHeight = 0, 0;
     local function UpdateChildLayoutPos(layouts)
         for _, childLayout in ipairs(line.layouts) do
@@ -65,7 +65,7 @@ local function UpdateRow(layout, style)
         end 
     end
 	
-	-- LayoutFlexDebug(lines);
+	-- FlexDebug(lines);
 	
 	for _, line in ipairs(lines) do
 		if (width) then
@@ -103,16 +103,18 @@ local function UpdateRow(layout, style)
 		else 
 			UpdateChildLayoutPos(line.layouts);
 		end
-        contentWidth = math.max(contentWidth, offsetLeft - HGap);
-		offsetLeft, HGap = 0, 0;
+        contentWidth = math.max(contentWidth, offsetLeft - HGap - left);
+		offsetLeft, HGap = left, 0;
         offsetTop = offsetTop + line.height + VGap;
-        contentHeight = math.max(contentHeight, offsetTop - VGap);
+        contentHeight = math.max(contentHeight, offsetTop - VGap - top);
 	end
+
+	FlexDebug.Format("left = %s, top = %s, width = %s, height = %s, contentWidth = %s, contentHeight = %s", left, top, width, height, contentWidth, contentHeight);
     layout:SetRealContentWidthHeight(contentWidth, contentHeight);
 end
 
 local function UpdateCol(layout, style)
-    local width, height = layout:GetContentWidthHeight();
+    local left, top, width, height = layout:GetContentGeometry();
 	local lines, line = {}, {layouts = {}, width = 0, height = 0, flexGrow = 0};
 	table.insert(lines, line);
 	for child in layout:GetElement():ChildElementIterator(true, LayoutElementFilter) do
@@ -131,7 +133,7 @@ local function UpdateCol(layout, style)
 	end
 
 	-- local totalHeight = 0;
-    local offsetLeft, offsetTop, HGap, VGap = 0, 0, 0, 0;
+    local offsetLeft, offsetTop, HGap, VGap = left, top, 0, 0;
     local contentWidth, contentHeight = 0, 0;
     local function UpdateChildLayoutPos(layouts)
         for _, childLayout in ipairs(line.layouts) do
@@ -195,10 +197,10 @@ local function UpdateCol(layout, style)
 		else 
 			UpdateChildLayoutPos(line.layouts);
         end
-        contentHeight = math.max(contentHeight, offsetTop - VGap);
-        offsetTop, VGap = 0, 0;
+        contentHeight = math.max(contentHeight, offsetTop - VGap - top);
+        offsetTop, VGap = top, 0;
         offsetLeft = offsetLeft + line.width + HGap;
-        contentWidth = math.max(contentWidth, offsetLeft - HGap);
+        contentWidth = math.max(contentWidth, offsetLeft - HGap - left);
     end
     layout:SetRealContentWidthHeight(contentWidth, contentHeight);
 end
@@ -217,6 +219,6 @@ local function Update(layout)
     end
 end
 
-function LayoutFlex.Update(layout)
+function Flex.Update(layout)
     Update(layout);
 end

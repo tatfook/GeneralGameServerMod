@@ -51,6 +51,10 @@ GGS.ToString = Debug.ToString;
 -- 配置
 GGS.MaxEntityId =  1000000;                                                    -- 服务器统一分配的最大实体ID数
 GGS.WorkerThreadName = "WorkerThread";                                         -- 工作线程名
+function GGS.GetWorkerThreadName(no)
+    return GGS.WorkerThreadName .. tostring(no);
+end
+
 -- 注册主客户端类
 function GGS.RegisterClientClass(appName, clientClass)
     GeneralGameClients[appName] = clientClass;

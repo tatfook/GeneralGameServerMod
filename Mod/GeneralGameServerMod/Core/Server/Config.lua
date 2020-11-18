@@ -76,6 +76,7 @@ function Config:StaticInit()
     self.DataHandler = {
         filename = "Mod/GeneralGameServerMod/Core/Server/ServerDataHandler.lua",
     }
+    self.WorldServers = {};
     self.PublicFiles = {};
     self.IsDevEnv = IsDevEnv;
     
@@ -164,8 +165,45 @@ function Config:LoadConfig(filename)
         local filename = node.attr and node.attr.filename;
         if (filename) then table.insert(self.PublicFiles, #(self.PublicFiles) + 1, filename) end
     end
-    
-    GGS.INFO(self);
+
+    local WorkerServerCount = {};
+    for i = 1, self.Server.threadCount do WorkerServerCount[GGS.GetWorkerThreadName(i)] = 0 end
+    local WorldServerNodes = commonlib.XPath.selectNodes(xmlRoot, pathPrefix .. "/WorldServer") or {};
+    for _, node in ipairs(WorldServerNodes) do
+        local worldKey = node.attr and node.attr.worldKey;
+        local threadNo = node.attr and node.attr.threadNo;
+        local threadName = GGS.GetWorkerThreadName(threadNo);
+        
+        if (worldKey) then 
+            if (threadName and WorkerServerCount[threadName]) then
+                WorkerServerCount[threadName] = WorkerServerCount[threadName] + 1;
+            else
+                threadName = nil;
+            end 
+            self.WorldServers[worldKey] = {
+                worldKey = worldKey,
+                threadName = threadName,
+            }
+        end
+    end
+    -- 均匀分配, 可改进, 选择分配
+    for _, worldServer in pairs(self.WorldServers) do
+        local minCount, minThreadName = nil, nil;
+        if (not worldServer.threadName) then
+            for threadName, count in pairs(WorkerServerCount) do
+                if (not minCount or minCount > count) then 
+                    minCount = count;
+                    minThreadName = threadName;
+                end
+            end
+            if (minThreadName) then
+                worldServer.threadName = minThreadName;
+                WorkerServerCount[minThreadName] = WorkerServerCount[minThreadName] + 1;
+            end
+        end
+    end
+
+    GGS.INFO.If(__rts__:GetName() == "main", self);
 end
 
 -- 加载配置

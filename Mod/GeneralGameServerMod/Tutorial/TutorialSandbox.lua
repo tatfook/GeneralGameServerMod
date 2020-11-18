@@ -50,7 +50,7 @@ function TutorialSandbox:Reset()
 end
 
 function TutorialSandbox:OnWorldLoaded()
-    self:Reset();
+    -- self:Reset();
 end
 
 function TutorialSandbox:OnWorldUnloaded()

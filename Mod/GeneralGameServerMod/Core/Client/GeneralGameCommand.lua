@@ -141,8 +141,11 @@ function GeneralGameCommand:handleConnectCommand(cmd_text)
 
 	options.worldId = (worldId and worldId ~= 0) and worldId or nil;
 	options.worldName = worldName;
-	options.ip = (options.host and options.host ~= "") and options.host or nil;
+	options.worldKey = (options.worldKey and options.worldKey ~= "") and options.worldKey or nil;
+	options.ip = (options.ip and options.ip ~= "") and options.ip or nil;
 	options.port = (options.port and options.port ~= "") and options.port or nil;
+	options.serverIp = (options.serverIp and options.serverIp ~= "") and options.serverIp or nil;
+	options.serverPort = (options.serverPort and options.serverPort ~= "") and options.serverPort or nil;
 	options.username = (options.username and options.username ~= "") and options.username or nil;
 	options.password = (options.password and options.password ~= "") and options.password or nil;
 	options.silent = if_else(options.silent == nil, true, options.silent and true or false);

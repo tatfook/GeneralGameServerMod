@@ -215,6 +215,8 @@ function GeneralGameClient:LoadWorld(opts, loadworld)
 
     -- 确定世界ID
     options.worldId = tostring(opts.worldId or curWorldId or options.defaultWorldId);
+    options.worldName = opts.worldName;
+    options.worldKey = opts.worldKey;
     options.username = options.username or self:GetUserInfo().username;
     options.ip = opts.ip;            -- ip port 每次重写
     options.port = options.port;     -- 以便动态获取
@@ -340,6 +342,7 @@ function GeneralGameClient:SelectServerAndWorld()
     self.controlServerConnection:AddPacketToSendQueue(Packets.PacketWorldServer:new():Init({
         worldId = options.worldId,
         worldName = options.worldName,
+        worldKey = options.worldKey,
     }));
 end
 

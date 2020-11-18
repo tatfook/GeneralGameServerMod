@@ -5,265 +5,27 @@ Date: 2020/6/30
 Desc: 布局类
 use the lib:
 -------------------------------------------------------
-local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout.lua");
+local Layout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout/Layout.lua");
 -------------------------------------------------------
 ]]
 
-local Layout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-local LayoutFlex = NPL.load("./LayoutFlex.lua", IsDevEnv);
+local BaseLayout = NPL.load("./BaseLayout.lua", IsDevEnv);
+local Flex = NPL.load("./Flex.lua", IsDevEnv);
+
+local Layout = commonlib.inherit(BaseLayout, NPL.export());
 
 local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Enable(); --Enable  Disable
 
--- 属性定义
-Layout:Property("Element");                                        -- 元素
-Layout:Property("BorderBox", false, "IsBorderBox");                -- 区域盒子
-Layout:Property("LayoutFinish", false, "IsLayoutFinish");          -- 是否布局完成
-Layout:Property("FixedSize", false, "IsFixedSize");                -- 是否是固定宽高
-Layout:Property("FixedWidth", false, "IsFixedWidth");              -- 是否是固定宽
-Layout:Property("FixedHeight", false, "IsFixedHeight");            -- 是否是固定高
-Layout:Property("UseSpace", true, "IsUseSpace");                   -- 是否使用空间
-local nid = 0;
-
--- 重置布局
-function Layout:Reset()
-	-- 相对于父元素的位置
-	self.top, self.right, self.bottom, self.left = 0, 0, 0, 0;
-	-- 元素宽高 
-	self.x, self.y, self.width, self.height = 0, 0, nil, nil;
-	-- 真实内容宽高
-	self.realContentWidth, self.realContentHeight = nil, nil;
-	-- 内容宽高
-	self.contentWidth, self.contentHeight = 0, 0;  
-	-- 空间大小
-	self.spaceWidth, self.spaceHeight = 0, 0;
-	-- 边框
-	self.borderTop, self.borderRight, self.borderBottom, self.borderLeft = 0, 0, 0, 0;
-	-- 填充
-	self.paddingTop, self.paddingRight, self.paddingBottom, self.paddingLeft = 0, 0, 0, 0;
-	-- 边距
-	self.marginTop, self.marginRight, self.marginBottom, self.marginLeft = 0, 0, 0, 0;
-	-- 窗口坐标
-	-- self.windowX, self.windowY = 0, 0;
-
-	-- 是否固定内容大小
-	self:SetFixedSize(false);
-	self:SetLayoutFinish(false);
-	self:SetUseSpace(true);
-end
-
 -- 初始化
 function Layout:Init(element)
-	self:Reset();
-	
-	nid = nid + 1;
-	self.nid = nid;
-
-    self:SetElement(element);
-
+	Layout._super.Init(self, element);
 	return self;
-end
--- 获取元素名
-function Layout:GetName()
-    return self:GetElement():GetName();
-end
--- 获取窗口
-function Layout:GetWindow()
-    return self:GetElement():GetWindow();
-end
--- 获取窗口位置 x, y, w, h    (w, h 为宽高, 非坐标)
-function Layout:GetWindowPosition()
-	return self:GetWindow():GetWindowPosition();
-end
--- 获取屏幕(应用程序窗口)位置 x, y, w, h    (w, h 为宽高, 非坐标)
-function Layout:GetScreenPosition()
-	return ParaUI.GetUIObject("root"):GetAbsPosition();
-end
--- 获取页面元素的样式
-function Layout:GetStyle()
-	return self:GetElement():GetStyle();
-end
--- 获取父布局
-function Layout:GetParentLayout()
-    local parent = self:GetElement():GetParentElement();
-    return parent and parent:GetLayout();
-end
--- 获取根布局
-function Layout:GetRootLayout()
-    return self:GetWindow() and self:GetWindow():GetLayout();
-end
--- 设置空间大小
-function Layout:SetSpaceWidthHeight(width, height)
-	self.spaceWidth, self.spaceHeight = width, height;
-end
--- 获取空间大小 margin border padding content
-function Layout:GetSpaceWidthHeight(width, height)
-	return self.spaceWidth, self.spaceHeight;
-end
--- 获取固定宽高
-function Layout:GetFixedWidthHeight()
-	local width, height = self:GetWidthHeight();
-	if (self:IsFixedSize()) then return width, height end
-	if (not self:IsFixedWidth()) then width = nil end
-	if (not self:IsFixedHeight()) then height = nil end
-	return width, height;
-end
--- 设置区域宽高 非坐标 包含 padding border content
-function Layout:SetWidthHeight(width, height)
-	self.width, self.height = width, height;
-	self:GetElement():SetSize(self.width or 0, self.height or 0);
-	local marginTop, marginRight, marginBottom, marginLeft = self:GetMargin();
-	local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
-	local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
-	self.spaceWidth = width and (width + marginLeft + marginRight);
-	self.spaceHeight = height and (height + marginTop + marginBottom);
-	self.contentWidth = width and (width - borderLeft - borderRight - paddingLeft - paddingRight);
-	self.contentHeight = height and (height - borderTop - borderBottom - paddingTop - paddingBottom);
-end
--- 获取区域宽高 非坐标 包含 padding border style.width    style.width 可能是内容宽也可能是区域宽,  布局里的宽一定是区域宽
-function Layout:GetWidthHeight()
-	return self.width, self.height;
-end
--- 设置内容宽高
-function Layout:SetContentWidthHeight(width, height)
-    self.contentWidth, self.contentHeight = width, height;
-end
--- 获取内容宽高 
-function Layout:GetContentWidthHeight()
-	return self.contentWidth, self.contentHeight;
-end
--- 设置真实宽高
-function Layout:SetRealContentWidthHeight(width, height)
-	local isRealContentWidthHeightChange = self.realContentWidth ~= width or self.realContentHeight ~= height;
-    self.realContentWidth, self.realContentHeight = width, height;
-	-- 真实内容发生改变
-	if (isRealContentWidthHeightChange and self:IsLayoutFinish()) then self:GetElement():OnRealContentSizeChange() end
-end
--- 获取真实宽高 
-function Layout:GetRealContentWidthHeight()
-	return self.realContentWidth, self.realContentHeight;
-end
--- 设置最小宽高 
-function Layout:SetMinWidthHeight(width, height)
-	self.minWidth, self.minHeight = width, height;
-end
--- 获取最小宽高
-function Layout:GetMinWidthHeight()
-	return self.minWidth, self.minHeight;
-end
--- 设置最大宽高 
-function Layout:SetMaxWidthHeight(width, height)
-	self.maxWidth, self.maxHeight = width, height;
-end
--- 获取最大宽高
-function Layout:GetMaxWidthHeight()
-	return self.maxWidth, self.maxHeight;
-end
--- 设置填充
-function Layout:SetBorder(top, right, bottom, left)
-    self.borderTop, self.borderRight, self.borderBottom, self.borderLeft = top, right, bottom, left;
-end
--- 获取填充 top right bottom left 
-function Layout:GetBorder()
-	return self.borderTop, self.borderRight, self.borderBottom, self.borderLeft;
-end
--- 设置填充
-function Layout:SetPadding(top, right, bottom, left)
-    self.paddingTop, self.paddingRight, self.paddingBottom, self.paddingLeft = top, right, bottom, left;
-end
--- 获取填充 top right bottom left 
-function Layout:GetPadding()
-	return self.paddingTop, self.paddingRight, self.paddingBottom, self.paddingLeft;
-end
--- 设置边距
-function Layout:SetMargin(top, right, bottom, left)
-    self.marginTop, self.marginRight, self.marginBottom, self.marginLeft = top, right, bottom, left;
-end
--- 获取填充 top right bottom left 
-function Layout:GetMargin()
-	return self.marginTop, self.marginRight, self.marginBottom, self.marginLeft;
-end
--- 设置位置
-function Layout:SetPosition(top, right, bottom, left)
-	self.top, self.right, self.bottom, self.left = top, right, bottom, left;
-end
--- 获取位置
-function Layout:GetPosition()
-    return self.top, self.right, self.bottom, self.left;
-end
--- 设置位置坐标
-function Layout:SetPos(x, y)
-	self.x, self.y = x or 0, y or 0;
-	self:GetElement():SetPosition(self.x, self.y);
-end
--- 获取位置坐标
-function Layout:GetPos()
-	return self.x or 0, self.y or 0; 
-end
--- 获取内容位置
-function Layout:GetContentPos()
-	return self.x + self.borderLeft + self.paddingLeft, self.y + self.borderTop + self.paddingTop;
-end
--- 百分比转数字
-function Layout:PercentageToNumber(percentage, size)
-	if (type(percentage) == "number") then return percentage end;
-	if (type(percentage) ~= "string") then return end
-	local number = tonumber(string.match(percentage, "[%+%-]?%d+"));
-	if (string.match(percentage, "%%$")) then
-		number = size and math.floor(size * number /100);
-	end
-	return number;
-end
--- 块元素识别
-function Layout:IsBlock()
-	local style = self:GetStyle();
-	return (not style.display or style.display == "block") and not style.float;
-end
--- 弹性元素识别
-function Layout:IsFlex()
-	return self:GetStyle().display == "flex";
-end
--- 是定位元素
-function Layout:IsPosition()
-	local style = self:GetStyle();
-	return style.position == "absoulte" or style.position == "fixed" or style.position == "screen";
-end
--- 元素是否布局 false 不布局
-function Layout:IsLayout()
-	local element = self:GetElement();
-    local display = self:GetStyle().display;
-    local width, height = self:GetWidthHeight();
-    -- if (not element:IsVisible() or width == 0 or height == 0 or display == "none") then return false end 
-    if (not element:IsVisible() or display == "none") then return false end 
-    return true;
-end
--- 是否是定位元素
-function Layout:IsPosition()
-	local position = self:GetStyle().position;
-	return self:IsLayout() and (position == "absolute" or position == "fixed" or position == "screen");
-end
-
--- 是否溢出
-function Layout:IsOverflow()
-	return self:IsOverflowX() or self:IsOverflowY();
-end
--- 是否溢出
-function Layout:IsOverflowX()
-	local style = self:GetStyle();
-	-- return (style["overflow-x"] ~= "none" and style["overflow-x"] ~= "hidden") and self:IsFixedWidth() and self.realContentWidth and self.realContentWidth > self.contentWidth;
-	return (style["overflow-x"] ~= "none" and style["overflow-x"] ~= "hidden") and self.contentWidth and self.realContentWidth and self.realContentWidth > self.contentWidth;
-end
--- 是否溢出
-function Layout:IsOverflowY()
-	local style = self:GetStyle();
-	-- return (style["overflow-y"] ~= "none" and style["overflow-y"] ~= "hidden") and self:IsFixedHeight() and self.realContentHeight and self.realContentHeight > self.contentHeight;
-	return (style["overflow-y"] ~= "none" and style["overflow-y"] ~= "hidden") and self.contentHeight and self.realContentHeight and self.realContentHeight > self.contentHeight;
 end
 
 -- 处理布局准备工作, 单位数字化
 function Layout:PrepareLayout()
-    -- 先重置布局
-    self:Reset();
-
+	Layout._super.PrepareLayout(self);
+	
 	-- 获取父元素布局
     local parentLayout = self:GetParentLayout();
 	
@@ -332,7 +94,7 @@ function Layout:PrepareLayout()
 
 	-- 数字化宽高
 	local width, height = style.width, style.height;                                                                                   -- 支持百分比, px
-	if (self:IsBlock() and not self:IsPosition() and not width and parentLayout and not parentLayout:IsFlex()) then                    -- 块元素默认为父元素宽
+	if (self:IsBlockElement() and not self:IsPositionElement() and not width and parentLayout and not parentLayout:IsFlexElement()) then                    -- 块元素默认为父元素宽
 		width = parentLayout:GetContentWidthHeight();
 	end             
 	width = self:PercentageToNumber(width, parentWidth);
@@ -473,7 +235,7 @@ end
 
 
 function Layout:UpdateFlexLayoutRealContentWidthHeight()
-	return LayoutFlex.Update(self);
+	return Flex.Update(self);
 end
 
 -- 更新盒子内容宽高
@@ -504,7 +266,7 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 				-- string.format("child margin: %s, %s, %s, %s", childMarginTop, childMarginRight, childMarginBottom, childMarginLeft), childStyle,
 				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s, childWidth = %s, childHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight, childWidth, childHeight)
 			);
-			if (not childLayout:IsBlock()) then
+			if (not childLayout:IsBlockElement()) then
 				-- 内联元素
 				if ((width - availableX - rightAvailableX) < childSpaceWidth) then
 					-- 新起一行
@@ -562,7 +324,7 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 			left = left + paddingLeft + borderLeft
 		end
 		top = top + paddingTop + borderTop;
-		if (not childLayout:IsPosition()) then
+		if (not childLayout:IsPositionElement()) then
 			childLayout:SetPos(left, top);
 		end
 		LayoutDebug.If(

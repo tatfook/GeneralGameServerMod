@@ -77,7 +77,7 @@ function GeneralGameServer:Start()
 	
 	local threadCount = Config.Server.threadCount;
 	for i = 1, threadCount do 
-		local threadName = GGS.WorkerThreadName .. tostring(i);
+		local threadName = GGS.GetWorkerThreadName(i);
 		NPL.CreateRuntimeState(threadName, 0):Start(); 
 		-- NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Server/ThreadHelper.lua", threadName), {action = "Init"});
 	end

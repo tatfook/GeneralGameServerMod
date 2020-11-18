@@ -16,7 +16,7 @@ local Rect = commonlib.gettable("mathlib.Rect");
 local Point = commonlib.gettable("mathlib.Point");
 
 local Style = NPL.load("./style.lua", IsDevEnv);
-local Layout = NPL.load("./layout.lua", IsDevEnv);
+local Layout = NPL.load("./Layout/Layout.lua", IsDevEnv);
 local ElementUI = NPL.load("./ElementUI.lua", IsDevEnv);
 local Element = commonlib.inherit(ElementUI, NPL.export());
 
@@ -28,6 +28,7 @@ Element:Property("Window");     -- 元素所在窗口
 Element:Property("Attr", {});   -- 元素属性
 Element:Property("XmlNode");    -- 元素XmlNode
 Element:Property("ParentElement");                        -- 父元素
+Element:Property("Layout");                               -- 元素布局
 Element:Property("Style", nil);                           -- 样式
 Element:Property("StyleSheet");                           -- 元素样式表
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
@@ -340,21 +341,25 @@ function Element:OnRealContentSizeChange()
     local width, height = layout:GetWidthHeight();
     local contentWidth, contentHeight = layout:GetContentWidthHeight();
     local realContentWidth, realContentHeight = layout:GetRealContentWidthHeight();
-    if (layout:IsOverflowX()) then 
-        -- ElementDebug.Format("contentWidth = %s, realContentWidth = %s", contentWidth, realContentWidth);
-        self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self);
-        self.horizontalScrollBar:SetVisible(true);
+    local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
+
+    -- ElementDebug.If(
+    --     self:GetAttrStringValue("id") == "debug", 
+    --     isOverflowX, isOverflowY, 
+    --     width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+
+    if (isOverflowX) then self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self) end
+
+    if (self.horizontalScrollBar) then
+        self.horizontalScrollBar:SetVisible(isOverflowX);
         self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
-    elseif (self.horizontalScrollBar) then
-        self.horizontalScrollBar:SetVisible(false);
     end
-    if (layout:IsOverflowY()) then 
-        self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self);
-        self.verticalScrollBar:SetVisible(true);
+
+    if (isOverflowY) then self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self) end
+
+    if (self.verticalScrollBar) then
+        self.verticalScrollBar:SetVisible(isOverflowY);
         self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
-        -- ElementDebug.Format("contentHeight = %s, realContentHeight = %s, isLayout = %s, isPosition = %s", contentHeight, realContentHeight, self.verticalScrollBar:GetLayout():IsLayout(), self.verticalScrollBar:GetLayout():IsPosition());
-    elseif (self.verticalScrollBar) then
-        self.verticalScrollBar:SetVisible(false);
     end
 end
 
@@ -502,7 +507,7 @@ end
 function Element:GetPositionElements()
     local list = {};
     local function GetPositionElements(element)
-        if (element:GetLayout():IsPosition()) then
+        if (element:GetLayout():IsPositionElement()) then
             table.insert(list, element);
         end
         for childElement in element:ChildElementIterator(false) do

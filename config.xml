@@ -104,6 +104,14 @@
     NetDebug=false
     PlayerLoginLogoutDebug=true>
   </Debug>
+  <!-- 配置世界服 可配置多项
+    worldKey 世界KEY 唯一
+    threadNo 所属线程序号, 最小为1 最大值为线程数 Server.threadCount 
+  -->
+  <!-- 
+  <WorldServer worldKey="世界KEY_1" threadNo=1></WorldServer>
+  <WorldServer worldKey="世界KEY_2" threadNo=2></WorldServer> 
+  -->
 </GeneralGameServer>
 
 <!-- GGS 测试环境配置 -->
@@ -214,7 +222,7 @@
 <!--开发环境配置-->
 <GeneralGameServerDev>
   <Server 
-    threadCount=1
+    threadCount=3
     threadMaxClientCount=200
     listenIp="0.0.0.0" 
     isControlServer=true
@@ -239,7 +247,7 @@
   <World 
     areaSize=0
     minClientCount=0 
-    maxClientCount=1>
+    maxClientCount=5>
   </World>
   <Player
     sendPacketFrequency=500ms
@@ -250,5 +258,8 @@
     NetDebug=false
     PlayerLoginLogoutDebug=true>
   </Debug>
+  <WorldServer worldKey="worldkey1"></WorldServer>
+  <WorldServer worldKey="worldkey2" threadNo=1></WorldServer>
+  <WorldServer worldKey="worldkey3"></WorldServer>
 </GeneralGameServerDev>
 

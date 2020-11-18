@@ -242,7 +242,7 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
     if (clientWidth < 0 or clientHeight < 0 or contentWidth < 0 or contentHeight < 0 or scrollWidth < 0 or scrollHeight < 0) then return end
     
     self.clientWidth, self.clientHeight, self.contentWidth, self.contentHeight, self.scrollWidth, self.scrollHeight = clientWidth or 0, clientHeight or 0, contentWidth or 0, contentHeight or 0, scrollWidth or 0, scrollHeight or 0;
-    ScrollBarDebug.Format("SetScrollWidthHeight clientWidth = %s, clientHeight = %s, contentWidth = %s, contentHeight = %s, scrollWidth = %s, scrollHeight = %s", clientWidth, clientHeight, contentWidth, contentHeight, scrollWidth, scrollHeight);
+    ScrollBarDebug.Format("id = %s, SetScrollWidthHeight clientWidth = %s, clientHeight = %s, contentWidth = %s, contentHeight = %s, scrollWidth = %s, scrollHeight = %s", self:GetParentElement():GetAttrStringValue("id"), clientWidth, clientHeight, contentWidth, contentHeight, scrollWidth, scrollHeight);
 
     local style = self:GetStyle();
     local thumbSize, defaultScrollBarSize = 0, self:GetDefaultWidth();
@@ -251,17 +251,31 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
     self.height = GetPxValue(style["height"]);
     
     if (self:IsHorizontal()) then
+        -- 内容没有溢出 滚动置0 返回
+        if (self.scrollWidth <= self.contentWidth) then
+            self.scrollLeft = 0;
+            self.thumb:ScrollTo(0, 0);
+            return ;
+        end
+
         self.width = self.clientWidth;
         self.height = self.height or defaultScrollBarSize;
         if (self.scrollWidth > 0 and self.clientWidth > 0) then
-            thumbSize = math.floor(self.clientWidth / self.scrollWidth * self.contentWidth);
+            thumbSize = math.floor(self.clientWidth * self.contentWidth / self.scrollWidth);
         end
         self.thumb:SetThumbWidthHeight(thumbSize, self.height, self.width, self.height);
     else
+        -- 内容没有溢出 滚动置0 返回
+        if (self.scrollHeight <= self.contentHeight) then
+            self.scrollTop = 0;
+            self.thumb:ScrollTo(0, 0);
+            return ;
+        end
+
         self.width = self.width or defaultScrollBarSize;
         self.height = self.clientHeight;
         if (self.scrollHeight > 0 and self.clientHeight > 0) then
-            thumbSize = math.floor(self.clientHeight / self.scrollHeight * self.contentHeight);
+            thumbSize = math.floor(self.clientHeight * self.contentHeight / self.scrollHeight);
         end
         self.thumb:SetThumbWidthHeight(self.width, thumbSize, self.width, self.height);
     end
@@ -272,16 +286,16 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
 
     self:UpdateLayout();
 
-    ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s, isPosition = %s", self:GetDirection(), self.width, self.height, thumbSize, self:GetLayout():IsPosition());
+    ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s, isPosition = %s", self:GetDirection(), self.width, self.height, thumbSize, self:GetLayout():IsPositionElement());
 end
 
 -- 滚动位置计算
 function ScrollBar:OnScroll()
     local thumb = self.thumb;
     if (self:IsHorizontal()) then
-        self.scrollLeft = self.thumb.left / self.thumb.maxLeft * (self.scrollWidth - self.contentWidth);
+        self.scrollLeft = math.max(0, self.thumb.left / self.thumb.maxLeft * (self.scrollWidth - self.contentWidth));
     else 
-        self.scrollTop = self.thumb.top / self.thumb.maxTop * (self.scrollHeight - self.contentHeight);
+        self.scrollTop = math.max(0, self.thumb.top / self.thumb.maxTop * (self.scrollHeight - self.contentHeight));
     end
     self:GetParentElement():OnScroll(self);
     -- DebugStack();
