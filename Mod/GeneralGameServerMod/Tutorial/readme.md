@@ -184,6 +184,23 @@ TutorialSandbox:NextStep(true);
 TutorialSandbox:GoStep(3, true);
 ```
 
+## 常用功能
+
+```lua
+-- 设置相机位置
+TutorialSandbox:SetCamera(12, 40, 90);
+-- 获取相机位置
+local dist, pitch, facing = TutorialSandbox:GetCamera();
+-- 禁止人物随鼠标转向
+TutorialSandbox:SetCameraMode(2);
+-- 允许人物随鼠标转向
+TutorialSandbox:SetCameraMode(0);
+-- 禁止右键拖拽调整视角
+TutorialSandbox:SetParaCameraEnableMouseRightButton(false);
+-- 允许右键拖拽调整视角
+TutorialSandbox:SetParaCameraEnableMouseRightButton(true);
+```
+
 ## 快速开始
 
 ```lua

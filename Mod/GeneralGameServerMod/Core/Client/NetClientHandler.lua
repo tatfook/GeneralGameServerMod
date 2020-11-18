@@ -121,6 +121,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     local options = self:GetClient():GetOptions();
     options.worldId = packetPlayerLogin.worldId;                       -- 世界ID
     options.worldName = packetPlayerLogin.worldName;                   -- 平行世界名  可能被客户端改掉
+    options.worldKey = packetPlayerLogin.worldKey;
     options.username = packetPlayerLogin.username;
     options.areaSize = packetPlayerLogin.areaSize or 0; 
 

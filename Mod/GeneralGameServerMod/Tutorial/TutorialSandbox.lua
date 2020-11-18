@@ -8,6 +8,10 @@ local TutorialSandbox = NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSand
 ]]
 NPL.load("(gl)script/ide/System/Core/SceneContextManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeAPI.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/World/CameraController.lua");
+local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController")
+local CodeAPI = commonlib.gettable("MyCompany.Aries.Game.Code.CodeAPI");
 local SceneContextManager = commonlib.gettable("System.Core.SceneContextManager");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
@@ -24,6 +28,7 @@ TutorialSandbox:Property("RightClickToCreateBlockStrategy", {});         -- 配�
 TutorialSandbox:Property("Step", 0);                                     -- 第几步
 
 function TutorialSandbox:ctor()
+    self.CodeAPI = CodeAPI:new()
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
     GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
 end
@@ -213,5 +218,29 @@ function TutorialSandbox:OnKeyPressEvent(event)
     return accept;
 end
 
+-- 是否使能右键拖拽视角
+function TutorialSandbox:SetParaCameraEnableMouseRightButton(bEnable)
+    ParaCamera.GetAttributeObject():SetField("EnableMouseRightButton", bEnable);
+end
+
+-- 设置相机
+function TutorialSandbox:SetCamera(dist, pitch, facing)
+    self.CodeAPI.camera(dist, pitch, facing);
+end
+
+-- 获取相机
+function TutorialSandbox:GetCamera()
+    local att = ParaCamera.GetAttributeObject();
+    local dist = att:GetField("CameraObjectDistance");
+    local pitch = att:GetField("CameraLiftupAngle") * 180 / math.pi;
+    local facing = att:GetField("CameraRotY") * 180 / math.pi;
+    return dist, pitch, facing;
+end
+
+-- 设置相机模式  ThirdPersonFreeLooking = 0, FirstPerson = 1, ThirdPersonLookCamera = 2,
+function TutorialSandbox:SetCameraMode(mode)
+    local cameraMode = if_else(mode == 2, CameraController.ThirdPersonLookCamera, if_else(mode == 1, CameraController.FirstPerson, CameraController.ThirdPersonFreeLooking));
+    CameraController:SetMode(cameraMode);
+end
 -- 初始化成单列模式
 TutorialSandbox:InitSingleton();
