@@ -129,8 +129,8 @@ TutorialSandbox:SetCanFly(false); -- 禁止飞行
 TutorialSandbox:SetCanJump(true);    -- 允许跳跃
 TutorialSandbox:SetCanJump(false);   -- 禁止跳跃
 
--- 左击清除方块策略
-TutorialSandbox:AddLeftClickToDestroyBlockStrategy({
+-- 添加左击清除方块策略
+local strategy = TutorialSandbox:AddLeftClickToDestroyBlockStrategy({
     -- 允许移除指定类型方块
     type = "BlockId",
     blockId = 60,
@@ -156,11 +156,14 @@ TutorialSandbox:AddLeftClickToDestroyBlockStrategy({
     type = "BlockPosRangeIdRange",
     minBlockX=0,maxBlockX=0,minBlockY=0,maxBlockY=0,minBlockZ=0,maxBlockZ=0,minBlockId = 1, maxBlockId=10,
 });
-
+-- 移除左击清除方块策略
+TutorialSandbox:RemoveLeftClickToDestroyBlockStrategy(strategy);
 -- 右击添加方块策略
-TutorialSandbox:AddRightClickToCreateBlockStrategy({
-    -- 规则同移除
+local strategy = TutorialSandbox:AddRightClickToCreateBlockStrategy({
+    -- 规则同清除方块
 });
+-- 移除左击清除方块策略
+TutorialSandbox:RemoveRightClickToCreateBlockStrategy(strategy);
 ```
 
 ## 步骤拆分与定义

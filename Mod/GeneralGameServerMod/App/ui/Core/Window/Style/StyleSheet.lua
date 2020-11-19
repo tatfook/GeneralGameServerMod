@@ -12,7 +12,79 @@ local StyleSheet = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Style/S
 local Style = NPL.load("./Style.lua", IsDevEnv);
 local StyleSheet = commonlib.inherit(nil, NPL.export());
 
+local function StringTrim(str, ch)
+    str = string.gsub(str, "^" .. ch .. "*", "");
+    str = string.gsub(str, ch .. "*$", "");
+    return str;
+end
+
+-- 获取尾部选择器
+local function GetTailSelector(comboSelector)
+    if (not comboSelector) then return end
+
+    comboSelector = string.gsub(comboSelector, "%s*$", "");
+    -- 后代选择器 div p
+    local selector = string.match(comboSelector, " ([^%s%+%~%>]-)$");
+    if (selector) then return selector, " " end
+
+    -- 子选择器 div>p
+    selector = string.match(comboSelector, "%>%s*([^%s%+%~%>]-)$");
+    if (selector) then return selector, ">" end
+
+    -- 后续兄弟选择器 div~p
+    selector = string.match(comboSelector, "%~%s*([^%s%+%~%>]-)$");
+    if (selector) then return selector, "~" end
+
+    -- 相邻兄弟选择器 div+p
+    selector = string.match(comboSelector, "%+%s*([^%s%+%~%>]-)$");
+    if (selector) then return selector, "+" end
+
+    return nil;
+end
+
+-- 是否是祖先元素的选择器
+local function IsAncestorElementSelector(element, selector)
+    local parentElement = element:GetParentElement();
+    if (not parentElement) then return false end
+    local elementSelector = parentElement:GetSelector();
+
+    if (elementSelector[selector]) then return true, parentElement end
+
+    return IsAncestorElementSelector(parentElement, selector);
+end
+
+-- 是否是元素的选择器
+local function IsElementSelector(comboSelector, element)
+    local elementSelector = element:GetSelector();
+    local selector, selectorType = GetTailSelector(comboSelector, element);
+    if (not selector or not elementSelector[selector]) then return false end
+
+    local newComboSelector = string.sub(comboSelector, 1, #comboSelector - #selector);
+    local newSelector, newSelectorType = GetTailSelector(newComboSelector);
+    newSelector = StringTrim(newSelector or newComboSelector);
+    -- 后代选择器 div p
+    if (selectorType == " ") then
+        local isAncestorElementSelector, ancestorElement = IsAncestorElementSelector(element, newSelector);
+        if (not isAncestorElementSelector) then return false end
+        if (not newSelectorType) then return true end
+        return IsElementSelector(newComboSelector, ancestorElement);
+    end
+
+    -- 子选择器 div>p
+    if (selectorType == ">") then
+        local parentElement = element:GetParentElement();
+        if (not parentElement) then return false end
+        local parentElementSelector = parentElement:GetSelector();
+        if (not parentElementSelector[newSelector]) then return false end
+        if (not newSelectorType) then return true end
+        return IsElementSelector(newComboSelector, parentElement);
+    end
+
+    -- 后续兄弟选择器 div~p
+end
+
 function StyleSheet:ctor()
+    self.SelectorStyle = {};
 end
 
 function StyleSheet:LoadByString(code)
@@ -21,7 +93,7 @@ function StyleSheet:LoadByString(code)
         local style = Style.ParseString(declaration_str);
         for selector in string.gmatch(selector_str, "([^,]+),?") do
             selector = string.match(selector, "^%s*(.-)%s*$");
-            self[selector] = style;
+            self.SelectorStyle[selector] = style;
         end
     end
     return self;
@@ -33,57 +105,45 @@ function StyleSheet:SetInheritStyleSheet(sheet)
 end
 
 -- 生效选择器样式
-function StyleSheet:ApplySelectorStyle(selector, style)
+function StyleSheet:ApplySelectorStyle(selector, style, element)
     -- 选择器默认样式
-    local selectorStyle = self[selector];
+    local selectorStyle = self.SelectorStyle[selector];
     if (selectorStyle) then Style.CopyStyle(style:GetNormalStyle(), selectorStyle) end
 
     -- 选择器激活样式
-    selectorStyle = self[selector .. ":active"];
+    selectorStyle = self.SelectorStyle[selector .. ":active"];
     if (selectorStyle) then Style.CopyStyle(style:GetActiveStyle(), selectorStyle) end
-
     -- 选择器悬浮样式
-    selectorStyle = self[selector .. ":hover"];
+    selectorStyle = self.SelectorStyle[selector .. ":hover"];
     if (selectorStyle) then Style.CopyStyle(style:GetHoverStyle(), selectorStyle) end
 
     -- 选择器聚焦样式
-    selectorStyle = self[selector .. ":focus"];
+    selectorStyle = self.SelectorStyle[selector .. ":focus"];
     if (selectorStyle) then Style.CopyStyle(style:GetFocusStyle(), selectorStyle) end
+
+    -- 标记选择器
+    local elementSelector = element:GetSelector();
+    elementSelector[selector] = true;
+    elementSelector[selector .. ":active"] = true;
+    elementSelector[selector .. ":hover"] = true;
+    elementSelector[selector .. ":focus"] = true;
 end
 
+-- 生效类选择器样式
 function StyleSheet:ApplyClassSelectorStyle(element, style)
-    local function isSelectorElement(selector, element)
-        -- 后代选择器 div p
-
-        -- 子选择器 div>p
-
-        -- 后续兄弟选择器 div~p
-
-        -- 相邻兄弟选择器 div+p
-    end
-    local function ApplyComboClassSelectorStyle(selector, style)
-        local selectorLength = string.len(selector);
-        -- 组合样式 
-        for key, val in pairs(self) do
-            local preudo = string.match(key, ":([^:]+)$");
-            local preudolen = preudo and (string.len(preudo) + 1) or 0;
-            local keylen = string.len(key);
-            if (string.sub(keylen - selectorLength - preudolen + 1, keylen - preudolen) == selector) then
-                local selector = string.sub(key, 1, keylen - selectorLength - preudolen);
-                if (isSelectorElement(selector, element)) then
-                    
-                end
-            end
-        end
-    end
-
     local classes = element:GetAttrStringValue("class",  "");
     for class in string.gmatch(classes, "%s*([^%s]+)%s*") do 
-        local classSelector = "." .. class;
-        
-        self:ApplySelectorStyle(classSelector, style);
+        self:ApplySelectorStyle("." .. class, style, element);
+    end
+end
 
-        ApplyComboClassSelectorStyle(classSelector, style);
+-- 生效组合选择器样式
+function StyleSheet:ApplyComboSelectorStyle(element, style)
+    -- 组合样式 
+    for selector in pairs(self.SelectorStyle) do
+        if (IsElementSelector(selector, element)) then
+            self:ApplySelectorStyle(selector, style, element);
+        end
     end
 end
 
@@ -91,7 +151,7 @@ end
 function StyleSheet:ApplyTagNameSelectorStyle(element, style)
     local tagname = string.lower(element:GetTagName() or "");
 
-    self:ApplySelectorStyle(tagname, style);
+    self:ApplySelectorStyle(tagname, style, element);
 end
 
 -- 生效ID选择器样式
@@ -99,14 +159,14 @@ function StyleSheet:ApplyIdSelectorStyle(element, style)
     local id = element:GetAttrStringValue("id",  "");
 
     if (type(id) ~= "string" and id ~= "") then 
-        self:ApplySelectorStyle("#" .. id, style);
+        self:ApplySelectorStyle("#" .. id, style, element);
     end
 end
 
-
+-- 应用元素样式
 function StyleSheet:ApplyElementStyle(element, style)
-    local selector = element:GetSelector();
-    for key in pairs(selector) do selector[key] = false end
+    local elementSelector = element:GetSelector();
+    for key in pairs(elementSelector) do elementSelector[key] = false end
     
     local function ApplyElementStyle(sheet, element, style)
         -- 先生效基类样式
@@ -117,13 +177,13 @@ function StyleSheet:ApplyElementStyle(element, style)
         sheet:ApplyClassSelectorStyle(element, style);
     
         sheet:ApplyIdSelectorStyle(element, style);
+
+        sheet:ApplyComboSelectorStyle(element, style);
     end
 
     ApplyElementStyle(self, element, style);
 end
 
 function StyleSheet:Clear()
-    for key, val in pairs(self) do
-        self[key] = nil;
-    end
+    self.SelectorStyle = {};
 end
