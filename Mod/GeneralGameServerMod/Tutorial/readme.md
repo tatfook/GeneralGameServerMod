@@ -199,6 +199,10 @@ TutorialSandbox:SetCameraMode(0);
 TutorialSandbox:SetParaCameraEnableMouseRightButton(false);
 -- 允许右键拖拽调整视角
 TutorialSandbox:SetParaCameraEnableMouseRightButton(true);
+-- 设置玩家移速, 设置为0, 玩家将无法移动
+TutorialSandbox:SetPlayerSpeedScale(speed);
+-- 获取玩家移速
+local speed = TutorialSandbox:GetPlayerSpeedScale();
 ```
 
 ## 快速开始

@@ -33,7 +33,7 @@
                     <!-- <div v-if="isAuthUser" v-on:click="ClickOpenWorldDir(project.name)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_wenjian_40X40_32bits.png#0 0 40 40);"></div>
                     <div v-if="IsSelected(project.id)" v-on:click="ClickWorldDelete(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shanchu_40X40_32bits.png#0 0 40 40);"></div> -->
                     <div v-on:click="ClickShareWorld(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#109 459 40 40);"></div>
-                    <div v-on:click="ClickOpenWorld(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
+                    <div v-on:click="ClickOpenWorld(project)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
                 </div>
             </div>
             <Rate v-if="project.rate and project.rate > 0" style="position: absolute; left: 0px;" v-bind:rate="project.rate"></Rate>
@@ -132,9 +132,16 @@ function GetUpdatedTime(datetime)
 end
 
 -- 点击打开世界
-function ClickOpenWorld(worldId)
+function ClickOpenWorld(project)
     ui:CloseWindow();
-    GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
+    local worldId, worldName = project.id, project.name;
+    local WorldCommon = commonlib.gettable("MyCompany.Aries.Creator.WorldCommon")
+    local info = string.format(L"即将离开【%s】进入【%s】", WorldCommon.GetWorldTag("name") or "", worldName);
+    _guihelper.MessageBox(info, function(res)
+        if(res and res == _guihelper.DialogResult.OK) then
+            GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
+        end
+    end, _guihelper.MessageBoxButtons.OKCancel);
 end
 
 -- 点击分享世界

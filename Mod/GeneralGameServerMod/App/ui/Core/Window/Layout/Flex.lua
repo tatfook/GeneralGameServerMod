@@ -42,7 +42,8 @@ local function UpdateRow(layout, style)
     local function UpdateChildLayoutPos(layouts)
         for _, childLayout in ipairs(line.layouts) do
             local spaceWidth = childLayout:GetSpaceWidthHeight();
-            childLayout:SetPos(offsetLeft, offsetTop);
+			childLayout:SetPos(offsetLeft, offsetTop);
+			-- FlexDebug.Format("child layout left = %s, top = %s", offsetLeft, offsetTop);
             offsetLeft = offsetLeft + spaceWidth + HGap;
         end
     end

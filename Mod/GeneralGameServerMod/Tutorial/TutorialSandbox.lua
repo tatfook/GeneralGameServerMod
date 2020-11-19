@@ -33,7 +33,10 @@ function TutorialSandbox:ctor()
     GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
 end
 
+-- 重置教学环境
 function TutorialSandbox:Reset()
+    self.isReseted = true;
+
     self:SetContext(TutorialContext:new():Init(self));
     self:SetLastContext(SceneContextManager:GetCurrentContext());
     self:SetLeftClickToDestroyBlockStrategy({});
@@ -47,6 +50,11 @@ function TutorialSandbox:Reset()
 
     GameLogic.GetCodeGlobal():GetCurrentGlobals()["TutorialSandbox"] = self;
 
+    self.oldCanJumpInWater = GameLogic.options.CanJumpInWater;
+    self.oldCanJump = GameLogic.options.CanJump;
+    self.oldCanJumpInAir = GameLogic.options.oldCanJumpInAir;
+    self.oldContext = SceneContextManager:GetCurrentContext();
+
     GameLogic.options.CanJumpInWater = true;
     GameLogic.options.CanJump = true;
     GameLogic.options.CanJumpInAir = true;
@@ -54,11 +62,24 @@ function TutorialSandbox:Reset()
     -- self:ActiveTutorialContext();
 end
 
+-- 恢复默认环境
+function TutorialSandbox:Restore()
+    if (not self.isReseted) then return end
+    self.isReseted = false;
+
+    GameLogic.options.CanJumpInWater = self.oldCanJumpInWater;
+    GameLogic.options.CanJump = self.oldCanJump;
+    GameLogic.options.oldCanJumpInAir = self.oldCanJumpInAir;
+    if (self.oldContext) then self.oldContext:activate() end
+end
+
+
 function TutorialSandbox:OnWorldLoaded()
     -- self:Reset();
 end
 
 function TutorialSandbox:OnWorldUnloaded()
+    self:Restore();
 end
 
 function TutorialSandbox:SetCanFly(bFly)
@@ -124,6 +145,19 @@ end
 -- 获取玩家库存
 function TutorialSandbox:GetPlayerInventory()
     return self:GetPlayer().inventory;
+end
+
+-- 设置玩家移速
+function TutorialSandbox:SetPlayerSpeedScale(speed)
+    local player = EntityManager:GetFocus();
+    if(not player) then return end
+    player:SetSpeedScale(speed);
+end
+
+-- 获取玩家移速
+function TutorialSandbox:GetPlayerSpeedScale()
+    local player = EntityManager:GetFocus();
+    return player and player:GetSpeedScale();
 end
 
 -- 左击清除方块策略
@@ -243,5 +277,9 @@ function TutorialSandbox:SetCameraMode(mode)
     local cameraMode = if_else(mode == 2, CameraController.ThirdPersonLookCamera, if_else(mode == 1, CameraController.FirstPerson, CameraController.ThirdPersonFreeLooking));
     CameraController:SetMode(cameraMode);
 end
+
+
+
+
 -- 初始化成单列模式
 TutorialSandbox:InitSingleton();
