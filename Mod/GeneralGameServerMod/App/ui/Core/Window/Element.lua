@@ -15,7 +15,7 @@ local Color = commonlib.gettable("System.Core.Color");
 local Rect = commonlib.gettable("mathlib.Rect");
 local Point = commonlib.gettable("mathlib.Point");
 
-local Style = NPL.load("./style.lua", IsDevEnv);
+local Style = NPL.load("./Style/Style.lua", IsDevEnv);
 local Layout = NPL.load("./Layout/Layout.lua", IsDevEnv);
 local ElementUI = NPL.load("./ElementUI.lua", IsDevEnv);
 local Element = commonlib.inherit(ElementUI, NPL.export());
@@ -32,6 +32,7 @@ Element:Property("Layout");                               -- 元素布局
 Element:Property("Style", nil);                           -- 样式
 Element:Property("StyleSheet");                           -- 元素样式表
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
+Element:Property("Selector", nil);                        -- 选择器集
 Element:Property("Rect");                                 -- 元素几何区域矩形
 Element:Property("Name", "Element");                      -- 元素名
 Element:Property("TagName");                              -- 标签名
@@ -44,6 +45,7 @@ function Element:ctor()
     -- 设置布局
     self:SetLayout(Layout:new():Init(self));
     self:SetRect(Rect:new():init(0,0,0,0));
+    self:SetSelector({});
 end
 
 -- 是否是元素
@@ -374,13 +376,11 @@ function Element:CreateStyle()
     local style = Style:new():Init(baseStyle, inheritStyle);
     
     -- 全局类样式
-    local class = self:GetAttrStringValue("class",  "");
-    self:GetWindow():GetStyleManager():ApplyClassStyle(class, style, self);
+    self:GetWindow():GetStyleManager():ApplyElementStyle(self, style);
+
     -- 局部样式表
     local styleSheet = self:GetStyleSheet();
-    if (styleSheet) then 
-        styleSheet:ApplyClassStyle(class, style, self);
-    end
+    if (styleSheet) then styleSheet:ApplyElementStyle(self, style) end
     -- ElementDebug.If(self:GetName() == "Text", "class", style);
     -- 内联样式
     style:AddString(self:GetAttrValue("style"));
