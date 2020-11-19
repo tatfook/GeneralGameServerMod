@@ -201,7 +201,7 @@ end
 -- 处理客户端请求连接世界的服务器
 function ControlServer:handleWorldServer(packetWorldServer)
     local worldId = packetWorldServer.worldId;
-    local worldName = packetWorldServer.worldName;
+    local worldName = packetWorldServer.worldName or "";
     local worldKey = packetWorldServer.worldKey;
     GGS.INFO.Format("客户端接入请求, worldId = %s, worldName = %s, worldKey = %s", worldId, worldName, worldKey);
     local worldServer = self:SelectWorldServerByWorldKey(worldKey) or self:SelectWorldServerByWorldIdAndName(worldId, worldName);

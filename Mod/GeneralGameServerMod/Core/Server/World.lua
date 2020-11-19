@@ -41,7 +41,7 @@ end
 -- 世界初始化
 function World:Init(worldId, WorldName, worldType, worldKey)
     self:SetWorldId(worldId);
-    self:SetWorldName(WorldName);
+    self:SetWorldName(WorldName or "");
     self:SetWorldKey(worldKey);
     self:SetWorldType(worldType or "World");
     
