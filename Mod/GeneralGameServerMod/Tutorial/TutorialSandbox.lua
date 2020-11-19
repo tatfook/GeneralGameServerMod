@@ -10,6 +10,8 @@ NPL.load("(gl)script/ide/System/Core/SceneContextManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeAPI.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/CameraController.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldLoginAdapter.lua");
+local ParaWorldLoginAdapter = commonlib.gettable("MyCompany.Aries.Game.Tasks.ParaWorld.ParaWorldLoginAdapter");
 local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController")
 local CodeAPI = commonlib.gettable("MyCompany.Aries.Game.Code.CodeAPI");
 local SceneContextManager = commonlib.gettable("System.Core.SceneContextManager");
@@ -29,6 +31,7 @@ TutorialSandbox:Property("Step", 0);                                     -- 第�
 
 function TutorialSandbox:ctor()
     self.CodeAPI = CodeAPI:new()
+
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
     GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
 end
@@ -53,13 +56,12 @@ function TutorialSandbox:Reset()
     self.oldCanJumpInWater = GameLogic.options.CanJumpInWater;
     self.oldCanJump = GameLogic.options.CanJump;
     self.oldCanJumpInAir = GameLogic.options.oldCanJumpInAir;
-    self.oldContext = SceneContextManager:GetCurrentContext();
 
     GameLogic.options.CanJumpInWater = true;
     GameLogic.options.CanJump = true;
     GameLogic.options.CanJumpInAir = true;
 
-    -- self:ActiveTutorialContext();
+    self:ActiveTutorialContext();
 end
 
 -- 恢复默认环境
@@ -70,7 +72,8 @@ function TutorialSandbox:Restore()
     GameLogic.options.CanJumpInWater = self.oldCanJumpInWater;
     GameLogic.options.CanJump = self.oldCanJump;
     GameLogic.options.oldCanJumpInAir = self.oldCanJumpInAir;
-    if (self.oldContext) then self.oldContext:activate() end
+    
+    self:DeactiveTutorialContext()
 end
 
 
@@ -187,7 +190,8 @@ end
 -- 激活教学上下文
 function TutorialSandbox:ActiveTutorialContext()
     local context = SceneContextManager:GetCurrentContext();
-    if (context and not context:isa(TutorialContext)) then self:SetLastContext(context) end
+    if (context == self:GetContext()) then return end
+    self:SetLastContext(context);
     self:GetContext():activate();
 end
 
@@ -278,8 +282,10 @@ function TutorialSandbox:SetCameraMode(mode)
     CameraController:SetMode(cameraMode);
 end
 
-
-
+-- 进入主世界
+function TutorialSandbox:EnterMainWorld()
+    ParaWorldLoginAdapter:EnterWorld();
+end
 
 -- 初始化成单列模式
 TutorialSandbox:InitSingleton();

@@ -206,12 +206,23 @@ TutorialSandbox:SetParaCameraEnableMouseRightButton(true);
 TutorialSandbox:SetPlayerSpeedScale(speed);
 -- 获取玩家移速
 local speed = TutorialSandbox:GetPlayerSpeedScale();
+-- 进入主世界
+TutorialSandbox:EnterMainWorld();
 ```
 
 ## 快速开始
 
 ```lua
-local TutorialSandbox = NPL.load(GameLogic.GetWorldDirectory() .. "/Tutorial/TutorialSandbox.lua");
+-- 获取沙盒API对象
+local TutorialSandbox = NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua");
+
+-- 重置新手沙盒环境
+TutorialSandbox:Reset();
+
+-- main logic
+
+-- 退出沙盒环境
+TutorialSandbox:Restore();
 ```
 
 ## TODO

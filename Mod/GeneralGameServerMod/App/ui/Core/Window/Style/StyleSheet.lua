@@ -13,6 +13,7 @@ local Style = NPL.load("./Style.lua", IsDevEnv);
 local StyleSheet = commonlib.inherit(nil, NPL.export());
 
 local function StringTrim(str, ch)
+    ch = ch or "%s";
     str = string.gsub(str, "^" .. ch .. "*", "");
     str = string.gsub(str, ch .. "*$", "");
     return str;
@@ -81,6 +82,29 @@ local function IsElementSelector(comboSelector, element)
     end
 
     -- 后续兄弟选择器 div~p
+    if (selectorType == "~") then
+        local prevSiblingElement = element:GetPrevSiblingElement();
+        while (prevSiblingElement) do
+            local prevSiblingElementSelector = prevSiblingElement:GetSelector();
+            if (prevSiblingElementSelector[newSelector]) then break end
+            prevSiblingElement = prevSiblingElement:GetPrevSiblingElement();
+        end
+        if (not prevSiblingElement) then return false end
+        if (not newSelectorType) then return true end
+        return IsElementSelector(newComboSelector, prevSiblingElement);
+    end
+
+    -- 相邻兄弟选择器 div+p
+    if (selectorType == "+") then
+        local prevSiblingElement = element:GetPrevSiblingElement();
+        if (not prevSiblingElement) then return false end
+        local prevSiblingElementSelector = prevSiblingElement:GetSelector();
+        if (not prevSiblingElementSelector[newSelector]) then return false end
+        if (not newSelectorType) then return true end
+        return IsElementSelector(newComboSelector, prevSiblingElement);
+    end
+
+    return false;
 end
 
 function StyleSheet:ctor()

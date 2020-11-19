@@ -42,6 +42,8 @@ ElementManager.Text = NPL.load("./Controls/Text.lua", IsDevEnv);
 
 local ElementClassMap = {};
 
+local DivAliasTag = {"H1", "H2", "H3", "H4", "H5", "H6", "p", "span"};
+
 function ElementManager:ctor()
     -- 注册元素
     ElementManager:RegisterByTagName("Html", Html);
@@ -63,6 +65,10 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("Slot", Slot);
 
     ElementManager:RegisterByTagName("Blockly", Blockly);
+
+    for _, tagname in ipairs(DivAliasTag) do
+        ElementManager:RegisterByTagName(tagname, Div);
+    end
 end
 
 function ElementManager:RegisterByTagName(tagname, class)

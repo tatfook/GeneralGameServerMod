@@ -168,6 +168,26 @@ end
 function Element:OnDetach()
 end
 
+-- 上一个兄弟元素
+function Element:GetPrevSiblingElement()
+    local parentElement = self:GetParentElement();
+    if (not parentElement) then return end
+    for i, child in ipairs(parentElement.childrens) do
+        if (child == self) then return parentElement.childrens[i - 1] end
+    end
+    return
+end
+
+-- 上一个兄弟元素
+function Element:GetNextSiblingElement()
+    local parentElement = self:GetParentElement();
+    if (not parentElement) then return end
+    for i, child in ipairs(parentElement.childrens) do
+        if (child == self) then return parentElement.childrens[i + 1] end
+    end
+    return
+end
+
 -- 添加子元素
 function Element:InsertChildElement(pos, childElement)
     local element = childElement or pos;
@@ -192,6 +212,7 @@ function Element:GetChildElementPos(childElement)
     end
     return 0;
 end
+
 -- 移除子元素
 function Element:RemoveChildElement(pos)
     if (type(pos) == "table" and pos.IsElement and pos:IsElement()) then
