@@ -67,14 +67,15 @@ function ElementUI:RenderStaticElement(painter, root)
 
     -- 渲染元素
     self:OnRender(painter);
-    -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "listitems", "Render");
   
     -- 渲染子元素
-    painter:Translate(self:GetX(), self:GetY());
+    local left, top, width, height = self:GetGeometry();
+    -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "debug", "RenderStaticElement left = %s, top = %s, width = %s, height = %s", left, top, width, height);
+
+    painter:Translate(left, top);
 
     -- 存在滚动需要做裁剪
     local layout = self:GetLayout();
-    local width, height = self:GetSize();
     local scrollX, scrollY = self:GetScrollPos();
     local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
     
@@ -98,7 +99,7 @@ function ElementUI:RenderStaticElement(painter, root)
         end
     end
 
-    painter:Translate(-self:GetX(), -self:GetY());
+    painter:Translate(-left, -top);
     
     self:SetRender(false); -- 清除渲染标识
 end

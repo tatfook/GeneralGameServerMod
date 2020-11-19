@@ -22,6 +22,7 @@
             <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
             <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
             <div v-on:click="ClickPersonalPage" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
+            <div v-if="isAuthUser and not isRealName" v-on:click="ClickGoRealName" style="position: absolute; left: 120px; bottom: 10px;  text-align: center; line-height: 28px; width:100px; height:30px; font-size: 14px; base-font-size: 14px; color: #000000; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_cancel_16X16_32bits.png#0 0 16 16: 5 5 5 5);">实名认证</div>
             <div v-if="isAuthUser" v-on:click="ClickChangeSkinBtn" style="position: absolute; right: 15px; bottom: 15px; height:39px; width: 38px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_genghuan_38X39_32bits.png#0 0 38 39);"></div>
             <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
         </div>
@@ -92,6 +93,7 @@
 
 <script type="text/lua">
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
+
 RegisterComponent("ChangeNickName", "%ui%/Component/User/ChangeNickName.html");
 RegisterComponent("Follow", "%ui%/Component/User/Follow.html");
 RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
@@ -99,6 +101,7 @@ local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local UniString = commonlib.gettable("System.Core.UniString");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
+local RegisterModal = NPL.load("(gl)Mod/WorldShare/cellar/RegisterModal/RegisterModal.lua");
 local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
 
 local assets = {
@@ -137,7 +140,7 @@ function OnRefresh()
     self.isNeedUpdateRegion = region.hasChildren == 1 and true or false;
     local fullname = UniString:new(region.displayName or region.fullname or "");
     self.regionname = fullname:sub(1, 11):GetText() .. (fullname:length() > 11 and "..." or "");
-    
+    self.isRealName = UserDetail.isRealname;
     -- 格式化注册时间
     local datetime = UserDetail.createdAt;
     local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
@@ -162,6 +165,11 @@ end
 
 function ClickCloseRegionEditTip()
     isShowUpdateRegionTip = false;
+end
+
+function ClickGoRealName()
+    ui:CloseWindow();
+    RegisterModal:ShowClassificationPage();
 end
 
 function OnEditNickNameFinish(nickname)

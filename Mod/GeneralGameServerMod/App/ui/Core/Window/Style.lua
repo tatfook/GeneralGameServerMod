@@ -325,7 +325,7 @@ end
 -- 缩写字段
 local complex_fields = {
 	["border"] = "border-width border-style border-color",
-	-- ["border-width"] = "border-top-width border-right-width border-bottom-width border-left-width",
+	["border-width"] = "border-top-width border-right-width border-bottom-width border-left-width",
     ["padding"] = "padding-top padding-right padding-bottom padding-left",
 	["margin"] = "margin-top margin-right margin-bottom margin-left ",
 	["overflow"] = "overflow-x overflow-y",
@@ -342,7 +342,11 @@ end
 local function AddComplexStyleItem(style, name, value)
 	local names = commonlib.split(complex_fields[name], "%s");
     local values = commonlib.split(tostring(value), "%s");
-    
+	
+	-- 保留简写值
+	AddSingleStyleItem(style, name, value);
+
+	-- 解析符合样式值
 	if (name == "padding" or name == "margin" or name == "border-width") then
 		values[1] = values[1] or 0;
 		values[4] = values[4] or values[2] or values[1];
@@ -360,10 +364,15 @@ local function AddComplexStyleItem(style, name, value)
 		values[2] = values[2] or 1;
 		values[3] = values[3] or "auto";
     end
-    
-    for i = 1, #names do
-		AddSingleStyleItem(style, names[i], values[i]);
+	
+	for i = 1, #names do
+		if (complex_fields[names[i]]) then
+			AddComplexStyleItem(style, names[i], values[i]);
+		else
+			AddSingleStyleItem(style, names[i], values[i]);
+		end
 	end
+	
 end
 
 function Style.AddStyleItem(style, name, value)
