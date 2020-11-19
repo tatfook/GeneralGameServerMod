@@ -95,6 +95,9 @@ function Window:Init(params)
     if (xmlNode) then
         self:InsertChildElement(self:CreateFromXmlNode(xmlNode, self, self));
     end
+
+    -- 加载元素, 提供一种置顶向下执行的机制
+    self:LoadElement();
 end
 
 -- 窗口刷新

@@ -29,10 +29,10 @@ Element:Property("Attr", {});   -- 元素属性
 Element:Property("XmlNode");    -- 元素XmlNode
 Element:Property("ParentElement");                        -- 父元素
 Element:Property("Layout");                               -- 元素布局
-Element:Property("Style", nil);                           -- 样式
+Element:Property("Style");                                -- 样式
 Element:Property("StyleSheet");                           -- 元素样式表
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
-Element:Property("Selector", nil);                        -- 选择器集
+Element:Property("Selector");                             -- 选择器集
 Element:Property("Rect");                                 -- 元素几何区域矩形
 Element:Property("Name", "Element");                      -- 元素名
 Element:Property("TagName");                              -- 标签名
@@ -111,14 +111,28 @@ function Element:InitElement(xmlNode, window, parent)
     self:GetStyleSheet():SetInheritStyleSheet(parent and parent:GetStyleSheet());
 
     -- 初始化元素样式
-    self:InitStyle();
+    if (not self:GetStyle()) then
+        self:SetStyle(Style:new():Init(self:GetBaseStyle(), parent and parent:GetStyle()));
+    end
 end
 
--- 初始化样式
-function Element:InitStyle()
-    self:SetStyle(self:CreateStyle());
-    self:GetStyle():SelectNormalStyle();
-    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", self:GetStyle():GetCurStyle());
+-- 创建样式
+function Element:ApplyElementStyle()
+    local style = self:GetStyle();
+
+    -- 全局样式表
+    self:GetWindow():GetStyleManager():ApplyElementStyle(self, style);
+
+    -- 局部样式表
+    self:GetStyleSheet():ApplyElementStyle(self, style);
+    -- ElementDebug.If(self:GetName() == "Text", "class", style);
+    -- 内联样式
+    style:AddString(self:GetAttrValue("style"));
+    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle());
+    -- ElementDebug.If(self:GetName() == "Text", "inline", style);
+
+    -- 选择默认样式
+    return style:SelectNormalStyle();
 end
 
 -- 初始化子元素
@@ -134,6 +148,7 @@ function Element:InitChildElement(xmlNode, window)
         end
     
         self:InsertChildElement(childElement);
+
         -- table.insert(self.childrens, childElement);
         -- childElement:SetParentElement(self);
     end
@@ -155,6 +170,8 @@ function Element:OnLoadElementBeforeChild()
 end
 
 function Element:OnLoadElement()
+    -- 应用元素样式
+    self:ApplyElementStyle();
 end
 
 function Element:OnLoadElementAfterChild()
@@ -201,14 +218,18 @@ function Element:InsertChildElement(pos, childElement)
     end
     -- 设置子元素的父元素
     element:SetParentElement(self);
+
+    -- 应用元素样式
+    -- element:ApplyElementStyle();
+
     -- 更新元素布局
     element:OnAttach();
 end
 
 -- 获取元素位置
 function Element:GetChildElementPos(childElement)
-    for i, child in ipairs(self.childrens) do
-        if (child == childElement) then return i end
+    for i, child in ipairs(self.childrens) do 
+        if (child == childElement) then return i end 
     end
     return 0;
 end
@@ -388,26 +409,6 @@ end
 
 function Element:OnScroll(scrollEl)
     self:UpdateWindowPos(true);
-end
-
--- 创建样式
-function Element:CreateStyle()
-    local baseStyle = self:GetBaseStyle();
-    local inheritStyle = self:GetParentElement() and self:GetParentElement():GetStyle();
-    local style = Style:new():Init(baseStyle, inheritStyle);
-    
-    -- 全局类样式
-    self:GetWindow():GetStyleManager():ApplyElementStyle(self, style);
-
-    -- 局部样式表
-    local styleSheet = self:GetStyleSheet();
-    if (styleSheet) then styleSheet:ApplyElementStyle(self, style) end
-    -- ElementDebug.If(self:GetName() == "Text", "class", style);
-    -- 内联样式
-    style:AddString(self:GetAttrValue("style"));
-    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle());
-    -- ElementDebug.If(self:GetName() == "Text", "inline", style);
-    return style;
 end
 
 -- 获取属性值

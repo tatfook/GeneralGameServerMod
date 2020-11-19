@@ -11,6 +11,7 @@ local StyleSheet = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Style/S
 
 local Style = NPL.load("./Style.lua", IsDevEnv);
 local StyleSheet = commonlib.inherit(nil, NPL.export());
+local StyleSheetDebug = GGS.Debug.GetModuleDebug("StyleSheetDebug").Enable();   --Enable  Disable
 
 local function StringTrim(str, ch)
     ch = ch or "%s";
@@ -25,20 +26,20 @@ local function GetTailSelector(comboSelector)
 
     comboSelector = string.gsub(comboSelector, "%s*$", "");
     -- 后代选择器 div p
-    local selector = string.match(comboSelector, " ([^%s%+%~%>]-)$");
-    if (selector) then return selector, " " end
+    local selector = string.match(comboSelector, "%s* ([^%s%+%~%>]-)$");
+    if (selector) then return selector, " ", string.gsub(comboSelector, "%s* [^%s%+%~%>]-$", "") end
 
     -- 子选择器 div>p
-    selector = string.match(comboSelector, "%>%s*([^%s%+%~%>]-)$");
-    if (selector) then return selector, ">" end
+    selector = string.match(comboSelector, "%s*%>%s*([^%s%+%~%>]-)$");
+    if (selector) then return selector, ">", string.gsub(comboSelector, "%s*%>%s*[^%s%+%~%>]-$", "") end
 
     -- 后续兄弟选择器 div~p
-    selector = string.match(comboSelector, "%~%s*([^%s%+%~%>]-)$");
-    if (selector) then return selector, "~" end
+    selector = string.match(comboSelector, "%s*%~%s*([^%s%+%~%>]-)$");
+    if (selector) then return selector, "~", string.gsub(comboSelector, "%s*%~%s*[^%s%+%~%>]-$", "") end
 
     -- 相邻兄弟选择器 div+p
-    selector = string.match(comboSelector, "%+%s*([^%s%+%~%>]-)$");
-    if (selector) then return selector, "+" end
+    selector = string.match(comboSelector, "%s*%+%s*([^%s%+%~%>]-)$");
+    if (selector) then return selector, "+", string.gsub(comboSelector, "%s*%+%s*[^%s%+%~%>]-$", "") end
 
     return nil;
 end
@@ -57,10 +58,9 @@ end
 -- 是否是元素的选择器
 local function IsElementSelector(comboSelector, element)
     local elementSelector = element:GetSelector();
-    local selector, selectorType = GetTailSelector(comboSelector, element);
+    local selector, selectorType, newComboSelector = GetTailSelector(comboSelector, element);
     if (not selector or not elementSelector[selector]) then return false end
 
-    local newComboSelector = string.sub(comboSelector, 1, #comboSelector - #selector);
     local newSelector, newSelectorType = GetTailSelector(newComboSelector);
     newSelector = StringTrim(newSelector or newComboSelector);
     -- 后代选择器 div p
@@ -96,11 +96,15 @@ local function IsElementSelector(comboSelector, element)
 
     -- 相邻兄弟选择器 div+p
     if (selectorType == "+") then
+        -- StyleSheetDebug.If(element:GetAttrStringValue("id") == "debug", "--------------------------------------1");
         local prevSiblingElement = element:GetPrevSiblingElement();
         if (not prevSiblingElement) then return false end
         local prevSiblingElementSelector = prevSiblingElement:GetSelector();
+        -- StyleSheetDebug.If(element:GetAttrStringValue("id") == "debug", "--------------------------------------2", prevSiblingElementSelector, newSelector, newComboSelector, selector, comboSelector);
         if (not prevSiblingElementSelector[newSelector]) then return false end
+        -- StyleSheetDebug.If(element:GetAttrStringValue("id") == "debug", "--------------------------------------3");
         if (not newSelectorType) then return true end
+        -- StyleSheetDebug.If(element:GetAttrStringValue("id") == "debug", "--------------------------------------4");
         return IsElementSelector(newComboSelector, prevSiblingElement);
     end
 
@@ -196,12 +200,19 @@ function StyleSheet:ApplyElementStyle(element, style)
         -- 先生效基类样式
         if (sheet.InheritStyleSheet) then ApplyElementStyle(sheet.InheritStyleSheet, element, style) end
 
+        -- 通配符*选择器
+        sheet:ApplySelectorStyle("*", style, element);
+
+        -- 便签选择器
         sheet:ApplyTagNameSelectorStyle(element, style);
 
+        -- 类选择器
         sheet:ApplyClassSelectorStyle(element, style);
     
+        -- ID选择器
         sheet:ApplyIdSelectorStyle(element, style);
 
+        -- 选择器组合
         sheet:ApplyComboSelectorStyle(element, style);
     end
 
