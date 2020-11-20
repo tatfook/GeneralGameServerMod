@@ -36,7 +36,7 @@ function Text:Init(xmlNode, window, parent)
 	self:InitElement(xmlNode, window, parent);
 
 	-- 处理实体字符
-	self:SetValue(self:FormatText(self:GetInnerText()));
+	self:SetValue(self:GetInnerText());
 
 	return self;
 end
@@ -56,10 +56,13 @@ function Text:FormatText(text)
 end
 
 function Text:SetText(value)
-	local value = self:FormatText(value);
 	if (value == self:GetValue()) then return end
 	self:SetValue(value);
 	self:UpdateLayout();
+end
+
+function Text:GetText()
+	return self:FormatText(self:GetValue());
 end
 
 function Text:GetTextAlign()
@@ -106,7 +109,7 @@ function Text:OnUpdateLayout()
 	local width, height = layout:GetFixedWidthHeight();
 	local left, top = 0, 0;
 	local textWidth, textHeight = 0, 0;
-	local text = self:GetValue();
+	local text = self:GetText();
 
 	self.texts = {};
 

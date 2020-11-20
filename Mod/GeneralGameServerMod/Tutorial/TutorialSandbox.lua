@@ -16,7 +16,7 @@ local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraControll
 local CodeAPI = commonlib.gettable("MyCompany.Aries.Game.Code.CodeAPI");
 local SceneContextManager = commonlib.gettable("System.Core.SceneContextManager");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
-
+local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local BlockStrategy = NPL.load("./BlockStrategy.lua", IsDevEnv);
 local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
 -- local Page = NPL.load("./Page/Page.lua", IsDevEnv);
@@ -285,6 +285,16 @@ end
 -- 进入主世界
 function TutorialSandbox:EnterMainWorld()
     ParaWorldLoginAdapter:EnterWorld();
+end
+
+-- 获取用户信息
+function TutorialSandbox:GetUserInfo()
+    return KeepWorkItemManager.GetProfile();
+end
+
+-- 获取当前时间的毫秒数
+function TutorialSandbox:GetTimeStamp()
+    return ParaGlobal.timeGetTime();
 end
 
 -- 初始化成单列模式

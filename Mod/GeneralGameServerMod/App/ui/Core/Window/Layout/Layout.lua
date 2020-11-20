@@ -325,7 +325,7 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 			if (isFalseWidth) then left = left - width + realContentWidth end
 			left = left - paddingRight - borderRight;
 		else
-			left = left + paddingLeft + borderLeft
+			left = left + paddingLeft + borderLeft;
 		end
 		top = top + paddingTop + borderTop;
 		if (not childLayout:IsPositionElement()) then

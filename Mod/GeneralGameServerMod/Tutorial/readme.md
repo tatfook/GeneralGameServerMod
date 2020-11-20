@@ -208,6 +208,10 @@ TutorialSandbox:SetPlayerSpeedScale(speed);
 local speed = TutorialSandbox:GetPlayerSpeedScale();
 -- 进入主世界
 TutorialSandbox:EnterMainWorld();
+-- 获取用户信息
+TutorialSandbox:GetUserInfo();
+-- 获取当前时间的毫秒数
+TutorialSandbox:GetTimeStamp();
 ```
 
 ## 快速开始
