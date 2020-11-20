@@ -146,6 +146,8 @@ end
 function Compile:VIf(element)
     local xmlNode = element:GetXmlNode();
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-if"] == nil) then return end
+    -- local parentElement = element:GetParentElement();
+    -- local pos = parentElement:GetChildElementPos(element);
     self:ExecCode(xmlNode.attr["v-if"], element, function(val)
         element:SetVisible(val and true or false);
         local parentElement = element:GetParentElement();
@@ -170,7 +172,8 @@ function Compile:VFor(element)
     local pos = parentElement:GetChildElementPos(element);
     local forComponent = self:GetComponent();
 
-    parentElement:RemoveChildElement(pos);
+    -- parentElement:RemoveChildElement(pos);
+    element:SetVisible(false);
     self:ExecCode(listexp, element, function(list)
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
         -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count);
@@ -184,7 +187,7 @@ function Compile:VFor(element)
             end
             self:UnWatch(clones[i]);
             if (i > lastCount) then
-                parentElement:InsertChildElement(pos + i - 1, clones[i]);
+                parentElement:InsertChildElement(pos + i, clones[i]);
             end
             -- v-for 产生新scope
             local scope = scopes[i] or {};

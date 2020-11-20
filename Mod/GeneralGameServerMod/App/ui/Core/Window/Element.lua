@@ -46,6 +46,7 @@ function Element:ctor()
     self:SetLayout(Layout:new():Init(self));
     self:SetRect(Rect:new():init(0,0,0,0));
     self:SetSelector({});
+    self:SetStyle(Style:new());
 end
 
 -- 是否是元素
@@ -110,29 +111,8 @@ function Element:InitElement(xmlNode, window, parent)
     end
     self:GetStyleSheet():SetInheritStyleSheet(parent and parent:GetStyleSheet());
 
-    -- 初始化元素样式
-    if (not self:GetStyle()) then
-        self:SetStyle(Style:new():Init(self:GetBaseStyle(), parent and parent:GetStyle()));
-    end
-end
-
--- 创建样式
-function Element:ApplyElementStyle()
-    local style = self:GetStyle();
-
-    -- 全局样式表
-    self:GetWindow():GetStyleManager():ApplyElementStyle(self, style);
-
-    -- 局部样式表
-    self:GetStyleSheet():ApplyElementStyle(self, style);
-    -- ElementDebug.If(self:GetName() == "Text", "class", style);
-    -- 内联样式
-    style:AddString(self:GetAttrValue("style"));
-    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle());
-    -- ElementDebug.If(self:GetName() == "Text", "inline", style);
-
-    -- 选择默认样式
-    return style:SelectNormalStyle();
+    -- 设置继承样式
+    self:GetStyle():Init(self:GetBaseStyle(), parent and parent:GetStyle());
 end
 
 -- 初始化子元素
@@ -146,11 +126,9 @@ function Element:InitChildElement(xmlNode, window)
         else 
             ElementDebug("元素不存在", xmlNode);
         end
-    
-        self:InsertChildElement(childElement);
-
-        -- table.insert(self.childrens, childElement);
-        -- childElement:SetParentElement(self);
+        -- self:InsertChildElement(childElement);
+        table.insert(self.childrens, childElement);
+        childElement:SetParentElement(self);
     end
 end
 
@@ -170,39 +148,41 @@ function Element:OnLoadElementBeforeChild()
 end
 
 function Element:OnLoadElement()
-    -- 应用元素样式
-    self:ApplyElementStyle();
 end
 
 function Element:OnLoadElementAfterChild()
 end
 
--- 添加DOM树中
-function Element:OnAttach()
-end
-
--- 从DOM树中移除
-function Element:OnDetach()
-end
 
 -- 上一个兄弟元素
 function Element:GetPrevSiblingElement()
     local parentElement = self:GetParentElement();
     if (not parentElement) then return end
+    local prevSiblingElement = nil;
     for i, child in ipairs(parentElement.childrens) do
-        if (child == self) then return parentElement.childrens[i - 1] end
+        if (child == self) then return prevSiblingElement end
+        prevSiblingElement = if_else(child:IsExist(), child, prevSiblingElement);
     end
-    return
 end
 
--- 上一个兄弟元素
+-- 下一个兄弟元素
 function Element:GetNextSiblingElement()
     local parentElement = self:GetParentElement();
     if (not parentElement) then return end
-    for i, child in ipairs(parentElement.childrens) do
-        if (child == self) then return parentElement.childrens[i + 1] end
+    local nextSiblingElement = nil;
+    for i = #self.childrens, 1, -1 do
+        child = self.childrens[i];
+        if (child == self) then return nextSiblingElement end
+        nextSiblingElement = if_else(child:IsExist(), child, nextSiblingElement);
     end
-    return
+end
+
+-- 获取元素位置
+function Element:GetChildElementPos(childElement)
+    for i, child in ipairs(self.childrens) do 
+        if (child == childElement) then return i end 
+    end
+    return 0;
 end
 
 -- 添加子元素
@@ -223,15 +203,7 @@ function Element:InsertChildElement(pos, childElement)
     -- element:ApplyElementStyle();
 
     -- 更新元素布局
-    element:OnAttach();
-end
-
--- 获取元素位置
-function Element:GetChildElementPos(childElement)
-    for i, child in ipairs(self.childrens) do 
-        if (child == childElement) then return i end 
-    end
-    return 0;
+    element:Attach();
 end
 
 -- 移除子元素
@@ -251,13 +223,17 @@ function Element:RemoveChildElement(pos)
     local element = self.childrens[pos];
     table.remove(self.childrens, pos);
     if (element) then 
-        element:OnDetach();
+        element:Detach();
         element:SetParentElement(nil);
     end
 end
 
 -- 清除子元素
 function Element:ClearChildElement()
+    for _, child in ipairs(self.childrens) do
+        child:Detach();
+    end
+
     self.childrens = {};
 end
 
@@ -273,8 +249,12 @@ end
 
 -- 遍历 默认渲染序  false 事件序
 function Element:ChildElementIterator(isRender, filter)
-    local childrens, list = self:GetChildElementList(), {};
-    for i = 1, #childrens do  list[i] = childrens[i] end
+    local list = {};
+    for _, child in ipairs(self.childrens) do
+        if (child:IsExist()) then
+            table.insert(list, child);
+        end
+    end
 
     isRender = isRender == nil or isRender;
     local function comp(child1, child2)
@@ -309,6 +289,52 @@ function Element:ChildElementIterator(isRender, filter)
     end
 
     return iterator;
+end
+
+-- 元素添加至文档树
+function Element:Attach()
+    self:OnAttach();
+
+    for _, child in ipairs(self.childrens) do
+        child:Attach();
+    end
+end
+
+-- 元素脱离文档树
+function Element:Detach()
+    self:OnDetach();
+
+    for _, child in ipairs(self.childrens) do
+        child:Detach();
+    end
+end
+
+-- 添加DOM树中
+function Element:OnAttach()
+    self:ApplyElementStyle();
+end
+
+-- 从DOM树中移除
+function Element:OnDetach()
+end
+
+-- 创建样式
+function Element:ApplyElementStyle()
+    local style = self:GetStyle();
+
+    -- 全局样式表
+    self:GetWindow():GetStyleManager():ApplyElementStyle(self, style);
+
+    -- 局部样式表
+    self:GetStyleSheet():ApplyElementStyle(self, style);
+    -- ElementDebug.If(self:GetName() == "Text", "class", style);
+    -- 内联样式
+    style:AddString(self:GetAttrValue("style"));
+    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle());
+    -- ElementDebug.If(self:GetName() == "Text", "inline", style);
+
+    -- 选择默认样式
+    return style:SelectNormalStyle();
 end
 
 -- 元素布局更新前回调

@@ -75,7 +75,7 @@ function Window:LoadXmlNodeByUrl(url)
 end
 
 function Window:Init(params)
-    self:SetG(G(self, params.G));      -- 设置全局G表
+    self:SetG(G.New(self, params.G));      -- 设置全局G表
     
     -- 保存窗口大小
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = self:GetNativeWindow():GetAbsPosition();
@@ -92,12 +92,14 @@ function Window:Init(params)
 
     -- 设置根元素
     local xmlNode = self:LoadXmlNodeByUrl(params.url);
-    if (xmlNode) then
-        self:InsertChildElement(self:CreateFromXmlNode(xmlNode, self, self));
-    end
+    local rootElement = xmlNode and self:CreateFromXmlNode(xmlNode, self, self);
+    if (rootElement) then table.insert(self.childrens, rootElement) end
 
     -- 加载元素, 提供一种置顶向下执行的机制
     self:LoadElement();
+
+    -- 文档化
+    self:Attach();
 end
 
 -- 窗口刷新

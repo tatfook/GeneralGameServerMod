@@ -9,50 +9,42 @@ local G = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/G.lua");
 -------------------------------------------------------
 ]]
 
-local G = NPL.export();
-
 local Storage = NPL.load("./Storage.lua", IsDevEnv);
 
-function G:SetWindow(window)
-    self.window = window;
+local G = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+
+G:Property("Window");  -- 所属窗口
+G:Property("G");       -- 真实G
+
+local global_methods = {
+    "CloseWindow",
+}
+
+function G.New(window, g)
+    g = setmetatable(g or {}, {__index = _G});
+    g.SessionStorage = Storage.SessionStorage;
+
+    local _g = G:new():Init(window, g);
+    for _, method in ipairs(global_methods) do
+        g[method] = function(...) 
+            return _g[method](_g, ...);
+        end
+    end
+    return g;
 end
 
-function G:GetWindow()
-    return self.window;
+function G:ctor()
 end
 
-function G:Init(window)
+function G:Init(window, g)
     self:SetWindow(window);
+    self:SetG(g);
     return self;
 end
 
-setmetatable(G, {
-    __index = _G,
-    __call = function(G, window, g)
-        local self = setmetatable(g or {}, {__index = G}):Init(window);
-
-        self.SessionStorage = Storage.SessionStorage;
-        
-        self.CloseWindow = function()
-            self:GetWindow():CloseWindow();
-        end
-
-        return self;
-    end
-});
+function G:CloseWindow()
+    self:GetWindow():CloseWindow();
+end
 
 
--- function G.CloseWindow()
---     GetWindow():CloseWindow();
--- end
 
--- setmetatable(G, {
---     __index = _G,
---     __call = function(G, window, g)
---         g = setmetatable(g or {}, {__index = G});
---         g.GetWindow = function() 
---             return window;
---         end
---         return g;
---     end
--- });

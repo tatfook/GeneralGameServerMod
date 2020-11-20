@@ -1,5 +1,5 @@
 --[[
-Title: Slot
+Title: Scope
 Author(s): wxa
 Date: 2020/6/30
 Desc: 插槽组件

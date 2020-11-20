@@ -35,6 +35,11 @@ function ElementUI:IsVisible()
     return self:GetVisible() and self:GetLayout():IsVisible();
 end
 
+-- 是否存在
+function ElementUI:IsExist()
+    return self:GetVisible() and self:GetStyle().display ~= "none";
+end
+
 -- 是否需要渲染
 function ElementUI:IsNeedRender()
     return not (self:IsRender() or not self:IsVisible() or self:GetWidth() == 0 or self:GetHeight() == 0);

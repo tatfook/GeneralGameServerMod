@@ -13,6 +13,7 @@ local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local Component = commonlib.inherit(Element, NPL.export());
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Scope = NPL.load("./Scope.lua", IsDevEnv);
+local ComponentScope = NPL.load("./ComponentScope.lua", IsDevEnv);
 local Compile = NPL.load("./Compile.lua", IsDevEnv);
 local ComponentDebug = GGS.Debug.GetModuleDebug("Component");
 
@@ -112,7 +113,10 @@ end
 -- 初始化组件
 function Component:InitComponent(xmlNode)
     -- 初始化组件Scope
-    self:InitComponentScope();
+    local scope = ComponentScope.New(self);
+    self:SetComponentScope(scope);
+    self:SetScope(scope);
+
     -- 设置父组件
     local parentComponent = self:GetParentElement();
     while (parentComponent and not parentComponent:isa(Component)) do
@@ -260,44 +264,6 @@ function Component:PopScope()
     scope = scope:__get_metatable_index__();
     self:SetScope(scope);
     return scope;
-end
-
--- 初始化组件Scope
-function Component:InitComponentScope()
-    local scope = Scope:__new__(); 
-    scope:__set_metatable_index__(self:GetGlobalScope());
-    self:SetComponentScope(scope);
-    self:SetScope(scope);
-
-    scope.self = scope;
-
-    scope.GetComponent = function()
-        return self;
-    end
-
-    scope.GetRef = function(refname) 
-        return self:GetRef(refname);
-    end
-
-    scope.GetAttrValue = function(attrName, defaultValue, valueType) 
-        if (valueType == "string") then return self:GetAttrStringValue(attrName, defaultValue)
-        elseif (valueType == "number") then return self:GetAttrNumberValue(attrName, defaultValue)
-        elseif (valueType == "boolean") then return self:GetAttrBoolValue(attrName, defaultValue)
-        elseif (valueType == "function") then return self:GetAttrFunctionValue(attrName, defaultValue)
-        else return self:GetAttrValue(attrName, defaultValue) end
-    end
-
-    scope.SetAttrValue = function(attrName, attrValue) 
-        self:SetAttrValue(attrName, attrValue);
-    end
-
-    scope.RegisterComponent = function(tagname, filename)
-        self:Register(tagname, filename);
-    end
-    
-    scope.GetGlobalScope = function()
-        return self:GetGlobalScope();
-    end
 end
 
 -- 执行代码

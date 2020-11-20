@@ -85,6 +85,7 @@ local function IsRefreshLayout(style)
 	return false;
 end
 
+-- 构造函数
 function Style:ctor()
 	self.RawStyle = {};             -- 原始样式
 	self.NormalStyle = {};          -- 普通样式
@@ -96,10 +97,16 @@ function Style:ctor()
 	self.FocusStyle = {};           -- 聚焦样式
 end
 
+-- 初始化函数
 function Style:Init(style, inheritStyle)
 	self.InheritStyle = inheritStyle;
     self:Merge(style);
     return self;
+end
+
+-- 设置继承样式
+function Style:SetInheritStyle(inheritStyle)
+	self.InheritStyle = inheritStyle;
 end
 
 -- 是否需要刷新布局
