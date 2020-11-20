@@ -312,7 +312,11 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 		end
 	end
 	local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
-    local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
+	local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
+	LayoutDebug.If(
+		element:GetAttrValue("id") == "debug",
+		string.format("paddingTop = %s, paddingRight = %s, paddingBottom = %s, paddingLeft = %s, borderTop = %s, borderRight = %s, borderBottom = %s, borderLeft = %s", paddingTop, paddingRight, paddingBottom, paddingLeft, borderTop, borderRight, borderBottom, borderLeft)
+	);
 	-- 假宽度右浮动元素需要调整
 	for child in element:ChildElementIterator(true) do
 		local childLayout, childStyle = child:GetLayout(), child:GetStyle(); 

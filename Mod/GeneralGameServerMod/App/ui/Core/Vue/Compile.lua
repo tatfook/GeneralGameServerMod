@@ -158,7 +158,6 @@ function Compile:VFor(element)
     local xmlNode = element:GetXmlNode();
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-for"] == nil) then return end
     local vfor = xmlNode.attr["v-for"];
-    element:SetVisible(false);
 
     local keyexp, listexp = string.match(vfor, "%(?(%a[%w%s,]*)%)?%s+in%s+(%w*)");
     if (not keyexp) then return end
@@ -170,6 +169,8 @@ function Compile:VFor(element)
     local parentElement = element:GetParentElement();
     local pos = parentElement:GetChildElementPos(element);
     local forComponent = self:GetComponent();
+
+    parentElement:RemoveChildElement(pos);
     self:ExecCode(listexp, element, function(list)
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
         -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count);
@@ -183,7 +184,7 @@ function Compile:VFor(element)
             end
             self:UnWatch(clones[i]);
             if (i > lastCount) then
-                parentElement:InsertChildElement(pos + i, clones[i]);
+                parentElement:InsertChildElement(pos + i - 1, clones[i]);
             end
             -- v-for 产生新scope
             local scope = scopes[i] or {};

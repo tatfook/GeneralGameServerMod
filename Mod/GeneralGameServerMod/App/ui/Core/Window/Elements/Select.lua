@@ -78,7 +78,7 @@ Select:Property("BaseStyle", {
         ["background-color"] = "#ffffff",
         ["width"] = "120px",
         ["height"] = "28px",
-        ["padding"] = "4px"
+        ["padding"] = "4px",
     }
 });
 
@@ -92,7 +92,7 @@ function Select:Init(xmlNode, window, parent)
     local ListBox = self:CreateFromXmlNode({
         name = "div",
         attr = {
-            style = "position: absolute; left: 0px; top: 0px;  max-height: 130px; width: 100%; overflow-x: hidden; background-color: #ffffff; padding: 4px 2px;",
+            style = "position: absolute; left: 0px; top: 0px;  max-height: 130px; width: 100%; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px;",
         }
     }, window, self);
     self:SetListBoxElement(ListBox);
