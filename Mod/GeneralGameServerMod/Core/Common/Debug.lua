@@ -26,7 +26,12 @@ local function CheckLogFile()
     local datestr = ParaGlobal.GetDateFormat("yyyy-MM-dd");
     if (LogFileName == datestr) then return end
     LogFileName = datestr;
-    commonlib.servicelog.GetLogger(""):SetLogFile(string.format("log/%s.txt", LogFileName));
+    
+    local logdir = "log/";
+    -- 先创建目录
+    ParaIO.CreateDirectory(ParaIO.GetCurDirectory(0) .. logdir);
+    -- 切换日志文件
+    commonlib.servicelog.GetLogger(""):SetLogFile(logdir .. LogFileName .. ".txt");
 end
 
 -- debug 实例
