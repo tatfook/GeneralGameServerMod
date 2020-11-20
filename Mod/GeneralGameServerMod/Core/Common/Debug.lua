@@ -20,6 +20,15 @@ local ModuleLogEnableMap = {
     DEBUG = true,
 }
 
+local LogFileName = nil;
+local function CheckLogFile()
+    if (not IsServer or IsDevEnv) then return end
+    local datestr = ParaGlobal.GetDateFormat("yyyy-MM-dd");
+    if (LogFileName == dateStr) then return end
+    LogFileName = datestr;
+    commonlib.servicelog.GetLogger(""):SetLogFile(string.format("log/%s.txt", LogFileName));
+end
+
 -- debug 实例
 local ModelDebug = {};
 
@@ -75,6 +84,8 @@ Debug.ToString = ToString;
 
 
 local function DebugCall(module, ...)
+    CheckLogFile();
+
     module = FormatModuleName(module);
 
     if (ModuleLogEnableMap[module] == false or (not IsDevEnv and not ModuleLogEnableMap[module])) then return end
