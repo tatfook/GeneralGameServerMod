@@ -24,7 +24,7 @@ local LogFileName = nil;
 local function CheckLogFile()
     if (not IsServer or IsDevEnv) then return end
     local datestr = ParaGlobal.GetDateFormat("yyyy-MM-dd");
-    if (LogFileName == dateStr) then return end
+    if (LogFileName == datestr) then return end
     LogFileName = datestr;
     commonlib.servicelog.GetLogger(""):SetLogFile(string.format("log/%s.txt", LogFileName));
 end
