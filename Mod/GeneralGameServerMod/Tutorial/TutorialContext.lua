@@ -25,6 +25,9 @@ TutorialContext:Property("CanFly", false, "IsCanFly");
 TutorialContext:Property("CanJump", false, "IsCanJump");
 TutorialContext:Property("CanClickScene", true, "IsCanClickScene");
 
+
+local shift_pressed, ctrl_pressed, alt_pressed = nil;
+
 function TutorialContext:Init(tutorialSandbox)
 	self:SetTutorialSandbox(tutorialSandbox);
 	return self;
@@ -87,34 +90,32 @@ function TutorialContext:mouseReleaseEvent(event)
 end
 
 function TutorialContext:handleLeftClickScene(event, result)
-	local result = result or self:CheckMousePick()
-	local shift_pressed = event.shift_pressed;
-	local ctrl_pressed = event.ctrl_pressed;
-	local alt_pressed = event.alt_pressed;
+	shift_pressed, ctrl_pressed, alt_pressed = event.shift_pressed, event.ctrl_pressed, event.alt_pressed;
+	result = result or self:CheckMousePick();
 
-	if (shift_pressed or ctrl_pressed) then return end
+	local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed, mouseKeyState = 1};
+	if (not self:GetTutorialSandbox():IsCanClick(data)) then return end
 
 	return TutorialContext._super.handleLeftClickScene(self, event, result);
 end
 
 function TutorialContext:handleRightClickScene(event, result)
-	result = result or SelectionManager:GetPickingResult();
-	local shift_pressed = event.shift_pressed;
-	local ctrl_pressed = event.ctrl_pressed;
-	local alt_pressed = event.alt_pressed;
+	shift_pressed, ctrl_pressed, alt_pressed = event.shift_pressed, event.ctrl_pressed, event.alt_pressed;
+	result = result or self:CheckMousePick();
 
-	if (shift_pressed or ctrl_pressed or alt_pressed) then return end
+	local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed, mouseKeyState = 2};
+	if ((shift_pressed or ctrl_pressed or alt_pressed) and not self:GetTutorialSandbox():IsCanClick(data)) then return end
 
 	return TutorialContext._super.handleRightClickScene(self, event, result);
 end
 
 function TutorialContext:TryDestroyBlock(result, is_allow_delete_terrain)
-	local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id};
-	if (self:GetTutorialSandbox():IsCanLeftClickToDestroyBlock(data)) then return TutorialContext._super.TryDestroyBlock(self, result, is_allow_delete_terrain) end
+	local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, mouseKeyState = 1};
+	if (self:GetTutorialSandbox():IsCanClick(data)) then return TutorialContext._super.TryDestroyBlock(self, result, is_allow_delete_terrain) end
 end
 
 function TutorialContext:OnCreateSingleBlock(blockX, blockY, blockZ, blockId, result)
-	local data = {blockX = blockX, blockY = blockY, blockZ = blockZ, blockId = blockId};
-	if(self:GetTutorialSandbox():IsCanRightClickToCreateBlock(data)) then return TutorialContext._super.OnCreateSingleBlock(self, blockX, blockY, blockZ, blockId, result) end
+	local data = {blockX = blockX, blockY = blockY, blockZ = blockZ, blockId = blockId, mouseKeyState = 2};
+	if(self:GetTutorialSandbox():IsCanClick(data)) then return TutorialContext._super.OnCreateSingleBlock(self, blockX, blockY, blockZ, blockId, result) end
 end
 

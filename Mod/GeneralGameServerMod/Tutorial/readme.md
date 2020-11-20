@@ -129,8 +129,12 @@ TutorialSandbox:SetCanFly(false); -- 禁止飞行
 TutorialSandbox:SetCanJump(true);    -- 允许跳跃
 TutorialSandbox:SetCanJump(false);   -- 禁止跳跃
 
--- 添加左击清除方块策略
-local strategy = TutorialSandbox:AddLeftClickToDestroyBlockStrategy({
+-- 添加鼠标点击策略
+local strategy = TutorialSandbox:AddClickStrategy({
+    mouseKeyState = 3,    -- 1 鼠标左键按下 2 鼠标右键按下 3 鼠标左键或右键按下
+    shiftKeyState = 0,    -- 0 shift 键必须没有按下   1 shift 键必须按下   2 shift 键可以按下也可以不按下
+    ctrlKeyState = 0,     -- 0 ctrl 键必须没有按下   1 ctrl 键必须按下   2 ctrl 键可以按下也可以不按下
+    altKeyState = true,   -- 0 alt 键必须没有按下   1 alt 键必须按下   2 alt 键可以按下也可以不按下
     -- 允许移除指定类型方块
     type = "BlockId",
     blockId = 60,
@@ -156,11 +160,19 @@ local strategy = TutorialSandbox:AddLeftClickToDestroyBlockStrategy({
     type = "BlockPosRangeIdRange",
     minBlockX=0,maxBlockX=0,minBlockY=0,maxBlockY=0,minBlockZ=0,maxBlockZ=0,minBlockId = 1, maxBlockId=10,
 });
+-- 移除鼠标点击策略
+TutorialSandbox:RemoveClickStrategy(strategy);
+
+-- 添加左击清除方块策略
+local strategy = TutorialSandbox:AddLeftClickToDestroyBlockStrategy({
+    -- 规则点击策略   mouseKeyState 被强制设置为 1
+});
 -- 移除左击清除方块策略
 TutorialSandbox:RemoveLeftClickToDestroyBlockStrategy(strategy);
+
 -- 右击添加方块策略
 local strategy = TutorialSandbox:AddRightClickToCreateBlockStrategy({
-    -- 规则同清除方块
+    -- 规则点击策略  mouseKeyState 被强制设置为 2
 });
 -- 移除左击清除方块策略
 TutorialSandbox:RemoveRightClickToCreateBlockStrategy(strategy);

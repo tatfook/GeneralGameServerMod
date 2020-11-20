@@ -27,8 +27,20 @@ function BlockStrategy:Init(strategy)
     self.maxBlockX = strategy.maxBlockX or 0;
     self.maxBlockY = strategy.maxBlockY or 0;
     self.maxBlockZ = strategy.maxBlockZ or 0;
-    
+    -- shift ctrl alt key state = 0 禁止按下 1 按下 2 忽略  
+    self.shiftKeyState = strategy.shiftKeyState or 0;
+    self.ctrlKeyState = strategy.ctrlKeyState or 0;
+    self.altKeyState = strategy.altKeyState or 0;
+    self.mouseKeyState = strategy.mouseKeyState or 3;
+
     return self;
+end
+
+function BlockStrategy:IsMatchKeyPressed(blockData)
+    return (self.shiftKeyState == 2 or (self.shiftKeyState == 1 and blockData.shift_pressed) or (self.shiftKeyState == 0 and not blockData.shift_pressed)) 
+        and (self.ctrlKeyState == 2 or (self.ctrlKeyState == 1 and blockData.ctrl_pressed) or (self.ctrlKeyState == 0 and not blockData.ctrl_pressed)) 
+        and (self.altKeyState == 2 or (self.altKeyState == 1 and blockData.alt_pressed) or (self.altKeyState == 0 and not blockData.alt_pressed))
+        and (self.mouseKeyState == 3 or self.mouseKeyState == blockData.mouseKeyState);
 end
 
 function BlockStrategy:IsMatchBlockIdType(blockData)
@@ -64,6 +76,9 @@ function BlockStrategy:IsMatchBlockPosRangeIdRangeType(blockData)
 end
 
 function BlockStrategy:IsMatch(blockData)
+    -- 先检测功能key是否匹配
+    if (not self:IsMatchKeyPressed(blockData)) then return false end
+
     if (self.type == "BlockId") then 
         return self:IsMatchBlockIdType(blockData);
     elseif (self.type == "BlockPos") then

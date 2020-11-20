@@ -25,8 +25,9 @@ local TutorialSandbox = commonlib.inherit(commonlib.gettable("System.Core.ToolBa
 
 TutorialSandbox:Property("Context");                                     -- 新手上下文环境
 TutorialSandbox:Property("LastContext");                                 -- 上次上下文环境
-TutorialSandbox:Property("LeftClickToDestroyBlockStrategy", {});         -- 配置左击删除方块策略
-TutorialSandbox:Property("RightClickToCreateBlockStrategy", {});         -- 配置右击创建方块策略
+TutorialSandbox:Property("LeftClickToDestroyBlockStrategy");             -- 配置左击删除方块策略
+TutorialSandbox:Property("RightClickToCreateBlockStrategy");             -- 配置右击创建方块策略
+TutorialSandbox:Property("ClickStrategy");                               -- 点击策略
 TutorialSandbox:Property("Step", 0);                                     -- 第几步
 
 function TutorialSandbox:ctor()
@@ -44,6 +45,7 @@ function TutorialSandbox:Reset()
     self:SetLastContext(SceneContextManager:GetCurrentContext());
     self:SetLeftClickToDestroyBlockStrategy({});
     self:SetRightClickToCreateBlockStrategy({});
+    self:SetClickStrategy({});
     self:SetStep(0);
     self.stepTasks = {};                   -- 每步任务
     self.loadItems = {};                   -- 代码方块加载表
@@ -165,26 +167,45 @@ end
 
 -- 左击清除方块策略
 function TutorialSandbox:AddLeftClickToDestroyBlockStrategy(strategy)
-    strategy = BlockStrategy:new():Init(strategy);
-    self:GetLeftClickToDestroyBlockStrategy()[strategy] = strategy;
-    return strategy;
+    strategy.mouseKeyState = 1;
+    return self:AddClickStrategy(strategy);
 end
 
 -- 移除清除策略
 function TutorialSandbox:RemoveLeftClickToDestroyBlockStrategy(strategy)
-    self:GetLeftClickToDestroyBlockStrategy()[strategy] = nil;
+    self:RemoveClickStrategy(strategy);
 end
 
 -- 右击添加方块策略
 function TutorialSandbox:AddRightClickToCreateBlockStrategy(strategy)
-    strategy = BlockStrategy:new():Init(strategy);
-    self:GetRightClickToCreateBlockStrategy()[strategy] = strategy;
-    return strategy;
+    strategy.mouseKeyState = 2;
+    return self:AddClickStrategy(strategy);
 end
 
 -- 移除创建策略
 function TutorialSandbox:RemoveRightClickToCreateBlockStrategy(strategy)
-    self:GetRightClickToCreateBlockStrategy()[strategy] = nil;
+    self:RemoveClickStrategy(strategy);
+end
+
+-- 添加点击策略
+function TutorialSandbox:AddClickStrategy(strategy)
+    strategy = BlockStrategy:new():Init(strategy);
+    self:GetClickStrategy()[strategy] = strategy;
+    return strategy;
+end
+
+-- 移除点击策略
+function TutorialSandbox:RemoveClickStrategy(strategy)
+    self:GetClickStrategy()[strategy] = nil;
+end
+
+-- 是否可以点击
+function TutorialSandbox:IsCanClick(data)
+    local strategy = self:GetClickStrategy();
+    for _, item in pairs(strategy) do 
+        if (item:IsMatch(data)) then return true end
+    end
+    return false;
 end
 
 -- 激活教学上下文
@@ -202,28 +223,6 @@ function TutorialSandbox:DeactiveTutorialContext()
     else
         GameLogic.ActivateDefaultContext();
     end
-end
-
--- 左击是否可以删除
-function TutorialSandbox:IsCanLeftClickToDestroyBlock(data)
-    local strategy = self:GetLeftClickToDestroyBlockStrategy();
-    if (type(strategy) ~= "table") then return end
-    for _, item in pairs(strategy) do 
-        if (item:IsMatch(data)) then return true end
-    end
-
-    return false;
-end
-
--- 右击是否可以创建
-function TutorialSandbox:IsCanRightClickToCreateBlock(data)
-    local strategy = self:GetRightClickToCreateBlockStrategy();
-    if (type(strategy) ~= "table") then return end
-    for _, item in pairs(strategy) do 
-        if (item:IsMatch(data)) then return true end
-    end
-
-    return false;
 end
 
 -- 获取玩家右手中方块
