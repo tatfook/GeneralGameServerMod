@@ -11,6 +11,8 @@ local TutorialContext = commonlib.gettable("MyCompany.Aries.Game.SceneContext.Tu
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/EditContext.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/GameRules/GameMode.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
+local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local GameMode = commonlib.gettable("MyCompany.Aries.Game.GameLogic.GameMode");
 local SelectionManager = commonlib.gettable("MyCompany.Aries.Game.SelectionManager");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
@@ -71,55 +73,48 @@ function TutorialContext:keyPressEvent(event)
 	TutorialContext._super.keyPressEvent(self, event);
 end
 
-function TutorialContext:mousePressEvent(event)
-	if (not self:IsCanClickScene()) then return end
 
-	TutorialContext._super.mousePressEvent(self, event);
-end
-
-function TutorialContext:mouseMoveEvent(event)
-	if (not self:IsCanClickScene()) then return end
-	
-	TutorialContext._super.mouseMoveEvent(self, event);
-end
-
-function TutorialContext:mouseReleaseEvent(event)
-	if (not self:IsCanClickScene()) then return end
-	
-	TutorialContext._super.mouseReleaseEvent(self, event);
-end
-
-function TutorialContext:handleLeftClickScene(event, result)
-	shift_pressed, ctrl_pressed, alt_pressed = event.shift_pressed, event.ctrl_pressed, event.alt_pressed;
-	result = result or self:CheckMousePick();
-
-	if (result) then
-		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed, mouseKeyState = 1};
-		if (not self:GetTutorialSandbox():IsCanClick(data)) then return end
-	end
-	
-	return TutorialContext._super.handleLeftClickScene(self, event, result);
-end
-
-function TutorialContext:handleRightClickScene(event, result)
-	shift_pressed, ctrl_pressed, alt_pressed = event.shift_pressed, event.ctrl_pressed, event.alt_pressed;
-	result = result or self:CheckMousePick();
-
-	if (result) then
-		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed, mouseKeyState = 2};
-		if ((shift_pressed or ctrl_pressed or alt_pressed) and not self:GetTutorialSandbox():IsCanClick(data)) then return end
-	end
-	
-	return TutorialContext._super.handleRightClickScene(self, event, result);
-end
-
-function TutorialContext:TryDestroyBlock(result, is_allow_delete_terrain)
-	local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, mouseKeyState = 1};
-	if (self:GetTutorialSandbox():IsCanClick(data)) then return TutorialContext._super.TryDestroyBlock(self, result, is_allow_delete_terrain) end
-end
-
+-- 创建方块
 function TutorialContext:OnCreateSingleBlock(blockX, blockY, blockZ, blockId, result)
-	local data = {blockX = blockX, blockY = blockY, blockZ = blockZ, blockId = blockId, mouseKeyState = 2};
+	local data = {blockX = blockX, blockY = blockY, blockZ = blockZ, blockId = blockId, mouseKeyState = 2, mouseButton = "right", shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
 	if(self:GetTutorialSandbox():IsCanClick(data)) then return TutorialContext._super.OnCreateSingleBlock(self, blockX, blockY, blockZ, blockId, result) end
 end
 
+-- 鼠标事件
+function TutorialContext:handleMouseEvent(event)
+	-- 忽略移动鼠标事件
+	if (event:GetType() == "mouseMoveEvent") then return TutorialContext._super.handleMouseEvent(self, event) end
+
+	-- 是否可点击
+	if (not self:IsCanClickScene()) then return end
+
+	-- 更新事件值
+	event:updateModifiers();
+	
+	-- 保存按键
+	shift_pressed, ctrl_pressed, alt_pressed = event.shift_pressed, event.ctrl_pressed, event.alt_pressed;
+	
+	-- 获取鼠标方块
+	local result = SelectionManager:MousePickBlock();
+
+	-- 无方块选中直接默认处理
+	if (not result) then return TutorialContext._super.handleMouseEvent(self, event) end
+
+	-- 检测使能
+	-- 无功能键按下右击
+	if (event.mouse_button == "right" and not (shift_pressed or ctrl_pressed or alt_pressed)) then
+		-- 待创建的方块信息
+		-- local blockX, blockY, blockZ = BlockEngine:GetBlockIndexBySide(result.blockX,result.blockY,result.blockZ,result.side);
+		-- local itemStack = EntityManager.GetPlayer():GetItemInRightHand();
+		-- local blockId = itemStack and itemStack.id or 0;
+		-- local data = {blockX = blockX, blockY = blockY, blockZ = blockZ, blockId = blockId, mouseKeyState = event:buttons(), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
+		-- if(not self:GetTutorialSandbox():IsCanClick(data) and blockId > 0) then return event:accept() end
+	else
+		-- 左击 或者 功能键按下
+		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, mouseKeyState = event:buttons(), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
+		if(not self:GetTutorialSandbox():IsCanClick(data)) then return event:accept() end
+	end
+	
+	-- 默认处理
+	return TutorialContext._super.handleMouseEvent(self, event);
+end
