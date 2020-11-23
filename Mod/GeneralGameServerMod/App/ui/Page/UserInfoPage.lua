@@ -7,12 +7,13 @@ local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
 local Encoding = commonlib.gettable("System.Encoding");
 local SelfProjectList = {};
 
+local GlobalScope = GetGlobalScope();
 -- 组件全局变量初始化
-GetGlobalScope():Set("AuthUsername", System.User.keepworkUsername);
-GetGlobalScope():Set("isLogin", System.User.keepworkUsername and true or false);
-GetGlobalScope():Set("isAuthUser", false);
-GetGlobalScope():Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {}});
-GetGlobalScope():Set("ProjectList", {});
+GlobalScope:Set("AuthUsername", System.User.keepworkUsername);
+GlobalScope:Set("isLogin", System.User.keepworkUsername and true or false);
+GlobalScope:Set("isAuthUser", false);
+GlobalScope:Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {}});
+GlobalScope:Set("ProjectList", {});
 
 -- Compare:RefreshWorldList(function(worldList)
 --     SelfProjectList = worldList or SelfProjectList;
@@ -39,10 +40,10 @@ function LoadUserInfo()
 
         -- echo(data)
         if (System.User.keepworkUsername == UserDetail.username) then
-            GetGlobalScope():Set("AuthUserId", UserDetail.id);
-            GetGlobalScope():Set("isAuthUser", true);
+            GlobalScope:Set("AuthUserId", UserDetail.id);
+            GlobalScope:Set("isAuthUser", true);
         end
-        GetGlobalScope():Set("UserDetail", UserDetail);
+        GlobalScope:Set("UserDetail", UserDetail);
 
         -- 获取项目列表
         local userId = UserDetail.id;
@@ -66,7 +67,7 @@ function LoadUserInfo()
                 local ProjectList = data;
                 -- echo(data);
                 if (#ProjectList < pageSize) then isFinish = true end
-                local ScopePorjectList = GetGlobalScope():Get("ProjectList");
+                local ScopePorjectList = GlobalScope:Get("ProjectList");
                 for i = 1, #ProjectList do
                     table.insert(ScopePorjectList, ProjectList[i]);
                 end
@@ -76,7 +77,7 @@ function LoadUserInfo()
         end
         -- 先拉取第一页
         NextPagePorjectList();
-        GetGlobalScope():Set("NextPageProjectList", NextPagePorjectList);
+        GlobalScope:Set("NextPageProjectList", NextPagePorjectList);
 
         -- 获取是否关注
         keepwork.user.isfollow({

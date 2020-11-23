@@ -37,7 +37,7 @@ function Block:ctor()
     self.contentWidthUnitCount, self.contentHeightUnitCount = 0, 0;
     self.widthUnitCount, self.heightUnitCount = 0, 0;
     self.leftUnitCount, self.topUnitCount = 0, 0;
-    self.left, self.top, self.width, self.height = 0, 0, 0, 0;
+    self.left, self.top, self.width, self.height, self.maxWidth, self.maxHeight = 0, 0, 0, 0, 0, 0;
 end
 
 function Block:Init(blockly, opt)
@@ -111,6 +111,12 @@ function Block:ParseMessageAndArg(opt)
         messageIndex, argIndex = "message" .. tostring(index), "arg" .. tostring(index);
         message, arg = opt[messageIndex], opt[argIndex];
     end
+end
+
+function Block:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount)
+    local UnitSize = self:GetUnitSize();
+    self.maxWidthUnitCount, self.maxHeightUnitCount = widthUnitCount, heightUnitCount;
+    self.maxWidth, self.maxHeight = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
 end
 
 function Block:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
@@ -240,6 +246,7 @@ function Block:UpdateLayout()
     local UnitSize = self:GetUnitSize();
     local maxWidthUnitCount, maxHeightUnitCount = 0, 0;
     local curMaxWidthUnitCount, curMaxHeightUnitCount = 0, 0;
+    local blockMaxWidthUnitCount, blockMaxHeightUnitCount = 0, 0;
     local inputAndFieldCount = #(self.inputAndFields);
     for i = 1, inputAndFieldCount do
         local inputAndField = self.inputAndFields[i];
@@ -249,6 +256,9 @@ function Block:UpdateLayout()
             inputAndField:SetLeftTopUnitCount(curMaxWidthUnitCount, maxHeightUnitCount);
         end
         local widthUnitCount, heightUnitCount = inputAndField:UpdateLayout();
+        blockMaxWidthUnitCount = math.max(blockMaxWidthUnitCount, widthUnitCount);
+        blockMaxHeightUnitCount = math.max(blockMaxHeightUnitCount, heightUnitCount);
+
         inputAndField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
         if (inputAndField:isa(InputStatement)) then
             maxHeightUnitCount = maxHeightUnitCount + curMaxHeightUnitCount + heightUnitCount;
@@ -264,7 +274,12 @@ function Block:UpdateLayout()
                 lastInputAndField:SetWidthHeightUnitCount(lastInputAndField.widthUnitCount, math.max(lastInputAndField.heightUnitCount, curMaxHeightUnitCount));
             end
         end
+
+        blockMaxWidthUnitCount = math.max(blockMaxWidthUnitCount, maxWidthUnitCount);
+        blockMaxHeightUnitCount = math.max(blockMaxHeightUnitCount, maxHeightUnitCount);
     end
+
+    self:SetMaxWidthHeightUnitCount(blockMaxWidthUnitCount, blockMaxHeightUnitCount);
 
     self.contentWidthUnitCount, self.contentHeightUnitCount = maxWidthUnitCount, maxHeightUnitCount;
 
@@ -288,6 +303,19 @@ end
 
 
 function Block:GetMouseUI(x, y)
-    if (x < self.top or x > (self.top + self.height) or x < self.left or x > (self.left + self.height)) then return end
+    -- 不在block内
+    if (x < self.left or x > (self.left + self.maxWidth) or y < self.top or y > (self.top + self.maxHeight)) then 
+        return self.nextBlock and self.nextBlock:GetMouseUI(x, y); 
+    end
+    
+    -- 上下边缘高度
+    local height = (self:IsOutput() and 1 or 2) * self:GetUnitSize();
 
+    -- 在block上下边缘
+    if (x < (self.left + self.width) and (y < (self.top + height)) or (y > self.height - height)) then return self end
+    
+    -- 遍历输入
+    for _, inputAndField in ipairs(self.inputAndFields) do
+
+    end
 end

@@ -84,7 +84,18 @@ end
 
 function Blockly:OnMouseDown(event)
     local x, y = self:GetRelPoint(event.x, event.y);
+    echo({"down",x, y})
     local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y);
+end
+
+function Blockly:OnMouseMove(event)
+    local x, y = self:GetRelPoint(event.x, event.y);
+    echo({"move",x, y})
+end
+
+function Blockly:OnMouseUp(event)
+    local x, y = self:GetRelPoint(event.x, event.y);
+    echo({"up",x, y})
 end
 
 function Blockly:GetMouseUI(x, y)

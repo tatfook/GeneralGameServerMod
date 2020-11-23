@@ -210,19 +210,20 @@ end
 
 -- 激活教学上下文
 function TutorialSandbox:ActiveTutorialContext()
-    local context = SceneContextManager:GetCurrentContext();
-    if (context == self:GetContext()) then return end
-    self:SetLastContext(context);
+    -- local context = SceneContextManager:GetCurrentContext();
+    -- if (context == self:GetContext()) then return end
+    -- self:SetLastContext(context);
     self:GetContext():activate();
 end
 
 -- 激活旧上下文
 function TutorialSandbox:DeactiveTutorialContext()
-    if (self:GetLastContext()) then 
-        self:GetLastContext():activate();
-    else
-        GameLogic.ActivateDefaultContext();
-    end
+    -- if (self:GetLastContext()) then 
+    --     self:GetLastContext():activate();
+    -- else
+    --     GameLogic.ActivateDefaultContext();
+    -- end
+    GameLogic.ActivateDefaultContext();
 end
 
 -- 获取玩家右手中方块

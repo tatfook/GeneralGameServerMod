@@ -42,22 +42,6 @@ function page.ShowUserInfoPage(G, params)
     return UserInfoPageUI;
 end
 
-local VueTestPage = vue:new();
-function page.ShowVueTestPage(G, params)
-    if (IsDevEnv) then
-        if (_G.VueTestPage) then
-            _G.VueTestPage:CloseWindow();
-        end        
-        _G.VueTestPage = VueTestPage;
-    end
-
-    params = params or {};
-    params.url = params.url or "%ui%/Core/Vue/Example/Test.html";
-    params.G = G;
-    VueTestPage:Show(params);
-    return VueTestPage;
-end
-
 local UserRegionUpdatePage = vue:new();
 function page.ShowUserRegionUpdatePage(G, params)
     params = params or {};
@@ -95,3 +79,20 @@ function page.ShowDebugInfoPage(G, params)
     return DebugInfoPage;
 end
 
+
+local VueTestPage = vue:new();
+function page.ShowVueTestPage(G, params)
+    if (IsDevEnv) then
+        if (_G.VueTestPage) then
+            _G.VueTestPage:CloseWindow();
+        end        
+        _G.VueTestPage = VueTestPage;
+    end
+
+    params = params or {};
+    params.draggable = false;
+    params.url = params.url or "%ui%/Core/Vue/Example/Test.html";
+    params.G = G;
+    VueTestPage:Show(params);
+    return VueTestPage;
+end
