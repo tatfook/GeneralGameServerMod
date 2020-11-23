@@ -16,8 +16,10 @@ end
 function BlockStrategy:Init(strategy)
     self.type = strategy.type or "BlockId";
     self.blockId = strategy.blockId or 0;
+    self.blockIdList = strategy.blockIdList or {};
     self.minBlockId = strategy.minBlockId or 0;
     self.maxBlockId = strategy.maxBlockId or 0; 
+    self.blockPosList = strategy.blockPosList or {};
     self.blockX = strategy.blockX or 0;
     self.blockY = strategy.blockY or 0;
     self.blockZ = strategy.blockZ or 0;
@@ -44,10 +46,18 @@ function BlockStrategy:IsMatchKeyPressed(blockData)
 end
 
 function BlockStrategy:IsMatchBlockIdType(blockData)
+    for _, blockId in ipairs(self.blockIdList) do
+        if (blockId == blockData.blockId) then return true end
+    end
+
     return self.blockId == blockData.blockId;
 end
 
 function BlockStrategy:IsMatchBlockPosType(blockData)
+    for _, pos in ipairs(self.blockPosList) do
+        if (pos.blockX == blockData.blockX and pos.blockY == blockData.blockY and pos.blockZ == blockData.blockZ) then return true end
+    end
+
     return self.blockX == blockData.blockX and self.blockY == blockData.blockY and self.blockZ == blockData.blockZ;
 end
 

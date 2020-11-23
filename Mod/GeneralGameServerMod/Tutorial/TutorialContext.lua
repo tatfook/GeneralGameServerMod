@@ -93,9 +93,11 @@ function TutorialContext:handleLeftClickScene(event, result)
 	shift_pressed, ctrl_pressed, alt_pressed = event.shift_pressed, event.ctrl_pressed, event.alt_pressed;
 	result = result or self:CheckMousePick();
 
-	local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed, mouseKeyState = 1};
-	if (not self:GetTutorialSandbox():IsCanClick(data)) then return end
-
+	if (result) then
+		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed, mouseKeyState = 1};
+		if (not self:GetTutorialSandbox():IsCanClick(data)) then return end
+	end
+	
 	return TutorialContext._super.handleLeftClickScene(self, event, result);
 end
 
@@ -103,9 +105,11 @@ function TutorialContext:handleRightClickScene(event, result)
 	shift_pressed, ctrl_pressed, alt_pressed = event.shift_pressed, event.ctrl_pressed, event.alt_pressed;
 	result = result or self:CheckMousePick();
 
-	local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed, mouseKeyState = 2};
-	if ((shift_pressed or ctrl_pressed or alt_pressed) and not self:GetTutorialSandbox():IsCanClick(data)) then return end
-
+	if (result) then
+		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed, mouseKeyState = 2};
+		if ((shift_pressed or ctrl_pressed or alt_pressed) and not self:GetTutorialSandbox():IsCanClick(data)) then return end
+	end
+	
 	return TutorialContext._super.handleRightClickScene(self, event, result);
 end
 

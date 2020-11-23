@@ -138,9 +138,11 @@ local strategy = TutorialSandbox:AddClickStrategy({
     -- 允许移除指定类型方块
     type = "BlockId",
     blockId = 60,
+    blockIdList = {61, 62, ...},
     -- 允许移除指定位置方块
     type = "BlockPos",
     blockX=0, blockY=0, blockZ=0,
+    blockPosList = {{blockX=1, blockY=1, blockZ=1}, {blockX=2, blockY=2, blockZ=2},  ...},
     -- 允许移除指定类型位置方块
     type = "BlockPosId",
     blockId = 60, blockX=0, blockY=0, blockZ=0,
@@ -224,6 +226,14 @@ TutorialSandbox:EnterMainWorld();
 TutorialSandbox:GetUserInfo();
 -- 获取当前时间的毫秒数
 TutorialSandbox:GetTimeStamp();
+
+-- 方块选择
+-- 选择块
+TutorialSandbox:SelectBlock(19189,5,19224);
+-- 取消选择块
+TutorialSandbox:DeselectBlock(19189,5,19224);
+-- 取消选择所有块
+TutorialSandbox:DeselectAllBlock();
 ```
 
 ## 快速开始

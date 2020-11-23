@@ -296,5 +296,20 @@ function TutorialSandbox:GetTimeStamp()
     return ParaGlobal.timeGetTime();
 end
 
+-- 选择块
+function TutorialSandbox:SelectBlock(x, y, z, groupindex)
+    ParaTerrain.SelectBlock(x, y, z, true, groupindex or 6);
+end
+
+-- 取消选择块
+function TutorialSandbox:DeselectBlock(x, y, z, groupindex)
+    ParaTerrain.SelectBlock(x, y, z, false, groupindex or 6);
+end
+
+-- 取消所有选择块
+function TutorialSandbox:DeselectAllBlock(groupindex)
+    ParaTerrain.DeselectAllBlock(groupindex or 6);
+end
+
 -- 初始化成单列模式
 TutorialSandbox:InitSingleton();
