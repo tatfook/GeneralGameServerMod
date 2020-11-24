@@ -321,5 +321,12 @@ function BaseLayout:PrepareLayout()
 
     -- 溢出
     self.overflowX = style["overflow-x"] or "visible";
-    self.overflowY = style["overflow-y"] or "visible";
+	self.overflowY = style["overflow-y"] or "visible";
+	
+	-- 设置盒子类型
+    if (style["box-sizing"] == "border-box") then
+        self:SetBorderBox(true);
+    else  -- content-box
+        self:SetBorderBox(false);
+    end
 end

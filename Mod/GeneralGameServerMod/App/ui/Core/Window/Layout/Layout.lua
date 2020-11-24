@@ -41,7 +41,14 @@ function Layout:PrepareLayout()
 	-- 获取父元素宽高
 	local parentWidth, parentHeight = nil, nil;
 	if (parentLayout) then
-		parentWidth, parentHeight = parentLayout:GetWidthHeight();
+		-- if (parentLayout:IsBorderBox()) then
+		-- 	parentWidth, parentHeight = parentLayout:GetWidthHeight();
+		-- else
+		-- 	parentWidth, parentHeight = parentLayout:GetContentWidthHeight();
+		-- end
+		-- 百分比统一使用内容宽高
+		parentWidth, parentHeight = parentLayout:GetContentWidthHeight();
+
 		if (not parentLayout:IsFixedSize()) then
 			parentWidth = parentLayout:IsFixedWidth() and parentWidth or nil;
 			parentHeight = parentLayout:IsFixedHeight() and parentHeight or nil;
@@ -85,18 +92,11 @@ function Layout:PrepareLayout()
 	paddingLeft = self:PercentageToNumber(paddingLeft, parentWidth) or 0;
     self:SetPadding(paddingTop, paddingRight, paddingBottom, paddingLeft);
     
-    -- 设置盒子类型
-    if (style["box-sizing"] == "border-box") then
-        self:SetBorderBox(true);
-    else  -- content-box
-        self:SetBorderBox(false);
-    end
-
+    
 	-- 数字化宽高
-	local width, height = style.width, style.height;                                                                                   -- 支持百分比, px
-	if (self:IsBlockElement() and not self:IsPositionElement() and not width and parentLayout and not parentLayout:IsFlexElement()) then                    -- 块元素默认为父元素宽
-		width = parentLayout:GetContentWidthHeight();
-	end             
+	local width, height = style.width, style.height;                                                                                                        -- 支持百分比, px
+	-- 块元素默认为父元素宽
+	if (self:IsBlockElement() and not self:IsPositionElement() and not width and parentLayout and not parentLayout:IsFlexElement()) then width = parentWidth end             
 	width = self:PercentageToNumber(width, parentWidth);
     height = self:PercentageToNumber(height, parentHeight);
 	if (style["box-sizing"] == "content-box" and style.width) then

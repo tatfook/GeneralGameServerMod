@@ -32,10 +32,18 @@ function InputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     self.width, self.height = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
 end
 
+function InputField:GetWidthHeightUnitCount()
+    return self.widthUnitCount, self.heightUnitCount;
+end
+
 function InputField:SetLeftTopUnitCount(leftUnitCount, topUnitCount)
     local UnitSize = self:GetUnitSize();
     self.leftUnitCount, self.topUnitCount = leftUnitCount, topUnitCount;
     self.left, self.top = leftUnitCount * UnitSize, topUnitCount * UnitSize;
+end
+
+function InputField:GetLeftTopUnitCount()
+    return self.leftUnitCount, self.topUnitCount;
 end
 
 function InputField:GetSingleLineTextHeight()
@@ -62,4 +70,23 @@ function InputField:Render()
 end
 
 function InputField:UpdateLayout()
+end
+
+function InputField:OnMouseDown(event)
+    self:GetBlock():OnMouseDown(event);
+end
+
+function InputField:OnMouseMove(event)
+    self:GetBlock():OnMouseMove(event);
+end
+
+function InputField:OnMouseUp(event)
+    self:GetBlock():OnMouseUp(event);
+end
+
+function InputField:GetMouseUI(x, y)
+end
+
+function InputField:ConnectionBlock(block)
+    return ;
 end

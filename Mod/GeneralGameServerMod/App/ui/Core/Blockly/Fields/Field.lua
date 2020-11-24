@@ -46,3 +46,8 @@ function Field:Render(painter)
     self:RenderContent(painter);
     painter:Translate(0, -offsetY);
 end
+
+function Field:GetMouseUI(x, y)
+    if (x < self.left or x > (self.left + self.width) or y < self.top or y > (self.top + self.height)) then return end
+    return self;
+end
