@@ -22,6 +22,7 @@ Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 
 function Blockly:ctor()
     local block1 = Block:new():Init(self, {
+        id = "1",
         message0 = "测试 %1 你好 %2",
         arg0 = {
             {
@@ -46,6 +47,7 @@ function Blockly:ctor()
         nextStatement = true,
     });
     local block2 = Block:new():Init(self, {
+        id = "2",
         message0 = "测试你好",
         arg0 = {
             {

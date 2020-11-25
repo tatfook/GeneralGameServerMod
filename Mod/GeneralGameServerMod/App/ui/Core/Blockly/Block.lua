@@ -26,12 +26,15 @@ local InputStatement = NPL.load("./Inputs/Statement.lua", IsDevEnv);
 local Block = commonlib.inherit(BlockInputField, NPL.export());
 local BlockDebug = GGS.Debug.GetModuleDebug("BlockDebug").Enable();   --Enable  Disable
 
-local Triangle = {{0,0,0}, {0,0,0}, {0,0,0}};         -- 三角形
+local nextBlockId = 1;
 Block:Property("Blockly");
+Block:Property("Id");
 
 function Block:ctor()
-    self.inputAndFields = {};                       -- 块内输入
+    self:SetId(nextBlockId);
+    nextBlockId = nextBlockId + 1;
 
+    self.inputAndFields = {};                       -- 块内输入
     self.totalMaxWidthUnitCount, self.totalMaxHeightUnitCount = 0, 0;
 end
 
@@ -39,6 +42,8 @@ function Block:Init(blockly, opt)
     Block._super.Init(self, self, opt);
 
     self:SetBlockly(blockly);
+    
+    if (opt.id) then self:SetId(opt.id) end
 
     if (opt.output) then
         self.outputConnection = Connection:new():Init(self, "value", opt.output);
@@ -223,9 +228,11 @@ function Block:UpdateLayout()
     maxWidthUnitCount = math.max(maxWidthUnitCount, self:IsStatement() and 16 or 8);
     maxHeightUnitCount = math.max(maxHeightUnitCount, self:IsStatement() and 12 or 10);
     self:SetWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
+    -- BlockDebug.Format("maxWidthUnitCount = %s, maxHeightUnitCount = %s", maxWidthUnitCount, maxHeightUnitCount);
     totalMaxWidthUnitCount = math.max(totalMaxWidthUnitCount, maxWidthUnitCount);
     totalMaxHeightUnitCount = math.max(totalMaxHeightUnitCount, maxHeightUnitCount);
     self:SetMaxWidthHeightUnitCount(totalMaxWidthUnitCount, totalMaxHeightUnitCount);
+    -- BlockDebug.Format("maxWidthUnitCount = %s, maxHeightUnitCount = %s", totalMaxWidthUnitCount, totalMaxHeightUnitCount);
     
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then 
@@ -300,7 +307,7 @@ end
 function Block:CheckConnection()
     local blocks = self:GetBlockly():GetBlocks();
     for _, block in ipairs(blocks) do
-        if (self:IsIntersect(block, false)) then
+        if (self ~= block and self:IsIntersect(block, false)) then
             if (self:ConnectionBlock(block)) then return true end
         end
     end
@@ -315,9 +322,11 @@ function Block:IsIntersect(block, isSingleBlock)
 
     local blockLeftUnitCount, blockTopUnitCount = block:GetLeftTopUnitCount();
     local blockWidthUnitCount, blockHeightUnitCount = block:GetMaxWidthHeightUnitCount();
-    if (not isSingleBlock) then blockWidthUnitCount, blockHeightUnitCount = self:GetTotalWidthHeightUnitCount() end
+    if (not isSingleBlock) then blockWidthUnitCount, blockHeightUnitCount = block:GetTotalWidthHeightUnitCount() end
     local blockHalfWidthUnitCount, blockHalfHeightUnitCount = blockWidthUnitCount / 2, blockHeightUnitCount / 2;
     local blockCenterX, blockCenterY = blockLeftUnitCount + blockHalfWidthUnitCount, blockTopUnitCount + blockHalfHeightUnitCount;
+    BlockDebug.Format("Id = %s, left = %s, top = %s, width = %s, height = %s, Id = %s, left = %s, top = %s, width = %s, height = %s", 
+        self:GetId(), leftUnitCount, topUnitCount, widthUnitCount, heightUnitCount, block:GetId(), blockLeftUnitCount, blockTopUnitCount, blockWidthUnitCount, blockHeightUnitCount);
     BlockDebug.Format("centerX = %s, centerY = %s, halfWidthUnitCount = %s, halfHeightUnitCount = %s, blockCenterX = %s, blockCenterY = %s, blockHalfWidthUnitCount = %s, blockHalfHeightUnitCount = %s", 
         centerX, centerY, halfWidthUnitCount, halfHeightUnitCount, blockCenterX, blockCenterY, blockHalfWidthUnitCount, blockHalfHeightUnitCount);
 
@@ -325,8 +334,9 @@ function Block:IsIntersect(block, isSingleBlock)
 end
 
 function Block:ConnectionBlock(block)
-    if (not block) then return end
+    if (not block or self == block) then return end
 
+    BlockDebug("==========================BlockConnectionBlock============================");
     if (not self:IsIntersect(block, true)) then
         local nextBlock = block:GetNextBlock();
         return nextBlock and self:ConnectionBlock(nextBlock);

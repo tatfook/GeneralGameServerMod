@@ -57,6 +57,9 @@ function Connection:Connection(connection)
     self:SetConnection(connection);
     connection:SetConnection(self);
 
+    -- 更新布局
+    self:GetBlock():GetTopBlock():UpdateLayout();
+
     return true;
 end
 
@@ -69,5 +72,5 @@ end
 
 function Connection:Print()
     local offsetX, offsetY = self:GetBlock():GetLeftTopUnitCount();
-    ConnectionDebug(offsetX, offsetY, self.left, self.top, self.width, self.height);
+    ConnectionDebug.Format("blockId = %s, offsetX = %s, offsetY = %s, left = %s, top = %s, width = %s, height = %s", self:GetBlock():GetId(), offsetX, offsetY, self.left, self.top, self.width, self.height);
 end

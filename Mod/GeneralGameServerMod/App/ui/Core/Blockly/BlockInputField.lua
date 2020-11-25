@@ -142,25 +142,26 @@ function BlockInputField:GetNextBlock()
     return connection and connection:GetBlock();
 end
 
-function BlockInputField:GetLastNextBlock()
-    local prevBlock, nextBlock = self, self:GetNextBlock();
-    while (nextBlock) do 
-        prevBlock = nextBlock;
-        nextBlock = prevBlock:GetNextBlock();
-    end
-    return prevBlock;
-end
+-- function BlockInputField:GetLastNextBlock()
+--     local prevBlock, nextBlock = self, self:GetNextBlock();
+--     while (nextBlock) do 
+--         prevBlock = nextBlock;
+--         nextBlock = prevBlock:GetNextBlock();
+--     end
+--     return prevBlock;
+-- end
 
-function BlockInputField:GetFirstPrevBlock()
+function BlockInputField:GetTopBlock()
     local prevBlock, nextBlock = self:GetPrevBlock(), self;
     while (prevBlock) do 
         nextBlock = prevBlock;
         prevBlock = nextBlock:GetPrevBlock();
     end
-    return prevBlock;
+    return nextBlock;
 end
 
 function BlockInputField:GetPrevBlock()
     local connection = self.previousConnection and self.previousConnection:GetConnection();
     return connection and connection:GetBlock();
 end
+
