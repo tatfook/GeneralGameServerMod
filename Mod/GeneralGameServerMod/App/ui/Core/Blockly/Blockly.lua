@@ -25,7 +25,7 @@ Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 
 function Blockly:ctor()
     local block = Block:new():Init(self, {
-        message0 = "测 %1 你好 %2",
+        message0 = "测试 %1 你好 %2",
         arg0 = {
             {
                 name = "x",
@@ -42,6 +42,13 @@ function Blockly:ctor()
                 }
             }
         }, 
+        message1 = "%1",
+        arg1 = {
+            {
+                name = "code",
+                type = "input_statement",
+            }
+        },
         color = StyleColor.ConvertTo16("rgb(37,175,244)"),
         -- output = true,
         previousStatement = true,
@@ -135,7 +142,7 @@ end
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
     local x, y = self:GetRelPoint(event.x, event.y);
-    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y);
+    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
     if (not ui) then return end
     ui:OnMouseDown(event);
 end
@@ -143,7 +150,7 @@ end
 -- 鼠标移动事件
 function Blockly:OnMouseMove(event)
     local x, y = self:GetRelPoint(event.x, event.y);
-    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y);
+    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
     if (not ui) then return end
     ui:OnMouseMove(event);
 end
@@ -151,18 +158,18 @@ end
 -- 鼠标抬起事件
 function Blockly:OnMouseUp(event)
     local x, y = self:GetRelPoint(event.x, event.y);
-    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y);
+    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
     if (not ui) then return end
     ui:OnMouseUp(event);
 end
 
 -- 获取鼠标元素
-function Blockly:GetMouseUI(x, y)
+function Blockly:GetMouseUI(x, y, event)
     local ui = self:GetMouseCaptureUI();
     if (ui) then return ui end
 
     for _, block in ipairs(self.blocks) do
-        ui = block:GetMouseUI(x, y);
+        ui = block:GetMouseUI(x, y, event);
         if (ui) then return ui end
     end
 

@@ -130,7 +130,7 @@ function OnRefresh()
     self.schoolName = UserDetail.school and UserDetail.school.name or "";
     self.userId = UserDetail.id;
     self.username = UserDetail.username;
-    self.nickname = UserDetail.nickname;
+    self.nickname = MyCompany.Aries.Chat.BadWordFilter.FilterString(UserDetail.nickname);
     self.isFollow = UserDetail.isFollow or false;
     self.follow = UserDetail.rank.follow or 0;
     self.fans = UserDetail.rank.fans or 0;

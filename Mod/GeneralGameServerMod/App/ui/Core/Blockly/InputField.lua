@@ -85,6 +85,8 @@ function InputField:OnMouseUp(event)
 end
 
 function InputField:GetMouseUI(x, y)
+    if (x < self.left or x > (self.left + self.width) or y < self.top or y > (self.top + self.height)) then return end
+    return self;
 end
 
 function InputField:ConnectionBlock(block)

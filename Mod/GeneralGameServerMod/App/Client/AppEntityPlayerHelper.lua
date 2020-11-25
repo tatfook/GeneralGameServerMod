@@ -68,7 +68,7 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     local player = self:GetEntityPlayer();
     local playerInfo = self:GetPlayerInfo();
     local userinfo = self:GetUserInfo();
-    local username = userinfo.nickname or playerInfo.username;
+    local username = MyCompany.Aries.Chat.BadWordFilter.FilterString(userinfo.nickname or playerInfo.username);
     local state = playerInfo.state;
     local isVip = userinfo.isVip;
     local usertag = state == "online" and userinfo.usertag or "";

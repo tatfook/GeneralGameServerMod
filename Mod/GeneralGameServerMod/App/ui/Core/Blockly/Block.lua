@@ -18,6 +18,7 @@ local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
 local InputValue = NPL.load("./Inputs/Value.lua", IsDevEnv);
+local InputStatement = NPL.load("./Inputs/Statement.lua", IsDevEnv);
 
 local Block = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 local BlockDebug = GGS.Debug.GetModuleDebug("BlockDebug").Enable();   --Enable  Disable
@@ -41,21 +42,6 @@ function Block:ctor()
 end
 
 function Block:Init(blockly, opt)
-    opt = opt or {
-        message0 = "测 %1 你好",
-        arg0 = {
-            {
-                name = "x",
-                type = "field_input",
-                text = "输入框"
-            }
-        }, 
-        color = StyleColor.ConvertTo16("rgb(37,175,244)"),
-        -- output = true,
-        previousStatement = true,
-        nextStatement = true,
-    };
-
     self:SetBlockly(blockly);
     if (opt.output) then
         self:SetOutput(opt.output);
@@ -122,6 +108,11 @@ function Block:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     self.maxWidth, self.maxHeight = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
 end
 
+
+function Block:GetWidthHeightUnitCount()
+    return self.widthUnitCount, self.heightUnitCount;
+end
+
 function Block:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     local UnitSize = self:GetUnitSize();
     self.widthUnitCount, self.heightUnitCount = widthUnitCount, heightUnitCount;
@@ -129,6 +120,9 @@ function Block:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
 
     -- 设置连接大小
     self:AdjustConnectionPosition();
+
+    if (self.nextBlock) then self.nextBlock:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount + self.heightUnitCount) end
+
 end
 
 function Block:SetLeftTopUnitCount(leftUnitCount, topUnitCount)
@@ -138,10 +132,12 @@ function Block:SetLeftTopUnitCount(leftUnitCount, topUnitCount)
 
     -- 设置连接大小
     self:AdjustConnectionPosition();
+
+    if (self.nextBlock) then self.nextBlock:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount + self.heightUnitCount) end
 end
 
 function Block:AdjustConnectionPosition()
-    local statementConnectionHeight = 12;
+    local statementConnectionHeight = 4;
     if (self.previousConnection) then
         self.previousConnection:SetGeometry(self.leftUnitCount, self.topUnitCount, self.widthUnitCount, statementConnectionHeight);
     end
@@ -269,12 +265,13 @@ end
 function Block:UpdateLayout()
     local UnitSize = self:GetUnitSize();
     local maxWidthUnitCount, maxHeightUnitCount = 0, 0;
-    local curMaxWidthUnitCount, curMaxHeightUnitCount = 0, 0;
+    local curMaxWidthUnitCount, curMaxHeightUnitCount = 0, 0;    -- 当前行的最大宽高
     local blockMaxWidthUnitCount, blockMaxHeightUnitCount = 0, 0;
     local inputAndFieldCount = #(self.inputAndFields);
     for i = 1, inputAndFieldCount do
         local inputAndField = self.inputAndFields[i];
         if (inputAndField:isa(InputStatement)) then
+            maxHeightUnitCount = maxHeightUnitCount + curMaxHeightUnitCount
             inputAndField:SetLeftTopUnitCount(0, maxHeightUnitCount);
         else
             inputAndField:SetLeftTopUnitCount(curMaxWidthUnitCount, maxHeightUnitCount);
@@ -285,7 +282,7 @@ function Block:UpdateLayout()
 
         inputAndField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
         if (inputAndField:isa(InputStatement)) then
-            maxHeightUnitCount = maxHeightUnitCount + curMaxHeightUnitCount + heightUnitCount;
+            maxHeightUnitCount = maxHeightUnitCount + heightUnitCount;
             curMaxWidthUnitCount, curMaxHeightUnitCount = 0, 0;
         else
             curMaxWidthUnitCount = curMaxWidthUnitCount + widthUnitCount;
@@ -303,7 +300,7 @@ function Block:UpdateLayout()
         blockMaxHeightUnitCount = math.max(blockMaxHeightUnitCount, maxHeightUnitCount);
     end
 
-
+    echo({maxWidthUnitCount, maxHeightUnitCount})
     self.contentWidthUnitCount, self.contentHeightUnitCount = maxWidthUnitCount, maxHeightUnitCount;
 
     if (self:IsOutput()) then maxHeightUnitCount = maxHeightUnitCount + 2
@@ -312,9 +309,9 @@ function Block:UpdateLayout()
 
     maxWidthUnitCount = math.max(maxWidthUnitCount, self:IsStatement() and 16 or 8);
     maxHeightUnitCount = math.max(maxHeightUnitCount, self:IsStatement() and 12 or 10);
+    self:SetWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
     blockMaxWidthUnitCount = math.max(blockMaxWidthUnitCount, maxWidthUnitCount);
     blockMaxHeightUnitCount = math.max(blockMaxHeightUnitCount, maxHeightUnitCount);
-    self:SetWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
     self:SetMaxWidthHeightUnitCount(blockMaxWidthUnitCount, blockMaxHeightUnitCount);
     
     -- echo({self.contentWidthUnitCount, self.contentHeightUnitCount, self.widthUnitCount, self.heightUnitCount});
@@ -322,28 +319,28 @@ function Block:UpdateLayout()
         local leftUnitCount = self.leftUnitCount;
         local topUnitCount = self.topUnitCount + self.heightUnitCount;
         self.nextBlock:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
-        self.nextBlock:UpdateLayout();
+        local nextBlockMaxWidthUnitCount, nextBlockMaxHeightUnitCount = self.nextBlock:UpdateLayout();
+        blockMaxWidthUnitCount = blockMaxWidthUnitCount + nextBlockMaxWidthUnitCount;
+        blockMaxHeightUnitCount = blockMaxHeightUnitCount + nextBlockMaxHeightUnitCount;
     end
-
-    return maxWidthUnitCount, maxHeightUnitCount;
+    return blockMaxWidthUnitCount, blockMaxHeightUnitCount;
 end
 
-
-function Block:GetMouseUI(x, y)
+-- 获取鼠标元素
+function Block:GetMouseUI(x, y, event)
     -- 不在block内
-    if (x < self.left or x > (self.left + self.maxWidth) or y < self.top or y > (self.top + self.maxHeight)) then 
-        return self.nextBlock and self.nextBlock:GetMouseUI(x, y); 
-    end
-    
+    if (x < self.left or x > (self.left + self.maxWidth) or y < self.top or y > (self.top + self.maxHeight)) then return self.nextBlock and self.nextBlock:GetMouseUI(x, y, event) end
+
     -- 上下边缘高度
     local height = (self:IsOutput() and 1 or 2) * self:GetUnitSize();
 
     -- 在block上下边缘
-    if (x < (self.left + self.width) and (y < (self.top + height)) or (y > self.height - height)) then return self end
+    if (self.left < x and x < (self.left + self.width) and ((self.top < y and y < (self.top + height)) or (y > (self.top + self.height - height) and y < (self.top + self.height)))) then return self end
     
     -- 遍历输入
     for _, inputAndField in ipairs(self.inputAndFields) do
-        local ui = inputAndField:GetMouseUI(x, y);
+        local ui = inputAndField:GetMouseUI(x - self.left, y - self.top);
+
         if (ui) then return ui end
     end
 
@@ -367,20 +364,23 @@ function Block:OnMouseMove(event)
     end
     local XUnitCount = math.floor((x - self.startX) / UnitSize);
     local YUnitCount = math.floor((y - self.startY) / UnitSize);
-    self:SetLeftTopUnitCount(self.startLeftUnitCount + XUnitCount, self.startTopUnitCount + YUnitCount);
+    
     if (self.prevBlock) then
         self.prevBlock.nextBlock = nil;
         self.prevBlock = nil;
     end
     self:GetBlockly():AddBlock(self);
+    self:SetLeftTopUnitCount(self.startLeftUnitCount + XUnitCount, self.startTopUnitCount + YUnitCount);
 end
 
 function Block:OnMouseUp(event)
+    if (self.isDragging) then
+        self:ConnectionBlock();
+    end
+
     self.isMouseDown = false;
     self.isDragging = false;
     self:GetBlockly():ReleaseMouseCapture();
-    self:UpdateLayout();
-    self:ConnectionBlock();
 end
 
 function Block:GetLastNextBlock()
@@ -415,12 +415,19 @@ function Block:ConnectionBlock()
 
         if (isIntersect(block.leftUnitCount, block.maxWidthUnitCount, block.topUnitCount, block.maxHeightUnitCount)) then
             BlockDebug(self.previousConnection, block.nextConnection)
-            if (self.previousConnection and block.nextConnection and self.previousConnection:IsMatch(block.nextConnection)) then
+            if (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and self.previousConnection:IsMatch(block.nextConnection)) then
+                self:GetBlockly():RemoveBlock(self);
                 self.prevBlock = block;
                 self:GetLastNextBlock().nextBlock = block.nextBlock;
                 block.nextBlock = self;
-                block:UpdateLayout();
-            -- elseif (self.nextConnection and block.previousConnection and self.nextConnection:IsMatch(block.previousConnection)) then
+                self:SetLeftTopUnitCount(block.leftUnitCount, block.topUnitCount + block.heightUnitCount);
+                BlockDebug("===================previousConnection match nextConnection====================");
+            elseif (self.topUnitCount < block.topUnitCount and not self.nextBlock and not block.prevBlock and self.nextConnection and block.previousConnection and self.nextConnection:IsMatch(block.previousConnection)) then
+                self:GetBlockly():RemoveBlock(block);
+                block.prevBlock = self;
+                self.nextBlock = block;
+                self:SetLeftTopUnitCount(block.leftUnitCount, block.topUnitCount - self.heightUnitCount);
+                BlockDebug("===================nextConnection match previousConnection====================");
             else
                 for _, inputAndField in ipairs(block.inputAndFields) do
                     local isConnection = inputAndField:ConnectionBlock(self);

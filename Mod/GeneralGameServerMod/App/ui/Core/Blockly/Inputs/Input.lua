@@ -12,7 +12,6 @@ local InputField = NPL.load("../InputField.lua", IsDevEnv);
 local Input = commonlib.inherit(InputField, NPL.export());
 
 Input:Property("InputBlock");               -- 输入块
-Input:Property("Color");
 
 function Input:ctor()
 end
