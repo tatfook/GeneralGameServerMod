@@ -8,16 +8,29 @@ use the lib:
 local Statement = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Statement.lua");
 -------------------------------------------------------
 ]]
+
+local Connection = NPL.load("../Connection.lua", IsDevEnv);
 local Shape = NPL.load("../Shape.lua", IsDevEnv);
+local Const = NPL.load("../Const.lua", IsDevEnv);
 local Input = NPL.load("./Input.lua", IsDevEnv);
 local Statement = commonlib.inherit(Input, NPL.export());
 
 function Statement:ctor()
 end
 
+function Statement:OnSizeChange()
+    local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
+    local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
+    local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
+    if (widthUnitCount == 0 or heightUnitCount == 0) then return end
+    self.nextConnection:SetGeometry(leftUnitCount, topUnitCount, Const.ConnectionRegionWidthUnitCount, Const.ConnectionRegionHeightUnitCount);
+end
+
 function Statement:Init(block)
     Statement._super.Init(self, block);
-    
+
+    self.nextConnection = Connection:new():Init(block, "statement");
+
     return self;
 end
 
@@ -29,28 +42,36 @@ function Statement:Render(painter)
     local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
     local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
     local UnitSize = self:GetUnitSize();
-    local WidthUnitCount = blockWidthUnitCount - widthUnitCount;
-    Shape:DrawNextConnection(painter, {UnitSize = UnitSize, WidthUnitCount = WidthUnitCount});
+    local connectionWidthUnitCount = blockWidthUnitCount - widthUnitCount;
+    Shape:DrawNextConnection(painter, connectionWidthUnitCount);
 
-    local inputBlockWidthUnitCount, inputBlockHeightUnitCount = self:GetIputBlockWidthHeightUnitCount();
-    painter:Translate(0, (inputBlockHeightUnitCount + 4) * UnitSize);
-    Shape:DrawPrevConnection(painter, {UnitSize = UnitSize, WidthUnitCount = WidthUnitCount});
-    painter:Translate(0, -(inputBlockHeightUnitCount + 4) * UnitSize);
+    local inputWidthUnitCount, inputHeightUnitCount = self:GetIputWidthHeightUnitCount();
+    painter:Translate(0, (inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
+    Shape:DrawPrevConnection(painter, connectionWidthUnitCount);
+    painter:Translate(0, -(inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
     
     painter:Translate(-self.width, 0)
 end
 
-
-function Statement:GetIputBlockWidthHeightUnitCount()
-    if (self:GetInputBlock()) then
-        return self:GetInputBlock():UpdateLayout();
-    end
-
+function Statement:GetIputWidthHeightUnitCount()
+    if (self:GetNextBlock()) then return self:GetNextBlock():GetTotalWidthHeightUnitCount() end
     return 0, 4;
 end
 
 function Statement:UpdateLayout()
-    local inputBlockWidthUnitCount, inputBlockHeightUnitCount = self:GetIputBlockWidthHeightUnitCount();
+    local inputWidthUnitCount, inputHeightUnitCount = self:GetIputWidthHeightUnitCount();
     
-    return 6, inputBlockHeightUnitCount + 6;
+    return 6, inputHeightUnitCount + 2 * Const.ConnectionHeightUnitCount;
+end
+
+function Statement:ConnectionBlock(block)
+    if (self.nextConnection and block.previousConnection and self.nextConnection:IsMatch(block.previousConnection)) then
+        block:GetBlockly():RemoveBlock(block);
+        local absoluteLeftUnitCount, absoluteTopUnitCount = self:GetAbsoluteLeftTopUnitCount();
+        block:SetLeftTopUnitCount(absoluteLeftUnitCount + self.widthUnitCount, absoluteTopUnitCount + Const.ConnectionHeightUnitCount);
+        return true;
+    end
+
+    local nextBlock = self:GetNextBlock();
+    return nextBlock and block:ConnectionBlock(nextBlock);
 end

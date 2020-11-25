@@ -17,14 +17,11 @@ local Block = NPL.load("./Block.lua", IsDevEnv);
 
 local Blockly = commonlib.inherit(Element, NPL.export());
 
-Blockly:Property("Name", "Blockly");
-Blockly:Property("UnitSize", 4);              -- 一个单元格4px  默认为4
-Blockly:Property("SpaceUnitCount", 2);        -- 字段间间距
-Blockly:Property("LineHeightUnitCount", 8);   -- 每行内容高为8
+Blockly:Property("Name", "Blockly");  
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 
 function Blockly:ctor()
-    local block = Block:new():Init(self, {
+    local block1 = Block:new():Init(self, {
         message0 = "测试 %1 你好 %2",
         arg0 = {
             {
@@ -42,19 +39,13 @@ function Blockly:ctor()
                 }
             }
         }, 
-        message1 = "%1",
-        arg1 = {
-            {
-                name = "code",
-                type = "input_statement",
-            }
-        },
+        
         color = StyleColor.ConvertTo16("rgb(37,175,244)"),
         -- output = true,
         previousStatement = true,
         nextStatement = true,
     });
-    block.nextBlock = Block:new():Init(self, {
+    local block2 = Block:new():Init(self, {
         message0 = "测试你好",
         arg0 = {
             {
@@ -63,13 +54,20 @@ function Blockly:ctor()
                 text = ""
             }
         }, 
+        message1 = "%1",
+        arg1 = {
+            {
+                name = "code",
+                type = "input_statement",
+            }
+        },
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         -- output = true,
         previousStatement = true,
         nextStatement = true,
     });
-    block.nextBlock.prevBlock = block;
-    self.blocks = {block};
+    block2:SetLeftTopUnitCount(20,20);
+    self.blocks = {block1, block2};
     self.offsetX = 0;
     self.offsetY = 0;
 end

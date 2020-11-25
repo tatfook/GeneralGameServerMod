@@ -8,8 +8,8 @@ use the lib:
 local Input = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Input.lua");
 -------------------------------------------------------
 ]]
-local InputField = NPL.load("../InputField.lua", IsDevEnv);
-local Input = commonlib.inherit(InputField, NPL.export());
+local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
+local Input = commonlib.inherit(BlockInputField, NPL.export());
 
 Input:Property("InputBlock");               -- 输入块
 

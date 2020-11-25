@@ -30,6 +30,10 @@ TutorialContext:Property("CanClickScene", true, "IsCanClickScene");
 
 local shift_pressed, ctrl_pressed, alt_pressed = nil;
 
+local function GetMouseKeyState(event)
+	return event.mouse_button == "left" and 1 or (event.mouse_button == "right" and 2 or 0);
+end
+
 function TutorialContext:Init(tutorialSandbox)
 	self:SetTutorialSandbox(tutorialSandbox);
 	return self;
@@ -73,7 +77,6 @@ function TutorialContext:keyPressEvent(event)
 	TutorialContext._super.keyPressEvent(self, event);
 end
 
-
 -- 创建方块
 function TutorialContext:OnCreateSingleBlock(blockX, blockY, blockZ, blockId, result)
 	local data = {blockX = blockX, blockY = blockY, blockZ = blockZ, blockId = blockId, mouseKeyState = 2, mouseButton = "right", shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
@@ -111,10 +114,11 @@ function TutorialContext:handleMouseEvent(event)
 		-- if(not self:GetTutorialSandbox():IsCanClick(data) and blockId > 0) then return event:accept() end
 	else
 		-- 左击 或者 功能键按下
-		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, mouseKeyState = event:buttons(), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
-		if(not self:GetTutorialSandbox():IsCanClick(data)) then return event:accept() end
+		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, mouseKeyState = GetMouseKeyState(event), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
+		if(not self:GetTutorialSandbox():IsCanClick(data)) then 
+			return event:accept();
+		end
 	end
-	
 	-- 默认处理
 	return TutorialContext._super.handleMouseEvent(self, event);
 end

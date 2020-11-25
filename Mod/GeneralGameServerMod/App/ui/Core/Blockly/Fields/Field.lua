@@ -9,10 +9,11 @@ local Field = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Fiel
 -------------------------------------------------------
 ]]
 
-local InputField = NPL.load("../InputField.lua", IsDevEnv);
-local Field = commonlib.inherit(InputField, NPL.export());
+local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
+local Field = commonlib.inherit(BlockInputField, NPL.export());
 
 Field:Property("Value");                    -- 值
+Field:Property("Type");                     -- label text, value
 
 function Field:ctor()
 end
