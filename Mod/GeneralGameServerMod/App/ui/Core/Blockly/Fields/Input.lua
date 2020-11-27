@@ -72,6 +72,7 @@ function Input:GetFieldEditElement(parentElement)
     InputFieldEditElement:SetAttrValue("onkeydown.enter", function()
         local value = InputFieldEditElement:GetValue();
         self:SetValue(value);
+        self:SetText(value);
         self:FocusOut();
     end)
 
