@@ -31,6 +31,7 @@ local UnitSize = Const.UnitSize;
 
 Block:Property("Blockly");
 Block:Property("Id");
+Block:Property("Name", "Block");
 
 function Block:ctor()
     self:SetId(nextBlockId);
@@ -165,8 +166,9 @@ function Block:UpdateWidthHeightUnitCount()
         if (inputAndField:isa(InputStatement)) then   -- 语句块新起一行
             maxHeightUnitCount = maxHeightUnitCount + curMaxHeightUnitCount
         end
-        local widthUnitCount, heightUnitCount = inputAndField:UpdateWidthHeightUnitCount();
-        inputAndField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
+        local widthUnitCount, heightUnitCount, inputfieldWidthUnitCount, inputfieldHeightUnitCount = inputAndField:UpdateWidthHeightUnitCount();
+        inputAndField:SetWidthHeightUnitCount(inputfieldWidthUnitCount or widthUnitCount, inputfieldHeightUnitCount or heightUnitCount);
+        inputAndField:SetMaxWidthHeightUnitCount(nil, math.max(heightUnitCount, Const.LineHeightUnitCount));
         if (inputAndField:isa(InputStatement)) then
             maxHeightUnitCount = maxHeightUnitCount + heightUnitCount;
             curMaxWidthUnitCount, curMaxHeightUnitCount = 0, 0;
@@ -174,14 +176,16 @@ function Block:UpdateWidthHeightUnitCount()
             totalMaxWidthUnitCount = math.max(totalMaxWidthUnitCount, widthUnitCount);
         else
             curMaxWidthUnitCount = curMaxWidthUnitCount + widthUnitCount;
-            curMaxHeightUnitCount = math.max(curMaxHeightUnitCount, heightUnitCount);
             maxWidthUnitCount = math.max(maxWidthUnitCount, curMaxWidthUnitCount);
-            if (i == inputAndFieldCount) then maxHeightUnitCount = maxHeightUnitCount + curMaxHeightUnitCount end 
-            for j = i - 1, 1, -1 do
-                local lastInputAndField = self.inputAndFields[j];
-                if (lastInputAndField:isa(InputStatement)) then break end
-                lastInputAndField:SetMaxWidthHeightUnitCount(lastInputAndField.widthUnitCount, curMaxHeightUnitCount);
+            if (heightUnitCount > curMaxHeightUnitCount) then
+                curMaxHeightUnitCount = math.max(heightUnitCount, Const.LineHeightUnitCount);
+                for j = i - 1, 1, -1 do
+                    local lastInputAndField = self.inputAndFields[j];
+                    if (lastInputAndField:isa(InputStatement)) then break end
+                    lastInputAndField:SetMaxWidthHeightUnitCount(nil, curMaxHeightUnitCount);
+                end
             end
+            if (i == inputAndFieldCount) then maxHeightUnitCount = maxHeightUnitCount + curMaxHeightUnitCount end 
         end
 
         totalMaxWidthUnitCount = math.max(totalMaxWidthUnitCount, maxWidthUnitCount);
@@ -191,7 +195,7 @@ function Block:UpdateWidthHeightUnitCount()
     if (self:IsOutput()) then maxWidthUnitCount = maxWidthUnitCount + Const.BlockEdgeWidthUnitCount * 2 end
     if (self:IsStatement()) then maxHeightUnitCount = maxHeightUnitCount + Const.ConnectionHeightUnitCount * 2 end
     self:SetWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
-    BlockDebug.Format("maxWidthUnitCount = %s, maxHeightUnitCount = %s", maxWidthUnitCount, maxHeightUnitCount);
+    -- BlockDebug.Format("widthUnitCount = %s, heightUnitCount = %s", maxWidthUnitCount, maxHeightUnitCount);
     totalMaxWidthUnitCount = math.max(totalMaxWidthUnitCount, maxWidthUnitCount);
     totalMaxHeightUnitCount = math.max(totalMaxHeightUnitCount, maxHeightUnitCount);
     self:SetMaxWidthHeightUnitCount(totalMaxWidthUnitCount, totalMaxHeightUnitCount);
@@ -223,6 +227,7 @@ function Block:UpdateLeftTopUnitCount()
         else
             -- local maxWidthUnitCount, maxHeightUnitCount = inputAndField:GetMaxWidthHeightUnitCount();
             -- inputAndField:SetLeftTopUnitCount(offsetX + (maxWidthUnitCount - widthUnitCount) / 2, offsetY + (maxHeightUnitCount - heightUnitCount) / 2);
+            -- BlockDebug.Format("left = %s, top = %s, width = %s, height = %s", offsetX, offsetY, widthUnitCount, heightUnitCount);
             inputAndField:SetLeftTopUnitCount(offsetX, offsetY);
             curMaxHeightUnitCount = math.max(curMaxHeightUnitCount, heightUnitCount);
             offsetX = offsetX + widthUnitCount;
@@ -276,11 +281,12 @@ function Block:OnMouseDown(event)
 end
 
 function Block:OnMouseMove(event)
-    if (not self.isMouseDown) then return end
+    if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
+    
     local x, y = event.x, event.y;
     local UnitSize = self:GetUnitSize();
     if (not self.isDragging) then
-        if (math.abs(x, self.startX) < UnitSize and math.abs(y - self.startY) < UnitSize) then return end
+        if (math.abs(x - self.startX) < UnitSize and math.abs(y - self.startY) < UnitSize) then return end
         self.isDragging = true;
         self:GetBlockly():CaptureMouse(self);
     end
@@ -289,6 +295,11 @@ function Block:OnMouseMove(event)
     
     if (self.previousConnection and self.previousConnection:IsConnection()) then 
         local connection = self.previousConnection:Disconnection();
+        if (connection) then connection:GetBlock():GetTopBlock():UpdateLayout() end
+    end
+
+    if (self.outputConnection and self.outputConnection:IsConnection()) then
+        local connection = self.outputConnection:Disconnection();
         if (connection) then connection:GetBlock():GetTopBlock():UpdateLayout() end
     end
 
@@ -311,9 +322,7 @@ end
 function Block:CheckConnection()
     local blocks = self:GetBlockly():GetBlocks();
     for _, block in ipairs(blocks) do
-        if (self ~= block and self:IsIntersect(block, false)) then
-            if (self:ConnectionBlock(block)) then return true end
-        end
+        if (self:ConnectionBlock(block)) then return true end
     end
     return false;
 end
@@ -339,8 +348,13 @@ end
 
 function Block:ConnectionBlock(block)
     if (not block or self == block) then return end
-
     BlockDebug("==========================BlockConnectionBlock============================");
+    self:Debug();
+    block:Debug();
+    -- 是否在整个区域内
+    if (not self:IsIntersect(block, false)) then return end
+
+    -- 是否在块区域内
     if (not self:IsIntersect(block, true)) then
         local nextBlock = block:GetNextBlock();
         return nextBlock and self:ConnectionBlock(nextBlock);
@@ -365,6 +379,7 @@ function Block:ConnectionBlock(block)
         BlockDebug("===================nextConnection match previousConnection====================");
         return true;
     else
+        BlockDebug("===================outputConnection match inputConnection====================");
         for _, inputAndField in ipairs(block.inputAndFields) do
             if (inputAndField:ConnectionBlock(self)) then return true end
         end

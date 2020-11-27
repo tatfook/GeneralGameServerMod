@@ -9,20 +9,10 @@ local Space = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Spac
 -------------------------------------------------------
 ]]
 
+local Const = NPL.load("../Const.lua", IsDevEnv);
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Space = commonlib.inherit(Field, NPL.export());
 
-function Space:Init(block)
-    Space._super.Init(self, block);
-    return self;
-end
-
-function Space:Render(painter)
-    Space._super.Render(self, painter);
-end
-
 function Space:UpdateWidthHeightUnitCount()
-    local widthUnitCount, heightUnitCount = self:GetBlock():GetSpaceUnitCount(), self:GetDefaultHeightUnitCount();
-    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    return widthUnitCount, heightUnitCount;
+    return Const.FieldSpaceWidthUnitCount, Const.LineHeightUnitCount;
 end

@@ -98,6 +98,7 @@ function Input:IsReadOnly()
 end
 
 function Input:handleReturn()
+    return self:OnEvent("onkeydown.enter")
 end
 
 function Input:handleEscape()

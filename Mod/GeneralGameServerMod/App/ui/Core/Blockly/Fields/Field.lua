@@ -9,6 +9,7 @@ local Field = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Fiel
 -------------------------------------------------------
 ]]
 
+local Const = NPL.load("../Const.lua", IsDevEnv);
 local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
 local Field = commonlib.inherit(BlockInputField, NPL.export());
 
@@ -18,38 +19,25 @@ Field:Property("Type");                     -- label text, value
 function Field:ctor()
 end
 
-function Field:Init(block)
-    Field._super.Init(self, block);
-
-    self.contentHeight = self:GetDefaultHeightUnitCount() * self:GetUnitSize();
-    self.singleLineTextHeight = self:GetSingleLineTextHeight();
-
-    return self;
+function Field:GetFieldEditElement(parentElement)
 end
 
-function Field:GetDefaultHeightUnitCount()
-    return 8;
+function Field:BeginEdit(opt)
+    local editor = self:GetEditorElement();
+    editor:ClearChildElement();
+    local style = editor:GetStyle();
+    style.NormalStyle.left = self.left + (self.maxWidth - self.width) / 2;
+    style.NormalStyle.top = self.top + (self.maxHeight - self.height) / 2;
+    style.NormalStyle.width = self.width;
+    style.NormalStyle.height = self.height;
+    local fieldEditElement = self:GetFieldEditElement(editor);
+    if (not fieldEditElement) then return end
+    editor:InsertChildElement(fieldEditElement);
+    editor:UpdateLayout();
 end
 
-function Field:GetDefaultWidthUnitCount()
-    return self:GetDefaultHeightUnitCount() * 2;
+function Field:EndEdit()
+    local editor = self:GetEditorElement();
+    editor:SetGeometry(0, 0, 0, 0);
+    self:GetTopBlock():UpdateLayout();
 end
-
-function Field:RenderContent()
-end
-
-function Field:Render(painter)
-    painter:Translate(self.left, self.top);
-
-    painter:SetPen(self:GetBlock():GetColor());
-    painter:DrawRect(0, 0, self.width, self.height);
-
-    local offsetY = (self.maxHeightUnitCount - self:GetDefaultHeightUnitCount()) / 2 * self:GetUnitSize();
-    painter:Translate(0, offsetY);
-    self:RenderContent(painter);
-    painter:Translate(0, -offsetY);
-   
-    painter:Translate(-self.left, -self.top);
-end
-
-

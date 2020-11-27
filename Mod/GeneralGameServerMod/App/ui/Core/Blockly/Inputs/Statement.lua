@@ -44,11 +44,18 @@ function Statement:Render(painter)
     local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
     local connectionWidthUnitCount = blockWidthUnitCount - widthUnitCount;
     Shape:DrawNextConnection(painter, connectionWidthUnitCount);
-    painter:Translate(0, self.inputHeightUnitCount * UnitSize);
+    painter:Translate(0, (self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
     Shape:DrawPrevConnection(painter, connectionWidthUnitCount);
-    painter:Translate(0, -self.inputHeightUnitCount * UnitSize);
-    
+    painter:Translate(0, -(self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
     painter:Translate(-(self.left + self.width), -self.top);
+
+    painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * UnitSize - UnitSize, UnitSize, UnitSize);
+    painter:DrawRect(self.left + self.width, self.top + self.height - Const.ConnectionHeightUnitCount * UnitSize, UnitSize, UnitSize);
+    local inputBlock = self:GetInputBlock();
+    if (not inputBlock) then return end
+    painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * UnitSize, UnitSize, UnitSize);
+    painter:DrawRect(self.left + self.width, self.top + self.height - Const.ConnectionHeightUnitCount * UnitSize - UnitSize, UnitSize, UnitSize);
+    inputBlock:Render(painter)
 end
 
 function Statement:UpdateWidthHeightUnitCount()
@@ -58,16 +65,16 @@ function Statement:UpdateWidthHeightUnitCount()
     else
         self.inputWidthUnitCount, self.inputHeightUnitCount = 0, 6;
     end
-    local widthUnitCount, heightUnitCount = StatementWidthUnitCount, Const.ConnectionHeightUnitCount + self.inputHeightUnitCount
-    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    return widthUnitCount, heightUnitCount;
+    local widthUnitCount, heightUnitCount = StatementWidthUnitCount + self.inputWidthUnitCount, Const.ConnectionHeightUnitCount * 2 + self.inputHeightUnitCount;
+    self:SetWidthHeightUnitCount(StatementWidthUnitCount, heightUnitCount);
+    return widthUnitCount, heightUnitCount, StatementWidthUnitCount, heightUnitCount;
 end
 
 function Statement:UpdateLeftTopUnitCount()
     local inputBlock = self:GetInputBlock();
     if (not inputBlock) then return end
     local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
-    inputBlock:SetLeftTopUnitCount(leftUnitCount + StatementWidthUnitCount, topUnitCount);
+    inputBlock:SetLeftTopUnitCount(leftUnitCount + StatementWidthUnitCount, topUnitCount + Const.ConnectionHeightUnitCount);
     inputBlock:UpdateLeftTopUnitCount();
 end
 
@@ -84,4 +91,12 @@ function Statement:ConnectionBlock(block)
 
     local inputBlock = self:GetInputBlock();
     return inputBlock and block:ConnectionBlock(inputBlock);
+end
+
+function Statement:GetMouseUI(x, y)
+    if (x >= self.left and x <= (self.left + self.width) and y >= self.top and y <= (self.top + self.height)) then return self end
+    local block = self:GetBlock();
+    if (x >= block.left and x <= (block.left + block.width)  and y >= self.top and y <= (self.top + Const.ConnectionHeightUnitCount * UnitSize)) then return self end
+    local inputBlock = self:GetInputBlock();
+    return inputBlock and inputBlock:GetMouseUI(x, y);
 end

@@ -111,7 +111,7 @@ function Shape:DrawNextConnection(painter, widthUnitCount, offsetXUnitCount, off
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
 
     -- 绘制下边缘
-    self:DrawDownEdge(painter, widthUnitCount);
+    self:DrawDownEdge(painter, widthUnitCount, Const.ConnectionHeightUnitCount - Const.BlockEdgeHeightUnitCount);
     painter:Translate(0, Const.ConnectionHeightUnitCount * UnitSize);
 
     -- 下边突出部分

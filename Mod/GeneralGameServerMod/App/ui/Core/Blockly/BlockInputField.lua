@@ -14,6 +14,7 @@ local BlockInputField = commonlib.inherit(commonlib.gettable("System.Core.ToolBa
 
 local UnitSize = Const.UnitSize;
 
+BlockInputField:Property("Name", "BlockInputField");
 BlockInputField:Property("Block");
 BlockInputField:Property("Option");
 BlockInputField:Property("Color");                    -- 颜色
@@ -48,13 +49,12 @@ function BlockInputField:GetTotalWidthHeightUnitCount()
 end
 
 function BlockInputField:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount)
-    self.maxWidthUnitCount, self.maxHeightUnitCount = widthUnitCount, heightUnitCount;
-    self.maxWidth, self.maxHeight = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
+    self.maxWidthUnitCount, self.maxHeightUnitCount = widthUnitCount or self.widthUnitCount, heightUnitCount or self.heightUnitCount;
+    self.maxWidth, self.maxHeight = self.maxWidthUnitCount * UnitSize, self.maxHeightUnitCount * UnitSize;
 end
 
-
 function BlockInputField:UpdateWidthHeightUnitCount()
-    return 0, 0;
+    return 0, 0, 0, 0;  -- 元素区域宽高,  元素真实宽高
 end
 
 function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
@@ -67,7 +67,7 @@ function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount
 end
 
 function BlockInputField:GetMaxWidthHeightUnitCount()
-    return self.maxHeightUnitCount, self.maxHeightUnitCount;
+    return self.maxWidthUnitCount, self.maxHeightUnitCount;
 end
 
 function BlockInputField:GetWidthHeightUnitCount()
@@ -104,8 +104,8 @@ function BlockInputField:GetSingleLineTextHeight()
     return self:GetFontSize() * 6 / 5;
 end
 
-function BlockInputField:GetSpaceUnitCount() 
-    return Const.SpaceUnitCount;
+function BlockInputField:GetTextWidthUnitCount(text)
+    return math.ceil(_guihelper.GetTextWidth(text or "", self:GetFont()) / self:GetUnitSize())
 end
 
 function BlockInputField:GetLineHeightUnitCount()
@@ -126,6 +126,7 @@ end
 
 function BlockInputField:RenderContent(painter)
 end
+
 function BlockInputField:Render(painter)
     painter:SetPen(self:GetBlock():GetColor());
     painter:DrawRect(self.left, self.top, self.maxWidth, self.maxHeight);
@@ -158,17 +159,32 @@ function BlockInputField:GetMouseUI(x, y)
     return self;
 end
 
+function BlockInputField:OnFocusOut()
+end
+
+function BlockInputField:OnFocusIn()
+end
+
+function BlockInputField:FocusIn()
+    local blockly = self:GetBlock():GetBlockly();
+    local focusUI = blockly:GetFocusUI();
+    if (focusUI == self) then return end
+    if (focusUI) then focusUI:OnFocusOut() end
+    self:OnFocusIn();
+end
+
 function BlockInputField:ConnectionBlock(block)
     return ;
 end
 
 function BlockInputField:GetNextBlock()
-    local connection = self.nextConnection and self.nextConnection:GetConnection();
+    local block = self:GetBlock();
+    local connection = block.nextConnection and block.nextConnection:GetConnection();
     return connection and connection:GetBlock();
 end
 
 function BlockInputField:GetLastNextBlock()
-    local prevBlock, nextBlock = self, self:GetNextBlock();
+    local prevBlock, nextBlock = self:GetBlock(), self:GetNextBlock();
     while (nextBlock) do 
         prevBlock = nextBlock;
         nextBlock = prevBlock:GetNextBlock();
@@ -177,7 +193,7 @@ function BlockInputField:GetLastNextBlock()
 end
 
 function BlockInputField:GetTopBlock()
-    local prevBlock, nextBlock = self:GetPrevBlock(), self;
+    local prevBlock, nextBlock = self:GetPrevBlock(), self:GetBlock();
     while (prevBlock) do 
         nextBlock = prevBlock;
         prevBlock = nextBlock:GetPrevBlock();
@@ -186,7 +202,20 @@ function BlockInputField:GetTopBlock()
 end
 
 function BlockInputField:GetPrevBlock()
-    local connection = self.previousConnection and self.previousConnection:GetConnection();
+    local block = self:GetBlock();
+    local connection = block.previousConnection and block.previousConnection:GetConnection();
     return connection and connection:GetBlock();
 end
 
+function BlockInputField:GetEditorElement()
+    return self:GetBlock():GetBlockly():GetEditorElement();
+end
+
+function BlockInputField:GetBlocklyElement()
+    return self:GetBlock():GetBlockly();
+end
+
+function BlockInputField:Debug()
+    GGS.DEBUG.Format("left = %s, top = %s, width = %s, height = %s, maxWidth = %s, maxHeight = %s, totalWidth = %s, totalHeight = %s", 
+        self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount, self.maxWidthUnitCount, self.maxHeightUnitCount, self.totalWidthUnitCount, self.totalHeightUnitCount);
+end

@@ -33,37 +33,58 @@ end
 
 
 function Value:Render(painter)
-    Value._super.Render(self, painter);
-    
-    painter:Translate(self.left, self.top);
-    painter:SetPen(self:GetColor());
-    Shape:DrawLeftEdge(painter, self.heightUnitCount, self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2);
-    Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
-    -- Shape:DrawDownEdge(painter, self.widthUnitCount, 0, 0, self.heightUnitCount - Const.BlockEdgeHeightUnitCount);
+    painter:SetPen(self:GetBlock():GetColor());
+    painter:DrawRect(self.left, self.top, self.maxWidth, self.maxHeight);
 
-    -- 用field_input代替  field_input应支持方形, 圆形
-    -- if (not self:GetInputBlock()) then
-    --     painter:Translate(0, UnitSize);
-    --     painter:DrawCircle(UnitSize * 3, -UnitSize * 3, 0, UnitSize * 3, "z", true, nil, math.pi / 2, math.pi * 3 / 2);
-    --     painter:DrawRect(UnitSize * 3, 0, UnitSize * 3, self.height - 2 * UnitSize);
-    --     painter:DrawCircle(UnitSize * 6, -UnitSize * 3, 0, UnitSize * 3, "z", true, nil, math.pi * 3 / 2, math.pi * 5 / 2);
-    --     painter:Translate(0, -UnitSize);
-    -- end
-    painter:Translate(-self.left, -self.top);
+    local inputBlock = self:GetInputBlock();
+    if (inputBlock) then return inputBlock:Render(painter) end
+
+    painter:Translate(self.left, self.top + Const.BlockEdgeHeightUnitCount * UnitSize);
+    painter:SetPen("#fffffff0");
+    Shape:DrawLeftEdge(painter, self.heightUnitCount);
+    painter:DrawRect(Const.BlockEdgeWidthUnitCount * UnitSize, 0, self.width - Const.BlockEdgeWidthUnitCount * 2 * UnitSize, self.height);
+    Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
+    painter:Translate(-self.left, -self.top - Const.BlockEdgeHeightUnitCount * UnitSize);
+end
+
+function Value:OnSizeChange()
+    local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
+    local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
+    self.inputConnection:SetGeometry(leftUnitCount, topUnitCount, widthUnitCount, heightUnitCount);
 end
 
 function Value:UpdateWidthHeightUnitCount()
-    local widthUnitCount, heightUnitCount = Const.InputValueWidthUnitCount, self:GetLineHeightUnitCount() - 2;
+    local inputBlock = self:GetInputBlock();
 
-    if (self:GetInputBlock()) then 
-        widthUnitCount, heightUnitCount = self:GetInputBlock():UpdateWidthHeightUnitCount();
-        heightUnitCount = heightUnitCount - Const.BlockEdgeHeightUnitCount * 2;
-    end
-
-    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    
-    return widthUnitCount, heightUnitCount;
+    if (not inputBlock) then return Const.InputValueWidthUnitCount, self:GetLineHeightUnitCount() - Const.BlockEdgeHeightUnitCount * 2 end
+    return inputBlock:UpdateWidthHeightUnitCount();
 end
 
-function Input:UpdateLeftTopUnitCount()
+function Value:UpdateLeftTopUnitCount()
+    local inputBlock = self:GetInputBlock();
+    if (not inputBlock) then return end
+    local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
+    inputBlock:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
+    inputBlock:UpdateLeftTopUnitCount();
+end
+
+function Value:ConnectionBlock(block)
+    if (block.outputConnection and not block.outputConnection:IsConnection() and self.inputConnection:IsMatch(block.outputConnection)) then
+        block:GetBlockly():RemoveBlock(block);
+        local inputConnectionConnection = self.inputConnection:Disconnection();
+        self.inputConnection:Connection(block.outputConnection);
+        self:GetTopBlock():UpdateLayout();
+        if (inputConnectionConnection) then
+            block:GetBlockly():AddBlock(inputConnectionConnection:GetBlock());
+        end
+        return true;
+    end
+
+    local inputBlock = self:GetInputBlock();
+    return inputBlock and block:ConnectionBlock(inputBlock);
+end
+
+function Value:GetMouseUI(x, y)
+    if (x < self.left or x > (self.left + self.width) or y < self.top or y > (self.top + self.height)) then return end
+    return self:GetInputBlock() or self;
 end

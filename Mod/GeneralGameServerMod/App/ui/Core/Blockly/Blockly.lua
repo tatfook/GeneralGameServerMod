@@ -14,11 +14,13 @@ local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 
 local Block = NPL.load("./Block.lua", IsDevEnv);
-
+local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
 local Blockly = commonlib.inherit(Element, NPL.export());
 
 Blockly:Property("Name", "Blockly");  
+Blockly:Property("EditorElement");            -- 编辑元素 用户输入
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
+Blockly:Property("FocusUI");                  -- 聚焦UI
 
 function Blockly:ctor()
     local block1 = Block:new():Init(self, {
@@ -99,10 +101,23 @@ function Blockly:ctor()
     block2:SetLeftTopUnitCount(20,20);
     block3:SetLeftTopUnitCount(40, 40);
     block4:SetLeftTopUnitCount(60, 40);
-    self.blocks = {block1, block2, block3, block4};
-    -- self.blocks = {block2};
+    self.blocks = {block1, block2, block3};
+    -- self.blocks = {block1, block3};
     self.offsetX = 0;
     self.offsetY = 0;
+end
+
+function Blockly:Init(xmlNode, window, parent)
+    Blockly._super.Init(self, xmlNode, window, parent);
+    local blocklyEditor = BlocklyEditor:new():Init({
+        name = "BlocklyEditor",
+        attr = {
+            style = "position: absolute; left: 0px; top: 0px; width: 0px; height: 0px; overflow: hidden; background-color: #ff0000;",
+        }
+    }, window, self)
+    table.insert(self.childrens, blocklyEditor);
+    self:SetEditorElement(blocklyEditor);
+    return self;
 end
 
 -- 获取所有顶层块
@@ -132,7 +147,7 @@ end
 -- 添加块
 function Blockly:RemoveBlock(block)
     local index = self:GetBlockIndex(block);
-    if (index) then return end
+    if (not index) then return end
     table.remove(self.blocks, index);
 end
 
@@ -175,8 +190,17 @@ end
 
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
+    
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
+    
+    -- 失去焦点
+    local focusUI = self:GetFocusUI();
+    if (focusUI ~= ui and focusUI) then 
+        focusUI:OnFocusOut();
+        self:SetFocusUI(nil);
+    end
+
     if (not ui) then return end
     ui:OnMouseDown(event);
 end
@@ -195,6 +219,14 @@ function Blockly:OnMouseUp(event)
     local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
     if (not ui) then return end
     ui:OnMouseUp(event);
+    -- 获取焦点
+    local focusUI = self:GetFocusUI();
+    if (focusUI ~= ui) then 
+        if (focusUI) then focusUI:OnFocusOut() end
+        ui:OnFocusIn();
+        self:SetFocusUI(ui);
+    end
+
 end
 
 -- 获取鼠标元素

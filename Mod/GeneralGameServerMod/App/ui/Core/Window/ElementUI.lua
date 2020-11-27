@@ -457,6 +457,11 @@ function ElementUI:OnChange(value)
     if (change) then change(value) end
 end
 
+function ElementUI:OnEvent(eventName, ...)
+    local eventFunc = self:GetAttrFunctionValue(eventName);
+    if (eventFunc) then eventFunc(...) end
+end
+
 function ElementUI:OnMouseDown(event)
     self:OnClick(event);
 

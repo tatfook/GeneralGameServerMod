@@ -9,6 +9,7 @@ local Label = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Labe
 -------------------------------------------------------
 ]]
 
+local Const = NPL.load("../Const.lua", IsDevEnv);
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Label = commonlib.inherit(Field, NPL.export());
 
@@ -25,13 +26,9 @@ end
 function Label:RenderContent(painter)
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    painter:DrawText(0, (self.contentHeight - self.singleLineTextHeight) / 2, self:GetValue());
+    painter:DrawText(0, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetValue());
 end
 
 function Label:UpdateWidthHeightUnitCount()
-    local width = _guihelper.GetTextWidth(self:GetValue() or "", self:GetFont());
-    local widthUnitCount = math.ceil(width / self:GetUnitSize());
-    local heightUnitCount = self:GetDefaultHeightUnitCount();
-    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    return widthUnitCount, heightUnitCount;
+    return self:GetTextWidthUnitCount(self:GetValue()), self:GetLineHeightUnitCount();
 end
