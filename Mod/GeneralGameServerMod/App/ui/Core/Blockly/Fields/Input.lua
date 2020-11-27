@@ -19,6 +19,7 @@ Input:Property("Name", "Input");
 Input:Property("Color", "#000000");
 Input:Property("BackgroundColor", "#ffffff");
 Input:Property("Value", "");
+Input:Property("Text", "");
 Input:Property("Type", "text");
 -- Input:Property("")
 
@@ -33,6 +34,7 @@ function Input:Init(block, opt)
     else  end
 
     self:SetValue(value);
+    self:SetText(value);
 
     return self;
 end
@@ -49,26 +51,12 @@ function Input:RenderContent(painter)
     -- input
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetValue());
+    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetText());
 end
 
 function Input:UpdateWidthHeightUnitCount()
-    return math.max(self:GetTextWidthUnitCount(self:GetValue()), 4) + Const.BlockEdgeWidthUnitCount * 2, self:GetLineHeightUnitCount() - Const.BlockEdgeHeightUnitCount * 2;
-end
-
-
-function Input:OnFocusIn()
-    self:BeginEdit({
-        width = self.width,
-        height = self.height,
-        left = self.left + (self.maxWidth - self.width) / 2,
-        top = self.top + (self.maxHeight - self.height) / 2,
-        type = "input",
-    });
-end
-
-function Input:OnFocusOut()
-    self:EndEdit();
+    local widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetText()), 4) + Const.BlockEdgeWidthUnitCount * 2, self:GetLineHeightUnitCount() - Const.BlockEdgeHeightUnitCount * 2;
+    return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), heightUnitCount;
 end
 
 function Input:GetFieldEditElement(parentElement)
@@ -77,15 +65,14 @@ function Input:GetFieldEditElement(parentElement)
         attr = {
             style = "width: 100%; height: 100%; font-size: 14px;",
             value = self:GetValue(),
+            autofocus = true,
         },
     }, parentElement:GetWindow(), parentElement);
 
     InputFieldEditElement:SetAttrValue("onkeydown.enter", function()
         local value = InputFieldEditElement:GetValue();
-        echo(value);
         self:SetValue(value);
-
-        self:EndEdit();
+        self:FocusOut();
     end)
 
     return InputFieldEditElement;

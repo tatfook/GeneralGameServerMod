@@ -312,8 +312,10 @@ function Window:handleMouseEvent(event)
             target = ElementMouseEvent(child);
             if (target) then break end
         end
-        target = target or element;
         
+        target = target or element;
+        event.target = target;
+
         -- 是否已处理
         if (event:isAccepted()) then return target end
         

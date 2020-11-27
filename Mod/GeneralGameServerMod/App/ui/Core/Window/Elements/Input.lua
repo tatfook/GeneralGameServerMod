@@ -46,6 +46,9 @@ end
 function Input:Init(xmlNode, window, parent)
     self:InitElement(xmlNode, window, parent);
     self.text = UniString:new(xmlNode.attr and xmlNode.attr.value or "");
+
+    if (self:GetAttrBoolValue("autofocus")) then self:FocusIn() end
+
     return self;
 end
 
@@ -98,7 +101,7 @@ function Input:IsReadOnly()
 end
 
 function Input:handleReturn()
-    return self:OnEvent("onkeydown.enter")
+    return self:CallAttrFunction("onkeydown.enter")
 end
 
 function Input:handleEscape()

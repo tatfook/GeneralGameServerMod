@@ -115,6 +115,9 @@ function Select:Init(xmlNode, window, parent)
     self:OnValueAttrValueChange(self:GetAttrStringValue("value"));
 
     ListBox:SetVisible(false);
+
+    if (self:GetAttrBoolValue("autofocus")) then self:OnFocusIn() end
+
     return self;
 end
 
@@ -160,7 +163,8 @@ end
 function Select:OnSelect(option)
     self:SetSelectedOptionElement(option);
     local value = option and option:GetValue();
-    self:CallAttrFunction("onselect", nil, value);
+    local label = option and option:GetLabel();
+    self:CallAttrFunction("onselect", nil, value, label);
 end
 
 function Select:OnFocusIn(event)

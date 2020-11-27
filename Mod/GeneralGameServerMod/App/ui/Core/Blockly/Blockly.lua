@@ -78,8 +78,8 @@ function Blockly:ctor()
         arg0 = {
             {
                 name = "x",
-                type = "field_input",
-                text = "输入框"
+                type = "field_select",
+                text = "下拉列表"
             }, 
             {
                 name = "x",
@@ -101,7 +101,7 @@ function Blockly:ctor()
     block2:SetLeftTopUnitCount(20,20);
     block3:SetLeftTopUnitCount(40, 40);
     block4:SetLeftTopUnitCount(60, 40);
-    self.blocks = {block1, block2, block3};
+    self.blocks = {block1, block2, block3, block4};
     -- self.blocks = {block1, block3};
     self.offsetX = 0;
     self.offsetY = 0;
@@ -190,7 +190,8 @@ end
 
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
-    
+    if (event.target ~= self) then return end
+
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
     
@@ -207,6 +208,8 @@ end
 
 -- 鼠标移动事件
 function Blockly:OnMouseMove(event)
+    if (event.target ~= self) then return end
+    
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
     if (not ui) then return end
@@ -215,6 +218,8 @@ end
 
 -- 鼠标抬起事件
 function Blockly:OnMouseUp(event)
+    if (event.target ~= self) then return end
+    
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
     if (not ui) then return end
@@ -226,7 +231,6 @@ function Blockly:OnMouseUp(event)
         ui:OnFocusIn();
         self:SetFocusUI(ui);
     end
-
 end
 
 -- 获取鼠标元素

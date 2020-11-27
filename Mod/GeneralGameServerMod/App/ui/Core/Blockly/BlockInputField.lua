@@ -173,6 +173,15 @@ function BlockInputField:FocusIn()
     self:OnFocusIn();
 end
 
+function BlockInputField:FocusOut()
+    self:OnFocusOut();
+
+    local blockly = self:GetBlock():GetBlockly();
+    local focusUI = blockly:GetFocusUI();
+    if (focusUI == self) then blockly:SetFocusUI(nil) end
+end
+
+
 function BlockInputField:ConnectionBlock(block)
     return ;
 end

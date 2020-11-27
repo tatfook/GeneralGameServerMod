@@ -22,3 +22,5 @@ Const.BlockEdgeWidthUnitCount = 1;    -- 块边缘高度
 Const.LineHeightUnitCount = 8;                    -- 每行内容高为8
 Const.InputValueWidthUnitCount = 10;              -- 输入值宽度
 Const.FieldSpaceWidthUnitCount = 2;               -- 空白字段宽度
+
+Const.MinEditFieldWidthUnitCount = 30;            -- 最小编辑字段宽度

@@ -20,6 +20,7 @@ local BlockInputField = NPL.load("./BlockInputField.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
+local FieldSelect = NPL.load("./Fields/Select.lua", IsDevEnv);
 local InputValue = NPL.load("./Inputs/Value.lua", IsDevEnv);
 local InputStatement = NPL.load("./Inputs/Statement.lua", IsDevEnv);
 
@@ -84,6 +85,9 @@ function Block:ParseMessageAndArg(opt)
                 local inputField = arg[no];
                 if (inputField.type == "field_input" or inputField.type == "field_number") then
                     table.insert(self.inputAndFields, FieldInput:new():Init(self, inputField));
+                    table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
+                elseif (inputField.type == "field_select") then
+                    table.insert(self.inputAndFields, FieldSelect:new():Init(self, inputField));
                     table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
                 elseif (inputField.type == "input_dummy") then
                     table.insert(self.inputAndFields, InputDummy:new():Init(self, inputField));
