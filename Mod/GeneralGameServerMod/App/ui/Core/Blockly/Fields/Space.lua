@@ -21,6 +21,8 @@ function Space:Render(painter)
     Space._super.Render(self, painter);
 end
 
-function Space:UpdateLayout()
-    return self:GetBlock():GetSpaceUnitCount(), self:GetDefaultHeightUnitCount();
+function Space:UpdateWidthHeightUnitCount()
+    local widthUnitCount, heightUnitCount = self:GetBlock():GetSpaceUnitCount(), self:GetDefaultHeightUnitCount();
+    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
+    return widthUnitCount, heightUnitCount;
 end

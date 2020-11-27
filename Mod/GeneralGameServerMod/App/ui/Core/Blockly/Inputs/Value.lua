@@ -9,44 +9,61 @@ local Value = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Valu
 -------------------------------------------------------
 ]]
 
+local Shape = NPL.load("../Shape.lua", IsDevEnv);
+local Const = NPL.load("../Const.lua", IsDevEnv);
 local Input = NPL.load("./Input.lua", IsDevEnv);
-
 local Value = commonlib.inherit(Input, NPL.export());
+
+local UnitSize = Const.UnitSize;
 
 function Value:ctor()
 end
 
-function Value:Init(block)
-    Value._super.Init(self, block);
+function Value:Init(block, opt)
+    opt = opt or {};
 
-    self:SetColor("#ffffff");
+    opt.color = opt.color or "#ffffff";
+
+    Value._super.Init(self, block, opt);
+
+    self.inputConnection:SetType("value");
 
     return self;
 end
 
 
 function Value:Render(painter)
-    local UnitSize = self:GetUnitSize()
+    Value._super.Render(self, painter);
     
-    painter:SetPen(self:GetBlock():GetColor());
-    painter:DrawRect(0, 0, self.width, self.height);
-
+    painter:Translate(self.left, self.top);
     painter:SetPen(self:GetColor());
+    Shape:DrawLeftEdge(painter, self.heightUnitCount, self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2);
+    Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
+    -- Shape:DrawDownEdge(painter, self.widthUnitCount, 0, 0, self.heightUnitCount - Const.BlockEdgeHeightUnitCount);
 
     -- 用field_input代替  field_input应支持方形, 圆形
-    if (not self:GetInputBlock()) then
-        painter:Translate(0, UnitSize);
-        painter:DrawCircle(UnitSize * 3, -UnitSize * 3, 0, UnitSize * 3, "z", true, nil, math.pi / 2, math.pi * 3 / 2);
-        painter:DrawRect(UnitSize * 3, 0, UnitSize * 3, self.height - 2 * UnitSize);
-        painter:DrawCircle(UnitSize * 6, -UnitSize * 3, 0, UnitSize * 3, "z", true, nil, math.pi * 3 / 2, math.pi * 5 / 2);
-        painter:Translate(0, -UnitSize);
-    end
+    -- if (not self:GetInputBlock()) then
+    --     painter:Translate(0, UnitSize);
+    --     painter:DrawCircle(UnitSize * 3, -UnitSize * 3, 0, UnitSize * 3, "z", true, nil, math.pi / 2, math.pi * 3 / 2);
+    --     painter:DrawRect(UnitSize * 3, 0, UnitSize * 3, self.height - 2 * UnitSize);
+    --     painter:DrawCircle(UnitSize * 6, -UnitSize * 3, 0, UnitSize * 3, "z", true, nil, math.pi * 3 / 2, math.pi * 5 / 2);
+    --     painter:Translate(0, -UnitSize);
+    -- end
+    painter:Translate(-self.left, -self.top);
 end
 
-function Value:UpdateLayout()
-    if (not self:GetInputBlock()) then return 9, self:GetLineHeightUnitCount() end
+function Value:UpdateWidthHeightUnitCount()
+    local widthUnitCount, heightUnitCount = Const.InputValueWidthUnitCount, self:GetLineHeightUnitCount() - 2;
 
-    local blockWidthUnitCount, blockHeightUnitCount = self:GetInputBlock():UpdateLayout();
+    if (self:GetInputBlock()) then 
+        widthUnitCount, heightUnitCount = self:GetInputBlock():UpdateWidthHeightUnitCount();
+        heightUnitCount = heightUnitCount - Const.BlockEdgeHeightUnitCount * 2;
+    end
 
-    return blockWidthUnitCount, blockHeightUnitCount;
+    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
+    
+    return widthUnitCount, heightUnitCount;
+end
+
+function Input:UpdateLeftTopUnitCount()
 end

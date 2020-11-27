@@ -14,7 +14,11 @@ local Const = NPL.export();
 
 Const.UnitSize = 4;                               -- 单元格大小
 Const.ConnectionRegionHeightUnitCount = 4;        -- 连接区域高度
-Const.ConnectionRegionWidthUnitCount = 12;        -- 连接区域宽度
+Const.ConnectionRegionWidthUnitCount = 16;        -- 连接区域宽度
 Const.ConnectionHeightUnitCount = 2;  -- 连接高度
+Const.BlockEdgeHeightUnitCount = 2;   -- 块边缘高度
+Const.BlockEdgeWidthUnitCount = 1;    -- 块边缘高度
 Const.LineHeightUnitCount = 8;        -- 每行内容高为8
 Const.SpaceUnitCount = 2;             -- 字段间间距
+
+Const.InputValueWidthUnitCount = 10;              -- 输入值宽度

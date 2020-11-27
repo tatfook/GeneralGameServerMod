@@ -52,23 +52,37 @@ function BlockInputField:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCo
     self.maxWidth, self.maxHeight = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
 end
 
-function BlockInputField:GetMaxWidthHeightUnitCount()
-    return self.maxHeightUnitCount, self.maxHeightUnitCount;
+
+function BlockInputField:UpdateWidthHeightUnitCount()
+    return 0, 0;
 end
 
 function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
+    if (self.widthUnitCount == widthUnitCount and self.heightUnitCount == heightUnitCount) then return end
+
     self.widthUnitCount, self.heightUnitCount = widthUnitCount, heightUnitCount;
     self.width, self.height = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
+
     self:OnSizeChange();
+end
+
+function BlockInputField:GetMaxWidthHeightUnitCount()
+    return self.maxHeightUnitCount, self.maxHeightUnitCount;
 end
 
 function BlockInputField:GetWidthHeightUnitCount()
     return self.widthUnitCount, self.heightUnitCount;
 end
 
+function BlockInputField:UpdateLeftTopUnitCount()
+end
+
 function BlockInputField:SetLeftTopUnitCount(leftUnitCount, topUnitCount)
+    if (self.leftUnitCount == leftUnitCount and self.topUnitCount == topUnitCount) then return end
+
     self.leftUnitCount, self.topUnitCount = leftUnitCount, topUnitCount;
     self.left, self.top = leftUnitCount * UnitSize, topUnitCount * UnitSize;
+    
     self:OnSizeChange();
 end
 
@@ -110,8 +124,19 @@ function BlockInputField:GetFont()
     return string.format("System;%s", self:GetFontSize());
 end
 
-function BlockInputField:Render()
+function BlockInputField:RenderContent(painter)
 end
+function BlockInputField:Render(painter)
+    painter:SetPen(self:GetBlock():GetColor());
+    painter:DrawRect(self.left, self.top, self.maxWidth, self.maxHeight);
+
+    local offsetX, offsetY = self.left + (self.maxWidth - self.width) / 2, self.top + (self.maxHeight - self.height) / 2;
+    painter:SetPen(self:GetColor());
+    painter:Translate(offsetX, offsetY);
+    self:RenderContent(painter);
+    painter:Translate(-offsetX, -offsetY);
+end
+
 
 function BlockInputField:UpdateLayout()
 end
@@ -142,14 +167,14 @@ function BlockInputField:GetNextBlock()
     return connection and connection:GetBlock();
 end
 
--- function BlockInputField:GetLastNextBlock()
---     local prevBlock, nextBlock = self, self:GetNextBlock();
---     while (nextBlock) do 
---         prevBlock = nextBlock;
---         nextBlock = prevBlock:GetNextBlock();
---     end
---     return prevBlock;
--- end
+function BlockInputField:GetLastNextBlock()
+    local prevBlock, nextBlock = self, self:GetNextBlock();
+    while (nextBlock) do 
+        prevBlock = nextBlock;
+        nextBlock = prevBlock:GetNextBlock();
+    end
+    return prevBlock;
+end
 
 function BlockInputField:GetTopBlock()
     local prevBlock, nextBlock = self:GetPrevBlock(), self;

@@ -37,12 +37,12 @@ function Connection:SetGeometry(left, top, width, height)
 end
 
 function Connection:IsIntersect(connection)
-    local offsetX1, offsetY1 = self:GetBlock():GetLeftTopUnitCount();
-    local offsetX2, offsetY2 = connection:GetBlock():GetLeftTopUnitCount();
-    return math.abs(offsetX1 + self.centerX - offsetX2 - connection.centerX) <= (self.halfWidth + connection.halfWidth) and math.abs(offsetY1 + self.centerY - offsetY2 - connection.centerY) <= (self.halfHeight + connection.halfHeight);
+    return math.abs(self.centerX - connection.centerX) <= (self.halfWidth + connection.halfWidth) and math.abs(self.centerY - connection.centerY) <= (self.halfHeight + connection.halfHeight);
 end
 
 function Connection:IsMatch(connection)
+    if (not connection) then return false end
+    if (self:GetType() ~= connection:GetType()) then return false end
     return self:IsIntersect(connection);
 end
 
@@ -52,15 +52,8 @@ end
 
 -- 连接
 function Connection:Connection(connection)
-    if (not connection or not self:IsMatch(connection)) then return false end
-
     self:SetConnection(connection);
-    connection:SetConnection(self);
-
-    -- 更新布局
-    self:GetBlock():GetTopBlock():UpdateLayout();
-
-    return true;
+    if (connection) then connection:SetConnection(self) end
 end
 
 -- 解除连接
@@ -68,9 +61,17 @@ function Connection:Disconnection()
     local connection = self:GetConnection();
     if (connection) then connection:SetConnection(nil) end
     self:SetConnection(nil)
+    return connection;
 end
 
-function Connection:Print()
+-- 获取连接块
+function Connection:GetConnectionBlock()
+    local connection = self:GetConnection();
+    return connection and connection:GetBlock();
+end
+
+function Connection:Debug()
     local offsetX, offsetY = self:GetBlock():GetLeftTopUnitCount();
+    ConnectionDebug.Format("connection = %s, block = %s, ConnectionConnection = %s", tostring(self), tostring(self:GetBlock()), tostring(self:GetConnection()));
     ConnectionDebug.Format("blockId = %s, offsetX = %s, offsetY = %s, left = %s, top = %s, width = %s, height = %s", self:GetBlock():GetId(), offsetX, offsetY, self.left, self.top, self.width, self.height);
 end

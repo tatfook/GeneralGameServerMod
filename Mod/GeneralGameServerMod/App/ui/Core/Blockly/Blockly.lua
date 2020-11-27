@@ -22,7 +22,6 @@ Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 
 function Blockly:ctor()
     local block1 = Block:new():Init(self, {
-        id = "1",
         message0 = "测试 %1 你好 %2",
         arg0 = {
             {
@@ -47,7 +46,6 @@ function Blockly:ctor()
         nextStatement = true,
     });
     local block2 = Block:new():Init(self, {
-        id = "2",
         message0 = "测试你好",
         arg0 = {
             {
@@ -68,8 +66,41 @@ function Blockly:ctor()
         previousStatement = true,
         nextStatement = true,
     });
+    local block3 = Block:new():Init(self, {
+        message0 = "值块",
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        output = true,
+    });
+    local block4 = Block:new():Init(self, {
+        message0 = "测试 %1 你好 %2",
+        arg0 = {
+            {
+                name = "x",
+                type = "field_input",
+                text = "输入框"
+            }, 
+            {
+                name = "x",
+                type = "input_value",
+                text = "输入框",
+                shadow = {
+                    type = "",
+                    value = "",
+                }
+            }
+        }, 
+        
+        color = StyleColor.ConvertTo16("rgb(37,175,244)"),
+        -- output = true,
+        previousStatement = true,
+        nextStatement = true,
+    });
+    block1:SetLeftTopUnitCount(5,5);
     block2:SetLeftTopUnitCount(20,20);
-    self.blocks = {block1, block2};
+    block3:SetLeftTopUnitCount(40, 40);
+    block4:SetLeftTopUnitCount(60, 40);
+    self.blocks = {block1, block2, block3, block4};
+    -- self.blocks = {block2};
     self.offsetX = 0;
     self.offsetY = 0;
 end
@@ -90,8 +121,12 @@ end
 -- 移除块
 function Blockly:AddBlock(block)
     local index = self:GetBlockIndex(block);
-    if (index) then return end
-    table.insert(self.blocks, block);
+    if (not index) then 
+        return table.insert(self.blocks, block);
+    end
+    
+    local tail = #self.blocks;
+    self.blocks[tail], self.blocks[index] = self.blocks[index], self.blocks[tail];  -- 放置尾部
 end
 
 -- 添加块
@@ -107,9 +142,8 @@ function Blockly:RenderContent(painter)
     painter:Translate(x, y);
 
     for _, block in ipairs(self.blocks) do
-        painter:Translate(block.left, block.top);
         block:Render(painter);
-        painter:Translate(-block.left, -block.top);
+        painter:Flush();
     end
 
     painter:Translate(-x, -y);

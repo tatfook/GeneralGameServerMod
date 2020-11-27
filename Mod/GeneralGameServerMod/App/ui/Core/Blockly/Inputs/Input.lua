@@ -9,6 +9,8 @@ local Input = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Inpu
 -------------------------------------------------------
 ]]
 local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
+local Connection = NPL.load("../Connection.lua", IsDevEnv);
+
 local Input = commonlib.inherit(BlockInputField, NPL.export());
 
 Input:Property("InputBlock");               -- 输入块
@@ -16,11 +18,16 @@ Input:Property("InputBlock");               -- 输入块
 function Input:ctor()
 end
 
-function Input:Init(block)
-    Input._super.Init(self, block);
+function Input:Init(block, opt)
+    Input._super.Init(self, block, opt);
     
+    self.inputConnection = Connection:new():Init(block);
+
     return self;
 end
 
-function Input:Render(painter)
+function Input:GetInputBlock()
+    return self.inputConnection:GetConnectionBlock();
 end
+
+

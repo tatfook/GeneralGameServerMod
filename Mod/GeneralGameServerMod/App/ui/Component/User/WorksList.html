@@ -134,14 +134,15 @@ end
 -- 点击打开世界
 function ClickOpenWorld(project)
     ui:CloseWindow();
-    local worldId, worldName = project.id, project.name;
+    GameLogic.RunCommand(string.format("/loadworld %d", project.id));    
+    <!-- local worldId, worldName = project.id, project.name;
     local WorldCommon = commonlib.gettable("MyCompany.Aries.Creator.WorldCommon")
     local info = string.format(L"即将离开【%s】进入【%s】", WorldCommon.GetWorldTag("name") or "", worldName);
     _guihelper.MessageBox(info, function(res)
         if(res and res == _guihelper.DialogResult.OK) then
             GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
         end
-    end, _guihelper.MessageBoxButtons.OKCancel);
+    end, _guihelper.MessageBoxButtons.OKCancel); -->
 end
 
 -- 点击分享世界

@@ -28,8 +28,10 @@ function Label:RenderContent(painter)
     painter:DrawText(0, (self.contentHeight - self.singleLineTextHeight) / 2, self:GetValue());
 end
 
-function Label:UpdateLayout()
+function Label:UpdateWidthHeightUnitCount()
     local width = _guihelper.GetTextWidth(self:GetValue() or "", self:GetFont());
     local widthUnitCount = math.ceil(width / self:GetUnitSize());
-    return widthUnitCount, self:GetDefaultHeightUnitCount();
+    local heightUnitCount = self:GetDefaultHeightUnitCount();
+    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
+    return widthUnitCount, heightUnitCount;
 end

@@ -48,8 +48,10 @@ function Input:RenderContent(painter)
     -- painter:DrawCircle(UnitSize * (4  + fieldWidthUnitCount), UnitSize * 4, 0, UnitSize * 4, "z", true, nil, math.pi * 3 / 2, math.pi * 5 / 2);
 end
 
-function Input:UpdateLayout()
+function Input:UpdateWidthHeightUnitCount()
     local width = _guihelper.GetTextWidth(self:GetValue() or "", self:GetFont());
     local widthUnitCount = math.max(6, math.ceil(width / self:GetUnitSize())) + 2;
-    return widthUnitCount, self:GetDefaultHeightUnitCount();
+    local heightUnitCount = self:GetDefaultHeightUnitCount();
+    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
+    return widthUnitCount, heightUnitCount;
 end

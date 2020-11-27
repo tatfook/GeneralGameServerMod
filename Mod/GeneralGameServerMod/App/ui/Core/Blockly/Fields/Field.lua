@@ -39,13 +39,17 @@ function Field:RenderContent()
 end
 
 function Field:Render(painter)
+    painter:Translate(self.left, self.top);
+
     painter:SetPen(self:GetBlock():GetColor());
     painter:DrawRect(0, 0, self.width, self.height);
 
-    local offsetY = (self.heightUnitCount - self:GetDefaultHeightUnitCount()) / 2 * self:GetUnitSize();
+    local offsetY = (self.maxHeightUnitCount - self:GetDefaultHeightUnitCount()) / 2 * self:GetUnitSize();
     painter:Translate(0, offsetY);
     self:RenderContent(painter);
     painter:Translate(0, -offsetY);
+   
+    painter:Translate(-self.left, -self.top);
 end
 
 
