@@ -21,18 +21,20 @@ Input:Property("BackgroundColor", "#ffffff");
 Input:Property("Value", "");
 Input:Property("Text", "");
 Input:Property("Type", "text");
+
 -- Input:Property("")
 
 local UnitSize = Const.UnitSize;
 
 function Input:Init(block, opt)
-    Input._super.Init(self, block);
+    Input._super.Init(self, block, opt);
 
     local value = "";
     if (type(opt.text) == "function") then value = opt.text() 
     elseif (type(opt.text) == "string") then value = opt.text 
     else  end
 
+    self:SetType(opt.type == "field_number" and "number" or "text");
     self:SetValue(value);
     self:SetText(value);
 
@@ -45,8 +47,8 @@ function Input:RenderContent(painter)
     -- background
     painter:SetPen(self:GetBackgroundColor());
     Shape:DrawLeftEdge(painter, self.heightUnitCount);
-    painter:DrawRect(Const.BlockEdgeWidthUnitCount * UnitSize, 0, self.width - Const.BlockEdgeWidthUnitCount * 2 * UnitSize, self.height);
     Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
+    painter:DrawRect(Const.BlockEdgeWidthUnitCount * UnitSize, 0, self.width - Const.BlockEdgeWidthUnitCount * 2 * UnitSize, self.height);
 
     -- input
     painter:SetPen(self:GetColor());
@@ -55,7 +57,7 @@ function Input:RenderContent(painter)
 end
 
 function Input:UpdateWidthHeightUnitCount()
-    local widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetText()), 4) + Const.BlockEdgeWidthUnitCount * 2, self:GetLineHeightUnitCount() - Const.BlockEdgeHeightUnitCount * 2;
+    local widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetText()), 4) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
     return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), heightUnitCount;
 end
 
@@ -69,6 +71,7 @@ function Input:GetFieldEditElement(parentElement)
         },
     }, parentElement:GetWindow(), parentElement);
 
+    InputFieldEditElement:SetAttrValue("type", self:GetType());
     InputFieldEditElement:SetAttrValue("onkeydown.enter", function()
         local value = InputFieldEditElement:GetValue();
         self:SetValue(value);

@@ -47,7 +47,11 @@ function Layout:PrepareLayout()
 		-- 	parentWidth, parentHeight = parentLayout:GetContentWidthHeight();
 		-- end
 		-- 百分比统一使用内容宽高
-		parentWidth, parentHeight = parentLayout:GetContentWidthHeight();
+		if (self:IsPositionElement()) then
+			parentWidth, parentHeight = parentLayout:GetWidthHeight();
+		else
+			parentWidth, parentHeight = parentLayout:GetContentWidthHeight();
+		end
 
 		if (not parentLayout:IsFixedSize()) then
 			parentWidth = parentLayout:IsFixedWidth() and parentWidth or nil;

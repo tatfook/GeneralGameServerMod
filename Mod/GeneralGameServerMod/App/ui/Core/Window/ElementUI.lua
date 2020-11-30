@@ -458,8 +458,6 @@ function ElementUI:OnChange(value)
 end
 
 function ElementUI:OnMouseDown(event)
-    self:OnClick(event);
-
     local mousedown = self:GetAttrFunctionValue("onmousedown");
     if (mousedown) then mousedown(event) end
 
@@ -505,6 +503,7 @@ function ElementUI:OnMouseMove(event)
 end
 
 function ElementUI:OnMouseUp(event)
+    self:OnClick(event);
     if(event:isAccepted()) then return end
 	if(self.isDragging) then
         self.isDragging = false;

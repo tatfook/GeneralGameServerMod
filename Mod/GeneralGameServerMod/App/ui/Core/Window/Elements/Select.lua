@@ -63,8 +63,19 @@ function Option:RenderContent(painter)
     painter:DrawText(x, y + (lineHeight - fontSize) / 2 - fontSize / 6, text);
 end
 
-function Option:OnClick()
+function Option:OnClick(event)
+    event:accept();
     self:GetSelectElement():OnSelect(self);
+end
+
+function Option:OnMouseDown(event)
+    Option._super.OnMouseDown(self, event);
+    event:accept();
+end
+
+function Option:OnMouseUp(event)
+    Option._super.OnMouseUp(self, event);
+    event:accept();
 end
 
 local Select = commonlib.inherit(Element, NPL.export());
@@ -140,7 +151,7 @@ function Select:OnOptionsAttrValueChange(attrValue)
     for _, option in ipairs(attrValue) do
         if (type(option) == "string") then option = {label = option, value = option} end
         if (type(option) == "table") then
-            local childElement = Option:new():Init({name = "option", attr = {label = option.label or option.value, value = option.value or option.label}}, self:GetWindow(), ListBox);
+            local childElement = Option:new():Init({name = "option", attr = {label = option[1] or option.label or option.value, value = option[2] or option[1] or option.value or option.label}}, self:GetWindow(), ListBox);
             childElement:SetSelectElement(self);
             ListBox:InsertChildElement(childElement);
             if (childElement:GetValue() == value) then
@@ -164,6 +175,7 @@ function Select:OnSelect(option)
     self:SetSelectedOptionElement(option);
     local value = option and option:GetValue();
     local label = option and option:GetLabel();
+    self:OnFocusOut();
     self:CallAttrFunction("onselect", nil, value, label);
 end
 

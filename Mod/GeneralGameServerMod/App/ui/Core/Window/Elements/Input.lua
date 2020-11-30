@@ -16,9 +16,7 @@ local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
 local Point = commonlib.gettable("mathlib.Point");
 
 local Element = NPL.load("../Element.lua", IsDevEnv);
-
 local Input = commonlib.inherit(Element, NPL.export());
-
 local InputDebug = GGS.Debug.GetModuleDebug("InputDebug").Disable(); --Enable  Disable
 local CursorShowHideMaxTickCount = 30;
 
@@ -254,7 +252,18 @@ function Input:OnKey(event)
     self:InsertTextCmd(commitString, self.cursorAt);
 end
 
+-- 检测输入是否合法
+function Input:CheckInputText(text)
+    local inputType = self:GetAttrStringValue("type", "text");
+    if (inputType == "number") then
+        return string.match(text, "^[%d%.]*$");
+    end
+    return true;
+end
+
 function Input:InsertTextCmd(text, startAt)
+    if (not self:CheckInputText(text)) then return end
+    
     -- 先删除已选择的文本
     if (self:IsSelected()) then self:DeleteSelected() end
 

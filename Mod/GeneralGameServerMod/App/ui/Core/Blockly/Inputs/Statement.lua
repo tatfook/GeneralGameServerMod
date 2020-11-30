@@ -36,7 +36,8 @@ function Statement:Init(block)
 end
 
 function Statement:Render(painter)
-    painter:SetPen(self:GetColor() or self:GetBlock():GetColor());
+    Shape:SetBrush(self:GetBlock():GetColor());
+    painter:SetPen(self:GetBlock():GetColor());
     painter:DrawRect(self.left, self.top, self.width, self.height);
 
     painter:Translate(self.left + self.width, self.top);
@@ -49,8 +50,8 @@ function Statement:Render(painter)
     painter:Translate(0, -(self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
     painter:Translate(-(self.left + self.width), -self.top);
 
-    painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * UnitSize - UnitSize, UnitSize, UnitSize);
-    painter:DrawRect(self.left + self.width, self.top + self.height - Const.ConnectionHeightUnitCount * UnitSize, UnitSize, UnitSize);
+    -- painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * UnitSize - UnitSize, UnitSize, UnitSize);
+    -- painter:DrawRect(self.left + self.width, self.top + self.height - Const.ConnectionHeightUnitCount * UnitSize, UnitSize, UnitSize);
     local inputBlock = self:GetInputBlock();
     if (not inputBlock) then return end
     painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * UnitSize, UnitSize, UnitSize);

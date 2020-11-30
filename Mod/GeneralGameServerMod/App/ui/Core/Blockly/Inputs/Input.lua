@@ -30,4 +30,12 @@ function Input:GetInputBlock()
     return self.inputConnection:GetConnectionBlock();
 end
 
+function Input:IsInput()
+    return true;
+end
 
+function Input:GetInputCode()
+    if (not self:GetInputBlock()) then return nil end
+
+    return self:GetInputBlock():GetBlockCode(self:GetBlock():GetLanguage());
+end

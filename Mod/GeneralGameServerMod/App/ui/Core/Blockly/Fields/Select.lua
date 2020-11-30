@@ -25,8 +25,11 @@ function Input:GetFieldEditElement(parentElement)
         },
     }, parentElement:GetWindow(), parentElement);
 
+    local option = self:GetOption();
+    local options = type(option.options) == "table" and option.options or {};
+    if (type(option.options) == "function") then options = option.options() end
     SelectFieldEditElement:SetAttrValue("value", self:GetValue());
-    SelectFieldEditElement:SetAttrValue("options", {"选项1", "选项2", "选项3"});
+    SelectFieldEditElement:SetAttrValue("options", options);
     SelectFieldEditElement:SetAttrValue("onselect", function(value, label)
         self:SetValue(value);
         self:SetText(label);

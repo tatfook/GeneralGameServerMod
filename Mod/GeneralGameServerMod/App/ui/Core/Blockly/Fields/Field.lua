@@ -61,3 +61,11 @@ end
 function Field:OnFocusOut()
     self:EndEdit();
 end
+
+function Field:IsField()
+    return true;
+end
+
+function Field:GetFieldValue()
+    return self:GetValue();
+end

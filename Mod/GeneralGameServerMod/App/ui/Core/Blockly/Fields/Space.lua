@@ -14,5 +14,5 @@ local Field = NPL.load("./Field.lua", IsDevEnv);
 local Space = commonlib.inherit(Field, NPL.export());
 
 function Space:UpdateWidthHeightUnitCount()
-    return Const.FieldSpaceWidthUnitCount, Const.LineHeightUnitCount;
+    return Const.FieldSpaceWidthUnitCount, 0;
 end

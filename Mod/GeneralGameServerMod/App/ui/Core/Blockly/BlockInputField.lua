@@ -14,10 +14,11 @@ local BlockInputField = commonlib.inherit(commonlib.gettable("System.Core.ToolBa
 
 local UnitSize = Const.UnitSize;
 
-BlockInputField:Property("Name", "BlockInputField");
+BlockInputField:Property("ClassName", "BlockInputField");
+BlockInputField:Property("Name");
 BlockInputField:Property("Block");
 BlockInputField:Property("Option");
-BlockInputField:Property("Color");                    -- 颜色
+BlockInputField:Property("Color", "#ffffff");                    -- 颜色
 
 function BlockInputField:ctor()
     self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount = 0, 0, 0, 0;
@@ -31,6 +32,7 @@ function BlockInputField:Init(block, option)
 
     self:SetBlock(block);
     self:SetOption(option or {});
+    self:SetName(option.name);
 
     -- 解析颜色值
     self:SetColor(option.color);
@@ -38,10 +40,21 @@ function BlockInputField:Init(block, option)
     return self;
 end
 
+function BlockInputField:IsField()
+    return false;
+end
+
+function BlockInputField:IsInput()
+    return false;
+end
+
+function BlockInputField:IsBlock()
+    return false;
+end
+
 function BlockInputField:SetTotalWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     self.totalWidthUnitCount, self.totalHeightUnitCount = widthUnitCount, heightUnitCount;
     self.totalWidth, self.totalHeight = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
-
 end
 
 function BlockInputField:GetTotalWidthHeightUnitCount()
@@ -58,6 +71,7 @@ function BlockInputField:UpdateWidthHeightUnitCount()
 end
 
 function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
+    widthUnitCount, heightUnitCount = widthUnitCount or self.widthUnitCount, heightUnitCount or self.heightUnitCount;
     if (self.widthUnitCount == widthUnitCount and self.heightUnitCount == heightUnitCount) then return end
 
     self.widthUnitCount, self.heightUnitCount = widthUnitCount, heightUnitCount;
@@ -100,12 +114,12 @@ end
 function BlockInputField:OnSizeChange()
 end
 
-function BlockInputField:GetSingleLineTextHeight()
-    return self:GetFontSize() * 6 / 5;
-end
-
 function BlockInputField:GetTextWidthUnitCount(text)
     return math.ceil(_guihelper.GetTextWidth(text or "", self:GetFont()) / self:GetUnitSize())
+end
+
+function BlockInputField:GetTextHeightUnitCount()
+    return math.ceil(self:GetFontSize() / Const.UnitSize);
 end
 
 function BlockInputField:GetLineHeightUnitCount()
@@ -117,7 +131,12 @@ function BlockInputField:GetUnitSize()
 end
 
 function BlockInputField:GetFontSize()
-    return (self:GetLineHeightUnitCount() - 4) * self:GetUnitSize();
+    -- return (self:GetLineHeightUnitCount() - 4) * self:GetUnitSize();
+    return math.floor(Const.LineHeightUnitCount * Const.UnitSize * 3 / 5);
+end
+
+function BlockInputField:GetSingleLineTextHeight()
+    return math.floor(self:GetFontSize() * 6 / 5);
 end
 
 function BlockInputField:GetFont()
@@ -125,6 +144,10 @@ function BlockInputField:GetFont()
 end
 
 function BlockInputField:RenderContent(painter)
+end
+
+function BlockInputField:GetOffset()
+    return self.left + (self.maxWidth - self.width) / 2, self.top + (self.maxHeight - self.height) / 2;
 end
 
 function BlockInputField:Render(painter)

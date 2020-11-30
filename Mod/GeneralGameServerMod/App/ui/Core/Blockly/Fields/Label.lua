@@ -30,5 +30,5 @@ function Label:RenderContent(painter)
 end
 
 function Label:UpdateWidthHeightUnitCount()
-    return self:GetTextWidthUnitCount(self:GetValue()), self:GetLineHeightUnitCount();
+    return self:GetTextWidthUnitCount(self:GetValue()), self:GetTextHeightUnitCount();
 end

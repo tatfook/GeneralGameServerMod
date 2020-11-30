@@ -33,18 +33,15 @@ end
 
 
 function Value:Render(painter)
-    painter:SetPen(self:GetBlock():GetColor());
-    painter:DrawRect(self.left, self.top, self.maxWidth, self.maxHeight);
-
     local inputBlock = self:GetInputBlock();
     if (inputBlock) then return inputBlock:Render(painter) end
 
-    painter:Translate(self.left, self.top + Const.BlockEdgeHeightUnitCount * UnitSize);
-    painter:SetPen("#fffffff0");
+    local offsetX, offsetY = self:GetOffset();
+    painter:Translate(offsetX, offsetY);
     Shape:DrawLeftEdge(painter, self.heightUnitCount);
-    painter:DrawRect(Const.BlockEdgeWidthUnitCount * UnitSize, 0, self.width - Const.BlockEdgeWidthUnitCount * 2 * UnitSize, self.height);
     Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
-    painter:Translate(-self.left, -self.top - Const.BlockEdgeHeightUnitCount * UnitSize);
+    painter:DrawRect(Const.BlockEdgeWidthUnitCount * UnitSize, 0, self.width - Const.BlockEdgeWidthUnitCount * 2 * UnitSize, self.height);
+    painter:Translate(-offsetX, -offsetY);
 end
 
 function Value:OnSizeChange()
@@ -56,7 +53,7 @@ end
 function Value:UpdateWidthHeightUnitCount()
     local inputBlock = self:GetInputBlock();
 
-    if (not inputBlock) then return Const.InputValueWidthUnitCount, self:GetLineHeightUnitCount() - Const.BlockEdgeHeightUnitCount * 2 end
+    if (not inputBlock) then return Const.InputValueWidthUnitCount, Const.LineHeightUnitCount end
     return inputBlock:UpdateWidthHeightUnitCount();
 end
 
@@ -86,5 +83,7 @@ end
 
 function Value:GetMouseUI(x, y)
     if (x < self.left or x > (self.left + self.width) or y < self.top or y > (self.top + self.height)) then return end
-    return self:GetInputBlock() or self;
+    local inputBlock = self:GetInputBlock();
+    if (inputBlock) then return inputBlock:GetMouseUI(x, y) end
+    return self;
 end

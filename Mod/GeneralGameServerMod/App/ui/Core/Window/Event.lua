@@ -10,9 +10,10 @@ local Event = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Event.lua");
 ]]
 
 NPL.load("(gl)script/ide/System/Windows/MouseEvent.lua");
+local Event = NPL.export();
 
+local MouseDownElement = nil;
 local MouseEvent = commonlib.inherit(commonlib.gettable("System.Windows.MouseEvent"), {});
-
 function MouseEvent:init(event_type, window)
 	MouseEvent._super.init(self, event_type);
 
@@ -25,6 +26,5 @@ function MouseEvent:init(event_type, window)
 	return self;
 end
 
-local Event = NPL.export();
 
 Event.MouseEvent = MouseEvent;

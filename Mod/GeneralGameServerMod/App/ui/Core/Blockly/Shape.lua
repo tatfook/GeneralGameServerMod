@@ -10,13 +10,18 @@ local Shape = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Shape.lua")
 ]]
 
 local Const = NPL.load("./Const.lua", IsDevEnv);
-local Shape = NPL.export();
+local Shape = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local Triangle = {{0,0,0}, {0,0,0}, {0,0,0}};       -- 三角形
 local UnitSize = Const.UnitSize;
 
+Shape:Property("Pen", "#000000");              -- 画笔
+Shape:Property("Brush", "#ffffff");            -- 画刷
+
 -- 绘制上边缘
 function Shape:DrawUpEdge(painter, widthUnitCount, fillHeightUnitCount, offsetXUnitCount, offsetYUnitCount)
+    painter:SetPen(self:GetBrush());
+
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
 
@@ -31,6 +36,8 @@ end
 
 -- 绘制下边缘
 function Shape:DrawDownEdge(painter, widthUnitCount, fillHeightUnitCount, offsetXUnitCount, offsetYUnitCount)
+    painter:SetPen(self:GetBrush());
+    
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
 
@@ -49,6 +56,8 @@ end
 
 -- 绘制左边缘
 function Shape:DrawLeftEdge(painter, heightUnitCount, fillWidthUnitCount, offsetXUnitCount, offsetYUnitCount)
+    painter:SetPen(self:GetBrush());
+    
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
 
@@ -64,6 +73,8 @@ end
 
 -- 绘制右边缘
 function Shape:DrawRightEdge(painter, heightUnitCount, fillWidthUnitCount, offsetXUnitCount, offsetYUnitCount)
+    painter:SetPen(self:GetBrush());
+    
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
 
@@ -82,22 +93,28 @@ end
 
 -- 绘制上边及凹陷部分 占据高度 2 * UnitSize
 function Shape:DrawPrevConnection(painter, widthUnitCount, offsetXUnitCount, offsetYUnitCount)
+    painter:SetPen(self:GetBrush());
+    
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
 
+    local ConnectionSize = Const.ConnectionHeightUnitCount;
     painter:DrawCircle(UnitSize, -UnitSize, 0, UnitSize, "z", true, nil, math.pi / 2, math.pi);
     painter:DrawRect(UnitSize, 0, UnitSize * 3, UnitSize);
-    painter:DrawRect(0, UnitSize, UnitSize * 4, UnitSize);
+    painter:DrawRect(0, UnitSize, UnitSize * 4, UnitSize * (ConnectionSize - 1));
     painter:Translate(UnitSize * 4, 0);
-    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, 0, -UnitSize * 2, UnitSize * 2, -UnitSize * 2;
+
+    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, 0, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, -UnitSize * ConnectionSize;
     painter:DrawTriangleList(Triangle);
-    painter:Translate(UnitSize * 6, 0);
-    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, -UnitSize * 2, UnitSize * 2, -UnitSize * 2, UnitSize * 2, 0;
+    
+    painter:Translate(UnitSize * (4 + ConnectionSize), 0);
+    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, 0;
     painter:DrawTriangleList(Triangle);
-    painter:Translate(UnitSize * 2, 0);
-    local remainSize = widthUnitCount - 13;
+    painter:Translate(UnitSize * ConnectionSize, 0);
+    
+    local remainSize = widthUnitCount - 9 - ConnectionSize * 2;
     painter:DrawRect(0, 0, UnitSize * remainSize, UnitSize);
-    painter:DrawRect(0, UnitSize, UnitSize * (remainSize + 1), UnitSize);
+    painter:DrawRect(0, UnitSize, UnitSize * (remainSize + 1), UnitSize * (ConnectionSize - 1));
     painter:Translate(UnitSize * remainSize, 0);
     painter:DrawCircle(0, -UnitSize, 0, UnitSize, "z", true, nil, 0, math.pi / 2);
     painter:Translate(-(widthUnitCount - 1) * UnitSize, 0);
@@ -106,25 +123,32 @@ function Shape:DrawPrevConnection(painter, widthUnitCount, offsetXUnitCount, off
 end
 
 -- 绘制下边及突出部分 占据高度 4 * UnitSize
-function Shape:DrawNextConnection(painter, widthUnitCount, offsetXUnitCount, offsetYUnitCount)
+function Shape:DrawNextConnection(painter, widthUnitCount, offsetXUnitCount, offsetYUnitCount, isDrawDownEdge)
+    painter:SetPen(self:GetBrush());
+    
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
 
+    local ConnectionSize = Const.ConnectionHeightUnitCount;
     -- 绘制下边缘
-    self:DrawDownEdge(painter, widthUnitCount, Const.ConnectionHeightUnitCount - Const.BlockEdgeHeightUnitCount);
-    painter:Translate(0, Const.ConnectionHeightUnitCount * UnitSize);
-
+    -- if (isDrawDownEdge) then
+        self:DrawDownEdge(painter, widthUnitCount, ConnectionSize - Const.BlockEdgeHeightUnitCount);
+        painter:Translate(0, ConnectionSize * UnitSize);
+    -- end
+    
     -- 下边突出部分
     painter:Translate(4 * UnitSize, 0);
-    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, UnitSize * 2, -UnitSize * 2, UnitSize * 2, 0;
+    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, UnitSize * ConnectionSize, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, 0;
     painter:DrawTriangleList(Triangle);
-    painter:Translate(2 * UnitSize, 0);
-    painter:DrawRect(0, 0, UnitSize * 4, UnitSize * 2);
+    painter:Translate(ConnectionSize * UnitSize, 0);
+    painter:DrawRect(0, 0, UnitSize * 4, UnitSize * ConnectionSize);
     painter:Translate(4 * UnitSize, 0);
-    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, 0, -UnitSize * 2, UnitSize * 2, 0;
+    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, 0, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, 0;
     painter:DrawTriangleList(Triangle);
-    painter:Translate(-10 * UnitSize,  0);
-    
-    painter:Translate(0, -Const.ConnectionHeightUnitCount * UnitSize);
+    painter:Translate(-(8 + ConnectionSize) * UnitSize,  0);
+
+    -- if (isDrawDownEdge) then
+        painter:Translate(0, -ConnectionSize * UnitSize);
+    -- end
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end

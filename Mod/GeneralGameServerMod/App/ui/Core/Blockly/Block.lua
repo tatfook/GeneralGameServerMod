@@ -16,7 +16,7 @@ local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local Input = NPL.load("./Inputs/Input.lua", IsDevEnv);
 local Connection = NPL.load("./Connection.lua", IsDevEnv);
 local BlockInputField = NPL.load("./BlockInputField.lua", IsDevEnv);
-
+local InputFieldContainer = NPL.load("./InputFieldContainer.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
@@ -33,13 +33,13 @@ local UnitSize = Const.UnitSize;
 Block:Property("Blockly");
 Block:Property("Id");
 Block:Property("Name", "Block");
+Block:Property("Language");
 
 function Block:ctor()
     self:SetId(nextBlockId);
     nextBlockId = nextBlockId + 1;
 
-    self.inputAndFields = {};                       -- 块内输入
-    self.totalMaxWidthUnitCount, self.totalMaxHeightUnitCount = 0, 0;
+    self.inputFieldContainerList = {};           -- 输入字段容器列表
 end
 
 function Block:Init(blockly, opt)
@@ -61,13 +61,18 @@ function Block:Init(blockly, opt)
 end
 
 function Block:ParseMessageAndArg(opt)
-    local index = 0;
+    local index, inputFieldContainerIndex = 0, 1;
     local messageIndex, argIndex = "message" .. tostring(index), "arg" .. tostring(index);
     local message, arg = opt[messageIndex], opt[argIndex];
+    local function GetInputFieldContainer(isFillFieldSpace)
+        local inputFieldContainer = self.inputFieldContainerList[inputFieldContainerIndex] or InputFieldContainer:new():Init(self, isFillFieldSpace);
+        self.inputFieldContainerList[inputFieldContainerIndex] = inputFieldContainer;
+        return inputFieldContainer;
+    end
     while (message) do
         local startPos, len = 1, string.len(message);
-        table.insert(self.inputAndFields, FieldSpace:new():Init(self));     -- 起始加空白
         while(startPos <= len) do
+            local inputFieldContainer = GetInputFieldContainer(true);
             local pos = string.find(message, "%%", startPos);
             if (not pos) then pos = len + 1 end
             local nostr = string.match(message, "%%(%d+)", startPos) or "";
@@ -76,26 +81,26 @@ function Block:ParseMessageAndArg(opt)
             local textlen = string.len(text);
             text = string.gsub(string.gsub(text, "^%s*", ""), "%s*$", "");
              -- 添加FieldLabel
-            if (text ~= "") then
-                table.insert(self.inputAndFields, FieldLabel:new():Init(self, text));
-                table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
+            if (text ~= "") then 
+                inputFieldContainer:AddInputField(FieldLabel:new():Init(self, text), true);
             end
             if (no and arg and arg[no]) then
                 -- 添加InputAndField
                 local inputField = arg[no];
                 if (inputField.type == "field_input" or inputField.type == "field_number") then
-                    table.insert(self.inputAndFields, FieldInput:new():Init(self, inputField));
-                    table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
-                elseif (inputField.type == "field_select") then
-                    table.insert(self.inputAndFields, FieldSelect:new():Init(self, inputField));
-                    table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
+                    inputFieldContainer:AddInputField(FieldInput:new():Init(self, inputField), true);
+                elseif (inputField.type == "field_select" or inputField.type == "field_dropdown") then
+                    inputFieldContainer:AddInputField(FieldSelect:new():Init(self, inputField), true);
                 elseif (inputField.type == "input_dummy") then
-                    table.insert(self.inputAndFields, InputDummy:new():Init(self, inputField));
+                    inputFieldContainer:AddInputField(InputDummy:new():Init(self, inputField));
                 elseif (inputField.type == "input_value") then
-                    table.insert(self.inputAndFields, InputValue:new():Init(self, inputField));
-                    table.insert(self.inputAndFields, FieldSpace:new():Init(self));    -- 加空白
+                    inputFieldContainer:AddInputField(InputValue:new():Init(self, inputField), true);
                 elseif (inputField.type == "input_statement") then
-                    table.insert(self.inputAndFields, InputStatement:new():Init(self, inputField));
+                    inputFieldContainerIndex = inputFieldContainerIndex + 1;
+                    inputFieldContainer = GetInputFieldContainer();
+                    inputFieldContainer:AddInputField(InputStatement:new():Init(self, inputField));
+                    inputFieldContainer:SetInputStatementContainer(true);
+                    inputFieldContainerIndex = inputFieldContainerIndex + 1;
                 end
             end
             startPos = pos + 1 + nolen;
@@ -137,10 +142,13 @@ end
 
 function Block:Render(painter)
     -- 绘制凹陷部分
-    painter:SetPen(self:GetColor());
+    Shape:SetBrush(self:GetColor());
+    -- painter:SetPen(self:GetColor());
     painter:Translate(self.left, self.top);
     -- 绘制左右边缘
     if (self:IsOutput()) then
+        Shape:DrawUpEdge(painter, self.widthUnitCount);
+        Shape:DrawDownEdge(painter, self.widthUnitCount, 0, 0, self.heightUnitCount - Const.BlockEdgeHeightUnitCount);
         Shape:DrawLeftEdge(painter, self.heightUnitCount);
         Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
     end
@@ -152,8 +160,8 @@ function Block:Render(painter)
     painter:Translate(-self.left, -self.top);
 
     -- 绘制输入字段
-    for _, inputAndField in ipairs(self.inputAndFields) do
-        inputAndField:Render(painter);
+    for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        inputFieldContainer:Render(painter);
     end
 
     local nextBlock = self:GetNextBlock();
@@ -161,84 +169,62 @@ function Block:Render(painter)
 end
 
 function Block:UpdateWidthHeightUnitCount()
-    local curMaxWidthUnitCount, curMaxHeightUnitCount = 0, 0;           -- 当前行的最大宽高
-    local maxWidthUnitCount, maxHeightUnitCount = 0, 0;                 -- 方块宽高
-    local totalMaxWidthUnitCount, totalMaxHeightUnitCount = 0, 0;       -- 方块及连接块的最大宽高  
-    local inputAndFieldCount = #(self.inputAndFields);
-    for i = 1, inputAndFieldCount do
-        local inputAndField = self.inputAndFields[i];
-        if (inputAndField:isa(InputStatement)) then   -- 语句块新起一行
-            maxHeightUnitCount = maxHeightUnitCount + curMaxHeightUnitCount
+    local widthUnitCount, heightUnitCount = 0, 0;                 -- 方块宽高
+    for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        local inputFieldContainerTotalWidthUnitCount, inputFieldContainerTotalHeightUnitCount = inputFieldContainer:UpdateWidthHeightUnitCount();
+        if (not inputFieldContainer:IsInputStatementContainer()) then
+            widthUnitCount = math.max(widthUnitCount, inputFieldContainerTotalWidthUnitCount);
         end
-        local widthUnitCount, heightUnitCount, inputfieldWidthUnitCount, inputfieldHeightUnitCount = inputAndField:UpdateWidthHeightUnitCount();
-        inputAndField:SetWidthHeightUnitCount(inputfieldWidthUnitCount or widthUnitCount, inputfieldHeightUnitCount or heightUnitCount);
-        inputAndField:SetMaxWidthHeightUnitCount(nil, math.max(heightUnitCount, Const.LineHeightUnitCount));
-        if (inputAndField:isa(InputStatement)) then
-            maxHeightUnitCount = maxHeightUnitCount + heightUnitCount;
-            curMaxWidthUnitCount, curMaxHeightUnitCount = 0, 0;
-            -- 语句块宽短统计到最大宽度中
-            totalMaxWidthUnitCount = math.max(totalMaxWidthUnitCount, widthUnitCount);
-        else
-            curMaxWidthUnitCount = curMaxWidthUnitCount + widthUnitCount;
-            maxWidthUnitCount = math.max(maxWidthUnitCount, curMaxWidthUnitCount);
-            if (heightUnitCount > curMaxHeightUnitCount) then
-                curMaxHeightUnitCount = math.max(heightUnitCount, Const.LineHeightUnitCount);
-                for j = i - 1, 1, -1 do
-                    local lastInputAndField = self.inputAndFields[j];
-                    if (lastInputAndField:isa(InputStatement)) then break end
-                    lastInputAndField:SetMaxWidthHeightUnitCount(nil, curMaxHeightUnitCount);
-                end
-            end
-            if (i == inputAndFieldCount) then maxHeightUnitCount = maxHeightUnitCount + curMaxHeightUnitCount end 
+        heightUnitCount = heightUnitCount + inputFieldContainerTotalHeightUnitCount;
+    end
+    
+    widthUnitCount = math.max(widthUnitCount, Const.ConnectionRegionWidthUnitCount);
+    
+    for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        if (not inputFieldContainer:IsInputStatementContainer()) then
+            inputFieldContainer:SetWidthHeightUnitCount(widthUnitCount, nil);
         end
-
-        totalMaxWidthUnitCount = math.max(totalMaxWidthUnitCount, maxWidthUnitCount);
-        totalMaxHeightUnitCount = math.max(totalMaxHeightUnitCount, maxHeightUnitCount);
     end
 
-    if (self:IsOutput()) then maxWidthUnitCount = maxWidthUnitCount + Const.BlockEdgeWidthUnitCount * 2 end
-    if (self:IsStatement()) then maxHeightUnitCount = maxHeightUnitCount + Const.ConnectionHeightUnitCount * 2 end
-    self:SetWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
-    -- BlockDebug.Format("widthUnitCount = %s, heightUnitCount = %s", maxWidthUnitCount, maxHeightUnitCount);
-    totalMaxWidthUnitCount = math.max(totalMaxWidthUnitCount, maxWidthUnitCount);
-    totalMaxHeightUnitCount = math.max(totalMaxHeightUnitCount, maxHeightUnitCount);
-    self:SetMaxWidthHeightUnitCount(totalMaxWidthUnitCount, totalMaxHeightUnitCount);
-    -- BlockDebug.Format("maxWidthUnitCount = %s, maxHeightUnitCount = %s", totalMaxWidthUnitCount, totalMaxHeightUnitCount);
+    if (self:IsOutput()) then 
+        widthUnitCount = widthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
+        heightUnitCount = heightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
+    end
+
+    if (self:IsStatement()) then 
+        heightUnitCount = heightUnitCount + Const.ConnectionHeightUnitCount * 2;
+    end
+
+    self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
+    self:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount);
+    BlockDebug.Format("widthUnitCount = %s, heightUnitCount = %s", widthUnitCount, heightUnitCount);
     
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then 
-        local nextTotalMaxWidthUnitCount, nextTotalMaxHeightUnitCount = nextBlock:UpdateWidthHeightUnitCount();
-        totalMaxWidthUnitCount = math.max(totalMaxWidthUnitCount, nextTotalMaxWidthUnitCount);
-        totalMaxHeightUnitCount = totalMaxHeightUnitCount + nextTotalMaxHeightUnitCount;
+        local nextBlockTotalWidthUnitCount, nextBlockTotalHeightUnitCount = nextBlock:UpdateWidthHeightUnitCount();
+        widthUnitCount = math.max(widthUnitCount, nextBlockTotalWidthUnitCount);
+        heightUnitCount = heightUnitCount + nextBlockTotalHeightUnitCount;
     end
 
-    self:SetTotalWidthHeightUnitCount(totalMaxWidthUnitCount, totalMaxHeightUnitCount);
-    return totalMaxWidthUnitCount, totalMaxHeightUnitCount;
+    self:SetTotalWidthHeightUnitCount(widthUnitCount, heightUnitCount);
+    return widthUnitCount, heightUnitCount;
 end
 
 -- 更新左上位置
 function Block:UpdateLeftTopUnitCount()
     local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
-    local offsetX, offsetY = leftUnitCount + (self:IsOutput() and Const.BlockEdgeWidthUnitCount or 0), topUnitCount + (self:IsStatement() and Const.ConnectionHeightUnitCount or 0);
-    local curMaxHeightUnitCount = 0;
-    for _, inputAndField in ipairs(self.inputAndFields) do
-        local widthUnitCount, heightUnitCount = inputAndField:GetWidthHeightUnitCount();
-        if (inputAndField:isa(InputStatement)) then   -- 语句块新起一行
-            offsetX, offsetY = leftUnitCount + (self:IsOutput() and Const.BlockEdgeWidthUnitCount or 0), offsetY + curMaxHeightUnitCount;
-            inputAndField:SetLeftTopUnitCount(offsetX, offsetY);
-            offsetY = offsetY + heightUnitCount;
-            curMaxHeightUnitCount = 0;
-        else
-            -- local maxWidthUnitCount, maxHeightUnitCount = inputAndField:GetMaxWidthHeightUnitCount();
-            -- inputAndField:SetLeftTopUnitCount(offsetX + (maxWidthUnitCount - widthUnitCount) / 2, offsetY + (maxHeightUnitCount - heightUnitCount) / 2);
-            -- BlockDebug.Format("left = %s, top = %s, width = %s, height = %s", offsetX, offsetY, widthUnitCount, heightUnitCount);
-            inputAndField:SetLeftTopUnitCount(offsetX, offsetY);
-            curMaxHeightUnitCount = math.max(curMaxHeightUnitCount, heightUnitCount);
-            offsetX = offsetX + widthUnitCount;
-        end
-        inputAndField:UpdateLeftTopUnitCount();
-    end
+    local offsetX, offsetY = leftUnitCount, topUnitCount;
+    
+    if (self:IsOutput()) then offsetX, offsetY = leftUnitCount + Const.BlockEdgeWidthUnitCount, topUnitCount + Const.BlockEdgeHeightUnitCount end
+    if (self:IsStatement()) then offsetY = topUnitCount + Const.ConnectionHeightUnitCount end
 
+    for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        local inputFieldContainerTotalWidthUnitCount, inputFieldContainerTotalHeightUnitCount = inputFieldContainer:GetWidthHeightUnitCount();
+        inputFieldContainer:SetLeftTopUnitCount(offsetX, offsetY);
+        inputFieldContainer:UpdateLeftTopUnitCount();
+        offsetY = offsetY + inputFieldContainerTotalHeightUnitCount;
+    end
+   
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then
         local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
@@ -270,8 +256,8 @@ function Block:GetMouseUI(x, y, event)
     if (self.left < x and x < (self.left + self.width) and ((self.top < y and y < (self.top + height)) or (y > (self.top + self.height - height) and y < (self.top + self.height)))) then return self end
     
     -- 遍历输入
-    for _, inputAndField in ipairs(self.inputAndFields) do
-        local ui = inputAndField:GetMouseUI(x, y);
+    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
+        local ui = inputAndFieldContainer:GetMouseUI(x, y);
         if (ui) then return ui end
     end
 
@@ -353,8 +339,6 @@ end
 function Block:ConnectionBlock(block)
     if (not block or self == block) then return end
     BlockDebug("==========================BlockConnectionBlock============================");
-    self:Debug();
-    block:Debug();
     -- 是否在整个区域内
     if (not self:IsIntersect(block, false)) then return end
 
@@ -384,8 +368,46 @@ function Block:ConnectionBlock(block)
         return true;
     else
         BlockDebug("===================outputConnection match inputConnection====================");
-        for _, inputAndField in ipairs(block.inputAndFields) do
-            if (inputAndField:ConnectionBlock(self)) then return true end
+        for _, inputAndFieldContainer in ipairs(block.inputFieldContainerList) do
+            if (inputAndFieldContainer:ConnectionBlock(self)) then return true end
         end
     end
+end
+
+-- 是否是块
+function Block:IsBlock()
+    return true;
+end
+
+-- 获取字段值
+function Block:GetFieldValue(name)
+    for _, inputAndFieldContainer in ipairs(block.inputFieldContainerList) do
+        local inputAndFields = inputAndFieldContainer:GetInputFields();
+        for inputAndField in ipairs(inputAndFields) do
+            if (inputAndField:GetName() == name and inputAndField:IsField()) then return inputAndField:GetFieldValue() end
+        end
+    end
+    return ;
+end
+
+-- 获取输入代码
+function Block:GetInputCode(name)
+    for _, inputAndFieldContainer in ipairs(block.inputFieldContainerList) do
+        local inputAndFields = inputAndFieldContainer:GetInputFields();
+        for inputAndField in ipairs(inputAndFields) do
+            if (inputAndField:GetName() == name and inputAndField:IsInput()) then return inputAndField:GetInputCode() end
+        end
+    end
+    return "";
+end
+
+-- 获取块代码
+function Block:GetBlockCode(language)
+    self:SetLanguage(language);
+    local option = self:GetOption();
+    if (language == "lua") then
+    else  -- npl
+        return option.ToNPL(self);
+    end
+    return "";
 end
