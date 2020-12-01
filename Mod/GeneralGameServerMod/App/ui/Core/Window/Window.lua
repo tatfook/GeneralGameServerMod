@@ -54,6 +54,8 @@ function Window:ctor()
     self:SetName("Window");
     self:SetTagName("Window");
     self:SetStyleManager(StyleManager:new());
+    -- 创建绘图上下文
+    self:SetPainterContext(System.Core.PainterContext:new():init(self));
 end
 
 function Window:IsWindow()
@@ -185,8 +187,6 @@ function Window:CreateNativeWindow(params)
     native_window:SetField("InputMethodEnabled", true);
     -- 加到有效窗口上
     native_window:AttachToRoot();
-    -- 创建绘图上下文
-    self:SetPainterContext(System.Core.PainterContext:new():init(self));
 	
 	local _this = native_window;
 	-- redirect events from native ParaUI object to this object. 

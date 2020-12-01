@@ -19,6 +19,10 @@ BlockInputField:Property("Name");
 BlockInputField:Property("Block");
 BlockInputField:Property("Option");
 BlockInputField:Property("Color", "#ffffff");                    -- 颜色
+BlockInputField:Property("BackgroundColor", "#ffffff");          -- 背景颜色
+BlockInputField:Property("Edit", false, "IsEdit");               -- 是否在编辑
+BlockInputField:Property("Value");                               -- 值
+BlockInputField:Property("Text");                                -- 值
 
 function BlockInputField:ctor()
     self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount = 0, 0, 0, 0;
@@ -62,20 +66,22 @@ function BlockInputField:GetTotalWidthHeightUnitCount()
 end
 
 function BlockInputField:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount)
-    self.maxWidthUnitCount, self.maxHeightUnitCount = widthUnitCount or self.widthUnitCount, heightUnitCount or self.heightUnitCount;
+    self.maxWidthUnitCount, self.maxHeightUnitCount = widthUnitCount or self.maxWidthUnitCount or self.widthUnitCount, heightUnitCount or self.maxHeightUnitCount or self.heightUnitCount;
     self.maxWidth, self.maxHeight = self.maxWidthUnitCount * UnitSize, self.maxHeightUnitCount * UnitSize;
 end
 
 function BlockInputField:UpdateWidthHeightUnitCount()
-    return 0, 0, 0, 0;  -- 元素区域宽高,  元素真实宽高
+    return 0, 0, 0, 0, 0, 0;  -- 最大宽高, 元素宽高, 元素总宽高
 end
 
 function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
-    widthUnitCount, heightUnitCount = widthUnitCount or self.widthUnitCount, heightUnitCount or self.heightUnitCount;
+    widthUnitCount, heightUnitCount = widthUnitCount or self.widthUnitCount or 0, heightUnitCount or self.heightUnitCount or 0;
     if (self.widthUnitCount == widthUnitCount and self.heightUnitCount == heightUnitCount) then return end
 
     self.widthUnitCount, self.heightUnitCount = widthUnitCount, heightUnitCount;
     self.width, self.height = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
+
+    self:SetMaxWidthHeightUnitCount(math.max(widthUnitCount, self.maxWidthUnitCount or 0), math.max(heightUnitCount, self.maxHeightUnitCount or 0));
 
     self:OnSizeChange();
 end
@@ -250,4 +256,51 @@ end
 function BlockInputField:Debug()
     GGS.DEBUG.Format("left = %s, top = %s, width = %s, height = %s, maxWidth = %s, maxHeight = %s, totalWidth = %s, totalHeight = %s", 
         self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount, self.maxWidthUnitCount, self.maxHeightUnitCount, self.totalWidthUnitCount, self.totalHeightUnitCount);
+end
+
+
+function BlockInputField:IsCanEdit()
+    return false;
+end
+
+function BlockInputField:GetFieldEditElement(parentElement)
+end
+
+function BlockInputField:GetMinEditFieldWidthUnitCount()
+    return Const.MinEditFieldWidthUnitCount;
+end
+
+function BlockInputField:BeginEdit(opt)
+    if (not self:IsCanEdit()) then return end
+
+    local editor = self:GetEditorElement();
+    editor:ClearChildElement();
+    local style = editor:GetStyle();
+    style.NormalStyle.left = self.left + (self.maxWidth - self.width) / 2;
+    style.NormalStyle.top = self.top + (self.maxHeight - self.height) / 2;
+    style.NormalStyle.width = math.max(self.width, self:GetMinEditFieldWidthUnitCount() * Const.UnitSize);
+    style.NormalStyle.height = self.height;
+    local fieldEditElement = self:GetFieldEditElement(editor);
+    if (not fieldEditElement) then return end
+    self:SetEdit(true);
+    self:GetTopBlock():UpdateLayout();
+
+    editor:InsertChildElement(fieldEditElement);
+    editor:UpdateLayout();
+end
+
+function BlockInputField:EndEdit()
+    self:SetEdit(false);
+
+    local editor = self:GetEditorElement();
+    editor:SetGeometry(0, 0, 0, 0);
+    self:GetTopBlock():UpdateLayout();
+end
+
+function BlockInputField:OnFocusIn()
+    self:BeginEdit();
+end
+
+function BlockInputField:OnFocusOut()
+    self:EndEdit();
 end

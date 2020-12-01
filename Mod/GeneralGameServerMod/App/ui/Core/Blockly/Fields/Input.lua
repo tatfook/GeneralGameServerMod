@@ -45,10 +45,10 @@ function Input:RenderContent(painter)
     local UnitSize = self:GetUnitSize();
 
     -- background
-    painter:SetPen(self:GetBackgroundColor());
+    Shape:SetBrush(self:GetBackgroundColor());
     Shape:DrawLeftEdge(painter, self.heightUnitCount);
     Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
-    painter:DrawRect(Const.BlockEdgeWidthUnitCount * UnitSize, 0, self.width - Const.BlockEdgeWidthUnitCount * 2 * UnitSize, self.height);
+    Shape:DrawRect(painter, Const.BlockEdgeWidthUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2, self.heightUnitCount);
 
     -- input
     painter:SetPen(self:GetColor());
@@ -57,7 +57,7 @@ function Input:RenderContent(painter)
 end
 
 function Input:UpdateWidthHeightUnitCount()
-    local widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetText()), 4) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
+    local widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetText()), 6) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
     return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), heightUnitCount;
 end
 

@@ -169,16 +169,18 @@ function Block:Render(painter)
 end
 
 function Block:UpdateWidthHeightUnitCount()
-    local widthUnitCount, heightUnitCount = 0, 0;                 -- 方块宽高
+    local maxWidthUnitCount, maxHeightUnitCount, widthUnitCount, heightUnitCount = 0, 0, 0, 0;                                                           -- 方块宽高
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
-        local inputFieldContainerTotalWidthUnitCount, inputFieldContainerTotalHeightUnitCount = inputFieldContainer:UpdateWidthHeightUnitCount();
-        if (not inputFieldContainer:IsInputStatementContainer()) then
-            widthUnitCount = math.max(widthUnitCount, inputFieldContainerTotalWidthUnitCount);
-        end
-        heightUnitCount = heightUnitCount + inputFieldContainerTotalHeightUnitCount;
+        local inputFieldContainerMaxWidthUnitCount, inputFieldContainerMaxHeightUnitCount, inputFieldContainerWidthUnitCount, inputFieldContainerHeightUnitCount = inputFieldContainer:UpdateWidthHeightUnitCount();
+        inputFieldContainerWidthUnitCount, inputFieldContainerHeightUnitCount = inputFieldContainerWidthUnitCount or inputFieldContainerMaxWidthUnitCount, inputFieldContainerHeightUnitCount or inputFieldContainerMaxHeightUnitCount;
+        
+        widthUnitCount = math.max(widthUnitCount, inputFieldContainerWidthUnitCount);
+        heightUnitCount = heightUnitCount + inputFieldContainerHeightUnitCount;
+        maxWidthUnitCount = math.max(maxWidthUnitCount, inputFieldContainerMaxWidthUnitCount);
+        maxHeightUnitCount = maxHeightUnitCount + inputFieldContainerMaxHeightUnitCount;
     end
     
-    widthUnitCount = math.max(widthUnitCount, Const.ConnectionRegionWidthUnitCount);
+    widthUnitCount = math.max(widthUnitCount, self:IsOutput() and 8 or 14);
     
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
         if (not inputFieldContainer:IsInputStatementContainer()) then
@@ -189,25 +191,28 @@ function Block:UpdateWidthHeightUnitCount()
     if (self:IsOutput()) then 
         widthUnitCount = widthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
         heightUnitCount = heightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
+        maxWidthUnitCount = maxWidthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
+        maxHeightUnitCount = maxHeightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
     end
 
     if (self:IsStatement()) then 
         heightUnitCount = heightUnitCount + Const.ConnectionHeightUnitCount * 2;
+        maxHeightUnitCount = maxHeightUnitCount + Const.ConnectionHeightUnitCount * 2;
     end
 
     self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    self:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    BlockDebug.Format("widthUnitCount = %s, heightUnitCount = %s", widthUnitCount, heightUnitCount);
+    self:SetMaxWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
+    BlockDebug.Format("widthUnitCount = %s, heightUnitCount = %s, maxWidthUnitCount = %s, maxHeightUnitCount = %s", widthUnitCount, heightUnitCount, maxWidthUnitCount, maxHeightUnitCount);
     
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then 
-        local nextBlockTotalWidthUnitCount, nextBlockTotalHeightUnitCount = nextBlock:UpdateWidthHeightUnitCount();
-        widthUnitCount = math.max(widthUnitCount, nextBlockTotalWidthUnitCount);
-        heightUnitCount = heightUnitCount + nextBlockTotalHeightUnitCount;
+        local _, _, _, _, nextBlockTotalWidthUnitCount, nextBlockTotalHeightUnitCount = nextBlock:UpdateWidthHeightUnitCount();
+        self:SetTotalWidthHeightUnitCount(math.max(maxWidthUnitCount, nextBlockTotalWidthUnitCount), maxHeightUnitCount + nextBlockTotalHeightUnitCount);
+    else
+        self:SetTotalWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
     end
-
-    self:SetTotalWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    return widthUnitCount, heightUnitCount;
+    local totalWidthUnitCount, totalHeightUnitCount = self:GetTotalWidthHeightUnitCount();
+    return maxWidthUnitCount, maxHeightUnitCount, widthUnitCount, heightUnitCount, totalWidthUnitCount, totalHeightUnitCount;
 end
 
 -- 更新左上位置
@@ -256,8 +261,8 @@ function Block:GetMouseUI(x, y, event)
     if (self.left < x and x < (self.left + self.width) and ((self.top < y and y < (self.top + height)) or (y > (self.top + self.height - height) and y < (self.top + self.height)))) then return self end
     
     -- 遍历输入
-    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
-        local ui = inputAndFieldContainer:GetMouseUI(x, y);
+    for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        local ui = inputFieldContainer:GetMouseUI(x, y, event);
         if (ui) then return ui end
     end
 

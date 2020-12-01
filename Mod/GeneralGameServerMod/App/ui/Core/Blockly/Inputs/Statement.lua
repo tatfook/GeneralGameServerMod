@@ -62,12 +62,11 @@ end
 function Statement:UpdateWidthHeightUnitCount()
     local inputBlock = self:GetInputBlock();
     if (inputBlock) then 
-        self.inputWidthUnitCount, self.inputHeightUnitCount = inputBlock:UpdateWidthHeightUnitCount();
+        _, _, _, _, self.inputWidthUnitCount, self.inputHeightUnitCount = inputBlock:UpdateWidthHeightUnitCount();
     else
         self.inputWidthUnitCount, self.inputHeightUnitCount = 0, 6;
     end
     local widthUnitCount, heightUnitCount = StatementWidthUnitCount + self.inputWidthUnitCount, Const.ConnectionHeightUnitCount * 2 + self.inputHeightUnitCount;
-    self:SetWidthHeightUnitCount(StatementWidthUnitCount, heightUnitCount);
     return widthUnitCount, heightUnitCount, StatementWidthUnitCount, heightUnitCount;
 end
 
@@ -94,10 +93,10 @@ function Statement:ConnectionBlock(block)
     return inputBlock and block:ConnectionBlock(inputBlock);
 end
 
-function Statement:GetMouseUI(x, y)
+function Statement:GetMouseUI(x, y, event)
     if (x >= self.left and x <= (self.left + self.width) and y >= self.top and y <= (self.top + self.height)) then return self end
     local block = self:GetBlock();
     if (x >= block.left and x <= (block.left + block.width)  and y >= self.top and y <= (self.top + Const.ConnectionHeightUnitCount * UnitSize)) then return self end
     local inputBlock = self:GetInputBlock();
-    return inputBlock and inputBlock:GetMouseUI(x, y);
+    return inputBlock and inputBlock:GetMouseUI(x, y, event);
 end

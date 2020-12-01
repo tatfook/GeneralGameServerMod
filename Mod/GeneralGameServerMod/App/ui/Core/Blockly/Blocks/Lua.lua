@@ -125,4 +125,29 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
     },
+    {
+        name = "for",
+        message0 = "每个 %1 , %2 在数组 %3 %4",
+        arg0 = {
+            {
+                name = "input_value",
+                type = "input_value",
+            },
+            {
+                name = "input_value",
+                type = "input_value",
+            },
+            {
+                name = "input_value",
+                type = "input_value",
+            },
+            {
+                name = "input_statement",
+                type = "input_statement"
+            },
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+    },
 });

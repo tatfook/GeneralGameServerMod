@@ -9,6 +9,7 @@ local InputFieldContainer = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Block
 -------------------------------------------------------
 ]]
 
+local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local BlockInputField = NPL.load("./BlockInputField.lua", IsDevEnv);
@@ -50,19 +51,25 @@ function InputFieldContainer:IsEmpty()
 end
 
 function InputFieldContainer:UpdateWidthHeightUnitCount()
-    local widthUnitCount, heightUnitCount = 0, 0;
+    local maxWidthUnitCount, maxHeightUnitCount, widthUnitCount, heightUnitCount = 0, 0, 0, 0;
     for _, inputField in ipairs(self.inputFields) do
-        local inputFieldTotalWidthUnitCount, inputFieldTotalHeightUnitCount, inputFieldWidthUnitCount, inputFieldHeightUnitCount = inputField:UpdateWidthHeightUnitCount();
-        inputField:SetWidthHeightUnitCount(inputFieldWidthUnitCount or inputFieldTotalWidthUnitCount, inputFieldHeightUnitCount or inputFieldTotalHeightUnitCount);
-        widthUnitCount = widthUnitCount + inputFieldTotalWidthUnitCount;
-        heightUnitCount = math.max(heightUnitCount, inputFieldTotalHeightUnitCount);
+        local inputFieldMaxWidthUnitCount, inputFieldMaxHeightUnitCount, inputFieldWidthUnitCount, inputFieldHeightUnitCount = inputField:UpdateWidthHeightUnitCount();
+        inputFieldWidthUnitCount, inputFieldHeightUnitCount = inputFieldWidthUnitCount or inputFieldMaxWidthUnitCount, inputFieldHeightUnitCount or inputFieldMaxHeightUnitCount;
+        inputField:SetWidthHeightUnitCount(inputFieldWidthUnitCount, inputFieldHeightUnitCount);
+        inputField:SetMaxWidthHeightUnitCount(inputFieldMaxWidthUnitCount, inputFieldMaxHeightUnitCount);
+        widthUnitCount = widthUnitCount + inputFieldWidthUnitCount;
+        heightUnitCount = math.max(heightUnitCount, inputFieldHeightUnitCount);
+        maxWidthUnitCount = maxWidthUnitCount + inputFieldMaxWidthUnitCount;
+        maxHeightUnitCount = math.max(maxHeightUnitCount, inputFieldMaxHeightUnitCount);
     end
+
     for _, inputField in ipairs(self.inputFields) do
-        inputField:SetMaxWidthHeightUnitCount(nil, heightUnitCount);
+        inputField:SetMaxWidthHeightUnitCount(nil, maxHeightUnitCount);
     end
+
     self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    self:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount);
-    return widthUnitCount, heightUnitCount;
+    self:SetMaxWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
+    return maxWidthUnitCount, maxHeightUnitCount, widthUnitCount, heightUnitCount;
 end
 
 function InputFieldContainer:UpdateLeftTopUnitCount()
@@ -82,12 +89,16 @@ function InputFieldContainer:ConnectionBlock(block)
     return false;
 end
 
-function InputFieldContainer:GetMouseUI(x, y)
-    if (not InputFieldContainer._super.GetMouseUI(self, x, y)) then return end
+function InputFieldContainer:GetMouseUI(x, y, event)
+    if (x < self.left or x > (self.left + self.maxWidth) or y < self.top or y > (self.top + self.maxHeight)) then return end
+
     for _, inputField in ipairs(self.inputFields) do
-        local ui = inputField:GetMouseUI(x, y);
+        local ui = inputField:GetMouseUI(x, y, event);
         if (ui) then return ui end
     end
+    
+    if (x < self.left or x > (self.left + self.width) or y < self.top or y > (self.top + self.height)) then return end
+
     return self;
 end
 
@@ -95,6 +106,8 @@ function InputFieldContainer:Render(painter)
     if (not self:IsInputStatementContainer()) then
         painter:SetPen(self:GetBlock():GetColor());
         painter:DrawRect(self.left, self.top, self.width, self.height);
+        -- Shape:DrawLine(painter, self.leftUnitCount, self.topUnitCount, self.leftUnitCount, self.topUnitCount + self.heightUnitCount);
+        -- Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
     end
     for _, inputField in ipairs(self.inputFields) do
         inputField:Render(painter);

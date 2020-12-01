@@ -13,7 +13,8 @@ NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local LuaBlocks = NPL.load("./Blocks/Lua.lua", IsDevEnv);
-
+local Const = NPL.load("./Const.lua", IsDevEnv);
+local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
 local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
 local Blockly = commonlib.inherit(Element, NPL.export());
@@ -23,96 +24,18 @@ Blockly:Property("EditorElement");            -- 编辑元素 用户输入
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 Blockly:Property("FocusUI");                  -- 聚焦UI
 
+local UnitSize = Const.UnitSize;
+
 function Blockly:ctor()
-    -- local block1 = Block:new():Init(self, {
-    --     message0 = "测试 %1 你好 %2",
-    --     arg0 = {
-    --         {
-    --             name = "x",
-    --             type = "field_input",
-    --             text = "输入框"
-    --         }, 
-    --         {
-    --             name = "y",
-    --             type = "input_value",
-    --             text = "输入框",
-    --             shadow = {
-    --                 type = "",
-    --                 value = "",
-    --             }
-    --         }
-    --     }, 
-        
-    --     color = StyleColor.ConvertTo16("rgb(37,175,244)"),
-    --     -- output = true,
-    --     previousStatement = true,
-    --     nextStatement = true,
-    --     ToNPL = function(self)
-    --         return string.format('BecomeTeacherNPC("%s")\n', self:getFieldValue('npcType'));
-    --     end,
-    -- });
-    -- local block2 = Block:new():Init(self, {
-    --     message0 = "测试你好",
-    --     arg0 = {
-    --         {
-    --             name = "x",
-    --             type = "field_input",
-    --             text = ""
-    --         }
-    --     }, 
-    --     message1 = "%1",
-    --     arg1 = {
-    --         {
-    --             name = "code",
-    --             type = "input_statement",
-    --         }
-    --     },
-    --     color = StyleColor.ConvertTo16("rgb(160,110,254)"),
-    --     -- output = true,
-    --     previousStatement = true,
-    --     nextStatement = true,
-    -- });
-    -- local block3 = Block:new():Init(self, {
-    --     message0 = "值块",
-    --     color = StyleColor.ConvertTo16("rgb(160,110,254)"),
-    --     output = true,
-    -- });
-    -- local block4 = Block:new():Init(self, {
-    --     message0 = "测试 %1 你好 %2",
-    --     arg0 = {
-    --         {
-    --             name = "x",
-    --             type = "field_select",
-    --             text = "下拉列表"
-    --         }, 
-    --         {
-    --             name = "x",
-    --             type = "input_value",
-    --             text = "输入框",
-    --             shadow = {
-    --                 type = "",
-    --                 value = "",
-    --             }
-    --         }
-    --     }, 
-        
-    --     color = StyleColor.ConvertTo16("rgb(37,175,244)"),
-    --     -- output = true,
-    --     previousStatement = true,
-    --     nextStatement = true,
-    -- });
-    -- block1:SetLeftTopUnitCount(5,5);
-    -- block2:SetLeftTopUnitCount(20,20);
-    -- block3:SetLeftTopUnitCount(40, 40);
-    -- block4:SetLeftTopUnitCount(60, 40);
-    -- self.blocks = {block1, block2, block3, block4};
-    -- self.blocks = {block1, block3};
     self.offsetX = 0;
     self.offsetY = 0;
     self.blocks = {};
+    local offsetX, offsetY = 5, 5;
     for index, blockOption in ipairs(LuaBlocks) do
         local block = Block:new():Init(self, blockOption);
-        block:SetLeftTopUnitCount(5, (index - 1) * 10 + 5);
+        block:SetLeftTopUnitCount(offsetX, offsetY);
+        local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
+        offsetY = offsetY + heightUnitCount + 5;
         table.insert(self.blocks, block);
     end
 end
@@ -164,12 +87,20 @@ end
 -- 渲染Blockly
 function Blockly:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
+    -- 设置绘图类
+    -- Shape:SetPainter(painter);
+
     painter:Translate(x, y);
 
+    painter:Save();
+    painter:SetClipRegion(0, 0, w, h);
+    painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
         block:Render(painter);
         painter:Flush();
     end
+    painter:Translate(-self.offsetX, -self.offsetY);
+    painter:Restore();
 
     painter:Translate(-x, -y);
 end
@@ -198,12 +129,18 @@ end
 --     }
 -- end
 
+-- 获取相对窗口坐标
+function Blockly:GetRelPoint(x, y)
+    local relx, rely = Blockly._super.GetRelPoint(self, x, y);
+    return relx - self.offsetX, rely - self.offsetY;
+end
+
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
     if (event.target ~= self) then return end
 
     local x, y = self:GetRelPoint(event.x, event.y);
-    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
+    local ui = self:GetMouseUI(x, y, event);
     
     -- 失去焦点
     local focusUI = self:GetFocusUI();
@@ -212,8 +149,13 @@ function Blockly:OnMouseDown(event)
         self:SetFocusUI(nil);
     end
 
-    if (not ui) then return end
-    ui:OnMouseDown(event);
+    -- 元素被点击 直接返回元素事件处理
+    if (ui and ui ~= self) then return ui:OnMouseDown(event) end
+
+    -- 工作区被点击
+    self.isMouseDown = true;
+    self.startX, self.startY = event.x, event.y;
+    self.startOffsetX, self.startOffsetY = self.offsetX, self.offsetY;
 end
 
 -- 鼠标移动事件
@@ -221,9 +163,19 @@ function Blockly:OnMouseMove(event)
     if (event.target ~= self) then return end
     
     local x, y = self:GetRelPoint(event.x, event.y);
-    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
-    if (not ui) then return end
-    ui:OnMouseMove(event);
+    local ui = self:GetMouseUI(x, y, event);
+    if (ui and ui ~= self) then return ui:OnMouseMove(event) end
+    
+    if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
+    if (not self.isDragging) then
+        if (math.abs(event.x - self.startX) < UnitSize and math.abs(event.y - self.startY) < UnitSize) then return end
+        self.isDragging = true;
+        self:CaptureMouse(self);
+    end
+    local offsetX = math.floor((event.x - self.startX) / UnitSize) * UnitSize;
+    local offsetY = math.floor((event.y - self.startY) / UnitSize) * UnitSize;
+    self.offsetX = self.startOffsetX + offsetX;
+    self.offsetY = self.startOffsetY + offsetY;
 end
 
 -- 鼠标抬起事件
@@ -231,17 +183,18 @@ function Blockly:OnMouseUp(event)
     if (event.target ~= self) then return end
     
     local x, y = self:GetRelPoint(event.x, event.y);
-    local ui = self:GetMouseUI(self.offsetX + x, self.offsetY + y, event);
-    if (not ui) then return end
-    ui:OnMouseUp(event);
-
-    -- 获取焦点
-    local focusUI = self:GetFocusUI();
-    if (focusUI ~= ui) then 
-        if (focusUI) then focusUI:OnFocusOut() end
-        ui:OnFocusIn();
+    local ui = self:GetMouseUI(x, y, event);
+    local focusUI = self:GetFocusUI();  -- 获取焦点
+    if (focusUI ~= ui and focusUI) then focusUI:OnFocusOut() end
+    if (focusUI ~= ui and ui) then ui:OnFocusIn() end
+    if (ui and ui ~= self) then 
         self:SetFocusUI(ui);
+        return ui:OnMouseUp(event);
     end
+
+    self.isDragging = false;
+    self.isMouseDown = false;
+    self:ReleaseMouseCapture();
 end
 
 -- 获取鼠标元素
