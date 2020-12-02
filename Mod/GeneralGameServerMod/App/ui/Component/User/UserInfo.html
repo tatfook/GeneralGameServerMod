@@ -175,6 +175,8 @@ end
 function OnEditNickNameFinish(nickname)
     UserDetail.nickname = nickname;
     self.isEditNickName = false;
+    local userinfo = KeepWorkItemManager.GetProfile();
+    userinfo.nickname = nickname;
 end 
 
 function ClickChangeSkinBtn()
@@ -263,6 +265,8 @@ function UpdatePlayerInfo()
         extra = extra,
     }, function(status, msg, data) 
         if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
+        local userinfo = KeepWorkItemManager.GetProfile();
+        userinfo.extra = extra;
     end);
 
 end 

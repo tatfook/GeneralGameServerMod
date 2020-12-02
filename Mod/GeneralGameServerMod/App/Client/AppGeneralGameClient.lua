@@ -84,6 +84,9 @@ function AppGeneralGameClient:LoadWorld(opts)
     self.userinfo.school = options.school or self.userinfo.school;
     self.userinfo.isVip = options.isVip or self.userinfo.isVip;
     self.userinfo.nickname = options.nickname or self.userinfo.nickname;
+
+    -- 再次更新信息
+    self:CopyKpUserInfo();
 end
 
 -- 获取世界类
@@ -110,13 +113,15 @@ end
 -- 拷贝KeepWork用户信息
 function AppGeneralGameClient:CopyKpUserInfo(userinfo)
     self.userinfo = self.userinfo or {};
+    -- 保证userinfo存在
+    userinfo = userinfo or KeepWorkItemManager.GetProfile() or self.userinfo;
 
     self.userinfo.id = userinfo.id;
     self.userinfo.username = userinfo.username or System.User.keepworkUsername;
     self.userinfo.nickname = userinfo.nickname;
     self.userinfo.isVip = userinfo.vip == 1;
     self.userinfo.usertag = KpUserTag.GetMcml(userinfo);
-    self.userinfo.worldCount = 0;
+    self.userinfo.worldCount = self.userinfo.worldCount or 0;
 
     local ParacraftPlayerEntityInfo = (userinfo.extra or {}).ParacraftPlayerEntityInfo or {};
     self.userinfo.scale = ParacraftPlayerEntityInfo.scale or 1;
