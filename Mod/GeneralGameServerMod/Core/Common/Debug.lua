@@ -81,7 +81,7 @@ local function ToString(val, key)
         text = text .. str .. "\n";
     end
 
-    Print(val,key, output);
+    Print(val, key, output);
 
     return text;
 end

@@ -16,6 +16,7 @@ local G = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.expo
 G:Property("Window");  -- 所属窗口
 G:Property("G");       -- 真实G
 
+
 function G.New(window, g)
     g = setmetatable(g or {}, {__index = _G});
     g.SessionStorage = Storage.SessionStorage;
@@ -28,6 +29,9 @@ function G.New(window, g)
             end
         end
     end
+
+    g.Log = GGS.INFO;
+
     return g;
 end
 
@@ -39,6 +43,10 @@ function G:Init(window, g)
     self:SetWindow(window);
     self:SetG(g);
     return self;
+end
+
+function G:ToString(obj)
+    return GGS.Debug.ToString(obj);
 end
 
 function G:CloseWindow()
@@ -58,6 +66,7 @@ function G:SetTimeout(func, timeoutMS)
 end
 
 function G:ClearTimeout(timer)
+    if (not timer) then return end
     return commonlib.TimerManager.ClearTimeout(timer);
 end
 
@@ -68,5 +77,6 @@ function G:SetInterval(func, intervalMS)
 end
 
 function G:ClearInterval(timer)
+    if (not timer) then return end
     return commonlib.TimerManager.ClearInterval(timer);
 end
