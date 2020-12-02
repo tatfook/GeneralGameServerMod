@@ -63,13 +63,9 @@ function Option:RenderContent(painter)
     painter:DrawText(x, y + (lineHeight - fontSize) / 2 - fontSize / 6, text);
 end
 
-function Option:OnClick(event)
-    event:accept();
-    self:GetSelectElement():OnSelect(self);
-end
-
 function Option:OnMouseDown(event)
     Option._super.OnMouseDown(self, event);
+    self:GetSelectElement():OnSelect(self);
     event:accept();
 end
 

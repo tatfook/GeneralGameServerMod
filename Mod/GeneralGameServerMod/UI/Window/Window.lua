@@ -44,7 +44,6 @@ Window:Property("HoverElement");                    -- 光标所在元素
 Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
-Window:Property("FullScreen", false, "IsFullScreen");  -- 是否全屏窗口
 
 function Window:ctor()
     --屏幕位置,宽度,高度
@@ -78,12 +77,6 @@ end
 
 function Window:Init(params)
     self:SetG(G.New(self, params.G));      -- 设置全局G表
-    
-    -- 保存窗口大小
-    self.screenX, self.screenY, self.screenWidth, self.screenHeight = self:GetNativeWindow():GetAbsPosition();
-    self.windowWidth, self.windowHeight = params.width, params.height;
-    self.windowX, self.windowY = params.x or math.floor((self.screenWidth - self.windowWidth) / 2), params.y or math.floor((self.screenHeight - self.windowHeight) / 2);
-
     -- 设置窗口元素
     self:InitElement({
         name = "Window",
@@ -116,7 +109,6 @@ function Window.Show(self, params)
     end
     params = params or {};
     params.width, params.height = params.width or 600, params.height or 500;
-    self:SetFullScreen(if_else(params.fullscreen == true, true, false));
     if (not self:GetNativeWindow()) then
         self:SetNativeWindow(self:CreateNativeWindow(params));
     end
@@ -136,11 +128,13 @@ function Window:CloseWindow()
 end
 
 function Window:InitWindowPosition(params)
-    -- 保存窗口大小
     local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
-    if (self:IsFullScreen()) then return screenX, screenY, screenWidth, screenHeight end
     local windoX, windowY, windowWidth, windowHeight = 0, 0, params.width or 600, params.height or 500;
     local offsetX, offsetY = params.x or 0, params.y or 0;
+    if (type(windowWidth) == "string" and string.match(windowWidth, "^%d+%%$")) then windowWidth = math.floor(screenWidth * tonumber(string.match(windowWidth, "%d+")) / 100) end
+    if (type(windowHeight) == "string" and string.match(windowHeight, "^%d+%%$")) then windowHeight = math.floor(screenHeight * tonumber(string.match(windowHeight, "%d+")) / 100) end
+    if (type(offsetX) == "string" and string.match(offsetX, "^%d+%%$")) then offsetX = math.floor(screenWidth * tonumber(string.match(offsetX, "%d+")) / 100) end
+    if (type(offsetY) == "string" and string.match(offsetY, "^%d+%%$")) then offsetY = math.floor(screenHeight * tonumber(string.match(offsetY, "%d+")) / 100) end
     -- *	- "_lt" align to left top of the screen
     -- *	- "_lb" align to left bottom of the screen
     -- *	- "_ct" align to center of the screen
@@ -168,9 +162,29 @@ function Window:InitWindowPosition(params)
         windowX, windowY = offsetX, offsetY + math.floor((screenHeight - windowHeight) / 2);
     elseif (params.alignment == "_ctr") then
         windowX, windowY = offsetX + screenWidth - windowWidth , offsetY + math.floor((screenHeight - windowHeight) / 2);
+    elseif (params.alignment == "_lt") then
+        windowX, windowY = offsetX, offsetY;
+    elseif (params.alignment == "_lb") then
+        windowX, windowY = offsetX, offsetY + screenHeight - windowHeight;
+    elseif (params.alignment == "_rt") then
+        windowX, windowY = offsetX + screenWidth - windowWidth, offsetY;
+    elseif (params.alignment == "_rb") then
+        windowX, windowY = offsetX + screenWidth - windowWidth, offsetY + screenHeight - windowHeight;
+    elseif (params.alignment == "_mt") then
+        windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY;
+    elseif (params.alignment == "_mb") then
+        windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
+    elseif (params.alignment == "_ml") then
+        windowX, windowY = offsetX, offsetY + math.floor((screenHeight - windowHeight) / 2);
+    elseif (params.alignment == "_mr") then
+        windowX, windowY = offsetX + screenWidth - windowWidth, offsetY + math.floor((screenHeight - windowHeight) / 2);
     else
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + math.floor((screenHeight - windowHeight) / 2);
     end
+
+    self.screenX, self.screenY, self.screenWidth, self.screenHeight = windowX, windowY, windowWidth, windowHeight;
+    self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, windowWidth, windowHeight;
+
     return windowX, windowY, windowWidth, windowHeight;
 end
 

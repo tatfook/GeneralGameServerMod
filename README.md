@@ -42,10 +42,11 @@ pm2 start npm npl --name "GGS" --  isDevEnv="true" servermode="true" bootstrappe
 
 ## 客户端部署
 
-- 下载客户端模块的ZIP包, 下载地址: <https://github.com/tatfook/GeneralGameServerMod>
-- 将下载好的zip包放在Paracraft安装目录的Mod文件夹里
-- 启动Paracraft, 在登录页面, 点登录框下面的MOD加载, 再在弹出的Mod对话框中找到刚放入的zip包模块, 并勾选
-- 登录进入世界, 执行 `ggs connect worldId`(`ggs connect -test worldId` 选择测试服务器) 命令进入多人世界, 或按F12执行如下代码:
+- 下载 GGS 模块的ZIP包, 并解压获得 GeneralGameServerMod 源码目录. 下载地址: <https://github.com/tatfook/GeneralGameServerMod>
+- 进入 Paracraft 的安装目录的 npl_packages 目录(路径为: 安装目录/npl_packges), 解压 paracraftbuildinmod.zip 模块压缩包, 得到 ParacraftBuildinMod 目录
+- 进入 ParacraftBuildinMod 目录下 Mod 的目录(ParacraftBuildinMod/Mod), 删除里面已有 GeneralGameServerMod 目录, 并将下载解压后的GeneralGameServerMod 拷贝此, 用于替换原有的 GeneralGameServerMod 目录.
+- 回退到 npl_packages 目录, 将 ParacraftBuildinMod 目压缩成zip, 获得替换后的 paracraftbuildinmod.zip
+- 重启 Paracraft 即可使用 GGS 模块的最新代码
 
 ### 版本
 

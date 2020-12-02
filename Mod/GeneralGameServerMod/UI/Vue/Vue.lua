@@ -29,7 +29,7 @@ function Vue:LoadXmlNodeByUrl(url)
         {
             name = "component",
             attr = {
-                src = url or "%ui%/Core/Window/Window.html",
+                src = url,
             }
         }
     }
@@ -45,7 +45,7 @@ end
 
 -- 静态初始化
 local function StaticInit()
-    Vue.Register("WindowTitleBar", "%ui%/Core/Components/WindowTitleBar.html");
+    Vue.Register("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 end
 
 

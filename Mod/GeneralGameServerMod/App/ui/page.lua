@@ -11,7 +11,7 @@ page.ShowUserInfoPage({username="用户名", mainasset="人物模型文件名"})
 ]]
 
 local ui = NPL.load("./ui.lua");
-local vue = NPL.load("./Core/Vue/Vue.lua", IsDevEnv);
+local vue = NPL.load("../../UI/Vue/Vue.lua", IsDevEnv);
 local page = NPL.export();
 
 -- 通用信息框
@@ -46,7 +46,7 @@ local UserRegionUpdatePage = vue:new();
 function page.ShowUserRegionUpdatePage(G, params)
     params = params or {};
 
-    params.url = "%ui%/Core/Vue/Page/AreaSelect.html";
+    params.url = "%vue%/Page/AreaSelect.html";
     params.draggable = false;
     params.G = G;
     UserRegionUpdatePage:Show(params);
@@ -58,7 +58,7 @@ local MessageBoxPage = vue:new();
 function page.ShowMessageBoxPage(G, params)
     params = params or {};
 
-    params.url = "%ui%/Core/Vue/Page/MessageBox.html";
+    params.url = "%vue%/Page/MessageBox.html";
     params.draggable = false;
     params.G = G;
     MessageBoxPage:Show(params);
@@ -71,7 +71,7 @@ local DebugInfoPage = vue:new()
 function page.ShowDebugInfoPage(G, params)
     params = params or {};
 
-    params.url = "%ui%/Core/Vue/Page/DebugInfo.html";
+    params.url = "%vue%/Page/DebugInfo.html";
     params.draggable = false;
     params.G = G;
     DebugInfoPage:Show(params);
@@ -91,7 +91,7 @@ function page.ShowVueTestPage(G, params)
 
     params = params or {};
     params.draggable = false;
-    params.url = params.url or "%ui%/Core/Vue/Example/Test.html";
+    params.url = params.url or "%vue%/Example/Test.html";
     params.G = G;
     VueTestPage:Show(params);
     return VueTestPage;

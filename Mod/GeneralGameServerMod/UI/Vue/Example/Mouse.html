@@ -1,0 +1,53 @@
+<template class="container">
+    <div style="width:100%; height: 100%;" onmousedown=OnMouseDown onmousemove=OnMouseMove onmouseup=OnMouseUp>
+        <WindowTitleBar title="测试"></WindowTitleBar>
+    </div>
+</template>
+
+<script type="text/lua">
+RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+
+local mouseDownTime = 0;
+
+-- 组件解析完成
+function OnReady()
+end
+
+-- 鼠标按下事件回调
+function OnMouseDown()
+    mouseDownTime = GetTime();
+    echo("鼠标按下, 当前毫秒:" .. tostring(mouseDownTime));
+end
+
+-- 鼠标移动事件回调
+function OnMouseMove()
+    local time = GetTime() - mouseDownTime;
+    echo("鼠标移动, 鼠标已按下:" .. tostring(time) .. "ms");
+end
+
+-- 鼠标抬起事件回调
+function OnMouseUp()
+    echo("鼠标松开");
+end
+
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    padding: 0px 2px 2px 2px;
+    border: 1px solid #ffffff;
+}
+</style>
+
+<!--  
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", true);
+Page.ShowVueTestPage(nil, {
+    url = "%vue%/Example/Mouse.html", 
+    alignment = "_ml",
+    height= "60%",
+    width = "50%"
+    x = 200;
+});
+-->

@@ -474,6 +474,9 @@ function ElementUI:OnMouseDown(event)
 end
 
 function ElementUI:OnMouseMove(event)
+    local mousemove = self:GetAttrFunctionValue("onmousemove");
+    if (mousemove) then mousemove(event) end
+
     if(event:isAccepted()) then return end
     local x, y = ParaUI.GetMousePosition();
 	if(self.isMouseDown and self:IsDraggable() and event:button() == "left") then
@@ -485,7 +488,7 @@ function ElementUI:OnMouseMove(event)
         elseif(self.isDragging) then
             local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
             self:SetPosition(self.startDragElementX + offsetX, self.startDragElementY + offsetY);
-            if (self:IsWindow() and not self:IsFullScreen()) then
+            if (self:IsWindow()) then
                 local left, top = self:GetPosition();
                 local width, height = self:GetSize();
                 local right, bottom = left + width, top + height;
@@ -503,6 +506,9 @@ function ElementUI:OnMouseMove(event)
 end
 
 function ElementUI:OnMouseUp(event)
+    local mouseup = self:GetAttrFunctionValue("onmouseup");
+    if (mouseup) then mouseup(event) end
+
     self:OnClick(event);
     if(event:isAccepted()) then return end
 	if(self.isDragging) then

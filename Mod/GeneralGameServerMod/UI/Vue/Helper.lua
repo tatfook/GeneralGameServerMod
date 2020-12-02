@@ -15,7 +15,12 @@ local Helper = (NPL and NPL.export) and NPL.export() or {};
 local PathAliasMap = {
     ["ui"] = "Mod/GeneralGameServerMod/App/ui",
     ["tutorial"] = "Mod/GeneralGameServerMod/Tutorial",
+    ["vue"] = "Mod/GeneralGameServerMod/UI/Vue",
+    ["world_directory"] = function() 
+        return GameLogic.GetWorldDirectory();
+    end
 }; 
+
 local FileCacheMap = {};
 
 function Helper.SetPathAlias(alias, path)
@@ -24,9 +29,14 @@ end
 
 -- 格式化文件名
 function Helper.FormatFilename(filename)
-    return string.gsub(filename or "", "%%(.-)%%", function(alias)
-        return PathAliasMap[string.lower(alias)];
+    local path = string.gsub(filename or "", "%%(.-)%%", function(alias)
+        local path = PathAliasMap[string.lower(alias)];
+        if (type(path) == "string") then return path end
+        if (type(path) == "function") then return path() end
+        return "";
     end);
+
+    return string.gsub(path, "/+", "/");
 end
 
 -- 获取脚本文件

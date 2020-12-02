@@ -7,7 +7,7 @@ local Page = NPL.load("Mod/GeneralGameServerMod/Tutorial/Page/Page.lua");
 -----------------------------------------------
 ]]
 
-local Vue = NPL.load("../../App/ui/Core/Vue/Vue.lua", IsDevEnv);
+local Vue = NPL.load("../UI/Vue/Vue.lua", IsDevEnv);
 
 local Page = NPL.export();
 

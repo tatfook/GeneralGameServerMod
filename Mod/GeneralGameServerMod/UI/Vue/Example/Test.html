@@ -1,0 +1,38 @@
+<template class="container">
+    <div style="width:100%; height: 100%;" onmousedown=OnMouseDown onmousemove=OnMouseMove onmouseup=OnMouseUp>
+        <WindowTitleBar title="测试"></WindowTitleBar>
+    </div>
+</template>
+
+<script type="text/lua">
+RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+
+id = 1;
+
+-- 组件解析完成
+function OnReady()
+end
+
+function OnMouseDown()
+    echo("鼠标按下");
+end
+
+function OnMouseMove()
+    echo("鼠标移动");
+end
+
+function OnMouseUp()
+    echo("鼠标松开");
+end
+
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    padding: 0px 2px 2px 2px;
+    border: 1px solid #ffffff;
+    /* background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44); */
+}
+</style>
