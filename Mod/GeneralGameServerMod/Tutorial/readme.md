@@ -257,9 +257,10 @@ TutorialSandbox:Restore();
 1. 安装正式Paracraft的应用程序, 安装Git以便执行sh脚本.
 2. 在D盘新建测试环境paracraft安装目录 ParacraftTest. 注: 该路径可自定义, D://ParacraftTest 为本教程示例目录
 3. 拷贝正式环境安装目录中的 ParaCraft.exe 应用程序到 D://ParacraftTest 目录内, 得到D://ParacraftTest/ParaCraft.exe
-4. 在 D://ParacraftTest 目录内, 点击新拷贝的 ParaCraft.exe 程序, 并在弹出的界面中点击更新, 更新完成后可以关闭该程序. 此步会更新 Paracraft 的所有依赖更新. 此步会操作比较频繁
+4. 在 D://ParacraftTest 目录内, 点击新拷贝的 ParaCraft.exe 程序, 并在弹出的界面中点击更新, 更新完成后可以关闭该程序
 5. 进入D://ParacraftTest/npl_packages目录, 下载 https://raw.githubusercontent.com/tatfook/GeneralGameServerMod/dev/upgrade.sh 至本目录内
 6. 在D://ParacraftTest/npl_packages目录内, 执行下载 upgrade.sh 脚本. (下载git后, 该类型文件会默认用git打开, 所以直接双击运行即可, 也可以手动执行, 目录内右击选择git bash, 在弹出的命令行中执行 bash upgrade.sh 即可)
+7. 后续增量更新, 执行4, 6步骤即可
 
 ## TODO
 
