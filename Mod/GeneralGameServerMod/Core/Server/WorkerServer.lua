@@ -108,6 +108,7 @@ function WorkerServer:handleGeneral(packetGeneral)
     local data = packetGeneral.data;
     if (action == "ServerList") then 
         self:SetServerList(data);
+	self:SendMsgToWorkerThread({action="SetServerList", data = data});
     elseif (action == "ServerInfo") then
         self:SetServerInfo(data);
         self:SendMsgToWorkerThread({action="SetServerInfo", data = data});
