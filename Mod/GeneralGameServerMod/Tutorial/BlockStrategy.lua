@@ -34,6 +34,7 @@ function BlockStrategy:Init(strategy)
     self.ctrlKeyState = strategy.ctrlKeyState or 0;
     self.altKeyState = strategy.altKeyState or 0;
     self.mouseKeyState = strategy.mouseKeyState or 3;
+    self.handBlockId = strategy.handBlockId;
 
     return self;
 end
@@ -43,6 +44,22 @@ function BlockStrategy:IsMatchKeyPressed(blockData)
         and (self.ctrlKeyState == 2 or (self.ctrlKeyState == 1 and blockData.ctrl_pressed) or (self.ctrlKeyState == 0 and not blockData.ctrl_pressed)) 
         and (self.altKeyState == 2 or (self.altKeyState == 1 and blockData.alt_pressed) or (self.altKeyState == 0 and not blockData.alt_pressed))
         and (self.mouseKeyState == 3 or self.mouseKeyState == blockData.mouseKeyState);
+end
+
+function BlockStrategy:IsMatchHandBlockId(blockData)
+    if (not self.handBlockId) then return true end
+
+    if (type(self.handBlockId) == "number") then return self.handBlockId == blockData.handBlockId end
+
+    if (type(self.handBlockId) == "table") then 
+        for _, blockId in ipairs(self.handBlockId) do
+            if (blockId == blockData.handBlockId) then return true end
+        end
+    end
+
+    if (type(self.handBlockId) == "function") then return self.handBlockId(blockData) end
+ 
+    return false;
 end
 
 function BlockStrategy:IsMatchBlockIdType(blockData)
@@ -87,7 +104,7 @@ end
 
 function BlockStrategy:IsMatch(blockData)
     -- 先检测功能key是否匹配
-    if (not self:IsMatchKeyPressed(blockData)) then return false end
+    if (not self:IsMatchKeyPressed(blockData) or not self:IsMatchHandBlockId(blockData)) then return false end
 
     if (self.type == "BlockId") then 
         return self:IsMatchBlockIdType(blockData);
@@ -105,6 +122,8 @@ function BlockStrategy:IsMatch(blockData)
         return self:IsMatchBlockPosIdRangeType(blockData);
     elseif (self.type == "BlockPosRangeIdRange") then
         return self:IsMatchBlockPosRangeIdRangeType(blockData);
+    elseif (self.type == "All") then
+        return true;
     end
 
     return false;

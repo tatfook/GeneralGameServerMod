@@ -135,6 +135,7 @@ local strategy = TutorialSandbox:AddClickStrategy({
     shiftKeyState = 0,    -- 0 shift 键必须没有按下   1 shift 键必须按下   2 shift 键可以按下也可以不按下
     ctrlKeyState = 0,     -- 0 ctrl 键必须没有按下   1 ctrl 键必须按下   2 ctrl 键可以按下也可以不按下
     altKeyState = true,   -- 0 alt 键必须没有按下   1 alt 键必须按下   2 alt 键可以按下也可以不按下
+    handBlockId = nil,    -- 玩家手中方块匹配, 为 nil 则忽略, 可取值 60,  {60, 61},  function({blockId, blockX, ...}) return true or false end
     -- 允许移除指定类型方块
     type = "BlockId",
     blockId = 60,

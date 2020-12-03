@@ -114,7 +114,8 @@ function TutorialContext:handleMouseEvent(event)
 		-- if(not self:GetTutorialSandbox():IsCanClick(data) and blockId > 0) then return event:accept() end
 	else
 		-- 左击 或者 功能键按下
-		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, mouseKeyState = GetMouseKeyState(event), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
+		local handBlockId = self:GetTutorialSandbox():GetBlockInRightHand();
+		local data = {blockX = result.blockX, blockY = result.blockY, blockZ = result.blockZ, blockId = result.block_id, handBlockId = handBlockId, mouseKeyState = GetMouseKeyState(event), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
 		if(not self:GetTutorialSandbox():IsCanClick(data)) then 
 			return event:accept();
 		end
