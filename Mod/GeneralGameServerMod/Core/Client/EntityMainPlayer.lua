@@ -78,7 +78,7 @@ end
 -- 获取玩家同步信息的频率  33 = 1s   tick = 30fps
 -- 该值决定同步包的间隔时长
 function EntityMainPlayer:GetMotionSyncTickCount()
-    return 30;  -- 多久发一次同步包  1 = 30ms 本地帧频率
+    return IsDevEnv and 1 or 30;  -- 多久发一次同步包  1 = 30ms 本地帧频率
 end
 
 -- 获取玩家位置同步的帧距离, 移动多长距离记为1帧, 或理解为小于该值没有移动

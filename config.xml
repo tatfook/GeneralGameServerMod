@@ -250,7 +250,7 @@
     maxClientCount=5>
   </World>
   <Player
-    sendPacketFrequency=500ms
+    sendPacketFrequency=0ms
     minAliveTime=60s
     aliveDuration=300s>
   </Player>
