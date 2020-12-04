@@ -21,6 +21,16 @@ Field:Property("Type");                     -- label text, value
 function Field:ctor()
 end
 
+function Field:Render(painter)
+    painter:SetPen(self:GetBlock():GetColor());
+
+    local offsetX, offsetY = self.left + (self.maxWidth - self.width) / 2, self.top + (self.maxHeight - self.height) / 2;
+    painter:SetPen(self:GetColor());
+    painter:Translate(offsetX, offsetY);
+    self:RenderContent(painter);
+    painter:Translate(-offsetX, -offsetY);
+end
+
 function Field:IsField()
     return true;
 end

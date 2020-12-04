@@ -57,6 +57,8 @@ end
 
 -- 初始化
 function Component:Init(xmlNode, window, parent)
+    self.template = xmlNode.template;
+    
     self:InitSlotXmlNode(xmlNode);
 
     local htmlNode, scriptNode, styleNode, xmlRoot = self:LoadXmlNode(xmlNode);
@@ -154,7 +156,7 @@ function Component:LoadXmlNode(xmlNode)
     -- 从字符串加载
     local xmlRoot = nil;
     if (self.template and self.template ~= "") then
-        xmlRoot = ParaXML.LuaXML_ParseString(self.template);
+        xmlRoot = type(self.template) == "table" and self.template or ParaXML.LuaXML_ParseString(self.template);
     elseif (src and src ~= "") then
         local template = LoadXmlFile(src);
         -- 解析template

@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: 显示UI入口文件
 use the lib:
 -------------------------------------------------------
-local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 -------------------------------------------------------
 ]]
 

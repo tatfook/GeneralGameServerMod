@@ -35,6 +35,21 @@ function Vue:LoadXmlNodeByUrl(url)
     }
 end
 
+function Vue:LoadXmlNodeByTemplate(template)
+    return {
+        name = "html",
+        attr = {
+            style = "width: 100%; height:100%;",
+        }, 
+        {
+            name = "component",
+            template = template,
+            attr = {
+            }
+        }
+    }
+end
+
 function Vue.Register(tagname, tagclass)
     ElementManager:RegisterByTagName(tagname, Component.Extend(tagclass))
 end

@@ -157,14 +157,6 @@ function BlockInputField:GetOffset()
 end
 
 function BlockInputField:Render(painter)
-    painter:SetPen(self:GetBlock():GetColor());
-    painter:DrawRect(self.left, self.top, self.maxWidth, self.maxHeight);
-
-    local offsetX, offsetY = self.left + (self.maxWidth - self.width) / 2, self.top + (self.maxHeight - self.height) / 2;
-    painter:SetPen(self:GetColor());
-    painter:Translate(offsetX, offsetY);
-    self:RenderContent(painter);
-    painter:Translate(-offsetX, -offsetY);
 end
 
 
@@ -258,7 +250,6 @@ function BlockInputField:Debug()
         self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount, self.maxWidthUnitCount, self.maxHeightUnitCount, self.totalWidthUnitCount, self.totalHeightUnitCount);
 end
 
-
 function BlockInputField:IsCanEdit()
     return false;
 end
@@ -282,11 +273,11 @@ function BlockInputField:BeginEdit(opt)
     style.NormalStyle.height = self.height;
     local fieldEditElement = self:GetFieldEditElement(editor);
     if (not fieldEditElement) then return end
-    self:SetEdit(true);
-    self:GetTopBlock():UpdateLayout();
-
     editor:InsertChildElement(fieldEditElement);
     editor:UpdateLayout();
+
+    self:SetEdit(true);
+    self:GetTopBlock():UpdateLayout();
 end
 
 function BlockInputField:EndEdit()

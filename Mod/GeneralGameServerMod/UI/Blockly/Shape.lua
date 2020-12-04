@@ -18,6 +18,7 @@ local UnitSize = Const.UnitSize;
 Shape:Property("Pen", "#000000");              -- 画笔
 Shape:Property("Brush", "#ffffff");            -- 画刷
 Shape:Property("Painter");                     -- 绘图类
+Shape:Property("DrawBorder", true, "IsDrawBorder");  -- 是否绘制边框
 
 -- 绘制上边缘
 function Shape:DrawUpEdge(painter, widthUnitCount, fillHeightUnitCount, offsetXUnitCount, offsetYUnitCount)
@@ -36,12 +37,14 @@ function Shape:DrawUpEdge(painter, widthUnitCount, fillHeightUnitCount, offsetXU
     painter:Flush();
     
     -- 绘制边框
-    painter:SetPen(self:GetPen());
-    painter:DrawCircle(UnitSize, UnitSize, 0, UnitSize, "z", false, nil, math.pi, math.pi * 3 / 2);
-    painter:DrawLine(UnitSize, 0, (widthUnitCount - 1) * UnitSize, 0);
-    painter:DrawCircle(UnitSize * (widthUnitCount - 1), UnitSize, 0, UnitSize, "z", false, nil, math.pi * 3 / 2, math.pi * 2);
-    painter:Flush();
-  
+    if (self:IsDrawBorder()) then
+        painter:SetPen(self:GetPen());
+        painter:DrawCircle(UnitSize, UnitSize, 0, UnitSize, "z", false, nil, math.pi, math.pi * 3 / 2);
+        painter:DrawLine(UnitSize, 0, (widthUnitCount - 1) * UnitSize, 0);
+        painter:DrawCircle(UnitSize * (widthUnitCount - 1), UnitSize, 0, UnitSize, "z", false, nil, math.pi * 3 / 2, math.pi * 2);
+        painter:Flush();
+    end
+    
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end
 
@@ -63,11 +66,15 @@ function Shape:DrawDownEdge(painter, widthUnitCount, fillHeightUnitCount, offset
     painter:Flush();
     
     -- 绘制边框
-    painter:SetPen(self:GetPen());
-    painter:DrawCircle(UnitSize , 0, 0, UnitSize, "z", false, nil, math.pi / 2, math.pi);
-    painter:DrawLine(UnitSize, Const.BlockEdgeHeightUnitCount * UnitSize, (widthUnitCount - 1) * UnitSize, Const.BlockEdgeHeightUnitCount * UnitSize);
-    painter:DrawCircle(UnitSize * (widthUnitCount - 1), 0, 0, UnitSize, "z", false, nil, 0, math.pi / 2);
-    painter:Flush();
+    if (self:IsDrawBorder()) then
+        painter:SetPen(self:GetPen());
+        painter:DrawLine(0, -fillHeightUnitCount * UnitSize, 0, 0);
+        painter:DrawLine(widthUnitCount * UnitSize, -fillHeightUnitCount * UnitSize, widthUnitCount * UnitSize, 0);
+        painter:DrawCircle(UnitSize , 0, 0, UnitSize, "z", false, nil, math.pi / 2, math.pi);
+        painter:DrawLine(UnitSize, Const.BlockEdgeHeightUnitCount * UnitSize, (widthUnitCount - 1) * UnitSize, Const.BlockEdgeHeightUnitCount * UnitSize);
+        painter:DrawCircle(UnitSize * (widthUnitCount - 1), 0, 0, UnitSize, "z", false, nil, 0, math.pi / 2);
+        painter:Flush();
+    end
     
     painter:Translate(0, -fillHeightUnitCount * UnitSize);
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
@@ -90,12 +97,14 @@ function Shape:DrawLeftEdge(painter, heightUnitCount, fillWidthUnitCount, offset
     painter:Flush();
 
     -- 绘制边框
-    painter:SetPen(self:GetPen());
-    painter:DrawCircle(UnitSize, (heightUnitCount - 1) * UnitSize, 0, UnitSize, "z", false, nil, math.pi / 2, math.pi);
-    painter:DrawLine(0, UnitSize, 0, (heightUnitCount - 1) * UnitSize);
-    painter:DrawCircle(UnitSize,  UnitSize, 0, UnitSize, "z", false, nil, math.pi, math.pi * 3 / 2);
-    painter:Flush();
-
+    if (self:IsDrawBorder()) then
+        painter:SetPen(self:GetPen());
+        painter:DrawCircle(UnitSize, (heightUnitCount - 1) * UnitSize, 0, UnitSize, "z", false, nil, math.pi / 2, math.pi);
+        painter:DrawLine(0, UnitSize, 0, (heightUnitCount - 1) * UnitSize);
+        painter:DrawCircle(UnitSize,  UnitSize, 0, UnitSize, "z", false, nil, math.pi, math.pi * 3 / 2);
+        painter:Flush();
+    end
+    
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end
 
@@ -118,12 +127,14 @@ function Shape:DrawRightEdge(painter, heightUnitCount, fillWidthUnitCount, offse
     painter:Flush();
 
     -- 绘制边框
-    painter:SetPen(self:GetPen());
-    painter:DrawCircle(0, (heightUnitCount - 1) * UnitSize, 0, UnitSize, "z", false, nil, 0, math.pi / 2);
-    painter:DrawLine(Const.BlockEdgeWidthUnitCount * UnitSize, UnitSize, Const.BlockEdgeWidthUnitCount * UnitSize, (heightUnitCount - 1) * UnitSize);
-    painter:DrawCircle(0 * UnitSize,  UnitSize, 0, UnitSize, "z", false, nil, math.pi * 3 / 2, math.pi * 2);
-    painter:Flush();
-
+    if (self:IsDrawBorder()) then
+        painter:SetPen(self:GetPen());
+        painter:DrawCircle(0, (heightUnitCount - 1) * UnitSize, 0, UnitSize, "z", false, nil, 0, math.pi / 2);
+        painter:DrawLine(Const.BlockEdgeWidthUnitCount * UnitSize, UnitSize, Const.BlockEdgeWidthUnitCount * UnitSize, (heightUnitCount - 1) * UnitSize);
+        painter:DrawCircle(0 * UnitSize,  UnitSize, 0, UnitSize, "z", false, nil, math.pi * 3 / 2, math.pi * 2);
+        painter:Flush();
+    end
+    
     painter:Translate(-fillWidthUnitCount * UnitSize, 0);
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end
@@ -158,15 +169,19 @@ function Shape:DrawPrevConnection(painter, widthUnitCount, offsetXUnitCount, off
     painter:Flush();
 
     -- 绘制边框
-    painter:SetPen(self:GetPen());
-    painter:DrawCircle(UnitSize, UnitSize, 0, UnitSize, "z", false, nil, math.pi, math.pi * 3 / 2);
-    painter:DrawLine(UnitSize, 0, 4 * UnitSize, 0);
-    painter:DrawLine(4 * UnitSize, 0, (4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
-    painter:DrawLine((4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
-    painter:DrawLine((8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + 2 * ConnectionSize) * UnitSize, 0);
-    painter:DrawLine((8 + 2 * ConnectionSize) * UnitSize, 0, (widthUnitCount - 1) * UnitSize, 0);
-    painter:DrawCircle(UnitSize * (widthUnitCount - 1), UnitSize, 0, UnitSize, "z", false, nil, math.pi * 3 / 2, math.pi * 2);
-    painter:Flush();
+    if (self:IsDrawBorder()) then
+        painter:SetPen(self:GetPen());
+        painter:DrawLine(0, (ConnectionSize - 1) * UnitSize, 0, UnitSize * ConnectionSize);
+        painter:DrawCircle(UnitSize, UnitSize, 0, UnitSize, "z", false, nil, math.pi, math.pi * 3 / 2);
+        painter:DrawLine(UnitSize, 0, 4 * UnitSize, 0);
+        painter:DrawLine(4 * UnitSize, 0, (4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
+        painter:DrawLine((4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
+        painter:DrawLine((8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + 2 * ConnectionSize) * UnitSize, 0);
+        painter:DrawLine((8 + 2 * ConnectionSize) * UnitSize, 0, (widthUnitCount - 1) * UnitSize, 0);
+        painter:DrawCircle(UnitSize * (widthUnitCount - 1), UnitSize, 0, UnitSize, "z", false, nil, math.pi * 3 / 2, math.pi * 2);
+        painter:DrawLine(UnitSize * widthUnitCount, (ConnectionSize - 1) * UnitSize, UnitSize * widthUnitCount, UnitSize * ConnectionSize);
+        painter:Flush();
+    end
 
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end
@@ -196,15 +211,16 @@ function Shape:DrawNextConnection(painter, widthUnitCount, offsetXUnitCount, off
     painter:Flush();
 
     -- 绘制边框
-    painter:SetPen(self:GetBrush());
-    painter:DrawLine(4 * UnitSize, 0, 12 * UnitSize, 0);
-    painter:SetPen(self:GetPen());
-    painter:DrawLine(4 * UnitSize, 0, (4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
-    painter:DrawLine((4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
-    painter:DrawLine((8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + 2 * ConnectionSize) * UnitSize, 0);
-
-    painter:Flush();
-
+    if (self:IsDrawBorder()) then
+        painter:SetPen(self:GetBrush());
+        painter:DrawLine(4 * UnitSize, 0, 12 * UnitSize, 0);
+        painter:SetPen(self:GetPen());
+        painter:DrawLine(4 * UnitSize, 0, (4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
+        painter:DrawLine((4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
+        painter:DrawLine((8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + 2 * ConnectionSize) * UnitSize, 0);
+        painter:Flush();
+    end
+    
     painter:Translate(0, -ConnectionSize * UnitSize);
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end

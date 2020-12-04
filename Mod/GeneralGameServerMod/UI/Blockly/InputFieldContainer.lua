@@ -104,10 +104,10 @@ end
 
 function InputFieldContainer:Render(painter)
     if (not self:IsInputStatementContainer()) then
-        painter:SetPen(self:GetBlock():GetColor());
-        painter:DrawRect(self.left, self.top, self.width, self.height);
-        -- Shape:DrawLine(painter, self.leftUnitCount, self.topUnitCount, self.leftUnitCount, self.topUnitCount + self.heightUnitCount);
-        -- Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
+        Shape:SetBrush(self:GetBlock():GetColor());
+        Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
+        Shape:DrawLine(painter, self.leftUnitCount, self.topUnitCount, self.leftUnitCount, self.topUnitCount + self.heightUnitCount);
+        Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
     end
     for _, inputField in ipairs(self.inputFields) do
         inputField:Render(painter);

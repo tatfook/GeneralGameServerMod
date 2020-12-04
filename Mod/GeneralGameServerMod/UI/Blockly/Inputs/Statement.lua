@@ -37,8 +37,9 @@ end
 
 function Statement:Render(painter)
     Shape:SetBrush(self:GetBlock():GetColor());
-    painter:SetPen(self:GetBlock():GetColor());
-    painter:DrawRect(self.left, self.top, self.width, self.height);
+    Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
+    Shape:DrawLine(painter, self.leftUnitCount, self.topUnitCount, self.leftUnitCount, self.topUnitCount + self.heightUnitCount);
+    Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
 
     painter:Translate(self.left + self.width, self.top);
     local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();

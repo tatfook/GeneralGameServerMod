@@ -181,7 +181,6 @@ function Block:UpdateWidthHeightUnitCount()
     end
     
     widthUnitCount = math.max(widthUnitCount, self:IsOutput() and 8 or 14);
-    
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
         if (not inputFieldContainer:IsInputStatementContainer()) then
             inputFieldContainer:SetWidthHeightUnitCount(widthUnitCount, nil);
@@ -189,9 +188,9 @@ function Block:UpdateWidthHeightUnitCount()
     end
 
     if (self:IsOutput()) then 
-        widthUnitCount = widthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
+        -- widthUnitCount = widthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
+        -- maxWidthUnitCount = maxWidthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
         heightUnitCount = heightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
-        maxWidthUnitCount = maxWidthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
         maxHeightUnitCount = maxHeightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
     end
 
@@ -220,7 +219,8 @@ function Block:UpdateLeftTopUnitCount()
     local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
     local offsetX, offsetY = leftUnitCount, topUnitCount;
     
-    if (self:IsOutput()) then offsetX, offsetY = leftUnitCount + Const.BlockEdgeWidthUnitCount, topUnitCount + Const.BlockEdgeHeightUnitCount end
+    -- if (self:IsOutput()) then offsetX, offsetY = leftUnitCount + Const.BlockEdgeWidthUnitCount, topUnitCount + Const.BlockEdgeHeightUnitCount end
+    if (self:IsOutput()) then offsetY = topUnitCount + Const.BlockEdgeHeightUnitCount end
     if (self:IsStatement()) then offsetY = topUnitCount + Const.ConnectionHeightUnitCount end
 
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do

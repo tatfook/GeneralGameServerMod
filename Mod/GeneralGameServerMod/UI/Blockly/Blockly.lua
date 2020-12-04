@@ -137,6 +137,7 @@ end
 
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
+    event:accept();
     if (event.target ~= self) then return end
 
     local x, y = self:GetRelPoint(event.x, event.y);
@@ -160,6 +161,7 @@ end
 
 -- 鼠标移动事件
 function Blockly:OnMouseMove(event)
+    event:accept();
     if (event.target ~= self) then return end
     
     local x, y = self:GetRelPoint(event.x, event.y);
@@ -180,6 +182,7 @@ end
 
 -- 鼠标抬起事件
 function Blockly:OnMouseUp(event)
+    event:accept();
     if (event.target ~= self) then return end
     
     local x, y = self:GetRelPoint(event.x, event.y);

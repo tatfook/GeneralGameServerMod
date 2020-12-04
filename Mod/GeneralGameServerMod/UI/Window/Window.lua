@@ -36,6 +36,7 @@ local Window = commonlib.inherit(Element, NPL.export());
 local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug");
 local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();  -- --Enable  Disable
 
+local windowId = 0;
 Window:Property("NativeWindow");                    -- 原生窗口
 Window:Property("PainterContext");                  -- 绘制上下文
 Window:Property("ElementManager", ElementManager);  -- 元素管理器
@@ -46,6 +47,9 @@ Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
 
 function Window:ctor()
+    windowId = windowId + 1;
+    self.windowId = windowId;
+
     --屏幕位置,宽度,高度
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = 0, 0, 0, 0; 
     -- 窗口的位置,宽度,高度
@@ -73,6 +77,12 @@ function Window:LoadXmlNodeByUrl(url)
     local text = file:GetText();
     file:close();
     return commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString(text), "//html");
+end
+
+function Window:LoadXmlNodeByTemplate(template)
+    if (type(template) == "table") then return template end
+    if (type(template) ~= "string") then return nil end
+    return commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString(template), "//html");
 end
 
 function Window:Init(params)
@@ -122,7 +132,6 @@ function Window:CloseWindow()
 
     ParaUI.Destroy(self:GetNativeWindow().id);
     self:SetNativeWindow(nil);
-    
     local G = self:GetG();
     if (G and type(G.OnClose) == "function") then G.OnClose() end
 end
@@ -246,7 +255,7 @@ function Window:CreateNativeWindow(params)
 	_this:SetScript("onfocusout", function()
 		self:handleActivateEvent(false);
 	end);
-	_this:SetScript("ondestroy", function()
+    _this:SetScript("ondestroy", function(...)
 		self:handleDestroyEvent();
     end);
 
@@ -277,10 +286,13 @@ end
 
 -- handle ondraw callback from system ParaUI object. 
 function Window:handleRender()
+    if (not self:GetNativeWindow()) then return end
     self:Render(self:GetPainterContext());
 end
 
 function Window:handleMouseEvent(event)
+    if (not self:GetNativeWindow()) then return end
+
     self:Hover(event);
 
     local point, eventType = event:globalPos(), event:GetType();
@@ -413,7 +425,6 @@ function Window:handleActivateEvent(isActive)
 end
 
 function Window:handleDestroyEvent()
-    self:SetNativeWindow(nil);
 end
 
 -- 执行字符串代码  返回 result, errmsg
