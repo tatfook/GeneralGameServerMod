@@ -24,3 +24,9 @@ Const.InputValueWidthUnitCount = 10;              -- 输入值宽度
 Const.FieldSpaceWidthUnitCount = 2;               -- 空白字段宽度
 
 Const.MinEditFieldWidthUnitCount = 30;            -- 最小编辑字段宽度
+
+
+
+-- ToolBox
+Const.ToolBoxWidthUnitCount = 80;
+Const.ToolBoxCategoryWidthUnitCount = 10;

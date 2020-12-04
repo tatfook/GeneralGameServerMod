@@ -39,6 +39,8 @@ function Block:ctor()
     self:SetId(nextBlockId);
     nextBlockId = nextBlockId + 1;
 
+    self.isDraggable = true;
+    self.isDragClone = false;
     self.inputFieldContainerList = {};           -- 输入字段容器列表
 end
 
@@ -47,6 +49,9 @@ function Block:Init(blockly, opt)
 
     self:SetBlockly(blockly);
     
+    self.isDraggable = if_else(opt.isDraggable == false, false, true);
+    self.isDragClone = opt.isDragClone;
+
     if (opt.id) then self:SetId(opt.id) end
 
     if (opt.output) then
@@ -58,6 +63,17 @@ function Block:Init(blockly, opt)
 
     self:ParseMessageAndArg(opt);
     return self;
+end
+
+function Block:Clone()
+    local clone = Block:new():Init(self:GetBlockly(), self:GetOption());
+    for key, val in pairs(self) do
+        if (type(val) ~= "function" and type(val) ~= "table" and rawget(self, key) ~= nil) then clone[key] = val end
+    end
+    clone:UpdateLayout();
+    clone.isDraggable = true;
+    clone.isDragClone = false;
+    return clone;
 end
 
 function Block:ParseMessageAndArg(opt)
@@ -82,7 +98,7 @@ function Block:ParseMessageAndArg(opt)
             text = string.gsub(string.gsub(text, "^%s*", ""), "%s*$", "");
              -- 添加FieldLabel
             if (text ~= "") then 
-                inputFieldContainer:AddInputField(FieldLabel:new():Init(self, text), true);
+                inputFieldContainer:AddInputField(FieldLabel:new():Init(self, {text = text}), true);
             end
             if (no and arg and arg[no]) then
                 -- 添加InputAndField
@@ -277,30 +293,35 @@ end
 
 function Block:OnMouseMove(event)
     if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
-    
+    if (not self.isDraggable) then return end
+
+    local block = self;
     local x, y = event.x, event.y;
-    local UnitSize = self:GetUnitSize();
-    if (not self.isDragging) then
-        if (math.abs(x - self.startX) < UnitSize and math.abs(y - self.startY) < UnitSize) then return end
-        self.isDragging = true;
-        self:GetBlockly():CaptureMouse(self);
+    if (not block.isDragging) then
+        if (math.abs(x - block.startX) < UnitSize and math.abs(y - block.startY) < UnitSize) then return end
+        if (block.isDragClone) then 
+            block = self:Clone();
+        end
+
+        block.isDragging = true;
+        block:GetBlockly():CaptureMouse(block);
     end
-    local XUnitCount = math.floor((x - self.startX) / UnitSize);
-    local YUnitCount = math.floor((y - self.startY) / UnitSize);
+    local XUnitCount = math.floor((x - block.startX) / UnitSize);
+    local YUnitCount = math.floor((y - block.startY) / UnitSize);
     
-    if (self.previousConnection and self.previousConnection:IsConnection()) then 
-        local connection = self.previousConnection:Disconnection();
+    if (block.previousConnection and block.previousConnection:IsConnection()) then 
+        local connection = block.previousConnection:Disconnection();
         if (connection) then connection:GetBlock():GetTopBlock():UpdateLayout() end
     end
 
-    if (self.outputConnection and self.outputConnection:IsConnection()) then
+    if (block.outputConnection and block.outputConnection:IsConnection()) then
         local connection = self.outputConnection:Disconnection();
         if (connection) then connection:GetBlock():GetTopBlock():UpdateLayout() end
     end
 
-    self:GetBlockly():AddBlock(self);
-    self:SetLeftTopUnitCount(self.startLeftUnitCount + XUnitCount, self.startTopUnitCount + YUnitCount);
-    self:UpdateLeftTopUnitCount();
+    block:GetBlockly():AddBlock(block);
+    block:SetLeftTopUnitCount(block.startLeftUnitCount + XUnitCount, block.startTopUnitCount + YUnitCount);
+    block:UpdateLeftTopUnitCount();
 end
 
 function Block:OnMouseUp(event)

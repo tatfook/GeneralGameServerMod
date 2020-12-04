@@ -1,31 +1,18 @@
 <template class="container">
-    <div style="width:100%; height: 100%;" onmousedown=OnMouseDown onmousemove=OnMouseMove onmouseup=OnMouseUp>
-        <WindowTitleBar title="测试"></WindowTitleBar>
-        <div style="width: 100px; height: 100px; background: url(@test.jpg);"></div>
-    </div>
+    <WindowTitleBar title="测试"></WindowTitleBar>
+    <Progress v-bind:percentage="percentage"></Progress>
+    <div onclick=OnClick>btn</div>
 </template>
 
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+RegisterComponent("Progress", "%vue%/Components/Progress.html");
 
-id = 1;
+percentage = 1;
 
--- 组件解析完成
-function OnReady()
+function OnClick()
+    percentage = percentage + 1;
 end
-
-function OnMouseDown()
-    echo("鼠标按下");
-end
-
-function OnMouseMove()
-    echo("鼠标移动");
-end
-
-function OnMouseUp()
-    echo("鼠标松开");
-end
-
 </script>
 
 <style>

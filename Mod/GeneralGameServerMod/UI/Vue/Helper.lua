@@ -35,7 +35,7 @@ function Helper.FormatFilename(filename)
         if (type(path) == "function") then return path() end
         return "";
     end);
-
+    path = string.gsub(path, "^@", GameLogic.GetWorldDirectory());
     return string.gsub(path, "/+", "/");
 end
 

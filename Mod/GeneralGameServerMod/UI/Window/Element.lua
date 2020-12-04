@@ -293,29 +293,41 @@ end
 
 -- 元素添加至文档树
 function Element:Attach()
-    self:OnAttach();
-
+    self:OnBeforeChildAttach();
     for _, child in ipairs(self.childrens) do
         child:Attach();
     end
+    self:OnAttach();
+    self:OnAfterChildAttach();
 end
 
 -- 元素脱离文档树
 function Element:Detach()
-    self:OnDetach();
-
+    self:OnBeforeChildDetach();
     for _, child in ipairs(self.childrens) do
         child:Detach();
     end
+    self:OnDetach();
+    self:OnAfterChildDetach();
+end
+
+function Element:OnBeforeChildAttach()
+    self:ApplyElementStyle();
 end
 
 -- 添加DOM树中
 function Element:OnAttach()
-    self:ApplyElementStyle();
 end
 
+function Element:OnAfterChildAttach()
+end
+
+function Element:OnBeforeChildDetach()
+end
 -- 从DOM树中移除
 function Element:OnDetach()
+end
+function Element:OnAfterChildDetach()
 end
 
 -- 创建样式
@@ -493,6 +505,15 @@ function Element:SetAttrValue(attrName, attrValue)
     local oldAttrValue = attr[attrName];
     attr[attrName] = attrValue;
     self:OnAttrValueChange(attrName, attrValue, oldAttrValue);
+end
+
+-- 设置样式值
+function Element:SetStyleValue(styleKey, styleValue)
+    local style = self:GetStyle();
+    local value = Style.GetStyleValue(styleKey, styleValue);
+    style[styleKey] = value;
+    style:GetNormalStyle()[styleKey] = value;
+    return ;
 end
 
 -- 获取内联文本

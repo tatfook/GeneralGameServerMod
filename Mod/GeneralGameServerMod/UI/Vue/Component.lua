@@ -22,6 +22,8 @@ Component:Property("ParentComponent");        -- 父组件
 Component:Property("ChildrenComponentList");  -- 子组件列表
 Component:Property("Scope");                  -- 组件当前Scope
 Component:Property("ComponentScope");         -- 组件Scope 
+Component:Property("Compiled", false, "IsCompiled");      -- 是否编译
+
 -- 全局组件
 local GlobalComponentClassMap = {};
 local XmlFileCache = {};
@@ -75,12 +77,12 @@ function Component:Init(xmlNode, window, parent)
     self:InitByScriptNode(scriptNode);
     -- 初始化子元素  需要重写创建子元素逻辑
     self:InitChildElement(htmlNode, window);
-    -- 根组件直接编译
-    if (not self:GetParentComponent()) then 
-        self:Compile();
-    else
-        -- 非根组件等待编译完成
-    end
+    -- -- 根组件直接编译
+    -- if (not self:GetParentComponent()) then 
+    --     self:Compile();
+    -- else
+    --     -- 非根组件等待编译完成
+    -- end
     return self;
 end
 
@@ -194,6 +196,9 @@ function Component:InitByXmlNode(elementXmlNode, componentXmlNode)
     elementAttr.style = (componentAttr.style or "") .. ";" .. (elementAttr.style or "");
     elementAttr.class = (componentAttr.class or "") .. (elementAttr.class or "");
     elementXmlNode.attr = elementAttr;
+
+    if (componentAttr.ref) then self:SetRef(componentAttr.ref, self) end
+
     return elementXmlNode;
 end
 
@@ -206,8 +211,22 @@ function Component:InitByScriptNode(scriptNode)
     self:ExecCode(scriptText);
 end
 
+-- 元素加载到DOM之前
+function Component:OnAfterChildAttach()
+    Component._super.OnAfterChildAttach(self);
+    
+    -- 根组件直接编译
+    local parentComponent = self:GetParentComponent();
+    if (not parentComponent or parentComponent:IsCompiled()) then 
+        self:Compile();
+    end
+end
+
 -- 编译组件
 function Component:Compile()
+    if (self:IsCompiled()) then return end
+    self:SetCompiled(true);
+
     self:OnBeforeCompile();
 
     self:OnCompile();
@@ -304,6 +323,7 @@ function Component:Register(tagname, tagclass)
         if (not tagclass) then
             return ComponentClassMap[tagname] or self:GetElementByTagName(tagname);
         end
+        -- ComponentDebug.Format("注册组件: %s", tagname);
         ComponentClassMap[tagname] = tagclass;
         return tagclass;
     end

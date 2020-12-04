@@ -13,6 +13,7 @@ NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local LuaBlocks = NPL.load("./Blocks/Lua.lua", IsDevEnv);
+local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
@@ -27,16 +28,14 @@ Blockly:Property("FocusUI");                  -- 聚焦UI
 local UnitSize = Const.UnitSize;
 
 function Blockly:ctor()
-    self.offsetX = 0;
-    self.offsetY = 0;
+    self.widthUnitCount, self.heightUnitCount = 0, 0;
+    self.offsetX, self.offsetY = 0, 0;
     self.blocks = {};
-    local offsetX, offsetY = 5, 5;
-    for index, blockOption in ipairs(LuaBlocks) do
-        local block = Block:new():Init(self, blockOption);
-        block:SetLeftTopUnitCount(offsetX, offsetY);
-        local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
-        offsetY = offsetY + heightUnitCount + 5;
-        table.insert(self.blocks, block);
+    self.toolbox = ToolBox:new():Init(self);
+    self.block_types = {};
+
+    for _, block in ipairs(LuaBlocks) do
+        self:DefineBlock(block);
     end
 end
 
@@ -51,6 +50,16 @@ function Blockly:Init(xmlNode, window, parent)
     table.insert(self.childrens, blocklyEditor);
     self:SetEditorElement(blocklyEditor);
     return self;
+end
+
+-- 定义块
+function Blockly:DefineBlock(block)
+    self.block_types[block.type] = block;
+end
+
+-- 获取块
+function Blockly:GetBlockOptionByType(typ)
+    return self.block_types[typ];
 end
 
 -- 获取所有顶层块
@@ -91,25 +100,31 @@ function Blockly:RenderContent(painter)
     -- Shape:SetPainter(painter);
 
     painter:Translate(x, y);
-
     painter:Save();
     painter:SetClipRegion(0, 0, w, h);
+
+    self.toolbox:Render(painter);
+
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
         block:Render(painter);
         painter:Flush();
     end
     painter:Translate(-self.offsetX, -self.offsetY);
+    
     painter:Restore();
-
     painter:Translate(-x, -y);
 end
 
 -- 布局Blockly
-function Blockly:OnAfterUpdateLayout()
+function Blockly:OnSize()
     for _, block in ipairs(self.blocks) do
         block:UpdateLayout();
     end
+    local _, _, width, height = self:GetContentGeometry();
+    self.widthUnitCount = math.ceil(width / UnitSize);
+    self.heightUnitCount = math.ceil(height / UnitSize);
+    self.toolbox:SetWidthHeightUnitCount(nil, self.heightUnitCount);
 end
 
 -- 捕获鼠标
@@ -203,6 +218,9 @@ end
 -- 获取鼠标元素
 function Blockly:GetMouseUI(x, y, event)
     local ui = self:GetMouseCaptureUI();
+    if (ui) then return ui end
+
+    ui = self.toolbox:GetMouseUI(x + self.offsetX, y + self.offsetY, event);
     if (ui) then return ui end
 
     local size = #self.blocks;

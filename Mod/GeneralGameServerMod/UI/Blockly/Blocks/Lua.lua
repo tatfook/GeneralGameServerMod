@@ -15,7 +15,7 @@ local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 
 NPL.export({
     {
-        name = "boolean",
+        type = "boolean",
         message0 = "%1",
         arg0 = {
             {
@@ -32,7 +32,7 @@ NPL.export({
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
     },
     {
-        name = "number",
+        type = "number",
         message0 = "%1",
         arg0 = {
             {
@@ -47,7 +47,7 @@ NPL.export({
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
     },
     {
-        name = "text",
+        type = "text",
         message0 = "%1",
         arg0 = {
             {
@@ -60,7 +60,7 @@ NPL.export({
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
     },
     {
-        name = "if",
+        type = "if",
         message0 = "如果 %1 那么",
         arg0 = {
             {
@@ -80,7 +80,7 @@ NPL.export({
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
     },
     {
-        name = "if_else",
+        type = "if_else",
         message0 = "如果 %1 那么 %2 否则 %3",
         arg0 = {
             {
@@ -101,7 +101,7 @@ NPL.export({
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
     },
     {
-        name = "for",
+        type = "for",
         message0 = "每个 %1 , %2 在 %3 %4",
         arg0 = {
             {
@@ -126,7 +126,7 @@ NPL.export({
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
     },
     {
-        name = "for",
+        type = "for",
         message0 = "每个 %1 , %2 在数组 %3 %4",
         arg0 = {
             {

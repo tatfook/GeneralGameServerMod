@@ -73,13 +73,13 @@ end
 
 function ElementManager:RegisterByTagName(tagname, class)
     ElementClassMap[string.lower(tagname)] = class;
-    -- ElementManagerDebug.Format("Register TagElement %s", tagname);
+    -- ElementManagerDebug.Format("Register TagElement %s, class = %s", tagname, class ~= nil);
 end
 
 function ElementManager:GetElementByTagName(tagname)
     local TagElement = ElementClassMap[string.lower(tagname)];
     -- ElementManagerDebug.Format("GetElementByTagName TagName = %s", tagname);
-    if (not TagElement) then ElementManagerDebug.Format("TagElement Not Exist, TagName = %s", tagname) end
+    -- if (not TagElement) then ElementManagerDebug.Format("TagElement Not Exist, TagName = %s", tagname) end
     return TagElement or Element;
 end
 

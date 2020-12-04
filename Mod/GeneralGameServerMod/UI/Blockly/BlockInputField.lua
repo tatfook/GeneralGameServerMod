@@ -16,6 +16,7 @@ local UnitSize = Const.UnitSize;
 
 BlockInputField:Property("ClassName", "BlockInputField");
 BlockInputField:Property("Name");
+BlockInputField:Property("Type");
 BlockInputField:Property("Block");
 BlockInputField:Property("Option");
 BlockInputField:Property("Color", "#ffffff");                    -- 颜色
@@ -37,12 +38,30 @@ function BlockInputField:Init(block, option)
     self:SetBlock(block);
     self:SetOption(option or {});
     self:SetName(option.name);
+    self:SetType(option.type);
 
     -- 解析颜色值
     self:SetColor(option.color);
 
     return self;
 end
+
+-- 拷贝
+-- function BlockInputField:Clone()
+--     local clone = self:new():Init(self:GetBlock(), self:GetOption());
+--     for key, val in pairs(self) do
+--         local valtype = type(val);
+--         if (valtype ~= "function" and valtype ~= "table" and rawget(self, key) ~= nil) then
+--             clone[key] = val;
+--         end
+
+--         if (valtype == "table" and type(val.Clone) == "function") then
+--             clone[key] = val:Clone() or val;
+--         end
+--     end
+
+--     return clone;
+-- end
 
 function BlockInputField:IsField()
     return false;
@@ -264,11 +283,12 @@ end
 function BlockInputField:BeginEdit(opt)
     if (not self:IsCanEdit()) then return end
 
+    local blockly = self:GetBlock():GetBlockly();
     local editor = self:GetEditorElement();
     editor:ClearChildElement();
     local style = editor:GetStyle();
-    style.NormalStyle.left = self.left + (self.maxWidth - self.width) / 2;
-    style.NormalStyle.top = self.top + (self.maxHeight - self.height) / 2;
+    style.NormalStyle.left = self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX;
+    style.NormalStyle.top = self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY;
     style.NormalStyle.width = math.max(self.width, self:GetMinEditFieldWidthUnitCount() * Const.UnitSize);
     style.NormalStyle.height = self.height;
     local fieldEditElement = self:GetFieldEditElement(editor);

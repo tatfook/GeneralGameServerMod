@@ -15,10 +15,10 @@ local Label = commonlib.inherit(Field, NPL.export());
 
 Label:Property("Color", "#ffffff");
 
-function Label:Init(block, value)
-    Label._super.Init(self, block);
+function Label:Init(block, opt)
+    Label._super.Init(self, block, opt);
 
-    self:SetValue(value);
+    self:SetValue(opt and opt.text or "");
 
     return self;
 end
