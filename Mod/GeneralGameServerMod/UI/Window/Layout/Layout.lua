@@ -174,24 +174,25 @@ function Layout:ApplyPositionStyle()
 	relWidth, relHeight = relWidth or 0, relHeight or 0;
 	if (right and width and not left) then left = relWidth - right - width end
 	if (bottom and height and not top) then top = relHeight - bottom - height end
-	if (not width) then width = relWidth - (left or 0) - (right or 0) end 
-	if (not height) then height = relHeight - (top or 0) - (bottom or 0) end 
+	if (not width and left and right) then width = relWidth - left - right end 
+	if (not height and top and bottom) then height = relHeight - top - bottom end 
 	left, top = left or 0, top or 0;
 	self:SetPos(left, top);
 	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", self:GetName(), left, top, right, bottom, width, height, relWidth, relHeight);
-	self:SetWidthHeight(math.max(width, 0), math.max(height, 0));
+	self:SetWidthHeight(width and math.max(width, 0), height and math.max(height, 0));
 end
 
 -- 更新布局
 function Layout:Update(isUpdateWidthHeight)
+	-- local width, height = self:GetWidthHeight();
 	local maxWidth, maxHeight = self:GetMaxWidthHeight();
     local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
     local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
 
 	-- 应用定位方式获取宽高
 	self:ApplyPositionStyle();
-	local width, height = self:GetWidthHeight();
 
+	local width, height = self:GetWidthHeight();
 	-- 更新真实内容大小 由所有子元素决定
 	self:UpdateRealContentWidthHeight();
 	local realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
