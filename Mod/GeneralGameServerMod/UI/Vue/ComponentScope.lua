@@ -9,7 +9,7 @@ local ComponentScope = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/ComponentS
 -------------------------------------------------------
 ]]
 
-local Scope = NPL.load("./Scope.lua", IsDevEnv);
+local Scope = NPL.load("./Scope.lua");
 
 local ComponentScope = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 

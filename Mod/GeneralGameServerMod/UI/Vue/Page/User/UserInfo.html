@@ -1,0 +1,292 @@
+<template>
+    <div style="margin-top: 11px; margin-left: 9px; height:569px; width: 339px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwukuang_339X529_32bits.png#0 0 339 529:50 300 50 50);">
+        <div style="height: 298px; position: relative;">
+            <div style="margin-top: 20px;">
+                <div class="center" v-if="not isEditNickName">
+                    <div style="display: inline;">
+                        <div v-if="isCrown" tooltip="Paracraft 会员" style="margin-left:2px; display: inline-block; width:24px; height:24px; background:url(Texture/Aries/Creator/keepwork/UserInfo/crown_32bits.png#0 0 18 18)"></div>
+                        <div v-if="not isTeacher and isStudent" tooltip="合作机构vip学员" style="margin-left:2px; display: inline-block; width:24px; height:24px;background:url(Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18)"></div>
+                        <div v-if="isTeacher" tooltip="合作机构vip教师" style="margin-left:2px; display: inline-block; width:24px; height:24px; background:url(Texture/Aries/Creator/keepwork/UserInfo/blue_v_32bits.png#0 0 18 18)"></div>
+                    </div>
+                    <div style="display: inline; margin-left: 5px; font-size: 18px; base-font-size: 18px; color: #ffffff; shadow-quality:8; shadow-color:#000000; text-shadow:true;">{{GetNickName(nickname)}}</div>
+                    <div v-if="isAuthUser" v-on:click="ClickEditNickName" style="margin-left: 5px; display: inline-block; height:24; width: 24px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_bianji_24X24_32bits.png#2 1 26 25);"></div>
+                    <Follow v-if="not isAuthUser and isLogin" v-bind:UserDetail="UserDetail" style="display: inline; margin-left: 5px; margin-top:-2px;"></Follow>
+                </div>
+                <div v-if="isEditNickName" class="center">
+                    <ChangeNickName v-on:finish="OnEditNickNameFinish" v-bind:userId="UserDetail.id" v-bind:nickname="UserDetail.nickname" style="display: inline;"></ChangeNickName>
+                </div>
+            </div>
+            <div class="center">
+                <canvas3d v-bind:assetfile="mainasset" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" IsInteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></canvas3d>
+            </div>
+            <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div>
+            <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div>
+            <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
+            <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
+            <div v-on:click="ClickPersonalPage" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
+            <div v-if="isAuthUser and not isRealName" v-on:click="ClickGoRealName" style="position: absolute; left: 120px; bottom: 6px;  text-align: center; line-height: 24px; width:100px; height: 30px; font-size: 14px; base-font-size: 14px; color: #000000; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#673 198 38 64:12 10 12 15);">实名认证</div>
+            <div v-if="isAuthUser" v-on:click="ClickChangeSkinBtn" style="position: absolute; right: 15px; bottom: 15px; height:39px; width: 38px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_genghuan_38X39_32bits.png#0 0 38 39);"></div>
+            <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
+        </div>
+        <div style="padding-left: 4px; width: 316px; height: 360px; margin-left: 11px;">
+            <div style="display: flex; margin-top: 20px; height: 38px; width: 310px; background-color: #c1c2c2; font-size: 14px; base-font-size: 14px; color: #313131;">
+                <div class="center" style="width: 154px; height: 100%;">
+                    <div>
+                        <div style="display: inline; padding-right: 5px;">{{follow or 0}}</div>
+                        <div style="display: inline; margin-top: 2px; width:34px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_guangzhu_34X16_32bits.png#0 0 34 16);"></div>
+                    </div>
+                </div>
+                <div style="display: inline; width: 1px; height: 100%; background: url(Texture/Aries/Creator/keepwork/ggs/user/fengexian_1X45_32bits.png#0 0 1 45);"></div>
+                <div class="center" style="width: 154px; height: 100%;">
+                    <div>
+                        <div style="display: inline; padding-right: 5px;">{{fans or 0}}</div>
+                        <div style="display: inline; margin-top: 2px; width:34px; height: 15px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_fensi_34X15_32bits.png#0 0 34 15);"></div>
+                    </div>
+                </div>
+            </div>
+            <div style="padding-left: 10px; font-size: 14px; base-font-size: 14px; color: #323232;">
+                <div style="margin-top: 10px; height: 24px;">
+                    <div style="position: relative; width: 70px; height: 24px; display: inline;">
+                        <div style="position: absolute; left: 0px; top: 0px; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
+                        <div style="position: absolute; left: 18px; top: 4px; width: 34px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_zhanghao_34X16_32bits.png#0 0 34 16);"></div>
+                    </div>
+                    <div style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{username}}</div>
+                </div>
+                <div style="margin-top: 16px; height: 24px;">
+                    <div style="position: relative; width: 70px; height: 24px; display: inline;">
+                        <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
+                        <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 32px; height: 15px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_shengri_32X15_32bits.png#0 0 32 15);"></div>
+                    </div>
+                    <div  style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{registerAt}}</div>
+                </div>
+                <div style="margin-top: 16px; height: 24px;">
+                    <div style="position: relative; width: 70px; height: 24px; display: inline;">
+                        <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
+                        <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 34px; height: 17px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_xuexiao_34X17_32bits.png#0 0 34 17);"></div>
+                    </div>
+                    <div  style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{schoolName}}</div>
+                </div>
+                <div style="margin-top: 16px; height: 24px;">
+                    <div style="position: relative; width: 70px; height: 24px; display: inline;">
+                        <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
+                        <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 33px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_diqu_33X16_32bits.png#0 0 33 16);"></div>
+                    </div>
+                    <div style="max-width: 180px; display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{regionname}}</div>
+                    <div v-if="isAuthUser" v-on:click="ClickRegionEdit" style="display: inline; margin-left: 6px; width: 20px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/bianji_20X20_32bits.png#0 0 20 20);"></div>
+                </div>
+
+                <div v-if="isAuthUser" style="margin-top: 16px; height: 24px;">
+                    <div style="position: relative; width: 70px; height: 24px; display: inline;">
+                        <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
+                        <div style="position: absolute; left: 10px; top: 4px; display: inline; width: 50px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_zhishidou_50X16_32bits.png#0 0 50 16);"></div>
+                    </div>
+                    <div  style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{bean or 0}}</div>
+                </div>
+
+                <div v-if="isNeedUpdateRegion and isAuthUser and isShowUpdateRegionTip" style="position: absolute; top: 165px; left: 10px; height: 34px; width: 280px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tipbj_32bits.png:8 8 8 8);">
+                    <div style="display: inline-block; font-size: 12px; base-font-size: 12px; color: #ffffff; padding-top: 8px; padding-left: 16px;">完善地区信息, 获取知识豆奖励</div>
+                    <div v-on:click="ClickRegionEdit" style="display: inline-block; margin-left: 8px; margin-top: 5px; font-size: 14px; base-font-size: 14px; text-align: center; width: 55px; height: 24px; line-height: 22px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_guanzhu_32X32_32bits.png#0 0 32 32:8 8 8 8);">编辑</div>
+                    <div v-on:click="ClickCloseRegionEditTip" style="display: inline-block; margin-left: 8px; margin-top: 5px; width: 19px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tipX_19X20_32bits.png#0 0 19 20);"></div>
+                </div>
+            </div>
+        </div>
+    </div>    
+</template>
+
+<script type="text/lua">
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
+
+RegisterComponent("ChangeNickName", "%ui%/Component/User/ChangeNickName.html");
+RegisterComponent("Follow", "%ui%/Component/User/Follow.html");
+RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
+local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
+local UniString = commonlib.gettable("System.Core.UniString");
+local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
+local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
+local RegisterModal = NPL.load("(gl)Mod/WorldShare/cellar/RegisterModal/RegisterModal.lua");
+local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
+
+local assets = {
+    "character/CC/02human/paperman/boy01.x",
+    "character/CC/02human/paperman/boy02.x",
+    "character/CC/02human/paperman/boy03.x",
+    "character/CC/02human/paperman/boy04.x",
+    "character/CC/02human/paperman/boy05.x",
+    "character/CC/02human/paperman/boy06.x",
+    "character/CC/02human/paperman/boy07.x",
+    "character/CC/02human/paperman/girl01.x",
+    "character/CC/02human/paperman/girl02.x",
+    "character/CC/02human/paperman/girl03.x",
+    "character/CC/02human/paperman/girl04.x",
+    "character/CC/02human/paperman/girl05.x",
+}
+local curAssetIndex = 1;
+
+self.isEditNickName = false;
+self.isNeedUpdateRegion = nil;
+self.isShowUpdateRegionTip = true;
+
+function OnAttrValueChange(attrName, attrValue)
+    if (attrName == "UserDetail") then
+        OnUserInfoChange(attrValue or {});
+    end
+end
+
+function OnUserInfoChange()
+    local region = UserDetail.region or {};
+    self.bean = tostring(UserDetail.bean or 0);
+    self.schoolName = UserDetail.school and UserDetail.school.name or "";
+    self.userId = UserDetail.id;
+    self.username = UserDetail.username;
+    self.nickname = MyCompany.Aries.Chat.BadWordFilter.FilterString(UserDetail.nickname);
+    self.isFollow = UserDetail.isFollow or false;
+    self.follow = UserDetail.rank.follow or 0;
+    self.fans = UserDetail.rank.fans or 0;
+    self.isCrown = UserDetail.vip == 1;
+    self.isTeacher = UserDetail.tLevel == 1;
+    self.isStudent = UserDetail.student == 1;
+    self.isNeedUpdateRegion = region.hasChildren == 1 and true or false;
+    local fullname = UniString:new(region.displayName or region.fullname or "");
+    self.regionname = fullname:sub(1, 11):GetText() .. (fullname:length() > 11 and "..." or "");
+    self.isRealName = UserDetail.isRealname;
+    -- 格式化注册时间
+    local datetime = UserDetail.createdAt;
+    local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
+    self.registerAt = tostring(year) .. "." .. tostring(month) .. "." .. tostring(day);
+end
+
+function ClickEditNickName()
+    self.isEditNickName = not self.isEditNickName;
+end
+
+function ClickRegionEdit()
+    page.ShowUserRegionUpdatePage({
+        UserDetail = UserDetail,
+        UserRegion = UserDetail.region, 
+        userId = UserDetail.id,
+        confirm = function(region) 
+            UserDetail.region = region;
+            self.regionname = region and region.fullname;
+        end
+    });
+end
+
+function ClickCloseRegionEditTip()
+    isShowUpdateRegionTip = false;
+end
+
+function ClickGoRealName()
+    ui:CloseWindow();
+    RegisterModal:ShowClassificationPage();
+end
+
+function OnEditNickNameFinish(nickname)
+    UserDetail.nickname = nickname;
+    self.isEditNickName = false;
+    local userinfo = KeepWorkItemManager.GetProfile();
+    userinfo.nickname = nickname;
+end 
+
+function ClickChangeSkinBtn()
+    ui:CloseWindow();
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/SkinPage.lua", true);
+    local SkinPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.SkinPage");
+    
+    SkinPage.ShowPage(nil, function()
+        UpdatePlayerInfo();
+    end);
+end
+
+-- 获取昵称
+function GetNickName(text)
+    if type(text) ~= 'string' then return '' end
+    local utf8Text = UniString:new(text)
+    if _guihelper.GetTextWidth(text) > 112 then
+        return utf8Text:sub(1, 8).text .. '...'
+    else
+        return text
+    end
+end
+
+function ChangePlayerAsset(assetfile)
+	assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
+	local playerEntity = GameLogic.GetPlayerController():GetPlayer();
+	if(assetfile and assetfile~=playerEntity:GetMainAssetPath()) then
+		local oldAssetFile = playerEntity:GetMainAssetPath()
+		if(playerEntity.SetModelFile) then
+			playerEntity:SetModelFile(assetfile);
+		else
+			playerEntity:SetMainAssetPath(assetfile);
+        end
+        GameLogic.options:SetMainPlayerAssetName(assetfile);
+		-- this ensure that at least one default skin is selected
+		if(playerEntity:GetSkin()) then
+			playerEntity:SetSkin(nil);
+		else
+			playerEntity:RefreshSkin();
+		end
+		if(math.abs(EntityManager.PlayerAssetFile:GetDefaultScale(oldAssetFile) - playerEntity:GetScaling()) < 0.01) then
+			playerEntity:SetScaling(EntityManager.PlayerAssetFile:GetDefaultScale(assetfile))
+		end
+	end
+end 
+
+function ClickPrevAsset()
+    if (curAssetIndex == 1) then 
+        curAssetIndex = #assets;
+    else
+        curAssetIndex = curAssetIndex - 1;
+    end 
+    mainasset = assets[curAssetIndex];
+    --GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
+    --GameLogic.options:SetMainPlayerAssetName(mainasset);
+    ChangePlayerAsset(mainasset);
+
+    UpdatePlayerInfo();
+end
+
+function ClickNextAsset()
+    echo("-------------------")
+    if (curAssetIndex == #assets) then
+        curAssetIndex = 1;
+    else
+        curAssetIndex = curAssetIndex + 1;
+    end 
+    mainasset = assets[curAssetIndex];
+    --GameLogic.GetPlayerController():GetPlayer():SetMainAssetPath(mainasset);
+    --GameLogic.options:SetMainPlayerAssetName(mainasset);
+    ChangePlayerAsset(mainasset);
+    UpdatePlayerInfo();
+end
+
+function UpdatePlayerInfo()
+    -- 更新用户信息
+    if (not isAuthUser) then return end
+    local player = GameLogic.GetPlayerController():GetPlayer();
+    local asset = player:GetMainAssetPath();
+    local skin = player:GetSkin();
+    local extra = UserDetail.extra or {};
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    extra.ParacraftPlayerEntityInfo.asset = asset;
+    extra.ParacraftPlayerEntityInfo.skin = skin;
+    keepwork.user.setinfo({
+        router_params = {id = AuthUserId},
+        extra = extra,
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
+        local userinfo = KeepWorkItemManager.GetProfile();
+        userinfo.extra = extra;
+    end);
+
+end 
+
+function ClickPrevRotate()
+end 
+
+function ClickNextRotate()
+end
+
+function ClickPersonalPage()
+    ParaGlobal.ShellExecute("open", "https://keepwork.com/u/" .. UserDetail.username, "", "", 1);
+end
+</script>

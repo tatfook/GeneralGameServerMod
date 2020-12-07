@@ -261,7 +261,7 @@ function Element:ChildElementIterator(isRender, filter)
         local style1, style2 = child1:GetStyle() or {}, child2:GetStyle() or {};
         local zindex1, zindex2 = style1["z-index"] or 0, style2["z-index"] or 0;
         -- 函数返回true, 表两个元素需要交换位置
-        local sort = if_else(zindex1 == zindex2, style1.float ~= nil and style2.float == nil, zindex1 < zindex2);  -- true 默认升序  z-index 相同 含有float优先
+        local sort = if_else(zindex1 == zindex2, style1.float ~= nil and style2.float == nil, zindex1 > zindex2);  -- true 默认升序  z-index 相同 含有float优先
         return if_else(isRender, sort, not sort);
     end
     -- table.sort(list, comp);
@@ -274,6 +274,10 @@ function Element:ChildElementIterator(isRender, filter)
         end
     end
     
+    -- if (self:GetAttrStringValue("id") == "test") then
+    --     print(isRender, list[1]:GetAttrStringValue("id"), list[2]:GetAttrStringValue("id"));
+    -- end
+
     if (self.horizontalScrollBar) then table.insert(list, isRender and (#list + 1) or 1, self.horizontalScrollBar) end
     if (self.verticalScrollBar) then table.insert(list, isRender and (#list + 1) or 1, self.verticalScrollBar) end
 
@@ -294,6 +298,7 @@ end
 -- 元素添加至文档树
 function Element:Attach()
     self:OnBeforeChildAttach();
+	-- for child in self:ChildElementIterator() do
     for _, child in ipairs(self.childrens) do
         child:Attach();
     end
@@ -304,6 +309,7 @@ end
 -- 元素脱离文档树
 function Element:Detach()
     self:OnBeforeChildDetach();
+	-- for child in self:ChildElementIterator() do
     for _, child in ipairs(self.childrens) do
         child:Detach();
     end
@@ -317,6 +323,7 @@ end
 
 -- 添加DOM树中
 function Element:OnAttach()
+    self.attached = true;
 end
 
 function Element:OnAfterChildAttach()
@@ -326,7 +333,9 @@ function Element:OnBeforeChildDetach()
 end
 -- 从DOM树中移除
 function Element:OnDetach()
+    self.attached = false;
 end
+
 function Element:OnAfterChildDetach()
 end
 
@@ -341,12 +350,14 @@ function Element:ApplyElementStyle()
     self:GetStyleSheet():ApplyElementStyle(self, style);
     -- ElementDebug.If(self:GetName() == "Text", "class", style);
     -- 内联样式
-    style:AddString(self:GetAttrValue("style"));
-    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle());
-    -- ElementDebug.If(self:GetName() == "Text", "inline", style);
+    style:AddNormalStyle(self:GetAttrValue("style"));
 
     -- 选择默认样式
-    return style:SelectNormalStyle();
+    style:SelectNormalStyle();
+
+    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle(), self:GetAttr(), self:GetAttrValue("style"));
+
+    return;
 end
 
 -- 元素布局更新前回调
@@ -429,7 +440,8 @@ function Element:OnRealContentSizeChange()
     --     self:GetAttrStringValue("id") == "debug", 
     --     isOverflowX, isOverflowY, 
     --     width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
-
+    local style = self:GetStyle();
+    
     if (isOverflowX) then self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self) end
 
     if (self.horizontalScrollBar) then
@@ -443,6 +455,14 @@ function Element:OnRealContentSizeChange()
         self.verticalScrollBar:SetVisible(isOverflowY);
         self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
     end
+end
+
+function Element:GetHorizontalScrollBar()
+    return self.horizontalScrollBar;
+end
+
+function Element:GetVerticalScrollBar()
+    return self.verticalScrollBar;
 end
 
 function Element:OnScroll(scrollEl)
@@ -497,6 +517,12 @@ end
 
 -- 元素属性值更新
 function Element:OnAttrValueChange(attrName, attrValue, oldAttrValue)
+    if ((attrName == "style" or attrName == "class") and self.attached) then
+        local parent = self:GetParentElement();
+        self:SetStyle(Style:new():Init(self:GetBaseStyle(), parent and parent:GetStyle()));
+        self:ApplyElementStyle();
+        self:UpdateLayout();
+    end
 end
 
 -- 设置属性值

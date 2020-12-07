@@ -10,7 +10,7 @@ local Flex = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout/Flex.l
 ]]
 
 local Flex = NPL.export();
-local FlexDebug = GGS.Debug.GetModuleDebug("FlexDebug").Enable(); --Enable  Disable
+local FlexDebug = GGS.Debug.GetModuleDebug("FlexDebug").Disable(); --Enable  Disable
 
 local function LayoutElementFilter(el)
 	local layout = el:GetLayout();

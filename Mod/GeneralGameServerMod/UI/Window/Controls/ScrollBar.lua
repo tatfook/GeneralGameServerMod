@@ -213,6 +213,10 @@ function ScrollBar:IsHorizontal()
     return self:GetDirection() == "horizontal";
 end
 
+function ScrollBar:GetThumb()
+    return self.thumb;
+end
+
 function ScrollBar:Init(xmlNode, window, parent)
     self:InitElement(xmlNode, window, parent);
     self:SetDirection(self:GetAttrStringValue("direction") or "horizontal"); -- horizontal  vertical

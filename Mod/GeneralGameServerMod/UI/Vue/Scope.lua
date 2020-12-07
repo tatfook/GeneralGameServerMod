@@ -194,7 +194,6 @@ function Scope:__get__(scope, key)
 
     -- 无法正确识别数组更新(rawset, table.insert) 故当对scope类型值操作时, 统一出发当前scope的读取, 设置回调
     -- self:__call_index_and_newindex_callback__(scope, key);
-    
     -- 触发回调
     self:__call_index_callback__(scope, key);
 
@@ -203,7 +202,7 @@ function Scope:__get__(scope, key)
 
     -- 返回用户自定的读取
     if (type(self.__metatable_index__) == "table") then return self.__metatable_index__[key] end
-    if (type(self.__metatable_index__) == "table") then return self.__metatable_index__(scope, key) end
+    if (type(self.__metatable_index__) == "function") then return self.__metatable_index__(scope, key) end
 end
 
 -- 写入回调   

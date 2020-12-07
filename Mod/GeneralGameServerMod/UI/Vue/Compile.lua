@@ -28,7 +28,7 @@ local function GenerateDependItem(obj, key)
 end
 
 Scope.__set_global_index__(function(obj, key)
-    -- CompileDebug.Format("__Index key = %s", key);
+    -- CompileDebug.Format("__Index key = %s, obj = %s", key, tostring(obj));
     DependItems[GenerateDependItem(obj, key)] = true;
 end)
 
@@ -59,7 +59,8 @@ end)
 local function ExecCode(code, func, object, watch)
     DependItems = {};   -- 清空依赖集
     local oldVal = func();
-    -- CompileDebug.If(code == "List", code, DependItems);
+    -- CompileDebug.If(code == "UserDetail", code, DependItems);
+
     if (object and type(watch) == "function") then
         local OldDependItems = {};
         for dependItem in pairs(DependItems) do
@@ -257,6 +258,7 @@ function Compile:VBind(element)
         local realVal = nil;
         if (realKey and realKey ~= "") then
             self:ExecCode(val, element, function(realVal)
+                if (type(realVal) == "table" and realVal.__get_raw_data__) then realVal = realVal:__get_raw_data__() end
                 element:SetAttrValue(realKey, realVal);
             end, true);
         end

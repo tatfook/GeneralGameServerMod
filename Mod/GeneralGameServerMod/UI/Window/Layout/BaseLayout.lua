@@ -274,12 +274,14 @@ end
 
 -- 是否溢出
 function BaseLayout:IsOverflowX()
-	return (self.overflowX == "auto" or self.overflowX == "scroll") and self.contentWidth and self.realContentWidth and self.realContentWidth > self.contentWidth;
+	return self.overflowX == "auto" or self.overflowX == "scroll";
+	-- return (self.overflowX == "auto" or self.overflowX == "scroll") and self.contentWidth and self.realContentWidth and self.realContentWidth > self.contentWidth;
 end
 
 -- 是否溢出
 function BaseLayout:IsOverflowY()
-	return (self.overflowY == "auto" or self.overflowY == "scroll") and self.contentHeight and self.realContentHeight and self.realContentHeight > self.contentHeight;
+	return self.overflowY == "auto" or self.overflowY == "scroll";
+	-- return (self.overflowY == "auto" or self.overflowY == "scroll") and self.contentHeight and self.realContentHeight and self.realContentHeight > self.contentHeight;
 end
 
 -- 开始布局

@@ -25,6 +25,7 @@ function Vue:LoadXmlNodeByUrl(url)
         name = "html",
         attr = {
             style = "width: 100%; height:100%;",
+            -- id = "debug"
         }, 
         {
             name = "component",

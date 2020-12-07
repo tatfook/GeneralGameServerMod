@@ -1,0 +1,22 @@
+<template>
+    <div style="padding-left:10px; padding-right:20px; height:39px; padding-top: 10px;">
+        <div style="float: left; width:128px; height:64px; margin-top:-28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/biaoti_128X64_32bits.png);"></div>
+        <div style="float: left; margin-left: 220px; margin-top: -5px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_zuop_90X34_32bits.png#0 0 90 34);"></div>
+        <div v-on:click="Close" class="btn" style="float: right; background:url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22); width:20px; height:20px;"></div>
+    </div>
+</template>
+
+<script type="text/lua">
+function Close() 
+    CloseWindow();
+end
+</script>
+
+<style>
+.btn {
+    background-color: #e6e6e6;
+}
+.btn:hover {
+    background-color: #ffffff;
+}
+</style>

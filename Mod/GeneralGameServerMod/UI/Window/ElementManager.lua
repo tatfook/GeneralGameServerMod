@@ -34,6 +34,8 @@ local Slot = NPL.load("../Vue/Slot.lua", IsDevEnv);
 
 local Blockly = NPL.load("../Blockly/Blockly.lua", IsDevEnv);
 
+local Canvas3D = NPL.load("./Controls/Canvas3D.lua", IsDevEnv);
+
 local ElementManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 local ElementManagerDebug = GGS.Debug.GetModuleDebug("ElementManagerDebug").Enable();   --Enable  Disable
 
@@ -65,6 +67,9 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("Slot", Slot);
 
     ElementManager:RegisterByTagName("Blockly", Blockly);
+
+    -- 控件元素
+    ElementManager:RegisterByTagName("Canvas3D", Canvas3D);
 
     for _, tagname in ipairs(DivAliasTag) do
         ElementManager:RegisterByTagName(tagname, Div);

@@ -27,6 +27,12 @@ local DefaultStyleString = [[
         flex-direction: column;
         justify-content: center;
     }
+    .btn {
+
+    }
+    .btn:hover {
+        background-color: #ffffff;
+    }
 ]]
 
 function DefaultStyle.GetDefaultStyleString()

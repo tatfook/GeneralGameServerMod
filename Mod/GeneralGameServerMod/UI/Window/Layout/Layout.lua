@@ -100,7 +100,7 @@ function Layout:PrepareLayout()
 	-- 数字化宽高
 	local width, height = style.width, style.height;                                                                                                        -- 支持百分比, px
 	-- 块元素默认为父元素宽
-	if (self:IsBlockElement() and not self:IsPositionElement() and not width and parentLayout and not parentLayout:IsFlexElement()) then width = parentWidth end             
+	if (self:IsBlockElement() and not self:IsPositionElement() and not width and parentLayout and not parentLayout:IsFlexElement()) then width = parentWidth end  
 	width = self:PercentageToNumber(width, parentWidth);
     height = self:PercentageToNumber(height, parentHeight);
 	if (style["box-sizing"] == "content-box" and style.width) then
@@ -186,6 +186,7 @@ end
 function Layout:Update(isUpdateWidthHeight)
 	-- local width, height = self:GetWidthHeight();
 	local maxWidth, maxHeight = self:GetMaxWidthHeight();
+	local minWidth, minHeight = self:GetMinWidthHeight();
     local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
     local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
 
@@ -206,6 +207,7 @@ function Layout:Update(isUpdateWidthHeight)
 	end
 
 	width, height = math.min(width, maxWidth or width), math.min(height, maxHeight or height);
+	width, height = math.max(width, minWidth or width), math.max(height, minHeight or height);
 	self:SetWidthHeight(width, height);
 
 	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);

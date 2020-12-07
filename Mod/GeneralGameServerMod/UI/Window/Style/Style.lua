@@ -423,12 +423,23 @@ function Style.ParseString(style_code)
 	return style;
 end
 
--- 添加样式代码: mcml style attribute string like "background:url();margin:10px;"
-function Style:AddString(style_code)
-	local style = Style.ParseString(style_code);
-	for key, val in pairs(style) do
-		self.NormalStyle[key] = val;
+
+function Style:AddStyle(dst_style, src_style)
+	if (type(src_style) == "string") then
+		local style = Style.ParseString(src_style);
+		for key, val in pairs(style) do
+			dst_style[key] = val;
+		end
+	elseif (type(src_style) == "table") then
+		for key, val in pairs(src_style) do
+			Style.AddStyleItem(dst_style, key, val);
+		end
 	end
+end
+
+-- 添加样式代码: mcml style attribute string like "background:url();margin:10px;"
+function Style:AddNormalStyle(style)
+	self:AddStyle(self.NormalStyle, style);
 end
 
 -- 获取样式值

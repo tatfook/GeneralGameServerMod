@@ -1,0 +1,15 @@
+
+<template style="width: 100%; height: 100%; color:#ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/dialog_440X93_32bits.png#0 0 440 93:37 43 33 44);">
+    <Title></Title>
+    <div width="100%">
+        <UserInfo v-bind:UserDetail="UserDetail" style="float:left;"></UserInfo>
+        <WorksList v-bind:ProjectList="ProjectList" style="float:left;"></WorksList>
+    </div>
+</template>
+
+<script type="text/lua" src="%vue%/Page/User/User.lua">
+RegisterComponent("Title", "%vue%/Page/User/Title.html");
+RegisterComponent("UserInfo", "%vue%/Page/User/UserInfo.html");
+RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
+</script>
+

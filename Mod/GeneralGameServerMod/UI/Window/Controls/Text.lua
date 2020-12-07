@@ -71,7 +71,7 @@ end
 
 local function CalculateTextLayout(self, text, width, left, top)
 	TextDebug.Format("CalculateTextLayout, text = %s, width = %s, left = %s, top = %s", text, width, left, top);
-	if(not text or text =="") then return 0, 0 end
+	if(not text or text == "") then return 0, 0 end
 
 	local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
 	local remaining_text = nil;
@@ -79,6 +79,10 @@ local function CalculateTextLayout(self, text, width, left, top)
 	if(width and width > 0 and textWidth > width) then
 		text, remaining_text = _guihelper.TrimUtf8TextByWidth(text, width, self:GetFont())
 		textWidth = _guihelper.GetTextWidth(text, self:GetFont());
+		if (textWidth == 0) then 
+			text, remaining_text = remaining_text, nil;
+			textWidth = _guihelper:GetTextWidth(text, self:GetFont());
+		end
 	end
 
 	TextDebug.Format("text = %s, x = %s, y = %s, w = %s, h = %s", text, left, top, textWidth, textHeight);
@@ -141,7 +145,7 @@ function Text:OnUpdateLayout()
 		-- TextDebug(text, self.texts);
 	end
 
-	-- TextDebug.Format("OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
+	-- TextDebug.FormatIf(self:GetParentElement():GetAttrStringValue("id") == "debug", "OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
 
 	self:GetLayout():SetWidthHeight(width or textWidth, height or textHeight);
     return true; 

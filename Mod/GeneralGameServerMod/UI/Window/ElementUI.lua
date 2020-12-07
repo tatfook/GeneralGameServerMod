@@ -61,9 +61,9 @@ function ElementUI:RenderStaticElement(painter, root)
     local position = self:GetLayout():GetPositionStyle();
     if (self ~= root and (position == "absolute" or position == "fixed" or position == "screen")) then
         if (position == "absolute") then 
-            table.insert(root.AbsoluteElements, 1, self);
+            table.insert(root.AbsoluteElements, self);
         else
-            table.insert(root.FixedElements, 1, self);
+            table.insert(root.FixedElements, self);
         end
         return ;
     end
@@ -452,6 +452,9 @@ function ElementUI:OnClick(event)
 	if (click) then click(event) end
 end
 
+function ElementUI:OnContextMenu()
+end
+
 function ElementUI:OnChange(value)
     local change = self:GetAttrFunctionValue("onchange");
     if (change) then change(value) end
@@ -509,8 +512,14 @@ function ElementUI:OnMouseUp(event)
     local mouseup = self:GetAttrFunctionValue("onmouseup");
     if (mouseup) then mouseup(event) end
 
-    self:OnClick(event);
+    if (event:button() == "right") then 
+        self:OnContextMenu(event);
+    else
+        self:OnClick(event)
+    end
+
     if(event:isAccepted()) then return end
+    
 	if(self.isDragging) then
         self.isDragging = false;
 		self:ReleaseMouseCapture();
