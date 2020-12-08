@@ -41,8 +41,17 @@ local function UpdateRow(layout, style)
     local contentWidth, contentHeight = 0, 0;
     local function UpdateChildLayoutPos(layouts)
         for _, childLayout in ipairs(line.layouts) do
-            local spaceWidth = childLayout:GetSpaceWidthHeight();
-			childLayout:SetPos(offsetLeft, offsetTop);
+			local spaceWidth, spaceHeight = childLayout:GetSpaceWidthHeight();
+			local childMarginTop, childMarginRight, childMarginBottom, childMarginLeft = childLayout:GetMargin();
+			local alignSelf = childLayout:GetStyle()["align-self"];
+			local lineHeight = line.height;
+			if (alignSelf == "center") then
+				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop + (lineHeight - spaceHeight) / 2);
+			elseif (alignSelf == "flex-end") then
+				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop+ lineHeight - spaceHeight);
+			else
+				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop);
+			end
 			-- FlexDebug.Format("child layout left = %s, top = %s", offsetLeft, offsetTop);
             offsetLeft = offsetLeft + spaceWidth + HGap;
         end
@@ -208,7 +217,7 @@ end
 
 local function Update(layout)
     local style = layout:GetStyle();
-    if (style.display ~= "flex") then return end
+    if (style.display ~= "flex" and style.display ~= "inline-flex") then return end
 
 	local flexDirection = style["flex-direction"] or "row";
     if (flexDirection == "row" or flexDirection == "row-reverse") then

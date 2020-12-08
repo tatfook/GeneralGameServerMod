@@ -33,8 +33,8 @@ local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local StyleManager = NPL.load("./Style/StyleManager.lua", IsDevEnv);
 local Window = commonlib.inherit(Element, NPL.export());
-local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug");
-local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();  -- --Enable  Disable
+local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug").Enable();
+local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();  -- Enable  Disable
 
 local windowId = 0;
 Window:Property("NativeWindow");                    -- 原生窗口
@@ -85,8 +85,13 @@ function Window:LoadXmlNodeByTemplate(template)
     return commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString(template), "//html");
 end
 
+-- 新建一个全局表
+function Window:NewG(g)
+    return G.New(self, g);
+end
+
 function Window:Init(params)
-    self:SetG(G.New(self, params.G));      -- 设置全局G表
+    self:SetG(self:NewG(params.G));      -- 设置全局G表
     -- 设置窗口元素
     self:InitElement({
         name = "Window",
@@ -124,6 +129,8 @@ function Window.Show(self, params)
     end
     self:Init(params);
     self:UpdateLayout();
+
+    return self;
 end
 
 -- 窗口关闭
@@ -319,18 +326,28 @@ function Window:handleMouseEvent(event)
         -- 无布局的元素忽略
         if (not element:IsVisible()) then return end
 
+        -- MouseDebug.If(element:GetTagName() == "ScaleSlider" and eventType == "mousePressEvent", 
+        --     "-----------------------------------", 
+        --     element:IsContainPoint(x, y),
+        --     x, y,
+        --     {element:GetWindowPos()},
+        --     {element:GetScreenPos()},
+        --     {element:GetSize()}
+        -- );
+        
         -- 检测元素是否包含
         if (not element:IsContainPoint(x, y)) then return end
 
-        if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Element Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
+        MouseDebug.FormatIf(eventType == "mousePressEvent", "Element Capture: TagName = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetTagName(), eventType, captureFuncName, bubbleFuncName);
 
         -- 触发捕获事件
         if (type(element[captureFuncName]) == "function") then 
+            event:UpdateElement(element);
             (element[captureFuncName])(element, event);
         end
 
         -- 是否已处理
-        if (event:isAccepted()) then return target end
+        if (event:isAccepted()) then return element end
 
         -- 子元素
         local target = nil;
@@ -339,41 +356,56 @@ function Window:handleMouseEvent(event)
             if (target) then break end
         end
         
+        MouseDebug.If(target == nil and eventType == "mousePressEvent", "===================================================",element:GetTagName());
+        
         target = target or element;
         event.target = target;
 
         -- 是否已处理
         if (event:isAccepted()) then return target end
         
-        if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Element Bubble: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
+        MouseDebug.FormatIf(eventType == "mousePressEvent", "Element Bubble: TagName = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetTagName(), eventType, captureFuncName, bubbleFuncName);
 
         -- 触发相应事件
         if (type(element[bubbleFuncName]) == "function") then
+            event:UpdateElement(element);
             (element[bubbleFuncName])(element, event);
         end
         
+        -- 定位元素父元素冒泡
+        if (element:GetLayout():IsPositionElement()) then
+            local el = element:GetParentElement();
+            while(el) do
+                event:UpdateElement(el);
+                (element[bubbleFuncName])(el, event);
+                el = el:GetParentElement();
+            end
+        end
+
         return target;
     end
 
     -- 如果鼠标事件已被锁定则直接执行事件回调
     local element = self:GetMouseCapture();
     if (element) then
-        if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Mouse Capture: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetName(), eventType, captureFuncName, bubbleFuncName) end
+        MouseDebug.FormatIf(eventType == "mousePressEvent", "Mouse Capture: TagName = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element:GetTagName(), eventType, captureFuncName, bubbleFuncName);
         if (type(element[bubbleFuncName]) == "function") then
+            event:UpdateElement(element);
             (element[bubbleFuncName])(element, event);
         end
     else 
         local positionElements = self:GetPositionElements();
         for _, el in ipairs(positionElements) do
-            -- MouseDebug.If(false and eventType ~= "mouseMoveEvent", el:GetName());
+            MouseDebug.If(eventType == "mousePressEvent", "positionElements", el:GetTagName());
             element = ElementMouseEvent(el);
             if (element) then break end
         end
         element = element or ElementMouseEvent(self);
     end
 
-    if (eventType ~= "mouseMoveEvent") then MouseDebug.Format("Target Element: Name = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element and element:GetName(), eventType, captureFuncName, bubbleFuncName) end
+    MouseDebug.FormatIf(eventType == "mousePressEvent", "Target Element: TagName = %s, EventType = %s, CaptureFuncName = %s, BubbleFuncName = %s", element and element:GetTagName(), eventType, captureFuncName, bubbleFuncName);
 
+    event:UpdateElement(element);
     if (eventType == "mouseMoveEvent") then
         -- self:SetHover(element);
     elseif(eventType == "mousePressEvent") then

@@ -9,7 +9,7 @@ local ScrollBar = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Controls
 ]]
 
 local Element = NPL.load("../Element.lua", IsDevEnv);
-local ScrollBarDebug = GGS.Debug.GetModuleDebug("ScrollBarDebug");
+local ScrollBarDebug = GGS.Debug.GetModuleDebug("ScrollBarDebug").Disable();  -- Enable() Disable;
 
 local defaultScrollBarSize = 10;
 

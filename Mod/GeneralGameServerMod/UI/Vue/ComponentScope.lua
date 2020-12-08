@@ -32,9 +32,9 @@ local scope_methods = {
 function ComponentScope.New(component)
     local scope = Scope:__new__(); 
     local _scope = ComponentScope:new():Init(component, scope);
-
+    local parentComponent = component:GetParentComponent();
     scope.self = scope;
-    scope:__set_metatable_index__(_scope:GetGlobalScope());
+    scope:__set_metatable_index__(parentComponent and parentComponent:GetScope() or _scope:GetGlobalScope());
 
     for _, method in ipairs(scope_methods) do
         scope[method] = function(...) 

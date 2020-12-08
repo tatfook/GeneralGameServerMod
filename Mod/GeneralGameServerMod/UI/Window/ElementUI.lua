@@ -366,13 +366,15 @@ function ElementUI:UpdateWindowPos(forceUpdate)
         windowX, windowY = parentElement:GetWindowPos();
         local scrollX, scrollY = parentElement:GetScrollPos();
         -- ElementUIDebug.FormatIf(parentElement:GetAttrStringValue("id") == "debug", "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
-        if (not self:GetLayout():IsPositionElement()) then
+        if (self:GetLayout():IsPositionElement()) then
+        else
             windowX, windowY = windowX - scrollX, windowY - scrollY;
-            -- ElementUIDebug.FormatIf((scrollX > 0 or scrollY > 0), "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
         end
+        -- ElementUIDebug.FormatIf((scrollX > 0 or scrollY > 0), "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
     end
+    -- ElementUIDebug.FormatIf(self:GetTagName() == "ScaleSlider", "windowX = %s, windowY = %s, parentElement = %s", windowX, windowY, parentElement == nil);
     windowX, windowY = windowX + x, windowY + y;
-    -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBar", "windowX = %s, windowY = %s", windowX, windowY);
+    -- ElementUIDebug.FormatIf(self:GetTagName() == "ScaleSlider", "windowX = %s, windowY = %s", windowX, windowY);
     self:SetWindowPos(windowX, windowY);
     -- 更新子元素的窗口位置
     if (forceUpdate or oldWindowX ~= windowX or oldWindowY ~= windowY) then 

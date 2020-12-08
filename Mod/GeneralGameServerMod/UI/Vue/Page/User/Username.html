@@ -1,13 +1,17 @@
-<template style="background-color: #00000080;">
-    <div v-if="portrait" v-bind:style="portraitStyle" valign="center"></div>
+<template style="background-color: #00000080; display: flex; align-items: center;">
+    <div v-if="portrait" v-bind:style="portraitStyle"></div>
     <div v-if="isCrown" tooltip="Paracraft 会员" valign="center" class="icon" style=" background:url(Texture/Aries/Creator/keepwork/UserInfo/crown_32bits.png#0 0 18 18)"></div>
-    <div v-if="not isTeacher and isStudent" tooltip="合作机构vip学员" valign="center"  class="icon" style="height:18px;background:url(Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18)"></div>
-    <div v-if="isTeacher" tooltip="合作机构vip教师" class="icon" valign="center" style="background:url(Texture/Aries/Creator/keepwork/UserInfo/blue_v_32bits.png#0 0 18 18)"></div>
-    <div valign="center" style="display: inline; margin-left: 5px; color: #ffffff; shadow-quality:8; shadow-color:#000000; text-shadow:true;">{{username}}</div>
+    <div v-if="not isTeacher and isStudent" tooltip="合作机构vip学员" class="icon" style="height:18px;background:url(Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18)"></div>
+    <div v-if="isTeacher" tooltip="合作机构vip教师" class="icon" style="background:url(Texture/Aries/Creator/keepwork/UserInfo/blue_v_32bits.png#0 0 18 18)"></div>
+    <div style="display: inline; margin-left: 5px; color: #ffffff; align-self: center;">{{username}}</div>
 </template>
 
 <script type="text/lua">
+local GlobalScope = GetGlobalScope();
+ 
 function OnReady()
+    local UserDetail = GlobalScope:Get("UserDetail");
+    if (not UserDetail) then return end
     self.portrait = UserDetail.portrait;
     self.username = UserDetail.username;
     self.isCrown = UserDetail.vip == 1;
@@ -18,6 +22,9 @@ function OnReady()
         self.portraitStyle = string.format("display: inline-block; margin-left: 8px; width: 24px; height: 24px; background:url(%s);", self.portrait);
     end
 end
+
+GlobalScope:Watch("UserDetail", OnReady);
+
 </script>
 
 <style>
@@ -26,5 +33,7 @@ end
     width: 18px;
     height: 18px;
     margin-left:4px; 
+    display: flex; 
+    align-self: center;
 }
 </style>

@@ -154,7 +154,6 @@ function Canvas3D:AutoSetObjectSkin(obj_params)
 end
 
 function Canvas3D:OnAttrValueChange()
-	
     local IsActiveRendering = self:GetAttrBoolValue("IsActiveRendering");
     if (IsActiveRendering == nil) then
         IsActiveRendering = true;

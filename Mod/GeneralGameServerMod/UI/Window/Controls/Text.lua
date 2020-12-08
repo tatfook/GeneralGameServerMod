@@ -12,7 +12,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Text = commonlib.inherit(Element, NPL.export());
 
-local TextDebug = GGS.Debug.GetModuleDebug("TextDebug").Disable();  -- Enable() Disable;
+local TextDebug = GGS.Debug.GetModuleDebug("TextDebug").Enable();  -- Enable() Disable;
 
 Text:Property("Value");  -- 文本值
 Text:Property("Name", "Text");
@@ -70,7 +70,7 @@ function Text:GetTextAlign()
 end
 
 local function CalculateTextLayout(self, text, width, left, top)
-	TextDebug.Format("CalculateTextLayout, text = %s, width = %s, left = %s, top = %s", text, width, left, top);
+	TextDebug.FormatIf(self:GetParentElement():GetAttrStringValue("id") == "debug", "CalculateTextLayout, text = %s, width = %s, left = %s, top = %s", text, width, left, top);
 	if(not text or text == "") then return 0, 0 end
 
 	local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
@@ -85,7 +85,7 @@ local function CalculateTextLayout(self, text, width, left, top)
 		end
 	end
 
-	TextDebug.Format("text = %s, x = %s, y = %s, w = %s, h = %s", text, left, top, textWidth, textHeight);
+	TextDebug.FormatIf(self:GetParentElement():GetAttrStringValue("id") == "debug", "text = %s, x = %s, y = %s, w = %s, h = %s", text, left, top, textWidth, textHeight);
 	local textObject = {text = text, x = left, y = top, w = textWidth, h = textHeight};
 	table.insert(self.texts, textObject);
 	
@@ -107,18 +107,18 @@ local function CalculateTextLayout(self, text, width, left, top)
 end
 
 function Text:OnUpdateLayout()
-	local layout, style = self:GetLayout(), self:GetStyle();
+	local layout, parentStyle = self:GetLayout(), self:GetParentElement():GetStyle();
 	local parentLayout = self:GetParentElement():GetLayout();
-	local parentContentWidth, parentContentHeight = parentLayout:GetContentWidthHeight();
+	local parentContentWidth, parentContentHeight = parentLayout:GetFixedContentWidthHeight();
 	local width, height = layout:GetFixedWidthHeight();
 	local left, top = 0, 0;
 	local textWidth, textHeight = 0, 0;
 	local text = self:GetText();
-
 	self.texts = {};
 
-	-- TextDebug("OnBeforeUpdateChildElementLayout", width, parentContentWidth);
-	if (style["text-wrap"] == "none") then
+	TextDebug.FormatIf(self:GetParentElement():GetAttrStringValue("id") == "debug", "width = %s, height = %s, parentWidth = %s, parentHeight = %s, parentIsFixedWidth = %s", width, height, parentContentWidth, parentContentHeight, parentLayout:IsFixedWidth());
+	if (parentStyle["text-wrap"] == "none") then
+		echo("----------------")
 		--  不换行
 		local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
 		local textObject = {text = text, x = 0, y = 0, w = textWidth, h = textHeight}
@@ -126,7 +126,7 @@ function Text:OnUpdateLayout()
 		height = height or textHeight;
 		width = width or textWidth;
 		if (width < textWidth) then
-			if (style["text-overflow"] == "ellipsis") then
+			if (parentStyle["text-overflow"] == "ellipsis") then
 				textObject.text = _guihelper.AutoTrimTextByWidth(text, width - 16, self:GetFont()) .. "...";
 			else
 				textObject.text = _guihelper.AutoTrimTextByWidth(text, width, self:GetFont());
@@ -142,10 +142,12 @@ function Text:OnUpdateLayout()
 			textHeight = textHeight + lineheight;
 			top = top + lineheight;
 		end
+		height = height or textHeight;
+		width = width or textWidth;
 		-- TextDebug(text, self.texts);
 	end
 
-	-- TextDebug.FormatIf(self:GetParentElement():GetAttrStringValue("id") == "debug", "OnBeforeUpdateChildElementLayout, width = %s, height = %s", width, height);
+	TextDebug.FormatIf(self:GetParentElement():GetAttrStringValue("id") == "debug", "OnBeforeUpdateChildElementLayout, width = %s, height = %s, textCount = %s", width, height, #self.texts);
 
 	self:GetLayout():SetWidthHeight(width or textWidth, height or textHeight);
     return true; 
@@ -165,6 +167,9 @@ function Text:OnRender(painter)
 	for i = 1, #self.texts do
 		local obj = self.texts[i];
 		local x, y, text = left + obj.x, top + obj.y + linePadding, obj.text;
+
+		-- TextDebug.FormatIf(self:GetParentElement():GetAttrStringValue("id") == "debug", "OnReader, x = %s, y = %s, text = %s", x, y, text);
+
 		painter:DrawText(x, y, text);
 	end
 end

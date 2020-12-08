@@ -13,11 +13,11 @@
                     <Follow v-if="not isAuthUser and isLogin" v-bind:UserDetail="UserDetail" style="display: inline; margin-left: 5px; margin-top:-2px;"></Follow>
                 </div>
                 <div v-if="isEditNickName" class="center">
-                    <ChangeNickName v-on:finish="OnEditNickNameFinish" v-bind:userId="UserDetail.id" v-bind:nickname="UserDetail.nickname" style="display: inline;"></ChangeNickName>
+                    <ChangeNickName v-bind:finish="OnEditNickNameFinish" v-bind:userId="UserDetail.id" v-bind:nickname="UserDetail.nickname" style="display: inline;"></ChangeNickName>
                 </div>
             </div>
             <div class="center">
-                <canvas3d v-bind:assetfile="mainasset" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" IsInteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></canvas3d>
+                <canvas3d v-bind:assetfile="mainasset" v-bind:scale="scale" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" IsInteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></canvas3d>
             </div>
             <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div>
             <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div>
@@ -26,22 +26,18 @@
             <div v-on:click="ClickPersonalPage" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
             <div v-if="isAuthUser and not isRealName" v-on:click="ClickGoRealName" style="position: absolute; left: 120px; bottom: 6px;  text-align: center; line-height: 24px; width:100px; height: 30px; font-size: 14px; base-font-size: 14px; color: #000000; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#673 198 38 64:12 10 12 15);">实名认证</div>
             <div v-if="isAuthUser" v-on:click="ClickChangeSkinBtn" style="position: absolute; right: 15px; bottom: 15px; height:39px; width: 38px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_genghuan_38X39_32bits.png#0 0 38 39);"></div>
-            <ScaleSlider v-if="isAuthUser" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
+            <ScaleSlider v-if="isAuthUser" onscale="OnScale" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
         </div>
         <div style="padding-left: 4px; width: 316px; height: 360px; margin-left: 11px;">
             <div style="display: flex; margin-top: 20px; height: 38px; width: 310px; background-color: #c1c2c2; font-size: 14px; base-font-size: 14px; color: #313131;">
                 <div class="center" style="width: 154px; height: 100%;">
-                    <div>
-                        <div style="display: inline; padding-right: 5px;">{{follow or 0}}</div>
-                        <div style="display: inline; margin-top: 2px; width:34px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_guangzhu_34X16_32bits.png#0 0 34 16);"></div>
-                    </div>
+                    <div style="display: inline; padding-right: 5px;">{{follow}}</div>
+                    <div style="display: inline; margin-top: 2px; width:34px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_guangzhu_34X16_32bits.png#0 0 34 16);"></div>
                 </div>
                 <div style="display: inline; width: 1px; height: 100%; background: url(Texture/Aries/Creator/keepwork/ggs/user/fengexian_1X45_32bits.png#0 0 1 45);"></div>
                 <div class="center" style="width: 154px; height: 100%;">
-                    <div>
-                        <div style="display: inline; padding-right: 5px;">{{fans or 0}}</div>
-                        <div style="display: inline; margin-top: 2px; width:34px; height: 15px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_fensi_34X15_32bits.png#0 0 34 15);"></div>
-                    </div>
+                    <div style="display: inline; padding-right: 5px;">{{fans}}</div>
+                    <div style="display: inline; margin-top: 2px; width:34px; height: 15px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_fensi_34X15_32bits.png#0 0 34 15);"></div>
                 </div>
             </div>
             <div style="padding-left: 10px; font-size: 14px; base-font-size: 14px; color: #323232;">
@@ -80,7 +76,7 @@
                         <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
                         <div style="position: absolute; left: 10px; top: 4px; display: inline; width: 50px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_zhishidou_50X16_32bits.png#0 0 50 16);"></div>
                     </div>
-                    <div  style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{bean or 0}}</div>
+                    <div  style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{bean}}</div>
                 </div>
 
                 <div v-if="isNeedUpdateRegion and isAuthUser and isShowUpdateRegionTip" style="position: absolute; top: 165px; left: 10px; height: 34px; width: 280px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tipbj_32bits.png:8 8 8 8);">
@@ -96,9 +92,9 @@
 <script type="text/lua">
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 
-RegisterComponent("ChangeNickName", "%ui%/Component/User/ChangeNickName.html");
-RegisterComponent("Follow", "%ui%/Component/User/Follow.html");
-RegisterComponent("ScaleSlider", "%ui%/Component/User/ScaleSlider.html");
+RegisterComponent("ChangeNickName", "%vue%/Page/User/ChangeNickName.html");
+RegisterComponent("Follow", "%vue%/Page/User/Follow.html");
+RegisterComponent("ScaleSlider", "%vue%/Page/User/ScaleSlider.html");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local UniString = commonlib.gettable("System.Core.UniString");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
@@ -128,11 +124,11 @@ self.isShowUpdateRegionTip = true;
 
 function OnAttrValueChange(attrName, attrValue)
     if (attrName == "UserDetail") then
-        OnUserInfoChange(attrValue or {});
+        OnReady();
     end
 end
 
-function OnUserInfoChange()
+function OnReady()
     local region = UserDetail.region or {};
     self.bean = tostring(UserDetail.bean or 0);
     self.schoolName = UserDetail.school and UserDetail.school.name or "";
@@ -153,10 +149,19 @@ function OnUserInfoChange()
     local datetime = UserDetail.createdAt;
     local year, month, day = commonlib.timehelp.GetYearMonthDayFromStr(datetime);
     self.registerAt = tostring(year) .. "." .. tostring(month) .. "." .. tostring(day);
+
+    local extra = UserDetail.extra or {};
+    local player = GameLogic.GetPlayerController():GetPlayer();
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    self.scale = extra.ParacraftPlayerEntityInfo.scale or (player and player:GetScaling()) or 1;
 end
 
 function ClickEditNickName()
     self.isEditNickName = not self.isEditNickName;
+end
+
+function OnScale(scale)
+    self.scale = scale;
 end
 
 function ClickRegionEdit()
@@ -176,7 +181,7 @@ function ClickCloseRegionEditTip()
 end
 
 function ClickGoRealName()
-    ui:CloseWindow();
+    CloseWindow();
     RegisterModal:ShowClassificationPage();
 end
 
@@ -188,7 +193,7 @@ function OnEditNickNameFinish(nickname)
 end 
 
 function ClickChangeSkinBtn()
-    ui:CloseWindow();
+    CloseWindow();
     NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/SkinPage.lua", true);
     local SkinPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.SkinPage");
     
@@ -246,7 +251,6 @@ function ClickPrevAsset()
 end
 
 function ClickNextAsset()
-    echo("-------------------")
     if (curAssetIndex == #assets) then
         curAssetIndex = 1;
     else

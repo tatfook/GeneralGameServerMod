@@ -19,7 +19,6 @@ local ComponentDebug = GGS.Debug.GetModuleDebug("Component");
 
 Component:Property("Components");             -- 组件依赖组件集
 Component:Property("ParentComponent");        -- 父组件
-Component:Property("ChildrenComponentList");  -- 子组件列表
 Component:Property("Scope");                  -- 组件当前Scope
 Component:Property("ComponentScope");         -- 组件Scope 
 Component:Property("Compiled", false, "IsCompiled");      -- 是否编译
@@ -54,13 +53,13 @@ function Component:ctor()
     self:SetComponents({});             -- 依赖组件集
     self.refs = {};
     self.slotXmlNodes = {};
-    self:SetChildrenComponentList({});
 end
 
 -- 初始化
 function Component:Init(xmlNode, window, parent)
     self.template = xmlNode.template;
     
+    self:SetTagName(xmlNode.name);
     self:InitSlotXmlNode(xmlNode);
 
     local htmlNode, scriptNode, styleNode, xmlRoot = self:LoadXmlNode(xmlNode);
@@ -116,20 +115,14 @@ end
 
 -- 初始化组件
 function Component:InitComponent(xmlNode)
+    -- 设置父组件
+    local parentComponent = self:GetParentElement();
+    while (parentComponent and not parentComponent:isa(Component)) do parentComponent = parentComponent:GetParentElement() end
+    self:SetParentComponent(parentComponent);
     -- 初始化组件Scope
     local scope = ComponentScope.New(self);
     self:SetComponentScope(scope);
     self:SetScope(scope);
-
-    -- 设置父组件
-    local parentComponent = self:GetParentElement();
-    while (parentComponent and not parentComponent:isa(Component)) do
-        parentComponent = parentComponent:GetParentElement();
-    end
-    self:SetParentComponent(parentComponent);
-    if (parentComponent) then
-        table.insert(parentComponent:GetChildrenComponentList(), self);
-    end
 end
 
 -- 初始化子元素
@@ -225,17 +218,19 @@ end
 -- 编译组件
 function Component:Compile()
     if (self:IsCompiled()) then return end
-    self:SetCompiled(true);
-
     self:OnBeforeCompile();
-
     self:OnCompile();
-
-    local childrenComponentList = self:GetChildrenComponentList();
-    for _, childrenComponent in ipairs(childrenComponentList) do
-        childrenComponent:Compile();
+    self:SetCompiled(true);
+    local function CompileChildComponent(element) 
+        for _, child in ipairs(element.childrens) do
+            if (child:isa(Component)) then
+                child:Compile();
+            elseif (child.childrens) then
+                CompileChildComponent(child);
+            end
+        end
     end
-
+    CompileChildComponent(self);
     self:OnAfterCompile();
 end
 

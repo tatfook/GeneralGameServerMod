@@ -77,9 +77,18 @@ function BaseLayout:Init(element)
 	return self;
 end
 
+function BaseLayout:GetTagNameAndName()
+	return self:GetTagName() .. "-" .. self:GetName();
+end
+
 -- 获取元素名
 function BaseLayout:GetName()
-    return self:GetElement():GetName();
+	return self:GetElement():GetName();
+end
+
+-- 获取元素名
+function BaseLayout:GetTagName()
+    return self:GetElement():GetTagName();
 end
 
 -- 获取窗口
@@ -121,6 +130,15 @@ end
 -- 获取空间大小 margin border padding content
 function BaseLayout:GetSpaceWidthHeight(width, height)
 	return self.spaceWidth, self.spaceHeight;
+end
+
+-- 获取固定内容宽高
+function BaseLayout:GetFixedContentWidthHeight() 
+	local width, height = self:GetContentWidthHeight();
+	if (self:IsFixedSize()) then return width, height end
+	if (not self:IsFixedWidth()) then width = nil end
+	if (not self:IsFixedHeight()) then height = nil end
+	return width, height;
 end
 
 -- 获取固定宽高

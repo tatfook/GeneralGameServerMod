@@ -51,6 +51,17 @@ function Vue:LoadXmlNodeByTemplate(template)
     }
 end
 
+function Vue:NewG(g)
+    local G = Vue._super.NewG(self, g);
+
+    -- 扩展全局方法
+    G.ShowWindow = function(params)
+        return Vue:new():Show(params);
+    end
+
+    return G;
+end
+
 function Vue.Register(tagname, tagclass)
     ElementManager:RegisterByTagName(tagname, Component.Extend(tagclass))
 end

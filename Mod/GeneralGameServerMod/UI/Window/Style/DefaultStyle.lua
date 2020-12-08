@@ -28,7 +28,7 @@ local DefaultStyleString = [[
         justify-content: center;
     }
     .btn {
-
+        background-color: #e6e6e6;
     }
     .btn:hover {
         background-color: #ffffff;

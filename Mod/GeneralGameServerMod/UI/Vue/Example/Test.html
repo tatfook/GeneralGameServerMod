@@ -1,11 +1,19 @@
 <template class="container">
     <WindowTitleBar title="测试"></WindowTitleBar>
-    <Canvas3D miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" IsInteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></Canvas3D>
+    <ChangeNickName></ChangeNickName>
 </template>
 
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+RegisterComponent("ChangeNickName", "%vue%/Page/User/ChangeNickName.html");
 
+
+function Test()
+    return "test"
+end
+
+function OnReady()
+end
 </script>
 
 <style>

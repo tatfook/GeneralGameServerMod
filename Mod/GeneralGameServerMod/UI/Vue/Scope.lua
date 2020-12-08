@@ -115,6 +115,7 @@ function Scope:__ctor__()
     self.__scope__ = true;                              -- 是否为Scope
     self.__index_callback__ = nil;                      -- 读取回调
     self.__newindex_callback__ = nil;                   -- 写入回调   
+    self.__watch__ = {};
     -- print("--------------------------scope:__ctor__-------------------------------");
     -- 内置可读写属性
     self.__inner_can_set_attrs__ = {
@@ -214,6 +215,13 @@ end
 function Scope:__call_newindex_callback__(scope, key, newval, oldval)
     self:__call_global_newindex_callback__(scope, key, newval, oldval);
     if (type(self.__newindex_callback__) == "function") then self.__newindex_callback__(scope, key, newval, oldval) end
+
+    local watch = self.__watch__[key];
+    if (watch) then
+        for _, func in pairs(watch) do
+            func(newval, oldval);
+        end
+    end
 end
 
 -- 设置写入回调   
@@ -277,4 +285,11 @@ end
 -- 获取数据
 function Scope:Get(key)
     return self:__get__(self.__scope__, key);
+end
+
+-- 监控
+function Scope:Watch(key, func)
+    local watch = self.__watch__[key] or {};
+    self.__watch__[key] = watch;
+    watch[func] = func;
 end

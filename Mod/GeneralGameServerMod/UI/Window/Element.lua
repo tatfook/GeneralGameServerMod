@@ -35,7 +35,7 @@ Element:Property("BaseStyle");                            -- 默认样式, 基�
 Element:Property("Selector");                             -- 选择器集
 Element:Property("Rect");                                 -- 元素几何区域矩形
 Element:Property("Name", "Element");                      -- 元素名
-Element:Property("TagName");                              -- 标签名
+Element:Property("TagName", "");                          -- 标签名
 
 
 -- 构造函数
@@ -71,7 +71,9 @@ end
 
 -- 创建元素
 function Element:CreateFromXmlNode(xmlNode, window, parent)
-    local PageElement = type(xmlNode) == "table" and self:GetElementByTagName(xmlNode.name) or self:GetWindow():GetElementManager():GetTextElement();
+    if (type(xmlNode) == "string") then return self:GetWindow():GetElementManager():GetTextElement():new():Init(xmlNode, window, parent) end
+    local PageElement =  xmlNode.ElementClass or self:GetElementByTagName(xmlNode.name);
+    xmlNode.ElementClass = PageElement;
     return PageElement:new():Init(xmlNode, window, parent);
 end
 
@@ -122,7 +124,7 @@ function Element:InitChildElement(xmlNode, window)
     for i, childXmlNode in ipairs(xmlNode) do
         local childElement = self:CreateFromXmlNode(childXmlNode, window, self);
         if (childElement) then 
-            -- ElementDebug.Format("InitChildElement Child Element Name = %s, TagName = %s", childElement:GetName(), childElement:GetTagName());
+            -- ElementDebug.FormatIf(self:GetTagName() == "Title" ,"InitChildElement Child Element Name = %s, TagName = %s", childElement:GetName(), childElement:GetTagName());
         else 
             ElementDebug("元素不存在", xmlNode);
         end
@@ -261,7 +263,9 @@ function Element:ChildElementIterator(isRender, filter)
         local style1, style2 = child1:GetStyle() or {}, child2:GetStyle() or {};
         local zindex1, zindex2 = style1["z-index"] or 0, style2["z-index"] or 0;
         -- 函数返回true, 表两个元素需要交换位置
-        local sort = if_else(zindex1 == zindex2, style1.float ~= nil and style2.float == nil, zindex1 > zindex2);  -- true 默认升序  z-index 相同 含有float优先
+        local sort = zindex1 > zindex2;
+        sort = sort or (style1.float ~= nil and style2.float == nil);
+        sort = sort or (child1:GetLayout():IsPositionElement() and not child2:GetLayout():IsPositionElement());
         return if_else(isRender, sort, not sort);
     end
     -- table.sort(list, comp);
@@ -289,7 +293,7 @@ function Element:ChildElementIterator(isRender, filter)
         
         if (type(filter) == "function" and not filter(list[i])) then return iterator() end
 
-        return list[i];
+        return list[i], i, size;
     end
 
     return iterator;
@@ -421,6 +425,11 @@ function Element:UpdateLayout()
 
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
+
+    -- 强制更新一次元素窗口坐标
+    local parentElement = self:GetParentElement();
+    -- 父元素不存在或父元素已布局完成
+    if (not parentElement or not parentElement.isUpdateLayout) then self:UpdateWindowPos(true) end
 
     self.isUpdateLayout = false;
     return;

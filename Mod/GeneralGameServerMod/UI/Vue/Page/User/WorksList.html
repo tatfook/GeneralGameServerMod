@@ -1,22 +1,22 @@
 <template>
-    <div ref="workslist" style="width: 604px; height: 580px; padding-left: 6px; padding-top: 6px; overflow-y: auto">
+    <div ref="workslist" style="width: 604px; height: 580px; padding-left: 6px; padding-top: 6px; overflow-y: auto;">
         <div v-if="#ProjectList == 0" class="center" style="width: 100%; height: 100%;">
             <div style="width: 332px; height: 50px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tixingzi_332X50_32bits.png#0 0 332 50);"></div>
         </div>
         <div v-for="project in ProjectList" class="project" v-bind:style="GetProjectStyle(project.id)" v-on:click="ClickProject(project)">
             <div v-bind:style="GetImageStyle(project.extra)">
-                <Username style="display: block; height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
+                <Username style="height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
             </div>
-            <div style="base-font-size: 16px; font-size:16px; color: #522b2b; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px;">
+            <div style="font-size:16px; color: #522b2b; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px;">
                 <div v-if="GetProjectStatusStyle(project.status)" class="status" style="display:inline-block; width: 16px; height: 16px;" v-bind:style="GetProjectStatusStyle(project.status)"></div>
                 <div style="display: inline;">{{GetProjectName(project.name)}}</div>
                 <div style="display: inline; margin-left: 10px; color: #999999">{{"#" .. tostring(project.id)}}</div>
             </div>
-            <div style="base-font-size: 12px; font-size:12px; color: #999999; margin-top: 10px; margin-left:8px; height: 12px; line-height: 12px;">
+            <div style="font-size:12px; color: #999999; margin-top: 10px; margin-left:8px; height: 12px; line-height: 12px;">
                 <div style="float: left;">{{GetCreateTime(project.createdAt)}}</div>
                 <div style="float: right; margin-right: 16px;">{{GetUpdatedTime(project.updatedAt)}}</div>
             </div>
-            <div style="margin-top: 12px; margin-left: 8px; base-font-size: 12px; font-size:12px; color: #999999; ">
+            <div style="margin-top: 12px; margin-left: 8px; font-size:12px; color: #999999; ">
                 <div style="display:inline; height: 16px;">
                     <div valign="center" style="display:inline; width: 16px; height: 12px; background: url(Texture/Aries/Creator/keepwork/ggs/user/icon_liulan_16X12_32bits.png#0 0 16 12);"></div>
                     <div style="display:inline; line-height: 16px; height: 16px; padding-left: 5px; padding-right: 5px;">{{project.visit or 0}}</div>
@@ -32,8 +32,6 @@
             </div>
             <div style="margin-top: 10px; width: 250px;">
                 <div style="float: right;">
-                    <!-- <div v-if="isAuthUser" v-on:click="ClickOpenWorldDir(project.name)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_wenjian_40X40_32bits.png#0 0 40 40);"></div>
-                    <div v-if="IsSelected(project.id)" v-on:click="ClickWorldDelete(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_shanchu_40X40_32bits.png#0 0 40 40);"></div> -->
                     <div v-on:click="ClickShareWorld(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#109 459 40 40);"></div>
                     <div v-on:click="ClickOpenWorld(project)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
                 </div>
@@ -59,6 +57,7 @@ ProjectList = {};
 function OnReady()
     local workslistEl = GetRef("workslist");
     local verticalScrollBar = workslistEl and workslistEl:GetVerticalScrollBar();
+    if (not verticalScrollBar) then return end
     verticalScrollBar:SetStyleValue("background-color", "#ffffff00");
     verticalScrollBar:GetThumb():SetStyleValue("background", "Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 15 2 15");
     verticalScrollBar:GetThumb():SetStyleValue("min-height", 38);

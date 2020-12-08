@@ -14,6 +14,7 @@ local Event = NPL.export();
 
 local MouseDownElement = nil;
 local MouseEvent = commonlib.inherit(commonlib.gettable("System.Windows.MouseEvent"), {});
+
 function MouseEvent:init(event_type, window)
 	MouseEvent._super.init(self, event_type);
 
@@ -26,5 +27,10 @@ function MouseEvent:init(event_type, window)
 	return self;
 end
 
+function MouseEvent:UpdateElement(element)
+    self.element = element;
+    local screenX, screenY = element:GetScreenPos();
+    self.elementX, self.elementY = self.x - screenX, self.y - screenY;
+end
 
 Event.MouseEvent = MouseEvent;

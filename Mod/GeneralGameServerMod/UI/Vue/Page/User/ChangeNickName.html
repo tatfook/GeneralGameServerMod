@@ -1,8 +1,8 @@
 <template>
     <div style="display: inline;">
-        <editbox ref="input" v-bind:value="value" style="display:inline-block; width: 180px; background: url(Texture/Aries/Creator/keepwork/ggs/user/shuruzhuangdi_16X16_32bits.png#0 0 16 16: 5 5 5 5);"></editbox>
-        <button v-on:click="confirm" style="display:inline-block; height: 28px; width: 55px; text-align: center; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">确认</button>
-        <button v-on:click="cancel" style="display:inline-block; height: 28px; width: 55px; text-align: center; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_cancel_16X16_32bits.png#0 0 16 16: 5 5 5 5);">取消</button>
+        <input ref="input" v-bind:value="value" autofocus=true style="display:inline-block; width: 180px; height: 26px; background: url(Texture/Aries/Creator/keepwork/ggs/user/shuruzhuangdi_16X16_32bits.png#0 0 16 16: 5 5 5 5);"></input>
+        <button onclick=confirm style="height: 28px; width: 55px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">确认</button>
+        <button onclick="cancel" style="height: 28px; width: 55px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_cancel_16X16_32bits.png#0 0 16 16: 5 5 5 5);">取消</button>
     </div>
 </template>
 
@@ -11,12 +11,16 @@ local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keep
 local IsExistNicknameGSItem = SessionStorage.GetItem("IsExistNicknameGSItem");
 if (IsExistNicknameGSItem == nil) then IsExistNicknameGSItem = KeepWorkItemManager.HasGSItem(129) end
 
-function OnRefresh()
-    self.value = self.nickname or "";
-    GetRef("input"):GetControl():setFocus("click");
+function OnAttrValueChange(attrName, attrValue)
+    self.value = GetAttrValue("nickname");
+end
+
+function OnReady()
+
 end
 
 local function FinishCallback(value, notify)
+    local finish = GetAttrValue("finish");
     if (type(finish) == "function") then
         finish(value);
     end
@@ -32,8 +36,8 @@ function cancel()
 end
 
 function ShowResultBox(text)
-    ui.ShowWindow({
-        url = "%ui%/Component/User/ChangeNicknameResult.html",
+    ShowWindow({
+        url = "%vue%/Page/User/ChangeNicknameResult.html",
         width = 500,
         height = 242,
         G = {text = text},
@@ -64,7 +68,7 @@ end
 
 function confirm()
     local inputEl = GetRef("input");
-    local value = inputEl:GetUIValue();
+    local value = inputEl:GetValue();
     if (value == self.nickname or value == "") then return cancel() end
     
     -- 客户端处理铭感词
@@ -74,8 +78,8 @@ function confirm()
         return UpdateNickName(value);
     end
 
-    ui.ShowWindow({
-        url = "%ui%/Component/User/ChangeNicknameConfirm.html",
+    ShowWindow({
+        url = "%vue%/Page/User/ChangeNicknameConfirm.html",
         width = 500,
         height = 242,
         G = {

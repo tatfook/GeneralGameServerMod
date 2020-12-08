@@ -16,13 +16,12 @@ Button:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 
 Button:Property("BaseStyle", {
 	NormalStyle = {
-		["display"] = "inline-block",
+		["display"] = "inline-flex",
+		["justify-content"] = "center",
+		["align-items"] = "center",
 		["background-color"] = "#e6e6e6",
-		["text-align"] = "center";
 		["color"] = "#000000",
 		["font-size"] = "12px",
-		["line-height"] = "18px",
-		["padding"] = "8px 16px",
 		["width"] = "80px",
 		["height"] = "32px",
 		["overflow"] = "none",

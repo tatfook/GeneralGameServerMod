@@ -132,7 +132,7 @@ function Layout:PrepareLayout()
 
     LayoutDebug.If(
 		self:GetElement():GetAttrValue("id") == "debug",
-        "PrepareLayout:" .. self:GetElement():GetName(), 
+        "PrepareLayout TagName = " .. self:GetTagName() ..  " ElementName = " .. self:GetName(), 
         string.format("Element nid = %s, width = %s, height = %s", nid, width, height),
         parentLayout and string.format("ParentElement nid = %s, width = %s, height = %s", parentLayout.nid, parentWidth, parentHeight)
     );
@@ -178,7 +178,7 @@ function Layout:ApplyPositionStyle()
 	if (not height and top and bottom) then height = relHeight - top - bottom end 
 	left, top = left or 0, top or 0;
 	self:SetPos(left, top);
-	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", self:GetName(), left, top, right, bottom, width, height, relWidth, relHeight);
+	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", self:GetTagNameAndName(), left, top, right, bottom, width, height, relWidth, relHeight);
 	self:SetWidthHeight(width and math.max(width, 0), height and math.max(height, 0));
 end
 
@@ -210,7 +210,7 @@ function Layout:Update(isUpdateWidthHeight)
 	width, height = math.max(width, minWidth or width), math.max(height, minHeight or height);
 	self:SetWidthHeight(width, height);
 
-	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
+	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetTagNameAndName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
 
 	-- 再次回调
 	self:GetElement():OnRealContentSizeChange();
@@ -233,7 +233,7 @@ end
 
 function Layout:UpdateRealContentWidthHeight()
 	local display = self:GetStyle().display;
-	if (display == "flex") then
+	if (display == "flex" or display == "inline-flex") then
 		self:UpdateFlexLayoutRealContentWidthHeight();
 	else
 		self:UpdateBoxLayoutRealContentWidthHeight();
@@ -268,10 +268,10 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 		if (childLayout:IsLayout() and childLayout:IsUseSpace()) then
 			LayoutDebug.If(
 				true and element:GetAttrValue("id") == "debug",
-				string.format("[%s] Layout Add ChildLayout Before ", self:GetName()),
+				string.format("[%s] Layout Add ChildLayout Before ", self:GetTagNameAndName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
 				-- string.format("child margin: %s, %s, %s, %s", childMarginTop, childMarginRight, childMarginBottom, childMarginLeft), childStyle,
-				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s, childWidth = %s, childHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight, childWidth, childHeight)
+				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s, childWidth = %s, childHeight = %s", childLayout:GetTagName(), childLeft, childTop, childSpaceWidth, childSpaceHeight, childWidth, childHeight)
 			);
 			if (not childLayout:IsBlockElement()) then
 				-- 内联元素
@@ -312,9 +312,9 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 			childLayout:SetPos(childLeft, childTop);
 			LayoutDebug.If(
 				true and element:GetAttrValue("id") == "debug",
-				string.format("[%s] Layout Add ChildLayout After ", self:GetName()),
+				string.format("[%s] Layout Add ChildLayout After ", self:GetTagNameAndName()),
 				string.format("Layout availableX = %s, availableY = %s, realContentWidth = %s, realContentHeight = %s, width = %s, height = %s", availableX, availableY, realContentWidth, realContentHeight, width, height),
-				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
+				string.format("[%s] childLeft = %s, childTop = %s, childSpaceWidth = %s, childSpaceHeight = %s", childLayout:GetTagNameAndName(), childLeft, childTop, childSpaceWidth, childSpaceHeight)
 			);
 		end
 	end
@@ -322,6 +322,7 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 	local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
 	LayoutDebug.If(
 		element:GetAttrValue("id") == "debug",
+		string.format("children count = %s, TagName = %s", #element.childrens, self:GetTagNameAndName()),
 		string.format("paddingTop = %s, paddingRight = %s, paddingBottom = %s, paddingLeft = %s, borderTop = %s, borderRight = %s, borderBottom = %s, borderLeft = %s", paddingTop, paddingRight, paddingBottom, paddingLeft, borderTop, borderRight, borderBottom, borderLeft)
 	);
 	-- 假宽度右浮动元素需要调整
@@ -340,7 +341,7 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 		end
 		LayoutDebug.If(
 			element:GetAttrValue("id") == "debug",
-			string.format("[%s] Adjust Pos Left = %s, Top = %s ", child:GetName(), left, top)
+			string.format("[%s] Adjust Pos Left = %s, Top = %s ", childLayout:GetTagNameAndName(), left, top)
 		);
 	end
 

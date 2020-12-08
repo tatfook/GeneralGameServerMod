@@ -1,5 +1,70 @@
 <template style="width: 20px; padding-left:10px;">
-    <div v-on:click="ClickAddStep" style="width:11px; height: 11px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jia_11X11_32bits.png#0 0 11 11)"></div>
+    <div onclick=ClickAddStep class="btn" style="width:11px; height: 11px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jia_11X11_32bits.png#0 0 11 11)"></div>
+    <div onclick=clickSelectStep style="width:10px; height:130px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_ladongdi_10x130_32bits.png#0 0 10 130); margin-top: 2px; margin-bottom: 2px;">
+        <div ref="sliderbar" style="margin-left:-6px; width:22px; height:8px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_ladong_20X8_32bits.png#0 0 22 8);"></div>
+    </div>
+    <div onclick=ClickSubStep class="btn" style="margin-top: 2px; width:10px; height: 3px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jian_10X3_32bits.png#0 0 10 3)"></div>
+</template>
+
+<script type="text/lua">
+local Total = 220;
+local Height = 130 - 8;
+
+local player = GameLogic.GetPlayerController():GetPlayer();
+local scale = player and player:GetScaling() or 1;
+
+function clickSelectStep(event)
+    local height = math.max(event.elementY, 0);
+    height = math.min(height, Height);
+    scale = 1.2 - height /  Height * 0.2 
+    OnScaleChange(true);
+end
+
+function ClickAddStep()
+    scale = scale + 0.02;
+    OnScaleChange(true);
+end
+
+function ClickSubStep()
+    scale = scale - 0.02;
+    OnScaleChange(true);
+end
+
+function OnScaleChange(isUpdateUserInfo)
+    scale = scale > 1.2 and 1.2 or (scale < 1 and 1 or scale);
+    local sliderbarEl = GetRef("sliderbar");
+    if (not sliderbarEl) then return end
+    local marginTop = Height * (1.2 - scale) / 0.2;
+    sliderbarEl:SetStyleValue("margin-top", marginTop);
+    sliderbarEl:UpdateLayout();
+
+    local onscale = GetAttrValue("onscale");
+    if (type(onscale) == "function") then onscale(scale) end
+     
+    if (not isUpdateUserInfo) then return end
+    local player = GameLogic.GetPlayerController():GetPlayer();
+    if (player) then player:SetScaling(scale) end
+
+    if (not isAuthUser) then return end
+    -- 更新用户信息
+    local extra = UserDetail.extra or {};
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    extra.ParacraftPlayerEntityInfo.scale = scale;
+    keepwork.user.setinfo({
+        router_params = {id = AuthUserId},
+        extra = extra,
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
+    end);
+end
+
+function OnReady()
+    OnScaleChange(false);
+end 
+
+</script>
+
+<!-- 
     <sliderbar 
         ref="sliderbar"
         v-on:change="Change"
@@ -16,48 +81,4 @@
         button_height=8
         button_bg="Texture/Aries/Creator/keepwork/ggs/user/btn_ladong_20X8_32bits.png#0 0 22 8">
     </sliderbar>
-    <div v-on:click="ClickSubStep" style="margin-top: 2px; width:10px; height: 3px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jian_10X3_32bits.png#0 0 10 3)"></div>
-</template>
-
-<script type="text/lua">
-local Total = 220;
-
-function ClickAddStep()
-    local sliderbarEl = GetRef("sliderbar");
-    if (not sliderbarEl) then return end
-
-    sliderbarEl:SetValue(sliderbarEl:GetValue() - 2);
-end
-
-function ClickSubStep()
-    local sliderbarEl = GetRef("sliderbar");
-    if (not sliderbarEl) then return end
-
-    sliderbarEl:SetValue(sliderbarEl:GetValue() + 2);
-end
-
-function Change(value)
-    local player = GameLogic.GetPlayerController():GetPlayer();
-    if (not player or self.value == value) then return end;
-    local scale = (Total - value) / 100;
-    player:SetScaling(scale);
-    self.value = value;
-
-    if (not isAuthUser) then return end
-    -- 更新用户信息
-    local extra = UserDetail.extra or {};
-    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
-    extra.ParacraftPlayerEntityInfo.scale = scale;
-    keepwork.user.setinfo({
-        router_params = {id = AuthUserId},
-        extra = extra,
-    }, function(status, msg, data) 
-        if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
-    end);
-end
-
-local player = GameLogic.GetPlayerController():GetPlayer();
-local scale = player and player:GetScaling() or 1;
-scale = scale > 1.2 and 1.2 or (scale < 1 and 1 or scale);
-self.value = Total - math.floor(scale * 100);
-</script>
+ -->
