@@ -8,7 +8,7 @@
                         <div v-if="not isTeacher and isStudent" tooltip="合作机构vip学员" style="margin-left:2px; display: inline-block; width:24px; height:24px;background:url(Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18)"></div>
                         <div v-if="isTeacher" tooltip="合作机构vip教师" style="margin-left:2px; display: inline-block; width:24px; height:24px; background:url(Texture/Aries/Creator/keepwork/UserInfo/blue_v_32bits.png#0 0 18 18)"></div>
                     </div>
-                    <div style="display: inline; margin-left: 5px; font-size: 18px; base-font-size: 18px; color: #ffffff; shadow-quality:8; shadow-color:#000000; text-shadow:true;">{{GetNickName(nickname)}}</div>
+                    <div style="display: inline; margin-left: 5px; font-size: 18px; base-font-size: 18px; color: #ffffff; shadow-quality:8; shadow-color:#000000; text-shadow:true;">{{GetNickName(nickname or username)}}</div>
                     <div v-if="isAuthUser" v-on:click="ClickEditNickName" style="margin-left: 5px; display: inline-block; height:24; width: 24px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_bianji_24X24_32bits.png#2 1 26 25);"></div>
                     <Follow v-if="not isAuthUser and isLogin" v-bind:UserDetail="UserDetail" style="display: inline; margin-left: 5px; margin-top:-2px;"></Follow>
                 </div>

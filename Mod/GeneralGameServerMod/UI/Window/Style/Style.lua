@@ -100,9 +100,50 @@ end
 
 -- 初始化函数
 function Style:Init(style, inheritStyle)
+	self:Clear();
+
 	self.InheritStyle = inheritStyle;
     self:Merge(style);
-    return self;
+	
+	return self;
+end
+
+local ClearCacheTable = {};
+local function ClearStyle(self)
+	if (type(self) ~= "table") then return end
+
+	for key, val in pairs(self) do
+		if (rawget(self, key) ~= nil and type(val) ~= "function" and type(val) ~= "table") then
+			ClearCacheTable[key] = true;
+		end
+	end
+
+	for key, val in pairs(ClearCacheTable) do
+		if (val) then
+			self[key] = nil;
+			ClearCacheTable[key] = false;
+		end
+	end
+end
+
+-- 清空样式
+function Style:Clear()
+	ClearStyle(self);
+	ClearStyle(self.RawStyle);
+	ClearStyle(self.NormalStyle);
+	ClearStyle(self.ActiveStyle);
+	ClearStyle(self.HoverStyle);
+	ClearStyle(self.FocusStyle);
+
+	self.InheritStyle = nil;        -- 继承样式
+	self.LastSelectStyle = self.NormalStyle;     -- 上次选择样式
+
+	self.RawStyle = {};             -- 原始样式
+	self.NormalStyle = {};          -- 普通样式
+	-- 伪类样式
+	self.ActiveStyle = {};          -- 激活样式
+	self.HoverStyle = {};           -- 鼠标悬浮样式
+	self.FocusStyle = {};           -- 聚焦样式
 end
 
 -- 设置继承样式

@@ -88,4 +88,64 @@ function LoadUserInfo()
     end)
 end
 
+_G.GetUserAssets = function()
+    -- echo(KeepWorkItemManager.bags, true);
+    -- echo(KeepWorkItemManager.items, true);
+    local skinBag = nil;
+    local assets = {};
+    for _, bag in ipairs(KeepWorkItemManager.bags) do
+        if (bag.name == "换装") then
+            skinBag = bag;
+            break;
+        end
+    end 
+    local bagId = skinBag and skinBag.id;
+    if (not bagId) then return assets end
+
+    for _, item in ipairs(KeepWorkItemManager.items) do
+        if (item.bagId == bagId) then
+            local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
+            if (itemTpl) then
+                -- echo(itemTpl, true);
+                table.insert(assets, {
+                    modelUrl = itemTpl.modelUrl,
+                    name = itemTpl.name,
+                });
+            end
+        end
+    end
+
+    return assets;
+end
+
+-- echo(_G.GetUserAssets(), true);
+-- _G.GetUserAssets()
+
+_G.GetUserShowGoods = function()
+    local bagId = 4;
+    local goods = {}; 
+    for _, item in ipairs(KeepWorkItemManager.items) do
+        local copies = item.copies or 0;
+        if (item.bagId == bagId and copies > 0) then
+            local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
+            if (itemTpl) then
+                local icon = itemTpl.icon;
+                if(not icon or icon == "" or icon == "0") then icon = string.format("Texture/Aries/Creator/keepwork/items/item_%d_32bits.png", item.gsId) end
+                -- echo(itemTpl, true);
+                table.insert(goods, {
+                    icon = icon,
+                    copies = copies,
+                    name = itemTpl.name,
+                });
+            end
+        end
+    end
+
+    -- echo(goods, true);
+
+    return goods;
+end
+
+_G.GetUserShowGoods();
+
 LoadUserInfo();

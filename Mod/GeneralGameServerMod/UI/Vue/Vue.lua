@@ -11,6 +11,10 @@ local Component = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Vue/Component.l
 
 local Window = NPL.load("../Window/Window.lua", IsDevEnv);
 local ElementManager = NPL.load("../Window/ElementManager.lua");
+local Helper = NPL.load("./Helper.lua", IsDevEnv);
+local Scope = NPL.load("./Scope.lua", IsDevEnv);
+local ComponentScope = NPL.load("./ComponentScope.lua", IsDevEnv);
+local Compile = NPL.load("./Compile.lua", IsDevEnv);
 local Component = NPL.load("./Component.lua", IsDevEnv);
 local Slot = NPL.load("./Slot.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
@@ -19,6 +23,7 @@ ElementManager:RegisterByTagName("Component", Component);
 ElementManager:RegisterByTagName("Slot", Slot);
 
 local Vue = commonlib.inherit(Window, NPL.export());
+
 
 function Vue:LoadXmlNodeByUrl(url)
     return {
@@ -51,13 +56,25 @@ function Vue:LoadXmlNodeByTemplate(template)
     }
 end
 
-function Vue:NewG(g)
-    local G = Vue._super.NewG(self, g);
-
-    -- 扩展全局方法
+-- 扩展全局方法
+function Vue:ExtendG(G)
     G.ShowWindow = function(params)
         return Vue:new():Show(params);
     end
+
+    G.GetGlobalScope = function()
+        if (not G.GlobalScope) then
+            G.GlobalScope = Scope:__new__();
+            G.GlobalScope:__set_metatable_index__(G);
+        end
+        return G.GlobalScope;
+    end
+end
+
+function Vue:NewG(g)
+    local G = Vue._super.NewG(self, g);
+
+    self:ExtendG(G);
 
     return G;
 end

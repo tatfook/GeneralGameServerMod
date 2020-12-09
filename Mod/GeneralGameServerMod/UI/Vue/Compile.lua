@@ -147,12 +147,28 @@ end
 function Compile:VIf(element)
     local xmlNode = element:GetXmlNode();
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-if"] == nil) then return end
-    -- local parentElement = element:GetParentElement();
-    -- local pos = parentElement:GetChildElementPos(element);
+    local vif = true;
+    local curElement = element;
+    local parentElement = element:GetParentElement();
+    local ifComponent = self:GetComponent();
     self:ExecCode(xmlNode.attr["v-if"], element, function(val)
-        element:SetVisible(val and true or false);
-        local parentElement = element:GetParentElement();
-        if (parentElement) then parentElement:UpdateLayout() end
+        val = val and true or false;
+        if (val) then
+            if (not vif) then
+                local newElement = curElement:Clone();
+                parentElement:ReplaceChildElement(curElement, newElement);
+                curElement = newElement;
+                local oldComponent = self:GetComponent();
+                self:SetComponent(ifComponent);
+                self:CompileElement(curElement);
+                self:SetComponent(oldComponent);
+            end
+            curElement:SetVisible(true);
+        else
+            curElement:SetVisible(false);
+        end
+        vif = val;
+        if (parentElement) then parentElement:UpdateLayout(true) end
     end, true);
 end
 
@@ -211,7 +227,7 @@ function Compile:VFor(element)
             parentElement:RemoveChildElement(clones[i]);
         end
         lastCount = count;
-        parentElement:UpdateLayout();
+        parentElement:UpdateLayout(true);
         self:SetComponent(oldComponent);
     end, true);
 

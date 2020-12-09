@@ -1,0 +1,27 @@
+<template style="display: inline-block;">
+    <div v-for="goods in goodslist" class="goods">
+        <div v-bind:style="GoodsStyle(goods)"></div>
+        <div style="position: absolute; bottom: 0px; right: 0px; color: #000000;">{{goods.copies}}</div>
+    </div>
+</template>
+
+<script type="text/lua">
+
+goodslist = _G.GetUserShowGoods();
+
+function OnAttrValueChange()
+end
+
+function GoodsStyle(goods)
+    return string.format("width: 128px; height:64px; background:url(%s)", goods.icon);
+end
+
+</script>
+
+<style>
+.goods {
+    width: 128px;
+    height: 64px;
+    background: url(Texture/Aries/Creator/keepwork/Window/tooltip/tipkuang_32bits.png:14 14 14 14);
+}
+</style>

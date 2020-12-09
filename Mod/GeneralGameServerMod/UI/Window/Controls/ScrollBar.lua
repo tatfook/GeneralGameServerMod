@@ -206,6 +206,7 @@ function ScrollBar:ctor()
     self.left, self.top, self.width, self.height = 0, 0, 0, 0;
     self.scrollTop, self.contentHeight, self.scrollHeight, self.clientHeight = 0, 0, 0, 0;
     self.scrollLeft, self.contentWidth, self.scrollWidth, self.clientWidth = 0, 0, 0, 0;
+    self.scrollMaxLeft, self.scrollMaxTop = 0, 0;
     self.thumbSize = 0;
 end
 
@@ -253,6 +254,8 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
 
     self.width = GetPxValue(style["width"]);
     self.height = GetPxValue(style["height"]);
+    self.scrollMaxLeft = self.scrollWidth - self.contentWidth;
+    self.scrollMaxTop = self.scrollHeight - self.contentHeight;
     
     if (self:IsHorizontal()) then
         -- 内容没有溢出 滚动置0 返回

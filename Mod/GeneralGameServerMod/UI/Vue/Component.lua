@@ -8,13 +8,13 @@ use the lib:
 local Component = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Vue/Component.lua");
 -------------------------------------------------------
 ]]
-local Element = NPL.load("../Window/Element.lua", IsDevEnv);
+local Element = NPL.load("../Window/Element.lua");
+local Helper = NPL.load("./Helper.lua");
+local Scope = NPL.load("./Scope.lua");
+local ComponentScope = NPL.load("./ComponentScope.lua");
+local Compile = NPL.load("./Compile.lua");
 
 local Component = commonlib.inherit(Element, NPL.export());
-local Helper = NPL.load("./Helper.lua", IsDevEnv);
-local Scope = NPL.load("./Scope.lua", IsDevEnv);
-local ComponentScope = NPL.load("./ComponentScope.lua", IsDevEnv);
-local Compile = NPL.load("./Compile.lua", IsDevEnv);
 local ComponentDebug = GGS.Debug.GetModuleDebug("Component");
 
 Component:Property("Components");             -- 组件依赖组件集
@@ -200,7 +200,7 @@ function Component:InitByScriptNode(scriptNode)
     if (not scriptNode) then return end
     local scriptFile = scriptNode.attr and scriptNode.attr.src;
     local scriptText = scriptNode[1] or "";
-    scriptText = (Helper.ReadFile(scriptFile) or "") .. "\n" .. scriptText;
+    scriptText = scriptText ..  "\n" .. (Helper.ReadFile(scriptFile) or "");
     self:ExecCode(scriptText);
 end
 
@@ -255,16 +255,6 @@ end
 -- 获取引用元素
 function Component:GetRef(ref)
     return self.refs[ref];
-end
-
--- 获取全局Scope
-function Component:GetGlobalScope()
-    local G = self:GetWindow():GetG();
-    if (not G.GlobalScope) then
-        G.GlobalScope = Scope:__new__();
-        G.GlobalScope:__set_metatable_index__(G);
-    end
-    return G.GlobalScope;
 end
 
 function Component:PushScope(scope)

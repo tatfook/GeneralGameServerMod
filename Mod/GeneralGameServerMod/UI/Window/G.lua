@@ -31,7 +31,8 @@ function G.New(window, g)
     end
 
     g.Log = GGS.INFO;
-
+    g._G = g;
+    
     return g;
 end
 

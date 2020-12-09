@@ -9,9 +9,7 @@
 <script type="text/lua">
 local Total = 220;
 local Height = 130 - 8;
-
-local player = GameLogic.GetPlayerController():GetPlayer();
-local scale = player and player:GetScaling() or 1;
+local scale = 1;
 
 function clickSelectStep(event)
     local height = math.max(event.elementY, 0);
@@ -35,7 +33,7 @@ function OnScaleChange(isUpdateUserInfo)
     local sliderbarEl = GetRef("sliderbar");
     if (not sliderbarEl) then return end
     local marginTop = Height * (1.2 - scale) / 0.2;
-    sliderbarEl:SetStyleValue("margin-top", marginTop);
+    sliderbarEl:SetStyleValue("margin-top", math.floor(marginTop));
     sliderbarEl:UpdateLayout();
 
     local onscale = GetAttrValue("onscale");
@@ -59,9 +57,13 @@ function OnScaleChange(isUpdateUserInfo)
 end
 
 function OnReady()
+    local extra = UserDetail.extra or {};
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    scale = extra.ParacraftPlayerEntityInfo.scale or 1;
     OnScaleChange(false);
 end 
 
+GetGlobalScope():Watch("UserDetail", OnReady);
 </script>
 
 <!-- 

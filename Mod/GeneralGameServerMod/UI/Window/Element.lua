@@ -30,6 +30,7 @@ Element:Property("XmlNode");    -- 元素XmlNode
 Element:Property("ParentElement");                        -- 父元素
 Element:Property("Layout");                               -- 元素布局
 Element:Property("Style");                                -- 样式
+Element:Property("AttrStyle");                            -- 属性样式表
 Element:Property("StyleSheet");                           -- 元素样式表
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
 Element:Property("Selector");                             -- 选择器集
@@ -47,6 +48,7 @@ function Element:ctor()
     self:SetRect(Rect:new():init(0,0,0,0));
     self:SetSelector({});
     self:SetStyle(Style:new());
+    self:SetAttrStyle({});
 end
 
 -- 是否是元素
@@ -75,6 +77,11 @@ function Element:CreateFromXmlNode(xmlNode, window, parent)
     local PageElement =  xmlNode.ElementClass or self:GetElementByTagName(xmlNode.name);
     xmlNode.ElementClass = PageElement;
     return PageElement:new():Init(xmlNode, window, parent);
+end
+
+-- 复制元素
+function Element:Clone()
+    return Element:CreateFromXmlNode(self:GetXmlNode(), self:GetWindow(), self:GetParentElement());
 end
 
 -- 元素初始化
@@ -107,14 +114,13 @@ function Element:InitElement(xmlNode, window, parent)
         end
     end
 
+    self:SetAttrStyle(Style.ParseString(self:GetAttrStringValue("style")));
+
     -- 初始化样式表
     if (not self:GetStyleSheet()) then
         self:SetStyleSheet(self:GetWindow():GetStyleManager():NewStyleSheet());
     end
     self:GetStyleSheet():SetInheritStyleSheet(parent and parent:GetStyleSheet());
-
-    -- 设置继承样式
-    self:GetStyle():Init(self:GetBaseStyle(), parent and parent:GetStyle());
 end
 
 -- 初始化子元素
@@ -201,9 +207,6 @@ function Element:InsertChildElement(pos, childElement)
     -- 设置子元素的父元素
     element:SetParentElement(self);
 
-    -- 应用元素样式
-    -- element:ApplyElementStyle();
-
     -- 更新元素布局
     element:Attach();
 end
@@ -228,6 +231,17 @@ function Element:RemoveChildElement(pos)
         element:Detach();
         element:SetParentElement(nil);
     end
+end
+
+-- 替换子元素
+function Element:ReplaceChildElement(oldElement, newElement)
+    local pos = self:GetChildElementPos(oldElement);
+    if (pos == 0) then return end
+    oldElement:Detach();
+    oldElement:SetParentElement(nil);
+    self.childrens[pos] = newElement;
+    newElement:Attach();
+    newElement:SetParentElement(self);
 end
 
 -- 清除子元素
@@ -345,7 +359,11 @@ end
 
 -- 创建样式
 function Element:ApplyElementStyle()
+    local parent = self:GetParentElement();
     local style = self:GetStyle();
+
+    -- 设置继承样式
+    style:Init(self:GetBaseStyle(), parent and parent:GetStyle());
 
     -- 全局样式表
     self:GetWindow():GetStyleManager():ApplyElementStyle(self, style);
@@ -354,7 +372,7 @@ function Element:ApplyElementStyle()
     self:GetStyleSheet():ApplyElementStyle(self, style);
     -- ElementDebug.If(self:GetName() == "Text", "class", style);
     -- 内联样式
-    style:AddNormalStyle(self:GetAttrValue("style"));
+    style:AddNormalStyle(self:GetAttrStyle());
 
     -- 选择默认样式
     style:SelectNormalStyle();
@@ -381,10 +399,15 @@ end
 function Element:OnAfterUpdateLayout()
 end
 -- 更新布局, 先进行子元素布局, 再布局当前元素
-function Element:UpdateLayout()
+function Element:UpdateLayout(bApplyElementStyle)
     -- 是否正在更新布局
     if (self.isUpdateLayout) then return end
     self.isUpdateLayout = true;
+    
+    -- 应用元素样式
+    if (bApplyElementStyle) then
+        self:ApplyElementStyle();
+    end
 
     -- 布局更新前回调
     if (self:OnBeforeUpdateLayout()) then 
@@ -410,7 +433,7 @@ function Element:UpdateLayout()
     -- 执行子元素布局  子元素布局未更新则进行更新
     if (not isUpdatedChildLayout) then
 		for childElement in self:ChildElementIterator() do
-			childElement:UpdateLayout();
+			childElement:UpdateLayout(bApplyElementStyle);
 		end
     end
     
@@ -449,19 +472,19 @@ function Element:OnRealContentSizeChange()
     --     self:GetAttrStringValue("id") == "debug", 
     --     isOverflowX, isOverflowY, 
     --     width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
-    local style = self:GetStyle();
+    -- local style = self:GetStyle();
     
     if (isOverflowX) then self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self) end
 
     if (self.horizontalScrollBar) then
-        self.horizontalScrollBar:SetVisible(isOverflowX);
+        self.horizontalScrollBar:SetVisible(isOverflowX and realContentWidth > contentWidth);
         self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
     end
 
     if (isOverflowY) then self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self) end
 
     if (self.verticalScrollBar) then
-        self.verticalScrollBar:SetVisible(isOverflowY);
+        self.verticalScrollBar:SetVisible(isOverflowY and realContentHeight > contentHeight);
         self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
     end
 end
@@ -476,6 +499,8 @@ end
 
 function Element:OnScroll(scrollEl)
     self:UpdateWindowPos(true);
+
+    self:CallAttrFunction("onscroll", nil, scrollEl);
 end
 
 -- 获取属性值
@@ -527,10 +552,10 @@ end
 -- 元素属性值更新
 function Element:OnAttrValueChange(attrName, attrValue, oldAttrValue)
     if ((attrName == "style" or attrName == "class") and self.attached) then
-        local parent = self:GetParentElement();
-        self:SetStyle(Style:new():Init(self:GetBaseStyle(), parent and parent:GetStyle()));
-        self:ApplyElementStyle();
-        self:UpdateLayout();
+        if (attrName == "style") then 
+            self:SetAttrStyle(Style.ParseString(attrValue));
+        end
+        self:UpdateLayout(attrName == "class");
     end
 end
 
@@ -548,6 +573,7 @@ function Element:SetStyleValue(styleKey, styleValue)
     local value = Style.GetStyleValue(styleKey, styleValue);
     style[styleKey] = value;
     style:GetNormalStyle()[styleKey] = value;
+    self:GetAttrStyle()[styleKey] = value;
     return ;
 end
 

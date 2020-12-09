@@ -184,16 +184,12 @@ end
 
 -- 更新布局
 function Layout:Update(isUpdateWidthHeight)
-	-- local width, height = self:GetWidthHeight();
+	local width, height = self:GetWidthHeight();
 	local maxWidth, maxHeight = self:GetMaxWidthHeight();
 	local minWidth, minHeight = self:GetMinWidthHeight();
     local paddingTop, paddingRight, paddingBottom, paddingLeft = self:GetPadding();
     local borderTop, borderRight, borderBottom, borderLeft = self:GetBorder();
 
-	-- 应用定位方式获取宽高
-	self:ApplyPositionStyle();
-
-	local width, height = self:GetWidthHeight();
 	-- 更新真实内容大小 由所有子元素决定
 	self:UpdateRealContentWidthHeight();
 	local realContentWidth, realContentHeight = self:GetRealContentWidthHeight();
@@ -209,6 +205,9 @@ function Layout:Update(isUpdateWidthHeight)
 	width, height = math.min(width, maxWidth or width), math.min(height, maxHeight or height);
 	width, height = math.max(width, minWidth or width), math.max(height, minHeight or height);
 	self:SetWidthHeight(width, height);
+
+	-- 应用定位方式获取宽高
+	self:ApplyPositionStyle();
 
 	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetTagNameAndName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
 

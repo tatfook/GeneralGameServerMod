@@ -16,33 +16,34 @@ local ComponentScope = commonlib.inherit(commonlib.gettable("System.Core.ToolBas
 ComponentScope:Property("Component"); -- 所属组件
 ComponentScope:Property("Scope");     -- 所属Scope
 
-local scope_methods = {
-    "RegisterComponent",
-    "GetComponent",
-    "GetGlobalScope",
-    "GetRef",
-    "SetAttrValue",
-    "GetAttrValue",
-    "GetAttrStringValue",
-    "GetAttrNumberValue",
-    "GetAttrBoolValue",
-    "GetAttrFunctionValue",
+local exclude_scope_methods = {
+    ["New"] = true,
+    ["ctor"] = true,
+    ["Init"] = true,
 }
 
 function ComponentScope.New(component)
+    local G = component:GetWindow():GetG();
     local scope = Scope:__new__(); 
     local _scope = ComponentScope:new():Init(component, scope);
     local parentComponent = component:GetParentComponent();
+    
     scope.self = scope;
-    scope:__set_metatable_index__(parentComponent and parentComponent:GetScope() or _scope:GetGlobalScope());
+    scope:__set_metatable_index__(parentComponent and parentComponent:GetScope() or G.GetGlobalScope());
 
-    for _, method in ipairs(scope_methods) do
-        scope[method] = function(...) 
-            return _scope[method](_scope, ...);
+    for method in pairs(ComponentScope) do
+        if (type(rawget(ComponentScope, method)) == "function" and not exclude_scope_methods[method]) then
+            scope[method] = function(...) 
+                return _scope[method](_scope, ...);
+            end
         end
     end
-
+   
     return scope;
+end
+
+function ComponentScope:ctor(component, scope)
+    
 end
 
 function ComponentScope:Init(component, scope)
@@ -53,10 +54,6 @@ end
 
 function ComponentScope:RegisterComponent(tagname, filename)
     self:GetComponent():Register(tagname, filename);
-end
-
-function ComponentScope:GetGlobalScope()
-    return self:GetComponent():GetGlobalScope();
 end
 
 function ComponentScope:GetRef(refname) 

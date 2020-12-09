@@ -17,16 +17,16 @@ local GGS = NPL.export();
 local GeneralGameClients = {};
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local IsServer = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
-local env = ParaEngine.GetAppCommandLineByParam("env", "online");  -- online release stage local
+local Env = ParaEngine.GetAppCommandLineByParam("env", "online");  -- online release stage local
 
 _G.IsDevEnv = true and IsDevEnv;
 _G.IsServer = IsServer;
 _G.Env = Env;
 
 -- ENV
-GGS.IsDevEnv = IsDevEnv;
-GGS.IsTestEnv = env == "release";
-GGS.IsProdEnv = env == "online";
+GGS.IsDevEnv = IsDevEnv or Env == "local";
+GGS.IsTestEnv = Env == "release";
+GGS.IsProdEnv = Env == "online";
 GGS.IsServer = IsServer;
 
 	

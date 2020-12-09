@@ -51,7 +51,6 @@ function Page.ShowDebugInfoPage(G, params)
     return DebugInfoPage;
 end
 
-
 local VueTestPage = Vue:new();
 function Page.ShowVueTestPage(G, params)
     if (IsDevEnv) then
@@ -66,5 +65,6 @@ function Page.ShowVueTestPage(G, params)
     params.url = params.url or "%vue%/Example/Test.html";
     params.G = G;
     VueTestPage:Show(params);
+
     return VueTestPage;
 end

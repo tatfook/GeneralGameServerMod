@@ -1,9 +1,9 @@
 
 <template style="width: 100%; height: 100%; color:#ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/dialog_440X93_32bits.png#0 0 440 93:37 43 33 44);">
-    <Title></Title>
+    <Title onchange=OnTabChange></Title>
     <div width="100%">
-        <UserInfo v-bind:UserDetail="UserDetail" style="float:left;"></UserInfo>
-        <WorksList v-bind:ProjectList="ProjectList" style="float:left;"></WorksList>
+        <UserInfo v-bind:UserDetail="UserDetail"></UserInfo>
+        <WorksList v-if="tabindex == 'works'" v-bind:ProjectList="ProjectList"></WorksList>
     </div>
 </template>
 
@@ -11,5 +11,13 @@
 RegisterComponent("Title", "%vue%/Page/User/Title.html");
 RegisterComponent("UserInfo", "%vue%/Page/User/UserInfo.html");
 RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
+RegisterComponent("Bag", "%vue%/Page/User/Bag.html");
+
+tabindex = "works";
+
+function OnTabChange(index)
+    tabindex = index;
+end
+
 </script>
 

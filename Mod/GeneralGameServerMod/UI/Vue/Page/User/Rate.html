@@ -8,11 +8,12 @@
 </template>
 
 <script type="text/lua">
-RegisterComponent("Number", "%ui%/Component/User/Number.html");
+RegisterComponent("Number", "%vue%/Page/User/Number.html");
 
-function OnRefresh()
-    if (not self.rate or self.rate == 0) then return end
-    local ratestr = tostring(self.rate or 0);
+function OnAttrValueChange()
+    local rate = GetAttrValue("rate");
+    if (not rate or rate == 0) then return end
+    local ratestr = tostring(rate or 0);
     self.one, self.two, self.three = string.match(ratestr, "(%d?)(%d?)%D?(%d?)");
 end
 

@@ -32,6 +32,7 @@ local Event = NPL.load("./Event.lua", IsDevEnv);
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local StyleManager = NPL.load("./Style/StyleManager.lua", IsDevEnv);
+
 local Window = commonlib.inherit(Element, NPL.export());
 local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug").Enable();
 local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();  -- Enable  Disable
@@ -128,7 +129,7 @@ function Window.Show(self, params)
         self:SetNativeWindow(self:CreateNativeWindow(params));
     end
     self:Init(params);
-    self:UpdateLayout();
+    self:UpdateLayout(true);
 
     return self;
 end
