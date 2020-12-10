@@ -143,6 +143,17 @@ function Compile:Ref(element)
     self:GetComponent():SetRef(xmlNode.attr["ref"], element);
 end
 
+-- v-show 
+function Compile:VShow(element)
+    local xmlNode = element:GetXmlNode();
+    if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-show"] == nil) then return end
+    self:ExecCode(xmlNode.attr["v-show"], element, function(val)
+        element:SetVisible(val and true or false);
+        -- local parentElement = element:GetParentElement();
+        -- if (parentElement) then parentElement:UpdateLayout() end
+    end, true);
+end
+
 -- v-if
 function Compile:VIf(element)
     local xmlNode = element:GetXmlNode();
@@ -310,6 +321,7 @@ function Compile:CompileElement(element)
 
         self:Text(element);
         self:Ref(element);
+        self:VShow(element);  
         self:VIf(element);  
         self:VOn(element);
         self:VBind(element);

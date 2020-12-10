@@ -3,7 +3,7 @@
     <Title onchange=OnTabChange></Title>
     <div width="100%">
         <UserInfo v-bind:UserDetail="UserDetail"></UserInfo>
-        <WorksList v-if="tabindex == 'works'" v-bind:ProjectList="ProjectList"></WorksList>
+        <WorksList v-show="tabindex == 'works'" v-bind:ProjectList="ProjectList"></WorksList>
     </div>
 </template>
 
