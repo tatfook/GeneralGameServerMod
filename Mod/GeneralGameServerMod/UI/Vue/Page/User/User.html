@@ -1,12 +1,26 @@
 
-<template style="width: 100%; height: 100%; color:#ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/dialog_440X93_32bits.png#0 0 440 93:37 43 33 44);">
-    <Title v-bind:tabindex="tabindex" onchange=OnTabChange></Title>
+<template style="width: 960px; height: 100%; color:#ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/dialog_440X93_32bits.png#0 0 440 93:37 43 33 44);">
+    <Title v-bind:tabindex="tabindex" v-bind:asidetabindex=asideTabIndex onchange=OnTabChange></Title>
     <div width="100%">
         <UserInfo v-bind:UserDetail="UserDetail"></UserInfo>
-        <div style="display: inline-block; width: 604px; height: 580px;">
-            <WorksList v-show="tabindex == 'works'" v-bind:ProjectList="ProjectList"></WorksList>
-            <PlayerAsset v-show="tabindex == 'skin'"></PlayerAsset>
+        <div ref="list" style="display: inline-block; width: 604px; height: 580px; overflow-y: auto;">
+            <WorksList v-show="tabindex == 'works' and asideTabIndex == 'character'" v-bind:ProjectList="ProjectList"></WorksList>
+            <PlayerAsset v-show="tabindex == 'skin' and asideTabIndex == 'character'"></PlayerAsset>
+            <Honor v-show="tabindex == 'honor' and asideTabIndex == 'character'"></Honor>
+            <Bag v-show="asideTabIndex == 'bag'"></Bag>
         </div>
+    </div>
+
+    <div style="position: absolute; right: -65px; top: 80px;">
+        <div onclick="ClickAsideTab('character')" v-bind:class="AsideTabClass('character')">
+            <div class="tab-content"></div>
+        </div>
+        <div onclick="ClickAsideTab('bag')" v-bind:class="AsideTabClass('bag')">
+            <div class="tab-content"></div>
+        </div>
+        <!-- <div onclick="ClickAsideTab('favorite')" v-bind:class="AsideTabClass('favorite')">
+            <div class="tab-content"></div>
+        </div> -->
     </div>
 </template>
 
@@ -15,12 +29,88 @@ RegisterComponent("Title", "%vue%/Page/User/Title.html");
 RegisterComponent("UserInfo", "%vue%/Page/User/UserInfo.html");
 RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
 RegisterComponent("PlayerAsset", "%vue%/Page/User/PlayerAsset.html");
+RegisterComponent("Honor", "%vue%/Page/User/Honor.html");
+RegisterComponent("Bag", "%vue%/Page/User/Bag.html");
 
-tabindex = "skin";
+tabindex = "works";
+asideTabIndex = "character";
+
+function ClickAsideTab(index)
+    asideTabIndex = index;
+end
+
+function AsideTabClass(index)
+    local class = asideTabIndex == index and "active" or "inactive";
+    return string.format("tab %s %s", "tab-" .. class, index .. "-" .. class);
+end
 
 function OnTabChange(index)
     tabindex = index;
 end
 
+function OnReady()
+    SetScrollElement(GetRef("list"));
+end
 </script>
 
+<style>
+
+.tab {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.tab-inactive {
+    width: 50px;
+    margin-left: 13px;
+    height: 102px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_youqiehuan2_36X38_32bits.png#0 0 36 38:10 10 10 10);
+}
+
+.tab-active {
+    width: 63px;
+    height: 139px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_youqiehuan1_63X139_32bits.png#0 0 63 139);
+}
+
+.character-inactive>.tab-content {
+    width: 19px;
+    height: 38px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_renwu_19X38_32bits.png#0 0 19 38);
+}
+
+.character-active>.tab-content {
+    margin-left: 13px;
+    width: 40px;
+    height: 80px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_renwu2_19X38_32bits.png#0 0 40 80);
+}
+
+.bag-inactive>.tab-content {
+    width: 19px;
+    height: 38px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_beibao_19X38_32bits.png#0 0 19 38);
+}
+
+.bag-active>.tab-content {
+    margin-left: 13px;
+    width: 40px;
+    height: 80px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_beibao2_19X38_32bits.png#0 0 40 80);
+}
+
+.favorite-inactive>.tab-content {
+    width: 19px;
+    height: 38px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_shouc_19X38_32bits.png#0 0 19 38);
+}
+
+.favorite-active>.tab-content {
+    margin-left: 13px;
+    width: 40px;
+    height: 80px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_shouc2_19X38_32bits.png#0 0 40 80);
+}
+</style>

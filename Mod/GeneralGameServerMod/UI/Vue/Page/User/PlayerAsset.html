@@ -1,5 +1,5 @@
-<template style="width: 100%; padding: 6px;">
-    <div v-for="asset, key in PlayerAssetList" class="asset-container" onclick=ClickPlayerAsset(asset)>
+<template style="padding: 6px; width: 100%;">
+    <div v-for="asset, key in PlayerAssetList" v-bind:class="AssetContainerClass(asset)" onclick=ClickPlayerAsset(asset)>
         <div v-bind:style="AssetStyle(asset)"></div>
         <div class="use-btn"></div>
     </div>
@@ -8,8 +8,8 @@
 <script type="text/lua">
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
-<!-- PlayerAssetList = GetUserAssets(); -->
-PlayerAssetList = {
+PlayerAssetList = GetUserAssets();
+<!-- PlayerAssetList = {
     {
         id = 1,
         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
@@ -30,7 +30,27 @@ PlayerAssetList = {
         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
         modelUrl = "character/CC/02human/paperman/boy04.x",
     },
-};
+    {
+        id = 1,
+        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+        modelUrl = "character/CC/02human/paperman/boy01.x",
+    },
+    {
+        id = 2,
+        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+        modelUrl = "character/CC/02human/paperman/boy02.x",
+    },
+    {
+        id = 3,
+        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+        modelUrl = "character/CC/02human/paperman/boy03.x",
+    },
+    {
+        id = 4,
+        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+        modelUrl = "character/CC/02human/paperman/boy04.x",
+    },
+}; -->
 
 local function ChangePlayerAsset(assetfile)
 	assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
@@ -43,6 +63,7 @@ local function ChangePlayerAsset(assetfile)
 			playerEntity:SetMainAssetPath(assetfile);
         end
         GameLogic.options:SetMainPlayerAssetName(assetfile);
+        GetGlobalScope():Set("MainAsset", assetfile);
 		-- this ensure that at least one default skin is selected
 		if(playerEntity:GetSkin()) then
 			playerEntity:SetSkin(nil);
@@ -58,6 +79,10 @@ end
 function ClickPlayerAsset(asset)
     ChangePlayerAsset(asset.modelUrl);
     UpdatePlayerEntityInfo();
+end
+
+function AssetContainerClass(asset) 
+    return "asset-container " .. (asset.modelUrl == MainAsset and "used-asset-container" or "unused-asset-container");
 end
 
 function AssetStyle(asset)
@@ -77,9 +102,13 @@ end
     height: 235px; 
     margin-right: 20px;
     /* border: 1px solid #ff0000; */
+}
+
+.used-asset-container {
     background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/renwubj_174X235_32bits.png#0 0 174 235);
 }
-.asset-container:hover {
+
+.unused-asset-container {
     background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/renwubj2_174X235_32bits.png#0 0 174 235);
 }
 
@@ -93,7 +122,7 @@ end
     background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_shiyong_30X14_32bits.png#0 0 30 14);
 }
 
-.asset-container:hover .use-btn {
+.unused-asset-container .use-btn {
     visibility: visible;
 }
 </style>

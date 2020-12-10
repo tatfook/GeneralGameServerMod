@@ -1,14 +1,16 @@
 <template>
     <div style="padding-left:10px; padding-right:20px; height:39px; padding-top: 10px;">
         <div style="float: left; width:128px; height:64px; margin-top:-28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/biaoti_128X64_32bits.png);"></div>
-        <div onclick="SelectTab('works')" v-bind:class="GetClass('works')" style="float: left; margin-left: 220px; margin-top: -5px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
-            <div style="margin-top:4px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_zuoping_31X16_32bits.png#0 0 31 16);"></div>
-        </div>
-        <div onclick="SelectTab('skin')" v-bind:class="GetClass('skin')" style="float: left; margin-left: 10px; margin-top: -5px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
-            <div style="margin-top:6px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_waiguang_31X16_32bits.png#0 0 31 16);"></div>
-        </div>
-        <div onclick="SelectTab('honor')" v-bind:class="GetClass('honor')" style="float: left; margin-left: 10px; margin-top: -5px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
-            <div style="margin-top:4px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_rongyu_31X16_32bits.png#0 0 31 16);"></div>
+        <div v-show="asidetab == 'character'" style="float: left; margin-left: 220px; margin-top: -5px;">
+            <div onclick="SelectTab('works')" v-bind:class="GetClass('works')" style="width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
+                <div style="margin-top:4px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_zuoping_31X16_32bits.png#0 0 31 16);"></div>
+            </div>
+            <div onclick="SelectTab('skin')" v-bind:class="GetClass('skin')" style="margin-left: 10px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
+                <div style="margin-top:6px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_waiguang_31X16_32bits.png#0 0 31 16);"></div>
+            </div>
+            <div onclick="SelectTab('honor')" v-bind:class="GetClass('honor')" style="margin-left: 10px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
+                <div style="margin-top:4px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_rongyu_31X16_32bits.png#0 0 31 16);"></div>
+            </div>
         </div>
         <div onclick=CloseWindow class="btn" style="float: right; background:url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22); width:20px; height:20px;"></div>
     </div>
@@ -16,28 +18,33 @@
 
 <script type="text/lua">
 
-tab = GetAttrValue("tabindex", "works");  -- 当前选择项
+tab = "";               -- 当前选择项
+asidetab = ""
 
 function SelectTab(index)
     tab = index;
-
     local onchange = GetAttrValue("onchange");
-
     if (type(onchange) == "function") then onchange(tab) end
 end
 
 function GetClass(index)
-    return tab == index and "tab center active" or "tab center";
+    return tab == index and "title-tab center active" or "title-tab center";
 end
 
 function OnReady()
-    tab = GetAttrValue("tabindex", "works");  -- 当前选择项
+    tab = GetAttrValue("tabindex");
+    asidetab = GetAttrValue("asidetabindex");
+end
+
+function OnAttrValueChange()
+    OnReady();
 end
 
 </script>
 
 <style>
-.tab {
+.title-tab {
+    display: inline-flex;
     background-color: rgb(77,77,77);
 }
 .active {

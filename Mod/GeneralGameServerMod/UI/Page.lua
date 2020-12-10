@@ -26,6 +26,21 @@ function Page.Show(G, params)
     return page;
 end
 
+-- 显示用户信息
+local UserInfoPage = Vue:new();
+function Page.ShowUserInfoPage(G, params)
+    params = params or {};
+
+    params.url = "%vue%/Page/User/User.html";
+    params.G = G;
+    params.allowDrag = false;
+    params.width = params.width or 1025;
+    params.height = params.height or 625;
+    UserInfoPage:Show(params);
+
+    return UserInfoPage;
+end
+
 local MessageBoxPage = Vue:new();
 function Page.ShowMessageBoxPage(G, params)
     params = params or {};

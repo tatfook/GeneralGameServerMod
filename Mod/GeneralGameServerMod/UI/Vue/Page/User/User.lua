@@ -7,6 +7,7 @@ local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
 local Encoding = commonlib.gettable("System.Encoding");
 local SelfProjectList = {};
 
+local player = GameLogic.GetPlayerController():GetPlayer();
 local GlobalScope = GetGlobalScope();
 -- 组件全局变量初始化
 GlobalScope:Set("AuthUsername", System.User.keepworkUsername);
@@ -14,6 +15,7 @@ GlobalScope:Set("isLogin", System.User.keepworkUsername and true or false);
 GlobalScope:Set("isAuthUser", false);
 GlobalScope:Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {}});
 GlobalScope:Set("ProjectList", {});
+GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
 
 -- 加载用户信息
 function LoadUserInfo()
@@ -88,66 +90,67 @@ function LoadUserInfo()
     end)
 end
 
-_G.GetUserAssets = function()
-    -- echo(KeepWorkItemManager.bags, true);
-    -- echo(KeepWorkItemManager.items, true);
-    local skinBag = nil;
-    local assets = {};
-    for _, bag in ipairs(KeepWorkItemManager.bags) do
-        if (bag.name == "换装") then
-            skinBag = bag;
-            break;
-        end
-    end 
-    local bagId = skinBag and skinBag.id;
-    if (not bagId) then return assets end
 
+local function GetItemIcon(item)
+    local icon = item.icon;
+    if(not icon or icon == "" or icon == "0") then icon = string.format("Texture/Aries/Creator/keepwork/items/item_%d_32bits.png", item.gsId) end
+    return icon;
+end
+
+_G.GetUserAssets = function()
+    local bagNo = 1007;
+    local assets = {};
     for _, item in ipairs(KeepWorkItemManager.items) do
-        if (item.bagId == bagId) then
+        if (item.bagNo == bagNo) then
             local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
             if (itemTpl) then
-                -- echo(itemTpl, true);
                 table.insert(assets, {
                     modelUrl = itemTpl.modelUrl,
-                    icon = itemTpl.icon,
+                    icon = GetItemIcon(itemTpl),
                     name = itemTpl.name,
                 });
             end
         end
     end
-
     return assets;
 end
 
--- echo(_G.GetUserAssets(), true);
--- _G.GetUserAssets()
-
 _G.GetUserShowGoods = function()
-    local bagId = 4;
+    local bagNo = 1001;
     local goods = {}; 
     for _, item in ipairs(KeepWorkItemManager.items) do
+        -- echo(item, true);
         local copies = item.copies or 0;
-        if (item.bagId == bagId and copies > 0) then
+        if (item.bagNo == bagNo and copies > 0) then
             local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
             if (itemTpl) then
-                local icon = itemTpl.icon;
-                if(not icon or icon == "" or icon == "0") then icon = string.format("Texture/Aries/Creator/keepwork/items/item_%d_32bits.png", item.gsId) end
-                -- echo(itemTpl, true);
                 table.insert(goods, {
-                    icon = icon,
+                    icon = GetItemIcon(itemTpl),
                     copies = copies,
                     name = itemTpl.name,
                 });
             end
         end
     end
-
-    -- echo(goods, true);
-
     return goods;
 end
 
-_G.GetUserShowGoods();
+_G.GetUserHonors = function ()
+    local bagNo = 1006;
+    local honors = {}; 
+    for _, item in ipairs(KeepWorkItemManager.items) do
+        if (item.bagNo == bagNo) then
+            local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
+            if (itemTpl) then
+                table.insert(honors, {
+                    icon = GetItemIcon(itemTpl),
+                    name = itemTpl.name,
+                });
+            end
+        end
+    end
+    return honors;
+end
 
 _G.UpdatePlayerEntityInfo = function()
     local isAuthUser = GlobalScope:Get("isAuthUser");
@@ -170,4 +173,13 @@ _G.UpdatePlayerEntityInfo = function()
         userinfo.extra = extra;
     end);
 end 
+
+_G.SetScrollElement = function(el)
+    local verticalScrollBar = el and el:GetVerticalScrollBar();
+    if (not verticalScrollBar) then return end
+    verticalScrollBar:SetStyleValue("background-color", "#ffffff00");
+    verticalScrollBar:GetThumb():SetStyleValue("background", "Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 15 2 15");
+    verticalScrollBar:GetThumb():SetStyleValue("min-height", 38);
+end
+
 LoadUserInfo();

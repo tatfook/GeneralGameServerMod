@@ -1,25 +1,25 @@
 <template style="display: inline-block; padding: 6px; width: 100%;">
-    <div v-for="goods in goodslist" class="goods">
-        <div v-bind:style="GoodsStyle(goods)"></div>
-        <div class="center" style="height: 30px; color: #000000;">{{goods.copies}}</div>
+    <div v-for="honor in honorlist" class="honor">
+        <div v-bind:style="HonorStyle(honor)"></div>
+        <div class="center" style="height: 30px; color: #000000;">{{honor.name}}</div>
     </div>
 </template>
 
 <script type="text/lua">
 
-goodslist = _G.GetUserShowGoods();
+honorlist = _G.GetUserHonors();
 
 function OnAttrValueChange()
 end
 
-function GoodsStyle(goods)
-    return string.format("margin-top: 15px; margin-bottom: 15px; width: 128px; height: 64px; background:url(%s)", goods.icon);
+function HonorStyle(honor)
+    return string.format("margin-top: 15px; margin-bottom: 15px; width: 128px; height: 64px; background:url(%s)", honor.icon);
 end
 
 </script>
 
 <style>
-.goods {
+.honor {
     width: 146px;
     height: 140px;
     padding: 10px 9px 0px 9px;
