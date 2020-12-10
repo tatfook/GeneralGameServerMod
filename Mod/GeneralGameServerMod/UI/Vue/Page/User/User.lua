@@ -109,6 +109,7 @@ _G.GetUserAssets = function()
                 -- echo(itemTpl, true);
                 table.insert(assets, {
                     modelUrl = itemTpl.modelUrl,
+                    icon = itemTpl.icon,
                     name = itemTpl.name,
                 });
             end
@@ -148,4 +149,25 @@ end
 
 _G.GetUserShowGoods();
 
+_G.UpdatePlayerEntityInfo = function()
+    local isAuthUser = GlobalScope:Get("isAuthUser");
+    local AuthUserId = GlobalScope:Get("AuthUserId");
+    -- 更新用户信息
+    if (not isAuthUser) then return end
+    local player = GameLogic.GetPlayerController():GetPlayer();
+    local asset = player:GetMainAssetPath();
+    local skin = player:GetSkin();
+    local extra = UserDetail.extra or {};
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    extra.ParacraftPlayerEntityInfo.asset = asset;
+    extra.ParacraftPlayerEntityInfo.skin = skin;
+    keepwork.user.setinfo({
+        router_params = {id = AuthUserId},
+        extra = extra,
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
+        local userinfo = KeepWorkItemManager.GetProfile();
+        userinfo.extra = extra;
+    end);
+end 
 LoadUserInfo();

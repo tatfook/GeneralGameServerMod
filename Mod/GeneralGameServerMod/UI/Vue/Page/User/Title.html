@@ -16,7 +16,7 @@
 
 <script type="text/lua">
 
-tab = "works";  -- 当前选择项
+tab = GetAttrValue("tabindex", "works");  -- 当前选择项
 
 function SelectTab(index)
     tab = index;
@@ -29,6 +29,11 @@ end
 function GetClass(index)
     return tab == index and "tab center active" or "tab center";
 end
+
+function OnReady()
+    tab = GetAttrValue("tabindex", "works");  -- 当前选择项
+end
+
 </script>
 
 <style>

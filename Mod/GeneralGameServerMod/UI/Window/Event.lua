@@ -29,6 +29,7 @@ end
 
 function MouseEvent:UpdateElement(element)
     self.element = element;
+    if (not element) then return end
     local screenX, screenY = element:GetScreenPos();
     self.elementX, self.elementY = self.x - screenX, self.y - screenY;
 end

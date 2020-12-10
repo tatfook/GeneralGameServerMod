@@ -44,23 +44,25 @@ local function GetTailSelector(comboSelector)
     return nil;
 end
 
+-- 是否是有效的元素选择器
+local function IsValidElementSelector(selector, element)
+    local elementSelector = element:GetSelector();
+    if (not selector or not elementSelector[selector]) then return false end
+    if ((string.match(selector, ":hover%s*$")) and not element:IsHover()) then return false end
+    return true;
+end
 -- 是否是祖先元素的选择器
 local function IsAncestorElementSelector(element, selector)
     local parentElement = element:GetParentElement();
     if (not parentElement) then return false end
-    local elementSelector = parentElement:GetSelector();
-
-    if (elementSelector[selector]) then return true, parentElement end
-
+    if (IsValidElementSelector(selector, parentElement)) then return true, parentElement end
     return IsAncestorElementSelector(parentElement, selector);
 end
 
 -- 是否是元素的选择器
 local function IsElementSelector(comboSelector, element)
-    local elementSelector = element:GetSelector();
     local selector, selectorType, newComboSelector = GetTailSelector(comboSelector, element);
-    if (not selector or not elementSelector[selector]) then return false end
-
+    if (not IsValidElementSelector(selector, element)) then return false end
     local newSelector, newSelectorType = GetTailSelector(newComboSelector);
     newSelector = StringTrim(newSelector or newComboSelector);
     -- 后代选择器 div p
@@ -75,8 +77,7 @@ local function IsElementSelector(comboSelector, element)
     if (selectorType == ">") then
         local parentElement = element:GetParentElement();
         if (not parentElement) then return false end
-        local parentElementSelector = parentElement:GetSelector();
-        if (not parentElementSelector[newSelector]) then return false end
+        if (not IsValidElementSelector(newSelector, parentElement)) then return false end
         if (not newSelectorType) then return true end
         return IsElementSelector(newComboSelector, parentElement);
     end
@@ -85,8 +86,7 @@ local function IsElementSelector(comboSelector, element)
     if (selectorType == "~") then
         local prevSiblingElement = element:GetPrevSiblingElement();
         while (prevSiblingElement) do
-            local prevSiblingElementSelector = prevSiblingElement:GetSelector();
-            if (prevSiblingElementSelector[newSelector]) then break end
+            if (IsValidElementSelector(newSelector, prevSiblingElement)) then break end
             prevSiblingElement = prevSiblingElement:GetPrevSiblingElement();
         end
         if (not prevSiblingElement) then return false end
@@ -99,9 +99,8 @@ local function IsElementSelector(comboSelector, element)
         -- StyleSheetDebug.If(element:GetAttrStringValue("id") == "debug", "--------------------------------------1");
         local prevSiblingElement = element:GetPrevSiblingElement();
         if (not prevSiblingElement) then return false end
-        local prevSiblingElementSelector = prevSiblingElement:GetSelector();
         -- StyleSheetDebug.If(element:GetAttrStringValue("id") == "debug", "--------------------------------------2", prevSiblingElementSelector, newSelector, newComboSelector, selector, comboSelector);
-        if (not prevSiblingElementSelector[newSelector]) then return false end
+        if (not IsValidElementSelector(newSelector, prevSiblingElement)) then return false end
         -- StyleSheetDebug.If(element:GetAttrStringValue("id") == "debug", "--------------------------------------3");
         if (not newSelectorType) then return true end
         -- StyleSheetDebug.If(element:GetAttrStringValue("id") == "debug", "--------------------------------------4");

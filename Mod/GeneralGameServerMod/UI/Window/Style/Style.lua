@@ -91,7 +91,6 @@ function Style:ctor()
 	self.RawStyle = {};             -- 原始样式
 	self.NormalStyle = {};          -- 普通样式
 	self.InheritStyle = nil;        -- 继承样式
-	self.LastSelectStyle = self.NormalStyle;     -- 上次选择样式
 	-- 伪类样式
 	self.ActiveStyle = {};          -- 激活样式
 	self.HoverStyle = {};           -- 鼠标悬浮样式
@@ -136,8 +135,6 @@ function Style:Clear()
 	ClearStyle(self.FocusStyle);
 
 	self.InheritStyle = nil;        -- 继承样式
-	self.LastSelectStyle = self.NormalStyle;     -- 上次选择样式
-
 	self.RawStyle = {};             -- 原始样式
 	self.NormalStyle = {};          -- 普通样式
 	-- 伪类样式
@@ -158,18 +155,9 @@ end
 
 -- 选择样式
 function Style:SelectStyle(style)
-	-- 清除上次样式
-	if (self.LastSelectStyle ~= self.NormalStyle) then
-		for key, val in pairs(self.LastSelectStyle) do
-			self[key] = nil;
-		end
-	end
-	-- 写入新选择样式
 	for key, val in pairs(style) do
 		self[key] = val;
 	end
-	-- 记录选择
-	self.LastSelectStyle = style;
 	return self;
 end
 
@@ -192,7 +180,6 @@ end
 -- 选择激活样式
 function Style:SelectActiveStyle()
 	return self:SelectStyle(self.ActiveStyle);
-
 end
 
 -- 选择悬浮样式
@@ -203,6 +190,11 @@ end
 -- 选择聚焦样式
 function Style:SelectFocusStyle()
 	return self:SelectStyle(self.FocusStyle);
+end
+
+-- 取消选择
+function Style:UnselectStyle()
+	ClearStyle(self);
 end
 
 -- 选择默认样式

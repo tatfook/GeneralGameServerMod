@@ -536,44 +536,42 @@ end
 function ElementUI:OnMouseEnter()
 end
 
+function ElementUI:OnHover()
+    self:CallAttrFunction("onhover", nil, true, self);
+end
+
+function ElementUI:OffHover()
+    self:CallAttrFunction("onhover", nil, false, self);
+end
+
 -- 悬浮
-function ElementUI:Hover(event)
-    local point = event:globalPos();
-    local x, y = point:x(), point:y();
-    local ex, ey = self:GetScreenPos();
-    local w, h = self:GetSize();
-    if (ex <= x and x <= (ex + w) and ey <= y and y <= (ey + h)) then
-        self:SelectStyle("OnHover");
-        self:SetHover(true);
+function ElementUI:Hover(event, isUpdateLayout)
+    local isChangeHoverState = false;
+    if (self:IsContainPoint(event.x, event.y)) then
+        -- ElementUIDebug.If(self:GetAttrStringValue("class") == "asset-container" and not self:IsHover(), "---------------OnHover-----------");
+        if (not self:IsHover()) then
+            self:SetHover(true);
+            isChangeHoverState = true
+            self:OnHover();
+        end
     else 
-        self:SelectStyle("OffHover");
-        self:SetHover(false);
+        -- ElementUIDebug.If(self:GetAttrStringValue("class") == "asset-container" and self:IsHover(), "---------------OffHover-----------");
+        if (self:IsHover()) then
+            self:SetHover(false);
+            isChangeHoverState = true
+            self:OffHover();
+        end
     end
 
     for child in self:ChildElementIterator() do
-        child:Hover(event);
+        child:Hover(event, isUpdateLayout and not isChangeHoverState);  -- 若父布局更新, 则子布局无需更新
+    end
+
+    -- 需要更新且发送状态改变
+    if (isUpdateLayout and isChangeHoverState) then 
+        self:UpdateLayout(true);
     end
 end
-
--- -- 设置光标元素
--- function ElementUI:SetHover(element)
---     local window = self:GetWindow();
---     if (not window) then return end
---     local hoverElement = window:GetHoverElement();
---     if (hoverElement == element) then return end
---     if (hoverElement) then
---         hoverElement:OnMouseLeave(MouseEvent:init("mouseLeaveEvent", window));
---         hoverElement:SelectStyle("OffHover");
---         hoverElement:OffHover();
---     end
---     window:SetHoverElement(element);
---     if (element and element:IsCanHover()) then
---         element:OnMouseEnter(MouseEvent:init("mouseEnterEvent", window));
---         element:OnHover();
---         element:SelectStyle("OnHover");
---         ElementHoverDebug.Format("Hover Element, Name = %s", element:GetName());
---     end
--- end
 
 function ElementUI:OnFocusOut()
     local onblur = self:GetAttrFunctionValue("onblur");
@@ -608,47 +606,23 @@ function ElementUI:SetFocus(element)
     if (focusElement == element) then return end
     if (focusElement) then
         focusElement:OnFocusOut();
-        focusElement:SelectStyle("FocusOut");
+        self:UpdateLayout(true);
     end
     window:SetFocusElement(element);
     if (element) then
         element:OnFocusIn();
-        element:SelectStyle("FocusIn");
+        self:UpdateLayout(true);
         ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
     end
 end
 
--- 计算样式
+-- 选择样式
 function ElementUI:SelectStyle(action)
-    local isNeedRefreshLayout = false;
     local style = self:GetStyle();
-    if (not style) then return end
-    if (not action) then
-        if (self:IsFocus()) then action = "FocusIn" end
-        if (self:IsHover()) then action = "OnHover" end
-    end
-    if (action == "OnHover" or action == "OffHover") then
-        if (action == "OnHover") then 
-            style:SelectHoverStyle();
-        else
-            style:SelectNormalStyle();
-        end
-        isNeedRefreshLayout = style:IsNeedRefreshLayout(style:GetHoverStyle()); 
-    elseif (action == "FocusIn" or action == "FocusOut") then
-        if (action == "FocusIn") then 
-            style:SelectFocusStyle();
-        else
-            style:SelectNormalStyle();
-        end
-        isNeedRefreshLayout = style:IsNeedRefreshLayout(style:GetFocusStyle()); 
-    else
-        style:SelectNormalStyle();
-    end
-    -- ElementUIDebug.If(self:GetAttrValue("id") == "debug", isNeedRefreshLayout, action, style:GetCurStyle());
-
-    if (isNeedRefreshLayout) then
-        self:UpdateLayout();
-    end 
+    style:UnselectStyle();
+    style:SelectNormalStyle();
+    if (self:IsFocus()) then style:SelectFocusStyle() end
+    if (self:IsHover()) then style:SelectHoverStyle() end
 end
 
 -- 鼠标滚动事件

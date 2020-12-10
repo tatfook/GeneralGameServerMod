@@ -16,6 +16,8 @@ NPL.load("(gl)script/ide/System/Windows/Mouse.lua");
 NPL.load("(gl)script/ide/System/Core/SceneContextManager.lua");
 NPL.load("(gl)script/ide/math/Point.lua");
 NPL.load("(gl)script/ide/math/Rect.lua");
+NPL.load("(gl)script/ide/System/Windows/Screen.lua");
+local Screen = commonlib.gettable("System.Windows.Screen");
 local PainterContext = commonlib.gettable("System.Core.PainterContext");
 local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
 local KeyEvent = commonlib.gettable("System.Windows.KeyEvent");
@@ -46,6 +48,7 @@ Window:Property("HoverElement");                    -- 光标所在元素
 Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
+Window:Property("Params");                          -- 窗口参数
 
 function Window:ctor()
     windowId = windowId + 1;
@@ -91,7 +94,10 @@ function Window:NewG(g)
     return G.New(self, g);
 end
 
-function Window:Init(params)
+function Window:Init()
+    Screen:Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+
+    local params = self:GetParams();
     self:SetG(self:NewG(params.G));      -- 设置全局G表
     -- 设置窗口元素
     self:InitElement({
@@ -125,10 +131,11 @@ function Window.Show(self, params)
     end
     params = params or {};
     params.width, params.height = params.width or 600, params.height or 500;
+    self:SetParams(params);
     if (not self:GetNativeWindow()) then
-        self:SetNativeWindow(self:CreateNativeWindow(params));
+        self:SetNativeWindow(self:CreateNativeWindow());
     end
-    self:Init(params);
+    self:Init();
     self:UpdateLayout(true);
 
     return self;
@@ -137,14 +144,15 @@ end
 -- 窗口关闭
 function Window:CloseWindow()
     if (not self:GetNativeWindow()) then return end
-
+    Screen:Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     ParaUI.Destroy(self:GetNativeWindow().id);
     self:SetNativeWindow(nil);
     local G = self:GetG();
     if (G and type(G.OnClose) == "function") then G.OnClose() end
 end
 
-function Window:InitWindowPosition(params)
+function Window:InitWindowPosition()
+    local params = self:GetParams();
     local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
     local windoX, windowY, windowWidth, windowHeight = 0, 0, params.width or 600, params.height or 500;
     local offsetX, offsetY = params.x or 0, params.y or 0;
@@ -201,16 +209,20 @@ function Window:InitWindowPosition(params)
 
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = windowX, windowY, windowWidth, windowHeight;
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, windowWidth, windowHeight;
-
+    WindowDebug(
+        string.format("root window screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", screenX, screenY, screenWidth, screenHeight),
+        string.format("screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", windowX, windowY, windowWidth, windowHeight),
+        string.format("windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", 0, 0, windowWidth, windowHeight)
+    );
     return windowX, windowY, windowWidth, windowHeight;
 end
 
 -- 创建原生窗口
-function Window:CreateNativeWindow(params)
+function Window:CreateNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
     local RootUIObject = ParaUI.GetUIObject("root");
     -- 创建窗口
-    local windoX, windowY, windowWidth, windowHeight = self:InitWindowPosition(params);
+    local windoX, windowY, windowWidth, windowHeight = self:InitWindowPosition();
     local native_window = ParaUI.CreateUIObject("container", "Window", "_lt", windoX, windowY, windowWidth, windowHeight);
     -- WindowDebug.Format("CreateNativeWindow windoX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", windoX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
@@ -270,6 +282,13 @@ function Window:CreateNativeWindow(params)
     return native_window;
 end
 
+-- 屏幕窗口大小改变
+function Window:OnScreenSizeChanged()
+    self:InitWindowPosition();
+    self:GetWindow():GetNativeWindow():Reposition("_lt", self.screenX, self.screenY, self.screenWidth, self.screenHeight);
+    self:UpdateLayout();
+end
+
 -- 获取窗口位置
 function Window:GetWindowPosition()
     return self.windowX, self.windowY, self.windowWidth, self.windowHeight;
@@ -301,7 +320,7 @@ end
 function Window:handleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
 
-    self:Hover(event);
+    self:Hover(event, true);
 
     local point, eventType = event:globalPos(), event:GetType();
     local x, y = point:x(), point:y();
@@ -408,7 +427,6 @@ function Window:handleMouseEvent(event)
 
     event:UpdateElement(element);
     if (eventType == "mouseMoveEvent") then
-        -- self:SetHover(element);
     elseif(eventType == "mousePressEvent") then
         self:SetFocus(element);
     end

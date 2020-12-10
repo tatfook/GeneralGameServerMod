@@ -13,12 +13,14 @@ UI 是写 2D 窗口界面 UI 库, 使用方式与写 web 前端相似, 使用 ht
 ```lua
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
-Page.Show({
+local page = Page.Show({
     -- html 中 lua 执行环境的全局表
 }, {
     -- 窗口参数
     x, y, width, height, alignment,  -- 窗口位置参数, 支持百分比和数字 默认 x = 0, y = 0, widht = 600, height = 500
     draggable = false,               -- 窗口是否支持拖拽
     url = "",                        -- 窗口html文件路径
-})
+});
+
+page:CloseWindow();                  -- 关闭窗口
 ```

@@ -52,6 +52,14 @@ function ComponentScope:Init(component, scope)
     return self;
 end
 
+function ComponentScope:SetArguments(...)
+    self.args = table.pack(...);
+end
+
+function ComponentScope:GetArguments()
+    return table.unpack(self.args);
+end
+
 function ComponentScope:RegisterComponent(tagname, filename)
     self:GetComponent():Register(tagname, filename);
 end

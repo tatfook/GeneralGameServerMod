@@ -1,9 +1,12 @@
 
 <template style="width: 100%; height: 100%; color:#ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/dialog_440X93_32bits.png#0 0 440 93:37 43 33 44);">
-    <Title onchange=OnTabChange></Title>
+    <Title v-bind:tabindex="tabindex" onchange=OnTabChange></Title>
     <div width="100%">
         <UserInfo v-bind:UserDetail="UserDetail"></UserInfo>
-        <WorksList v-show="tabindex == 'works'" v-bind:ProjectList="ProjectList"></WorksList>
+        <div style="display: inline-block; width: 604px; height: 580px;">
+            <WorksList v-show="tabindex == 'works'" v-bind:ProjectList="ProjectList"></WorksList>
+            <PlayerAsset v-show="tabindex == 'skin'"></PlayerAsset>
+        </div>
     </div>
 </template>
 
@@ -11,9 +14,9 @@
 RegisterComponent("Title", "%vue%/Page/User/Title.html");
 RegisterComponent("UserInfo", "%vue%/Page/User/UserInfo.html");
 RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
-RegisterComponent("Bag", "%vue%/Page/User/Bag.html");
+RegisterComponent("PlayerAsset", "%vue%/Page/User/PlayerAsset.html");
 
-tabindex = "works";
+tabindex = "skin";
 
 function OnTabChange(index)
     tabindex = index;

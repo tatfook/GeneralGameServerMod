@@ -404,7 +404,7 @@ function Element:UpdateLayout(bApplyElementStyle)
     if (self.isUpdateLayout) then return end
     self.isUpdateLayout = true;
     
-    -- 应用元素样式
+    -- 生成元素样式
     if (bApplyElementStyle) then
         self:ApplyElementStyle();
     end
@@ -417,6 +417,7 @@ function Element:UpdateLayout(bApplyElementStyle)
 
     -- 选择合适样式
     self:SelectStyle();
+
     -- 准备布局
     local layout = self:GetLayout();
     layout:PrepareLayout();

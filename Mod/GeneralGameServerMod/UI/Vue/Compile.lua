@@ -149,8 +149,8 @@ function Compile:VShow(element)
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-show"] == nil) then return end
     self:ExecCode(xmlNode.attr["v-show"], element, function(val)
         element:SetVisible(val and true or false);
-        -- local parentElement = element:GetParentElement();
-        -- if (parentElement) then parentElement:UpdateLayout() end
+        local parentElement = element:GetParentElement();
+        if (parentElement) then parentElement:UpdateLayout() end
     end, true);
 end
 
