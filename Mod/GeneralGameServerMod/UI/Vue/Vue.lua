@@ -58,7 +58,11 @@ end
 
 -- 扩展全局方法
 function Vue:ExtendG(G)
-    G.ShowWindow = function(params)
+    G.ShowWindow = function(G, params)
+        params = params or {};
+        if (not params.url) then return end
+        params.G = G;
+        
         return Vue:new():Show(params);
     end
 

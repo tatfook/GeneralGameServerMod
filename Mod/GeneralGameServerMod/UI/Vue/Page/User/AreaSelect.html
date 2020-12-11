@@ -17,9 +17,7 @@
 
 <script type="text/lua">
 RegisterComponent("Select", "%vue%/Components/Select.html");
-
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
-local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
 local KeepworkServiceSchoolAndOrg = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/SchoolAndOrg.lua");
 local states, citys, countys = {}, {}, {};
 local country = {id = 1, name = "中国"};
@@ -151,6 +149,15 @@ function close()
     CloseWindow();
 end
 
+local function ShowMessageBoxPage(G)
+    ShowWindow(G, {
+        url = "%vue%/Page/User/MessageBox.html",
+        width = 500,
+        height = 242,
+        draggable = false,
+    });
+end
+
 function clickConfirm()
     local newregionid = county.id or city.id or state.id or country.id;
     if (newregionid == regionId) then return close() end
@@ -159,16 +166,16 @@ function clickConfirm()
         regionId = newregionid,
     }, function(status, msg, data) 
         if (status < 200 or status >= 300) then 
-            page.ShowMessageBoxPage({text = data and data.message or "修改地区失败"});
+            ShowMessageBoxPage({text = data and data.message or "修改地区失败"});
             return CloseWindow();
         end
         if (not IsExistRegionGSItem) then
             if (UserDetail) then UserDetail.bean = (UserDetail.bean or 0) + 5 end    
-            page.ShowMessageBoxPage({text = "地区修改成功, 获得了5知识豆"});
+            ShowMessageBoxPage({text = "地区修改成功, 获得了5知识豆"});
             IsExistRegionGSItem = true;
             SessionStorage.SetItem("IsExistRegionGSItem", IsExistRegionGSItem);
         else
-            page.ShowMessageBoxPage({text = "地区修改成功"});
+            ShowMessageBoxPage({text = "地区修改成功"});
         end
         if (type(confirm) == "function") then confirm(county.id and county or city) end
         CloseWindow();

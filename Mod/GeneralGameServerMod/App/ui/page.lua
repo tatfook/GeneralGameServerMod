@@ -49,7 +49,7 @@ local UserRegionUpdatePage = vue:new();
 function page.ShowUserRegionUpdatePage(G, params)
     params = params or {};
 
-    params.url = "%vue%/Page/AreaSelect.html";
+    params.url = "%vue%/Page/User/AreaSelect.html";
     params.draggable = false;
     params.G = G;
     UserRegionUpdatePage:Show(params);
@@ -61,7 +61,7 @@ local MessageBoxPage = vue:new();
 function page.ShowMessageBoxPage(G, params)
     params = params or {};
 
-    params.url = "%vue%/Page/MessageBox.html";
+    params.url = "%vue%/Page/User/MessageBox.html";
     params.draggable = false;
     params.G = G;
     MessageBoxPage:Show(params);
