@@ -33,16 +33,16 @@ end
 -- 显示用户信息
 local UserInfoPageUI = ui:new();
 function page.ShowUserInfoPage(G, params)
-    return Page.ShowUserInfoPage(G, params);
-    -- params = params or {};
+    -- return Page.ShowUserInfoPage(G, params);
+    params = params or {};
 
-    -- params.url = "%ui%/Page/UserInfoPage.html";
-    -- params.G = G;
-    -- params.allowDrag = false;
-    -- params.OnClose = function() end
+    params.url = "%ui%/Page/UserInfoPage.html";
+    params.G = G;
+    params.allowDrag = false;
+    params.OnClose = function() end
 
-    -- UserInfoPageUI:ShowWindow(params);
-    -- return UserInfoPageUI;
+    UserInfoPageUI:ShowWindow(params);
+    return UserInfoPageUI;
 end
 
 local UserRegionUpdatePage = vue:new();
