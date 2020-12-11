@@ -39,6 +39,7 @@ function LoadUserInfo()
         if (System.User.keepworkUsername == UserDetail.username) then
             GlobalScope:Set("AuthUserId", UserDetail.id);
             GlobalScope:Set("isAuthUser", true);
+            echo("--------------------------------IsAuthUser------------------------------------");
         end
         GlobalScope:Set("UserDetail", UserDetail);
 

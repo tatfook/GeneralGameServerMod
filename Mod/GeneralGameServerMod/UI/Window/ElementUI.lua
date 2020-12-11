@@ -42,7 +42,7 @@ end
 
 -- 是否需要渲染
 function ElementUI:IsNeedRender()
-    return not (self:IsRender() or not self:IsVisible() or self:GetWidth() == 0 or self:GetHeight() == 0);
+    return not (self:IsRender() or not self:IsVisible());
 end
 
 function ElementUI:Render(painter)
@@ -55,9 +55,9 @@ end
 
 -- 元素渲染
 function ElementUI:RenderStaticElement(painter, root)
-    -- ElementUIDebug.If(self:GetAttrValue("id") == "debug" and not self:IsNeedRender(), self:IsVisible(), self:GetWidth(), self:GetHeight());
-    if (not self:IsNeedRender()) then return end
+    -- ElementUIDebug.If(self:GetAttrValue("id") == "debug", self:IsVisible(), self:GetWidth(), self:GetHeight());
 
+    if (not self:IsNeedRender()) then return end
     local position = self:GetLayout():GetPositionStyle();
     if (self ~= root and (position == "absolute" or position == "fixed" or position == "screen")) then
         if (position == "absolute") then 
@@ -86,6 +86,7 @@ function ElementUI:RenderStaticElement(painter, root)
     
     -- 绘制子元素
     for childElement in self:ChildElementIterator() do
+        -- ElementUIDebug.If(self:GetAttrValue("id") == "debugp", childElement:GetXmlNode().attr);
         if (childElement:GetLayout():IsPositionElement()) then
             childElement:RenderStaticElement(painter, root);
         else 

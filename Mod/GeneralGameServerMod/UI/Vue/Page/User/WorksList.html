@@ -53,9 +53,10 @@ local UniString = commonlib.gettable("System.Core.UniString");
 selectedProjectId = nil;
 
 -- 响应式变量定义
-ProjectList = GetAttrValue("ProjectList", {});
+ProjectList = {};
 
 function OnReady()
+    ProjectList = GetAttrValue("ProjectList", {});
     SetScrollElement(GetRef("workslist"));
 end
 

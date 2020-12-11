@@ -10,7 +10,7 @@ local Flex = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout/Flex.l
 ]]
 
 local Flex = NPL.export();
-local FlexDebug = GGS.Debug.GetModuleDebug("FlexDebug").Disable(); --Enable  Disable
+local FlexDebug = GGS.Debug.GetModuleDebug("FlexDebug").Enable(); --Enable  Disable
 
 local function LayoutElementFilter(el)
 	local layout = el:GetLayout();
@@ -18,7 +18,7 @@ local function LayoutElementFilter(el)
 end 
 
 local function UpdateRow(layout, style)
-    local left, top, width, height = layout:GetContentGeometry();
+    local _, _, width, height = layout:GetContentGeometry();
 	local lines, line = {}, {layouts = {}, width = 0, height = 0, flexGrow = 0};
 	table.insert(lines, line);
 	for child in layout:GetElement():ChildElementIterator(true, LayoutElementFilter) do
@@ -37,9 +37,9 @@ local function UpdateRow(layout, style)
 	end
 
 	-- local totalHeight = 0;
-    local offsetLeft, offsetTop, HGap, VGap = left, top, 0, 0;
+    local offsetLeft, offsetTop, HGap, VGap = 0, 0, 0, 0;
     local contentWidth, contentHeight = 0, 0;
-    local function UpdateChildLayoutPos(layouts)
+    local function UpdateChildLayoutPos(line)
         for _, childLayout in ipairs(line.layouts) do
 			local spaceWidth, spaceHeight = childLayout:GetSpaceWidthHeight();
 			local childMarginTop, childMarginRight, childMarginBottom, childMarginLeft = childLayout:GetMargin();
@@ -48,11 +48,11 @@ local function UpdateRow(layout, style)
 			if (alignSelf == "center") then
 				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop + (lineHeight - spaceHeight) / 2);
 			elseif (alignSelf == "flex-end") then
-				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop+ lineHeight - spaceHeight);
+				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop + lineHeight - spaceHeight);
 			else
 				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop);
 			end
-			-- FlexDebug.Format("child layout left = %s, top = %s", offsetLeft, offsetTop);
+			-- FlexDebug.Format("child layout left = %s, top = %s, spaceWidth = %s, hgap = %s, count = %s", offsetLeft, offsetTop, spaceWidth, HGap, #line.layouts);
             offsetLeft = offsetLeft + spaceWidth + HGap;
         end
     end
@@ -74,10 +74,8 @@ local function UpdateRow(layout, style)
             offsetTop = VGap;
         end 
     end
-	
 	-- FlexDebug(lines);
-	
-	for _, line in ipairs(lines) do
+	for no, line in ipairs(lines) do
 		if (width) then
 			local remainWidth = width - line.width;
 			if (line.flexGrow > 0) then
@@ -108,24 +106,26 @@ local function UpdateRow(layout, style)
 					HGap = remainWidth / gapCount;
 					offsetLeft = HGap;
 				end 
-				UpdateChildLayoutPos(line.layouts);
+				-- FlexDebug.Format("no = %s, hgap = %s, contentWidth = %s, width = %s, count = %s", no, HGap, line.width, width, #line.layouts);
+				UpdateChildLayoutPos(line);
 			end
 		else 
-			UpdateChildLayoutPos(line.layouts);
+			UpdateChildLayoutPos(line);
 		end
-        contentWidth = math.max(contentWidth, offsetLeft - HGap - left);
-		offsetLeft, HGap = left, 0;
+        contentWidth = math.max(contentWidth, offsetLeft - HGap);
+		offsetLeft, HGap = 0, 0;
         offsetTop = offsetTop + line.height + VGap;
-        contentHeight = math.max(contentHeight, offsetTop - VGap - top);
+        contentHeight = math.max(contentHeight, offsetTop - VGap);
 	end
 
-	FlexDebug.Format("left = %s, top = %s, width = %s, height = %s, contentWidth = %s, contentHeight = %s", left, top, width, height, contentWidth, contentHeight);
+	-- FlexDebug.Format("left = %s, top = %s, width = %s, height = %s, contentWidth = %s, contentHeight = %s", left, top, width, height, contentWidth, contentHeight);
     layout:SetRealContentWidthHeight(contentWidth, contentHeight);
 end
 
 local function UpdateCol(layout, style)
-    local left, top, width, height = layout:GetContentGeometry();
+	-- local _, _, width, height = layout:GetContentGeometry();
 	local lines, line = {}, {layouts = {}, width = 0, height = 0, flexGrow = 0};
+	FlexDebug.Format("element left = %s, top = %s, width = %s, height = %s", left, top, width, height);
 	table.insert(lines, line);
 	for child in layout:GetElement():ChildElementIterator(true, LayoutElementFilter) do
 		local childLayout, childStyle = child:GetLayout(), child:GetStyle();
@@ -140,16 +140,27 @@ local function UpdateCol(layout, style)
 		line.height = line.height + childSpaceHeight;
 		line.width = math.max(line.width, childSpaceWidth);
 		table.insert(line.layouts, childLayout);
+		-- FlexDebug.Format("childSpaceWidth = %s, childSpaceHeight = %s, width = %s, height = %s, childCount = %s", childSpaceWidth, childSpaceHeight, width, height, #line.layouts);
 	end
 
 	-- local totalHeight = 0;
-    local offsetLeft, offsetTop, HGap, VGap = left, top, 0, 0;
+    local offsetLeft, offsetTop, HGap, VGap = 0, 0, 0, 0;
     local contentWidth, contentHeight = 0, 0;
-    local function UpdateChildLayoutPos(layouts)
+    local function UpdateChildLayoutPos(line)
         for _, childLayout in ipairs(line.layouts) do
-            local spaceWidth, spaceHeight = childLayout:GetSpaceWidthHeight();
-            childLayout:SetPos(offsetLeft, offsetTop);
-            offsetTop = offsetTop + spaceHeight + VGap;
+			local spaceWidth, spaceHeight = childLayout:GetSpaceWidthHeight();
+			local childMarginTop, childMarginRight, childMarginBottom, childMarginLeft = childLayout:GetMargin();
+			local alignSelf = childLayout:GetStyle()["align-self"];
+			local lineWidth = line.width;
+			if (alignSelf == "center") then
+				childLayout:SetPos(offsetLeft + childMarginLeft + (lineWidth - spaceWidth) / 2, offsetTop + childMarginTop);
+			elseif (alignSelf == "flex-end") then
+				childLayout:SetPos(offsetLeft + childMarginLeft + lineWidth - spaceWidth, offsetTop + childMarginTop);
+			else
+				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop);
+			end
+			offsetTop = offsetTop + spaceHeight + VGap;
+			-- FlexDebug.Format("child layout left = %s, top = %s, spaceHeight = %s, vgap = %s, count = %s", offsetLeft, offsetTop, spaceHeight, VGap, #line.layouts);
         end
     end
 
@@ -202,15 +213,15 @@ local function UpdateCol(layout, style)
 					VGap = remainHeight / gapCount;
 					offsetTop = VGap;
 				end 
-				UpdateChildLayoutPos(line.layouts);
+				UpdateChildLayoutPos(line);
 			end
 		else 
-			UpdateChildLayoutPos(line.layouts);
+			UpdateChildLayoutPos(line);
         end
-        contentHeight = math.max(contentHeight, offsetTop - VGap - top);
-        offsetTop, VGap = top, 0;
+        contentHeight = math.max(contentHeight, offsetTop - VGap);
+        offsetTop, VGap = 0, 0;
         offsetLeft = offsetLeft + line.width + HGap;
-        contentWidth = math.max(contentWidth, offsetLeft - HGap - left);
+        contentWidth = math.max(contentWidth, offsetLeft - HGap);
     end
     layout:SetRealContentWidthHeight(contentWidth, contentHeight);
 end
