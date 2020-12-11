@@ -53,7 +53,6 @@ function Page.ShowMessageBoxPage(G, params)
     return MessageBoxPage;
 end
 
-
 local DebugInfoPage = Vue:new();
 function Page.ShowDebugInfoPage(G, params)
     params = params or {};

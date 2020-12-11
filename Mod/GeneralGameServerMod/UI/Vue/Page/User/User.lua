@@ -39,9 +39,13 @@ function LoadUserInfo()
         if (System.User.keepworkUsername == UserDetail.username) then
             GlobalScope:Set("AuthUserId", UserDetail.id);
             GlobalScope:Set("isAuthUser", true);
-            echo("--------------------------------IsAuthUser------------------------------------");
+            -- echo("--------------------------------IsAuthUser------------------------------------");
         end
+
+        -- 设置模型
         GlobalScope:Set("UserDetail", UserDetail);
+        local ParacraftPlayerEntityInfo = UserDetail.extra and UserDetail.extra.ParacraftPlayerEntityInfo or {};
+        if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
 
         -- 获取项目列表
         local userId = UserDetail.id;

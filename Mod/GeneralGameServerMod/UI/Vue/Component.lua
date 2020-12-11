@@ -201,6 +201,7 @@ function Component:InitByScriptNode(scriptNode)
     local scriptFile = scriptNode.attr and scriptNode.attr.src;
     local scriptText = scriptNode[1] or "";
     scriptText = scriptText ..  "\n" .. (Helper.ReadFile(scriptFile) or "");
+    scriptText = string.gsub(scriptText, "^%s*", "");
     self:ExecCode(scriptText);
 end
 
