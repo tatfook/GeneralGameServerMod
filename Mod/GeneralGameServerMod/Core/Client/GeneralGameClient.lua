@@ -33,7 +33,7 @@ local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Conn
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
 
-local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
 GeneralGameClient:Property("World", nil);  -- 当前世界
 GeneralGameClient:Property("MainPlayerEntityScale", nil);  -- 玩家实体大小
@@ -441,7 +441,7 @@ end
 
 -- 显示调试信息
 function GeneralGameClient:ShowDebugInfo(debug)
-    page.ShowDebugInfoPage({text = GGS.ToString(debug)});
+    Page.ShowDebugInfoPage({text = GGS.ToString(debug)});
 end
 
 -- 初始化成单列模式

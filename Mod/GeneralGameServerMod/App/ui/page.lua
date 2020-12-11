@@ -74,7 +74,7 @@ local DebugInfoPage = vue:new()
 function page.ShowDebugInfoPage(G, params)
     params = params or {};
 
-    params.url = "%vue%/Page/DebugInfo.html";
+    params.url = "%vue%/Page/Debug/DebugInfo.html";
     params.draggable = false;
     params.G = G;
     DebugInfoPage:Show(params);
