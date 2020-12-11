@@ -51,6 +51,16 @@ function Element:ctor()
     self:SetAttrStyle({});
 end
 
+-- 转化为普通对象
+function Element:ToPlainObject()
+    return {
+        Name = self:GetName(),
+        TagName = self:GetTagName(),
+        Rect = self:GetRect(),
+        Attr = self:GetAttr(),
+    }
+end
+
 -- 是否是元素
 function Element:IsElement()
     return true;
@@ -74,14 +84,12 @@ end
 -- 创建元素
 function Element:CreateFromXmlNode(xmlNode, window, parent)
     if (type(xmlNode) == "string") then return self:GetWindow():GetElementManager():GetTextElement():new():Init(xmlNode, window, parent) end
-    local PageElement =  xmlNode.ElementClass or self:GetElementByTagName(xmlNode.name);
-    xmlNode.ElementClass = PageElement;
-    return PageElement:new():Init(xmlNode, window, parent);
+    return self:GetElementByTagName(xmlNode.name):new():Init(xmlNode, window, parent);
 end
 
 -- 复制元素
 function Element:Clone()
-    return Element:CreateFromXmlNode(self:GetXmlNode(), self:GetWindow(), self:GetParentElement());
+    return self:new():Init(commonlib.deepcopy(self:GetXmlNode()), self:GetWindow(), self:GetParentElement());
 end
 
 -- 元素初始化
@@ -447,9 +455,10 @@ function Element:UpdateLayout(bApplyElementStyle)
     -- 调整布局
     self:GetLayout():Update();
 
+  
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
-
+    
     -- 强制更新一次元素窗口坐标
     local parentElement = self:GetParentElement();
     -- 父元素不存在或父元素已布局完成
@@ -552,7 +561,7 @@ end
 
 -- 样式属性值改变
 function Element:OnAttrStyleValueChange(attrValue, oldAttrValue)
-    if (GGS.ToString(attrValue) == GGS.ToString(oldAttrValue)) then return end
+    if (commonlib.compare(attrValue, oldAttrValue)) then return end
     self:SetAttrStyle(Style.ParseString(attrValue));
     self:ApplyElementStyle();
     self:UpdateLayout(false);
@@ -560,7 +569,7 @@ end
 
 -- 样式类属性值改变
 function Element:OnAttrClassValueChange(attrValue, oldAttrValue)
-    if (GGS.ToString(attrValue) == GGS.ToString(oldAttrValue)) then return end
+    if (commonlib.compare(attrValue, oldAttrValue)) then return end
     self:UpdateLayout(true);
 end
 

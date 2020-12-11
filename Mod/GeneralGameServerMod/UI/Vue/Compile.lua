@@ -200,7 +200,6 @@ function Compile:VFor(element)
     local pos = parentElement:GetChildElementPos(element);
     local forComponent = self:GetComponent();
 
-    -- parentElement:RemoveChildElement(pos);
     element:SetVisible(false);
     self:ExecCode(listexp, element, function(list)
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
@@ -208,16 +207,13 @@ function Compile:VFor(element)
         local oldComponent = self:GetComponent();
         self:SetComponent(forComponent)
         for i = 1, count do
-            if (not clones[i]) then 
-                local cloneXmlNode = commonlib.deepcopy(xmlNode);
-                cloneXmlNode.attr["v-for"] = nil;
-                clones[i] = element:CreateFromXmlNode(cloneXmlNode, element:GetWindow(), parentElement);
-            end
-            self:UnWatch(clones[i]);
-            if (i > lastCount) then
-                parentElement:InsertChildElement(pos + i, clones[i]);
-            end
-            -- v-for 产生新scope
+            clones[i] = clones[i] or element:Clone();
+            local clone = clones[i];
+
+            clone:GetXmlNode().attr["v-for"] = nil;
+            self:UnWatch(clone);
+            if (i > lastCount) then parentElement:InsertChildElement(pos + i, clone) end
+
             local scope = scopes[i] or {};
             scope[key or "index"] = i;
             if (type(list) == "table") then
@@ -225,10 +221,13 @@ function Compile:VFor(element)
             else
                 scope[val] = i; 
             end
+
             -- 产生新scope压入scope栈
             scopes[i] = self:GetComponent():PushScope(scope);
+
             -- 解析当前节点重新
-            self:CompileElement(clones[i]);
+            self:CompileElement(clone);
+
             -- 弹出scope栈
             self:GetComponent():PopScope();
         end

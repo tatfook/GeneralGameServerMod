@@ -74,6 +74,11 @@ function Option:OnMouseUp(event)
     event:accept();
 end
 
+-- SelectListBox
+local ListBox = commonlib.inherit(Element, {});
+ListBox:Property("Name", "ListBox");
+
+-- Select
 local Select = commonlib.inherit(Element, NPL.export());
 
 Select:Property("Name", "Select");
@@ -90,14 +95,14 @@ Select:Property("BaseStyle", {
 });
 
 function Select:ctor()
-    self:SetName("Div");
 end
 
 function Select:Init(xmlNode, window, parent)
+    echo(xmlNode)
     self:InitElement(xmlNode, window, parent);
 
-    local ListBox = self:CreateFromXmlNode({
-        name = "div",
+    local ListBox = ListBox:new():Init({
+        name = "ListBox",
         attr = {
             style = "position: absolute; left: 0px; top: 0px;  max-height: 130px; width: 100%; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px;",
         }
@@ -189,7 +194,8 @@ end
 
 function Select:OnAfterUpdateLayout()
     local width, height = self:GetSize();
-    self:GetListBoxElement():SetPosition(0, (height or 0) + 2);
+
+    self:GetListBoxElement():SetStyleValue("top", (height or 0) + 2);
 end
 
 local ArrowAreaSize = 20;

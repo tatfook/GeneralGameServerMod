@@ -68,7 +68,8 @@ local function Print(val, key, output, indent, OutputTable)
 
     OutputTable[val] = true;  -- 表记已输出
 
-    for k, v in pairs(val) do
+    local plainVal = type(val.ToPlainObject) == "function" and val:ToPlainObject() or val;
+    for k, v in pairs(plainVal) do
         Print(v, k, output, indent .. "    ", OutputTable);
     end
 

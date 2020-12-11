@@ -118,7 +118,6 @@ function Text:OnUpdateLayout()
 
 	TextDebug.FormatIf(self:GetParentElement():GetAttrStringValue("id") == "debug", "width = %s, height = %s, parentWidth = %s, parentHeight = %s, parentIsFixedWidth = %s", width, height, parentContentWidth, parentContentHeight, parentLayout:IsFixedWidth());
 	if (parentStyle["text-wrap"] == "none") then
-		echo("----------------")
 		--  不换行
 		local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
 		local textObject = {text = text, x = 0, y = 0, w = textWidth, h = textHeight}

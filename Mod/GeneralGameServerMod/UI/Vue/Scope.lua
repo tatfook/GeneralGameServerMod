@@ -293,3 +293,8 @@ function Scope:Watch(key, func)
     self.__watch__[key] = watch;
     watch[func] = func;
 end
+
+-- 转化为普通对象
+function Scope:ToPlainObject()
+    return self:__get_raw_data__();
+end
