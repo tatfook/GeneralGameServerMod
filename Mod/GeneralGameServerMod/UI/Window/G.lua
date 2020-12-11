@@ -60,6 +60,10 @@ function G:GetTime()
     return ParaGlobal.timeGetTime()
 end
 
+function G:GetEvent()
+    return self:GetWindow():GetEvent()
+end
+
 function G:SetTimeout(func, timeoutMS)
     local timer = commonlib.TimerManager.SetTimeout(func, timeoutMS);
     self.timers[timer] = timer;

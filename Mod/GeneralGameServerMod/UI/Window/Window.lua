@@ -49,6 +49,7 @@ Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
 Window:Property("Params");                          -- 窗口参数
+Window:Property("Event");                           -- 事件对象
 
 function Window:ctor()
     windowId = windowId + 1;
@@ -319,6 +320,7 @@ end
 
 function Window:handleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
+    self:SetEvent(event);
 
     self:Hover(event, true);
 
@@ -446,6 +448,7 @@ function Window:handleMouseEnterLeaveEvent(event)
 end
 
 function Window:handleKeyEvent(event)
+    self:SetEvent(event);
     local focusElement = self:GetFocus();
     if (focusElement) then
         if (event:GetType() == "keyPressEvent") then
