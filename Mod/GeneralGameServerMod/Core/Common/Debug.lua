@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: 调试类
 use the lib:
 -------------------------------------------------------
-local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
+local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua");
 -------------------------------------------------------
 ]]
 
@@ -87,6 +87,31 @@ local function ToString(val, key)
 end
 Debug.ToString = ToString;
 
+local function LocationInfo(level)
+	if not level then level = 1 end
+	local res = "";
+	level = level+1;
+	local info = debug.getinfo(level, "nSl")
+	
+	if not info then return res end
+	
+	if info.what == "C" then   
+		-- a C function
+		res = res.."C function:"
+    else   
+        local source = commonlib.split(info.source, "\n")[1];
+        source = string.gsub(source, "^%s*", "");
+        source = string.gsub(source, "%s*$", "");
+		-- a Lua function
+		if(info.name~=nil) then
+			res = res..string.format("%s:%d: in function %s",
+							source, info.currentline,tostring(info.name))
+		else
+			res = res..string.format("%s:%d:", source, info.currentline)
+		end					
+	end
+	return res;
+end
 
 local function DebugCall(module, ...)
     CheckLogFile();
@@ -95,7 +120,7 @@ local function DebugCall(module, ...)
 
     if (ModuleLogEnableMap[module] == false or (not IsDevEnv and not ModuleLogEnableMap[module])) then return end
     local dateStr, timeStr = commonlib.log.GetLogTimeString();
-    local filepos = commonlib.debug.locationinfo(3) or "";
+    local filepos = LocationInfo(3);
     filepos = string.sub(filepos, 1, 256);
     Print(string.format("\n[%s %s][%s][%s][DEBUG BEGIN]", dateStr, timeStr, module, filepos));
 

@@ -145,9 +145,8 @@ end
 function Component:LoadXmlNode(xmlNode)
     -- 开发环境每次重新加载
     if (self.xmlRoot) then return self.htmlNode, self.scriptNode, self.styleNode, self.xmlRoot end
-    -- local src = self:GetAttrStringValue("src");
     local src = xmlNode.attr and xmlNode.attr.src or self.filename;
-    -- ComponentDebug.Format("LoadXmlNode src = %s", src);
+    self.filename = self.filename or src or "";
     -- 从字符串加载
     local xmlRoot = nil;
     if (self.template and self.template ~= "") then
@@ -200,9 +199,15 @@ function Component:InitByScriptNode(scriptNode)
     if (not scriptNode) then return end
     local scriptFile = scriptNode.attr and scriptNode.attr.src;
     local scriptText = scriptNode[1] or "";
-    scriptText = scriptText ..  "\n" .. (Helper.ReadFile(scriptFile) or "");
     scriptText = string.gsub(scriptText, "^%s*", "");
+    scriptText = "-- " .. Helper.FormatFilename(self.filename) .. "\n" .. scriptText;   -- 第一行作为文件名 方便日志输出
     self:ExecCode(scriptText);
+
+    local fileScriptText = Helper.ReadFile(scriptFile);
+    if (not fileScriptText or fileScriptText == "") then return end
+    fileScriptText = string.gsub(fileScriptText, "^%s*", "");
+    fileScriptText = "-- " .. Helper.FormatFilename(scriptFile) .. "\n" .. fileScriptText;   -- 第一行作为文件名 方便日志输出
+    self:ExecCode(fileScriptText);
 end
 
 -- 元素加载到DOM之前

@@ -192,13 +192,10 @@ end
 
 -- 绘制背景
 function ElementUI:RenderBackground(painter)
-    local style = self:GetStyle();
-    local background, backgroundColor = style:GetBackground(), style:GetBackgroundColor();
+    local background, backgroundColor = self:GetBackground(), self:GetBackgroundColor();
     local x, y, w, h = self:GetGeometry();
     backgroundColor = backgroundColor or (background and "#ffffffff" or "#ffffff00");
-
     -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
-
     painter:SetPen(backgroundColor);
     painter:DrawRectTexture(x, y, w, h, background);
 end

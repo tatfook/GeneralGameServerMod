@@ -10,7 +10,7 @@ local G = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/G.lua");
 ]]
 
 local Storage = NPL.load("./Storage.lua", IsDevEnv);
-
+local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua", true);
 local G = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 G:Property("Window");  -- 所属窗口
@@ -30,7 +30,7 @@ function G.New(window, g)
         end
     end
 
-    g.Log = GGS.INFO;
+    g.Log = Debug.GetModuleDebug("UI");
     g._G = g;
     
     return g;

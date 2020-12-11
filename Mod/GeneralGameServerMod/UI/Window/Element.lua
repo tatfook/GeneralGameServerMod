@@ -417,7 +417,7 @@ function Element:UpdateLayout(bApplyElementStyle)
 
     -- 选择合适样式
     self:SelectStyle();
-
+    
     -- 准备布局
     local layout = self:GetLayout();
     layout:PrepareLayout();
@@ -550,14 +550,24 @@ function Element:CallAttrFunction(attrName, defaultValue, ...)
     func(...)
 end
 
+-- 样式属性值改变
+function Element:OnAttrStyleValueChange(attrValue, oldAttrValue)
+    if (GGS.ToString(attrValue) == GGS.ToString(oldAttrValue)) then return end
+    self:SetAttrStyle(Style.ParseString(attrValue));
+    self:ApplyElementStyle();
+    self:UpdateLayout(false);
+end
+
+-- 样式类属性值改变
+function Element:OnAttrClassValueChange(attrValue, oldAttrValue)
+    if (GGS.ToString(attrValue) == GGS.ToString(oldAttrValue)) then return end
+    self:UpdateLayout(true);
+end
+
 -- 元素属性值更新
 function Element:OnAttrValueChange(attrName, attrValue, oldAttrValue)
-    if ((attrName == "style" or attrName == "class") and self.attached) then
-        if (attrName == "style") then 
-            self:SetAttrStyle(Style.ParseString(attrValue));
-        end
-        self:UpdateLayout(attrName == "class");
-    end
+    if (attrName == "style") then self:OnAttrStyleValueChange(attrValue, oldAttrValue) end
+    if (attrName == "class") then self:OnAttrClassValueChange(attrValue, oldAttrValue) end
 end
 
 -- 设置属性值
