@@ -33,7 +33,7 @@ function Page.ShowUserInfoPage(G, params)
 
     params.url = "%vue%/Page/User/User.html";
     params.G = G;
-    params.allowDrag = false;
+    params.draggable = false;
     params.width = params.width or 1025;
     params.height = params.height or 625;
     UserInfoPage:Show(params);
