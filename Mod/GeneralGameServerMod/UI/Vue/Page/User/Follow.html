@@ -17,8 +17,6 @@
 self.isFollow = false;
 self.isShowCancelFollow = false;
 
-GetGlobalScope():Watch("UserDetail", OnReady);
-
 function OnReady()
     if (not UserDetail) then return end 
     self.isFollow = UserDetail.isFollow or false;
@@ -29,9 +27,7 @@ function ShowCancelFollow()
 end
 
 function clickFollow()
-    echo("0--11")
     if (not isLogin) then return end
-    echo("0--11www")
     UserDetail.rank.fans = UserDetail.rank.fans + 1;
     UserDetail.isFollow = true;
     self.isFollow = true;
@@ -57,4 +53,7 @@ function clickCancelFollow()
         -- self.fans = self.fans - 1;
     end);
 end
+
+GetGlobalScope():Watch("UserDetail", OnReady);
+
 </script>
