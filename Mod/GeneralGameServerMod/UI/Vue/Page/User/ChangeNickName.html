@@ -50,7 +50,6 @@ function UpdateNickName(value)
         nickname = value,
     }, function(status, msg, data) 
         if (status < 200 or status >= 300) then 
-            echo(msg);
             ShowResultBox(data and data.message or "修改昵称失败");
             return cancel() 
         end
