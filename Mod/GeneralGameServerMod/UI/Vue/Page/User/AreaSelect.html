@@ -6,8 +6,8 @@
         <div>选择地区:</div>
         <div style="margin-top: 10px">
             <select id="state" class="select" v-bind:options="stateOptions" v-bind:value="state and state.name" placeholder="省" onselect=selectState></select>
-            <select id="city" class="select" v-bind:options="cityOptions" v-bind:value="city and city.name" placeholder="区" onselect=selectCity></select>
-            <select id="county" class="select" v-bind:options="countyOptions" v-bind:value="county and county.name" placeholder="市" onselect=selectCounty></select>
+            <select id="city" class="select" v-bind:options="cityOptions" v-bind:value="city and city.name" placeholder="市" onselect=selectCity></select>
+            <select id="county" class="select" v-bind:options="countyOptions" v-bind:value="county and county.name" placeholder="区" onselect=selectCounty></select>
         </div>
     </div>
     <div id="btn" style="margin-top: 30px; padding-left: 150px;">

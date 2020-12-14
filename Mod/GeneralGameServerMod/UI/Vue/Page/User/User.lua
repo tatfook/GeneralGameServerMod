@@ -120,6 +120,25 @@ _G.GetUserAssets = function()
     return assets;
 end
 
+_G.GetAllAssets = function()
+    local bagId, bagNo = 0, 1007;
+    local assets = {}; 
+    for _, bag in ipairs(KeepWorkItemManager.bags) do
+        if (bagNo == bag.bagNo) then 
+            bagId = bag.id;
+            break;
+        end
+    end
+
+    for _, tpl in ipairs(KeepWorkItemManager.globalstore) do
+        if (tpl.bagId == bagId) then
+            table.insert(assets, tpl);
+        end
+    end
+
+    return assets;
+end
+
 _G.GetUserShowGoods = function()
     local bagNo = 1001;
     local goods = {}; 

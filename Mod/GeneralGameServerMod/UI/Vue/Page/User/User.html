@@ -4,7 +4,7 @@
     <div width="100%">
         <UserInfo v-bind:UserDetail="UserDetail"></UserInfo>
         <div ref="list" style="display: inline-block; width: 604px; height: 580px; overflow-y: auto;">
-            <WorksList v-show="tabindex == 'works' and asideTabIndex == 'character'" v-bind:ProjectList="ProjectList"></WorksList>
+            <WorksList v-bind:UserInfo="UserDetail" v-show="tabindex == 'works' and asideTabIndex == 'character'" v-bind:ProjectList="ProjectList"></WorksList>
             <PlayerAsset v-show="tabindex == 'skin' and asideTabIndex == 'character'"></PlayerAsset>
             <Honor v-show="tabindex == 'honor' and asideTabIndex == 'character'"></Honor>
             <Bag v-show="asideTabIndex == 'bag'"></Bag>

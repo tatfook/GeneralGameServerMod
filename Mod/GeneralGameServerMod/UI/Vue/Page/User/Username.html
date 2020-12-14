@@ -7,10 +7,10 @@
 </template>
 
 <script type="text/lua">
-local GlobalScope = GetGlobalScope();
  
 function OnReady()
-    local UserDetail = GlobalScope:Get("UserDetail");
+    local UserDetail = GetAttrValue("UserInfo");
+
     if (not UserDetail) then return end
     self.portrait = UserDetail.portrait;
     self.username = UserDetail.username;
@@ -23,7 +23,9 @@ function OnReady()
     end
 end
 
-GlobalScope:Watch("UserDetail", OnReady);
+function OnAttrValueChange()
+    OnReady();
+end
 
 </script>
 

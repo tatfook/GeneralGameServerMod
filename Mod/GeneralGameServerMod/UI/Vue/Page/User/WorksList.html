@@ -5,7 +5,7 @@
         </div>
         <div id="test" v-for="project in ProjectList" class="project btn" v-bind:style="GetProjectStyle(project.id)" onclick=ClickProject(project)>
             <div v-bind:style="GetImageStyle(project.extra)">
-                <Username style="height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
+                <Username v-bind:UserInfo="project.user or UserInfo" style="height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
             </div>
             <div style="font-size:16px; color: #522b2b; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px; display: flex; align-items: center;">
                 <div v-if="GetProjectStatusStyle(project.status)" class="status" style="display:inline-block; width: 16px; height: 16px;" v-bind:style="GetProjectStatusStyle(project.status)"></div>
@@ -32,8 +32,8 @@
             </div>
             <div style="margin-top: 10px; width: 250px;">
                 <div style="float: right;">
-                    <div onclick="ClickShareWorld(project.id)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#109 459 40 40);"></div>
-                    <div onclick="ClickOpenWorld(project)" style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
+                    <div onclick=ClickShareWorld(project.id) style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#109 459 40 40);"></div>
+                    <div onclick=ClickOpenWorld(project) style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
                 </div>
             </div>
             <Rate v-if="project.rate and project.rate > 0" style="position: absolute; left: 0px;" v-bind:rate="project.rate"></Rate>
@@ -54,6 +54,7 @@ selectedProjectId = nil;
 
 -- 响应式变量定义
 ProjectList = {};
+UserInfo = {};
 
 function OnReady()
     ProjectList = GetAttrValue("ProjectList", {});
@@ -63,6 +64,8 @@ end
 function OnAttrValueChange(attrName, attrValue)
     if (attrName == "ProjectList") then
         ProjectList = attrValue;
+    elseif (attrName == "UserInfo") then
+        UserInfo = attrValue;
     end
 end
 
