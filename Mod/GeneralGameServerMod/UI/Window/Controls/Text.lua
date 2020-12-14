@@ -29,6 +29,7 @@ local function ReplaceEntityReference(value)
 end
 
 function Text:ctor()
+	self.texts = {};
 end
 
 -- public:
@@ -39,6 +40,12 @@ function Text:Init(xmlNode, window, parent)
 	self:SetValue(self:GetInnerText());
 
 	return self;
+end
+
+function Text:Clone()
+	local clone = Text:new():Init(self:GetXmlNode(), self:GetWindow(), self:GetParentElement());
+	clone:SetValue(self:GetValue());
+	return clone;
 end
 
 function Text:FormatText(text)

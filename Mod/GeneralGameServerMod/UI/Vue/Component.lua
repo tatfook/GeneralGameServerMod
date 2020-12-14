@@ -42,8 +42,15 @@ local function LoadXmlFile(filename)
 end
 
 -- 是否是组件
-function  Component:IsComponent()
+function Component:IsComponent()
     return true;
+end
+
+-- 通过标签名获取组件元素类
+function Component:GetElementByTagName(tagname)
+    local ComponentClassMap = self:GetComponents();
+    if (ComponentClassMap[tagname]) then return ComponentClassMap[tagname] end
+    return Component._super.GetElementByTagName(self, tagname);
 end
 
 -- 组件构造函数
@@ -76,12 +83,7 @@ function Component:Init(xmlNode, window, parent)
     self:InitByScriptNode(scriptNode);
     -- 初始化子元素  需要重写创建子元素逻辑
     self:InitChildElement(htmlNode, window);
-    -- -- 根组件直接编译
-    -- if (not self:GetParentComponent()) then 
-    --     self:Compile();
-    -- else
-    --     -- 非根组件等待编译完成
-    -- end
+    
     return self;
 end
 
@@ -123,22 +125,6 @@ function Component:InitComponent(xmlNode)
     local scope = ComponentScope.New(self);
     self:SetComponentScope(scope);
     self:SetScope(scope);
-end
-
--- 初始化子元素
-function Component:InitChildElement(xmlNode, window)
-    -- ComponentDebug("====================Component:InitChildElement========================");
-    local oldElementClass = {};
-    local ComponentClassMap = self:GetComponents();
-    local ElementManager = self:GetWindow():GetElementManager();
-    for key, val in pairs(ComponentClassMap) do
-        oldElementClass[key] = ElementManager:GetElementByTagName(key);
-        ElementManager:RegisterByTagName(key, val);
-    end
-    Component._super.InitChildElement(self, xmlNode, window);
-    for key, val in pairs(ComponentClassMap) do
-        ElementManager:RegisterByTagName(key, oldElementClass[key]);
-    end
 end
 
 -- 加载文件
@@ -342,7 +328,6 @@ function Component.Extend(opts)
     if (opts.isa and opts:isa(Component)) then return opts end
     -- 继承Component构造新组件
     local ComponentExtend = commonlib.inherit(Component, opts);
-
     -- 返回新组件
     return ComponentExtend;
 end

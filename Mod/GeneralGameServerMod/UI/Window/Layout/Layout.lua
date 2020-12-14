@@ -133,7 +133,7 @@ function Layout:PrepareLayout()
     LayoutDebug.If(
 		self:GetElement():GetAttrValue("id") == "debug",
         "PrepareLayout TagName = " .. self:GetTagName() ..  " ElementName = " .. self:GetName(), 
-        string.format("Element nid = %s, width = %s, height = %s", nid, width, height),
+        string.format("Element nid = %s, width = %s, height = %s", self.nid, width, height),
         parentLayout and string.format("ParentElement nid = %s, width = %s, height = %s", parentLayout.nid, parentWidth, parentHeight)
     );
 end
@@ -178,7 +178,9 @@ function Layout:ApplyPositionStyle()
 	if (not height and top and bottom) then height = relHeight - top - bottom end 
 	left, top = left or 0, top or 0;
 	self:SetPos(left, top);
-	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s", self:GetTagNameAndName(), left, top, right, bottom, width, height, relWidth, relHeight);
+	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", 
+		"ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s, parentLayoutId = %s", 
+		self:GetTagNameAndName(), left, top, right, bottom, width, height, relWidth, relHeight, self:GetParentLayout().nid);
 	self:SetWidthHeight(width and math.max(width, 0), height and math.max(height, 0));
 end
 
@@ -209,8 +211,9 @@ function Layout:Update(isUpdateWidthHeight)
 	-- 应用定位方式获取宽高
 	self:ApplyPositionStyle();
 
-	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", "Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s", self:GetTagNameAndName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
-
+	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", 
+		"Layout Update Name = %s, width = %s, height = %s, IsFixedSize = %s, realContentWidth = %s, realContentHeight = %s",
+		self:GetTagNameAndName(), width, height, self:IsFixedSize(), realContentWidth, realContentHeight);
 	-- 再次回调
 	self:GetElement():OnRealContentSizeChange();
 	

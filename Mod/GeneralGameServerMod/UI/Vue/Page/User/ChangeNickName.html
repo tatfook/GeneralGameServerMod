@@ -37,11 +37,12 @@ end
 
 function ShowResultBox(text)
     ShowWindow({
+        text = text
+    }, {
         url = "%vue%/Page/User/ChangeNicknameResult.html",
         width = 500,
         height = 242,
-        G = {text = text},
-    })
+    });
 end
 
 function UpdateNickName(value)
@@ -78,18 +79,19 @@ function confirm()
     end
 
     ShowWindow({
+        Confirm = function()
+            UpdateNickName(value);
+        end,
+        Cancel = function()
+            cancel();
+        end
+    },
+    {
         url = "%vue%/Page/User/ChangeNicknameConfirm.html",
         width = 500,
         height = 242,
-        G = {
-            Confirm = function()
-                UpdateNickName(value);
-            end,
-            Cancel = function()
-                cancel();
-            end
-        }
-    })
+       
+    });
 end 
 
 </script>

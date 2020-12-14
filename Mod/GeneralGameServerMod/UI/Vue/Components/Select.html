@@ -1,7 +1,7 @@
 <template style="height: 30px; width: 120px; display: inline-block;">
     <input ref="input" style="width: 100%; height: 100%;" v-bind:placeholder="placeholder" readonly=true onfocus=onfocus onblur=onblur onchange=onchange></input>
     <div v-if="isShowListBox" class="listitems">
-        <div v-for="option in SelectOptions" class="listitem" onmousedown="clickOption(option)">{{option.label or option.value}}</div>
+        <div v-for="option in SelectOptions" class="listitem" onmousedown=clickOption(option)>{{option.label or option.value}}</div>
     </div>
 </template>
 

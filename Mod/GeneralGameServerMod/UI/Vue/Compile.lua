@@ -97,6 +97,10 @@ function Compile:ExecCode(code, object, watch, isExecWatch)
     local func, errmsg = loadstring("return (" .. code .. ")");
     if (not func) then return CompileDebug("Exec Code Error: " .. errmsg) end
 
+    if (not self:GetScope()) then
+        echo({self:GetComponent():GetTagName()})
+    end
+
     setfenv(func, self:GetScope());
 
     local val = ExecCode(code, func, object, watch);
@@ -167,6 +171,7 @@ function Compile:VIf(element)
         if (val) then
             if (not vif) then
                 local newElement = curElement:Clone();
+                newElement:GetXmlNode().attr["v-if"] = nil;
                 parentElement:ReplaceChildElement(curElement, newElement);
                 curElement = newElement;
                 local oldComponent = self:GetComponent();

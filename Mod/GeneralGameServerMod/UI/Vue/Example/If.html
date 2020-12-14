@@ -1,4 +1,7 @@
-<template>
+<template class="container">
+    <WindowTitleBar title="测试"></WindowTitleBar>
+
+    <div style="height: 100px;"></div>
     <div v-if="IsShow">v-if test</div>
     <button onclick="click">{{GetBtnText()}}</button>
 </template>
@@ -15,5 +18,16 @@ function click()
     IsShow = not IsShow;
 end
 </script>
+
+<style>
+    .container {
+        height: 100%; 
+        width: 100%; 
+        padding: 0px 2px 2px 2px;
+        /* border: 1px solid #ffffff; */
+        background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);
+    }
+</style>
+
 
 <!-- RegisterComponent("WindowTitleBar", "%ui%/Core/Vue/Components/WindowTitleBar.html"); -->

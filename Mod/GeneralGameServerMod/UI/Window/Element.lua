@@ -41,8 +41,8 @@ Element:Property("TagName", "");                          -- 标签名
 
 -- 构造函数
 function Element:ctor()
-    self.childrens = {};   -- 子元素列表
-
+    self.childrens = {};                    -- 子元素列表
+    self.ElementClassMap = {};              -- 元素类
     -- 设置布局
     self:SetLayout(Layout:new():Init(self));
     self:SetRect(Rect:new():init(0,0,0,0));
@@ -78,18 +78,23 @@ end
 
 -- 获取元素
 function Element:GetElementByTagName(tagname)
+    if (self.ElementClassMap[tagname]) then return self.ElementClassMap[tagname] end
+    local parentElement = self:GetParentElement();
+    if (parentElement) then return parentElement:GetElementByTagName(tagname) end
     return self:GetWindow():GetElementManager():GetElementByTagName(tagname);
 end
 
 -- 创建元素
 function Element:CreateFromXmlNode(xmlNode, window, parent)
     if (type(xmlNode) == "string") then return self:GetWindow():GetElementManager():GetTextElement():new():Init(xmlNode, window, parent) end
-    return self:GetElementByTagName(xmlNode.name):new():Init(xmlNode, window, parent);
+    return self:GetElementByTagName(string.lower(xmlNode.name)):new():Init(xmlNode, window, parent);
 end
 
 -- 复制元素
 function Element:Clone()
-    return self:new():Init(commonlib.deepcopy(self:GetXmlNode()), self:GetWindow(), self:GetParentElement());
+    local clone = self:new();
+    clone.ElementClassMap = self.ElementClassMap;
+    return clone:Init(commonlib.deepcopy(self:GetXmlNode()), self:GetWindow(), self:GetParentElement());
 end
 
 -- 元素初始化
@@ -111,7 +116,7 @@ function Element:InitElement(xmlNode, window, parent)
     -- 设置元素属性
     self:SetAttr({});
     if (type(xmlNode) ~= "table") then 
-        self:SetTagName(nil);
+        self:SetTagName("");
         self:SetAttr({});
         self:SetXmlNode(xmlNode);
     else 
@@ -122,6 +127,8 @@ function Element:InitElement(xmlNode, window, parent)
         end
     end
 
+    if (parent) then parent.ElementClassMap[self:GetTagName()] = self:class() end 
+
     self:SetAttrStyle(Style.ParseString(self:GetAttrStringValue("style")));
 
     -- 初始化样式表
@@ -129,6 +136,8 @@ function Element:InitElement(xmlNode, window, parent)
         self:SetStyleSheet(self:GetWindow():GetStyleManager():NewStyleSheet());
     end
     self:GetStyleSheet():SetInheritStyleSheet(parent and parent:GetStyleSheet());
+
+    return self;
 end
 
 -- 初始化子元素
@@ -412,6 +421,7 @@ function Element:UpdateLayout(bApplyElementStyle)
     if (self.isUpdateLayout) then return end
     self.isUpdateLayout = true;
     
+    -- ElementDebug.If(self:GetAttrValue("id") == "debug", "Update Layout");
     -- 生成元素样式
     if (bApplyElementStyle) then
         self:ApplyElementStyle();
@@ -441,7 +451,9 @@ function Element:UpdateLayout(bApplyElementStyle)
 
     -- 执行子元素布局  子元素布局未更新则进行更新
     if (not isUpdatedChildLayout) then
-		for childElement in self:ChildElementIterator() do
+        for childElement in self:ChildElementIterator() do
+            -- ElementDebug.If(self:GetAttrValue("id") == "debug", "Child Update Layout", childElement:GetTagName(), childElement:GetName());
+            
 			childElement:UpdateLayout(bApplyElementStyle);
 		end
     end
@@ -602,6 +614,7 @@ function Element:GetInnerText()
     local function GetInnerText(xmlNode)
         if (not xmlNode) then return "" end
         if (type(xmlNode) == "string") then return xmlNode end
+        -- if (type(xmlNode) == "table" and type(xmlNode.value) == "string") then return xmlNode.value end
         local text = "";
         for _, childXmlNode in ipairs(xmlNode) do
             text = text .. GetInnerText(childXmlNode);
