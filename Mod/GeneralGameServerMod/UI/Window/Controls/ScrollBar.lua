@@ -100,7 +100,7 @@ end
 function ScrollBarThumb:OnMouseMove(event)
     if(event:isAccepted()) then return end
     
-	if(self.isMouseDown and event:button() == "left") then
+    if(self.isMouseDown and event:button() == "left") then
         local x, y = event:screenPos():get();
         if (self:GetScrollBar():IsHorizontal()) then
             self.left = self.left + x - self.lastX;
@@ -119,7 +119,6 @@ function ScrollBarThumb:OnMouseMove(event)
                 self.isMouseDown = false;
             end
         end
-        self:SetPosition(self.left, self.top);
         self:GetScrollBar():OnScroll();
 		event:accept();
 	end
@@ -135,22 +134,28 @@ function ScrollBarThumb:OnMouseUp(event)
     end
 end
 
-function ScrollBarThumb:SetThumbWidthHeight(width, height, scrollBarWidth, scrollBarHeight)
+function ScrollBarThumb:SetThumbWidthHeight(width, height, scrollBarWidth, scrollBarHeight, scrollLeft, scrollTop)
     local style = self:GetStyle();
+    local scrollBar = self:GetScrollBar();
     self.maxWidth, self.maxHeight = scrollBarWidth, scrollBarHeight;
     if (self:GetScrollBar():IsHorizontal()) then
         self.width = width;
         self.height = GetPxValue(style["height"]) or (height > 2 and (height - 2) or height);
-        self.top = (self.maxHeight - self.height) / 2;
         self.maxLeft = math.max(scrollBarWidth - width, 1);
+        self.left = math.min(scrollLeft * self.maxLeft / (scrollBar.scrollWidth - scrollBar.contentWidth), self.maxLeft);
+        self.top = (self.maxHeight - self.height) / 2;
     else
         self.width = GetPxValue(style["width"]) or (width > 2 and (width - 2) or width);
         self.height = height;
-        self.left = (self.maxWidth - self.width) / 2;
         self.maxTop = math.max(scrollBarHeight - height, 1);
+        self.left = (self.maxWidth - self.width) / 2;
+        self.top = math.min(scrollTop * self.maxTop / (scrollBar.scrollHeight - scrollBar.contentHeight), self.maxTop);
     end
-    style["width"], style["height"] = self.width, self.height;
-    style["left"], style["top"] = self.left, self.top;
+
+    self:SetStyleValue("width", self.width);
+    self:SetStyleValue("height", self.height);
+    self:SetStyleValue("left", self.left);
+    self:SetStyleValue("top", self.top);
 end
 
 function ScrollBarThumb:ScrollByDelta(delta)
@@ -161,8 +166,7 @@ function ScrollBarThumb:ScrollByDelta(delta)
         self.top = self.top - self.height * delta / 10;
         self.top = math.max(0, math.min(self.top, self.maxTop));
     end
-    self:SetPosition(self.left, self.top);
-    self:GetScrollBar():OnScroll();
+    self:OnScroll();
 end
 
 function ScrollBarThumb:ScrollTo(left, top)
@@ -173,6 +177,12 @@ function ScrollBarThumb:ScrollTo(left, top)
         self.top = top or 0;
         self.top = math.max(0, math.min(self.top, self.maxTop));
     end
+    self:OnScroll();
+end
+
+function ScrollBarThumb:OnScroll()
+    self:SetStyleValue("left", self.left);
+    self:SetStyleValue("top", self.top);
     self:SetPosition(self.left, self.top);
     self:GetScrollBar():OnScroll();
 end
@@ -270,7 +280,7 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
         if (self.scrollWidth > 0 and self.clientWidth > 0) then
             thumbSize = math.floor(self.clientWidth * self.contentWidth / self.scrollWidth);
         end
-        self.thumb:SetThumbWidthHeight(thumbSize, self.height, self.width, self.height);
+        self.thumb:SetThumbWidthHeight(thumbSize, self.height, self.width, self.height, self.scrollLeft, self.scrollTop);
     else
         -- 内容没有溢出 滚动置0 返回
         if (self.scrollHeight <= self.contentHeight) then
@@ -284,12 +294,13 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
         if (self.scrollHeight > 0 and self.clientHeight > 0) then
             thumbSize = math.floor(self.clientHeight * self.contentHeight / self.scrollHeight);
         end
-        self.thumb:SetThumbWidthHeight(self.width, thumbSize, self.width, self.height);
+        self.thumb:SetThumbWidthHeight(self.width, thumbSize, self.width, self.height, self.scrollLeft, self.scrollTop);
     end
     
     self.thumbSize = thumbSize;
     self:OnScroll();
-    style["width"], style["height"] = self.width, self.height;
+    self:SetStyleValue("width", self.width);
+    self:SetStyleValue("height", self.height);
 
     self:UpdateLayout();
 
@@ -334,6 +345,7 @@ end
 function ScrollBar:OnMouseDown(event)
     local pos = event:pos();
     local windowX, windowY = self:GetWindowPos();
+    if (not self.thumb) then return end
     self.thumb:ScrollTo(pos:x() - windowX - self.thumbSize / 2, pos:y() - windowY - self.thumbSize / 2);
 end
 

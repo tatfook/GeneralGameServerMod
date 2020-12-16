@@ -184,10 +184,10 @@ function ElementUI:RenderOutline(painter)
     local x, y, w, h = self:GetGeometry();
     if (not outlineWidth or not outlineColor) then return end
     painter:SetPen(outlineColor);
-    painter:DrawRectTexture(x - outlineWidth, y - outlineWidth , w + 2 * outlineWidth, outlineWidth);  -- 上
-    painter:DrawRectTexture(x + w, y - outlineWidth, outlineWidth, h + 2 * outlineWidth); -- 右
-    painter:DrawRectTexture(x - outlineWidth, y + h , w + 2 * outlineWidth, outlineWidth);             -- 下
-    painter:DrawRectTexture(x - outlineWidth, y - outlineWidth, outlineWidth, h + 2 * outlineWidth); -- 左
+    painter:DrawRectTexture(x - outlineWidth, y - outlineWidth , w + 2 * outlineWidth, outlineWidth);      -- 上
+    painter:DrawRectTexture(x + w, y - outlineWidth, outlineWidth, h + 2 * outlineWidth);                  -- 右
+    painter:DrawRectTexture(x - outlineWidth, y + h , w + 2 * outlineWidth, outlineWidth);                 -- 下
+    painter:DrawRectTexture(x - outlineWidth, y - outlineWidth, outlineWidth, h + 2 * outlineWidth);       -- 左
 end
 
 -- 绘制背景
@@ -196,6 +196,7 @@ function ElementUI:RenderBackground(painter)
     local x, y, w, h = self:GetGeometry();
     backgroundColor = backgroundColor or (background and "#ffffffff" or "#ffffff00");
     -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
+    -- ElementUIDebug.If(self:GetAttrValue("id") == "test", background);
     painter:SetPen(backgroundColor);
     painter:DrawRectTexture(x, y, w, h, background);
 end

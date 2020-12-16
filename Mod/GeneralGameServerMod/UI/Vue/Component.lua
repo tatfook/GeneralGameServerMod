@@ -19,8 +19,7 @@ local ComponentDebug = GGS.Debug.GetModuleDebug("Component");
 
 Component:Property("Components");             -- 组件依赖组件集
 Component:Property("ParentComponent");        -- 父组件
-Component:Property("Scope");                  -- 组件当前Scope
-Component:Property("ComponentScope");         -- 组件Scope 
+Component:Property("Scope");                  -- 组件Scope 
 Component:Property("Compiled", false, "IsCompiled");      -- 是否编译
 
 -- 全局组件
@@ -69,10 +68,10 @@ function Component:Init(xmlNode, window, parent)
     self:SetTagName(xmlNode.name);
     self:InitSlotXmlNode(xmlNode);
 
-    local htmlNode, scriptNode, styleNode, xmlRoot = self:LoadXmlNode(xmlNode);
+    local htmlNode, scriptNode, styleNodes, xmlRoot = self:LoadXmlNode(xmlNode);
     self:SetWindow(window);
     -- 加载组件样式
-    self:InitByStyleNode(styleNode);
+    self:InitByStyleNode(styleNodes);
     -- 合并XmlNode
     self:InitByXmlNode(xmlNode, htmlNode);
     -- 初始化元素
@@ -123,14 +122,13 @@ function Component:InitComponent(xmlNode)
     self:SetParentComponent(parentComponent);
     -- 初始化组件Scope
     local scope = ComponentScope.New(self);
-    self:SetComponentScope(scope);
     self:SetScope(scope);
 end
 
 -- 加载文件
 function Component:LoadXmlNode(xmlNode)
     -- 开发环境每次重新加载
-    if (self.xmlRoot) then return self.htmlNode, self.scriptNode, self.styleNode, self.xmlRoot end
+    if (self.xmlRoot) then return self.htmlNode, self.scriptNode, self.styleNodes, self.xmlRoot end
     local src = xmlNode.attr and xmlNode.attr.src or self.filename;
     self.filename = self.filename or src or "";
     -- 从字符串加载
@@ -148,20 +146,33 @@ function Component:LoadXmlNode(xmlNode)
 
     local htmlNode = xmlRoot and commonlib.XPath.selectNode(xmlRoot, "//template");
     local scriptNode = xmlRoot and commonlib.XPath.selectNode(xmlRoot, "//script");
-    local styleNode = xmlRoot and commonlib.XPath.selectNode(xmlRoot, "//style");
+    local styleNodes = xmlRoot and commonlib.XPath.selectNodes(xmlRoot, "//style");
 
-    self.htmlNode, self.scriptNode, self.styleNode, self.xmlRoot = htmlNode, scriptNode, styleNode, xmlRoot;
-    return htmlNode, scriptNode, styleNode, xmlRoot;
+    self.htmlNode, self.scriptNode, self.styleNodes, self.xmlRoot = htmlNode, scriptNode, styleNodes, xmlRoot;
+    return htmlNode, scriptNode, styleNodes, xmlRoot;
+end
+
+-- 获取局部样式表
+function Element:GetElementScopedStyleSheet(element)
+    return self:GetScopedStyleSheet();
 end
 
 -- 加载组件样式
-function Component:InitByStyleNode(styleNode)
-    if (not styleNode) then return end
-    local mimetype = styleNode.attr and styleNode.attr.type or "text/css";
-    local type = string.match(mimetype,"[^/]+/([^/]+)");
-    local text = styleNode[1] or "";
+function Component:InitByStyleNode(styleNodes)
+    if (not styleNodes) then return end
+    local styleText, scopedStyleText = "", "";
+    for _, styleNode in ipairs(styleNodes) do
+        local text = styleNode[1] or "";
+        if (styleNode.attr and styleNode.attr.scoped == "true") then
+            scopedStyleText = scopedStyleText .. text;
+        else 
+            styleText = styleText .. text;
+        end
+    end
     -- 强制使用css样式
-    self:SetStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(text));
+    self:SetStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(styleText));
+    if (not self:GetScopedStyleSheet()) then self:SetScopedStyleSheet(self:GetWindow():GetStyleManager():NewStyleSheet()) end
+    self:SetScopedStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(scopedStyleText));
 end
 
 -- 合并XmlNode
@@ -249,21 +260,6 @@ function Component:GetRef(ref)
     return self.refs[ref];
 end
 
-function Component:PushScope(scope)
-    scope = Scope:__new__(scope);
-    scope:__set_metatable_index__(self:GetScope());
-    self:SetScope(scope);
-    return scope;
-end
-
-function Component:PopScope()
-    local scope = self:GetScope();
-    if (scope == self:GetComponentScope()) then return end
-    scope = scope:__get_metatable_index__();
-    self:SetScope(scope);
-    return scope;
-end
-
 -- 执行代码
 function Component:ExecCode(code) 
     if (type(code) ~= "string" or code == "") then return end
@@ -271,7 +267,7 @@ function Component:ExecCode(code)
     if (not func) then 
         return ComponentDebug("===============================Exec Code Error=================================", errmsg);
     end
-    setfenv(func, self:GetComponentScope());
+    setfenv(func, self:GetScope());
     return func();
 end
 
@@ -285,6 +281,7 @@ end
 
 -- 属性值更新
 function Component:OnAttrValueChange(attrName, attrValue)
+    Component._super.OnAttrValueChange(self, attrName, attrValue);
     self:ExecCode(string.format([[return type(OnAttrValueChange) == "function" and OnAttrValueChange("%s", GetAttrValue("%s"))]], attrName, attrName));
 end
 

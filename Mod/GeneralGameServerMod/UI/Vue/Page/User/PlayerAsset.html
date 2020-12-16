@@ -1,5 +1,6 @@
 <template style="padding: 6px; width: 100%;">
     <div v-for="asset, key in PlayerAssetList" v-bind:class="AssetContainerClass(asset)" onclick=ClickPlayerAsset(asset)>
+        <div class="selected" style="position: absolute; left: 3px; top: 3px; width: 168px; height: 224px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/renwubj3_168X224_32bits.png#0 0 168 224);"></div>
         <div v-bind:style="AssetStyle(asset)"></div>
         <div class="use-btn"></div>
     </div>
@@ -8,12 +9,13 @@
 <script type="text/lua">
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
-PlayerAssetList = GetUserAssets();
+PlayerAssetList = GetAllAssets();
 <!-- PlayerAssetList = {
     {
         id = 1,
         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
         modelUrl = "character/CC/02human/paperman/boy01.x",
+        owned = true,
     },
     {
         id = 2,
@@ -77,12 +79,14 @@ local function ChangePlayerAsset(assetfile)
 end 
 
 function ClickPlayerAsset(asset)
+    if (not asset.owned) then return end
+
     ChangePlayerAsset(asset.modelUrl);
     UpdatePlayerEntityInfo();
 end
 
 function AssetContainerClass(asset) 
-    return "asset-container " .. (asset.modelUrl == MainAsset and "used-asset-container" or "unused-asset-container");
+    return "asset-container " .. (asset.modelUrl == MainAsset and "used-asset-container" or (asset.owned and "unused-asset-container" or ""));
 end
 
 function AssetStyle(asset)
@@ -101,11 +105,19 @@ end
     width: 174px; 
     height: 235px; 
     margin-right: 20px;
-    /* border: 1px solid #ff0000; */
+    background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/renwubj4_174X235_32bits.png#0 0 174 235);
 }
 
 .used-asset-container {
     background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/renwubj_174X235_32bits.png#0 0 174 235);
+}
+
+.selected {
+    visibility: hidden;
+}
+
+.used-asset-container>.selected {
+    visibility: visible;
 }
 
 .unused-asset-container {

@@ -14,8 +14,124 @@ GlobalScope:Set("AuthUsername", System.User.keepworkUsername);
 GlobalScope:Set("isLogin", System.User.keepworkUsername and true or false);
 GlobalScope:Set("isAuthUser", false);
 GlobalScope:Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {}});
-GlobalScope:Set("ProjectList", {});
+GlobalScope:Set("ProjectList", {});                      -- 用户项目列表
+GlobalScope:Set("FavoriteProjectList", {});              -- 收藏项目列表
 GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
+
+local function IsExistScopeProjectList(projectId)
+    local ScopePorjectList = GlobalScope:Get("ProjectList");
+    for _, project in ipairs(ScopePorjectList) do
+        if (project.id == projectId) then return true end
+    end
+    return false;
+end
+
+local function GetProjectListPageFunc()
+    -- 获取项目列表
+    local page, pageSize = 1, 10;
+    local isFinish = false;
+    local isRequest = false;
+    
+    return function() 
+        if (isFinish or isRequest) then return end
+        local userId = GlobalScope:Get("UserId");
+        if (not userId) then return end
+        isRequest = true;
+        keepwork.project.list({
+            -- 请求参数
+            userId = userId,                    -- 用户ID
+            type = 1,                           -- 取世界项目
+            -- 分页控制
+            ["x-page"] = page,                  -- 页数
+            ["x-per-page"] = pageSize,          -- 页大小
+            ["x-order"] = "updatedAt-desc",     -- 按更新时间降序
+        }, function(status, msg, data)
+            isRequest = false;
+            if (status ~= 200) then return echo("获取用户项目列表失败, userId " .. tostring(userId)) end
+            local ProjectList = data;
+            -- echo(data);
+            if (#ProjectList < pageSize) then isFinish = true end
+            local ScopePorjectList = GlobalScope:Get("ProjectList");
+            for _, project in ipairs(ProjectList) do
+                if (not IsExistScopeProjectList(project.id)) then
+                    table.insert(ScopePorjectList, project);
+                end
+            end
+            GlobalScope:Set("ProjectList", ScopePorjectList);
+            page = page + 1;
+        end)
+    end
+end
+
+local function GetFavoriteProjectListPageFunc()
+    -- 获取项目列表
+    local page, pageSize = 1, 10;
+    local isFinish = false;
+    local isRequest = false;
+    
+    return function() 
+        if (isFinish or isRequest) then return end
+        local userId = GlobalScope:Get("AuthUserId");
+        if (not userId) then return end
+        isRequest = true;
+        keepwork.project.list_favorite({
+            -- 请求参数
+            userId = userId,                    -- 用户ID
+            type = 1,                           -- 取世界项目
+            -- 分页控制
+            ["x-page"] = page,                  -- 页数
+            ["x-per-page"] = pageSize,          -- 页大小
+            ["x-order"] = "updatedAt-desc",     -- 按更新时间降序
+        }, function(status, msg, data)
+            isRequest = false;
+            if (status ~= 200) then return echo("获取用户项目列表失败, userId " .. tostring(userId)) end
+            local ProjectList = data.rows;
+            -- echo(data, true);
+            if (#ProjectList < pageSize) then isFinish = true end
+            local ScopePorjectList = GlobalScope:Get("ProjectList");
+            for _, project in ipairs(ProjectList) do
+                if (not IsExistScopeProjectList(project.id)) then
+                    table.insert(ScopePorjectList, project);
+                end
+            end
+            GlobalScope:Set("ProjectList", ScopePorjectList);
+            page = page + 1;
+        end)
+    end
+end
+
+-- 取消收藏
+local function UnfavoriteProject(projectId)
+    local ScopePorjectList = GlobalScope:Get("ProjectList");
+    for i, project in ipairs(ScopePorjectList) do
+        if (project.id == projectId) then 
+            table.remove(ScopePorjectList, i);
+            break;
+        end
+    end
+    
+    GlobalScope:Set("ProjectList", ScopePorjectList);
+
+    keepwork.world.unfavorite({objectType = 5, objectId = projectId}, function(status)
+        if (status < 200 or status >= 300) then
+            Log("无法取消收藏");
+        end
+    end);
+end
+
+
+_G.SetProjectListType = function(projectListType)
+    GlobalScope:Set("ProjectList", {});
+    if (projectListType == "favorite") then
+        _G.NextPageProjectList = GetFavoriteProjectListPageFunc();
+        _G.DeleteProject = UnfavoriteProject;
+    else
+        _G.NextPageProjectList = GetProjectListPageFunc();
+    end
+    NextPageProjectList();
+end
+
+SetProjectListType("works");
 
 -- 加载用户信息
 function LoadUserInfo()
@@ -44,43 +160,14 @@ function LoadUserInfo()
 
         -- 设置模型
         GlobalScope:Set("UserDetail", UserDetail);
+        GlobalScope:Set("UserId", UserDetail.id);
+
         local ParacraftPlayerEntityInfo = UserDetail.extra and UserDetail.extra.ParacraftPlayerEntityInfo or {};
         if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
 
-        -- 获取项目列表
-        local userId = UserDetail.id;
-        local page, pageSize = 1, 10;
-        local isFinish = false;
-        local isRequest = false;
-        local NextPagePorjectList = function() 
-            if (isFinish or isRequest) then return end
-            isRequest = true;
-            keepwork.project.list({
-                -- 请求参数
-                userId = userId,
-                type = 1,               -- 取世界项目
-                -- 分页控制
-                ["x-page"] = page,                  -- 页数
-                ["x-per-page"] = pageSize,          -- 页大小
-                ["x-order"] = "updatedAt-desc",     -- 按更新时间降序
-            }, function(status, msg, data)
-                isRequest = false;
-                if (status ~= 200) then return echo("获取用户项目列表失败") end
-                local ProjectList = data;
-                -- echo(data);
-                if (#ProjectList < pageSize) then isFinish = true end
-                local ScopePorjectList = GlobalScope:Get("ProjectList");
-                for i = 1, #ProjectList do
-                    table.insert(ScopePorjectList, ProjectList[i]);
-                end
-                GlobalScope:Set("ProjectList", ScopePorjectList);
-                page = page + 1;
-            end)
-        end
         -- 先拉取第一页
-        NextPagePorjectList();
-        GlobalScope:Set("NextPageProjectList", NextPagePorjectList);
-
+        NextPageProjectList();
+        if (not GlobalScope:Get("isAuthUser")) then return end
         -- 获取是否关注
         keepwork.user.isfollow({
             objectId = userId,
@@ -107,12 +194,13 @@ _G.GetUserAssets = function()
     local assets = {};
     for _, item in ipairs(KeepWorkItemManager.items) do
         if (item.bagNo == bagNo) then
-            local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
-            if (itemTpl) then
+            local tpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
+            if (tpl) then
                 table.insert(assets, {
-                    modelUrl = itemTpl.modelUrl,
-                    icon = GetItemIcon(itemTpl),
-                    name = itemTpl.name,
+                    id = tpl.id,
+                    modelUrl = tpl.modelUrl,
+                    icon = GetItemIcon(tpl),
+                    name = tpl.name,
                 });
             end
         end
@@ -130,9 +218,24 @@ _G.GetAllAssets = function()
         end
     end
 
+    local userAssets = _G.GetUserAssets();
+    local function IsOwned(id)
+        for _, asset in ipairs(userAssets) do
+            if (asset.id == id) then return true end
+        end
+        return false;
+    end
+
     for _, tpl in ipairs(KeepWorkItemManager.globalstore) do
+        -- echo(tpl, true)
         if (tpl.bagId == bagId) then
-            table.insert(assets, tpl);
+            table.insert(assets, {
+                id = tpl.id,
+                modelUrl = tpl.modelUrl,
+                icon = GetItemIcon(tpl),
+                name = tpl.name,
+                owned = IsOwned(tpl.id),
+            });
         end
     end
 

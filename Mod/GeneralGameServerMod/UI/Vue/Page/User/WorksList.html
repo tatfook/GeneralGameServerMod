@@ -1,11 +1,11 @@
-<template style="display: inline-block;">
-    <div ref="workslist" onscroll=OnScroll style="width: 604px; height: 580px; padding-left: 6px; padding-top: 6px; overflow-y: auto;">
+<template style="height: 100%;">
+    <div ref="workslist" onscroll=OnScroll style="width: 598px; height: 100%; overflow-y: auto;">
         <div v-if="#ProjectList == 0" class="center" style="width: 100%; height: 100%;">
             <div style="width: 332px; height: 50px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tixingzi_332X50_32bits.png#0 0 332 50);"></div>
         </div>
-        <div id="test" v-for="project in ProjectList" class="project btn" v-bind:style="GetProjectStyle(project.id)" onclick=ClickProject(project)>
+        <div v-for="project in ProjectList" class="project btn" v-bind:style="GetProjectStyle(project.id)" onclick=ClickProject(project)>
             <div v-bind:style="GetImageStyle(project.extra)">
-                <Username v-bind:UserInfo="project.user or UserInfo" style="height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
+                <Username v-bind:UserInfo="project.user or UserDetail" style="height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
             </div>
             <div style="font-size:16px; color: #522b2b; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px; display: flex; align-items: center;">
                 <div v-if="GetProjectStatusStyle(project.status)" class="status" style="display:inline-block; width: 16px; height: 16px;" v-bind:style="GetProjectStatusStyle(project.status)"></div>
@@ -32,6 +32,7 @@
             </div>
             <div style="margin-top: 10px; width: 250px;">
                 <div style="float: right;">
+                    <div v-if="AuthUserId and AuthUserId ~= project.userId" onclick=ClickUnfavoriteWorld(project.id) style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_yishoucang_40X40_32bits.png#0 0 40 40);"></div>
                     <div onclick=ClickShareWorld(project.id) style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#109 459 40 40);"></div>
                     <div onclick=ClickOpenWorld(project) style="display: inline; margin-left:6px; width: 36px; height: 36px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_jingru_40X40_32bits.png#0 0 40 40);"></div>
                 </div>
@@ -52,26 +53,15 @@ local UniString = commonlib.gettable("System.Core.UniString");
 
 selectedProjectId = nil;
 
--- 响应式变量定义
-ProjectList = {};
-UserInfo = {};
-
 function OnReady()
-    ProjectList = GetAttrValue("ProjectList", {});
     SetScrollElement(GetRef("workslist"));
 end
 
 function OnAttrValueChange(attrName, attrValue)
-    if (attrName == "ProjectList") then
-        ProjectList = attrValue;
-    elseif (attrName == "UserInfo") then
-        UserInfo = attrValue;
-    end
 end
 
 function OnScroll(scroll)
     if (scroll.scrollTop < (scroll.scrollMaxTop - 200)) then return end
-    local NextPageProjectList = GetGlobalScope():Get("NextPageProjectList");
     if (type(NextPageProjectList) == "function") then NextPageProjectList() end
 end
 
@@ -154,6 +144,10 @@ function GetUpdatedTime(datetime)
     return time_str;
 end
 
+function ClickUnfavoriteWorld(projectId)
+    if (type(DeleteProject) == "function") then DeleteProject(projectId) end
+end 
+
 -- 点击打开世界
 function ClickOpenWorld(project)
     CloseWindow();
@@ -191,10 +185,8 @@ end
 .project {
     position: relative;
     display: inline-block; 
-    margin:3px; 
-    padding: 10px; 
-    padding-top: 8px; 
-    padding-bottom: 9px; 
+    margin: 0px 3px 6px 3px; 
+    padding: 8px 10px 9px 10px; 
     color:white;
     width: 284px;
     height: 274px;

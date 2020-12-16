@@ -12,7 +12,7 @@
                     <div v-if="isAuthUser" v-on:click="ClickEditNickName" style="margin-left: 5px; display: inline-block; height:24; width: 24px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_bianji_24X24_32bits.png#2 1 26 25);"></div>
                     <Follow v-if="not isAuthUser and isLogin" v-bind:UserDetail="UserDetail" style="display: inline; margin-left: 5px; margin-top:-2px;"></Follow>
                 </div>
-                <div id="debug" v-if="isEditNickName" class="center">
+                <div v-if="isEditNickName" class="center">
                     <ChangeNickName v-bind:finish="OnEditNickNameFinish" v-bind:userId="UserDetail.id" v-bind:nickname="UserDetail.nickname" style="display: inline;"></ChangeNickName>
                 </div>
             </div>

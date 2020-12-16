@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: 组件指令解析器
 use the lib:
 -------------------------------------------------------
-local Compile = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Vue/Compile.lua");
+local Compile = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Compile.lua");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/timer.lua");
@@ -14,13 +14,43 @@ local Scope = NPL.load("./Scope.lua");
 local Compile = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 local CompileDebug = GGS.Debug.GetModuleDebug("CompileDebug").Enable();   --Enable  Disable
 
-Compile:Property("Component");
-
 -- local EventNameMap = {["onclick"] = true, ["onmousedown"] = true, ["onmousemove"] = true, ["onmouseup"] = true};
 local DependItems = {};
 local AllDependItemWatch = {};
 local DependItemUpdateQueue = {};
-local DependItemUpdateQueueTimer = nil;
+local DependItemUpdateMap  = {};
+local IsActivedDependItemUpdate = false;
+
+local function ClearDependItemUpdateQueue()
+    if (IsCompile) then return end
+
+    local dependItemCount = 0;
+
+    for dependItem in pairs(DependItemUpdateQueue) do 
+        dependItemCount = dependItemCount + 1;
+        DependItemUpdateMap[dependItemCount] = dependItem;
+    end
+
+    if (dependItemCount == 0) then return end
+
+    for i = 1, dependItemCount do
+        local dependItem = DependItemUpdateMap[i];
+        DependItemUpdateQueue[dependItem] = nil;
+        local objects = AllDependItemWatch[dependItem];
+        for key, watchs in pairs(objects) do
+            for exp, func in pairs(watchs) do
+                func();
+            end
+        end
+    end
+
+    ClearDependItemUpdateQueue();
+end
+
+NPL.this(function()
+    IsActivedDependItemUpdate = false;
+    ClearDependItemUpdateQueue();
+end, {filename = "Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"});
 
 local function GenerateDependItem(obj, key)
     if (key == nil) then return tostring(obj) end
@@ -38,22 +68,12 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     if (not AllDependItemWatch[dependItem]) then return end
     -- CompileDebug.Format("__NewIndex key = %s, dependItem = %s, newVal = %s, oldVal = %s", key, dependItem, newVal, oldVal);
     DependItemUpdateQueue[dependItem] = true;
-    -- table.insert(DependItemUpdateQueue, dependItem)
-    if (DependItemUpdateQueueTimer) then return end
-    DependItemUpdateQueueTimer = commonlib.TimerManager.SetTimeout(function()  
-        DependItemUpdateQueueTimer = nil;   -- 定时并行执行的
-        local DependItemUpdateMap  = {};
-        for dependItem in pairs(DependItemUpdateQueue) do DependItemUpdateMap[dependItem] = true end
-        for dependItem in pairs(DependItemUpdateMap) do
-            DependItemUpdateQueue[dependItem] = nil;
-            local objects = AllDependItemWatch[dependItem];
-            for key, watchs in pairs(objects) do
-                for exp, func in pairs(watchs) do
-                    func();
-                end
-            end
-        end
-    end, 20)
+
+    -- 是否已激活更新, 已经激活忽略
+    if (IsActivedDependItemUpdate) then return end
+    -- 激活更新
+    IsActivedDependItemUpdate = true;
+    NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate");
 end)
 
 local function ExecCode(code, func, object, watch)
@@ -64,13 +84,13 @@ local function ExecCode(code, func, object, watch)
     if (object and type(watch) == "function") then
         local OldDependItems = {};
         for dependItem in pairs(DependItems) do
-            OldDependItems[dependItem] = true;   -- 备份依赖项 
-            AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};  -- 依赖项的对象集
+            OldDependItems[dependItem] = true;                                                      -- 备份依赖项 
+            AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};                  -- 依赖项的对象集
             AllDependItemWatch[dependItem][object] = AllDependItemWatch[dependItem][object] or {};  -- 对象的监控集
-            AllDependItemWatch[dependItem][object][code] = function()  -- 监控集项
+            AllDependItemWatch[dependItem][object][code] = function()                               -- 监控集项
                 -- 先清除
                 for dependItem in pairs(OldDependItems) do
-                    AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};  -- 依赖项的对象集
+                    AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};          -- 依赖项的对象集
                     AllDependItemWatch[dependItem][object] = AllDependItemWatch[dependItem][object] or {};  -- 对象的监控集
                     AllDependItemWatch[dependItem][object][code] = nil;
                 end
@@ -87,8 +107,39 @@ local function ExecCode(code, func, object, watch)
     return oldVal;
 end
 
+function Compile:ctor()
+    self.scope = nil;
+    self.component = nil;
+end
+
 function Compile:GetScope()
-    return self:GetComponent():GetScope();
+    return self.scope;
+end
+
+function Compile:SetScope(scope)
+    -- CompileDebug.Format("lastScopeId = %s scopeId = %s", self.scope and self.scope.__id__ or 0, scope and scope.__id__ or 0);
+    self.scope = scope;
+end
+
+function Compile:PushScope(scope)
+    scope = Scope:__new__(scope);
+    scope:__set_metatable_index__(self:GetScope());
+    self:SetScope(scope);
+    return scope;
+end
+
+function Compile:PopScope()
+    local scope = self:GetScope();
+    scope = scope and scope:__get_metatable_index__();
+    self:SetScope(scope);
+end
+
+function Compile:SetComponent(component)
+    self.component = component;
+end
+
+function Compile:GetComponent()
+    return self.component;
 end
 
 function Compile:ExecCode(code, object, watch, isExecWatch)
@@ -97,10 +148,7 @@ function Compile:ExecCode(code, object, watch, isExecWatch)
     local func, errmsg = loadstring("return (" .. code .. ")");
     if (not func) then return CompileDebug("Exec Code Error: " .. errmsg) end
 
-    if (not self:GetScope()) then
-        echo({self:GetComponent():GetTagName()})
-    end
-
+    -- CompileDebug.Format("ComponentTagName = %s, ElementTagName = %s, ScopeId = %s", self:GetComponent():GetTagName(), object and object:GetTagName(), self:GetScope().__id__);
     setfenv(func, self:GetScope());
 
     local val = ExecCode(code, func, object, watch);
@@ -166,18 +214,23 @@ function Compile:VIf(element)
     local curElement = element;
     local parentElement = element:GetParentElement();
     local ifComponent = self:GetComponent();
+    local ifScope = self:GetScope();
+
     self:ExecCode(xmlNode.attr["v-if"], element, function(val)
         val = val and true or false;
         if (val) then
             if (not vif) then
                 local newElement = curElement:Clone();
                 newElement:GetXmlNode().attr["v-if"] = nil;
+                local oldComponent = self:GetComponent();
+                local oldScope = self:GetScope();
+                self:SetComponent(ifComponent);
+                self:SetScope(ifScope);
+                self:CompileElement(newElement);
                 parentElement:ReplaceChildElement(curElement, newElement);
                 curElement = newElement;
-                local oldComponent = self:GetComponent();
-                self:SetComponent(ifComponent);
-                self:CompileElement(curElement);
                 self:SetComponent(oldComponent);
+                self:SetScope(oldScope);
             end
             curElement:SetVisible(true);
         else
@@ -204,21 +257,22 @@ function Compile:VFor(element)
     local parentElement = element:GetParentElement();
     local pos = parentElement:GetChildElementPos(element);
     local forComponent = self:GetComponent();
-
+    local forScope = self:GetScope();
     element:SetVisible(false);
     self:ExecCode(listexp, element, function(list)
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
         -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count);
         local oldComponent = self:GetComponent();
-        self:SetComponent(forComponent)
+        local oldScope = self:GetScope();
+
         for i = 1, count do
+            -- self:GetComponent():SetCompiled(false);
             clones[i] = clones[i] or element:Clone();
             local clone = clones[i];
-
+            -- 移除监控
             clone:GetXmlNode().attr["v-for"] = nil;
             self:UnWatch(clone);
-            if (i > lastCount) then parentElement:InsertChildElement(pos + i, clone) end
-
+            -- 构建scope数据
             local scope = scopes[i] or {};
             scope[key or "index"] = i;
             if (type(list) == "table") then
@@ -226,15 +280,19 @@ function Compile:VFor(element)
             else
                 scope[val] = i; 
             end
-
-            -- 产生新scope压入scope栈
-            scopes[i] = self:GetComponent():PushScope(scope);
-
-            -- 解析当前节点重新
+            -- 设置起始scope
+            self:SetComponent(forComponent);
+            self:SetScope(forScope);
+            -- 压入新scope
+            scopes[i] = self:PushScope(scope);
+            -- 编译新元素
             self:CompileElement(clone);
-
+            -- 添加至dom树
+            if (i > lastCount) then parentElement:InsertChildElement(pos + i, clone) end
             -- 弹出scope栈
-            self:GetComponent():PopScope();
+            self:PopScope();
+            self:SetComponent(oldComponent);
+            self:SetScope(oldScope);
         end
         -- 移除多余元素
         for i = count + 1, lastCount do
@@ -243,7 +301,6 @@ function Compile:VFor(element)
         end
         lastCount = count;
         parentElement:UpdateLayout(true);
-        self:SetComponent(oldComponent);
     end, true);
 
     return true;
@@ -269,7 +326,7 @@ function Compile:VOn(element)
                 local code_func, errmsg = loadstring(val);
                 if (code_func) then
                     -- 这里使用合适的作用作用域
-                    setfenv(code_func, self:GetComponent():GetScope());
+                    setfenv(code_func, self:GetScope());
                     realVal = code_func;
                 else
                     realVal = function() echo("null function") end;
@@ -284,13 +341,16 @@ end
 function Compile:VBind(element)
     local xmlNode = element:GetXmlNode();
     if (type(xmlNode) ~= "table" or not xmlNode.attr) then return end
+    -- CompileDebug.If(xmlNode.attr.id == "test", xmlNode.attr);
     for key, val in pairs(xmlNode.attr) do
         local realKey = string.match(key, "^v%-bind:(.+)");
         local realVal = nil;
         if (realKey and realKey ~= "") then
             self:ExecCode(val, element, function(realVal)
+                -- CompileDebug.If(realKey == "NextPagePorjectList", realVal);
                 if (type(realVal) == "table" and realVal.__get_raw_data__) then realVal = realVal:__get_raw_data__() end
                 element:SetAttrValue(realKey, realVal);
+                -- CompileDebug.If(realKey == "NextPagePorjectList", element:GetAttrValue("NextPagePorjectList"));
             end, true);
         end
     end
@@ -319,8 +379,8 @@ end
 function Compile:CompileElement(element)
     local isComponent = self:IsComponent(element);
     local isCurrentComponentElement = self:GetComponent() == element;
+
     if (not isCurrentComponentElement) then
-        
         if (self:VFor(element)) then return end
 
         self:Text(element);
@@ -338,11 +398,17 @@ function Compile:CompileElement(element)
     for childElement in element:ChildElementIterator() do
         self:CompileElement(childElement);
     end
+
 end
 
 function Compile:Compile(compoent)
+    -- CompileDebug.Format("=====================begin compile component [%s]=================", compoent:GetTagName());
     self:SetComponent(compoent);
+    self:SetScope(compoent:GetScope());
     self:CompileElement(compoent);
+    self:SetComponent(nil);
+    self:SetScope(nil);
+    -- CompileDebug.Format("=====================end compile component [%s]=================", compoent:GetTagName());
 end
 
 local metatable = getmetatable(Compile);

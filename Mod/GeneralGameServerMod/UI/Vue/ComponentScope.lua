@@ -68,6 +68,10 @@ function ComponentScope:GetRef(refname)
     return self:GetComponent():GetRef(refname);
 end
 
+function ComponentScope:GetAttr()
+    return self:GetComponent():GetAttr();
+end
+
 function ComponentScope:SetAttrValue(attrName, attrValue) 
     self:GetComponent():SetAttrValue(attrName, attrValue);
 end

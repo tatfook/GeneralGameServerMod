@@ -1,8 +1,11 @@
-<template style="display: inline-block; padding: 6px; width: 100%;">
-    <div v-for="goods in goodslist" class="goods">
-        <div v-bind:style="GoodsStyle(goods)"></div>
-        <div class="center" style="height: 30px; color: #000000;">{{goods.copies}}</div>
+<template>
+    <div ref="list" style="width: 598px; height: 580px; padding-left: 3px; padding-top: 8px; overflow-y: auto; ">
+        <div v-for="goods in goodslist" class="goods">
+            <div v-bind:style="GoodsStyle(goods)"></div>
+            <div class="center" style="height: 30px; color: #000000;">{{goods.copies}}</div>
+        </div>
     </div>
+    
 </template>
 
 <script type="text/lua">
@@ -16,6 +19,9 @@ function GoodsStyle(goods)
     return string.format("margin-top: 15px; margin-bottom: 15px; width: 128px; height: 64px; background:url(%s)", goods.icon);
 end
 
+function OnReady()
+    SetScrollElement(GetRef("list"));
+end
 </script>
 
 <style>
@@ -26,4 +32,22 @@ end
     display: inline-block;
     background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/wupingbj_146X140_32bits.png#0 0 146 140);
 }
+</style>
+
+<template>
+    <div ref="list" style="width: 598px; height: 580px; padding-left: 3px; padding-top: 8px; overflow-y: auto; ">
+        <WorksList v-bind:UserInfo="UserDetail" v-bind:NextPageProjectList="NextPageFavoriteProjectList" v-bind:ProjectList="FavoriteProjectList"></WorksList>
+    </div>
+</template>
+
+<script type="text/lua">
+RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
+
+function OnReady()
+    SetScrollElement(GetRef("list"));
+end
+</script>
+
+<style>
+
 </style>

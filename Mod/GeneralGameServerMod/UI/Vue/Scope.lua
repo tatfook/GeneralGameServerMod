@@ -87,6 +87,14 @@ function Scope:__new__(obj)
         return pairs(metatable.__data__);
     end
 
+    -- 长度
+    metatable.__len = function(scope)
+        metatable:__call_index_callback__(scope, nil);
+        local index = 1;
+        while (scope[index] ~= nil) do index = index + 1 end
+        return index - 1;
+    end
+
     -- 遍历
     -- metatable.__ipairs = function(scope)
     --     return ipairs(metatable.__data__);
@@ -109,8 +117,11 @@ function Scope:__new__(obj)
     return scope;
 end
 
+local scopeId = 0;
 -- 构造函数
 function Scope:__ctor__()
+    scopeId = scopeId + 1;
+    self.__id__ = scopeId ;
     self.__data__ = {};                                 -- 数据表      
     self.__scope__ = true;                              -- 是否为Scope
     self.__index_callback__ = nil;                      -- 读取回调

@@ -24,14 +24,15 @@ local ElementDebug = GGS.Debug.GetModuleDebug("ElementDebug").Enable();   --Enab
 local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Enable();
 local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
-Element:Property("Window");     -- 元素所在窗口
-Element:Property("Attr", {});   -- 元素属性
-Element:Property("XmlNode");    -- 元素XmlNode
+Element:Property("Window");                               -- 元素所在窗口
+Element:Property("Attr", {});                             -- 元素属性
+Element:Property("XmlNode");                              -- 元素XmlNode
 Element:Property("ParentElement");                        -- 父元素
 Element:Property("Layout");                               -- 元素布局
 Element:Property("Style");                                -- 样式
 Element:Property("AttrStyle");                            -- 属性样式表
 Element:Property("StyleSheet");                           -- 元素样式表
+Element:Property("ScopedStyleSheet");                     -- 局部元素样式表
 Element:Property("BaseStyle");                            -- 默认样式, 基本样式
 Element:Property("Selector");                             -- 选择器集
 Element:Property("Rect");                                 -- 元素几何区域矩形
@@ -374,6 +375,11 @@ end
 function Element:OnAfterChildDetach()
 end
 
+-- 获取局部样式表
+function Element:GetElementScopedStyleSheet(element)
+    return self:GetParentElement() and self:GetParentElement():GetElementScopedStyleSheet(element or self);
+end
+
 -- 创建样式
 function Element:ApplyElementStyle()
     local parent = self:GetParentElement();
@@ -385,9 +391,13 @@ function Element:ApplyElementStyle()
     -- 全局样式表
     self:GetWindow():GetStyleManager():ApplyElementStyle(self, style);
 
-    -- 局部样式表
+    -- 元素样式表
     self:GetStyleSheet():ApplyElementStyle(self, style);
     -- ElementDebug.If(self:GetName() == "Text", "class", style);
+    -- 局部样式表
+    local scopedStyleSheet = self:GetElementScopedStyleSheet();
+    if (scopedStyleSheet) then scopedStyleSheet:ApplyElementStyle(self, style) end 
+
     -- 内联样式
     style:AddNormalStyle(self:GetAttrStyle());
 
@@ -573,8 +583,11 @@ end
 
 -- 样式属性值改变
 function Element:OnAttrStyleValueChange(attrValue, oldAttrValue)
+    -- ElementDebug.If(self:GetAttrValue("id") == "test", attrValue, oldAttrValue, tostring(self));
     if (commonlib.compare(attrValue, oldAttrValue)) then return end
     self:SetAttrStyle(Style.ParseString(attrValue));
+    -- ElementDebug.If(self:GetAttrValue("id") == "test", self:GetAttrStyle());
+
     self:ApplyElementStyle();
     self:UpdateLayout(false);
 end

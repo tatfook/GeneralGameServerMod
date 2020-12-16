@@ -1,0 +1,49 @@
+<template style="width: 100%; height: 100%;">
+    <div style="width: 100%; height: 40px; display: flex; align-items: center; margin-left: 3px;">
+        <div onclick="SelectTab('works')" v-bind:class="GetClass('works')" style="width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
+            <div style="margin-top:4px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_zuoping_31X16_32bits.png#0 0 31 16);"></div>
+        </div>
+        <div v-if="isAuthUser" onclick="SelectTab('skin')" v-bind:class="GetClass('skin')" style="margin-left: 10px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
+            <div style="margin-top:6px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_waiguang_31X16_32bits.png#0 0 31 16);"></div>
+        </div>
+        <div onclick="SelectTab('honor')" v-bind:class="GetClass('honor')" style="margin-left: 10px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
+            <div style="margin-top:4px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_rongyu_31X16_32bits.png#0 0 31 16);"></div>
+        </div>
+    </div>
+
+    <div style="height: 540px;">
+        <WorksList v-show="tabindex == 'works'"></WorksList>
+        <PlayerAsset v-show="tabindex == 'skin'"></PlayerAsset>
+        <Honor v-show="tabindex == 'honor'"></Honor>
+    </div>
+</template>
+
+<script type="text/lua">
+RegisterComponent("PlayerAsset", "%vue%/Page/User/PlayerAsset.html");
+RegisterComponent("Honor", "%vue%/Page/User/Honor.html");
+RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
+
+tabindex = "works";               -- 当前选择项
+
+function SelectTab(index)
+    tabindex = index;
+end
+
+function GetClass(index)
+    return tabindex == index and "tab center active" or "tab center";
+end
+
+</script>
+
+<style scoped=true>
+.tab {
+    display: inline-flex;
+    background-color: rgb(77,77,77);
+}
+.active {
+    background-color: #ffffff;
+}
+.active>div {
+    background-color: rgb(24,24,24);
+}
+</style>

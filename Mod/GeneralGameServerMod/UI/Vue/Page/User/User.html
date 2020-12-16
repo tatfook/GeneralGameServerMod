@@ -1,17 +1,16 @@
 
 <template id="debugp" style="width: 960px; height: 100%; color:#ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/dialog_440X93_32bits.png#0 0 440 93:37 43 33 44);">
-    <Title v-bind:tabindex="tabindex" v-bind:asidetabindex=asideTabIndex onchange=OnTabChange></Title>
+    <Title></Title>
     <div width="100%">
         <UserInfo v-bind:UserDetail="UserDetail"></UserInfo>
-        <div ref="list" style="display: inline-block; width: 604px; height: 580px; overflow-y: auto;">
-            <WorksList v-bind:UserInfo="UserDetail" v-show="tabindex == 'works' and asideTabIndex == 'character'" v-bind:ProjectList="ProjectList"></WorksList>
-            <PlayerAsset v-show="tabindex == 'skin' and asideTabIndex == 'character'"></PlayerAsset>
-            <Honor v-show="tabindex == 'honor' and asideTabIndex == 'character'"></Honor>
+        <div style="display: inline-block; width: 604px; height: 580px; overflow-y: auto; padding-left: 6px;">
+            <Character v-show="asideTabIndex == 'character'"></Character>
             <Bag v-show="asideTabIndex == 'bag'"></Bag>
+            <Favorite v-show="asideTabIndex == 'favorite'"></Favorite>
         </div>
     </div>
 
-    <div v-if="isAuthUser" style="position: absolute; right: -65px; top: 80px;">
+    <div v-if="isAuthUser" style="position: absolute; right: -50px; top: 80px; width: 50px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_youqiehuan2_50X44_32bits.png#0 0 50 44:16 16 16 16);">
         <div onclick="ClickAsideTab('character')" v-bind:class="AsideTabClass('character')">
             <div class="tab-content"></div>
         </div>
@@ -27,15 +26,19 @@
 <script type="text/lua" src="%vue%/Page/User/User.lua">
 RegisterComponent("Title", "%vue%/Page/User/Title.html");
 RegisterComponent("UserInfo", "%vue%/Page/User/UserInfo.html");
-RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
-RegisterComponent("PlayerAsset", "%vue%/Page/User/PlayerAsset.html");
-RegisterComponent("Honor", "%vue%/Page/User/Honor.html");
+RegisterComponent("Character", "%vue%/Page/User/Character.html");
+RegisterComponent("Favorite", "%vue%/Page/User/Favorite.html");
 RegisterComponent("Bag", "%vue%/Page/User/Bag.html");
 
-tabindex = "works";
 asideTabIndex = "character";
 
 function ClickAsideTab(index)
+    if (asideTabIndex == index) then return end
+    if (index == "character") then
+        SetProjectListType("works");
+    elseif (index == "favorite") then
+        SetProjectListType("favorite");
+    end
     asideTabIndex = index;
 end
 
@@ -44,13 +47,6 @@ function AsideTabClass(index)
     return string.format("tab %s %s", "tab-" .. class, index .. "-" .. class);
 end
 
-function OnTabChange(index)
-    tabindex = index;
-end
-
-function OnReady()
-    SetScrollElement(GetRef("list"));
-end
 </script>
 
 <style>
@@ -59,20 +55,20 @@ end
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 10px;
+    width: 50px;
 }
 
 .tab-inactive {
-    width: 50px;
-    margin-left: 13px;
     height: 102px;
-    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_youqiehuan2_36X38_32bits.png#0 0 36 38:10 10 10 10);
 }
 
 .tab-active {
-    width: 63px;
     height: 139px;
-    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_youqiehuan1_63X139_32bits.png#0 0 63 139);
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_youqiehuan1_63X139_32bits.png#0 0 50 135:4 4 20 20);
+}
+
+.tab-active>.tab-content {
+    margin-left: 0px;
 }
 
 .character-inactive>.tab-content {
@@ -82,10 +78,9 @@ end
 }
 
 .character-active>.tab-content {
-    margin-left: 13px;
-    width: 40px;
-    height: 80px;
-    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_renwu2_19X38_32bits.png#0 0 40 80);
+    width: 35;
+    height: 75px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_renwu2_35X75_32bits.png#0 0 35 75);
 }
 
 .bag-inactive>.tab-content {
@@ -95,10 +90,9 @@ end
 }
 
 .bag-active>.tab-content {
-    margin-left: 13px;
-    width: 40px;
-    height: 80px;
-    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_beibao2_19X38_32bits.png#0 0 40 80);
+    width: 35px;
+    height: 74px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_beibao2_29X74_32bits.png#0 0 35 74);
 }
 
 .favorite-inactive>.tab-content {
@@ -108,9 +102,8 @@ end
 }
 
 .favorite-active>.tab-content {
-    margin-left: 13px;
-    width: 40px;
-    height: 80px;
-    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_shouc2_19X38_32bits.png#0 0 40 80);
+    width: 35px;
+    height: 76px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_shouc2_32X76_32bits.png#0 0 35 76);
 }
 </style>
