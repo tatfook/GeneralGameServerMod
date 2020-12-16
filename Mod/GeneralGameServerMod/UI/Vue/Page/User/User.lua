@@ -6,11 +6,14 @@ local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
 local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
 local Encoding = commonlib.gettable("System.Encoding");
 local SelfProjectList = {};
-
+local AuthUser = KeepWorkItemManager.GetProfile();
 local player = GameLogic.GetPlayerController():GetPlayer();
 local GlobalScope = GetGlobalScope();
+local ProjectListType = "works";
+
 -- 组件全局变量初始化
-GlobalScope:Set("AuthUsername", System.User.keepworkUsername);
+GlobalScope:Set("AuthUsername", AuthUser.username);
+GlobalScope:Set("AuthUserId", AuthUser.id or 0);
 GlobalScope:Set("isLogin", System.User.keepworkUsername and true or false);
 GlobalScope:Set("isAuthUser", false);
 GlobalScope:Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {}});
@@ -49,7 +52,7 @@ local function GetProjectListPageFunc()
             isRequest = false;
             if (status ~= 200) then return echo("获取用户项目列表失败, userId " .. tostring(userId)) end
             local ProjectList = data;
-            -- echo(data);
+            -- echo(data, true);
             if (#ProjectList < pageSize) then isFinish = true end
             local ScopePorjectList = GlobalScope:Get("ProjectList");
             for _, project in ipairs(ProjectList) do
@@ -105,7 +108,10 @@ local function UnfavoriteProject(projectId)
     local ScopePorjectList = GlobalScope:Get("ProjectList");
     for i, project in ipairs(ScopePorjectList) do
         if (project.id == projectId) then 
-            table.remove(ScopePorjectList, i);
+            project.favorite = 0;
+            if (ProjectListType == "favorite") then
+                table.remove(ScopePorjectList, i);
+            end
             break;
         end
     end
@@ -119,12 +125,31 @@ local function UnfavoriteProject(projectId)
     end);
 end
 
+-- 收藏
+local function FavoriteProject(projectId)
+    local ScopePorjectList = GlobalScope:Get("ProjectList");
+    for i, project in ipairs(ScopePorjectList) do
+        if (project.id == projectId) then 
+            project.favorite = 1;
+            break;
+        end
+    end
+    
+    GlobalScope:Set("ProjectList", ScopePorjectList);
 
+    keepwork.world.favorite({objectType = 5, objectId = projectId}, function(status)
+        if (status < 200 or status >= 300) then
+            Log("无法取消收藏");
+        end
+    end);
+end
+
+_G.UnfavoriteProject = UnfavoriteProject;
+_G.FavoriteProject = FavoriteProject;
 _G.SetProjectListType = function(projectListType)
     GlobalScope:Set("ProjectList", {});
     if (projectListType == "favorite") then
         _G.NextPageProjectList = GetFavoriteProjectListPageFunc();
-        _G.DeleteProject = UnfavoriteProject;
     else
         _G.NextPageProjectList = GetProjectListPageFunc();
     end
