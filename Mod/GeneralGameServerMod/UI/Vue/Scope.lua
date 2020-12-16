@@ -305,6 +305,11 @@ function Scope:Watch(key, func)
     watch[func] = func;
 end
 
+-- 通知监控
+function Scope:Notify(key)
+    self:__call_newindex_callback__(self.__scope__, key);
+end
+
 -- 转化为普通对象
 function Scope:ToPlainObject()
     return self:__get_raw_data__();

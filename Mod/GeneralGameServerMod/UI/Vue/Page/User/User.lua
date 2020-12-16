@@ -21,6 +21,8 @@ GlobalScope:Set("ProjectList", {});                      -- 用户项目列表
 GlobalScope:Set("FavoriteProjectList", {});              -- 收藏项目列表
 GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
 
+local ProjectMap = {};
+
 local function IsExistScopeProjectList(projectId)
     local ScopePorjectList = GlobalScope:Get("ProjectList");
     for _, project in ipairs(ScopePorjectList) do
@@ -38,6 +40,7 @@ local function GetProjectListPageFunc()
     return function() 
         if (isFinish or isRequest) then return end
         local userId = GlobalScope:Get("UserId");
+        local AuthUserId = GlobalScope:Get("AuthUserId");
         if (not userId) then return end
         isRequest = true;
         keepwork.project.list({
@@ -55,12 +58,33 @@ local function GetProjectListPageFunc()
             -- echo(data, true);
             if (#ProjectList < pageSize) then isFinish = true end
             local ScopePorjectList = GlobalScope:Get("ProjectList");
-            for _, project in ipairs(ProjectList) do
+            local projectIds, projects = {}, {};
+            for i, project in ipairs(ProjectList) do
+                projectIds[i] = project.id;
+                projects[project.id] = project;
+                project.isFavorite = false;
                 if (not IsExistScopeProjectList(project.id)) then
                     table.insert(ScopePorjectList, project);
                 end
             end
-            GlobalScope:Set("ProjectList", ScopePorjectList);
+            if (AuthUserId and AuthUserId > 0) then
+                keepwork.project.favorite_search({
+                    objectType = 5,
+                    objectId = {
+                        ["$in"] = projectIds,
+                    }, 
+                    userId = AuthUserId,
+                }, function(status, msg, data)
+                    local rows = data.rows or {};
+                    for _, row in ipairs(rows) do
+                        projects[row.objectId].isFavorite = true;
+                    end
+                    -- GlobalScope:Set("ProjectList", ScopePorjectList);
+                    GlobalScope:Notify("ProjectList");
+                end);
+            end
+            -- GlobalScope:Set("ProjectList", ScopePorjectList);
+            GlobalScope:Notify("ProjectList");
             page = page + 1;
         end)
     end
@@ -93,11 +117,12 @@ local function GetFavoriteProjectListPageFunc()
             if (#ProjectList < pageSize) then isFinish = true end
             local ScopePorjectList = GlobalScope:Get("ProjectList");
             for _, project in ipairs(ProjectList) do
+                project.isFavorite = true;
                 if (not IsExistScopeProjectList(project.id)) then
                     table.insert(ScopePorjectList, project);
                 end
             end
-            GlobalScope:Set("ProjectList", ScopePorjectList);
+            GlobalScope:Notify("ProjectList");
             page = page + 1;
         end)
     end
@@ -108,7 +133,7 @@ local function UnfavoriteProject(projectId)
     local ScopePorjectList = GlobalScope:Get("ProjectList");
     for i, project in ipairs(ScopePorjectList) do
         if (project.id == projectId) then 
-            project.favorite = 0;
+            project.isFavorite = false;
             if (ProjectListType == "favorite") then
                 table.remove(ScopePorjectList, i);
             end
@@ -130,7 +155,7 @@ local function FavoriteProject(projectId)
     local ScopePorjectList = GlobalScope:Get("ProjectList");
     for i, project in ipairs(ScopePorjectList) do
         if (project.id == projectId) then 
-            project.favorite = 1;
+            project.isFavorite = true;
             break;
         end
     end
@@ -180,7 +205,7 @@ function LoadUserInfo()
         if (System.User.keepworkUsername == UserDetail.username) then
             GlobalScope:Set("AuthUserId", UserDetail.id);
             GlobalScope:Set("isAuthUser", true);
-            -- echo("--------------------------------IsAuthUser------------------------------------");
+            echo("--------------------------------IsAuthUser------------------------------------");
         end
 
         -- 设置模型

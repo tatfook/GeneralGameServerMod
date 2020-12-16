@@ -21,30 +21,33 @@ local DependItemUpdateQueue = {};
 local DependItemUpdateMap  = {};
 local IsActivedDependItemUpdate = false;
 
+local CallBackFunctionListCache = {};
 local function ClearDependItemUpdateQueue()
-    if (IsCompile) then return end
-
     local dependItemCount = 0;
-
     for dependItem in pairs(DependItemUpdateQueue) do 
         dependItemCount = dependItemCount + 1;
         DependItemUpdateMap[dependItemCount] = dependItem;
     end
-
     if (dependItemCount == 0) then return end
 
+    local callbackFunctionCount = 0;
     for i = 1, dependItemCount do
         local dependItem = DependItemUpdateMap[i];
         DependItemUpdateQueue[dependItem] = nil;
         local objects = AllDependItemWatch[dependItem];
-        for key, watchs in pairs(objects) do
+        -- CompileDebug.If(string.match(dependItem, "%[isAuthUser%]"), objects);
+        for object, watchs in pairs(objects) do
             for exp, func in pairs(watchs) do
-                func();
+                callbackFunctionCount = callbackFunctionCount + 1;
+                CallBackFunctionListCache[callbackFunctionCount] = func;
             end
         end
     end
 
-    ClearDependItemUpdateQueue();
+    for i = 1, callbackFunctionCount do
+        local func = CallBackFunctionListCache[i];
+        func();
+    end
 end
 
 NPL.this(function()
@@ -68,11 +71,13 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     if (not AllDependItemWatch[dependItem]) then return end
     -- CompileDebug.Format("__NewIndex key = %s, dependItem = %s, newVal = %s, oldVal = %s", key, dependItem, newVal, oldVal);
     DependItemUpdateQueue[dependItem] = true;
+    -- CompileDebug.If(string.match(dependItem, "%[isAuthUser%]"), AllDependItemWatch[dependItem]);
 
     -- 是否已激活更新, 已经激活忽略
     if (IsActivedDependItemUpdate) then return end
     -- 激活更新
     IsActivedDependItemUpdate = true;
+
     NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate");
 end)
 
@@ -218,16 +223,18 @@ function Compile:VIf(element)
 
     self:ExecCode(xmlNode.attr["v-if"], element, function(val)
         val = val and true or false;
+
         if (val) then
-            if (not vif) then
+            if (not vif and self:IsComponent(element)) then
                 local newElement = curElement:Clone();
-                newElement:GetXmlNode().attr["v-if"] = nil;
                 local oldComponent = self:GetComponent();
                 local oldScope = self:GetScope();
                 self:SetComponent(ifComponent);
                 self:SetScope(ifScope);
+                self:UnWatchElement(curElement);
                 self:CompileElement(newElement);
                 parentElement:ReplaceChildElement(curElement, newElement);
+                curElement:SetVisible(false);
                 curElement = newElement;
                 self:SetComponent(oldComponent);
                 self:SetScope(oldScope);
@@ -271,7 +278,7 @@ function Compile:VFor(element)
             local clone = clones[i];
             -- 移除监控
             clone:GetXmlNode().attr["v-for"] = nil;
-            self:UnWatch(clone);
+            self:UnWatchElement(clone);
             -- 构建scope数据
             local scope = scopes[i] or {};
             scope[key or "index"] = i;
@@ -296,7 +303,7 @@ function Compile:VFor(element)
         end
         -- 移除多余元素
         for i = count + 1, lastCount do
-            self:UnWatch(clones[i]);
+            self:UnWatchElement(clones[i]);
             parentElement:RemoveChildElement(clones[i]);
         end
         lastCount = count;

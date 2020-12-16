@@ -169,6 +169,10 @@ function ClickRegionEdit()
         UserRegion = UserDetail.region, 
         userId = UserDetail.id,
         confirm = function(region) 
+            if region and region.hasChildren == 0 then
+                GameLogic.QuestAction.AchieveTask("40004_1", 1, true)
+            end
+
             UserDetail.region = region;
             self.regionname = region and region.fullname;
         end
