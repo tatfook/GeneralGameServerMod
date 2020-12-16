@@ -225,7 +225,7 @@ function Compile:VIf(element)
         val = val and true or false;
 
         if (val) then
-            if (not vif and self:IsComponent(element)) then
+            if (not vif) then
                 local newElement = curElement:Clone();
                 local oldComponent = self:GetComponent();
                 local oldScope = self:GetScope();
