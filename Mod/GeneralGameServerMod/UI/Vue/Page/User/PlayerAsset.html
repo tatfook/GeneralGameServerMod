@@ -90,7 +90,11 @@ function AssetContainerClass(asset)
 end
 
 function AssetStyle(asset)
-    return string.format("width: 108px; height: 176px; background:url(%s)", asset.icon);
+    local icon = asset.icon;
+    if (not string.match(icon, "#%d+%s+%d+%s+%d+%s+%d+%s*")) then
+        icon = icon .. "#0 0 108 176";
+    end
+    return string.format("width: 108px; height: 176px; background:url(%s)", icon);
 end
 
 function OnAttrValueChange()

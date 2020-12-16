@@ -256,6 +256,7 @@ _G.GetAllAssets = function()
         if (tpl.bagId == bagId) then
             table.insert(assets, {
                 id = tpl.id,
+                gsId = tpl.gsId,
                 modelUrl = tpl.modelUrl,
                 icon = GetItemIcon(tpl),
                 name = tpl.name,
@@ -264,6 +265,7 @@ _G.GetAllAssets = function()
         end
     end
 
+    -- echo(assets, true);
     return assets;
 end
 
