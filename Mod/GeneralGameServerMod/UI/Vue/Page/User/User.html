@@ -34,12 +34,12 @@ asideTabIndex = "character";
 
 function ClickAsideTab(index)
     if (asideTabIndex == index) then return end
+    asideTabIndex = index;
     if (index == "character") then
         SetProjectListType("works");
     elseif (index == "favorite") then
         SetProjectListType("favorite");
     end
-    asideTabIndex = index;
 end
 
 function AsideTabClass(index)

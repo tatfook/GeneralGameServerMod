@@ -1,13 +1,13 @@
 <template style="width: 100%; height: 100%;">
     <div style="width: 100%; height: 40px; display: flex; align-items: center; margin-left: 3px;">
-        <div onclick="SelectTab('works')" v-bind:class="GetClass('works')" style="width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
-            <div style="margin-top:4px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_zuoping_31X16_32bits.png#0 0 31 16);"></div>
+        <div onclick="SelectTab('works')" v-bind:class="GetClass('works')">
+            <div class="tab-content" style="background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_zuoping_31X16_32bits.png#0 0 31 16);"></div>
         </div>
-        <div id="test" v-if="isAuthUser" onclick="SelectTab('skin')" v-bind:class="GetClass('skin')" style="margin-left: 10px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
-            <div style="margin-top:6px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_waiguang_31X16_32bits.png#0 0 31 16);"></div>
+        <div v-if="isAuthUser" onclick="SelectTab('skin')" v-bind:class="GetClass('skin')">
+            <div class="tab-content" style="background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_waiguang_31X16_32bits.png#0 0 31 16);"></div>
         </div>
-        <div onclick="SelectTab('honor')" v-bind:class="GetClass('honor')" style="margin-left: 10px; width: 90px; height: 34px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);">
-            <div style="margin-top:4px; width: 31px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_rongyu_31X16_32bits.png#0 0 31 16);"></div>
+        <div onclick="SelectTab('honor')" v-bind:class="GetClass('honor')">
+            <div class="tab-content" style="background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zi_rongyu_31X16_32bits.png#0 0 31 16);"></div>
         </div>
     </div>
 
@@ -30,20 +30,31 @@ function SelectTab(index)
 end
 
 function GetClass(index)
-    return tabindex == index and "tab center active" or "tab center";
+    return index .. " tab center " .. (tabindex == index and "active" or "");
 end
 
 </script>
 
 <style scoped=true>
 .tab {
+    width: 90px; 
+    height: 34px;
+    margin-right: 10px; 
     display: inline-flex;
     background-color: rgb(77,77,77);
+    background:url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/btn_qiehuan_32X16_32bits.png#0 0 32 16:14 14 14 1);
 }
+
+.tab-content {
+    margin-top:4px; 
+    width: 31px; 
+    height: 16px; 
+}
+
 .active {
     background-color: #ffffff;
 }
-.active>div {
+.active>.tab-content {
     background-color: rgb(24,24,24);
 }
 </style>

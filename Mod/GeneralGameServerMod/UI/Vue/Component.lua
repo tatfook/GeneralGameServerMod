@@ -171,7 +171,6 @@ function Component:InitByStyleNode(styleNodes)
     end
     -- 强制使用css样式
     self:SetStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(styleText));
-    if (not self:GetScopedStyleSheet()) then self:SetScopedStyleSheet(self:GetWindow():GetStyleManager():NewStyleSheet()) end
     self:SetScopedStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(scopedStyleText));
 end
 
