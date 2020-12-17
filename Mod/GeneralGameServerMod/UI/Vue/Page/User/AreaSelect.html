@@ -11,7 +11,7 @@
         </div>
     </div>
     <div id="btn" style="margin-top: 30px; padding-left: 150px;">
-        <div v-on:click="clickConfirm" style="display: inline-block; text-align: center; line-height: 58px; width:178px; height:58px; font-size: 24px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">确定</div>
+        <div onmousedown=clickConfirm style="display: inline-block; text-align: center; line-height: 58px; width:178px; height:58px; font-size: 24px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">确定</div>
     </div>
 </template>
 
@@ -177,7 +177,7 @@ function clickConfirm()
         else
             ShowMessageBoxPage({text = "地区修改成功"});
         end
-        if (type(confirm) == "function") then confirm(county.id and county or city) end
+        <!-- if (type(confirm) == "function") then confirm(county.id and county or city) end -->
         CloseWindow();
     end);
 end

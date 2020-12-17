@@ -9,7 +9,6 @@ local SelfProjectList = {};
 local AuthUser = KeepWorkItemManager.GetProfile();
 local player = GameLogic.GetPlayerController():GetPlayer();
 local GlobalScope = GetGlobalScope();
-local ProjectListType = "works";
 
 -- 组件全局变量初始化
 GlobalScope:Set("AuthUsername", AuthUser.username);
@@ -20,6 +19,7 @@ GlobalScope:Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {
 GlobalScope:Set("ProjectList", {});                      -- 用户项目列表
 GlobalScope:Set("FavoriteProjectList", {});              -- 收藏项目列表
 GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
+GlobalScope:Set("ProjectListType", "works");
 
 local ProjectMap = {};
 
@@ -132,7 +132,7 @@ local function UnfavoriteProject(projectId)
     for i, project in ipairs(ScopePorjectList) do
         if (project.id == projectId) then 
             project.isFavorite = false;
-            if (ProjectListType == "favorite") then
+            if (GetProjectListType() == "favorite") then
                 table.remove(ScopePorjectList, i);
             end
             break;
@@ -162,7 +162,7 @@ local function FavoriteProject(projectId)
 
     keepwork.world.favorite({objectType = 5, objectId = projectId}, function(status)
         if (status < 200 or status >= 300) then
-            Log("无法取消收藏");
+            Log("无法收藏");
         end
     end);
 end
@@ -171,12 +171,17 @@ _G.UnfavoriteProject = UnfavoriteProject;
 _G.FavoriteProject = FavoriteProject;
 _G.SetProjectListType = function(projectListType)
     GlobalScope:Set("ProjectList", {});
+    GlobalScope:Set("ProjectListType", projectListType);
+
     if (projectListType == "favorite") then
         _G.NextPageProjectList = GetFavoriteProjectListPageFunc();
     else
         _G.NextPageProjectList = GetProjectListPageFunc();
     end
     NextPageProjectList();
+end
+_G.GetProjectListType = function()
+    return GlobalScope:Get("ProjectListType");
 end
 
 SetProjectListType("works");

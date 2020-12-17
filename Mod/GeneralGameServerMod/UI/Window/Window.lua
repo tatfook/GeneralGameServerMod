@@ -397,7 +397,7 @@ function Window:handleMouseEvent(event)
         -- 定位元素父元素冒泡
         if (element:GetLayout():IsPositionElement()) then
             local el = element:GetParentElement();
-            while(el) do
+            while(el and not event:isAccepted()) do
                 event:UpdateElement(el);
                 (element[bubbleFuncName])(el, event);
                 el = el:GetParentElement();
