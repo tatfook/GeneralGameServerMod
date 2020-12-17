@@ -31,6 +31,16 @@ local function IsExistScopeProjectList(projectId)
     return false;
 end
 
+local function AddPojectListToScopeProjectList(ProjectList)
+    local ScopePorjectList = GlobalScope:Get("ProjectList");
+    for _, project in ipairs(ProjectList) do
+        if (not IsExistScopeProjectList(project.id)) then
+            table.insert(ScopePorjectList, project);
+        end
+    end
+end
+
+
 local function GetProjectListPageFunc()
     -- 获取项目列表
     local page, pageSize = 1, 10;
@@ -57,15 +67,11 @@ local function GetProjectListPageFunc()
             local ProjectList = data;
             -- echo(data, true);
             if (#ProjectList < pageSize) then isFinish = true end
-            local ScopePorjectList = GlobalScope:Get("ProjectList");
             local projectIds, projects = {}, {};
             for i, project in ipairs(ProjectList) do
                 projectIds[i] = project.id;
                 projects[project.id] = project;
                 project.isFavorite = false;
-                if (not IsExistScopeProjectList(project.id)) then
-                    table.insert(ScopePorjectList, project);
-                end
             end
             if (AuthUserId and AuthUserId > 0) then
                 keepwork.project.favorite_search({
@@ -76,13 +82,12 @@ local function GetProjectListPageFunc()
                     userId = AuthUserId,
                 }, function(status, msg, data)
                     local rows = data.rows or {};
-                    for _, row in ipairs(rows) do
-                        projects[row.objectId].isFavorite = true;
-                    end
-                    GlobalScope:Notify("ProjectList");
+                    for _, row in ipairs(rows) do projects[row.objectId].isFavorite = true end
+                    AddPojectListToScopeProjectList(ProjectList);
                 end);
+            else
+                AddPojectListToScopeProjectList(ProjectList);
             end
-            GlobalScope:Notify("ProjectList");
             page = page + 1;
         end)
     end
@@ -113,14 +118,8 @@ local function GetFavoriteProjectListPageFunc()
             local ProjectList = data.rows;
             -- echo(data, true);
             if (#ProjectList < pageSize) then isFinish = true end
-            local ScopePorjectList = GlobalScope:Get("ProjectList");
-            for _, project in ipairs(ProjectList) do
-                project.isFavorite = true;
-                if (not IsExistScopeProjectList(project.id)) then
-                    table.insert(ScopePorjectList, project);
-                end
-            end
-            GlobalScope:Notify("ProjectList");
+            for _, project in ipairs(ProjectList) do project.isFavorite = true end
+            AddPojectListToScopeProjectList(ProjectList);
             page = page + 1;
         end)
     end
@@ -139,7 +138,7 @@ local function UnfavoriteProject(projectId)
         end
     end
     
-    GlobalScope:Set("ProjectList", ScopePorjectList);
+    -- GlobalScope:Set("ProjectList", ScopePorjectList);
 
     keepwork.world.unfavorite({objectType = 5, objectId = projectId}, function(status)
         if (status < 200 or status >= 300) then
@@ -158,7 +157,7 @@ local function FavoriteProject(projectId)
         end
     end
     
-    GlobalScope:Set("ProjectList", ScopePorjectList);
+    -- GlobalScope:Set("ProjectList", ScopePorjectList);
 
     keepwork.world.favorite({objectType = 5, objectId = projectId}, function(status)
         if (status < 200 or status >= 300) then

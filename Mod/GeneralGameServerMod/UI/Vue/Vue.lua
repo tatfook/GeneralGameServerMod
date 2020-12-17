@@ -14,10 +14,10 @@ local ElementManager = NPL.load("../Window/ElementManager.lua");
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Scope = NPL.load("./Scope.lua", IsDevEnv);
 local ComponentScope = NPL.load("./ComponentScope.lua", IsDevEnv);
+local Table = NPL.load("./Table.lua", IsDevEnv);
 local Compile = NPL.load("./Compile.lua", IsDevEnv);
 local Component = NPL.load("./Component.lua", IsDevEnv);
 local Slot = NPL.load("./Slot.lua", IsDevEnv);
-local Helper = NPL.load("./Helper.lua", IsDevEnv);
 
 ElementManager:RegisterByTagName("Component", Component);
 ElementManager:RegisterByTagName("Slot", Slot);
@@ -73,6 +73,8 @@ function Vue:ExtendG(G)
         end
         return G.GlobalScope;
     end
+
+    G.table = Table;  -- 替换全局table以便支持scope特性
 end
 
 function Vue:NewG(g)

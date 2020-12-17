@@ -73,6 +73,8 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     DependItemUpdateQueue[dependItem] = true;
     -- CompileDebug.If(string.match(dependItem, "%[isAuthUser%]"), AllDependItemWatch[dependItem]);
 
+    -- print("__set_global_newindex__", obj, key);
+
     -- 是否已激活更新, 已经激活忽略
     if (IsActivedDependItemUpdate) then return end
     -- 激活更新
@@ -356,7 +358,7 @@ function Compile:VBind(element)
         if (realKey and realKey ~= "") then
             self:ExecCode(val, element, function(realVal)
                 -- CompileDebug.If(realKey == "NextPagePorjectList", realVal);
-                if (type(realVal) == "table" and realVal.__get_raw_data__) then realVal = realVal:__get_raw_data__() end
+                if (type(realVal) == "table" and realVal.ToPlainObject) then realVal = realVal:ToPlainObject() end
                 element:SetAttrValue(realKey, realVal);
                 -- CompileDebug.If(realKey == "NextPagePorjectList", element:GetAttrValue("NextPagePorjectList"));
             end, true);

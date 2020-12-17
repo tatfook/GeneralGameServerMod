@@ -13,7 +13,8 @@ local __global_index_callback__ = nil;
 local __global_newindex_callback__ = nil;
 
 local function Inherit(baseClass, inheritClass)
-	if (type(baseClass) ~= "table") then baseClass = nil end
+    if (type(baseClass) ~= "table") then baseClass = nil end
+    
 	-- 初始化派生类
     local inheritClass = inheritClass or {};
     local inheritClassMetaTable = { __index = inheritClass };
@@ -58,6 +59,9 @@ local function __get_val__(val)
     return Scope:__new__(val);
 end
 
+-- 获取值
+Scope.__get_val__ = __get_val__;
+
 -- 设置全局读取回调
 function Scope.__set_global_index__(__index__)
     __global_index_callback__ = __index__;
@@ -87,18 +91,19 @@ function Scope:__new__(obj)
         return pairs(metatable.__data__);
     end
 
+    -- 遍历
+    metatable.__ipairs = function(scope)
+        return ipairs(metatable.__data__);
+    end
+
     -- 长度
     metatable.__len = function(scope)
         metatable:__call_index_callback__(scope, nil);
-        local index = 1;
-        while (scope[index] ~= nil) do index = index + 1 end
-        return index - 1;
+        return #metatable.__data__;
+        -- local index = 1;
+        -- while (scope[index] ~= nil) do index = index + 1 end
+        -- return index - 1;
     end
-
-    -- 遍历
-    -- metatable.__ipairs = function(scope)
-    --     return ipairs(metatable.__data__);
-    -- end
 
     -- 构建scope对象
     local scope = setmetatable({}, metatable);
@@ -113,6 +118,9 @@ function Scope:__new__(obj)
             scope[key] = val;
         end
     end
+
+    -- 新建触发一次读取
+    metatable:__call_index_callback__(scope, nil);
 
     return scope;
 end
@@ -174,18 +182,14 @@ function Scope:__call_global_index_callback__(scope, key)
     if (type(__global_index_callback__) == "function") then __global_index_callback__(scope, key) end
 end
 
--- Scope自身读取设置回调
-function Scope:__call_index_and_newindex_callback__(scope, key)
-    if (not key) then return end
-    local val = self.__data__[key];
-    if (self:__is_scope__(val)) then 
-        self:__call_global_index_callback__(val, nil);
-        self:__call_global_newindex_callback__(val, nil, val);
-    end
-end
-
 -- 读取回调
 function Scope:__call_index_callback__(scope, key)
+    local val = key and self.__data__[key];
+    -- print("__call_index_callback__", scope, key);
+    -- 值为scope触发本身读索引
+    if (self:__is_scope__(val)) then return val:__call_index_callback__(val, nil) end
+
+    -- 触发普通值的读索引
     self:__call_global_index_callback__(scope, key);
     if (type(self.__index_callback__) == "function") then self.__index_callback__(scope, key) end
 end
@@ -195,17 +199,27 @@ function Scope:__set_index_callback__(__index__)
     self.__index_callback__ = __index__;
 end
 
+-- 设置数字属性
+function Scope:__set_by_index__(scope, index, value)
+    self.__data__[index] = __get_val__(value);
+    self:__call_newindex_callback__(scope, nil, scope, scope);
+    -- return rawset(scope, index, value);
+end
+
+-- 获取数字属性
+function Scope:__get_by_index__(scope, index)
+    self:__call_index_callback__(scope, nil);  -- 针对列表触发列表整体更新
+    return self.__data__[index];
+    -- return rawget(scope, index);
+end
+
 -- 获取键值
 function Scope:__get__(scope, key)
-    if (type(key) == "number") then return rawget(scope, key) end
+    if (type(key) == "number") then return self:__get_by_index__(scope, key) end
 
     -- 内置属性直接返回
     if (self:__is_inner_attr__(key)) then return self[key] end
 
-    -- print("__index", scope, key);
-
-    -- 无法正确识别数组更新(rawset, table.insert) 故当对scope类型值操作时, 统一出发当前scope的读取, 设置回调
-    -- self:__call_index_and_newindex_callback__(scope, key);
     -- 触发回调
     self:__call_index_callback__(scope, key);
 
@@ -224,15 +238,22 @@ end
 
 -- 写入回调   
 function Scope:__call_newindex_callback__(scope, key, newval, oldval)
-    self:__call_global_newindex_callback__(scope, key, newval, oldval);
-    if (type(self.__newindex_callback__) == "function") then self.__newindex_callback__(scope, key, newval, oldval) end
+    -- print("__call_newindex_callback__", scope, key);
 
-    local watch = self.__watch__[key];
+    -- 触发监控回调
+    local watch = key and self.__watch__[key];
     if (watch) then
         for _, func in pairs(watch) do
             func(newval, oldval);
         end
     end
+
+    -- 旧值为scope触发本身写索引
+    if (key and self:__is_scope__(oldval)) then return oldval:__call_newindex_callback__(oldval, nil, newval, oldval) end
+    
+    -- 触发普通值的写索引
+    self:__call_global_newindex_callback__(scope, key, newval, oldval);
+    if (type(self.__newindex_callback__) == "function") then self.__newindex_callback__(scope, key, newval, oldval) end
 end
 
 -- 设置写入回调   
@@ -242,22 +263,16 @@ end
 
 -- 设置键值
 function Scope:__set__(scope, key, val)
-    if (type(key) == "number") then return rawset(scope, key, val) end
+    if (type(key) == "number") then return self:__set_by_index__(scope, key, val) end
     
     if (self:__is_inner_attr__(key)) then
         if (self.__inner_can_set_attrs__[key]) then self[key] = val end
         return;
     end
-    -- print("__newindex", scope, key, val);
-    -- 触发旧值回调, 旧值的表地址可能为监听key 需要先触发一次
-    self:__call_index_and_newindex_callback__(scope, key);
 
     -- 更新值
     local oldval = self.__data__[key];
     self.__data__[key] = __get_val__(val);
-
-    -- 无法正确识别数组更新(rawset, table.insert) 故当对scope类型值操作时, 统一出发当前scope的读取, 设置回调
-    self:__call_index_and_newindex_callback__(scope, key);
 
     -- 相同直接退出
     if (oldval == val and type(val) ~= "table") then return end
@@ -266,26 +281,9 @@ function Scope:__set__(scope, key, val)
     self:__call_newindex_callback__(scope, key, val, oldval);
 end
 
--- 获取原生数据
-function Scope:__get_raw_data__()
-    local data = {};
-    for i, val in ipairs(self) do
-        if (self:__is_scope__(val)) then
-            data[i] = val:__get_raw_data__();
-        else
-            data[i] = val;
-        end
-    end
-
-    for key, val in pairs(self) do
-        if (self:__is_scope__(val)) then
-            data[key] = val:__get_raw_data__();
-        else
-            data[key] = val;
-        end
-    end
-
-    return data;
+-- 获取真实数据
+function Scope:__get_data__()
+    return self.__data__;
 end
 
 -- 设置数据
@@ -312,5 +310,5 @@ end
 
 -- 转化为普通对象
 function Scope:ToPlainObject()
-    return self:__get_raw_data__();
+    return commonlib.deepcopy(self.__data__);
 end
