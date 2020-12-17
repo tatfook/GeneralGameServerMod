@@ -153,7 +153,7 @@ function Component:LoadXmlNode(xmlNode)
 end
 
 -- 获取局部样式表
-function Element:GetElementScopedStyleSheet(element)
+function Component:GetElementScopedStyleSheet(element)
     return self:GetScopedStyleSheet();
 end
 
