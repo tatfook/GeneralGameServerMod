@@ -85,15 +85,15 @@ end
 
 -- 鼠标事件
 function TutorialContext:handleMouseEvent(event)
+	-- 更新事件值
+	event:updateModifiers();
+
 	-- 忽略移动鼠标事件
-	if (event:GetType() == "mouseMoveEvent") then return TutorialContext._super.handleMouseEvent(self, event) end
+	if (event:GetType() == "mouseMoveEvent" and event:buttons() == 0) then return TutorialContext._super.handleMouseEvent(self, event) end
 
 	-- 是否可点击
 	if (not self:IsCanClickScene()) then return end
 
-	-- 更新事件值
-	event:updateModifiers();
-	
 	-- 保存按键
 	shift_pressed, ctrl_pressed, alt_pressed = event.shift_pressed, event.ctrl_pressed, event.alt_pressed;
 	
