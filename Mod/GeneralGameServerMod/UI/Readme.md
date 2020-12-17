@@ -37,6 +37,10 @@ UI 是写 2D 窗口界面 UI 库, 使用方式与写 web 前端相似, 使用 ht
 - v-on    绑定元素事件, 或时间属性值以on开头也行
 - {{expr}} 文本表达式  
 
+## 特殊属性
+
+- ref 元素引用表示符 方便通过 GetRef 全局函数快速获取元素, 当前组件范围内唯一. 暂时不支持v-bind绑定此属性
+
 ## 响应式
 
 指令集关联的变量必须为全局变量. 全局变量更新页面会自动更新. 为实现此功能, 框架对全局变量做了hook, 也因此正常用法有所不同, 需注意以下几点:
@@ -45,12 +49,13 @@ UI 是写 2D 窗口界面 UI 库, 使用方式与写 web 前端相似, 使用 ht
 - list = {1, 2} 列表内部数据暂无响应式支持, 若列表内部数据更新需要更新视图可以使用 list = list 临时方式触发列表变量本身的更新. 此问题由默认table.insert, table.remove等函数无法触发变量内的hook导致, 后续会替换默认table.xxx相关方法解决此问题
 - 全局变量相比局部变量开销会比较大, 如没有与UI关联可以使用局部变量替代
 - 对全局变量表类数据由于hook导致普通打印函数无法打印其类容, 可以使用内置的Log函数来打印输出数据内容以便调试.
+- 组件脚本的全局变量仅是当前执行的环境的全局变量, 与框架外lua内置全局_G不同, 但是其继承对象.
 
 ## API
 
 ```lua
+-- 外部显示窗口函数
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
-
 local page = Page.Show({
     -- html 中 lua 执行环境的全局表
 }, {
@@ -61,4 +66,51 @@ local page = Page.Show({
 });
 
 page:CloseWindow();                  -- 关闭窗口
+
+
+-- 组件内默认自定义全局回调函数
+function OnReady()
+    -- 组件编译完成, 准备就绪回调
+end
+
+function OnAttrValueChange(attrName, attrValue, oldAttrValue)
+    -- 组件属性更新
+
+    -- NOTES: 框架目前没有将属性值扩展为组件的全局变量, 因有时需监控属性值变化做逻辑处理而不是单纯绑定UI, 开发者可在此自行转化成组件全局变量做UI联动.
+end
+
+
+-- 组件内置的全局函数
+CloseWindow();  -- 关闭当前窗口
+ShowWindow(G, Params);   -- 显示新窗口, 参数同Page.Show
+
+-- 定时器相关, 参数同此类函数的其它语言版本
+SetTimeout(func, timeoutMS)
+ClearTimeout(timer)
+SetInterval(func, intervalMS)
+ClearInterval(timer)
+
+GetTime()    -- 获取当前毫秒数
+GetEvent()   -- 获取当前事件对象
+
+ToString()   -- 转字符串, 调试使用, 支持表循坏嵌套
+
+
+-- 组件相关
+RegisterComponent(tagname, htmlpath)     -- 注册子组件
+GetRef(refname)                          -- 获取引用元素  与特殊属性ref配合使用
+SetAttrValue(attrName, attrValue)        -- 设置当前组件属性值
+ComponentScope:GetAttrValue(attrName, defaultValue, valueType)   -- 获取当前组件属性值  valueType 默认为nil, 可以指定类型验证 string number function boolean 或使用简化函数 例: GetAttrStringValue(attrName, defaultValue)
+
+
+-- 内置全局变量
+Log          -- 日志输出  Log() Log.If(condition,  ...) Log.Format(fmt, ...) Log.FormatIf(condition, fmt, ...)
+self         -- 当前执行环境   self.globalVal = 1  <==> globalVal = 1    定义局部变量 local localVal = 1
+
+
+-- 元素常用方法
 ```
+
+## TODO
+
+[ ] 滚动条样式设定优化
