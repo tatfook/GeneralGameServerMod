@@ -79,11 +79,9 @@ local function GetProjectListPageFunc()
                     for _, row in ipairs(rows) do
                         projects[row.objectId].isFavorite = true;
                     end
-                    -- GlobalScope:Set("ProjectList", ScopePorjectList);
                     GlobalScope:Notify("ProjectList");
                 end);
             end
-            -- GlobalScope:Set("ProjectList", ScopePorjectList);
             GlobalScope:Notify("ProjectList");
             page = page + 1;
         end)
@@ -205,7 +203,7 @@ function LoadUserInfo()
         if (System.User.keepworkUsername == UserDetail.username) then
             GlobalScope:Set("AuthUserId", UserDetail.id);
             GlobalScope:Set("isAuthUser", true);
-            echo("--------------------------------IsAuthUser------------------------------------");
+            -- echo("--------------------------------IsAuthUser------------------------------------");
         end
 
         -- 设置模型

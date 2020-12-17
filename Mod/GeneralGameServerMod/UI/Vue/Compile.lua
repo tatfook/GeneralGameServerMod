@@ -225,20 +225,21 @@ function Compile:VIf(element)
         val = val and true or false;
 
         if (val) then
-            if (not vif) then
-                local newElement = curElement:Clone();
-                local oldComponent = self:GetComponent();
-                local oldScope = self:GetScope();
-                self:SetComponent(ifComponent);
-                self:SetScope(ifScope);
-                self:UnWatchElement(curElement);
-                self:CompileElement(newElement);
-                parentElement:ReplaceChildElement(curElement, newElement);
-                curElement:SetVisible(false);
-                curElement = newElement;
-                self:SetComponent(oldComponent);
-                self:SetScope(oldScope);
-            end
+            -- 没有必要重新编译元素
+            -- if (not vif) then
+            --     local newElement = curElement:Clone();
+            --     local oldComponent = self:GetComponent();
+            --     local oldScope = self:GetScope();
+            --     self:SetComponent(ifComponent);
+            --     self:SetScope(ifScope);
+            --     self:UnWatchElement(curElement);
+            --     self:CompileElement(newElement);
+            --     parentElement:ReplaceChildElement(curElement, newElement);
+            --     curElement:SetVisible(false);
+            --     curElement = newElement;
+            --     self:SetComponent(oldComponent);
+            --     self:SetScope(oldScope);
+            -- end
             curElement:SetVisible(true);
         else
             curElement:SetVisible(false);
