@@ -171,7 +171,7 @@ function Component:InitByStyleNode(styleNodes)
     end
     -- 强制使用css样式
     self:SetStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(styleText));
-    self:SetScopedStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(scopedStyleText));
+    if (scopedStyleText ~= "") then self:SetScopedStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(scopedStyleText)) end
 end
 
 -- 合并XmlNode
