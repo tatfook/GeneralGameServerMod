@@ -9,7 +9,7 @@
             </div>
             <div style="font-size:16px; color: #522b2b; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px; display: flex; align-items: center;">
                 <div v-if="GetProjectStatusStyle(project.status)" class="status" style="display:inline-block; width: 16px; height: 16px;" v-bind:style="GetProjectStatusStyle(project.status)"></div>
-                <div style="display: inline;">{{GetProjectName(project.name)}}</div>
+                <div style="display: inline; min-width: 150px;">{{GetProjectName(project.name)}}</div>
                 <div style="display: inline; margin-left: 10px; color: #999999">{{"#" .. tostring(project.id)}}</div>
             </div>
             <div style="font-size:12px; color: #999999; margin-top: 10px; margin-left:8px; height: 12px; line-height: 12px;">
