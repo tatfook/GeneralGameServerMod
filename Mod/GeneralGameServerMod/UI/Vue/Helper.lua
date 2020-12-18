@@ -46,6 +46,8 @@ function Helper.ReadFile(filename)
 
     if (FileCacheMap[filename]) then return FileCacheMap[filename] end
     
+    -- GGS.INFO("读取文件: " .. filename);
+
     local text = nil;
 	local file = ParaIO.open(filename, "r");
     if(file:IsValid()) then
@@ -57,4 +59,14 @@ function Helper.ReadFile(filename)
 
     FileCacheMap[filename] = text;
     return text;
+end
+
+
+local BeginTime = 0;
+function Helper.BeginTime()
+    BeginTime = ParaGlobal.timeGetTime();
+end
+
+function Helper.EndTime(action)
+    GGS.INFO.Format("%s 耗时: %sms", action or "", ParaGlobal.timeGetTime() - BeginTime)
 end

@@ -9,11 +9,12 @@ local Compile = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Compile.lua");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/timer.lua");
-
+local Helper = NPL.load("./Helper.lua");
 local Scope = NPL.load("./Scope.lua");
 local Compile = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 local CompileDebug = GGS.Debug.GetModuleDebug("CompileDebug").Enable();   --Enable  Disable
 
+local BeginTime, EndTime = Helper.BeginTime, Helper.EndTime;
 -- local EventNameMap = {["onclick"] = true, ["onmousedown"] = true, ["onmousemove"] = true, ["onmouseup"] = true};
 local DependItems = {};
 local OldDependItems = {};
@@ -47,7 +48,7 @@ local function ClearDependItemUpdateQueue()
             elements[ElementListCache[i]] = nil;
         end
     end
-
+    local clearElementTime = ParaGlobal.timeGetTime() - BeginTime;
     -- 提取回调函数
     local callbackFunctionCount = 0;
     for i = 1, dependItemCount do
@@ -62,7 +63,7 @@ local function ClearDependItemUpdateQueue()
             end
         end
     end
-
+    local getCallbackTime = ParaGlobal.timeGetTime() - BeginTime;
     -- 触发回调
     for i = 1, callbackFunctionCount do
         local func = CallBackFunctionListCache[i];
@@ -70,7 +71,7 @@ local function ClearDependItemUpdateQueue()
     end
 
     local EndTime = ParaGlobal.timeGetTime();
-    print(string.format("响应更新耗时: %sms, 更新依赖项数: %s, 触发回调函数: %s", EndTime - BeginTime, dependItemCount, callbackFunctionCount));
+    print(string.format("响应更新耗时: %sms, 更新依赖项数: %s, 触发回调函数: %s, 清除无效元素耗时: %sms, 提取回调函数耗时: %sms", EndTime - BeginTime, dependItemCount, callbackFunctionCount, clearElementTime, getCallbackTime));
 end
 
 local ClearDependItemTimer = commonlib.Timer:new({callbackFunc = function() 
@@ -124,6 +125,7 @@ local function ExecCode(code, func, element, watch)
             AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};                           -- 依赖项的对象集
             AllDependItemWatch[dependItem][element] = AllDependItemWatch[dependItem][element] or {};         -- 对象的监控集
             AllDependItemWatch[dependItem][element][code] = function()                                       -- 监控集项
+                BeginTime();
                 -- 先清除
                 for dependItem in pairs(OldDependItems) do
                     AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};                    -- 依赖项的对象集
@@ -137,6 +139,8 @@ local function ExecCode(code, func, element, watch)
                 -- if (newVal == oldVal and type(newVal) ~= "table" or #newVal == #oldVal) then return end
                 -- 不同触发回调
                 watch(newVal, oldVal);
+
+                -- EndTime(string.format("依赖监控, code = %s", code));
             end
         end
     end
@@ -254,7 +258,6 @@ function Compile:VIf(element)
 
     self:ExecCode(xmlNode.attr["v-if"], element, function(val)
         val = val and true or false;
-
         if (val) then
             -- 没有必要重新编译元素
             -- if (not vif) then
@@ -263,10 +266,9 @@ function Compile:VIf(element)
             --     local oldScope = self:GetScope();
             --     self:SetComponent(ifComponent);
             --     self:SetScope(ifScope);
-            --     self:UnWatchElement(curElement);
+            --     -- self:UnWatchElement(curElement);
             --     self:CompileElement(newElement);
             --     parentElement:ReplaceChildElement(curElement, newElement);
-            --     curElement:SetVisible(false);
             --     curElement = newElement;
             --     self:SetComponent(oldComponent);
             --     self:SetScope(oldScope);
@@ -300,7 +302,7 @@ function Compile:VFor(element)
     element:SetVisible(false);
     self:ExecCode(listexp, element, function(list)
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
-        -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count);
+        -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s, element = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count, tostring(element));
         local oldComponent = self:GetComponent();
         local oldScope = self:GetScope();
 
@@ -423,14 +425,14 @@ end
 function Compile:CompileElement(element)
     local isComponent = self:IsComponent(element);
     local isCurrentComponentElement = self:GetComponent() == element;
-
+    local xmlNode = element:GetXmlNode();
     if (not isCurrentComponentElement) then
         if (self:VFor(element)) then return end
 
         self:Text(element);
         self:Ref(element);
         self:VShow(element);  
-        self:VIf(element);  
+        self:VIf(element);
         self:VOn(element);
         self:VBind(element);
         self:VModel(element);

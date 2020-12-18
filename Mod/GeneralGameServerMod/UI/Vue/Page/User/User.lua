@@ -172,6 +172,7 @@ end
 
 _G.UnfavoriteProject = UnfavoriteProject;
 _G.FavoriteProject = FavoriteProject;
+_G.NextPageProjectList = GetProjectListPageFunc();
 _G.SetProjectListType = function(projectListType)
     GlobalScope:Set("ProjectList", {});
     GlobalScope:Set("ProjectListType", projectListType);
@@ -187,7 +188,7 @@ _G.GetProjectListType = function()
     return GlobalScope:Get("ProjectListType");
 end
 
-SetProjectListType("works");
+-- SetProjectListType("works");
 
 -- 加载用户信息
 function LoadUserInfo()

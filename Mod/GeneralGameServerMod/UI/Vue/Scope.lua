@@ -276,6 +276,8 @@ function Scope:__set__(scope, key, val)
 
     -- 相同直接退出
     if (oldval == val and type(val) ~= "table") then return end
+    -- if (oldval == val) then return end
+
 
     -- 触发更新回调
     self:__call_newindex_callback__(scope, key, val, oldval);

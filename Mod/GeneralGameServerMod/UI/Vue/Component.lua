@@ -140,7 +140,7 @@ function Component:LoadXmlNode(xmlNode)
         -- 解析template
         xmlRoot = ParaXML.LuaXML_ParseString(template);
         -- 类存在放在类中, 避免重复读取, 不存在放在示例中
-        -- self._super.template = template;
+        -- self:class().template = template;
     end
     -- print(self.template);
 
