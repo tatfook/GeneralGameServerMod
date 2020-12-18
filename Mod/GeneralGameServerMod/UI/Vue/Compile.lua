@@ -69,6 +69,11 @@ local function ClearDependItemUpdateQueue()
     end
 end
 
+local ClearDependItemTimer = commonlib.Timer:new({callbackFunc = function() 
+    IsActivedDependItemUpdate = false;
+    ClearDependItemUpdateQueue();
+end});
+
 NPL.this(function()
     IsActivedDependItemUpdate = false;
     ClearDependItemUpdateQueue();
@@ -96,12 +101,12 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     if (IsActivedDependItemUpdate) then return end
     -- 激活更新
     IsActivedDependItemUpdate = true;
-
+    ClearDependItemTimer:Change(20);
     -- commonlib.TimerManager.SetTimeout(function()  
     --     IsActivedDependItemUpdate = false;
     --     ClearDependItemUpdateQueue();
     -- end, 20);
-    NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
+    -- NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
 end)
 
 local function ExecCode(code, func, element, watch)

@@ -9,6 +9,7 @@ local SelfProjectList = {};
 local AuthUser = KeepWorkItemManager.GetProfile();
 local player = GameLogic.GetPlayerController():GetPlayer();
 local GlobalScope = GetGlobalScope();
+local PageSize = 50;
 
 -- 组件全局变量初始化
 GlobalScope:Set("AuthUsername", AuthUser.username);
@@ -42,7 +43,7 @@ end
 
 local function GetProjectListPageFunc()
     -- 获取项目列表
-    local page, pageSize = 1, 10;
+    local page, pageSize = 1, PageSize;
     local isFinish = false;
     local isRequest = false;
     
@@ -98,7 +99,7 @@ end
 
 local function GetFavoriteProjectListPageFunc()
     -- 获取项目列表
-    local page, pageSize = 1, 10;
+    local page, pageSize = 1, PageSize;
     local isFinish = false;
     local isRequest = false;
     
