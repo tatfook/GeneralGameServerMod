@@ -40,7 +40,6 @@ local function AddPojectListToScopeProjectList(ProjectList)
     end
 end
 
-
 local function GetProjectListPageFunc()
     -- 获取项目列表
     local page, pageSize = 1, 10;
@@ -52,6 +51,7 @@ local function GetProjectListPageFunc()
         local userId = GlobalScope:Get("UserId");
         local AuthUserId = GlobalScope:Get("AuthUserId");
         if (not userId) then return end
+        local BeginTime = GetTime();
         isRequest = true;
         keepwork.project.list({
             -- 请求参数
@@ -83,6 +83,8 @@ local function GetProjectListPageFunc()
                 }, function(status, msg, data)
                     local rows = data.rows or {};
                     for _, row in ipairs(rows) do projects[row.objectId].isFavorite = true end
+                    local EndTime = GetTime();
+                    print("耗时: ", EndTime - BeginTime);
                     AddPojectListToScopeProjectList(ProjectList);
                 end);
             else

@@ -177,7 +177,7 @@ function clickConfirm()
         else
             ShowMessageBoxPage({text = "地区修改成功"});
         end
-        <!-- if (type(confirm) == "function") then confirm(county.id and county or city) end -->
+        if (type(confirm) == "function") then confirm(county.id and county or city) end
         CloseWindow();
     end);
 end
