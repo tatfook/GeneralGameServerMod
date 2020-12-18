@@ -80,11 +80,11 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     -- 激活更新
     IsActivedDependItemUpdate = true;
 
-    commonlib.TimerManager.SetTimeout(function()  
-        IsActivedDependItemUpdate = false;
-        ClearDependItemUpdateQueue();
-    end, 20);
-    -- NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate");  -- 
+    -- commonlib.TimerManager.SetTimeout(function()  
+    --     IsActivedDependItemUpdate = false;
+    --     ClearDependItemUpdateQueue();
+    -- end, 20);
+    NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
 end)
 
 local function ExecCode(code, func, object, watch)
