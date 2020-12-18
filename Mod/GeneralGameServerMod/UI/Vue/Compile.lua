@@ -25,6 +25,7 @@ local IsActivedDependItemUpdate = false;
 local CallBackFunctionListCache = {};
 local ElementListCache = {};
 local function ClearDependItemUpdateQueue()
+    local BeginTime = ParaGlobal.timeGetTime();
     -- 获取更新依赖项
     local dependItemCount = 0;
     for dependItem in pairs(DependItemUpdateQueue) do 
@@ -67,6 +68,9 @@ local function ClearDependItemUpdateQueue()
         local func = CallBackFunctionListCache[i];
         func();
     end
+
+    local EndTime = ParaGlobal.timeGetTime();
+    print(string.format("响应更新耗时: %sms, 更新依赖项数: %s, 触发回调函数: %s", EndTime - BeginTime, dependItemCount, callbackFunctionCount));
 end
 
 local ClearDependItemTimer = commonlib.Timer:new({callbackFunc = function() 

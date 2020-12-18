@@ -226,7 +226,7 @@ function LoadUserInfo()
         if (not GlobalScope:Get("isAuthUser")) then return end
         -- 获取是否关注
         keepwork.user.isfollow({
-            objectId = userId,
+            objectId = UserDetail.id,
             objectType = 0,
         }, function(status, msg, data) 
             UserDetail.isFollow = false;

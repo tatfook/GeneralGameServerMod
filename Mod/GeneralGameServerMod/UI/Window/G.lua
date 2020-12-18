@@ -57,7 +57,7 @@ function G:CloseWindow()
 end
 
 function G:GetTime()
-    return ParaGlobal.timeGetTime()
+    return ParaGlobal.timeGetTime();
 end
 
 function G:GetEvent()
