@@ -331,6 +331,8 @@ function Compile:VFor(element)
         for i = count + 1, lastCount do
             -- self:UnWatchElement(clones[i]);
             parentElement:RemoveChildElement(clones[i]);
+            clones[i] = nil;
+            scopes[i] = nil;
         end
         lastCount = count;
         parentElement:UpdateLayout(true);

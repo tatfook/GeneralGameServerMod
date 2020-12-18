@@ -5,7 +5,7 @@
         </div>
         <div v-for="project in ProjectList" class="project btn" v-bind:style="GetProjectStyle(project.id)" onclick=ClickProject(project)>
             <div v-bind:style="GetImageStyle(project.extra)">
-                <Username v-bind:UserInfo="project.user or UserDetail" style="height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
+                <Username v-bind:UserInfo="project.user" style="height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
             </div>
             <div style="font-size:16px; color: #522b2b; margin-top: 10px; margin-left:10px; height: 16px; line-height: 16px; display: flex; align-items: center;">
                 <div v-if="GetProjectStatusStyle(project.status)" class="status" style="display:inline-block; width: 16px; height: 16px;" v-bind:style="GetProjectStatusStyle(project.status)"></div>
