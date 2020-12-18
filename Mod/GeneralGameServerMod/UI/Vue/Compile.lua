@@ -16,13 +16,16 @@ local CompileDebug = GGS.Debug.GetModuleDebug("CompileDebug").Enable();   --Enab
 
 -- local EventNameMap = {["onclick"] = true, ["onmousedown"] = true, ["onmousemove"] = true, ["onmouseup"] = true};
 local DependItems = {};
+local OldDependItems = {};
 local AllDependItemWatch = {};
 local DependItemUpdateQueue = {};
 local DependItemUpdateMap  = {};
 local IsActivedDependItemUpdate = false;
 
 local CallBackFunctionListCache = {};
+local ElementListCache = {};
 local function ClearDependItemUpdateQueue()
+    -- 获取更新依赖项
     local dependItemCount = 0;
     for dependItem in pairs(DependItemUpdateQueue) do 
         dependItemCount = dependItemCount + 1;
@@ -30,20 +33,36 @@ local function ClearDependItemUpdateQueue()
     end
     if (dependItemCount == 0) then return end
 
+    -- 清除无效元素监听
+    for dependItem, elements in pairs(AllDependItemWatch) do
+        local invalueElementCount = 0;
+        for element, _ in pairs(elements) do
+            if (not element:IsValid()) then
+                invalueElementCount = invalueElementCount + 1;
+                ElementListCache[invalueElementCount] = element;
+            end
+        end
+        for i = 1, invalueElementCount do
+            elements[ElementListCache[i]] = nil;
+        end
+    end
+
+    -- 提取回调函数
     local callbackFunctionCount = 0;
     for i = 1, dependItemCount do
         local dependItem = DependItemUpdateMap[i];
-        DependItemUpdateQueue[dependItem] = nil;
-        local objects = AllDependItemWatch[dependItem];
+        DependItemUpdateQueue[dependItem] = nil;   -- 清除更新
+        local elements = AllDependItemWatch[dependItem];
         -- CompileDebug.If(string.match(dependItem, "%[isAuthUser%]"), objects);
-        for object, watchs in pairs(objects) do
-            for exp, func in pairs(watchs) do
+        for element, watchs in pairs(elements) do
+            for code, watch in pairs(watchs) do
                 callbackFunctionCount = callbackFunctionCount + 1;
-                CallBackFunctionListCache[callbackFunctionCount] = func;
+                CallBackFunctionListCache[callbackFunctionCount] = watch;
             end
         end
     end
 
+    -- 触发回调
     for i = 1, callbackFunctionCount do
         local func = CallBackFunctionListCache[i];
         func();
@@ -73,8 +92,6 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     DependItemUpdateQueue[dependItem] = true;
     -- CompileDebug.If(string.match(dependItem, "%[isAuthUser%]"), AllDependItemWatch[dependItem]);
 
-    -- print("__set_global_newindex__", obj, key);
-
     -- 是否已激活更新, 已经激活忽略
     if (IsActivedDependItemUpdate) then return end
     -- 激活更新
@@ -87,26 +104,25 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
 end)
 
-local function ExecCode(code, func, object, watch)
+local function ExecCode(code, func, element, watch)
     DependItems = {};   -- 清空依赖集
     local oldVal = func();
     -- CompileDebug.If(code == "UserDetail", code, DependItems);
 
-    if (object and type(watch) == "function") then
-        local OldDependItems = {};
+    if (element and type(watch) == "function") then
         for dependItem in pairs(DependItems) do
-            OldDependItems[dependItem] = true;                                                      -- 备份依赖项 
-            AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};                  -- 依赖项的对象集
-            AllDependItemWatch[dependItem][object] = AllDependItemWatch[dependItem][object] or {};  -- 对象的监控集
-            AllDependItemWatch[dependItem][object][code] = function()                               -- 监控集项
+            OldDependItems[dependItem] = true;                                                               -- 备份依赖项 
+            AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};                           -- 依赖项的对象集
+            AllDependItemWatch[dependItem][element] = AllDependItemWatch[dependItem][element] or {};         -- 对象的监控集
+            AllDependItemWatch[dependItem][element][code] = function()                                       -- 监控集项
                 -- 先清除
                 for dependItem in pairs(OldDependItems) do
-                    AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};          -- 依赖项的对象集
-                    AllDependItemWatch[dependItem][object] = AllDependItemWatch[dependItem][object] or {};  -- 对象的监控集
-                    AllDependItemWatch[dependItem][object][code] = nil;
+                    AllDependItemWatch[dependItem] = AllDependItemWatch[dependItem] or {};                    -- 依赖项的对象集
+                    AllDependItemWatch[dependItem][element] = AllDependItemWatch[dependItem][element] or {};  -- 对象的监控集
+                    AllDependItemWatch[dependItem][element][code] = nil;
                 end
                 -- 获取新值
-                local newVal = ExecCode(code, func, object, watch);
+                local newVal = ExecCode(code, func, element, watch);
                 -- 相同退出
                 if (type(newVal) ~= "table" and newVal == oldVal) then return end
                 -- if (newVal == oldVal and type(newVal) ~= "table" or #newVal == #oldVal) then return end
@@ -153,7 +169,7 @@ function Compile:GetComponent()
     return self.component;
 end
 
-function Compile:ExecCode(code, object, watch, isExecWatch)
+function Compile:ExecCode(code, element, watch, isExecWatch)
     if (type(code) ~= "string" or code == "") then return end
 
     local func, errmsg = loadstring("return (" .. code .. ")");
@@ -162,17 +178,17 @@ function Compile:ExecCode(code, object, watch, isExecWatch)
     -- CompileDebug.Format("ComponentTagName = %s, ElementTagName = %s, ScopeId = %s", self:GetComponent():GetTagName(), object and object:GetTagName(), self:GetScope().__id__);
     setfenv(func, self:GetScope());
 
-    local val = ExecCode(code, func, object, watch);
+    local val = ExecCode(code, func, element, watch);
     if (isExecWatch and type(watch) == "function") then watch(val) end
 
     return val;
 end
 
 -- 移除监控
-function Compile:UnWatch(object)
-    if (not object) then return end
+function Compile:UnWatch(element)
+    if (not element) then return end
     for key, watch in pairs(AllDependItemWatch) do
-        AllDependItemWatch[key][object] = nil;
+        AllDependItemWatch[key][element] = nil;
     end
 end
 
@@ -285,7 +301,7 @@ function Compile:VFor(element)
             local clone = clones[i];
             -- 移除监控
             clone:GetXmlNode().attr["v-for"] = nil;
-            self:UnWatchElement(clone);
+            -- self:UnWatchElement(clone);
             -- 构建scope数据
             local scope = scopes[i] or {};
             scope[key or "index"] = i;
@@ -299,10 +315,13 @@ function Compile:VFor(element)
             self:SetScope(forScope);
             -- 压入新scope
             scopes[i] = self:PushScope(scope);
-            -- 编译新元素
-            self:CompileElement(clone);
-            -- 添加至dom树
-            if (i > lastCount) then parentElement:InsertChildElement(pos + i, clone) end
+            -- 新元素
+            if (i > lastCount) then 
+                -- 编译新元素
+                self:CompileElement(clone);
+                -- 添加至dom树
+                parentElement:InsertChildElement(pos + i, clone);
+            end
             -- 弹出scope栈
             self:PopScope();
             self:SetComponent(oldComponent);
@@ -310,7 +329,7 @@ function Compile:VFor(element)
         end
         -- 移除多余元素
         for i = count + 1, lastCount do
-            self:UnWatchElement(clones[i]);
+            -- self:UnWatchElement(clones[i]);
             parentElement:RemoveChildElement(clones[i]);
         end
         lastCount = count;

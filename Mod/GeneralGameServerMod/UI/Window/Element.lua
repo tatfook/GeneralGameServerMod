@@ -62,6 +62,17 @@ function Element:ToPlainObject()
     }
 end
 
+-- 是否有效
+function Element:IsValid()
+    local window = self:GetWindow();
+    -- 判断窗口是否有效
+    if (not window or not window:GetNativeWindow()) then return false end   
+    -- 判断元素是否有效
+    local root = self;
+    while (root:GetParentElement()) do root = root:GetParentElement() end
+    return root == window;  -- 根元素为窗口元素则为有效
+end
+
 -- 是否是元素
 function Element:IsElement()
     return true;
@@ -266,6 +277,7 @@ end
 function Element:ClearChildElement()
     for _, child in ipairs(self.childrens) do
         child:Detach();
+        child:SetParentElement(nil);
     end
 
     self.childrens = {};
