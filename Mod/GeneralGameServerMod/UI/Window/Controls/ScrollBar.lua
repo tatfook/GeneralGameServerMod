@@ -338,6 +338,7 @@ end
 -- 鼠标滚动事件
 function ScrollBar:OnMouseWheel(event)
     local delta = event:GetDelta();  -- 1 向上滚动  -1 向下滚动
+    if (not self.thumb) then return end
     self.thumb:ScrollByDelta(delta);
 end
 

@@ -106,7 +106,8 @@ function Window:Init()
         attr = {
             draggable = if_else(params.draggable == false, false, true),   -- 窗口默认可以拖拽
         }, 
-    }, self, nil)
+    }, self, nil);
+    self:SetVisible(true);
 
     -- 设置根元素
     local xmlNode = self:LoadXmlNodeByUrl(params.url);
@@ -150,6 +151,7 @@ function Window:CloseWindow()
     Screen:Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     ParaUI.Destroy(self:GetNativeWindow().id);
     self:SetNativeWindow(nil);
+    self:SetVisible(false);
     local G = self:GetG();
     if (G and type(G.OnClose) == "function") then G.OnClose() end
 end

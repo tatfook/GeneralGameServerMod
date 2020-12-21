@@ -24,6 +24,16 @@ ElementManager:RegisterByTagName("Slot", Slot);
 
 local Vue = commonlib.inherit(Window, NPL.export());
 
+function Vue:ctor()
+    self.pages = {};
+end
+
+function Vue:CloseWindow()
+    Vue._super.CloseWindow(self);
+    for _, page in pairs(self.pages) do
+        page:CloseWindow();
+    end
+end
 
 function Vue:LoadXmlNodeByUrl(url)
     return {
@@ -61,9 +71,14 @@ function Vue:ExtendG(G)
     G.ShowWindow = function(G, params)
         params = params or {};
         if (not params.url) then return end
+
+        local page = self.pages[params.url] or Vue:new();
+        self.pages[params.url] = page;
+        if (page:GetNativeWindow()) then return page end
+
         params.G = G;
         
-        return Vue:new():Show(params);
+        return page:Show(params);
     end
 
     G.GetGlobalScope = function()

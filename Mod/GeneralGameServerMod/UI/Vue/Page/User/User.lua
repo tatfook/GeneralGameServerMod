@@ -9,7 +9,7 @@ local SelfProjectList = {};
 local AuthUser = KeepWorkItemManager.GetProfile();
 local player = GameLogic.GetPlayerController():GetPlayer();
 local GlobalScope = GetGlobalScope();
-local PageSize = 100;
+local PageSize = 10;
 
 -- 组件全局变量初始化
 GlobalScope:Set("AuthUsername", AuthUser.username);
@@ -63,16 +63,21 @@ local function GetProjectListPageFunc()
             ["x-per-page"] = pageSize,          -- 页大小
             ["x-order"] = "updatedAt-desc",     -- 按更新时间降序
         }, function(status, msg, data)
-            isRequest = false;
-            if (status ~= 200) then return echo("获取用户项目列表失败, userId " .. tostring(userId)) end
+            local total = tonumber(string.match(msg.header, "x-total:%s*(%d+)"));
+            if (status ~= 200) then 
+                isFinish = true;
+                return echo("获取用户项目列表失败, userId " .. tostring(userId));
+            end
             local ProjectList = data;
+            -- Log.Format("page = %s, count = %s", page, #ProjectList);
+
             -- echo(data, true);
-            if (#ProjectList < pageSize) then isFinish = true end
             local projectIds, projects = {}, {};
             for i, project in ipairs(ProjectList) do
                 projectIds[i] = project.id;
                 projects[project.id] = project;
                 project.isFavorite = false;
+                project.selected = false;
                 project.user = GlobalScope:Get("UserDetail");
             end
             if (AuthUserId and AuthUserId > 0) then
@@ -86,13 +91,20 @@ local function GetProjectListPageFunc()
                     local rows = data.rows or {};
                     for _, row in ipairs(rows) do projects[row.objectId].isFavorite = true end
                     local EndTime = GetTime();
-                    print("耗时: ", EndTime - BeginTime);
+                    -- print("耗时: ", EndTime - BeginTime);
                     AddPojectListToScopeProjectList(ProjectList);
                 end);
             else
                 AddPojectListToScopeProjectList(ProjectList);
             end
+            local ScopePorjectList = GlobalScope:Get("ProjectList");
+            if (total) then
+                isFinish = (#ScopePorjectList) >= total;
+            else
+                isFinish = (#ProjectList) < pageSize; 
+            end
             page = page + 1;
+            isRequest = false;
         end)
     end
 end
@@ -117,14 +129,28 @@ local function GetFavoriteProjectListPageFunc()
             ["x-per-page"] = pageSize,          -- 页大小
             ["x-order"] = "updatedAt-desc",     -- 按更新时间降序
         }, function(status, msg, data)
-            isRequest = false;
-            if (status ~= 200) then return echo("获取用户项目列表失败, userId " .. tostring(userId)) end
+            if (status ~= 200) then 
+                isFinish = true;
+                return echo("获取用户项目列表失败, userId " .. tostring(userId));
+            end
             local ProjectList = data.rows;
+            local total = data.count;
             -- echo(data, true);
             if (#ProjectList < pageSize) then isFinish = true end
-            for _, project in ipairs(ProjectList) do project.isFavorite = true end
+            for _, project in ipairs(ProjectList) do 
+                project.isFavorite = true;
+                project.selected = false;
+            end
             AddPojectListToScopeProjectList(ProjectList);
+            local ScopePorjectList = GlobalScope:Get("ProjectList");
+            if (total) then
+                isFinish = (#ScopePorjectList) >= total;
+            else
+                isFinish = (#ProjectList) < pageSize; 
+            end
+
             page = page + 1;
+            isRequest = false;
         end)
     end
 end
@@ -364,8 +390,8 @@ _G.SetScrollElement = function(el)
     local verticalScrollBar = el and el:GetVerticalScrollBar();
     if (not verticalScrollBar) then return end
     verticalScrollBar:SetStyleValue("background-color", "#ffffff00");
-    verticalScrollBar:GetThumb():SetStyleValue("background", "Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 15 2 15");
-    verticalScrollBar:GetThumb():SetStyleValue("min-height", 38);
+    verticalScrollBar:GetThumb():SetStyleValue("background", "Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 5 2 5");
+    verticalScrollBar:GetThumb():SetStyleValue("min-height", 10);
 end
 
 LoadUserInfo();

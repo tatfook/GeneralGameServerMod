@@ -11,13 +11,19 @@ local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
 local Vue = NPL.load("./Vue/Vue.lua", IsDevEnv);
 local Page = NPL.export();
-
-function Page.Show(G, params)
-    local page = Vue:new();
-
+local pages = {};
+function Page.Show(G, params, isNew)
     params = params or {};
     if (not params.url) then return end
-    
+   
+    local page = pages[params.url] or Vue:new();
+    if (isNew) then 
+        page = Vue:new();
+    else
+        pages[params.url] = page;
+        if (page:GetNativeWindow()) then return page end
+    end
+
     params.draggable = false;
     params.G = G;
     
