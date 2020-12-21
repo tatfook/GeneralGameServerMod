@@ -115,9 +115,6 @@ function Window:Init()
 
     -- 加载元素, 提供一种置顶向下执行的机制
     self:LoadElement();
-
-    -- 文档化
-    self:Attach();
 end
 
 -- 窗口刷新
@@ -136,7 +133,12 @@ function Window.Show(self, params)
     if (not self:GetNativeWindow()) then
         self:SetNativeWindow(self:CreateNativeWindow());
     end
+    
+    -- 初始化
     self:Init();
+    -- 文档化
+    self:Attach();
+    -- 更新布局
     self:UpdateLayout(true);
 
     return self;

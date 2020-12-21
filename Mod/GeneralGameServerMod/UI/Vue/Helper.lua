@@ -67,6 +67,8 @@ function Helper.BeginTime()
     BeginTime = ParaGlobal.timeGetTime();
 end
 
-function Helper.EndTime(action)
-    GGS.INFO.Format("%s 耗时: %sms", action or "", ParaGlobal.timeGetTime() - BeginTime)
+function Helper.EndTime(action, isResetBeginTime)
+    local curTime = ParaGlobal.timeGetTime();
+    GGS.INFO.Format("%s 耗时: %sms", action or "", curTime - BeginTime);
+    if (isResetBeginTime) then BeginTime = curTime end
 end

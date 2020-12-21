@@ -55,7 +55,9 @@ Scope.__inherit__ = Inherit;
 
 -- 获取值
 local function __get_val__(val)
-    if (type(val) ~= "table" or Scope:__is_scope__(val)) then return val end
+    -- 非普通表不做响应式
+    if (type(val) ~= "table" or getmetatable(val) ~= nil or Scope:__is_scope__(val)) then return val end
+    -- 普通表构建scope
     return Scope:__new__(val);
 end
 
@@ -112,12 +114,17 @@ function Scope:__new__(obj)
     metatable.__scope__ = scope;
     metatable.__metatable__ = metatable;
 
-    -- 拷贝原始数据
+    -- 拷贝原始数据时, 禁止触发回调
+    metatable.__enable_index_callback__ = false;
+    metatable.__enable_newindex_callback__ = false;
     if (type(obj) == "table") then 
         for key, val in pairs(obj) do
             scope[key] = val;
         end
     end
+    -- scope:__update_length__();
+    metatable.__enable_index_callback__ = true;
+    metatable.__enable_newindex_callback__ = true;
 
     -- 新建触发一次读取
     metatable:__call_index_callback__(scope, nil);
@@ -130,10 +137,13 @@ local scopeId = 0;
 function Scope:__ctor__()
     scopeId = scopeId + 1;
     self.__id__ = scopeId ;
-    self.__data__ = {};                                 -- 数据表      
+    self.__data__ = {};                                 -- 数据表
+    self.__length__ = 0;                                -- 列表长度
     self.__scope__ = true;                              -- 是否为Scope
     self.__index_callback__ = nil;                      -- 读取回调
     self.__newindex_callback__ = nil;                   -- 写入回调   
+    self.__enable_index_callback__ = true;              -- 使能index回调
+    self.__enable_newindex_callback__ = true;           -- 使能newindex回调
     self.__watch__ = {};
     -- print("--------------------------scope:__ctor__-------------------------------");
     -- 内置可读写属性
@@ -184,6 +194,8 @@ end
 
 -- 读取回调
 function Scope:__call_index_callback__(scope, key)
+    if (not self.__enable_index_callback__) then return end
+
     local val = key and self.__data__[key];
     -- print("__call_index_callback__", scope, key);
     -- 值为scope触发本身读索引
@@ -238,6 +250,8 @@ end
 
 -- 写入回调   
 function Scope:__call_newindex_callback__(scope, key, newval, oldval)
+    if (not self.__enable_newindex_callback__) then return end
+
     -- print("__call_newindex_callback__", scope, key);
 
     -- 触发监控回调
@@ -275,13 +289,19 @@ function Scope:__set__(scope, key, val)
     self.__data__[key] = __get_val__(val);
 
     -- 相同直接退出
-    if (oldval == val and type(val) ~= "table") then return end
-    -- if (oldval == val) then return end
+    if (oldval == val) then return end
+    -- if (oldval == val and (not self:__is_scope__(val) or val.__length__ == oldval.__length__)) then return end
 
 
     -- 触发更新回调
     self:__call_newindex_callback__(scope, key, val, oldval);
 end
+
+-- -- 更新列表大小
+-- function Scope:__update_length__()
+--     self.__length__ = #self.__data__;
+--     return self.__length__;
+-- end
 
 -- 获取真实数据
 function Scope:__get_data__()
