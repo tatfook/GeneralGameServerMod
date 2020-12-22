@@ -257,6 +257,7 @@ local dimension_fields = {
 	["padding"] = true, ["padding-top"] = true, ["padding-right"] = true, ["padding-bottom"] = true, ["padding-left"] = true, 
 	["margin"] = true, ["margin-top"] = true, ["margin-right"] = true, ["margin-bottom"] = true, ["margin-left"] = true, 
 	["border-width"] = true, ["border-top-wdith"] = true, ["border-right-wdith"] = true, ["border-bottom-wdith"] = true, ["border-left-wdith"] = true, 
+	-- ["border-radius"] = true,
 
 	["spacing"] = true,
 	["shadow-quality"] = true,
@@ -273,6 +274,8 @@ local number_fields = {
 	["scale"] = true,
 	["flex-grow"] = true,
 	["flex-shrink"] = true,
+
+	["border-radius"] = true,
 };
 
 local color_fields = {

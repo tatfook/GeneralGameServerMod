@@ -78,6 +78,8 @@ end
 
 -- 加载世界
 function AppGeneralGameClient:LoadWorld(opts)
+    opts.worldName = opts.worldName or string.format("school_%s",self.userinfo.schoolId);
+    
     AppGeneralGameClient._super.LoadWorld(self, opts);
 
     local options = self:GetOptions();
@@ -122,6 +124,7 @@ function AppGeneralGameClient:CopyKpUserInfo(userinfo)
     self.userinfo.isVip = userinfo.vip == 1;
     self.userinfo.usertag = KpUserTag.GetMcml(userinfo);
     self.userinfo.worldCount = self.userinfo.worldCount or 0;
+    self.userinfo.schoolId = userinfo.schoolId or 0;
 
     local ParacraftPlayerEntityInfo = (userinfo.extra or {}).ParacraftPlayerEntityInfo or {};
     self.userinfo.scale = ParacraftPlayerEntityInfo.scale or 1;
