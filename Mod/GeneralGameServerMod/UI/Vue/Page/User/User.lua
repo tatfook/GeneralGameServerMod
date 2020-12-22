@@ -18,9 +18,9 @@ GlobalScope:Set("isLogin", System.User.keepworkUsername and true or false);
 GlobalScope:Set("isAuthUser", false);
 GlobalScope:Set("UserDetail", {username = "", createdAt = "2020-01-01", rank = {}});
 GlobalScope:Set("ProjectList", {});                      -- 用户项目列表
-GlobalScope:Set("FavoriteProjectList", {});              -- 收藏项目列表
-GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
+GlobalScope:Set("ProjectListLoadFinish", false);
 GlobalScope:Set("ProjectListType", "works");
+GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
 
 local ProjectMap = {};
 

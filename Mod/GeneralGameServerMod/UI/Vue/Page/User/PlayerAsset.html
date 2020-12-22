@@ -1,8 +1,10 @@
 <template style="padding: 6px; width: 100%;">
-    <div v-for="asset, key in PlayerAssetList" v-bind:class="AssetContainerClass(asset)" onclick=ClickPlayerAsset(asset)>
-        <div class="selected" style="position: absolute; left: 3px; top: 3px; width: 168px; height: 224px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/renwubj3_168X224_32bits.png#0 0 168 224);"></div>
-        <div v-bind:style="AssetStyle(asset)"></div>
-        <div class="use-btn"></div>
+    <div ref="list" style="width: 100%; height: 100%; overflow-y: auto;">
+        <div v-for="asset, key in PlayerAssetList" v-bind:class="AssetContainerClass(asset)" onclick=ClickPlayerAsset(asset)>
+            <div class="selected" style="position: absolute; left: 3px; top: 3px; width: 168px; height: 224px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/renwubj3_168X224_32bits.png#0 0 168 224);"></div>
+            <div v-bind:style="AssetStyle(asset)"></div>
+            <div class="use-btn"></div>
+        </div>
     </div>
 </template>
 
@@ -21,36 +23,19 @@ PlayerAssetList = GetAllAssets();
         id = 2,
         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
         modelUrl = "character/CC/02human/paperman/boy02.x",
+        owned = true,
     },
     {
         id = 3,
         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
         modelUrl = "character/CC/02human/paperman/boy03.x",
+        owned = true,
     },
     {
         id = 4,
         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
         modelUrl = "character/CC/02human/paperman/boy04.x",
-    },
-    {
-        id = 1,
-        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
-        modelUrl = "character/CC/02human/paperman/boy01.x",
-    },
-    {
-        id = 2,
-        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
-        modelUrl = "character/CC/02human/paperman/boy02.x",
-    },
-    {
-        id = 3,
-        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
-        modelUrl = "character/CC/02human/paperman/boy03.x",
-    },
-    {
-        id = 4,
-        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
-        modelUrl = "character/CC/02human/paperman/boy04.x",
+        owned = true,
     },
 }; -->
 
@@ -96,6 +81,10 @@ function AssetStyle(asset)
     end
     return string.format("width: 108px; height: 176px; background:url(%s)", icon);
 end
+
+function OnReady()
+    SetScrollElement(GetRef("list"));
+end 
 
 function OnAttrValueChange()
 end

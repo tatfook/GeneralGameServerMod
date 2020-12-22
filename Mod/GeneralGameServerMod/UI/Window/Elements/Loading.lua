@@ -2,33 +2,29 @@
 Title: Button
 Author(s): wxa
 Date: 2020/8/14
-Desc: 按钮
+Desc: Loading
 -------------------------------------------------------
-local Canvas = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Canvas.lua");
+local Loading = NPL.load("Mod/GeneralGameServerMod/UI/Window/Elements/Loading.lua");
 -------------------------------------------------------
 ]]
-local Element = NPL.load("../Element.lua", IsDevEnv);
-local Canvas = commonlib.inherit(Element, NPL.export());
+local Element = NPL.load("../Element.lua");
+local Loading = commonlib.inherit(Element, NPL.export());
 
-local pen = {width = 2, color = "#000000"};
-local lines, points = {}, {};
-
-Canvas:Property("Name", "Canvas");
-Canvas:Property("BaseStyle", {
+Loading:Property("Name", "Canvas");
+Loading:Property("BaseStyle", {
     ["NormalStyle"] = {
-        ["display"] = "inline-block",
         ["width"] = "100%",
         ["height"] = "100%",
     }
 })
-function Canvas:ctor()
-    self:SetName("Canvas");
+function Loading:ctor()
+    self:SetName("Loading");
     self.rotate = 0;
     self.tick = 0;
 end
 
 -- 绘制内容
-function Canvas:RenderContent(painter)
+function Loading:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
     local offsetX, offsetY = 0, 50;
 
@@ -43,7 +39,7 @@ function Canvas:RenderContent(painter)
     local iconWidth, iconHeight = 114, 114;
     painter:Rotate(self.rotate);
     painter:SetPen("#ffffff");
-    painter:DrawRectTexture(-iconWidth / 2, -iconHeight / 2, iconWidth, iconHeight, "Texture/Aries/Creator/keepwork/ggs/dialog/loading1_114X114_32bits.png;0 0 114 114");
+    painter:DrawRectTexture(-iconWidth / 2, -iconHeight / 2, iconWidth, iconHeight, "Texture/Aries/Creator/keepwork/ggs/dialog/loading_114X114_32bits.png;0 0 114 114");
     painter:Rotate(-self.rotate);
     local textWidth, textHeight = 181, 23;
     painter:DrawRectTexture(-textWidth / 2 + 10, iconHeight / 2 + 20, textWidth, textHeight, "Texture/Aries/Creator/keepwork/ggs/dialog/zi_jiazaiz_181X23_32bits.png;0 0 181 23");

@@ -114,3 +114,4 @@ self         -- 当前执行环境   self.globalVal = 1  <==> globalVal = 1    �
 ## TODO
 
 [ ] 滚动条样式设定优化
+[ ] 圆角
