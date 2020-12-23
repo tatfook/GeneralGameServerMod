@@ -273,6 +273,10 @@ function BaseLayout:GetContentPos()
 	return self.x + self.borderLeft + self.paddingLeft, self.y + self.borderTop + self.paddingTop;
 end
 
+function BaseLayout:SetZIndex(zindex)
+	self:GetElement():SetZIndex(string.format("%06d", zindex));
+end
+
 -- 百分比转数字
 function BaseLayout:PercentageToNumber(percentage, size)
 	if (type(percentage) == "number") then return percentage end;
@@ -337,7 +341,12 @@ function BaseLayout:PrepareLayout()
     -- 定位元素
 	self:SetPositionStyle(position);
 
-    if (position == "absolute" or position == "fixed" or position == "screen") then self:SetPositionElement(true) end
+	if (position == "absolute" or position == "fixed" or position == "screen") then 
+		self:SetPositionElement(true);
+		style["z-index"] = style["z-index"] or 1;  -- 定位元素默认为1
+	else
+		style["z-index"] = style["z-index"] or 0;  -- 普通元素默认为0
+	end
 
     -- 溢出
     self.overflowX = style["overflow-x"] or "visible";

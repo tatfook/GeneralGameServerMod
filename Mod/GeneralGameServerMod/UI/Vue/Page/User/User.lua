@@ -70,7 +70,6 @@ local function GetProjectListPageFunc()
             end
             local total = tonumber(string.match(msg.header or "", "x-total:%s*(%d+)"));
             local ProjectList = data;
-            Log.Format("page = %s, pageSize = %s, count = %s, total = %s", page, pageSize, #ProjectList, total);
 
             -- echo(data, true);
             local projectIds, projects = {}, {};
@@ -105,6 +104,9 @@ local function GetProjectListPageFunc()
                 isFinish = (#ProjectList) < pageSize; 
             end
             GlobalScope:Set("ProjectListLoadFinish", isFinish);
+
+            Log.Format("page = %s, pageSize = %s, curCount = %s, realCount = %s, total = %s, isFinish = %s", page, pageSize, #ProjectList, #ScopePorjectList, total, isFinish);
+
             page = page + 1;
             isRequest = false;
         end)

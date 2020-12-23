@@ -19,6 +19,7 @@ ElementUI:Property("Active", false, "IsActive");            -- 是否激活
 ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 ElementUI:Property("Visible", true);                        -- 可见性
 ElementUI:Property("Render", false, "IsRender");            -- 是否渲染
+ElementUI:Property("ZIndex", "");                           -- zindex 序
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
 local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable(); 
@@ -424,7 +425,7 @@ function ElementUI:UpdateWindowPos(forceUpdate, offsetX, offsetY, scrollX, scrol
     scrollX, scrollY = self:GetScrollPos();
     if (forceUpdate or oldWindowX ~= windowX or oldWindowY ~= windowY) then 
         for child in self:ChildElementIterator() do
-            child:UpdateWindowPos(false, offsetX, offsetY, scrollX, scrollY);
+            child:UpdateWindowPos(forceUpdate, offsetX, offsetY, scrollX, scrollY);
         end
     end
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "============End========= windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
@@ -591,12 +592,27 @@ function ElementUI:OffHover()
 end
 
 -- 悬浮
-function ElementUI:Hover(event, isUpdateLayout)
+function ElementUI:Hover(event, isUpdateLayout, zindex)
     local isChangeHoverState = false;
-    local hoverElement, childHoverElement = nil, nil;
+    local hoverElement = nil;
     local winWidth, winHeight = self:GetWindowSize();
     
-    if (winWidth == 0 or winHeight == 0) then return end
+    zindex = (zindex or "") .. "-" .. self:GetZIndex();
+
+    -- 元素不可见元素全部置offhover
+    if (winWidth == 0 or winHeight == 0) then 
+        self:ForEach(function(el)
+            if (el:IsHover()) then
+                el:SetHover(false);
+                isChangeHoverState = true;
+                el:OffHover();
+            end
+        end);
+        if (isUpdateLayout and isChangeHoverState) then 
+            self:UpdateLayout(true);
+        end
+        return nil, zindex;
+    end
 
     if (self:IsContainPoint(event.x, event.y)) then
         hoverElement = self;
@@ -616,9 +632,13 @@ function ElementUI:Hover(event, isUpdateLayout)
     end
 
     -- 事件序遍历 取第一悬浮元素
+    local maxZIndex = zindex;
     for child in self:ChildElementIterator(false) do
-        local childHoverEl = child:Hover(event, isUpdateLayout and not isChangeHoverState);  -- 若父布局更新, 则子布局无需更新 
-        childHoverElement = childHoverElement or childHoverEl;
+        local childHoverElement, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex);  -- 若父布局更新, 则子布局无需更新 
+        if (childHoverElement and maxZIndex < childZIndex) then
+            hoverElement = childHoverElement;
+            maxZIndex = childZIndex;
+        end
     end
 
     -- 需要更新且发送状态改变
@@ -626,7 +646,7 @@ function ElementUI:Hover(event, isUpdateLayout)
         self:UpdateLayout(true);
     end
 
-    return childHoverElement or hoverElement;
+    return hoverElement, maxZIndex;
 end
 
 function ElementUI:OnFocusOut()

@@ -165,7 +165,7 @@ end
 function Select:OnValueAttrValueChange(attrValue)
     self:SetSelectedOptionElement(nil);
     local ListBox = self:GetListBoxElement();
-    for childElement in ListBox:ChildElementIterator() do
+    for _, childElement in ipairs(ListBox.childrens) do
         if (childElement:GetValue() == attrValue) then
             self:SetSelectedOptionElement(childElement);
         end
