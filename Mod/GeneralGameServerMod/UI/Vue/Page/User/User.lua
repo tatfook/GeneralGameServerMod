@@ -69,7 +69,7 @@ local function GetProjectListPageFunc()
                 return echo("获取用户项目列表失败, userId " .. tostring(userId));
             end
             local ProjectList = data;
-            -- Log.Format("page = %s, pageSize = %s, count = %s", page, pageSize, #ProjectList);
+            Log.Format("page = %s, pageSize = %s, count = %s, total = %s", page, pageSize, #ProjectList, total);
 
             -- echo(data, true);
             local projectIds, projects = {}, {};
@@ -103,6 +103,7 @@ local function GetProjectListPageFunc()
             else
                 isFinish = (#ProjectList) < pageSize; 
             end
+            GlobalScope:Set("ProjectListLoadFinish", isFinish);
             page = page + 1;
             isRequest = false;
         end)
@@ -148,7 +149,7 @@ local function GetFavoriteProjectListPageFunc()
             else
                 isFinish = (#ProjectList) < pageSize; 
             end
-
+            GlobalScope:Set("ProjectListLoadFinish", isFinish);
             page = page + 1;
             isRequest = false;
         end)
