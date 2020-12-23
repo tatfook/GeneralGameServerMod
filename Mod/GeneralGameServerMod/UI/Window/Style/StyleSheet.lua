@@ -148,6 +148,13 @@ function StyleSheet:ApplySelectorStyle(selector, style, element)
     selectorStyle = self.SelectorStyle[selector .. ":focus"];
     if (selectorStyle) then Style.CopyStyle(style:GetFocusStyle(), selectorStyle) end
 
+    -- 滚动条样式
+    local scrollBarStyle = element:GetScrollBarStyle();
+    selectorStyle = self.SelectorStyle[selector .. "::scrollbar"];
+    if (selectorStyle) then Style.CopyStyle(scrollBarStyle["scrollbar"], selectorStyle) end
+    selectorStyle = self.SelectorStyle[selector .. "::scrollbar-thumb"];
+    if (selectorStyle) then Style.CopyStyle(scrollBarStyle["scrollbar-thumb"], selectorStyle) end
+    
     -- 标记选择器
     local elementSelector = element:GetSelector();
     elementSelector[selector] = true;

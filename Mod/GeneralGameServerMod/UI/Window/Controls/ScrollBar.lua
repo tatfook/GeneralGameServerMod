@@ -63,7 +63,16 @@ end
 
 function ScrollBarThumb:Init(xmlNode, window, parent)
     self:InitElement(xmlNode, window, parent);
+    self:SetScrollBar(parent);
+
     return self;
+end
+
+function ScrollBarThumb:ApplyElementStyle()
+    ScrollBarThumb._super.ApplyElementStyle(self);
+    local scrollbarStyle = self:GetScrollBar():GetParentElement():GetScrollBarStyle();
+    local style = self:GetStyle();
+    style.CopyStyle(style:GetNormalStyle(), scrollbarStyle["scrollbar-thumb"]);
 end
 
 function ScrollBarThumb:OnUpdateLayout()
@@ -119,7 +128,7 @@ function ScrollBarThumb:OnMouseMove(event)
                 self.isMouseDown = false;
             end
         end
-        self:GetScrollBar():OnScroll();
+        self:OnScroll();
 		event:accept();
 	end
 end
@@ -244,13 +253,19 @@ function ScrollBar:Init(xmlNode, window, parent)
     -- table.insert(self.childrens, self.track);
     -- self.track:SetParentElement(self);
     table.insert(self.childrens, self.thumb);
-    self.thumb:SetParentElement(self);
-    self.thumb:SetScrollBar(self);
     -- table.insert(self.childrens, self.nextButton);
     -- self.nextButton:SetParentElement(self);
 
     return self;
 end
+
+function ScrollBar:ApplyElementStyle()
+    ScrollBar._super.ApplyElementStyle(self);
+    local scrollbarStyle = self:GetParentElement():GetScrollBarStyle();
+    local style = self:GetStyle();
+    style.CopyStyle(style:GetNormalStyle(), scrollbarStyle["scrollbar"]);
+end
+
 
 function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth, contentHeight, scrollWidth, scrollHeight)
     if (self.clientWidth == clientWidth and self.clientHeight == clientHeight and self.contentWidth == contentWidth and self.contentHeight == contentHeight and self.scrollWidth == scrollWidth and self.scrollHeight == scrollHeight) then return end
@@ -358,3 +373,26 @@ function ScrollBar:ScrollTo(val)
         self.thumb:ScrollTo(nil, val / (self.scrollHeight - self.contentHeight) * self.thumb.maxTop);
     end
 end
+
+
+--[[
+selector::scrollbar {
+
+}
+selector::scrollbar-thumb {
+    
+}
+]]
+-- ::-webkit-scrollbar ：滚动条整体部分，其中的属性有width,height,background,border等。
+
+-- ::-webkit-scrollbar-button ：滚动条两端的按钮。可以用display:none让其不显示，也可以添加背景图片，颜色改变显示效果。
+
+-- ::-webkit-scrollbar-track ：外层轨道。可以用display:none让其不显示，也可以添加背景图片，颜色改变显示效果。
+
+-- ::-webkit-scrollbar-track-piece ：内层轨道，具体区别看下面gif图，需要注意的就是它会覆盖第三个属性的样式。
+
+-- ::-webkit-scrollbar-thumb ：滚动条里面可以拖动的那部分
+
+-- ::-webkit-scrollbar-corner ：边角，两个滚动条交汇处
+
+-- ::-webkit-resizer ：两个滚动条交汇处用于拖动调整元素大小的小控件（基本用不上）

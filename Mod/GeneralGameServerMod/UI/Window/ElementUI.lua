@@ -29,6 +29,7 @@ function ElementUI:ctor()
     self.winWidth, self.winHeight = 0, 0;                -- 窗口大小
     self.AbsoluteElements, self.FixedElements = {}, {};
     self.RenderCacheList = {}
+    self.posinfo = {};
 end
 
 -- 是否显示
@@ -376,44 +377,57 @@ function ElementUI:GlobalToContentGeometryPos()
 end
 
 -- 更新元素窗口的坐标
-function ElementUI:UpdateWindowPos(forceUpdate)
-    local parentElement = self:GetParentElement();
+function ElementUI:UpdateWindowPos(forceUpdate, offsetX, offsetY, scrollX, scrollY)
+    local posinfo = self.posinfo;
+    offsetX, offsetY = offsetX or posinfo.offsetX or 0, offsetY or posinfo.offsetY or 0;   -- 影响定位元素
+    scrollX, scrollY = scrollX or posinfo.scrollX or 0, scrollY or posinfo.scrollY or 0;   -- 不影响定位元素
+    posinfo.offsetX, posinfo.offsetY, posinfo.scrollX, posinfo.scrollY = offsetX, offsetY, scrollX, scrollY;
 	local windowX, windowY, windowWidth, windowHeight = 0, 0, 0, 0;
     local x, y, w, h = self:GetGeometry();
     local oldWindowX, oldWindowY = self:GetWindowPos();
-    if (parentElement) then 
-        windowX, windowY = parentElement:GetWindowPos();
-        local scrollX, scrollY = parentElement:GetScrollPos();
-        -- ElementUIDebug.FormatIf(parentElement:GetAttrStringValue("id") == "debug", "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
-        if (self:GetLayout():IsPositionElement()) then
-        else
-            x, y = x - scrollX, y - scrollY;
-        end
-        -- ElementUIDebug.FormatIf((scrollX > 0 or scrollY > 0), "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
+    local parentElement = self:GetParentElement();
+    if (parentElement) then windowX, windowY = parentElement:GetWindowPos() end
+    if(self:GetLayout():IsPositionElement()) then
+        x, y = x - offsetX, y - offsetY;
+    else
+        x, y = x - offsetX - scrollX, y - offsetY - scrollY;
     end
-    -- ElementUIDebug.FormatIf(self:GetTagName() == "ScaleSlider", "windowX = %s, windowY = %s, parentElement = %s", windowX, windowY, parentElement == nil);
     if (x >= 0) then
         windowX, windowWidth = windowX + x, w;
+        offsetX = 0;
     elseif (x + w >= 0) then
         windowWidth = x + w;
+        offsetX = -x;
     else 
+        offsetX = 0;
         windowX, windowWidth = 0, 0;
     end
     if (y >= 0) then
         windowY, windowHeight = windowY + y, h;
+        offsetY = 0;
     elseif (y + h >= 0) then
         windowHeight = y + h;
+        offsetY = -y;
     else 
+        offsetY = 0;
         windowY, windowHeight = 0, 0;
     end
+    -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "=================start===============");
+    -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
+    -- ElementUIDebug.FormatIf(parentElement and parentElement:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
     self:SetWindowPos(windowX, windowY);
     self:SetWindowSize(windowWidth, windowHeight);
+    
+    -- 不可见直接返回
+    if (windowWidth == 0 or windowHeight == 0) then return end
     -- 更新子元素的窗口位置
+    scrollX, scrollY = self:GetScrollPos();
     if (forceUpdate or oldWindowX ~= windowX or oldWindowY ~= windowY) then 
         for child in self:ChildElementIterator() do
-            child:UpdateWindowPos();
+            child:UpdateWindowPos(false, offsetX, offsetY, scrollX, scrollY);
         end
     end
+    -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "============End========= windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
 end
 
 -- 获取元素相对屏幕的坐标
@@ -580,18 +594,21 @@ end
 function ElementUI:Hover(event, isUpdateLayout)
     local isChangeHoverState = false;
     local hoverElement, childHoverElement = nil, nil;
+    local winWidth, winHeight = self:GetWindowSize();
+    
+    if (winWidth == 0 or winHeight == 0) then return end
 
     if (self:IsContainPoint(event.x, event.y)) then
         hoverElement = self;
         if (not self:IsHover()) then
-            ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OnHover-----------");
+            -- ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OnHover-----------");
             self:SetHover(true);
             isChangeHoverState = true
             self:OnHover();
         end
     else 
         if (self:IsHover()) then
-            ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OffHover-----------");
+            -- ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OffHover-----------");
             self:SetHover(false);
             isChangeHoverState = true
             self:OffHover();
@@ -656,7 +673,7 @@ function ElementUI:SetFocus(element)
 end
 
 -- 选择样式
-function ElementUI:SelectStyle(action)
+function ElementUI:SelectStyle()
     local style = self:GetStyle();
     style:UnselectStyle();
     style:SelectNormalStyle();

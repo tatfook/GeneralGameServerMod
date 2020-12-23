@@ -345,7 +345,7 @@ end
 -- 鼠标事件处理函数
 function Window:handleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
-    local BeginTime = ParaGlobal.timeGetTime();
+    -- local BeginTime = ParaGlobal.timeGetTime();
     local eventType = event:GetType();
     local captureFuncName, bubbleFuncName = self:GetEventTypeFuncName(eventType);
 
@@ -359,6 +359,7 @@ function Window:handleMouseEvent(event)
     end
     -- 获取悬浮元素
     local hoverElement = self:Hover(event, true);
+    WindowDebug.If(eventType == "mousePressEvent", hoverElement:GetAttr(), {hoverElement:GetWindowPos()}, {hoverElement:GetWindowSize()});
 
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "Hover 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
 
@@ -394,8 +395,7 @@ function Window:handleMouseEvent(event)
         event:UpdateElement(hoverElement);
         self:SetFocus(hoverElement);
     end
-
-    WindowDebug.FormatIf(eventType == "mousePressEvent", "鼠标事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
+    -- WindowDebug.FormatIf(eventType == "mousePressEvent", "鼠标事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
 end
 
 function Window:handleMouseEnterLeaveEvent(event)

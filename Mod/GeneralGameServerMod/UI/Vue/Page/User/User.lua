@@ -63,11 +63,12 @@ local function GetProjectListPageFunc()
             ["x-per-page"] = pageSize,          -- 页大小
             ["x-order"] = "updatedAt-desc",     -- 按更新时间降序
         }, function(status, msg, data)
-            local total = tonumber(string.match(msg.header, "x-total:%s*(%d+)"));
             if (status ~= 200) then 
                 isFinish = true;
+                GlobalScope:Set("ProjectListLoadFinish", isFinish);
                 return echo("获取用户项目列表失败, userId " .. tostring(userId));
             end
+            local total = tonumber(string.match(msg.header or "", "x-total:%s*(%d+)"));
             local ProjectList = data;
             Log.Format("page = %s, pageSize = %s, count = %s, total = %s", page, pageSize, #ProjectList, total);
 
@@ -132,6 +133,7 @@ local function GetFavoriteProjectListPageFunc()
         }, function(status, msg, data)
             if (status ~= 200) then 
                 isFinish = true;
+                GlobalScope:Set("ProjectListLoadFinish", isFinish);
                 return echo("获取用户项目列表失败, userId " .. tostring(userId));
             end
             local ProjectList = data.rows;
@@ -387,12 +389,12 @@ _G.UpdatePlayerEntityInfo = function()
     end);
 end 
 
-_G.SetScrollElement = function(el)
-    local verticalScrollBar = el and el:GetVerticalScrollBar();
-    if (not verticalScrollBar) then return end
-    verticalScrollBar:SetStyleValue("background-color", "#ffffff00");
-    verticalScrollBar:GetThumb():SetStyleValue("background", "Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 5 2 5");
-    verticalScrollBar:GetThumb():SetStyleValue("min-height", 10);
-end
+-- _G.SetScrollElement = function(el)
+--     local verticalScrollBar = el and el:GetVerticalScrollBar();
+--     if (not verticalScrollBar) then return end
+--     verticalScrollBar:SetStyleValue("background-color", "#ffffff00");
+--     verticalScrollBar:GetThumb():SetStyleValue("background", "Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 5 2 5");
+--     verticalScrollBar:GetThumb():SetStyleValue("min-height", 10);
+-- end
 
 LoadUserInfo();

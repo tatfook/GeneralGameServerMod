@@ -1,5 +1,5 @@
 <template>
-    <div ref="list" style="width: 598px; height: 580px; padding-left: 3px; padding-top: 8px; overflow-y: auto; ">
+    <div class="scroll" style="width: 598px; height: 580px; padding-left: 3px; padding-top: 8px; overflow-y: auto; ">
         <div v-for="goods in goodslist" class="goods">
             <div v-bind:style="GoodsStyle(goods)"></div>
             <div class="center" style="height: 30px; color: #000000;">{{goods.copies}}</div>
@@ -20,7 +20,6 @@ function GoodsStyle(goods)
 end
 
 function OnReady()
-    SetScrollElement(GetRef("list"));
 end
 </script>
 
@@ -44,7 +43,6 @@ end
 RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
 
 function OnReady()
-    SetScrollElement(GetRef("list"));
 end
 </script>
 

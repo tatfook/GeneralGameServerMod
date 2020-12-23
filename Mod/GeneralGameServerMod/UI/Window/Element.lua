@@ -38,6 +38,7 @@ Element:Property("Selector");                             -- 选择器集
 Element:Property("Rect");                                 -- 元素几何区域矩形
 Element:Property("Name", "Element");                      -- 元素名
 Element:Property("TagName", "");                          -- 标签名
+Element:Property("ScrollBarStyle");                       -- 滚动条样式
 
 
 -- 构造函数
@@ -50,6 +51,7 @@ function Element:ctor()
     self:SetSelector({});
     self:SetStyle(Style:new());
     self:SetAttrStyle({});
+    self:SetScrollBarStyle({["scrollbar"] = {}, ["scrollbar-thumb"] = {}});
 end
 
 -- 转化为普通对象
@@ -352,20 +354,14 @@ function Element:Attach()
     for _, child in ipairs(self.childrens) do
         child:Attach();
     end
+    -- 滚动条
+    if (self.horizontalScrollBar) then self.horizontalScrollBar:Attach() end
+    if (self.verticalScrollBar) then self.verticalScrollBar:Attach() end
+
     self:OnAttach();
     self:OnAfterChildAttach();
 end
 
--- 元素脱离文档树
-function Element:Detach()
-    self:OnBeforeChildDetach();
-	-- for child in self:ChildElementIterator() do
-    for _, child in ipairs(self.childrens) do
-        child:Detach();
-    end
-    self:OnDetach();
-    self:OnAfterChildDetach();
-end
 
 function Element:OnBeforeChildAttach()
     self:ApplyElementStyle();
@@ -377,6 +373,20 @@ function Element:OnAttach()
 end
 
 function Element:OnAfterChildAttach()
+end
+
+-- 元素脱离文档树
+function Element:Detach()
+    self:OnBeforeChildDetach();
+    for _, child in ipairs(self.childrens) do
+        child:Detach();
+    end
+    -- 滚动条
+    if (self.horizontalScrollBar) then self.horizontalScrollBar:Detach() end
+    if (self.verticalScrollBar) then self.verticalScrollBar:Detach() end
+
+    self:OnDetach();
+    self:OnAfterChildDetach();
 end
 
 function Element:OnBeforeChildDetach()
@@ -415,8 +425,18 @@ function Element:ApplyElementStyle()
     -- 内联样式
     style:AddNormalStyle(self:GetAttrStyle());
 
-    -- 选择默认样式
-    style:SelectNormalStyle();
+    -- 选择合适样式
+    self:SelectStyle();
+    
+    -- 构建滚动条
+    local ScrollBar = self:GetWindow():GetElementManager().ScrollBar;
+    if (style["overflow-x"] == "auto" or style["overflow-x"] == "scroll") then
+        self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self);
+    end
+
+    if (style["overflow-y"] == "auto" or style["overflow-y"] == "scroll") then
+        self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self);
+    end
 
     -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle(), self:GetAttr(), self:GetAttrValue("style"));
 
@@ -447,9 +467,10 @@ function Element:UpdateLayout(bApplyElementStyle)
     
     -- ElementDebug.If(self:GetAttrValue("id") == "debug", "Update Layout");
     -- 生成元素样式
-    if (bApplyElementStyle) then
-        self:ApplyElementStyle();
-    end
+    if (bApplyElementStyle) then self:ApplyElementStyle() end
+
+    -- 选择合适样式
+    self:SelectStyle();
 
     -- 布局更新前回调
     if (self:OnBeforeUpdateLayout()) then 
@@ -457,9 +478,6 @@ function Element:UpdateLayout(bApplyElementStyle)
         return; 
     end
 
-    -- 选择合适样式
-    self:SelectStyle();
-    
     -- 准备布局
     local layout = self:GetLayout();
     layout:PrepareLayout();
@@ -507,8 +525,7 @@ end
 -- 真实内容大小更改
 function Element:OnRealContentSizeChange()
     if (not self:GetWindow()) then return end
-    local ElementManager = self:GetWindow():GetElementManager();
-    local layout, ScrollBar = self:GetLayout(), ElementManager.ScrollBar;
+    local layout = self:GetLayout();
     local width, height = layout:GetWidthHeight();
     local contentWidth, contentHeight = layout:GetContentWidthHeight();
     local realContentWidth, realContentHeight = layout:GetRealContentWidthHeight();
@@ -520,14 +537,10 @@ function Element:OnRealContentSizeChange()
     --     width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
     -- local style = self:GetStyle();
     
-    if (isOverflowX) then self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self) end
-
     if (self.horizontalScrollBar) then
         self.horizontalScrollBar:SetVisible(isOverflowX and realContentWidth > contentWidth);
         self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
     end
-
-    if (isOverflowY) then self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self) end
 
     if (self.verticalScrollBar) then
         self.verticalScrollBar:SetVisible(isOverflowY and realContentHeight > contentHeight);
