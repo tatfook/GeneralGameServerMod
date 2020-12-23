@@ -69,7 +69,7 @@ local function GetProjectListPageFunc()
                 return echo("获取用户项目列表失败, userId " .. tostring(userId));
             end
             local ProjectList = data;
-            -- Log.Format("page = %s, count = %s", page, #ProjectList);
+            -- Log.Format("page = %s, pageSize = %s, count = %s", page, pageSize, #ProjectList);
 
             -- echo(data, true);
             local projectIds, projects = {}, {};

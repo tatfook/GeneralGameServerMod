@@ -1,10 +1,10 @@
 <template style="height: 100%;">
-    <div ref="workslist" onscroll=OnScroll style="width: 598px; height: 100%; overflow-y: auto;">
+    <div id="hover" ref="workslist" onscroll=OnScroll style="width: 598px; height: 100%; overflow-y: auto;">
         <div v-if="#Projects == 0 and ProjectListLoadFinish" class="center" style="width: 100%; height: 100%;">
             <div v-bind:style="NullProjectStyle()"></div>
         </div>
         <Loading v-if="#Projects == 0 and not ProjectListLoadFinish"></Loading>
-        <div v-for="project in Projects" class="project btn" v-bind:style="GetProjectStyle(project)" onclick=ClickProject(project)>
+        <div v-for="project in Projects" class="project btn" v-bind:id="index" v-bind:style="GetProjectStyle(project)" onclick=ClickProject(project)>
             <div v-bind:style="GetImageStyle(project.extra)">
                 <Username v-bind:UserInfo="project.user" style="height: 30px; width: 264px; position: absolute; top: 104px;"></Username>
             </div>

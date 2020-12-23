@@ -21,11 +21,12 @@ ElementUI:Property("Visible", true);                        -- 可见性
 ElementUI:Property("Render", false, "IsRender");            -- 是否渲染
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
-local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable();
+local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable(); 
 local ElementFocusDebug = GGS.Debug.GetModuleDebug("ElementFocusDebug").Disable();
 
 function ElementUI:ctor()
-    self.winX, self.winY = 0, 0;                         -- 窗口内坐标
+    self.winX, self.winY = 0, 0;                         -- 窗口坐标
+    self.winWidth, self.winHeight = 0, 0;                -- 窗口大小
     self.AbsoluteElements, self.FixedElements = {}, {};
     self.RenderCacheList = {}
 end
@@ -346,6 +347,16 @@ function ElementUI:GetWindowPos()
     return self.winX, self.winY;
 end
 
+-- 设置元素相对窗口的大小
+function ElementUI:SetWindowSize(w, h)
+    self.winWidth, self.winHeight = w, h;
+end
+
+-- 获取元素相对窗口的大小
+function ElementUI:GetWindowSize()
+    return self.winWidth, self.winHeight;
+end
+
 -- 获取元素相对窗口坐标
 function ElementUI:GetRelWindowPos()
     local windowWindowX, windowWindowY = self:GetWindow():GetWindowPos();
@@ -367,8 +378,8 @@ end
 -- 更新元素窗口的坐标
 function ElementUI:UpdateWindowPos(forceUpdate)
     local parentElement = self:GetParentElement();
-	local windowX, windowY = 0, 0;
-    local x, y = self:GetPosition();
+	local windowX, windowY, windowWidth, windowHeight = 0, 0, 0, 0;
+    local x, y, w, h = self:GetGeometry();
     local oldWindowX, oldWindowY = self:GetWindowPos();
     if (parentElement) then 
         windowX, windowY = parentElement:GetWindowPos();
@@ -376,14 +387,27 @@ function ElementUI:UpdateWindowPos(forceUpdate)
         -- ElementUIDebug.FormatIf(parentElement:GetAttrStringValue("id") == "debug", "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
         if (self:GetLayout():IsPositionElement()) then
         else
-            windowX, windowY = windowX - scrollX, windowY - scrollY;
+            x, y = x - scrollX, y - scrollY;
         end
         -- ElementUIDebug.FormatIf((scrollX > 0 or scrollY > 0), "windowX = %s, windowY = %s, scrollX = %s, scrollY = %s", windowX, windowY, scrollX, scrollY);
     end
     -- ElementUIDebug.FormatIf(self:GetTagName() == "ScaleSlider", "windowX = %s, windowY = %s, parentElement = %s", windowX, windowY, parentElement == nil);
-    windowX, windowY = windowX + x, windowY + y;
-    -- ElementUIDebug.FormatIf(self:GetTagName() == "ScaleSlider", "windowX = %s, windowY = %s", windowX, windowY);
+    if (x >= 0) then
+        windowX, windowWidth = windowX + x, w;
+    elseif (x + w >= 0) then
+        windowWidth = x + w;
+    else 
+        windowX, windowWidth = 0, 0;
+    end
+    if (y >= 0) then
+        windowY, windowHeight = windowY + y, h;
+    elseif (y + h >= 0) then
+        windowHeight = y + h;
+    else 
+        windowY, windowHeight = 0, 0;
+    end
     self:SetWindowPos(windowX, windowY);
+    self:SetWindowSize(windowWidth, windowHeight);
     -- 更新子元素的窗口位置
     if (forceUpdate or oldWindowX ~= windowX or oldWindowY ~= windowY) then 
         for child in self:ChildElementIterator() do
@@ -402,7 +426,7 @@ end
 -- 指定点是否在元素视区内
 function ElementUI:IsContainPoint(screenX, screenY)
     local left, top = self:GetScreenPos();
-    local width, height = self:GetSize();
+    local width, height = self:GetWindowSize();
     local right, bottom = left + width, top + height;
     return left <= screenX and screenX <= right and top <= screenY and screenY <= bottom;
 end
@@ -555,30 +579,37 @@ end
 -- 悬浮
 function ElementUI:Hover(event, isUpdateLayout)
     local isChangeHoverState = false;
+    local hoverElement, childHoverElement = nil, nil;
+
     if (self:IsContainPoint(event.x, event.y)) then
-        -- ElementUIDebug.If(self:GetAttrStringValue("class") == "asset-container" and not self:IsHover(), "---------------OnHover-----------");
+        hoverElement = self;
         if (not self:IsHover()) then
+            ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OnHover-----------");
             self:SetHover(true);
             isChangeHoverState = true
             self:OnHover();
         end
     else 
-        -- ElementUIDebug.If(self:GetAttrStringValue("class") == "asset-container" and self:IsHover(), "---------------OffHover-----------");
         if (self:IsHover()) then
+            ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OffHover-----------");
             self:SetHover(false);
             isChangeHoverState = true
             self:OffHover();
         end
     end
 
-    for child in self:ChildElementIterator() do
-        child:Hover(event, isUpdateLayout and not isChangeHoverState);  -- 若父布局更新, 则子布局无需更新
+    -- 事件序遍历 取第一悬浮元素
+    for child in self:ChildElementIterator(false) do
+        local childHoverEl = child:Hover(event, isUpdateLayout and not isChangeHoverState);  -- 若父布局更新, 则子布局无需更新 
+        childHoverElement = childHoverElement or childHoverEl;
     end
 
     -- 需要更新且发送状态改变
     if (isUpdateLayout and isChangeHoverState) then 
         self:UpdateLayout(true);
     end
+
+    return childHoverElement or hoverElement;
 end
 
 function ElementUI:OnFocusOut()
@@ -614,12 +645,12 @@ function ElementUI:SetFocus(element)
     if (focusElement == element) then return end
     if (focusElement) then
         focusElement:OnFocusOut();
-        self:UpdateLayout(true);
+        -- self:UpdateLayout(true);  -- 太过耗时
     end
     window:SetFocusElement(element);
     if (element) then
         element:OnFocusIn();
-        self:UpdateLayout(true);
+        -- self:UpdateLayout(true);
         ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
     end
 end
@@ -649,4 +680,21 @@ function ElementUI:OnKeyUp(event)
 end
 
 function ElementUI:OnKey(event)
+end
+
+function ElementUI:OnMouseDownCapture()
+end
+function ElementUI:OnMouseUpCapture()
+end
+function ElementUI:OnMouseMoveCapture()
+end
+function ElementUI:OnMouseWheelCapture()
+end
+function ElementUI:OnMouseEnterCapture()
+end
+function ElementUI:OnMouseLeaveCapture()
+end
+function ElementUI:OnMouseCapture()
+end
+function ElementUI:OnMouse()
 end
