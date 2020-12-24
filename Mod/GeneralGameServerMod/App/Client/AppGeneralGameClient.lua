@@ -78,7 +78,7 @@ end
 
 -- 加载世界
 function AppGeneralGameClient:LoadWorld(opts)
-    opts.worldName = opts.worldName or string.format("school_%s",self.userinfo.schoolId);
+    -- opts.worldName = opts.worldName or string.format("school_%s",self.userinfo.schoolId);
     
     AppGeneralGameClient._super.LoadWorld(self, opts);
 
