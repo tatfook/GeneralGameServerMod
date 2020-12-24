@@ -28,6 +28,7 @@ TutorialContext:Property("CanJump", false, "IsCanJump");
 TutorialContext:Property("CanClickScene", true, "IsCanClickScene");
 
 
+local event_type = nil;
 local shift_pressed, ctrl_pressed, alt_pressed = nil;
 
 local function GetMouseKeyState(event)
@@ -79,7 +80,7 @@ end
 
 -- 创建方块
 function TutorialContext:OnCreateSingleBlock(blockX, blockY, blockZ, blockId, result)
-	local data = {blockX = blockX or 0, blockY = blockY or 0, blockZ = blockZ or 0, blockId = blockId or 0, mouseKeyState = 2, mouseButton = "right", shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
+	local data = {event_type = event_type, blockX = blockX or 0, blockY = blockY or 0, blockZ = blockZ or 0, blockId = blockId or 0, mouseKeyState = 2, mouseButton = "right", shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
 	if(self:GetTutorialSandbox():IsCanClick(data)) then return TutorialContext._super.OnCreateSingleBlock(self, blockX, blockY, blockZ, blockId, result) end
 end
 
@@ -88,8 +89,10 @@ function TutorialContext:handleMouseEvent(event)
 	-- 更新事件值
 	event:updateModifiers();
 
+	event_type = event:GetType();
+
 	-- 忽略移动鼠标事件
-	if (event:GetType() == "mouseMoveEvent" and event:buttons() == 0) then return TutorialContext._super.handleMouseEvent(self, event) end
+	if (event_type == "mouseMoveEvent" and event:buttons() == 0) then return TutorialContext._super.handleMouseEvent(self, event) end
 
 	-- 是否可点击
 	if (not self:IsCanClickScene()) then return end
@@ -115,7 +118,7 @@ function TutorialContext:handleMouseEvent(event)
 	else
 		-- 左击 或者 功能键按下
 		local handBlockId = self:GetTutorialSandbox():GetBlockInRightHand();
-		local data = {blockX = result.blockX or 0, blockY = result.blockY or 0, blockZ = result.blockZ or 0, blockId = result.block_id or 0, handBlockId = handBlockId or 0, mouseKeyState = GetMouseKeyState(event), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
+		local data = {event_type = event_type, blockX = result.blockX or 0, blockY = result.blockY or 0, blockZ = result.blockZ or 0, blockId = result.block_id or 0, handBlockId = handBlockId or 0, mouseKeyState = GetMouseKeyState(event), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
 		if(not self:GetTutorialSandbox():IsCanClick(data)) then 
 			return event:accept();
 		end

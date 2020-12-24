@@ -131,6 +131,7 @@ TutorialSandbox:SetCanJump(false);   -- 禁止跳跃
 
 -- 添加鼠标点击策略
 local strategy = TutorialSandbox:AddClickStrategy({
+    eventType = nil,      -- 鼠标事件类型匹配 nil 匹配任意事件  mousePressEvent 鼠标按下, mouseMoveEvent 鼠标移动 mouseReleaseEvent 鼠标抬起 匹配相应事件
     mouseKeyState = 3,    -- 1 鼠标左键按下 2 鼠标右键按下 3 鼠标左键或右键按下
     shiftKeyState = 0,    -- 0 shift 键必须没有按下   1 shift 键必须按下   2 shift 键可以按下也可以不按下
     ctrlKeyState = 0,     -- 0 ctrl 键必须没有按下   1 ctrl 键必须按下   2 ctrl 键可以按下也可以不按下

@@ -35,8 +35,19 @@ function BlockStrategy:Init(strategy)
     self.altKeyState = strategy.altKeyState or 0;
     self.mouseKeyState = strategy.mouseKeyState or 3;
     self.handBlockId = strategy.handBlockId;
-
+    self.eventType = strategy.eventType;
     return self;
+end
+
+function BlockStrategy:IsMatchEventType(blockData)
+    if (not self.eventType) then return true end
+    if (self.eventType == blockData.event_type) then return true end
+    if (type(self.eventType) == "table") then
+        for _, event_type in ipairs(self.eventType) do
+            if (self.eventType == event_type) then return true end
+        end
+    end
+    return false;
 end
 
 function BlockStrategy:IsMatchKeyPressed(blockData)
@@ -104,7 +115,7 @@ end
 
 function BlockStrategy:IsMatch(blockData)
     -- 先检测功能key是否匹配
-    if (not self:IsMatchKeyPressed(blockData) or not self:IsMatchHandBlockId(blockData)) then return false end
+    if (not self:IsMatchEventType(blockData) or not self:IsMatchKeyPressed(blockData) or not self:IsMatchHandBlockId(blockData)) then return false end
 
     if (self.type == "BlockId") then 
         return self:IsMatchBlockIdType(blockData);
