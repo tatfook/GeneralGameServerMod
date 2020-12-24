@@ -1,17 +1,19 @@
-<template style="height: 242px; width: 500px; background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);">
-    <div style="height: 43px;">
-        <div v-on:click="close" style="float: right; background:url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22); width:22px; height:22px; margin-right: 20px; margin-top: 10px;"></div>
-    </div>
-    <div style="padding-left: 50px; margin-top: 30px;">
-        <div>选择地区:</div>
-        <div style="margin-top: 10px">
-            <select id="state" class="select" v-bind:options="stateOptions" v-bind:value="state and state.name" placeholder="省" onselect=selectState></select>
-            <select id="city" class="select" v-bind:options="cityOptions" v-bind:value="city and city.name" placeholder="市" onselect=selectCity></select>
-            <select id="county" class="select" v-bind:options="countyOptions" v-bind:value="county and county.name" placeholder="区" onselect=selectCounty></select>
+<template style="width: 100%; height: 100%;" class="center">
+    <div style="height: 242px; width: 500px; background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);">
+        <div style="height: 43px;">
+            <div v-on:click="close" style="float: right; background:url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22); width:22px; height:22px; margin-right: 20px; margin-top: 10px;"></div>
         </div>
-    </div>
-    <div id="btn" style="margin-top: 30px; padding-left: 150px;">
-        <div onmousedown=clickConfirm style="display: inline-block; text-align: center; line-height: 58px; width:178px; height:58px; font-size: 24px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">确定</div>
+        <div style="padding-left: 50px; margin-top: 30px;">
+            <div>选择地区:</div>
+            <div style="margin-top: 10px">
+                <select id="state" class="select" v-bind:options="stateOptions" v-bind:value="state and state.name" placeholder="省" onselect=selectState></select>
+                <select id="city" class="select" v-bind:options="cityOptions" v-bind:value="city and city.name" placeholder="市" onselect=selectCity></select>
+                <select id="county" class="select" v-bind:options="countyOptions" v-bind:value="county and county.name" placeholder="区" onselect=selectCounty></select>
+            </div>
+        </div>
+        <div id="btn" style="margin-top: 30px; padding-left: 150px;">
+            <div onmousedown=clickConfirm style="display: inline-block; text-align: center; line-height: 58px; width:178px; height:58px; font-size: 24px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">确定</div>
+        </div>
     </div>
 </template>
 
