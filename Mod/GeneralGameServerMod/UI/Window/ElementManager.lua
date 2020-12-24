@@ -29,6 +29,7 @@ local Input = NPL.load("./Elements/Input.lua", IsDevEnv);
 local TextArea = NPL.load("./Elements/TextArea.lua", IsDevEnv);
 local Canvas = NPL.load("./Elements/Canvas.lua", IsDevEnv);
 local Loading = NPL.load("./Elements/Loading.lua", IsDevEnv);
+local QRCode = NPL.load("./Elements/QRCode.lua", IsDevEnv);
 
 local Component = NPL.load("../Vue/Component.lua", IsDevEnv);
 local Slot = NPL.load("../Vue/Slot.lua", IsDevEnv);
@@ -64,6 +65,7 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("TextArea", TextArea);
     ElementManager:RegisterByTagName("Canvas", Canvas);
     ElementManager:RegisterByTagName("Loading", Loading);
+    ElementManager:RegisterByTagName("QRCode", QRCode);
 
     ElementManager:RegisterByTagName("Component", Component);
     ElementManager:RegisterByTagName("Slot", Slot);
