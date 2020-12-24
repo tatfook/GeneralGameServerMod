@@ -86,7 +86,8 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 	/ggs setSyncForceBlock 19200 5 19200 on   强制同步位置19200 5 19200的方块信息
 	/ggs setSyncForceBlock 19200 5 19200 off  取消强制同步位置19200 5 19200的方块信息
 offlineuser 显示隐藏离线用户
-	/ggs offlineuser visible|hidden
+	/ggs offlineuser visible    显示离线用户
+	/ggs offlineuser hidden     隐藏离线用户
 debug 调试命令 
 	/ggs debug [action]
 	/ggs debug debug module 开启或关闭指定客户端模块日志
