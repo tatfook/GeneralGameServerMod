@@ -95,3 +95,20 @@ function PlayerManager:ClearPlayers()
     end
     self.players = {};
 end
+
+
+-- 隐藏离线用户
+function PlayerManager:HideOfflinePlayers()
+    for _, player in pairs(self.players) do 
+        if (not player:IsOnline()) then
+            player:SetVisible(false);
+        end
+    end
+end
+
+-- 显示离线用户
+function PlayerManager:ShowOfflinePlayers()
+    for _, player in pairs(self.players) do 
+        player:SetVisible(true);
+    end
+end

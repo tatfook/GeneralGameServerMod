@@ -246,8 +246,8 @@
   <DataHandler filename="Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua"></DataHandler>
   <World 
     areaSize=0
-    minClientCount=0 
-    maxClientCount=5>
+    minClientCount=5 
+    maxClientCount=10>
   </World>
   <Player
     sendPacketFrequency=0ms

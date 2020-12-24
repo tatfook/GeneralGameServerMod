@@ -85,6 +85,8 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 	/ggs setSyncForceBlock x y z on|off
 	/ggs setSyncForceBlock 19200 5 19200 on   强制同步位置19200 5 19200的方块信息
 	/ggs setSyncForceBlock 19200 5 19200 off  取消强制同步位置19200 5 19200的方块信息
+offlineuser 显示隐藏离线用户
+	/ggs offlineuser visible|hidden
 debug 调试命令 
 	/ggs debug [action]
 	/ggs debug debug module 开启或关闭指定客户端模块日志
@@ -121,11 +123,23 @@ debug 调试命令
 				__this__:handleDebugCommand(cmd_text);
 			elseif (cmd == "cmd") then
 				__this__:handleCmdCommand(cmd_text);
+			elseif (cmd == "offlineuser") then
+				__this__:handleOfflineUserCommand(cmd_text);
 			end
 		end
 	}
 
 	Commands["ggs"] = ggs;
+end
+
+function GeneralGameCommand:handleOfflineUserCommand(cmd_text)
+	local action, cmd_text = CmdParser.ParseString(cmd_text);
+	local playerManager = self:GetGeneralGameClient():GetWorld():GetPlayerManager();
+	if (action == "visible") then
+		playerManager:ShowOfflinePlayers();
+	elseif (action == "hidden") then
+		playerManager:HideOfflinePlayers();
+	end
 end
 
 -- 断开链接
