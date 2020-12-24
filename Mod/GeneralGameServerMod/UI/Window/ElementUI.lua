@@ -320,7 +320,6 @@ function ElementUI:SetPosition(x, y)
     local oldx, oldy = self:GetPosition();
     self:GetRect():setPosition(x, y);
     if (oldx ~= x or oldy ~= y) then 
-        self:UpdateWindowPos();
         self:OnSize();
     end
 end
@@ -515,7 +514,7 @@ function ElementUI:OnMouseDown(event)
 
     -- 默认拖拽处理
     if(event:isAccepted()) then return end
-    if(self:IsDraggable() and event:button()=="left") then
+    if(self:IsDraggable() and event:button() =="left") then
         self.isMouseDown = true;
         self.isDragging = false;
         self.startDragX, self.startDragY = ParaUI.GetMousePosition();
@@ -539,16 +538,11 @@ function ElementUI:OnMouseMove(event)
 			end
         elseif(self.isDragging) then
             local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
-            self:SetPosition(self.startDragElementX + offsetX, self.startDragElementY + offsetY);
             if (self:IsWindow()) then
-                local left, top = self:GetPosition();
-                local width, height = self:GetSize();
-                local right, bottom = left + width, top + height;
-                local x, y, w, h = self:GetScreenPosition();
-                if (left < 0 or top < 0 or right > w or bottom > h) then
-                    self:SetPosition(self.startDragElementX, self.startDragElementY);
-                    self:GetWindow():GetNativeWindow():Reposition("_lt", self.startDragScreenX + offsetX, self.startDragScreenY + offsetY, w, h);
-                end
+                local _, _, screenWidth, screenHeight = self:GetScreenPosition();
+                self:GetWindow():GetNativeWindow():Reposition("_lt", self.startDragScreenX + offsetX, self.startDragScreenY + offsetY, screenWidth, screenHeight);
+            else 
+                self:SetPosition(self.startDragElementX + offsetX, self.startDragElementY + offsetY);
             end
 		end
 		if(self.isDragging) then
@@ -571,6 +565,10 @@ function ElementUI:OnMouseUp(event)
     
 	if(self.isDragging) then
         self.isDragging = false;
+        local left, top = self:GetPosition();
+        self:SetStyleValue("left", left);
+        self:SetStyleValue("top", top);
+        self:UpdateWindowPos(true);
 		self:ReleaseMouseCapture();
 		event:accept();
 	end

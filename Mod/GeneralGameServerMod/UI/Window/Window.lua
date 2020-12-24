@@ -130,7 +130,6 @@ function Window.Show(self, params)
         self = Window:new();
     end
     params = params or {};
-    params.width, params.height = params.width or 600, params.height or 500;
     self:SetParams(params);
     if (not self:GetNativeWindow()) then
         self:SetNativeWindow(self:CreateNativeWindow());
@@ -160,7 +159,8 @@ end
 function Window:InitWindowPosition()
     local params = self:GetParams();
     local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
-    local windoX, windowY, windowWidth, windowHeight = 0, 0, params.width or 600, params.height or 500;
+    print(screenX, screenY, screenWidth, screenHeight, params.width, params.height);
+    local windoX, windowY, windowWidth, windowHeight = 0, 0, params.width or screenWidth, params.height or screenHeight;
     local offsetX, offsetY = params.x or 0, params.y or 0;
     if (type(windowWidth) == "string" and string.match(windowWidth, "^%d+%%$")) then windowWidth = math.floor(screenWidth * tonumber(string.match(windowWidth, "%d+")) / 100) end
     if (type(windowHeight) == "string" and string.match(windowHeight, "^%d+%%$")) then windowHeight = math.floor(screenHeight * tonumber(string.match(windowHeight, "%d+")) / 100) end
@@ -290,6 +290,7 @@ end
 
 -- 屏幕窗口大小改变
 function Window:OnScreenSizeChanged()
+    WindowDebug("================OnScreenSizeChanged===============");
     self:InitWindowPosition();
     self:GetWindow():GetNativeWindow():Reposition("_lt", self.screenX, self.screenY, self.screenWidth, self.screenHeight);
     self:UpdateLayout();

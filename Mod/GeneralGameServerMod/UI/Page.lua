@@ -24,9 +24,7 @@ function Page.Show(G, params, isNew)
         if (page:GetNativeWindow()) then return page end
     end
 
-    params.draggable = false;
     params.G = G;
-    
     page:Show(params);
 
     return page;

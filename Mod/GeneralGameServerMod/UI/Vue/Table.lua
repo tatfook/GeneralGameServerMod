@@ -44,7 +44,7 @@ function Table.remove(table_, pos)
     return TableRemove(table_, pos);
 end
 
-function Table.sort(table_)
+function Table.sort(table_, comp)
     table_ = GetRealTable(table_, false);   -- 获取真实表
-    return TableSort(table_);
+    return TableSort(table_, comp);
 end

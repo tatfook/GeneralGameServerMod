@@ -183,6 +183,7 @@ function Component:InitByXmlNode(elementXmlNode, componentXmlNode)
     commonlib.mincopy(elementAttr, componentAttr);
     elementAttr.style = (componentAttr.style or "") .. ";" .. (elementAttr.style or "");
     elementAttr.class = (componentAttr.class or "") .. (elementAttr.class or "");
+    elementAttr.draggable = if_else(elementAttr.draggable == nil, componentAttr.draggable, elementAttr.draggable);
     elementXmlNode.attr = elementAttr;
 
     if (componentAttr.ref) then self:SetRef(componentAttr.ref, self) end

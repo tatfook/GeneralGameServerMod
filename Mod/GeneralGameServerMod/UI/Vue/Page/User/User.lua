@@ -328,6 +328,10 @@ _G.GetAllAssets = function()
         end
     end
 
+    table.sort(assets, function(asset1, asset2) 
+        return not asset1.owned and asset2.owned;
+    end);
+    
     -- echo(assets, true);
     return assets;
 end
