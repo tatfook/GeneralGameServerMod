@@ -296,6 +296,33 @@ _G.GetUserAssets = function()
     return assets;
 end
 
+-- PlayerAssetList = {
+--     {
+--         id = 1,
+--         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+--         modelUrl = "character/CC/02human/paperman/boy01.x",
+--         owned = true,
+--     },
+--     {
+--         id = 2,
+--         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+--         modelUrl = "character/CC/02human/paperman/boy02.x",
+--         owned = false,
+--     },
+--     {
+--         id = 3,
+--         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+--         modelUrl = "character/CC/02human/paperman/boy03.x",
+--         owned = true,
+--     },
+--     {
+--         id = 4,
+--         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+--         modelUrl = "character/CC/02human/paperman/boy04.x",
+--         owned = true,
+--     },
+-- }; 
+
 _G.GetAllAssets = function()
     local bagId, bagNo = 0, 1007;
     local assets = {}; 
@@ -328,8 +355,10 @@ _G.GetAllAssets = function()
         end
     end
 
+    -- assets = PlayerAssetList;
+
     table.sort(assets, function(asset1, asset2) 
-        return not asset1.owned and asset2.owned;
+        return not asset2.owned and asset1.owned;
     end);
     
     -- echo(assets, true);

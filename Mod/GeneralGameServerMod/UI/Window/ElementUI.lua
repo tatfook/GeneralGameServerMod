@@ -377,58 +377,92 @@ function ElementUI:GlobalToContentGeometryPos()
 end
 
 -- 更新元素窗口的坐标
-function ElementUI:UpdateWindowPos(forceUpdate, offsetX, offsetY, scrollX, scrollY)
-    local posinfo = self.posinfo;
-    offsetX, offsetY = offsetX or posinfo.offsetX or 0, offsetY or posinfo.offsetY or 0;   -- 影响定位元素
-    scrollX, scrollY = scrollX or posinfo.scrollX or 0, scrollY or posinfo.scrollY or 0;   -- 不影响定位元素
-    posinfo.offsetX, posinfo.offsetY, posinfo.scrollX, posinfo.scrollY = offsetX, offsetY, scrollX, scrollY;
+function ElementUI:UpdateWindowPos(forceUpdate)
+    local parentScrollX, parentScrollY, parentWindowX, parentWindowY = 0, 0, 0, 0;
 	local windowX, windowY, windowWidth, windowHeight = 0, 0, 0, 0;
     local x, y, w, h = self:GetGeometry();
     local oldWindowX, oldWindowY = self:GetWindowPos();
     local parentElement = self:GetParentElement();
-    if (parentElement) then windowX, windowY = parentElement:GetWindowPos() end
-    if(self:GetLayout():IsPositionElement()) then
-        x, y = x - offsetX, y - offsetY;
-    else
-        x, y = x - offsetX - scrollX, y - offsetY - scrollY;
+    local position = self:GetStyle()["position"];
+    if (parentElement and position ~= "fixed" and position ~= "screen") then 
+        parentWindowX, parentWindowY = parentElement:GetWindowPos();
+        parentScrollX, parentScrollY = parentElement:GetScrollPos();
     end
-    if (x >= 0) then
-        windowX, windowWidth = windowX + x, w;
-        offsetX = 0;
-    elseif (x + w >= 0) then
-        windowWidth = x + w;
-        offsetX = -x;
-    else 
-        offsetX = 0;
-        windowX, windowWidth = 0, 0;
+    windowX, windowY = parentWindowX + x, parentWindowY + y;
+    windowWidth, windowHeight = self:GetSize();
+    if(not self:GetLayout():IsPositionElement()) then
+        windowX, windowY = windowX - parentScrollX, windowY - parentScrollY;
     end
-    if (y >= 0) then
-        windowY, windowHeight = windowY + y, h;
-        offsetY = 0;
-    elseif (y + h >= 0) then
-        windowHeight = y + h;
-        offsetY = -y;
-    else 
-        offsetY = 0;
-        windowY, windowHeight = 0, 0;
-    end
+    
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "=================start===============");
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
     -- ElementUIDebug.FormatIf(parentElement and parentElement:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
     self:SetWindowPos(windowX, windowY);
     self:SetWindowSize(windowWidth, windowHeight);
     
-    -- 不可见直接返回
-    if (windowWidth == 0 or windowHeight == 0) then return end
     -- 更新子元素的窗口位置
-    scrollX, scrollY = self:GetScrollPos();
     if (forceUpdate or oldWindowX ~= windowX or oldWindowY ~= windowY) then 
         for child in self:ChildElementIterator() do
-            child:UpdateWindowPos(forceUpdate, offsetX, offsetY, scrollX, scrollY);
+            child:UpdateWindowPos(forceUpdate);
         end
     end
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "============End========= windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
 end
+
+-- -- 更新元素窗口的坐标
+-- function ElementUI:UpdateWindowPos(forceUpdate, offsetX, offsetY, scrollX, scrollY)
+--     local posinfo = self.posinfo;
+--     offsetX, offsetY = offsetX or posinfo.offsetX or 0, offsetY or posinfo.offsetY or 0;   -- 影响定位元素
+--     scrollX, scrollY = scrollX or posinfo.scrollX or 0, scrollY or posinfo.scrollY or 0;   -- 不影响定位元素
+--     posinfo.offsetX, posinfo.offsetY, posinfo.scrollX, posinfo.scrollY = offsetX, offsetY, scrollX, scrollY;
+-- 	local windowX, windowY, windowWidth, windowHeight = 0, 0, 0, 0;
+--     local x, y, w, h = self:GetGeometry();
+--     local oldWindowX, oldWindowY = self:GetWindowPos();
+--     local parentElement = self:GetParentElement();
+--     if (parentElement) then windowX, windowY = parentElement:GetWindowPos() end
+--     windowX, windowY = windowX - offsetX, windowY - offsetY;                                -- 
+--     if(self:GetLayout():IsPositionElement()) then
+--         x, y = x - offsetX, y - offsetY;
+--     else
+--         x, y = x - offsetX - scrollX, y - offsetY - scrollY;
+--     end
+--     if (x >= 0) then
+--         windowX, windowWidth = windowX + x, w;
+--         offsetX = 0;
+--     elseif (x + w >= 0) then
+--         windowWidth = x + w;
+--         offsetX = -x;
+--     else 
+--         offsetX = 0;
+--         windowX, windowWidth = 0, 0;
+--     end
+--     if (y >= 0) then
+--         windowY, windowHeight = windowY + y, h;
+--         offsetY = 0;
+--     elseif (y + h >= 0) then
+--         windowHeight = y + h;
+--         offsetY = -y;
+--     else 
+--         offsetY = 0;
+--         windowY, windowHeight = 0, 0;
+--     end
+--     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "=================start===============");
+--     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
+--     -- ElementUIDebug.FormatIf(parentElement and parentElement:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
+--     self:SetWindowPos(windowX, windowY);
+--     self:SetWindowSize(windowWidth, windowHeight);
+    
+--     -- 不可见直接返回
+--     if (windowWidth == 0 or windowHeight == 0) then return end
+--     -- 更新子元素的窗口位置
+--     scrollX, scrollY = self:GetScrollPos();
+--     if (forceUpdate or oldWindowX ~= windowX or oldWindowY ~= windowY) then 
+--         for child in self:ChildElementIterator() do
+--             child:UpdateWindowPos(forceUpdate, offsetX, offsetY, scrollX, scrollY);
+--         end
+--     end
+--     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "============End========= windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
+-- end
 
 -- 获取元素相对屏幕的坐标
 function ElementUI:GetScreenPos()
@@ -590,29 +624,52 @@ function ElementUI:OffHover()
 end
 
 -- 悬浮
-function ElementUI:Hover(event, isUpdateLayout, zindex)
+function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, isParentPositionElement, scrollElement)
     local isChangeHoverState = false;
     local hoverElement = nil;
-    local winWidth, winHeight = self:GetWindowSize();
     
+    isParentElementHover = isParentElementHover == nil and true or isParentElementHover;
     zindex = (zindex or "") .. "-" .. self:GetZIndex();
 
-    -- 元素不可见元素全部置offhover
-    if (winWidth == 0 or winHeight == 0) then 
-        self:ForEach(function(el)
-            if (el:IsHover()) then
-                el:SetHover(false);
-                isChangeHoverState = true;
-                el:OffHover();
-            end
-        end);
-        if (isUpdateLayout and isChangeHoverState) then 
-            self:UpdateLayout(true);
+    local function SetElementOffHover(element)
+        if (element:IsHover()) then
+            element:SetHover(false);
+            isChangeHoverState = true
+            element:OffHover();
         end
-        return nil, zindex;
+        for child in element:ChildElementIterator() do
+            SetElementOffHover(child);
+        end
     end
 
-    if (self:IsContainPoint(event.x, event.y)) then
+    local maxZIndex = zindex;
+    local parentElement = self:GetParentElement();
+    local isPositionElement = self:GetLayout():IsPositionElement();
+    local isContainPoint = self:IsContainPoint(event.x, event.y);
+    local isHover = isContainPoint and isParentElementHover;
+    if (isContainPoint) then
+        if (isParentElementHover) then
+            isHover = true;
+        elseif(isPositionElement) then
+            if (not scrollElement or scrollElement == self:GetParentElement()) then
+                isHover = true;
+            end
+        end
+    elseif (scrollElement) then
+        if (isPositionElement) then 
+            scrollElement = nil;
+        else 
+            SetElementOffHover(self);
+            if (isUpdateLayout and isChangeHoverState) then self:UpdateLayout(true) end
+            return nil, maxZIndex; 
+        end
+    end
+
+    -- 设置滚动元素
+    local scrollX, scrollY = self:GetScrollPos();
+    if (scrollX > 0 or scrollY > 0) then scrollElement = self end
+
+    if (isHover) then
         hoverElement = self;
         if (not self:IsHover()) then
             -- ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OnHover-----------");
@@ -630,9 +687,8 @@ function ElementUI:Hover(event, isUpdateLayout, zindex)
     end
 
     -- 事件序遍历 取第一悬浮元素
-    local maxZIndex = zindex;
     for child in self:ChildElementIterator(false) do
-        local childHoverElement, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex);  -- 若父布局更新, 则子布局无需更新 
+        local childHoverElement, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
         if (childHoverElement and maxZIndex < childZIndex) then
             hoverElement = childHoverElement;
             maxZIndex = childZIndex;

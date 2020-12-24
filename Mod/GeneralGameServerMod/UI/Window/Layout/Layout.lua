@@ -151,8 +151,7 @@ function Layout:ApplyPositionStyle()
 	if (float or not position or position == "static") then return end
 	-- 相对定位
 	if (position == "relative") then return end  -- self:OffsetPos(left or 0, top or 0)
-	-- 不使用文档流
-	self:SetUseSpace(false);
+	
 	-- 计算定位
 	local relLayout = self:GetParentLayout();
 	

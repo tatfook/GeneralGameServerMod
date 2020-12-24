@@ -146,8 +146,8 @@ local strategy = TutorialSandbox:AddClickStrategy({
     blockX=0, blockY=0, blockZ=0,
     blockPosList = {{blockX=1, blockY=1, blockZ=1}, {blockX=2, blockY=2, blockZ=2},  ...},
     -- 允许移除指定类型位置方块
-    type = "BlockPosId",
-    blockId = 60, blockX=0, blockY=0, blockZ=0,
+    type = "BlockPosId",    -- 是 BlockId 与 BlockPos 组合   
+    blockId = 60, blockX=0, blockY=0, blockZ=0,   -- blockIdList  blockPosList
     -- 允许移除指定类型范围方块
     type = "BlockIdRange",
     minBlockId = 1, maxBlockId=10,

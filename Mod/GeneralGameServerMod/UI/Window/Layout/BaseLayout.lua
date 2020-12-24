@@ -343,8 +343,12 @@ function BaseLayout:PrepareLayout()
 
 	if (position == "absolute" or position == "fixed" or position == "screen") then 
 		self:SetPositionElement(true);
+		-- 不使用文档流
+		self:SetUseSpace(false);
 		style["z-index"] = style["z-index"] or 1;  -- 定位元素默认为1
 	else
+		self:SetUseSpace(true);
+		self:SetPositionElement(false);
 		style["z-index"] = style["z-index"] or 0;  -- 普通元素默认为0
 	end
 
