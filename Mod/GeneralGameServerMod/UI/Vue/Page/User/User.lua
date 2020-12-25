@@ -353,8 +353,8 @@ _G.GetAllAssets = function()
                 id = tpl.id,
                 gsId = tpl.gsId,
                 modelUrl = tpl.modelUrl,
-                modelFrom = if_else(not tpl.modelFrom or tpl.modelFrom == "", nil, tpl.modelFrom),
-                modelOrder = tonumber(tpl.modelOrder or 0) or 0,
+                modelFrom = if_else(not extra.modelFrom or extra.modelFrom == "", nil, extra.modelFrom),
+                modelOrder = tonumber(extra.modelOrder or 0) or 0,
                 icon = GetItemIcon(tpl),
                 name = tpl.name,
                 owned = IsOwned(tpl.id),
@@ -363,7 +363,7 @@ _G.GetAllAssets = function()
     end
 
     -- assets = PlayerAssetList;
-    -- Log(assets, true);
+    Log(assets, true);
 
     table.sort(assets, function(asset1, asset2) 
         -- return (not asset2.owned and asset1.owned) or asset1.modelOrder < asset2.modelOrder;
