@@ -28,15 +28,8 @@ allAssets:add("character/CC/02human/paperman/girl03.x")
 allAssets:add("character/CC/02human/paperman/girl04.x")
 allAssets:add("character/CC/02human/paperman/girl05.x")
 allAssets:add("character/v3/Elf/Female/ElfFemale.xml")
-allAssets:add("character/CC/02human/paperman/Male_teacher.x")
-allAssets:add("character/CC/artwar/movie/school42.x")
-allAssets:add("character/CC/artwar/movie/boy_ground_service.x")
-allAssets:add("character/CC/artwar/movie/boy_worker_1.x")
-allAssets:add("character/CC/artwar/movie/girl_ground_service.x")
-allAssets:add("character/CC/artwar/movie/girl_staff_bank.x")
-allAssets:add("character/CC/artwar/movie/girl_host.x")
-allAssets:add("character/CC/02human/paperman/xiaolong.x")
 
+-- character/CC/02human/paperman/sd-boy.x
 function AssetsWhiteList.IsInWhiteList(filename)
     return allAssets:contains(filename)
 end

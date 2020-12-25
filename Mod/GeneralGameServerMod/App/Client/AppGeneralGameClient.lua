@@ -16,6 +16,8 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityOtherPlayer.lua");
+NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
+local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local Encoding = commonlib.gettable("System.Encoding");
 local AppGeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameWorld");
@@ -26,6 +28,7 @@ local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keep
 local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
 local AppClientDataHandler = NPL.load("Mod/GeneralGameServerMod/App/Client/AppClientDataHandler.lua");
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
+local Keepwork = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keepwork.lua");
 
 -- 构造函数
 function AppGeneralGameClient:ctor()
@@ -47,6 +50,9 @@ function AppGeneralGameClient:ctor()
         end
         return msg;
     end);
+
+    -- 已经登录直接执行回调
+    if (Keepwork:IsLogin()) then AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback() end
 end
 
 -- 初始化函数
@@ -143,6 +149,12 @@ end
 
 -- 用户登录回调
 function AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback()
+    -- 初始化模型白名单
+    local assets = Keepwork:GetAllAssets();
+    for _, asset in ipairs(assets) do
+        AssetsWhiteList.AddAsset(asset.modelUrl);
+    end
+
     local self = AppGeneralGameClient;
     local userinfo = KeepWorkItemManager.GetProfile();
     

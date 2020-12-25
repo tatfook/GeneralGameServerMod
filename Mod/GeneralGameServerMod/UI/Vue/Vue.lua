@@ -82,7 +82,7 @@ function Vue:ExtendG(G)
     end
 
     G.GetGlobalScope = function()
-        if (not G.GlobalScope) then
+        if (not rawget(G, "GlobalScope")) then
             G.GlobalScope = Scope:__new__();
             G.GlobalScope:__set_metatable_index__(G);
         end

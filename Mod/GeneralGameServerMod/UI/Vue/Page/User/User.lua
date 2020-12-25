@@ -350,18 +350,18 @@ _G.GetAllAssets = function()
                 modelUrl = tpl.modelUrl,
                 icon = GetItemIcon(tpl),
                 name = tpl.name,
-                owned = IsOwned(tpl.id),
+                owned = true or IsOwned(tpl.id),
             });
         end
     end
 
     -- assets = PlayerAssetList;
+    Log(assets, true);
 
     table.sort(assets, function(asset1, asset2) 
         return not asset2.owned and asset1.owned;
     end);
     
-    -- echo(assets, true);
     return assets;
 end
 

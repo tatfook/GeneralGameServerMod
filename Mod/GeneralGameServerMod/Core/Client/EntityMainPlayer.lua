@@ -95,7 +95,10 @@ function EntityMainPlayer:SendMotionUpdates()
     self.motionUpdateTickCount = self.motionUpdateTickCount + 1;  -- tick 自增
     -- 获取模型验证模型的有效性
     local curMainAsset = self.dataWatcher:GetField(self.dataMainAsset);
-    if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then self.dataWatcher:SetField(self.dataMainAsset, AssetsWhiteList.GetRandomFilename()) end
+    if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then 
+        GGS.INFO.Format("无效模型: %s", curMainAsset);
+        self.dataWatcher:SetField(self.dataMainAsset, AssetsWhiteList.GetRandomFilename());
+    end
 
     local lastMoved, lastXYZ, curAnimId = self.lastMoved, self.lastXYZ, self:GetAnimId();
     local maxMoveDelayFrameCount = 30;
