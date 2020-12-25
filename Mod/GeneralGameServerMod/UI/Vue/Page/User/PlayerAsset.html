@@ -64,7 +64,8 @@ end
 function AssetStyle(asset)
     local icon = asset.icon;
     if (not string.match(icon, "#%d+%s+%d+%s+%d+%s+%d+%s*")) then
-        icon = icon .. "#0 0 108 176";
+        <!-- icon = icon .. "#0 0 108 176"; -->
+        icon = icon .. "#0 0 125 195";
     end
     return string.format("width: 108px; height: 176px; background:url(%s)", icon);
 end
