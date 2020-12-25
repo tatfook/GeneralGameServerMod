@@ -1,6 +1,6 @@
 <template style="padding: 6px; width: 100%; height: 100%;">
     <div style="width: 100%; height: 100%; overflow-y: auto;" class="scroll">
-        <div v-for="asset, key in PlayerAssetList" v-bind:class="AssetContainerClass(asset)" onclick=ClickPlayerAsset(asset)>
+        <div v-for="asset, key in AllAssets" v-bind:class="AssetContainerClass(asset)" onclick=ClickPlayerAsset(asset)>
             <div v-if="asset.modelFrom" style="position: absolute; left: -1px; top: -4px; width: 157px; height: 41px; font-size: 10px; padding-left: 12px; padding-top: 12px; color: #171717; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zibj_157X41_32bits.png#0 0 157 41);">
                 {{asset.modelFrom or ""}}
             </div>
@@ -13,8 +13,6 @@
 
 <script type="text/lua">
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
-
-PlayerAssetList = GetAllAssets();
 
 local function ChangePlayerAsset(assetfile)
 	assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
@@ -41,13 +39,14 @@ local function ChangePlayerAsset(assetfile)
 end 
 
 function ClickPlayerAsset(asset)
-    if (not asset.owned) then 
+    local userinfo = GetGlobalScope():Get("UserDetail");
+    if (not asset.owned) then
+        if (userinfo.vip == 1) then return end 
         GameLogic.GetFilters():apply_filters("VipNotice", true, "", function()
             local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
             if (KeepWorkItemManager.IsVip()) then
-                local userinfo = GetGlobalScope():Get("UserDetail");
                 userinfo.vip = 1;
-                PlayerAssetList = GetAllAssets();
+                GetAllAssets();
             end
 		end);
         return 

@@ -239,17 +239,18 @@ function LoadUserInfo()
         -- 设置知识豆
         _, _, _, UserDetail.bean = KeepWorkItemManager.HasGSItem(998);
 
+         -- 设置模型
+         GlobalScope:Set("UserDetail", UserDetail);
+         GlobalScope:Set("UserId", UserDetail.id);
+ 
         -- echo(data)
         if (System.User.keepworkUsername == UserDetail.username) then
             GlobalScope:Set("AuthUserId", UserDetail.id);
             GlobalScope:Set("isAuthUser", true);
+            GetAllAssets();
             -- echo("--------------------------------IsAuthUser------------------------------------");
         end
-
-        -- 设置模型
-        GlobalScope:Set("UserDetail", UserDetail);
-        GlobalScope:Set("UserId", UserDetail.id);
-
+       
         local ParacraftPlayerEntityInfo = UserDetail.extra and UserDetail.extra.ParacraftPlayerEntityInfo or {};
         if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
 
@@ -341,6 +342,9 @@ _G.GetAllAssets = function()
     local userAssets = _G.GetUserAssets();
     local userinfo = GlobalScope:Get("UserDetail");
     local isVip = userinfo.vip == 1;
+
+    -- Log(userinfo)
+
     local function IsOwned(item)
         local vip_enabled = (item.extra or {}).vip_enabled;
         if (isVip and vip_enabled) then return true end
@@ -375,6 +379,8 @@ _G.GetAllAssets = function()
         return asset1.modelOrder < asset2.modelOrder;
     end);
     
+    GlobalScope:Set("AllAssets", assets);
+
     return assets;
 end
 
