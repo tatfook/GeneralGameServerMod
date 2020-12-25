@@ -363,7 +363,7 @@ _G.GetAllAssets = function()
     end
 
     -- assets = PlayerAssetList;
-    Log(assets, true);
+    -- Log(assets, true);
 
     table.sort(assets, function(asset1, asset2) 
         -- return (not asset2.owned and asset1.owned) or asset1.modelOrder < asset2.modelOrder;
