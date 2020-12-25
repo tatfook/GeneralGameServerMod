@@ -313,6 +313,7 @@ end
 --         id = 3,
 --         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
 --         modelUrl = "character/CC/02human/paperman/boy03.x",
+--         modelFrom = "模型商城",
 --         owned = true,
 --     },
 --     {
@@ -356,7 +357,7 @@ _G.GetAllAssets = function()
     end
 
     -- assets = PlayerAssetList;
-    Log(assets, true);
+    -- Log(assets, true);
 
     table.sort(assets, function(asset1, asset2) 
         return not asset2.owned and asset1.owned;
