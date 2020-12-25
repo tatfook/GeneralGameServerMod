@@ -337,17 +337,22 @@ _G.GetAllAssets = function()
             break;
         end
     end
-
+    
     local userAssets = _G.GetUserAssets();
-    local function IsOwned(id)
+    local userinfo = GlobalScope:Get("UserDetail");
+    local isVip = userinfo.vip == 1;
+    local function IsOwned(item)
+        local vip_enabled = (item.extra or {}).vip_enabled;
+        if (isVip and vip_enabled) then return true end
         for _, asset in ipairs(userAssets) do
-            if (asset.id == id) then return true end
+            if (asset.id == item.id) then return true end
         end
         return false;
     end
 
     for _, tpl in ipairs(KeepWorkItemManager.globalstore) do
         local extra = tpl.extra or {};
+        -- echo(extra, true)
         if (tpl.bagId == bagId) then
             table.insert(assets, {
                 id = tpl.id,
@@ -357,7 +362,7 @@ _G.GetAllAssets = function()
                 modelOrder = tonumber(extra.modelOrder or 0) or 0,
                 icon = GetItemIcon(tpl),
                 name = tpl.name,
-                owned = IsOwned(tpl.id),
+                owned = IsOwned(tpl),
             });
         end
     end

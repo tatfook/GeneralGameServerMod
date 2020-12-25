@@ -41,7 +41,17 @@ local function ChangePlayerAsset(assetfile)
 end 
 
 function ClickPlayerAsset(asset)
-    if (not asset.owned) then return end
+    if (not asset.owned) then 
+        GameLogic.GetFilters():apply_filters("VipNotice", true, "", function()
+            local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
+            if (KeepWorkItemManager.IsVip()) then
+                local userinfo = GetGlobalScope():Get("UserDetail");
+                userinfo.vip = 1;
+                PlayerAssetList = GetAllAssets();
+            end
+		end);
+        return 
+    end
 
     ChangePlayerAsset(asset.modelUrl);
     UpdatePlayerEntityInfo();
