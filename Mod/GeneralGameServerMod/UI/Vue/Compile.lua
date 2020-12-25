@@ -111,8 +111,8 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     if (IsActivedDependItemUpdate) then return end
     -- 激活更新
     IsActivedDependItemUpdate = true;
-    ClearDependItemTimer:Change(20);
-    -- NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
+    -- ClearDependItemTimer:Change(20);
+    NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
 end)
 
 local function ExecCode(code, func, element, watch)

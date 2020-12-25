@@ -45,18 +45,6 @@ function Page.ShowUserInfoPage(G, params)
     return UserInfoPage;
 end
 
-local MessageBoxPage = Vue:new();
-function Page.ShowMessageBoxPage(G, params)
-    params = params or {};
-
-    params.url = "%vue%/Page/MessageBox.html";
-    params.draggable = false;
-    params.G = G;
-    MessageBoxPage:Show(params);
-
-    return MessageBoxPage;
-end
-
 local DebugInfoPage = Vue:new();
 function Page.ShowDebugInfoPage(G, params)
     params = params or {};
@@ -64,6 +52,8 @@ function Page.ShowDebugInfoPage(G, params)
     params.url = "%vue%/Page/Debug/DebugInfo.html";
     params.draggable = false;
     params.G = G;
+    params.width = params.width or 600;
+    params.height = params.height or 500;
     DebugInfoPage:Show(params);
 
     return DebugInfoPage;
@@ -82,6 +72,8 @@ function Page.ShowVueTestPage(G, params)
     -- params.draggable = false;
     params.url = params.url or "%vue%/Example/Test.html";
     params.G = G;
+    params.width = params.width or 600;
+    params.height = params.height or 500;
     VueTestPage:Show(params);
 
     return VueTestPage;

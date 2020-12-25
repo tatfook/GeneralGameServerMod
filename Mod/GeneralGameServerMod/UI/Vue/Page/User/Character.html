@@ -33,6 +33,9 @@ function GetClass(index)
     return index .. " tab center " .. (tabindex == index and "active" or "");
 end
 
+GetGlobalScope():Watch("isAuthUser", function(val)
+    SelectTab(val and "skin" or "works");
+end)
 </script>
 
 <style scoped=true>

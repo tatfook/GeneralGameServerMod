@@ -350,7 +350,7 @@ _G.GetAllAssets = function()
                 modelUrl = tpl.modelUrl,
                 icon = GetItemIcon(tpl),
                 name = tpl.name,
-                owned = true or IsOwned(tpl.id),
+                owned = IsOwned(tpl.id),
             });
         end
     end
