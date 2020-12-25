@@ -2,7 +2,7 @@
     <div style="width: 100%; height: 100%; overflow-y: auto;" class="scroll">
         <div v-for="asset, key in PlayerAssetList" v-bind:class="AssetContainerClass(asset)" onclick=ClickPlayerAsset(asset)>
             <div v-if="asset.modelFrom" style="position: absolute; left: -1px; top: -4px; width: 157px; height: 41px; font-size: 10px; padding-left: 12px; padding-top: 12px; color: #171717; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/zibj_157X41_32bits.png#0 0 157 41);">
-                {{"来源 " .. (asset.modelFrom or "")}}
+                {{asset.modelFrom or ""}}
             </div>
             <div class="selected" style="position: absolute; left: 3px; top: 3px; width: 168px; height: 224px; background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/renwubj3_168X224_32bits.png#0 0 168 224);"></div>
             <div v-bind:style="AssetStyle(asset)"></div>
