@@ -366,7 +366,8 @@ _G.GetAllAssets = function()
     -- Log(assets, true);
 
     table.sort(assets, function(asset1, asset2) 
-        return asset1.modelOrder < asset2.modelOrder;
+        return (not asset2.owned and asset1.owned) or asset1.modelOrder < asset2.modelOrder;
+        -- return asset1.modelOrder < asset2.modelOrder;
     end);
     
     return assets;
