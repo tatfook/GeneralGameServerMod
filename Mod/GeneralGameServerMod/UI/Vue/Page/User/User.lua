@@ -296,33 +296,37 @@ _G.GetUserAssets = function()
     return assets;
 end
 
--- PlayerAssetList = {
---     {
---         id = 1,
---         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
---         modelUrl = "character/CC/02human/paperman/boy01.x",
---         owned = true,
---     },
---     {
---         id = 2,
---         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
---         modelUrl = "character/CC/02human/paperman/boy02.x",
---         owned = false,
---     },
---     {
---         id = 3,
---         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
---         modelUrl = "character/CC/02human/paperman/boy03.x",
---         modelFrom = "模型商城",
---         owned = true,
---     },
---     {
---         id = 4,
---         icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
---         modelUrl = "character/CC/02human/paperman/boy04.x",
---         owned = true,
---     },
--- }; 
+PlayerAssetList = {
+    {
+        id = 1,
+        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+        modelUrl = "character/CC/02human/paperman/boy01.x",
+        modelOrder = 3,
+        owned = true,
+    },
+    {
+        id = 2,
+        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+        modelUrl = "character/CC/02human/paperman/boy02.x",
+        modelOrder = 6,
+        owned = false,
+    },
+    {
+        id = 3,
+        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+        modelUrl = "character/CC/02human/paperman/boy03.x",
+        modelFrom = "模型商城",
+        modelOrder = 1,
+        owned = true,
+    },
+    {
+        id = 4,
+        icon = "Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/nan_108X176_32bits.png#0 0 108 176",
+        modelUrl = "character/CC/02human/paperman/boy04.x",
+        modelOrder = 4,
+        owned = true,
+    },
+}; 
 
 _G.GetAllAssets = function()
     local bagId, bagNo = 0, 1007;
@@ -343,12 +347,14 @@ _G.GetAllAssets = function()
     end
 
     for _, tpl in ipairs(KeepWorkItemManager.globalstore) do
-        -- echo(tpl, true)
+        local extra = tpl.extra or {};
         if (tpl.bagId == bagId) then
             table.insert(assets, {
                 id = tpl.id,
                 gsId = tpl.gsId,
                 modelUrl = tpl.modelUrl,
+                modelFrom = if_else(not tpl.modelFrom or tpl.modelFrom == "", nil, tpl.modelFrom),
+                modelOrder = tonumber(tpl.modelOrder or 0) or 0,
                 icon = GetItemIcon(tpl),
                 name = tpl.name,
                 owned = IsOwned(tpl.id),
@@ -360,7 +366,7 @@ _G.GetAllAssets = function()
     -- Log(assets, true);
 
     table.sort(assets, function(asset1, asset2) 
-        return not asset2.owned and asset1.owned;
+        return asset1.modelOrder < asset2.modelOrder;
     end);
     
     return assets;
