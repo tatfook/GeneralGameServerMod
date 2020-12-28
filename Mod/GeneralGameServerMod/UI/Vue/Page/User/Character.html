@@ -34,7 +34,7 @@ function GetClass(index)
 end
 
 GetGlobalScope():Watch("isAuthUser", function(val)
-    SelectTab(val and "skin" or "works");
+    SelectTab(HeaderTabIndex or (val and "skin" or "works"));
 end)
 </script>
 
