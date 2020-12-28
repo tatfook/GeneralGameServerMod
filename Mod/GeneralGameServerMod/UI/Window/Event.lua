@@ -23,7 +23,8 @@ function MouseEvent:init(event_type, window)
     self.global_pos:set(self.x, self.y);
     self.local_pos:set(self.x - screenX, self.y - screenY);
     self.window_pos = self.local_pos;
-
+    self.accepted = false;
+    
 	return self;
 end
 
