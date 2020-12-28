@@ -1,7 +1,7 @@
 <template class="style-container">
     <div class="title">默认样式</div>
     <div class="style-item">
-        <select placeholder="样式名" v-model="styleName" v-bind:options="StyleOptions"></select>
+        <select AllowCreate=true placeholder="样式名" v-model="styleName" v-bind:options="StyleOptions"></select>
         <input placeholder="样式值" v-model="styleValue"></input>
         <div class="style-item-btn" onclick=AddStyle>添加</div>
     </div>
@@ -14,7 +14,7 @@
     </div>
     <div class="title">悬浮样式</div>
     <div class="style-item">
-        <select placeholder="样式名" v-model="hoverStyleName" v-bind:options="StyleOptions"></select>
+        <select AllowCreate=true placeholder="样式名" v-model="hoverStyleName" v-bind:options="StyleOptions"></select>
         <input placeholder="样式值" v-model="hoverStyleValue"></input>
         <div class="style-item-btn" onclick=AddHoverStyle>添加</div>
     </div>

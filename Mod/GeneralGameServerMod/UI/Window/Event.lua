@@ -35,11 +35,19 @@ function MouseEvent:IsMove()
     return not (math.abs(self.x - self.mouse_down_x) < 4 and math.abs(self.y - self.mouse_down_y) < 4);
 end
 
-function MouseEvent:UpdateElement(element)
+function MouseEvent:SetElement(element)
     self.element = element;
     if (not element) then return end
     local screenX, screenY = element:GetScreenPos();
     self.elementX, self.elementY = self.x - screenX, self.y - screenY;
+end
+
+function MouseEvent:GetWindowPos()
+    return self.windowX, self.windowY;
+end
+
+function MouseEvent:GetElement()
+    return self.element;
 end
 
 Event.MouseEvent = MouseEvent;

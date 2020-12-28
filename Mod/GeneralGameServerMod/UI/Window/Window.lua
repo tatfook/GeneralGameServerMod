@@ -371,13 +371,24 @@ function Window:handleMouseEvent(event)
     local captureElement = self:GetMouseCapture();
     event.target = captureElement;
     if (captureElement) then
-        event:UpdateElement(captureElement);
+        event:SetElement(captureElement);
         (captureElement[captureFuncName])(captureElement, event);
         (captureElement[bubbleFuncName])(captureElement, event);
         return ;        
     end
     -- 获取悬浮元素
     local hoverElement = self:Hover(event, true);
+    local lastHoverElement = self:GetHoverElement();
+    if (lastHoverElement ~= hoverElement) then
+        if (lastHoverElement) then
+            event:SetElement(lastHoverElement);
+            lastHoverElement:CallAttrFunction("onmouseout", nil, event, lastHoverElement);
+        end
+        self:SetHoverElement(hoverElement);
+        event:SetElement(hoverElement);
+        hoverElement:CallAttrFunction("onmouseover", nil, event, hoverElement);
+    end
+
     event.target = hoverElement;
     -- WindowDebug.If(eventType == "mousePressEvent", hoverElement:GetAttr(), {hoverElement:GetWindowPos()}, {hoverElement:GetWindowSize()});
 
@@ -394,7 +405,7 @@ function Window:handleMouseEvent(event)
     local EventElementCount = #EventElementList;
     for i = EventElementCount, 1, -1 do
         el = EventElementList[i];
-        event:UpdateElement(el);
+        event:SetElement(el);
         (el[captureFuncName])(el, event);
         if (event:isAccepted()) then break end
     end
@@ -402,7 +413,7 @@ function Window:handleMouseEvent(event)
     -- 冒泡事件
     for i = 1, EventElementCount, 1 do
         el = EventElementList[i];
-        event:UpdateElement(el);
+        event:SetElement(el);
         (el[bubbleFuncName])(el, event);
         if (event:isAccepted()) then break end
     end 
@@ -413,7 +424,7 @@ function Window:handleMouseEvent(event)
     -- 聚焦目标元素  聚焦与事件是否处理无关
     -- if (event:isAccepted()) then return end
     if(eventType == "mousePressEvent") then
-        event:UpdateElement(hoverElement);
+        event:SetElement(hoverElement);
         self:SetFocus(hoverElement);
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "鼠标事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);

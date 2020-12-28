@@ -123,7 +123,8 @@ function Select:Init(xmlNode, window, parent)
                 self:SetValue(value);
                 self:SetLabel(self:GetLabelByValue(value));
                 self:SetFocus(nil);
-                print(self:GetLabel());
+                self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
+                self:CallAttrFunction("onchange", nil, self:GetValue(), self:GetLabel());
             end
         }
     }, window, self);
