@@ -31,6 +31,7 @@ end
 local function GenerateListItemData(opt)
     local item = {
         id = GetNextElementId(),
+        parentId = "",
         text = "",
         textVarName = "",  -- 动态文本
         style = { 
@@ -119,6 +120,13 @@ function OnReady()
 
     _G.EditDefaultFile();
 end
+
+_G.GetIdOptions = function()
+    local opts = {};
+    local list = GlobalScope:Get("ElementList");
+    for _, item in ipairs(list) do table.insert(opts, #opts + 1, item.id) end 
+    return opts;
+end 
 
 _G.GetListItemById = function(id)
     local list = GlobalScope:Get("ElementList");

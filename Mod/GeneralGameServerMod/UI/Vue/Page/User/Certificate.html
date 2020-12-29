@@ -1,0 +1,30 @@
+<template class="container">
+    <div onmouseup="clickToContinue" style="display: flex;align-items: center; justify-content:center;width:100%; height: 100%;background-color:#00000085;">       
+            <div v-bind:style="GetCertStyle()">
+                <div style="position: absolute;left:-78px;top:257px;width:300px;height:50px;text-align:right;font-size:18px;color:rgb(20,38,54);background-color: #00000000">{{username}}</div> 
+                <div style="position: absolute;left:640px;top:470px;width:400px;height:50px;text-align:left;font-size:22px;color:rgb(20,38,54)" >{{datetime}}</div>
+                <div style="position: absolute;width:220px;height:200px;left:580px;top:350px;background:url(Texture/Aries/Creator/keepwork/ggs/user/seal.png)"></div>
+            </div>
+    </div>
+</template>
+
+<script type="text/lua">
+
+function GetCertStyle()
+    <!-- return string.format("width:909px; height:600px; background:url(%s);", "Texture/Aries/Creator/keepwork/ggs/user/fangyi.png#0 0 512 368"); -->
+    return string.format("width:909px; height:600px; background:url(%s);", certurl);
+end 
+
+function clickToContinue()
+    GetEvent():accept();
+    CloseWindow();
+end
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+}
+</style>
+

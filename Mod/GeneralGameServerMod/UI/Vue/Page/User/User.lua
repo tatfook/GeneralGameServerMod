@@ -24,6 +24,7 @@ GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
 GlobalScope:Set("MainSkin", player and player:GetSkin());
 GlobalScope:Set("AssetSkinGoodsItemId", 0);
 GlobalScope:Set("IsFollow", false);
+GlobalScope:Set("HonorList", {});
 
 local ProjectMap = {};
 
@@ -224,6 +225,15 @@ end
 
 -- SetProjectListType("works");
 
+
+
+local function GetItemIcon(item)
+    local icon = item.icon;
+    if(not icon or icon == "" or icon == "0") then icon = string.format("Texture/Aries/Creator/keepwork/items/item_%d_32bits.png", item.gsId) end
+    return icon;
+end
+
+
 -- 加载用户信息
 function LoadUserInfo()
     local payload = {};
@@ -265,6 +275,27 @@ function LoadUserInfo()
         if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
         if (ParacraftPlayerEntityInfo.skin) then GlobalScope:Set("MainSkin", ParacraftPlayerEntityInfo.skin) end 
 
+        -- 获取用户荣誉
+        keepwork.user.honors({userId = UserDetail.id}, function(status, msg, data)
+            if (status ~= 200) then return end
+            
+            local list = data.rows or {};
+            local honors = {};
+            for _, item in ipairs(list) do
+                local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
+                if (itemTpl) then
+                    table.insert(honors, {
+                        icon = GetItemIcon(itemTpl),
+                        name = itemTpl.name,
+                        desc = itemTpl.desc,
+                        createdAt = item.createdAt,
+                        certurl = (itemTpl.extra or {}).picture,
+                    });
+                end
+            end
+            GlobalScope:Set("HonorList", honors);
+        end);
+
         -- 先拉取第一页
         NextPageProjectList();
         if (GlobalScope:Get("isAuthUser") or not GlobalScope:Get("isLogin")) then return end
@@ -279,13 +310,6 @@ function LoadUserInfo()
             end
         end)
     end)
-end
-
-
-local function GetItemIcon(item)
-    local icon = item.icon;
-    if(not icon or icon == "" or icon == "0") then icon = string.format("Texture/Aries/Creator/keepwork/items/item_%d_32bits.png", item.gsId) end
-    return icon;
 end
 
 _G.GetUserAssets = function()
@@ -436,6 +460,7 @@ _G.GetUserHonors = function ()
     end
     return honors;
 end
+
 
 _G.UpdatePlayerEntityInfo = function()
     local isAuthUser = GlobalScope:Get("isAuthUser");

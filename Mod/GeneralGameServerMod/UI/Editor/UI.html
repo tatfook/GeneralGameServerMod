@@ -35,7 +35,10 @@
             </div>
             <div style="position: absolute; right: 0px; top: 0px; width: 300px; height: 100%; border: 1px solid #cccccc;">
                 <div class="right-aside-header" style="height: 60px;">
-                    <div style="position: absolute; left: -200px; top:12px; width: 200px; font-size: 18px; color: #cccccc;">{{"当前元素: " .. CurrentElementId}}</div>
+                    <div style="position: absolute; left: -200px; top:12px; width: 200px; font-size: 18px; color: #cccccc;">
+                        <div>当前元素: </div>
+                        <select v-bind:value="CurrentElementId" v-bind:options="GetIdOptions()" placeholder="元素ID"></select>
+                    </div>
                     <div style="display: flex; margin-top: 12px;">
                         <div class="action-btn" onclick="ClickRightAsideNavBtn('style')">样式</div>
                         <div class="action-btn" onclick="ClickRightAsideNavBtn('attr')">属性</div>
@@ -71,8 +74,8 @@ RegisterComponent("AttrEditor", "%ui%/Editor/Attr.html");
 RegisterComponent("SetEditor", "%ui%/Editor/Set.html");
 RegisterComponent("Code", "%ui%/Editor/Code.html");
 
-HeaderNavIndex = "ui";             -- ui logic code exec file
-RightAsideNavIndex = "style";      -- style attr
+HeaderNavIndex = "ui";                -- ui logic code exec file
+RightAsideNavIndex = "set";           -- style attr set
 
 function ClickRightAsideNavBtn(index)
     RightAsideNavIndex = index;

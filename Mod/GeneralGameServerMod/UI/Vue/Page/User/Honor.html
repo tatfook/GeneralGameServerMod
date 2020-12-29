@@ -1,6 +1,6 @@
 <template style="display: inline-block; padding: 6px; width: 100%; height: 100%;">
     <div class="scroll" style="width: 100%; height: 100%; overflow-y: auto;">
-        <div v-for="honor in honorlist" class="honor">
+        <div v-for="honor in HonorList" class="honor" onclick="ClickHonor(honor)">
             <div v-bind:style="HonorStyle(honor)"></div>
             <div class="center" style="height: 30px; color: #000000; font-size: 12px;">{{honor.name}}</div>
         </div>
@@ -9,10 +9,21 @@
 
 <script type="text/lua">
 
-honorlist = _G.GetUserHonors();
+<!-- honorlist = _G.GetUserHonors(); -->
 
 function OnAttrValueChange()
 end
+
+function ClickHonor(honor)
+    ShowWindow({
+        username = string.format("%s(%s)", UserDetail.nickname, UserDetail.username),
+        datetime = os.date("%Y-%m-%d", commonlib.timehelp.GetTimeStampByDateTime(honor.createdAt)),
+    }, {
+        url = "%vue%/Page/User/Certificate.html",
+        width = 909,
+        height = 600,
+    })
+end 
 
 function HonorStyle(honor)
     return string.format("margin-top: 15px; margin-bottom: 15px; width: 128px; height: 64px; background:url(%s)", honor.icon);
