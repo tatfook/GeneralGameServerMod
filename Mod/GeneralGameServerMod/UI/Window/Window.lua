@@ -91,6 +91,11 @@ function Window:LoadXmlNodeByTemplate(template)
     return commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString(template), "//html");
 end
 
+function Window:LoadXmlNode(params)
+    if (params.tpl) then return self:LoadXmlNodeByTemplate(params.tpl) end
+    if (params.url) then return self:LoadXmlNodeByUrl(params.url) end
+end
+
 -- 新建一个全局表
 function Window:NewG(g)
     return G.New(self, g);
@@ -111,7 +116,7 @@ function Window:Init()
     self:SetVisible(true);
 
     -- 设置根元素
-    local xmlNode = self:LoadXmlNodeByUrl(params.url);
+    local xmlNode = self:LoadXmlNode(params);
     local rootElement = xmlNode and self:CreateFromXmlNode(xmlNode, self, self);
     if (rootElement) then table.insert(self.childrens, rootElement) end
 

@@ -127,7 +127,6 @@ end
 
 -- 加载文件
 function Component:LoadXmlNode(xmlNode)
-    -- 开发环境每次重新加载
     if (self.xmlRoot) then return self.htmlNode, self.scriptNode, self.styleNodes, self.xmlRoot end
     local src = xmlNode.attr and xmlNode.attr.src or self.filename;
     self.filename = self.filename or src or "";
@@ -139,8 +138,6 @@ function Component:LoadXmlNode(xmlNode)
         local template = LoadXmlFile(src);
         -- 解析template
         xmlRoot = ParaXML.LuaXML_ParseString(template);
-        -- 类存在放在类中, 避免重复读取, 不存在放在示例中
-        -- self:class().template = template;
     end
     -- print(self.template);
 
