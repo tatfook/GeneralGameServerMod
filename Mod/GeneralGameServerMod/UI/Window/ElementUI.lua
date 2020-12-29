@@ -489,7 +489,7 @@ function ElementUI:OnMouseDownCapture(event)
 end
 
 function ElementUI:OnClick(event)
-    self:CallAttrFunction("onclick", nil, self, event);
+    self:CallAttrFunction("onclick", nil, event, self);
 end
 
 function ElementUI:OnContextMenu()
