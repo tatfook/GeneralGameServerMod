@@ -1,18 +1,16 @@
-<template class="container">
-    <div onmouseup="clickToContinue" style="display: flex;align-items: center; justify-content:center;width:100%; height: 100%;background-color:#00000085;">       
-            <div v-bind:style="GetCertStyle()">
-                <div style="position: absolute;left:-78px;top:257px;width:300px;height:50px;text-align:right;font-size:18px;color:rgb(20,38,54);background-color: #00000000">{{username}}</div> 
-                <div style="position: absolute;left:640px;top:470px;width:400px;height:50px;text-align:left;font-size:22px;color:rgb(20,38,54)" >{{datetime}}</div>
-                <div style="position: absolute;width:220px;height:200px;left:580px;top:350px;background:url(Texture/Aries/Creator/keepwork/ggs/user/seal.png)"></div>
-            </div>
+<template style="width: 100%; height: 100%;">
+    <div onmouseup=clickToContinue v-bind:style="GetCertStyle()">
+        <div  class="ID_52"  style="background:url(Texture/Aries/Creator/keepwork/ggs/user/zhang_77X77_32bits.png#0 0 77 77);position:absolute;top:250px;left:352px;height:77;width:77;"></div>
+        <div  class="ID_53"  style="position:absolute;top:291px;left:352px;height:30;width:200;">{{datetime}}</div>
+        <div  class="ID_54"  style="position:absolute;top:154px;left:22px;height:20;width:100;">{{username}}</div>
     </div>
 </template>
 
 <script type="text/lua">
 
 function GetCertStyle()
-    <!-- return string.format("width:909px; height:600px; background:url(%s);", "Texture/Aries/Creator/keepwork/ggs/user/fangyi.png#0 0 512 368"); -->
-    return string.format("width:909px; height:600px; background:url(%s);", certurl);
+    return string.format("background:url(%s);top:1;left:1;height:368;width:512;", certurl); 
+    <!-- return string.format("background:url(%s);top:1;left:1;height:368;width:512;", "Texture/Aries/Creator/keepwork/ggs/user/1_512X368_32bits.png#0 0 512 368");  -->
 end 
 
 function clickToContinue()
@@ -21,10 +19,7 @@ function clickToContinue()
 end
 </script>
 
-<style>
-.container {
-    height: 100%; 
-    width: 100%; 
-}
-</style>
-
+<!-- 
+    Texture/Aries/Creator/keepwork/ggs/user/1_512X368_32bits.png#0 0 512 368
+    Texture/Aries/Creator/keepwork/ggs/user/zhang_77X77_32bits.png#0 0 77 77
+ -->

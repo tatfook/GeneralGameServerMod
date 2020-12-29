@@ -21,6 +21,17 @@ local PathAliasMap = {
     end
 }; 
 
+local function ToCanonicalFilePath(filename)
+	if(System.os.GetPlatform()=="win32") then
+        filename = string.gsub(filename, "/+", "\\");
+		filename = string.gsub(filename, "\\+", "\\");
+	else
+		filename = string.gsub(filename, "\\+", "/");
+        filename = string.gsub(filename, "/+", "/");
+	end
+	return filename;
+end
+
 local FileCacheMap = {};
 
 function Helper.SetPathAlias(alias, path)
@@ -41,7 +52,7 @@ end
 
 -- 获取脚本文件
 function Helper.ReadFile(filename)
-    filename = Helper.FormatFilename(filename);
+    filename = ToCanonicalFilePath(Helper.FormatFilename(filename));
     if (not filename or filename ==  "") then return end
 
     if (FileCacheMap[filename]) then return FileCacheMap[filename] end

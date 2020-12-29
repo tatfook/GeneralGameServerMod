@@ -18,10 +18,11 @@ function ClickHonor(honor)
     ShowWindow({
         username = string.format("%s(%s)", UserDetail.nickname, UserDetail.username),
         datetime = os.date("%Y-%m-%d", commonlib.timehelp.GetTimeStampByDateTime(honor.createdAt)),
+        certurl = honor.certurl,
     }, {
         url = "%vue%/Page/User/Certificate.html",
-        width = 909,
-        height = 600,
+        width = 512,
+        height = 368,
     })
 end 
 
