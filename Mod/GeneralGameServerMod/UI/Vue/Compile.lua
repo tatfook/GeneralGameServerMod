@@ -312,6 +312,7 @@ function Compile:VFor(element)
     self:ExecCode(listexp, element, function(list)
         -- BeginTime();
         local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
+        if (Scope:__is_scope__(list)) then count = #(list:__get_data__()) end  -- 手机版不支持 #scope_list
         -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s, element = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count, tostring(element));
         local oldComponent = self:GetComponent();
         local oldScope = self:GetScope();

@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: 插槽组件
 use the lib:
 -------------------------------------------------------
-local Scope = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Scope.lua");
+local Scope = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Scope.lua");
 -------------------------------------------------------
 ]]
 
@@ -102,9 +102,6 @@ function Scope:__new__(obj)
     metatable.__len = function(scope)
         metatable:__call_index_callback__(scope, nil);
         return #metatable.__data__;
-        -- local index = 1;
-        -- while (scope[index] ~= nil) do index = index + 1 end
-        -- return index - 1;
     end
 
     -- 构建scope对象

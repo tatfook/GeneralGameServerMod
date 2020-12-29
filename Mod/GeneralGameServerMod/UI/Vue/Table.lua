@@ -48,3 +48,8 @@ function Table.sort(table_, comp)
     table_ = GetRealTable(table_, false);   -- 获取真实表
     return TableSort(table_, comp);
 end
+
+function Table.len(table_)
+    local table_ = GetRealTable(table_, true)
+    return type(table_) == "table" and #table_ or 0;
+end
