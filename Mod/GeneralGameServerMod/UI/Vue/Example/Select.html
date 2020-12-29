@@ -3,7 +3,7 @@
     <select v-bind:options="options" value="湖北省">
     </select>
     <button onclick=click>切换省份</button>
-    <select placeholder="省" AllowCreate=true>
+    <select v-bind:value="value" placeholder="省" AllowCreate=true>
         <option value="广东省">广东省</option>
         <option value="湖北省">湖北省</option>
         <option value="湖南省">湖南省</option>
@@ -14,9 +14,17 @@
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 
 options = {"广东省", "湖北省", "湖南省", "广东省", "湖北省", "湖南省", "广东省", "湖北省", "湖南省", "广东省", "湖北省", "湖南省"};
+
+GetGlobalScope():Set("value", "");
+local count = 1;
+
 function click()
     options = {"福建省", "江西省"};
+    GetGlobalScope():Set("value", "value" .. count);
+    count = count + 1;
 end
+
+
 </script>
 
 <style>

@@ -193,6 +193,8 @@ function Select:OnValueAttrValueChange(attrValue)
     local ListBox = self:GetListBoxElement();
     for _, childElement in ipairs(ListBox.childrens) do
         if (childElement:GetValue() == attrValue) then
+            self:SetValue(childElement:GetValue());
+            self:SetLabel(childElement:GetLabel());
             return self:SetSelectedOptionElement(childElement);
         end
     end
