@@ -17,7 +17,7 @@ local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher"
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local EntityOtherPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityPlayerMPOther"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer"));
 
-local moduleName = "Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer";
+EntityOtherPlayerDebug = GGS.Debug.GetModuleDebug("EntityOtherPlayerDebug").Enable();
 
 EntityOtherPlayer:Property("World");
 
@@ -159,6 +159,9 @@ end
 -- 帧函数
 function EntityOtherPlayer:OnLivingUpdate()
     EntityOtherPlayer._super.OnLivingUpdate(self);
+
+    -- EntityOtherPlayerDebug.If(not self.packetPlayerEntityInfoQueue:empty(), self.smoothFrames, self.motionBufferTickCount);
+
     -- 正在播放帧动画
     if (self.smoothFrames > 0) then return end
     -- 无动画播放
@@ -194,8 +197,12 @@ function EntityOtherPlayer:UpdatePlayerEntityInfo(packetPlayerEntityInfo)
 
     -- 更新位置信息
     if (x or y or z or facing or pitch) then
+        x, y, z, facing, pitch = x or self.x, y or self.y, z or self.z, facing or self.targetFacing, pitch or self.targetPitch;
+
         local oldpos = string.format("%.2f %.2f %.2f", self.x or 0, self.y or 0, self.z or 0);
         local newpos = string.format("%.2f %.2f %.2f", x or 0, y or 0, z or 0);
+        -- EntityOtherPlayerDebug.Format("oldpos = %s, newpos = %s", oldpos, newpos);
+
         if (oldpos == newpos) then 
             self:SetPositionAndRotation(x, y, z, facing, pitch);  -- 第一次需要用此函数避免飘逸
         else

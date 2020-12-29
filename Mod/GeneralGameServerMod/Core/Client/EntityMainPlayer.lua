@@ -125,6 +125,10 @@ function EntityMainPlayer:SendMotionUpdates()
         else
             -- 停止运动
             self.stopMotionUpdateTickCount = self.motionUpdateTickCount;
+        end 
+    else 
+        if (not curMoved) then  -- 确保tick不会太大
+            self.lastMotionUpdateTickCount = self.motionUpdateTickCount - 1;
         end
     end      
 
@@ -145,12 +149,12 @@ function EntityMainPlayer:SendMotionUpdates()
             self:SetUpdatePlayerInfo(false);
         end
 
-        if (hasMoved or hasRotation) then
+        if (hasMoved) then
             packet.x, packet.y, packet.z = self.x, self.y, self.z; 
             packet.bx, packet.by, packet.bz = self:GetBlockPos();
         end
         
-        if (hasHeadRotation) then packet.facing, packet.pitch = self.facing, self.rotationPitch end 
+        if (hasRotation) then packet.facing, packet.pitch = self.facing, self.rotationPitch end 
         if (hasHeadRotation) then packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch end
 
         -- 记录上一个包的状态

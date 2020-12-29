@@ -51,3 +51,4 @@ end
 function AppEntityMainPlayer:SetSuperPlayerInfo(playerInfo)
     AppEntityMainPlayer._super.SetPlayerInfo(self, playerInfo);
 end
+

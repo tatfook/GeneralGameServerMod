@@ -1,0 +1,1 @@
+-- /ggs connect -serverIp=ggs.keepwork.com -port=9001 -isSyncBlock=true -username=xiaoyao1 12348
