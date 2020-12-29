@@ -132,8 +132,8 @@ function Component:LoadXmlNode(xmlNode)
     self.filename = self.filename or src or "";
     -- 从字符串加载
     local xmlRoot = nil;
-    if (self.template and self.template ~= "") then
-        xmlRoot = type(self.template) == "table" and self.template or ParaXML.LuaXML_ParseString(self.template);
+    if (xmlNode.template and xmlNode.template ~= "") then
+        xmlRoot = type(xmlNode.template) == "table" and xmlNode.template or ParaXML.LuaXML_ParseString(xmlNode.template);
     elseif (src and src ~= "") then
         local template = LoadXmlFile(src);
         -- 解析template
