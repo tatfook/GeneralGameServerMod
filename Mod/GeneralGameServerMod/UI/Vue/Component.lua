@@ -261,11 +261,16 @@ end
 function Component:ExecCode(code) 
     if (type(code) ~= "string" or code == "") then return end
     local func, errmsg = loadstring(code);
-    if (not func) then 
-        return ComponentDebug("===============================Exec Code Error=================================", errmsg);
-    end
+    if (not func) then return ComponentDebug("===============================Exec Code Error=================================", errmsg) end
+
     setfenv(func, self:GetScope());
-    return func();
+    -- return func();
+    xpcall(function()
+        func();
+    end, function(errinfo) 
+        print("ERROR:", errinfo)
+        DebugStack();
+    end);
 end
 
 -- 设置属性值

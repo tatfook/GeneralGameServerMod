@@ -209,7 +209,20 @@ function ElementUI:RenderBackground(painter)
     -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
     -- ElementUIDebug.If(self:GetAttrValue("id") == "test", background);
     painter:SetPen(backgroundColor);
-    painter:DrawRectTexture(x, y, w, h, background);
+    local borderRadius = self:GetStyle()["border-radius"];
+    if (background or not borderRadius) then
+        painter:DrawRectTexture(x, y, w, h, background);
+    else 
+        painter:DrawRect(x + borderRadius, y + borderRadius, w - 2 * borderRadius, h - 2 * borderRadius);
+        painter:DrawRect(x + borderRadius, y, w - 2 * borderRadius, borderRadius);                          -- 上
+        painter:DrawRect(x + w - borderRadius, y + borderRadius, borderRadius, h - 2 * borderRadius);       -- 右
+        painter:DrawRect(x + borderRadius, y + h - borderRadius, w - 2 * borderRadius, borderRadius);       -- 下
+        painter:DrawRect(x, y + borderRadius, borderRadius, h - 2 * borderRadius);                          -- 左
+        painter:DrawCircle(x + borderRadius, -y - borderRadius, 0, borderRadius, "z", true, nil, math.pi / 2, math.pi);
+        painter:DrawCircle(x + w - borderRadius, -y - borderRadius, 0, borderRadius, "z", true, nil, 0, math.pi / 2);
+        painter:DrawCircle(x + borderRadius, -y -h + borderRadius, 0, borderRadius, "z", true, nil, math.pi, math.pi * 3 / 2);
+        painter:DrawCircle(x + w - borderRadius, -y -h + borderRadius, 0, borderRadius, "z", true, nil, math.pi * 3 / 2, math.pi * 2);
+    end
 end
 
 -- 绘制边框

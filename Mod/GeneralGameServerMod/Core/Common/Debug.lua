@@ -258,13 +258,17 @@ end
 function _G.DebugStack(dept)
     dept = dept or 50;
     for i = 1, dept do
-        local lastInfo = debug.getinfo(i - 1);
-        local info = debug.getinfo(i);
-        if info then
-            print("TraceStack",info.source, info.currentline, lastInfo and lastInfo.name);
-        else
-            break;
-        end
+        local debuginfo = LocationInfo(i);
+        if (not debuginfo or debuginfo == "") then break end
+        print("TraceStack", debuginfo);
+
+        -- local lastInfo = debug.getinfo(i - 1);
+        -- local info = debug.getinfo(i);
+        -- if info then
+        --     print("TraceStack",info.source, info.currentline, lastInfo and lastInfo.name);
+        -- else
+        --     break;
+        -- end
     end
 end
 

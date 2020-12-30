@@ -12,6 +12,15 @@ local Scope = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Scope.lua");
 local __global_index_callback__ = nil;
 local __global_newindex_callback__ = nil;
 
+local __len_meta_method_test_table__ = setmetatable({}, {__len = function() return 1 end });
+local __is_support_len_meta_method__ = #__len_meta_method_test_table__ == 1;
+
+local __is_support_pairs_meta_method__ = false;
+local __is_support_ipairs_meta_method__ = false;
+pairs(setmetatable({}, {__pairs = function() __is_support_pairs_meta_method__ = true end}));
+ipairs(setmetatable({}, {__ipairs = function() __is_support_ipairs_meta_method__ = true end}));
+
+
 local function Inherit(baseClass, inheritClass)
     if (type(baseClass) ~= "table") then baseClass = nil end
     
@@ -52,6 +61,10 @@ end
 local Scope = Inherit(nil, NPL.export());
 -- 基础函数
 Scope.__inherit__ = Inherit;
+-- 是否支持__len
+Scope.__is_support_len_meta_method__= __is_support_len_meta_method__;
+Scope.__is_support_pairs_meta_method__ = __is_support_pairs_meta_method__;
+Scope.__is_support_ipairs_meta_method__ = __is_support_ipairs_meta_method__;
 
 -- 获取值
 local function __get_val__(val)
@@ -63,6 +76,7 @@ end
 
 -- 获取值
 Scope.__get_val__ = __get_val__;
+
 
 -- 设置全局读取回调
 function Scope.__set_global_index__(__index__)
@@ -88,20 +102,25 @@ function Scope:__new__(obj)
         metatable:__set__(scope, key, val);
     end
 
-    -- 遍历
-    metatable.__pairs = function(scope)
-        return pairs(metatable.__data__);
+    -- 遍历  若不支持__pairs 外部将无法遍历对象 只能通过ToPlainObject值去遍历
+    if (__is_support_pairs_meta_method__) then
+        metatable.__pairs = function(scope)
+            return pairs(metatable.__data__);
+        end
     end
 
     -- 遍历
-    metatable.__ipairs = function(scope)
-        return ipairs(metatable.__data__);
+    if (__is_support_ipairs_meta_method__ and __is_support_len_meta_method__) then
+        metatable.__ipairs = function(scope)
+            return ipairs(metatable.__data__);
+        end
     end
 
     -- 长度
-    metatable.__len = function(scope)
-        metatable:__call_index_callback__(scope, nil);
-        return #metatable.__data__;
+    if (__is_support_len_meta_method__) then
+        metatable.__len = function(scope)
+            return #metatable.__data__;
+        end
     end
 
     -- 构建scope对象
@@ -119,10 +138,8 @@ function Scope:__new__(obj)
             scope[key] = val;
         end
     end
-    -- scope:__update_length__();
     metatable.__enable_index_callback__ = true;
     metatable.__enable_newindex_callback__ = true;
-
     -- 新建触发一次读取
     metatable:__call_index_callback__(scope, nil);
 
@@ -194,7 +211,7 @@ function Scope:__call_index_callback__(scope, key)
     if (not self.__enable_index_callback__) then return end
 
     local val = key and self.__data__[key];
-    -- print("__call_index_callback__", scope, key);
+
     -- 值为scope触发本身读索引
     if (self:__is_scope__(val)) then return val:__call_index_callback__(val, nil) end
 
@@ -210,16 +227,20 @@ end
 
 -- 设置数字属性
 function Scope:__set_by_index__(scope, index, value)
-    self.__data__[index] = __get_val__(value);
+    -- print(__is_support_len_meta_method__, scope, index, value);
+    if (__is_support_len_meta_method__) then
+        self.__data__[index] = __get_val__(value);
+    else
+        rawset(scope, index, __get_val__(value));
+    end
+
     self:__call_newindex_callback__(scope, nil, scope, scope);
-    -- return rawset(scope, index, value);
 end
 
 -- 获取数字属性
 function Scope:__get_by_index__(scope, index)
     self:__call_index_callback__(scope, nil);  -- 针对列表触发列表整体更新
-    return self.__data__[index];
-    -- return rawget(scope, index);
+    return if_else(__is_support_len_meta_method__, self.__data__[index], rawget(scope, index));
 end
 
 -- 获取键值
@@ -287,18 +308,10 @@ function Scope:__set__(scope, key, val)
 
     -- 相同直接退出
     if (oldval == val) then return end
-    -- if (oldval == val and (not self:__is_scope__(val) or val.__length__ == oldval.__length__)) then return end
-
 
     -- 触发更新回调
     self:__call_newindex_callback__(scope, key, val, oldval);
 end
-
--- -- 更新列表大小
--- function Scope:__update_length__()
---     self.__length__ = #self.__data__;
---     return self.__length__;
--- end
 
 -- 获取真实数据
 function Scope:__get_data__()
@@ -329,5 +342,12 @@ end
 
 -- 转化为普通对象
 function Scope:ToPlainObject()
-    return commonlib.deepcopy(self.__data__);
+    local __data__ = self.__data__;
+    if (not __is_support_len_meta_method__) then
+        for index, val in ipairs(self.__scope__) do
+            __data__[index] = val;
+        end
+    end
+
+    return __data__;
 end

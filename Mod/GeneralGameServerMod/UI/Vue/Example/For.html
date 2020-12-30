@@ -4,6 +4,8 @@
     <button onclick=Sub>Sub</button>
     <button onclick=Replace>Replace</button>
     <div v-for="item, index in List">item = {{item}} index = {{index}}</div>
+    <div v-if="#List == 0">EmptyList</div>
+    <div v-if="#List ~= 0">NoEmptyList</div>
 </template>
 
 <script type="text/lua">
@@ -13,11 +15,11 @@ Prefix = "List Item ";
 List = {};
 
 function Add()
-    table.insert(List, Prefix .. tostring(index)); 
+    table.insert(List, Prefix .. tostring(#List + 1)); 
 end 
 
 function Sub()
-    table.remove(List, table.len(List));
+    table.remove(List, #List);
 end
 
 function Replace()
@@ -26,6 +28,7 @@ end
 
 function OnReady()
 end
+
 </script>
 
 <style>

@@ -283,6 +283,7 @@ local color_fields = {
 	["border-color"] = true,
 	["outline-color"] = true,
 	["background-color"] = true,
+	["outer-background-color"] = true,
 	["shadow-color"] = true,
 	["caret-color"] = true,
 };

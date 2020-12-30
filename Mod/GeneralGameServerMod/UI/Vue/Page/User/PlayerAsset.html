@@ -40,9 +40,9 @@ end
 
 function ClickPlayerAsset(asset)
     local userinfo = GetGlobalScope():Get("UserDetail");
-    if (not asset.owned) then
+    if (not asset.owned and asset.requireVip) then
         if (userinfo.vip == 1) then return end 
-        GameLogic.GetFilters():apply_filters("VipNotice", true, "人物换肤", function()
+        GameLogic.GetFilters():apply_filters("VipNotice", true, "ChangeAvatarSkin", function()
             local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
             if (KeepWorkItemManager.IsVip()) then
                 userinfo.vip = 1;

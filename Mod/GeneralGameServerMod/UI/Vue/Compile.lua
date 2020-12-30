@@ -11,6 +11,7 @@ local Compile = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Compile.lua");
 NPL.load("(gl)script/ide/timer.lua");
 local Helper = NPL.load("./Helper.lua");
 local Scope = NPL.load("./Scope.lua");
+local Table = NPL.load("./Table.lua");
 local Compile = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 local CompileDebug = GGS.Debug.GetModuleDebug("CompileDebug").Enable();   --Enable  Disable
 
@@ -117,9 +118,20 @@ end)
 
 local function ExecCode(code, func, element, watch)
     DependItems = {};                                                                                        -- 清空依赖集
-    local oldVal = func();
+    -- local oldVal = func();
+    local oldVal = nil;
+    local ok, errinfo = pcall(function()
+        oldVal = func();
+    end, function() 
+        DebugStack();
+    end);
+    if (not ok) then
+        GGS.ERROR("===============执行代码出错=============", errinfo, code);
+        return nil;
+    end
+
     local OldDependItems = {};
-    local oldValSize = type(oldVal) == "table" and #oldVal or nil;
+    local oldValSize = Table.len(oldVal);
 
     -- CompileDebug.If(code == "UserDetail", code, DependItems);
 
@@ -144,7 +156,7 @@ local function ExecCode(code, func, element, watch)
                 -- end
 
                 -- if (type(newVal) ~= "table" and newVal == oldVal) then return end
-                if (newVal == oldVal and (type(newVal) ~= "table" or #newVal == oldValSize)) then return end
+                if (newVal == oldVal and (type(newVal) ~= "table" or Table.len(newVal) == oldValSize)) then return end
                 
                 -- 不同触发回调
                 watch(newVal, oldVal);
@@ -311,8 +323,7 @@ function Compile:VFor(element)
     element:SetVisible(false);
     self:ExecCode(listexp, element, function(list)
         -- BeginTime();
-        local count = type(list) == "number" and list or (type(list) == "table" and #list or 0);
-        if (Scope:__is_scope__(list)) then count = #(list:__get_data__()) end  -- 手机版不支持 #scope_list
+        local count = type(list) == "number" and list or (type(list) == "table" and Table.len(list) or 0);
         -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s, element = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count, tostring(element));
         local oldComponent = self:GetComponent();
         local oldScope = self:GetScope();

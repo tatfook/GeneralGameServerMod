@@ -23,31 +23,16 @@ Canvas:Property("BaseStyle", {
 })
 function Canvas:ctor()
     self:SetName("Canvas");
-    self.rotate = 0;
-    self.tick = 0;
 end
 
 -- 绘制内容
 function Canvas:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
-    local offsetX, offsetY = 0, 50;
 
+    -- print(x, y, w, h)
     painter:Translate(x, y);
-    painter:Translate(w / 2 - offsetX, h / 2 - offsetY);
-    self.tick = self.tick + 1;
-    if (self.tick > 10) then
-        self.rotate = (self.rotate + 45) % 360;
-        self.tick = 0;
-    end
-
-    local iconWidth, iconHeight = 114, 114;
-    painter:Rotate(self.rotate);
-    painter:SetPen("#ffffff");
-    painter:DrawRectTexture(-iconWidth / 2, -iconHeight / 2, iconWidth, iconHeight, "Texture/Aries/Creator/keepwork/ggs/dialog/loading1_114X114_32bits.png;0 0 114 114");
-    painter:Rotate(-self.rotate);
-    local textWidth, textHeight = 181, 23;
-    painter:DrawRectTexture(-textWidth / 2 + 10, iconHeight / 2 + 20, textWidth, textHeight, "Texture/Aries/Creator/keepwork/ggs/dialog/zi_jiazaiz_181X23_32bits.png;0 0 181 23");
-
-    painter:Translate(-w / 2 + offsetX, -h / 2 + offsetY);
+    -- painter:SetPen("#00ff00");
+    -- painter:SetBrush({texture="Texture/Aries/Creator/keepwork/ggs/test.jpg"})
+    -- painter:DrawCircle(50, -50, 0, 50, "z", true);
     painter:Translate(-x, -y);
 end

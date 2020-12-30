@@ -90,6 +90,8 @@ function Vue:ExtendG(G)
     end
 
     G.table = Table;  -- 替换全局table以便支持scope特性
+    G.pairs = Table.pairs;
+    G.ipairs = Table.ipairs;
 end
 
 function Vue:NewG(g)

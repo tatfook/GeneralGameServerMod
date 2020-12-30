@@ -367,6 +367,7 @@ _G.GetAllAssets = function()
                 icon = GetItemIcon(tpl),
                 name = tpl.name,
                 owned = IsOwned(tpl),
+                requireVip = tpl.extra and tpl.extra.vip_enabled,
             });
         end
     end
