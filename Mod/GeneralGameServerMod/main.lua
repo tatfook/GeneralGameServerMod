@@ -20,6 +20,7 @@ GeneralGameServerMod:init();
 
 --  全局变量初始化
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
+-- local FileSync = NPL.load("Mod/GeneralGameServerMod/FileSync/FileSync.lua");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
 local inited = false;
 
