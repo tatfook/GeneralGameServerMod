@@ -21,6 +21,7 @@ local Env = ParaEngine.GetAppCommandLineByParam("env", "online");  -- online rel
 
 _G.IsDevEnv = true and IsDevEnv;
 _G.IsServer = IsServer;
+_G.IsClient = not IsServer;
 _G.Env = Env;
 
 -- ENV
@@ -67,4 +68,12 @@ end
 
 _G.GGS = GGS;
 
+local PublicFileID = 1000;
+_G.AddPublicFile = function(filepath, nid)
+    if (not nid) then
+        PublicFileID = PublicFileID + 1;
+        nid = PublicFileID;
+    end
+    NPL.AddPublicFile(filepath, nid);
+end
 
