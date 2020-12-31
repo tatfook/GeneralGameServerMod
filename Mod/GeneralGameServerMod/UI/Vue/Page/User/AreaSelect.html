@@ -171,14 +171,15 @@ function clickConfirm()
             ShowMessageBoxPage({text = data and data.message or "修改地区失败"});
             return CloseWindow();
         end
-        if (not IsExistRegionGSItem) then
+        ShowMessageBoxPage({text = "地区修改成功"});
+        <!-- if (not IsExistRegionGSItem) then
             if (UserDetail) then UserDetail.bean = (UserDetail.bean or 0) + 5 end    
             ShowMessageBoxPage({text = "地区修改成功, 获得了5知识豆"});
             IsExistRegionGSItem = true;
             SessionStorage.SetItem("IsExistRegionGSItem", IsExistRegionGSItem);
         else
             ShowMessageBoxPage({text = "地区修改成功"});
-        end
+        end -->
         if (type(confirm) == "function") then confirm(county.id and county or city) end
         CloseWindow();
     end);

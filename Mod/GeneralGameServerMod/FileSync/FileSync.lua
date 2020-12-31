@@ -12,12 +12,16 @@ local FileSync = NPL.load("Mod/GeneralGameServerMod/FileSync/FileSync.lua");
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 
 local FileSync = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+local FileSyncDebug = GGS.Debug.GetModuleDebug("FileSyncDebug");
 
 FileSync:Property("FileSyncDirectory"); -- 同步目录
 
 local FileSyncConfig = {};
 local FileCacheMap = {};
 local NID = nil;                        -- 当前连接的 NID
+local NeuronFile = "Mod/GeneralGameServerMod/FileSync/FileSync.lua";
+local ThreadName = "FileSync";
+
 function FileSync:ctor()
 
 end
@@ -64,8 +68,19 @@ function FileSync:LoadListFile()
     end
 end
 
--- 初始化
+-- 工作线程初始化
 function FileSync:Init()
+    FileSyncConfig = self:ReadConfig();
+
+    if (IsServer) then
+        self:LoadListFile();
+    else
+        self:GetRemoteFileSyncConfig();
+    end
+end
+
+-- 主线程初始化
+function FileSync:StaticInit()
     if (self.inited) then return end
     self.inited = true;
 
@@ -75,15 +90,16 @@ function FileSync:Init()
     -- 确保目录存在
     ParaIO.CreateDirectory(fileSyncDir);
     -- 暴露通信接口
-    AddPublicFile("Mod/GeneralGameServerMod/FileSync/FileSync.lua");
+    NPL.AddPublicFile(NeuronFile, 1000);
 
-    FileSyncConfig = self:ReadConfig();
+    -- if (__rts__:GetName() == "main") then
+    --     -- 创建文件同步线程
+    --     NPL.CreateRuntimeState(ThreadName, 0):Start(); 
+    --     self:Send({action = "Init", ""})
+    -- else
 
-    if (IsServer) then
-        self:LoadListFile();
-    else
-        self:Sync();
-    end
+    -- end
+    self:Init();
 end
 
 -- 获取文件列表
@@ -95,8 +111,27 @@ end
 function FileSync:Load(moduleName)
 end
 
+
+-- 获取服务器配置信息
+function FileSync:GetRemoteFileSyncConfig()
+    self:Send({action = "GetRemoteFileSyncConfig"});
+end
+
+-- 设置服务器配置信息
+function FileSync:SetRemoteFileSyncConfig(config)
+end
+
 -- 同步文件
 function FileSync:Sync()
+end
+
+-- 发送数据
+function FileSync:Send(data, nid, threadName, neuronFile)
+    nid, threadName, neuronFile = nid or NID, threadName or ThreadName, neuronFile or NeuronFile;
+    local address = string.format("(%s)%s%s", threadName, (nid and nid ~= "") and (nid .. ":") or "", neuronFile);
+    if (NPL.activate(address, data) ~= 0) then
+        FileSyncDebug("send data failed");
+    end
 end
 
 -- 激活函数
@@ -106,13 +141,16 @@ function FileSync:OnActivate(msg)
 
     local action = msg.action;
 
-    if (action == "Sync") then
+    if (action == "GetRemoteFileSyncConfig") then
+        self:Send({action = "SetRemoteFileSyncConfig", config = FileSyncConfig});
+    elseif (action == "SetRemoteFileSyncConfig") then
+        self:SetRemoteFileSyncConfig(msg.config);
     end
 
 end
 
 -- 初始化环境
-FileSync:InitSingleton():Init();
+FileSync:InitSingleton():StaticInit();
 
 NPL.this(function() 
 	FileSync:OnActivate(msg);
