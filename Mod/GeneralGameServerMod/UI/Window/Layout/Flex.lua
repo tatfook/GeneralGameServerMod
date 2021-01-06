@@ -18,6 +18,7 @@ local function LayoutElementFilter(el)
 end 
 
 local function UpdateRow(layout, style)
+	local contentOffsetX, contentOffsetY = layout:GetContentOffset();
     local _, _, width, height = layout:GetContentGeometry();
 	local lines, line = {}, {layouts = {}, width = 0, height = 0, flexGrow = 0};
 	table.insert(lines, line);
@@ -46,11 +47,11 @@ local function UpdateRow(layout, style)
 			local alignSelf = childLayout:GetStyle()["align-self"];
 			local lineHeight = line.height;
 			if (alignSelf == "center") then
-				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop + (lineHeight - spaceHeight) / 2);
+				childLayout:SetPos(contentOffsetX + offsetLeft + childMarginLeft, contentOffsetY + offsetTop + childMarginTop + (lineHeight - spaceHeight) / 2);
 			elseif (alignSelf == "flex-end") then
-				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop + lineHeight - spaceHeight);
+				childLayout:SetPos(contentOffsetX + offsetLeft + childMarginLeft, contentOffsetY + offsetTop + childMarginTop + lineHeight - spaceHeight);
 			else
-				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop);
+				childLayout:SetPos(contentOffsetX + offsetLeft + childMarginLeft, contentOffsetY + offsetTop + childMarginTop);
 			end
 			-- FlexDebug.Format("child layout left = %s, top = %s, spaceWidth = %s, hgap = %s, count = %s", offsetLeft, offsetTop, spaceWidth, HGap, #line.layouts);
             offsetLeft = offsetLeft + spaceWidth + HGap;
@@ -80,7 +81,7 @@ local function UpdateRow(layout, style)
 			local remainWidth = width - line.width;
 			if (line.flexGrow > 0) then
 				for _, childLayout in ipairs(line.layouts) do
-					childLayout:SetPos(offsetLeft, offsetTop);
+					childLayout:SetPos(contentOffsetX + offsetLeft, contentOffsetY + offsetTop);
 					local spaceWidth = childLayout:GetSpaceWidthHeight();
 					local flexGrow = childLayout:GetStyle()["flex-grow"] or 0;
 					if (childLayout:IsFixedWidth() or flexGrow == 0) then
@@ -123,9 +124,10 @@ local function UpdateRow(layout, style)
 end
 
 local function UpdateCol(layout, style)
-	-- local _, _, width, height = layout:GetContentGeometry();
+	local contentOffsetX, contentOffsetY = layout:GetContentOffset();
+	local _, _, width, height = layout:GetContentGeometry();
 	local lines, line = {}, {layouts = {}, width = 0, height = 0, flexGrow = 0};
-	FlexDebug.Format("element left = %s, top = %s, width = %s, height = %s", left, top, width, height);
+	-- FlexDebug.Format("element left = %s, top = %s, width = %s, height = %s", left, top, width, height);
 	table.insert(lines, line);
 	for child in layout:GetElement():ChildElementIterator(true, LayoutElementFilter) do
 		local childLayout, childStyle = child:GetLayout(), child:GetStyle();
@@ -153,11 +155,11 @@ local function UpdateCol(layout, style)
 			local alignSelf = childLayout:GetStyle()["align-self"];
 			local lineWidth = line.width;
 			if (alignSelf == "center") then
-				childLayout:SetPos(offsetLeft + childMarginLeft + (lineWidth - spaceWidth) / 2, offsetTop + childMarginTop);
+				childLayout:SetPos(contentOffsetX + offsetLeft + childMarginLeft + (lineWidth - spaceWidth) / 2, contentOffsetY + offsetTop + childMarginTop);
 			elseif (alignSelf == "flex-end") then
-				childLayout:SetPos(offsetLeft + childMarginLeft + lineWidth - spaceWidth, offsetTop + childMarginTop);
+				childLayout:SetPos(contentOffsetX + offsetLeft + childMarginLeft + lineWidth - spaceWidth, contentOffsetY + offsetTop + childMarginTop);
 			else
-				childLayout:SetPos(offsetLeft + childMarginLeft, offsetTop + childMarginTop);
+				childLayout:SetPos(contentOffsetX + offsetLeft + childMarginLeft, contentOffsetY + offsetTop + childMarginTop);
 			end
 			offsetTop = offsetTop + spaceHeight + VGap;
 			-- FlexDebug.Format("child layout left = %s, top = %s, spaceHeight = %s, vgap = %s, count = %s", offsetLeft, offsetTop, spaceHeight, VGap, #line.layouts);
@@ -187,7 +189,7 @@ local function UpdateCol(layout, style)
 			local remainHeight = height - line.height;
 			if (line.flexGrow > 0) then
 				for _, childLayout in ipairs(line.layouts) do
-					childLayout:SetPos(offsetLeft, offsetTop);
+					childLayout:SetPos(contentOffsetX + offsetLeft, contentOffsetY + offsetTop);
 					local spaceWidth, spaceHeight = childLayout:GetSpaceWidthHeight();
 					local flexGrow = childLayout:GetStyle()["flex-grow"] or 0;
 					if (childLayout:IsFixedHeight() or flexGrow == 0) then

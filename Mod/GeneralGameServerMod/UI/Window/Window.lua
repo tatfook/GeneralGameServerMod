@@ -359,6 +359,7 @@ function Window:handleMouseEvent(event)
 
     -- 优先捕获鼠标元素
     local captureElement = self:GetMouseCapture();
+    event.target = captureElement;
     if (captureElement) then
         event:UpdateElement(captureElement);
         (captureElement[captureFuncName])(captureElement, event);
@@ -367,6 +368,7 @@ function Window:handleMouseEvent(event)
     end
     -- 获取悬浮元素
     local hoverElement = self:Hover(event, true);
+    event.target = hoverElement;
     -- WindowDebug.If(eventType == "mousePressEvent", hoverElement:GetAttr(), {hoverElement:GetWindowPos()}, {hoverElement:GetWindowSize()});
 
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "Hover 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
@@ -398,7 +400,8 @@ function Window:handleMouseEvent(event)
     -- 清空列表
     for i = 1, EventElementCount, 1 do EventElementList[i] = nil end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "清除元素列表 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
-    -- 聚焦目标元素
+    -- 聚焦目标元素  聚焦与事件是否处理无关
+    -- if (event:isAccepted()) then return end
     if(eventType == "mousePressEvent") then
         event:UpdateElement(hoverElement);
         self:SetFocus(hoverElement);

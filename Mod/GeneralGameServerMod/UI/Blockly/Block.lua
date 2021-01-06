@@ -34,6 +34,7 @@ Block:Property("Blockly");
 Block:Property("Id");
 Block:Property("Name", "Block");
 Block:Property("Language");
+Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");
 
 function Block:ctor()
     self:SetId(nextBlockId);
@@ -217,7 +218,7 @@ function Block:UpdateWidthHeightUnitCount()
 
     self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
     self:SetMaxWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
-    BlockDebug.Format("widthUnitCount = %s, heightUnitCount = %s, maxWidthUnitCount = %s, maxHeightUnitCount = %s", widthUnitCount, heightUnitCount, maxWidthUnitCount, maxHeightUnitCount);
+    -- BlockDebug.Format("widthUnitCount = %s, heightUnitCount = %s, maxWidthUnitCount = %s, maxHeightUnitCount = %s", widthUnitCount, heightUnitCount, maxWidthUnitCount, maxHeightUnitCount);
     
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then 
@@ -295,16 +296,18 @@ function Block:OnMouseMove(event)
     if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
     if (not self.isDraggable) then return end
 
-    local block = self;
+    local blockly, block = self:GetBlockly(), self;
     local x, y = event.x, event.y;
     if (not block.isDragging) then
         if (math.abs(x - block.startX) < UnitSize and math.abs(y - block.startY) < UnitSize) then return end
         if (block.isDragClone) then 
             block = self:Clone();
+            block.startLeftUnitCount, block.startTopUnitCount = block.leftUnitCount - blockly.offsetX / UnitSize, block.topUnitCount - blockly.offsetY / UnitSize;
         end
 
         block.isDragging = true;
         block:GetBlockly():CaptureMouse(block);
+        block:GetBlockly():SetDragBlock(block);
     end
     local XUnitCount = math.floor((x - block.startX) / UnitSize);
     local YUnitCount = math.floor((y - block.startY) / UnitSize);
@@ -326,9 +329,13 @@ end
 
 function Block:OnMouseUp(event)
     if (self.isDragging) then
-        self:CheckConnection();
+        if (self:GetBlockly():IsInnerDeleteArea(event.x, event.y)) then
+            self:GetBlockly():RemoveBlock(self);
+        else
+            self:CheckConnection();
+        end
     end
-
+    self:GetBlockly():SetDragBlock(nil);
     self.isMouseDown = false;
     self.isDragging = false;
     self:GetBlockly():ReleaseMouseCapture();
@@ -407,9 +414,9 @@ end
 
 -- 获取字段值
 function Block:GetFieldValue(name)
-    for _, inputAndFieldContainer in ipairs(block.inputFieldContainerList) do
+    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
         local inputAndFields = inputAndFieldContainer:GetInputFields();
-        for inputAndField in ipairs(inputAndFields) do
+        for _, inputAndField in ipairs(inputAndFields) do
             if (inputAndField:GetName() == name and inputAndField:IsField()) then return inputAndField:GetFieldValue() end
         end
     end
@@ -418,9 +425,9 @@ end
 
 -- 获取输入代码
 function Block:GetInputCode(name)
-    for _, inputAndFieldContainer in ipairs(block.inputFieldContainerList) do
+    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
         local inputAndFields = inputAndFieldContainer:GetInputFields();
-        for inputAndField in ipairs(inputAndFields) do
+        for _, inputAndField in ipairs(inputAndFields) do
             if (inputAndField:GetName() == name and inputAndField:IsInput()) then return inputAndField:GetInputCode() end
         end
     end

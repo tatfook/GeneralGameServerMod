@@ -100,6 +100,9 @@ debug 调试命令
 	/ggs debug statistics    显示全网统计信息
 	/ggs debug ping          验证是否是有效联机玩家
 	/ggs debug syncForceBlockList 显示强制同步块列表
+filesync
+	/ggs filesync            同步所有文件
+	/ggs filesync filepath   同步指定文件
 		]],
 -- sync 世界同步
 -- 	/ggs sync -[block|cmd]
@@ -116,6 +119,8 @@ debug 调试命令
 				__this__:handleSetSyncForceBlockCommand(cmd_text);
 			elseif (cmd == "sync") then
 				-- __this__:handleSyncCommand(cmd_text);
+			elseif (cmd == "filesync") then
+				__this__:handleFileSyncCommond(cmd_text);
 			end
 			-- 确保进入联机世界
 			if (not __this__:GetGeneralGameClient()) then return end;
@@ -131,6 +136,22 @@ debug 调试命令
 	}
 
 	Commands["ggs"] = ggs;
+end
+
+function GeneralGameCommand:handleFileSyncCommond(cmd_text)
+	local FileSync = NPL.load("Mod/GeneralGameServerMod/FileSync/FileSync.lua");
+	local options, cmd_text = ParseOptions(cmd_text);	
+	local filepath, cmd_text = CmdParser.ParseString(cmd_text);
+	local ip = IsDevEnv and "127.0.0.1" or (options.ip or "ggs.keepwork.com");
+	local port = options.port or 9000;
+	FileSync:SetIpPort(ip, port);
+	if (not filepath or filepath == "") then
+		FileSync:GetSyncFileList();
+	elseif (filepath == "refresh") then
+		FileSync:Refresh();
+	else
+		FileSync:GetSyncFile(filepath);
+	end
 end
 
 function GeneralGameCommand:handleOfflineUserCommand(cmd_text)

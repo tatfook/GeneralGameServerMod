@@ -26,7 +26,7 @@ local IsActivedDependItemUpdate = false;
 local CallBackFunctionListCache = {};
 local ElementListCache = {};
 local function ClearDependItemUpdateQueue()
-    print("======================开始更新依赖项==============================");
+    -- print("======================开始更新依赖项==============================");
     local BeginTime = ParaGlobal.timeGetTime();
     -- 获取更新依赖项
     local dependItemCount = 0;
@@ -76,8 +76,8 @@ local function ClearDependItemUpdateQueue()
     end
 
     local EndTime = ParaGlobal.timeGetTime();
-    print(string.format("响应更新耗时: %sms, 更新依赖项数: %s, 触发回调函数: %s, 清除无效元素耗时: %sms, 提取回调函数耗时: %sms", EndTime - BeginTime, dependItemCount, callbackFunctionCount, clearElementTime, getCallbackTime));
-    print("======================结束更新依赖项==============================");
+    -- print(string.format("响应更新耗时: %sms, 更新依赖项数: %s, 触发回调函数: %s, 清除无效元素耗时: %sms, 提取回调函数耗时: %sms", EndTime - BeginTime, dependItemCount, callbackFunctionCount, clearElementTime, getCallbackTime));
+    -- print("======================结束更新依赖项==============================");
 end
 
 local ClearDependItemTimer = commonlib.Timer:new({callbackFunc = function() 

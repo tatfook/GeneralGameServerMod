@@ -465,7 +465,7 @@ function Element:UpdateLayout(bApplyElementStyle)
     if (self.isUpdateLayout) then return end
     self.isUpdateLayout = true;
     
-    -- ElementDebug.If(self:GetAttrValue("id") == "debug", "Update Layout");
+    -- ElementDebug.If(self:GetAttrValue("id") == "debug", "Update Layout", bApplyElementStyle);
     -- 生成元素样式
     if (bApplyElementStyle) then self:ApplyElementStyle() end
 

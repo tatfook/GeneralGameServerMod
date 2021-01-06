@@ -24,6 +24,7 @@ Blockly:Property("Name", "Blockly");
 Blockly:Property("EditorElement");            -- 编辑元素 用户输入
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 Blockly:Property("FocusUI");                  -- 聚焦UI
+Blockly:Property("DragBlock");                -- 拖拽块
 
 local UnitSize = Const.UnitSize;
 
@@ -48,6 +49,7 @@ function Blockly:Init(xmlNode, window, parent)
         }
     }, window, self)
     table.insert(self.childrens, blocklyEditor);
+    blocklyEditor:SetVisible(false);
     self:SetEditorElement(blocklyEditor);
     return self;
 end
@@ -98,26 +100,37 @@ function Blockly:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
     -- 设置绘图类
     -- Shape:SetPainter(painter);
-
+    local dragBlock = self:GetDragBlock();
     painter:Translate(x, y);
-    painter:Save();
-    painter:SetClipRegion(0, 0, w, h);
 
     self.toolbox:Render(painter);
 
+    painter:Save();
+    painter:SetClipRegion(Const.ToolBoxWidthUnitCount * Const.UnitSize, 0, w, h);
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
-        block:Render(painter);
-        painter:Flush();
+        if (dragBlock ~= block) then
+            block:Render(painter);
+            painter:Flush();
+        end
     end
     painter:Translate(-self.offsetX, -self.offsetY);
-    
     painter:Restore();
+
+    if (dragBlock) then
+        painter:Translate(self.offsetX, self.offsetY);
+        dragBlock:Render(painter);
+        painter:Flush();
+        painter:Translate(-self.offsetX, -self.offsetY);
+    end
+
     painter:Translate(-x, -y);
 end
 
 -- 布局Blockly
-function Blockly:OnSize()
+function Blockly:UpdateWindowPos()
+    Blockly._super.UpdateWindowPos(self);
+    
     for _, block in ipairs(self.blocks) do
         block:UpdateLayout();
     end
@@ -153,11 +166,12 @@ end
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
     event:accept();
+
     if (event.target ~= self) then return end
 
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(x, y, event);
-    
+
     -- 失去焦点
     local focusUI = self:GetFocusUI();
     if (focusUI ~= ui and focusUI) then 
@@ -231,6 +245,13 @@ function Blockly:GetMouseUI(x, y, event)
     end
 
     return nil;
+end
+
+-- 是否在删除区域
+function Blockly:IsInnerDeleteArea(x, y)
+    local x, y = Blockly._super.GetRelPoint(self, x, y);  -- 防止减去偏移量
+    if (self.toolbox:IsContainPoint(x, y)) then return true end
+    return false;
 end
 
 -- 获取代码

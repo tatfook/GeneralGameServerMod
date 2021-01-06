@@ -22,8 +22,8 @@ BlockInputField:Property("Option");
 BlockInputField:Property("Color", "#ffffff");                    -- 颜色
 BlockInputField:Property("BackgroundColor", "#ffffff");          -- 背景颜色
 BlockInputField:Property("Edit", false, "IsEdit");               -- 是否在编辑
-BlockInputField:Property("Value");                               -- 值
-BlockInputField:Property("Text");                                -- 值
+BlockInputField:Property("Value", "");                           -- 值
+BlockInputField:Property("Label", "");                           -- 显示值
 
 function BlockInputField:ctor()
     self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount = 0, 0, 0, 0;
@@ -286,16 +286,16 @@ function BlockInputField:BeginEdit(opt)
     local blockly = self:GetBlock():GetBlockly();
     local editor = self:GetEditorElement();
     editor:ClearChildElement();
-    local style = editor:GetStyle();
-    style.NormalStyle.left = self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX;
-    style.NormalStyle.top = self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY;
-    style.NormalStyle.width = math.max(self.width, self:GetMinEditFieldWidthUnitCount() * Const.UnitSize);
-    style.NormalStyle.height = self.height;
+    editor:SetStyleValue("left", self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX);
+    editor:SetStyleValue("top", self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY);
+    editor:SetStyleValue("width", math.max(self.width, self:GetMinEditFieldWidthUnitCount() * Const.UnitSize));
+    editor:SetStyleValue("height", self.height);
     local fieldEditElement = self:GetFieldEditElement(editor);
     if (not fieldEditElement) then return end
     editor:InsertChildElement(fieldEditElement);
     editor:UpdateLayout();
-
+    editor:SetVisible(true);
+    fieldEditElement:OnFocusIn();
     self:SetEdit(true);
     self:GetTopBlock():UpdateLayout();
 end
@@ -304,7 +304,8 @@ function BlockInputField:EndEdit()
     self:SetEdit(false);
 
     local editor = self:GetEditorElement();
-    editor:SetGeometry(0, 0, 0, 0);
+    editor:SetVisible(false);
+
     self:GetTopBlock():UpdateLayout();
 end
 

@@ -31,12 +31,12 @@
         <div style="padding-left: 4px; width: 316px; height: 360px; margin-left: 11px;">
             <div style="display: flex; margin-top: 20px; height: 38px; width: 310px; background-color: #c1c2c2; font-size: 14px; base-font-size: 14px; color: #313131;">
                 <div class="center" style="width: 154px; height: 100%;">
-                    <div style="display: inline; padding-right: 5px;">{{follow}}</div>
+                    <div style="display: inline; padding-right: 5px;">{{UserDetail.rank.follow or 0}}</div>
                     <div style="display: inline; margin-top: 2px; width:34px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_guangzhu_34X16_32bits.png#0 0 34 16);"></div>
                 </div>
                 <div style="display: inline; width: 1px; height: 100%; background: url(Texture/Aries/Creator/keepwork/ggs/user/fengexian_1X45_32bits.png#0 0 1 45);"></div>
                 <div class="center" style="width: 154px; height: 100%;">
-                    <div style="display: inline; padding-right: 5px;">{{fans}}</div>
+                    <div style="display: inline; padding-right: 5px;">{{UserDetail.rank.fans or 0}}</div>
                     <div style="display: inline; margin-top: 2px; width:34px; height: 15px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_fensi_34X15_32bits.png#0 0 34 15);"></div>
                 </div>
             </div>
@@ -134,9 +134,6 @@ function OnReady()
     self.userId = UserDetail.id;
     self.username = UserDetail.username;
     self.nickname = MyCompany.Aries.Chat.BadWordFilter.FilterString(UserDetail.nickname);
-    self.isFollow = UserDetail.isFollow or false;
-    self.follow = UserDetail.rank.follow or 0;
-    self.fans = UserDetail.rank.fans or 0;
     self.isCrown = UserDetail.vip == 1;
     self.isTeacher = UserDetail.tLevel == 1;
     self.isStudent = UserDetail.student == 1;
@@ -196,6 +193,7 @@ end
 function OnEditNickNameFinish(nickname)
     UserDetail.nickname = nickname;
     self.isEditNickName = false;
+    self.nickname = nickname;
     local userinfo = KeepWorkItemManager.GetProfile();
     userinfo.nickname = nickname;
 end 

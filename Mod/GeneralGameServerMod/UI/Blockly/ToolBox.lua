@@ -48,7 +48,8 @@ function ToolBox:Render(painter)
     width = self.widthUnitCount * UnitSize;
 
     painter:SetPen("#ffffff");
-    painter:DrawLine(width, 0, width, height);
+    -- painter:DrawLine(width, 0, width, height);
+    painter:DrawRect(0, 0, width, height);
     -- echo({self.widthUnitCount, self.heightUnitCount})
 
     painter:Save();
@@ -100,5 +101,6 @@ function ToolBox:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     self.widthUnitCount, self.heightUnitCount = Const.ToolBoxWidthUnitCount, heightUnitCount or self.heightUnitCount;
 end
 
-
-
+function ToolBox:IsContainPoint(x, y)
+    return x < self.widthUnitCount * UnitSize;
+end

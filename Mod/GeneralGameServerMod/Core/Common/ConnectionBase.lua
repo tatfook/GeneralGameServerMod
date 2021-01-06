@@ -21,6 +21,9 @@ ConnectionBase:Property("Nid", "");
 ConnectionBase:Property("ThreadName", "gl");
 ConnectionBase:Property("DefaultNeuronFile", "Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");
 ConnectionBase:Property("ConnectionClosed", false, "IsConnectionClosed");
+ConnectionBase:Property("SynchronousSend", false, "IsSynchronousSend");   -- 是否采用同步发送数据包模式
+ConnectionBase:Property("SynchronousSendTimeout", 3);                     -- 同步发送超时时间
+
 
 function ConnectionBase:ctor()
     NextConnectionId = NextConnectionId + 1;
@@ -101,13 +104,6 @@ function ConnectionBase:Connect(timeout, callback_func)
 	end
 end
 
--- send message immediately to c++ queue
--- @param msg: the raw message table {id=packet_id, .. }. 
--- @param neuronfile: should be nil. By default, it is this file. 
-function ConnectionBase:Send(msg, neuronfile)
-    self:OnSend(msg, neuronfile);
-end
-
 -- 关闭连接
 function ConnectionBase:CloseConnection(reason)
 	NPL.reject({["nid"] = self:GetNid(), ["reason"] = reason});
@@ -116,14 +112,31 @@ function ConnectionBase:CloseConnection(reason)
     self:OnClose(reason);
 end
 
+-- send message immediately to c++ queue
+-- @param msg: the raw message table {id=packet_id, .. }. 
+-- @param neuronfile: should be nil. By default, it is this file. 
+function ConnectionBase:Send(msg, neuronfile)
+	if (self:IsConnectionClosed()) then return end
+	
+    msg, neuronfile = self:OnSend(msg, neuronfile);
+
+	local address = self:GetRemoteAddress(neuronfile);
+	local ret = 0;
+	if (self:IsSynchronousSend()) then
+		ret = NPL.activate_with_timeout(self:GetSynchronousSendTimeout(), address, msg);
+	else
+		ret = NPL.activate(address, msg);
+	end
+
+	if(ret ~= 0) then
+		LOG.std(nil, "warn", "Connection", "unable to send to %s.", self:GetNid());
+		self:CloseConnection("发包失败");
+	end
+end
+
 -- 发送消息
 function ConnectionBase:OnSend(msg, neuronfile)
-    if (self:IsConnectionClosed()) then return end
-	local address = self:GetRemoteAddress(neuronfile);
-    if(NPL.activate(address, msg) ~= 0) then
-        LOG.std(nil, "warn", "Connection", "unable to send to %s.", self:GetNid());
-        self:CloseConnection("发包失败");
-    end
+	return msg, neuronfile;
 end
 
 -- 接受消息
@@ -161,13 +174,17 @@ end
 
 function ConnectionBase:OnActivate(msg)
 	local nid = msg and (msg.nid or msg.tid);
-	if (not nid) then return end
+	if (not nid) then return self:handleMsg(msg) end
 	local connection = AllConnections[nid];
     if(connection) then return connection:OnReceive(msg) end
-	
-	self:new():Init({nid=nid}):OnConnection();
+	-- 新建连接
+	connection = self:new():Init({nid=nid});
+	connection:OnConnection();
+	connection:handleMsg(msg);
 end
 
+function ConnectionBase:handleMsg(msg)
+end
 
 NPL.this(function() 
 	local nid = msg and (msg.nid or msg.tid);
@@ -181,5 +198,7 @@ NPL.this(function()
 	elseif (action == "ConnectionDisconnected") then
 		local connection = AllConnections[msg.ConnectionNid];
 		if (connection) then connection:CloseConnection("链接断开") end
+	else 
+		ConnectionBase:handleMsg(msg);
 	end
 end);

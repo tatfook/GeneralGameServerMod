@@ -144,7 +144,6 @@ function Layout:ApplyPositionStyle()
 	local style = self:GetStyle();
 	local width, height = self:GetWidthHeight();
 	local WindowX, WindowY, WindowWidth, WindowHeight = self:GetWindowPosition();
-	local ScreenX, ScreenY, ScreenWidth, ScreenHeight = self:GetScreenPosition();
 	local top, right, bottom, left = self:GetPosition()
 	local float, position  = style.float, style.position;
 	-- 浮动与定位不共存
@@ -159,7 +158,7 @@ function Layout:ApplyPositionStyle()
 		-- 绝对定位 取已定位的父元素
 		-- while (relLayout and relLayout:GetParentLayout()) do
 		-- 	local relStyle = relLayout:GetStyle();
-		-- 	if (relStyle.position and (relStyle.position == "relative" or relStyle.position == "absolute" or relStyle.position == "fixed" or relStyle.position == "screen")) then break end
+		-- 	if (relStyle.position and (relStyle.position == "relative" or relStyle.position == "absolute" or relStyle.position == "fixed")) then break end
 		-- 	relLayout = relLayout:GetParentLayout();
 		-- end
 	elseif (position == "fixed") then
@@ -169,7 +168,6 @@ function Layout:ApplyPositionStyle()
 
 	local relWidth, relHeight = nil, nil;
 	if (relLayout) then relWidth, relHeight = relLayout:GetWidthHeight() end
-	if (position == "screen") then relWidth, relHeight = ScreenWidth, ScreenHeight end
 	relWidth, relHeight = relWidth or 0, relHeight or 0;
 	if (right and width and not left) then left = relWidth - right - width end
 	if (bottom and height and not top) then top = relHeight - bottom - height end

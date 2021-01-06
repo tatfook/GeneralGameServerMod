@@ -61,7 +61,7 @@ function ElementUI:RenderStaticElement(painter, root)
 
     if (not self:IsNeedRender()) then return end
     local position = self:GetLayout():GetPositionStyle();
-    if (self ~= root and (position == "absolute" or position == "fixed" or position == "screen")) then
+    if (self ~= root and (position == "absolute" or position == "fixed")) then
         if (position == "absolute") then 
             table.insert(root.AbsoluteElements, self);
         else
@@ -161,13 +161,9 @@ function ElementUI:RenderAbsoluteElement(painter, root)
 end
 
 function ElementUI:RenderFixedElement(painter)
-    if (not self:GetStyle()) then return end
-    local position = self:GetStyle().position;
-    if (position ~= "fixed" and position ~= "screen") then return end
-    local windowX, windowY = self:GetWindow():GetWindowPos();
-    if (position == "fixed") then painter:Translate(windowX, windowY) end
-    self:Render(painter);
-    if (position == "fixed") then painter:Translate(-windowX, -windowY) end
+    for _, fixedElement in ipairs(self.FixedElements) do
+        fixedElement:Render(painter);
+    end
 end
 
 -- 绘制元素
@@ -396,13 +392,16 @@ function ElementUI:UpdateWindowPos(forceUpdate)
     local oldWindowX, oldWindowY = self:GetWindowPos();
     local parentElement = self:GetParentElement();
     local position = self:GetStyle()["position"];
-    if (parentElement and position ~= "fixed" and position ~= "screen") then 
+    if (parentElement and position ~= "fixed") then 
         parentWindowX, parentWindowY = parentElement:GetWindowPos();
         parentScrollX, parentScrollY = parentElement:GetScrollPos();
     end
     windowX, windowY = parentWindowX + x, parentWindowY + y;
     windowWidth, windowHeight = self:GetSize();
-    if(position ~= "absolute" and position ~= "fixed" and position ~= "screen") then
+    if (position == "fixed") then
+        windowX, windowY = self:GetPosition();
+    elseif(position == "absolute") then
+    else 
         windowX, windowY = windowX - parentScrollX, windowY - parentScrollY;
     end
     
@@ -478,7 +477,7 @@ end
 function ElementUI:IsDraggable()
     local style = self:GetStyle();
     local draggable = self:GetAttrBoolValue("draggable") == true and true or false;
-    return draggable and (self:IsWindow() or style.position == "fixed" or style.position == "screen" or style.position == "absolute");
+    return draggable and (self:IsWindow() or style.position == "fixed" or style.position == "absolute");
 end
 
 -- https://developer.mozilla.org/en-US/docs/Web/Events
@@ -487,21 +486,18 @@ function ElementUI:OnMouseDownCapture(event)
 end
 
 function ElementUI:OnClick(event)
-    local click = self:GetAttrFunctionValue("onclick");
-	if (click) then click(event) end
+    self:CallAttrFunction("onclick", nil, self, event);
 end
 
 function ElementUI:OnContextMenu()
 end
 
 function ElementUI:OnChange(value)
-    local change = self:GetAttrFunctionValue("onchange");
-    if (change) then change(value) end
+    self:CallAttrFunction("onchange", nil, value, self, event);
 end
 
 function ElementUI:OnMouseDown(event)
-    local mousedown = self:GetAttrFunctionValue("onmousedown");
-    if (mousedown) then mousedown(event) end
+    self:CallAttrFunction("onmousedown", nil, self, event);
 
     -- 默认拖拽处理
     if(event:isAccepted()) then return end
@@ -516,8 +512,7 @@ function ElementUI:OnMouseDown(event)
 end
 
 function ElementUI:OnMouseMove(event)
-    local mousemove = self:GetAttrFunctionValue("onmousemove");
-    if (mousemove) then mousemove(event) end
+    self:CallAttrFunction("onmousemove", nil, self, event);
 
     if(event:isAccepted()) then return end
     local x, y = ParaUI.GetMousePosition();
@@ -543,8 +538,7 @@ function ElementUI:OnMouseMove(event)
 end
 
 function ElementUI:OnMouseUp(event)
-    local mouseup = self:GetAttrFunctionValue("onmouseup");
-    if (mouseup) then mouseup(event) end
+    self:CallAttrFunction("onmouseup", nil, self, event);
 
     if (event:button() == "right") then 
         self:OnContextMenu(event);
@@ -567,17 +561,15 @@ function ElementUI:OnMouseUp(event)
 end
 
 function ElementUI:OnMouseLeave()
+    self:CallAttrFunction("onmouseleave", nil, self, event);
 end
 
 function ElementUI:OnMouseEnter()
+    self:CallAttrFunction("onmouseenter", nil, self, event);
 end
 
-function ElementUI:OnHover()
-    self:CallAttrFunction("onhover", nil, true, self);
-end
-
-function ElementUI:OffHover()
-    self:CallAttrFunction("onhover", nil, false, self);
+function ElementUI:OnHover(isHover)
+    self:CallAttrFunction("onhover", nil, isHover, self);
 end
 
 -- 悬浮
@@ -592,7 +584,8 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
         if (element:IsHover()) then
             element:SetHover(false);
             isChangeHoverState = true
-            element:OffHover();
+            element:OnMouseLeave();
+            element:OnHover(false);
         end
         for child in element:ChildElementIterator() do
             SetElementOffHover(child);
@@ -632,14 +625,16 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
             -- ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OnHover-----------");
             self:SetHover(true);
             isChangeHoverState = true
-            self:OnHover();
+            self:OnHover(true);
+            self:OnMouseEnter();
         end
     else 
         if (self:IsHover()) then
             -- ElementUIDebug.If(self:GetAttrStringValue("class") == "project btn", "---------------OffHover-----------");
             self:SetHover(false);
             isChangeHoverState = true
-            self:OffHover();
+            self:OnHover(false);
+            self:OnMouseLeave();
         end
     end
 

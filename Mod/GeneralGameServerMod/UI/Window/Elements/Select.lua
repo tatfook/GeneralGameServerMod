@@ -98,7 +98,6 @@ function Select:ctor()
 end
 
 function Select:Init(xmlNode, window, parent)
-    echo(xmlNode)
     self:InitElement(xmlNode, window, parent);
 
     local ListBox = ListBox:new():Init({
@@ -127,8 +126,6 @@ function Select:Init(xmlNode, window, parent)
     self:OnValueAttrValueChange(self:GetAttrStringValue("value"));
 
     ListBox:SetVisible(false);
-
-    if (self:GetAttrBoolValue("autofocus")) then self:OnFocusIn() end
 
     return self;
 end
@@ -196,6 +193,9 @@ function Select:OnAfterUpdateLayout()
     local width, height = self:GetSize();
 
     self:GetListBoxElement():SetStyleValue("top", (height or 0) + 2);
+
+    -- 自动聚焦有问题
+    -- if (self:GetAttrBoolValue("autofocus")) then self:OnFocusIn() end
 end
 
 local ArrowAreaSize = 20;

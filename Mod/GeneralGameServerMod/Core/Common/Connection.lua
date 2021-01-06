@@ -61,7 +61,7 @@ end
 -- 接受数据包
 function Connection:OnReceive(msg)
 	-- 读取数据包
-	local packet = PacketTypes:GetNewPacket(msg.id);
+	local packet = msg.id and PacketTypes:GetNewPacket(msg.id) or nil;
 	if (packet) then packet:ReadPacket(msg) end
 
 	NetDebug(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);
@@ -81,7 +81,7 @@ function Connection:OnReceive(msg)
 			GGS.INFO("net handler no exist");
 		end
 	else
-		GGS.INFO("invalid packet");
+		-- GGS.INFO("invalid packet");
 		if (netHandler and netHandler.handleMsg) then
 			netHandler:handleMsg(msg);
 		else 
@@ -103,7 +103,6 @@ function Connection:OnActivate(msg)
 	local nid = msg and (msg.nid or msg.tid);
 	local connection = self:GetConnectionByNid(nid);
 	if(connection) then return connection:OnReceive(msg) end
-
 
 	NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
 	local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");

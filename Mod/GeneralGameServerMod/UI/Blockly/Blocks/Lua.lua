@@ -21,7 +21,7 @@ NPL.export({
             {
                 name = "field_dropdown",
                 type = "field_dropdown",
-                text = "真",
+                text = "true",
                 options = {
                     {"真", "true"},
                     {"假", "false"},
@@ -30,6 +30,9 @@ NPL.export({
         },
         output = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block) 
+            return block:GetFieldValue("field_dropdown");
+        end,
     },
     {
         type = "number",

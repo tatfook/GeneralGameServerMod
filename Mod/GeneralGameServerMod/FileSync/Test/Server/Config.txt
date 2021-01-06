@@ -1,0 +1,15 @@
+{
+["filelist"]={
+[1]={
+["filepath"]="FileSync.lua",
+["sha"]="BWhSEIC+wahRyTiViFQs8MF89d4=",
+}
+,
+[2]={
+["filepath"]="FileSync.xml",
+["sha"]="IjUFqqVeKBCoH5ZLHAyInlmjWCI=",
+}
+,
+}
+,
+}

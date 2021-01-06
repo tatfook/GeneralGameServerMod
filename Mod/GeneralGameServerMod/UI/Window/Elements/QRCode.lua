@@ -52,7 +52,7 @@ function QRCode:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
 
     painter:Translate(x, y);
-    painter:SetPen("#000000ff");
+    painter:SetPen(self:GetColor("#000000ff"));
 
     local block_size = w / #(self.qrcode);
 	for i = 1, #(self.qrcode) do

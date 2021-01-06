@@ -1,18 +1,43 @@
 <template>
-    <div class="scroll" style="width: 598px; height: 580px; padding-left: 3px; padding-top: 8px; overflow-y: auto; ">
-        <div v-for="goods in goodslist" class="goods">
+    <div class="scroll" style="width: 598px; height: 580px; padding-left: 3px; padding-top: 8px; overflow-y: auto; " onmousemove="OnMouseMove(nil)" onmouseenter=onmouseenter onmouseleave=onmouseleave>
+        <div v-for="goods in goodslist" class="goods" onmousemove="OnMouseMove(goods)">
             <div v-bind:style="GoodsStyle(goods)"></div>
             <div class="center" style="height: 30px; color: #000000;">{{goods.copies}}</div>
         </div>
+        <GoodsTooltip ref="tooltip" class="goods-tooltip" v-bind:goods="hoverGoods"></GoodsTooltip>
     </div>
-    
 </template>
 
 <script type="text/lua">
+RegisterComponent("GoodsTooltip", "%vue%/Page/User/GoodsTooltip.html");
 
 goodslist = _G.GetUserShowGoods();
+hoverGoods = nil;
+local ToolTipEl = nil;
 
 function OnAttrValueChange()
+end
+
+function onmouseleave()
+    hoverGoods = nil;
+    if (ToolTipEl) then ToolTipEl:SetVisible(false) end
+end
+
+function onmouseenter()
+end
+
+function OnMouseMove(goods)
+    local event = GetEvent();
+    event:accept();
+    if (not ToolTipEl) then return end
+    
+    local windowX, windowY = event.windowX + 30, event.windowY + 30;
+    ToolTipEl:SetStyleValue("left", windowX);
+    ToolTipEl:SetStyleValue("top", windowY);
+    ToolTipEl:SetPosition(windowX, windowY);
+    hoverGoods = goods;
+    ToolTipEl:SetVisible(hoverGoods and true or false);
+    --print(goods, event.x, event.y, event.windowX, event.windowY);
 end
 
 function GoodsStyle(goods)
@@ -20,6 +45,8 @@ function GoodsStyle(goods)
 end
 
 function OnReady()
+    ToolTipEl = GetRef("tooltip");
+    ToolTipEl:SetVisible(false);
 end
 </script>
 
@@ -31,21 +58,11 @@ end
     display: inline-block;
     background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/wupingbj_146X140_32bits.png#0 0 146 140);
 }
-</style>
 
-<template>
-    <div ref="list" style="width: 598px; height: 580px; padding-left: 3px; padding-top: 8px; overflow-y: auto; ">
-        <WorksList v-bind:UserInfo="UserDetail" v-bind:NextPageProjectList="NextPageFavoriteProjectList" v-bind:ProjectList="FavoriteProjectList"></WorksList>
-    </div>
-</template>
-
-<script type="text/lua">
-RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
-
-function OnReady()
-end
-</script>
-
-<style>
-
+.goods-tooltip {
+    position: fixed;
+    left: -10000px;
+    top: -10000px;
+    z-index: 100;
+}
 </style>

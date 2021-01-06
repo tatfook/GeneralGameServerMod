@@ -18,8 +18,6 @@ local Input = commonlib.inherit(Field, NPL.export());
 Input:Property("Name", "Input");
 Input:Property("Color", "#000000");
 Input:Property("BackgroundColor", "#ffffff");
-Input:Property("Value", "");
-Input:Property("Text", "");
 Input:Property("Type", "text");
 
 -- Input:Property("")
@@ -36,7 +34,7 @@ function Input:Init(block, opt)
 
     self:SetType(opt.type == "field_number" and "number" or "text");
     self:SetValue(value);
-    self:SetText(value);
+    self:SetLabel(value);
 
     return self;
 end
@@ -55,11 +53,11 @@ function Input:RenderContent(painter)
     -- input
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetText());
+    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
 end
 
 function Input:UpdateWidthHeightUnitCount()
-    local widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetText()), 6) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
+    local widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetLabel()), 6) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
     return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), heightUnitCount;
 end
 
@@ -77,7 +75,7 @@ function Input:GetFieldEditElement(parentElement)
     InputFieldEditElement:SetAttrValue("onkeydown.enter", function()
         local value = InputFieldEditElement:GetValue();
         self:SetValue(value);
-        self:SetText(value);
+        self:SetLabel(value);
         self:FocusOut();
     end)
 

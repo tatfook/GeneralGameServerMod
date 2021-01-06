@@ -1,12 +1,24 @@
 <template class="container">
-    <WindowTitleBar title="图块编程"></WindowTitleBar>
-    <Blockly style="width: 100%; flex: 1;"></Blockly>
+    <template class="header-container">
+        <div class="title">图块编程</div>
+        <div onclick=ClickCode class="text">代码</div>
+        <div onclick=CloseWindow class="btn" style="width: 22px; height: 22px; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);"></div>
+    </template>
+    <Blockly ref="blockly" style="width: 100%; flex: 1;"></Blockly>
 </template>
 
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+
+local BlocklyEl = nil;
+
 -- 组件解析完成
 function OnReady()
+    BlocklyEl = GetRef("blockly");
+end
+
+function ClickCode()
+    print(BlocklyEl:GetCode());
 end
 </script>
 
@@ -18,4 +30,16 @@ end
     flex-direction: column;
     background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);
 }
+
+.header-container {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    color: #ffffff;
+    height: 39px;
+    width: 100%;
+    font-size: 16px;
+    padding: 0px 20px;
+}
+
 </style>

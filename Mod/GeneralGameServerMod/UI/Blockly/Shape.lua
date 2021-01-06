@@ -15,7 +15,7 @@ local Shape = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.
 local Triangle = {{0,0,0}, {0,0,0}, {0,0,0}};       -- 三角形
 local UnitSize = Const.UnitSize;
 
-Shape:Property("Pen", "#000000");              -- 画笔
+Shape:Property("Pen", "#ffffff");              -- 画笔
 Shape:Property("Brush", "#ffffff");            -- 画刷
 Shape:Property("Painter");                     -- 绘图类
 Shape:Property("DrawBorder", true, "IsDrawBorder");  -- 是否绘制边框

@@ -268,6 +268,10 @@ end
 function BaseLayout:GetPos()
 	return self.x or 0, self.y or 0; 
 end
+-- 获取内容偏移
+function BaseLayout:GetContentOffset()
+	return self.borderLeft + self.paddingLeft, self.borderTop + self.paddingTop;
+end
 -- 获取内容位置
 function BaseLayout:GetContentPos()
 	return self.x + self.borderLeft + self.paddingLeft, self.y + self.borderTop + self.paddingTop;
@@ -341,7 +345,7 @@ function BaseLayout:PrepareLayout()
     -- 定位元素
 	self:SetPositionStyle(position);
 
-	if (position == "absolute" or position == "fixed" or position == "screen") then 
+	if (position == "absolute" or position == "fixed") then 
 		self:SetPositionElement(true);
 		-- 不使用文档流
 		self:SetUseSpace(false);

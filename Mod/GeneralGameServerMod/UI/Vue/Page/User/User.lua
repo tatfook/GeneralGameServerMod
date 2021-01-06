@@ -21,6 +21,8 @@ GlobalScope:Set("ProjectList", {});                      -- 用户项目列表
 GlobalScope:Set("ProjectListLoadFinish", false);
 GlobalScope:Set("ProjectListType", "works");
 GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
+GlobalScope:Set("IsFollow", false);
+
 
 local ProjectMap = {};
 
@@ -256,16 +258,15 @@ function LoadUserInfo()
 
         -- 先拉取第一页
         NextPageProjectList();
-        if (not GlobalScope:Get("isAuthUser")) then return end
+        if (GlobalScope:Get("isAuthUser") or not GlobalScope:Get("isLogin")) then return end
         -- 获取是否关注
         keepwork.user.isfollow({
             objectId = UserDetail.id,
             objectType = 0,
         }, function(status, msg, data) 
-            UserDetail.isFollow = false;
             if (status ~= 200) then return end
             if (data and data ~= "false" and tonumber(data) ~= 0) then
-                UserDetail.isFollow = true;
+                GlobalScope:Set("IsFollow", true);
             end
         end)
     end)
@@ -366,6 +367,7 @@ _G.GetAllAssets = function()
                 modelOrder = tonumber(extra.modelOrder or 0) or 0,
                 icon = GetItemIcon(tpl),
                 name = tpl.name,
+                desc = tpl.desc,
                 owned = IsOwned(tpl),
                 requireVip = tpl.extra and tpl.extra.vip_enabled,
             });
@@ -398,6 +400,7 @@ _G.GetUserShowGoods = function()
                     icon = GetItemIcon(itemTpl),
                     copies = copies,
                     name = itemTpl.name,
+                    desc = itemTpl.desc,
                 });
             end
         end
@@ -415,6 +418,7 @@ _G.GetUserHonors = function ()
                 table.insert(honors, {
                     icon = GetItemIcon(itemTpl),
                     name = itemTpl.name,
+                    desc = itemTpl.desc,
                 });
             end
         end

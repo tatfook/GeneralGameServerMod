@@ -53,7 +53,7 @@ function Value:Render(painter)
     
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetText());
+    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
 
     painter:Translate(-offsetX, -offsetY);
 end
@@ -71,7 +71,7 @@ function Value:UpdateWidthHeightUnitCount()
         _, _, _, _, widthUnitCount, heightUnitCount = inputBlock:UpdateWidthHeightUnitCount();
         return widthUnitCount, heightUnitCount;
     end
-    widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetText()), 6) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
+    widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetLabel()), 6) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
     return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), heightUnitCount;
 end
 
