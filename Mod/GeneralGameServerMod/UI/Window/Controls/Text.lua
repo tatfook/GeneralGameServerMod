@@ -50,7 +50,8 @@ end
 
 function Text:FormatText(text)
 	text = ReplaceEntityReference(text);
-
+	text = string.gsub(text, "\t", "    ");
+	
 	local whiteSpace = self:GetStyle():GetWhiteSpace();
 
 	text = string.gsub(text, "\r\n", "\n");

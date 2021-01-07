@@ -145,3 +145,14 @@ end
 function Value:OnEndEdit()
     if (self.inputEl) then self.inputEl:FocusOut() end
 end
+
+function Value:GetValueAsString()
+    if (not self:GetInputBlock()) then 
+        if (self:GetShadowType() == "math_number") then
+            return string.format('%s', self:GetValue());
+        else 
+            return string.format('"%s"', self:GetValue());
+        end
+    end
+    return self:GetInputBlock():GetBlockCode();
+end

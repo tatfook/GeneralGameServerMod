@@ -45,6 +45,10 @@ function Input:GetNextBlock()
     return self:GetInputBlock();
 end
 
-function Input:GetFieldValue()
+function Input:GetFieldValue() 
+    return self:GetValueAsString();
+end
+
+function Input:GetValueAsString()
     return self:GetInputCode();
 end

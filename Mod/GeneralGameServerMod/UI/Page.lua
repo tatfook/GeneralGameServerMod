@@ -59,6 +59,20 @@ function Page.ShowDebugInfoPage(G, params)
     return DebugInfoPage;
 end
 
+local BlocklyPage = Vue:new();
+function Page.ShowBlocklyPage()
+    params = params or {};
+
+    params.url = "%vue%/Example/Blockly.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = "100%";
+    params.height = "100%";
+    BlocklyPage:Show(params);
+
+    return BlocklyPage;
+end
+
 local VueTestPage = Vue:new();
 function Page.ShowVueTestPage(G, params)
     if (IsDevEnv) then

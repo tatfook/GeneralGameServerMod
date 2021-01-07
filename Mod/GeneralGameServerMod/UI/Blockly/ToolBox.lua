@@ -22,6 +22,7 @@ ToolBox:Property("Blockly");
 function ToolBox:ctor()
     self.leftUnitCount, self.topUnitCount = 0, 0;
     self.widthUnitCount, self.heightUnitCount = 0, 0;
+    self.width, self.height = 0, 0;
     self.offsetX, self.offsetY = 0, 0;
     self.blocks = {};
 end
@@ -51,8 +52,8 @@ function ToolBox:Render(painter)
     width = self.widthUnitCount * UnitSize;
 
     painter:SetPen("#ffffff");
-    -- painter:DrawLine(width, 0, width, height);
-    painter:DrawRect(0, 0, width, height);
+    painter:DrawLine(width, 0, width, height);
+    -- painter:DrawRect(0, 0, width, height);
     -- echo({self.widthUnitCount, self.heightUnitCount})
 
     painter:Save();
@@ -122,6 +123,7 @@ end
 
 function ToolBox:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     self.widthUnitCount, self.heightUnitCount = Const.ToolBoxWidthUnitCount, heightUnitCount or self.heightUnitCount;
+    self.width = self.widthUnitCount * UnitSize, self.heightUnitCount * UnitSize;
 end
 
 function ToolBox:IsContainPoint(x, y)

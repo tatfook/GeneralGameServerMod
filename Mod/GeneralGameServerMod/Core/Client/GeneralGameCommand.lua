@@ -103,6 +103,7 @@ debug 调试命令
 filesync
 	/ggs filesync            同步所有文件
 	/ggs filesync filepath   同步指定文件
+blockly 图块编程	
 		]],
 -- sync 世界同步
 -- 	/ggs sync -[block|cmd]
@@ -121,6 +122,8 @@ filesync
 				-- __this__:handleSyncCommand(cmd_text);
 			elseif (cmd == "filesync") then
 				__this__:handleFileSyncCommond(cmd_text);
+			elseif (cmd == "blockly") then
+				__this__:handleBlocklyCommond(cmd_text)
 			end
 			-- 确保进入联机世界
 			if (not __this__:GetGeneralGameClient()) then return end;
@@ -136,6 +139,11 @@ filesync
 	}
 
 	Commands["ggs"] = ggs;
+end
+
+function GeneralGameCommand:handleBlocklyCommond(cmd_text)
+	local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+	Page.ShowBlocklyPage();
 end
 
 function GeneralGameCommand:handleFileSyncCommond(cmd_text)

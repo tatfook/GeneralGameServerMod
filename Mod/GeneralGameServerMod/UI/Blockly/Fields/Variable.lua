@@ -35,3 +35,6 @@ function Variable:GetOptions()
     return options;
 end
 
+function Variable:GetValueAsString()
+    return self:GetValue();
+end

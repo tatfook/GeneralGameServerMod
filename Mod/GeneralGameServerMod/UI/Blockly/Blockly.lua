@@ -11,6 +11,8 @@ local Blockly = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blockly.l
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
+local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
+local Sandbox = NPL.load("./Sandbox/Sandbox.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
@@ -112,10 +114,11 @@ function Blockly:RenderContent(painter)
     -- 设置绘图类
     -- Shape:SetPainter(painter);
     local dragBlock = self:GetDragBlock();
+    local toolboxWidth = Const.ToolBoxWidthUnitCount * Const.UnitSize;
     painter:Translate(x, y);
 
     painter:Save();
-    painter:SetClipRegion(0, 0, w, h);
+    painter:SetClipRegion(toolboxWidth, 0, w - toolboxWidth, h);
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
         if (dragBlock ~= block) then
@@ -177,7 +180,6 @@ function Blockly:OnMouseDown(event)
 
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(x, y, event);
-
     -- 失去焦点
     local focusUI = self:GetFocusUI();
     if (focusUI ~= ui and focusUI) then 
@@ -186,8 +188,11 @@ function Blockly:OnMouseDown(event)
     end
 
     -- 元素被点击 直接返回元素事件处理
-    if (ui and ui ~= self) then return ui:OnMouseDown(event) end
-
+    if (ui ~= self) then 
+        event.down_target = ui;
+        return ui:OnMouseDown(event);
+    end
+    
     -- 工作区被点击
     self.isMouseDown = true;
     self.startX, self.startY = event.x, event.y;
@@ -218,21 +223,23 @@ end
 -- 鼠标抬起事件
 function Blockly:OnMouseUp(event)
     event:accept();
+    self.isDragging = false;
+    self.isMouseDown = false;
     if (event.target ~= self) then return end
-    
+
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(x, y, event);
+    self:ReleaseMouseCapture();
+
     local focusUI = self:GetFocusUI();  -- 获取焦点
+
     if (focusUI ~= ui and focusUI) then focusUI:OnFocusOut() end
-    if (focusUI ~= ui and ui) then ui:OnFocusIn() end
+    if (focusUI ~= ui and ui and event.down_target == ui) then ui:OnFocusIn() end
+    
     if (ui and ui ~= self) then 
         self:SetFocusUI(ui);
         return ui:OnMouseUp(event);
     end
-
-    self.isDragging = false;
-    self.isMouseDown = false;
-    self:ReleaseMouseCapture();
 end
 
 -- 获取鼠标元素
@@ -240,9 +247,11 @@ function Blockly:GetMouseUI(x, y, event)
     local ui = self:GetMouseCaptureUI();
     if (ui) then return ui end
 
-    ui = self.toolbox:GetMouseUI(x + self.offsetX, y + self.offsetY, event);
-    if (ui) then return ui end
-
+    if (self:IsInnerToolBox(event)) then
+        ui = self.toolbox:GetMouseUI(x + self.offsetX, y + self.offsetY, event);
+        return ui or self.toolbox;
+    end
+    
     local size = #self.blocks;
     for i = size, 1, -1 do
         local block = self.blocks[i];
@@ -250,7 +259,13 @@ function Blockly:GetMouseUI(x, y, event)
         if (ui) then return ui end
     end
 
-    return nil;
+    return self;
+end
+
+function Blockly:IsInnerToolBox(event)
+    local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);  -- 防止减去偏移量
+    if (self.toolbox:IsContainPoint(x, y)) then return true end
+    return false;
 end
 
 -- 是否在删除区域
@@ -272,5 +287,10 @@ function Blockly:GetCode(language)
     for _, block in ipairs(self.blocks) do
         code = code .. (block:GetBlockCode() or "") .. "\n";
     end
-    return code;
+    return code, LuaFmt.Pretty(code);
+end
+
+-- 执行代码
+function Blockly:ExecCode(code)
+    return Sandbox.ExecCode(code);
 end

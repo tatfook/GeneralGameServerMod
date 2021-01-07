@@ -434,29 +434,20 @@ function Block:GetFieldValue(name)
     for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
         local inputAndFields = inputAndFieldContainer:GetInputFields();
         for _, inputAndField in ipairs(inputAndFields) do
-            if (inputAndField:GetName() == name and inputAndField:IsField()) then return inputAndField:GetFieldValue() end
+            if (inputAndField:GetName() == name) then return inputAndField:GetFieldValue() end
         end
     end
-    return "";
-end
-
--- 获取输入代码
-function Block:GetInputCode(name)
-    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
-        local inputAndFields = inputAndFieldContainer:GetInputFields();
-        for _, inputAndField in ipairs(inputAndFields) do
-            if (inputAndField:GetName() == name and inputAndField:IsInput()) then return inputAndField:GetInputCode() end
-        end
-    end
-    return "";
+    return nil;
 end
 
 -- 获取字段
-function Block:GetFieldAsString(name)
+function Block:GetValueAsString(name)
     for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
         local inputAndFields = inputAndFieldContainer:GetInputFields();
         for _, inputAndField in ipairs(inputAndFields) do
-            if (inputAndField:GetName() == name) then return inputAndField:GetFieldValue() end
+            if (inputAndField:GetName() == name) then 
+                return inputAndField:GetValueAsString();
+            end
         end
     end
     return "";
@@ -466,9 +457,14 @@ end
 function Block:GetBlockCode()
     local language = self:GetLanguage();
     local option = self:GetOption();
+    local code = ""
     if (language == "lua") then
     else  -- npl
-        return option.ToNPL(self);
+        code = option.ToNPL(self);
     end
-    return "";
+    local nextBlock = self:GetNextBlock();
+    if (nextBlock) then
+        code = code .. "\n" .. nextBlock:GetBlockCode();
+    end
+    return code;
 end

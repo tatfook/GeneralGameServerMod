@@ -18,9 +18,6 @@ local Input = commonlib.inherit(Field, NPL.export());
 Input:Property("Name", "Input");
 Input:Property("Color", "#000000");
 Input:Property("BackgroundColor", "#ffffff");
-Input:Property("Type", "text");
-
--- Input:Property("")
 
 local UnitSize = Const.UnitSize;
 
@@ -32,7 +29,6 @@ function Input:Init(block, opt)
     elseif (type(opt.text) == "string") then value = opt.text 
     else  end
 
-    self:SetType(opt.type == "field_number" and "number" or "text");
     self:SetValue(value);
     self:SetLabel(value);
 
@@ -70,7 +66,7 @@ function Input:GetFieldEditElement(parentElement)
         },
     }, parentElement:GetWindow(), parentElement);
 
-    InputFieldEditElement:SetAttrValue("type", self:GetType());
+    InputFieldEditElement:SetAttrValue("type", self:GetType() == "field_number" and "number" or "text");
     InputFieldEditElement:SetAttrValue("onkeydown.enter", function()
         local value = InputFieldEditElement:GetValue();
         self:SetValue(value);
@@ -89,4 +85,12 @@ end
 
 function Input:OnEndEdit()
     if (self.inputEl) then self.inputEl:FocusOut() end
+end
+
+function Input:GetValueAsString()
+    if (self:GetType() == "field_number") then 
+        return string.format('%s', self:GetValue());
+    else 
+        return string.format('"%s"', self:GetValue());
+    end
 end

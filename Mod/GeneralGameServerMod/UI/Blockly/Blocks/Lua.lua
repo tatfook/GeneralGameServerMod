@@ -15,6 +15,15 @@ local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 
 NPL.export({
     {
+        type = "nil",
+        message0 = "nil",
+        output = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block) 
+            return "nil";
+        end,
+    },
+    {
         type = "boolean",
         message0 = "%1",
         arg0 = {
@@ -31,7 +40,7 @@ NPL.export({
         output = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block) 
-            return block:GetFieldAsString("field_dropdown");
+            return block:GetFieldValue("field_dropdown");
         end,
     },
     {
@@ -49,7 +58,7 @@ NPL.export({
         output = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block) 
-	    	return string.format('%s', block:GetFieldAsString("field_number"));
+            return block:GetValueAsString("field_number");
         end,
     },
     {
@@ -65,7 +74,7 @@ NPL.export({
         output = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block) 
-            return string.format("\"%s\"", block:GetFieldAsString("field_input"));
+            return block:GetValueAsString("field_input");
         end,
     },
     {
@@ -81,7 +90,7 @@ NPL.export({
         output = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block) 
-            return block:GetFieldAsString("field_variable");
+            return block:GetValueAsString("field_variable");
         end,
     },
     {
@@ -104,7 +113,7 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format('if(%s) then\n    %s\nend\n', block:GetFieldAsString('input_value'), block:GetFieldAsString('input_statement'));
+            return string.format('if(%s) then\n%s\nend\n', block:GetValueAsString('input_value'), block:GetValueAsString('input_statement'));
         end,
     },
     {
@@ -128,7 +137,7 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format('if(%s) then\n    %s\nelse\n    %s\nend\n', block:GetFieldAsString('expression'), block:GetFieldAsString('input_true'), block:GetFieldAsString('input_else'));
+            return string.format('if(%s) then\n%s\nelse\n%s\nend\n', block:GetValueAsString('expression'), block:GetValueAsString('input_true'), block:GetValueAsString('input_else'));
         end,
     },
     {
@@ -156,7 +165,7 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format('for %s, %s in pairs(%s) do\n    %s\nend\n', block:GetFieldAsString('key'), block:GetFieldAsString('value'), block:GetFieldAsString('data'), block:GetFieldAsString('input'));
+            return string.format('for %s, %s in pairs(%s) do\n    %s\nend\n', block:GetValueAsString('key'), block:GetValueAsString('value'), block:GetValueAsString('data'), block:GetValueAsString('input'));
         end,
     },
     {
@@ -184,7 +193,24 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format('for %s, %s in ipairs(%s) do\n    %s\nend\n', block:GetFieldAsString('i'), block:GetFieldAsString('item'), block:GetFieldAsString('data'), block:GetFieldAsString('input'));
+            return string.format('for %s, %s in ipairs(%s) do\n    %s\nend\n', block:GetValueAsString('i'), block:GetValueAsString('item'), block:GetValueAsString('data'), block:GetValueAsString('input'));
         end,
     },
+
+    {
+        type = "print",
+        message0 = "打印 %1",
+        arg0 = {
+            {
+                name = "val",
+                type = "input_value",
+            },
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            return string.format('Print(%s)\n', block:GetValueAsString('val'));
+        end,
+    }
 });

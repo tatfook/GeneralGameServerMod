@@ -39,14 +39,14 @@ function Field:IsCanEdit()
     return true;
 end
 
+function Field:GetBlockly()
+    return self:GetBlock():GetBlockly();
+end
+
 function Field:GetFieldValue()
     return self:GetValue();
 end
 
-function Field:GetInputCode()
-
-end
-
-function Field:GetBlockly()
-    return self:GetBlock():GetBlockly();
+function Field:GetValueAsString()
+    return string.format('"%s"', self:GetValue());
 end
