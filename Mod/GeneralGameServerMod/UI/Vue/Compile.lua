@@ -25,6 +25,7 @@ local IsActivedDependItemUpdate = false;
 
 local CallBackFunctionListCache = {};
 local ElementListCache = {};
+
 local function ClearDependItemUpdateQueue()
     -- print("======================开始更新依赖项==============================");
     local BeginTime = ParaGlobal.timeGetTime();

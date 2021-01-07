@@ -46,3 +46,7 @@ end
 function Field:GetInputCode()
 
 end
+
+function Field:GetBlockly()
+    return self:GetBlock():GetBlockly();
+end

@@ -110,7 +110,12 @@ function Value:IsCanEdit()
     return true;
 end
 
-function Input:GetFieldEditElement(parentElement)
+function Value:GetShadowType()
+    local shadow = self:GetOption().shadow or {};
+    return shadow.type;
+end
+
+function Value:GetFieldEditElement(parentElement)
     local InputFieldEditElement = InputElement:new():Init({
         name = "input",
         attr = {
@@ -120,12 +125,23 @@ function Input:GetFieldEditElement(parentElement)
         },
     }, parentElement:GetWindow(), parentElement);
 
+    InputFieldEditElement:SetAttrValue("type", self:GetShadowType() == "math_number" and "number" or "text");
     InputFieldEditElement:SetAttrValue("onkeydown.enter", function()
         local value = InputFieldEditElement:GetValue();
         self:SetValue(value);
-        self:SetText(value);
+        self:SetLabel(value);
         self:FocusOut();
     end)
 
+    self.inputEl = InputFieldEditElement;
+
     return InputFieldEditElement;
+end
+
+function Value:OnBeginEdit()
+    if (self.inputEl) then self.inputEl:FocusIn() end
+end
+
+function Value:OnEndEdit()
+    if (self.inputEl) then self.inputEl:FocusOut() end
 end

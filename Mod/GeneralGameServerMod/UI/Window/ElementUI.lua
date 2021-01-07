@@ -20,6 +20,7 @@ ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬�
 ElementUI:Property("Visible", true);                        -- 可见性
 ElementUI:Property("Render", false, "IsRender");            -- 是否渲染
 ElementUI:Property("ZIndex", "");                           -- zindex 序
+ElementUI:Property("CanFocus", false, "IsCanFocus");        -- 是否可以聚焦
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
 local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable(); 
@@ -672,7 +673,12 @@ end
 
 -- 元素主动聚焦
 function ElementUI:FocusIn()
-    self:SetFocus(self);
+    self:SetFocus(self:IsCanFocus() and self or nil);
+end
+
+-- 元素主动失去焦点
+function ElementUI:FocusOut()
+    self:SetFocus(nil);
 end
 
 -- 获取聚焦元素

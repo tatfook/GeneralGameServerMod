@@ -29,8 +29,8 @@ function Statement:OnSizeChange()
     self.inputConnection:SetGeometry(leftUnitCount, topUnitCount, Const.ConnectionRegionWidthUnitCount, Const.ConnectionRegionHeightUnitCount);
 end
 
-function Statement:Init(block)
-    Statement._super.Init(self, block);
+function Statement:Init(block, opt)
+    Statement._super.Init(self, block, opt);
     self.inputConnection:SetType("statement");
     return self;
 end
@@ -101,3 +101,5 @@ function Statement:GetMouseUI(x, y, event)
     local inputBlock = self:GetInputBlock();
     return inputBlock and inputBlock:GetMouseUI(x, y, event);
 end
+
+

@@ -36,7 +36,15 @@ function Input:IsInput()
 end
 
 function Input:GetInputCode()
-    if (not self:GetInputBlock()) then return nil end
+    if (not self:GetInputBlock()) then return self:GetValue() end
 
-    return self:GetInputBlock():GetBlockCode(self:GetBlock():GetLanguage());
+    return self:GetInputBlock():GetBlockCode();
+end
+
+function Input:GetNextBlock()
+    return self:GetInputBlock();
+end
+
+function Input:GetFieldValue()
+    return self:GetInputCode();
 end

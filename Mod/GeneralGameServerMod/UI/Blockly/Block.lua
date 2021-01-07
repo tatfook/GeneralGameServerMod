@@ -21,6 +21,7 @@ local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
 local FieldSelect = NPL.load("./Fields/Select.lua", IsDevEnv);
+local FieldVariable = NPL.load("./Fields/Variable.lua", IsDevEnv);
 local InputValue = NPL.load("./Inputs/Value.lua", IsDevEnv);
 local InputStatement = NPL.load("./Inputs/Statement.lua", IsDevEnv);
 
@@ -33,7 +34,6 @@ local UnitSize = Const.UnitSize;
 Block:Property("Blockly");
 Block:Property("Id");
 Block:Property("Name", "Block");
-Block:Property("Language");
 Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");
 
 function Block:ctor()
@@ -108,8 +108,10 @@ function Block:ParseMessageAndArg(opt)
                     inputFieldContainer:AddInputField(FieldInput:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_select" or inputField.type == "field_dropdown") then
                     inputFieldContainer:AddInputField(FieldSelect:new():Init(self, inputField), true);
+                elseif (inputField.type == "field_variable") then
+                    inputFieldContainer:AddInputField(FieldVariable:new():Init(self, inputField), true);
                 elseif (inputField.type == "input_dummy") then
-                    inputFieldContainer:AddInputField(InputDummy:new():Init(self, inputField));
+                    -- inputFieldContainer:AddInputField(InputDummy:new():Init(self, inputField));
                 elseif (inputField.type == "input_value") then
                     inputFieldContainer:AddInputField(InputValue:new():Init(self, inputField), true);
                 elseif (inputField.type == "input_statement") then
@@ -303,6 +305,8 @@ function Block:OnMouseMove(event)
         if (block.isDragClone) then 
             block = self:Clone();
             block.startLeftUnitCount, block.startTopUnitCount = block.leftUnitCount - blockly.offsetX / UnitSize, block.topUnitCount - blockly.offsetY / UnitSize;
+
+            self:GetBlockly():OnCreateBlock(block);
         end
 
         block.isDragging = true;
@@ -331,6 +335,7 @@ function Block:OnMouseUp(event)
     if (self.isDragging) then
         if (self:GetBlockly():IsInnerDeleteArea(event.x, event.y)) then
             self:GetBlockly():RemoveBlock(self);
+            self:GetBlockly():OnDestroyBlock(self);
         else
             self:CheckConnection();
         end
@@ -407,6 +412,18 @@ function Block:ConnectionBlock(block)
     end
 end
 
+-- 遍历
+function Block:ForEach(callback)
+    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
+        inputAndFieldContainer:ForEach(callback);
+    end
+    local nextBlock = self:GetNextBlock();
+    if (nextBlock) then
+        if (type(callback) == "function") then callback(nextBlock) end
+        nextBlock:ForEach(callback);
+    end
+end
+
 -- 是否是块
 function Block:IsBlock()
     return true;
@@ -420,7 +437,7 @@ function Block:GetFieldValue(name)
             if (inputAndField:GetName() == name and inputAndField:IsField()) then return inputAndField:GetFieldValue() end
         end
     end
-    return ;
+    return "";
 end
 
 -- 获取输入代码
@@ -434,9 +451,20 @@ function Block:GetInputCode(name)
     return "";
 end
 
+-- 获取字段
+function Block:GetFieldAsString(name)
+    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
+        local inputAndFields = inputAndFieldContainer:GetInputFields();
+        for _, inputAndField in ipairs(inputAndFields) do
+            if (inputAndField:GetName() == name) then return inputAndField:GetFieldValue() end
+        end
+    end
+    return "";
+end
+
 -- 获取块代码
-function Block:GetBlockCode(language)
-    self:SetLanguage(language);
+function Block:GetBlockCode()
+    local language = self:GetLanguage();
     local option = self:GetOption();
     if (language == "lua") then
     else  -- npl

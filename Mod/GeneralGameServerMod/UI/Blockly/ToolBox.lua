@@ -37,7 +37,10 @@ function ToolBox:Init(blockly)
         block:SetLeftTopUnitCount(offsetX, offsetY);
         block:UpdateLeftTopUnitCount();
         offsetY = offsetY + heightUnitCount + 5;
-        table.insert(self.blocks, block);
+        if (not blockOption.hide_in_toolbox) then
+            table.insert(self.blocks, block);
+        end
+        blockly:DefineBlock(blockOption);
     end
 
     return self;
@@ -83,6 +86,26 @@ function ToolBox:OnMouseMove(event)
 end
 
 function ToolBox:OnMouseUp(event)
+end
+
+function ToolBox:OnMouseWheel(event)
+    local delta = event:GetDelta();             -- 1 向上滚动  -1 向下滚动
+    local dist, offset = 5, 5;                  -- 滚动距离为5 * UnitSize  
+
+    if (#self.blocks == 0) then return end
+
+    if (delta < 0) then
+        local block = self.blocks[#self.blocks];
+        if (block.topUnitCount <= (self.heightUnitCount - offset)) then return end  
+    else
+        local block = self.blocks[1];
+        if (block.topUnitCount >= offset) then return end
+    end
+    for _, block in ipairs(self.blocks) do
+        local left, top = block:GetLeftTopUnitCount();
+        block:SetLeftTopUnitCount(left, top + dist * delta);
+        block:UpdateLeftTopUnitCount();
+    end
 end
 
 function ToolBox:OnFocusOut()

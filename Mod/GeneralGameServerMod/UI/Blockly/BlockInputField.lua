@@ -295,7 +295,7 @@ function BlockInputField:BeginEdit(opt)
     editor:InsertChildElement(fieldEditElement);
     editor:UpdateLayout();
     editor:SetVisible(true);
-    fieldEditElement:OnFocusIn();
+    -- fieldEditElement:FocusIn();
     self:SetEdit(true);
     self:GetTopBlock():UpdateLayout();
 end
@@ -309,10 +309,22 @@ function BlockInputField:EndEdit()
     self:GetTopBlock():UpdateLayout();
 end
 
+function BlockInputField:OnBeginEdit()
+end
+
+function BlockInputField:OnEndEdit()
+end
+
 function BlockInputField:OnFocusIn()
     self:BeginEdit();
+    self:OnBeginEdit();
 end
 
 function BlockInputField:OnFocusOut()
     self:EndEdit();
+    self:OnEndEdit();
+end
+
+function BlockInputField:GetLanguage()
+    return self:GetBlock():GetBlockly():GetLanguage();
 end

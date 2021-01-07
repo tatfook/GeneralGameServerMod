@@ -12,7 +12,6 @@ local Blockly = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blockly.l
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
-local LuaBlocks = NPL.load("./Blocks/Lua.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
@@ -25,6 +24,7 @@ Blockly:Property("EditorElement");            -- 编辑元素 用户输入
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 Blockly:Property("FocusUI");                  -- 聚焦UI
 Blockly:Property("DragBlock");                -- 拖拽块
+Blockly:Property("Language");                 -- 语言
 
 local UnitSize = Const.UnitSize;
 
@@ -32,12 +32,8 @@ function Blockly:ctor()
     self.widthUnitCount, self.heightUnitCount = 0, 0;
     self.offsetX, self.offsetY = 0, 0;
     self.blocks = {};
-    self.toolbox = ToolBox:new():Init(self);
     self.block_types = {};
-
-    for _, block in ipairs(LuaBlocks) do
-        self:DefineBlock(block);
-    end
+    self.toolbox = ToolBox:new():Init(self);
 end
 
 function Blockly:Init(xmlNode, window, parent)
@@ -69,6 +65,14 @@ function Blockly:GetBlocks()
     return self.blocks;
 end
 
+-- 遍历
+function Blockly:ForEach(callback)
+    for _, block in ipairs(self.blocks) do
+        if (type(callback) == "function") then callback(block) end
+        block:ForEach(callback);
+    end
+end
+
 -- 获取块索引
 function Blockly:GetBlockIndex(block)
     for index, _block in ipairs(self.blocks) do
@@ -95,6 +99,13 @@ function Blockly:RemoveBlock(block)
     table.remove(self.blocks, index);
 end
 
+-- 创建block
+function Blockly:OnCreateBlock(block)
+end
+
+function Blockly:OnDestroyBlock(block)
+end
+
 -- 渲染Blockly
 function Blockly:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
@@ -103,10 +114,8 @@ function Blockly:RenderContent(painter)
     local dragBlock = self:GetDragBlock();
     painter:Translate(x, y);
 
-    self.toolbox:Render(painter);
-
     painter:Save();
-    painter:SetClipRegion(Const.ToolBoxWidthUnitCount * Const.UnitSize, 0, w, h);
+    painter:SetClipRegion(0, 0, w, h);
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
         if (dragBlock ~= block) then
@@ -116,6 +125,8 @@ function Blockly:RenderContent(painter)
     end
     painter:Translate(-self.offsetX, -self.offsetY);
     painter:Restore();
+
+    self.toolbox:Render(painter);
 
     if (dragBlock) then
         painter:Translate(self.offsetX, self.offsetY);
@@ -151,11 +162,6 @@ function Blockly:ReleaseMouseCapture()
     self:SetMouseCaptureUI(nil);
 	return Blockly._super.ReleaseMouseCapture(self);
 end
-
--- function Blockly:GetMouseEvent(event)
---     return {
---     }
--- end
 
 -- 获取相对窗口坐标
 function Blockly:GetRelPoint(x, y)
@@ -254,11 +260,17 @@ function Blockly:IsInnerDeleteArea(x, y)
     return false;
 end
 
+function Blockly:OnMouseWheel(event)
+    local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);  -- 防止减去偏移量
+    if (self.toolbox:IsContainPoint(x, y)) then return self.toolbox:OnMouseWheel(event) end
+end
+
 -- 获取代码
 function Blockly:GetCode(language)
+    self:SetLanguage(language or "NPL");
     local code = "";
     for _, block in ipairs(self.blocks) do
-        code = code .. block:GetBlockCode(language) .. "\n";
+        code = code .. (block:GetBlockCode() or "") .. "\n";
     end
     return code;
 end

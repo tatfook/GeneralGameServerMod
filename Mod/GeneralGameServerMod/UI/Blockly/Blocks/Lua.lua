@@ -31,7 +31,7 @@ NPL.export({
         output = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block) 
-            return block:GetFieldValue("field_dropdown");
+            return block:GetFieldAsString("field_dropdown");
         end,
     },
     {
@@ -48,10 +48,13 @@ NPL.export({
         },
         output = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block) 
+	    	return string.format('%s', block:GetFieldAsString("field_number"));
+        end,
     },
     {
         type = "text",
-        message0 = "%1",
+        message0 = "\" %1 \"",
         arg0 = {
             {
                 name = "field_input",
@@ -61,6 +64,25 @@ NPL.export({
         },
         output = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block) 
+            return string.format("\"%s\"", block:GetFieldAsString("field_input"));
+        end,
+    },
+    {
+        type = "variable",
+        message0 = "%1",
+        arg0 = {
+            {
+                name = "field_variable",
+                type = "field_variable",
+                allowNewOption = true,
+            },
+        },
+        output = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block) 
+            return block:GetFieldAsString("field_variable");
+        end,
     },
     {
         type = "if",
@@ -81,76 +103,88 @@ NPL.export({
         previousStatement = true,
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            return string.format('if(%s) then\n    %s\nend\n', block:GetFieldAsString('input_value'), block:GetFieldAsString('input_statement'));
+        end,
     },
     {
         type = "if_else",
         message0 = "如果 %1 那么 %2 否则 %3",
         arg0 = {
             {
-                name = "input_value",
+                name = "expression",
                 type = "input_value",
             },
             {
-                name = "input_statement",
+                name = "input_true",
                 type = "input_statement"
             },
             {
-                name = "input_statement",
+                name = "input_else",
                 type = "input_statement"
             },
         },
         previousStatement = true,
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            return string.format('if(%s) then\n    %s\nelse\n    %s\nend\n', block:GetFieldAsString('expression'), block:GetFieldAsString('input_true'), block:GetFieldAsString('input_else'));
+        end,
     },
     {
         type = "for",
         message0 = "每个 %1 , %2 在 %3 %4",
         arg0 = {
             {
-                name = "input_value",
+                name = "key",
                 type = "input_value",
             },
             {
-                name = "input_value",
+                name = "value",
                 type = "input_value",
             },
             {
-                name = "input_value",
+                name = "data",
                 type = "input_value",
             },
             {
-                name = "input_statement",
+                name = "input",
                 type = "input_statement"
             },
         },
         previousStatement = true,
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            return string.format('for %s, %s in pairs(%s) do\n    %s\nend\n', block:GetFieldAsString('key'), block:GetFieldAsString('value'), block:GetFieldAsString('data'), block:GetFieldAsString('input'));
+        end,
     },
     {
         type = "for",
         message0 = "每个 %1 , %2 在数组 %3 %4",
         arg0 = {
             {
-                name = "input_value",
+                name = "i",
                 type = "input_value",
             },
             {
-                name = "input_value",
+                name = "item",
                 type = "input_value",
             },
             {
-                name = "input_value",
+                name = "data",
                 type = "input_value",
             },
             {
-                name = "input_statement",
+                name = "input",
                 type = "input_statement"
             },
         },
         previousStatement = true,
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            return string.format('for %s, %s in ipairs(%s) do\n    %s\nend\n', block:GetFieldAsString('i'), block:GetFieldAsString('item'), block:GetFieldAsString('data'), block:GetFieldAsString('input'));
+        end,
     },
 });

@@ -67,7 +67,6 @@ function Input:GetFieldEditElement(parentElement)
         attr = {
             style = "width: 100%; height: 100%; font-size: 14px;",
             value = self:GetValue(),
-            autofocus = true,
         },
     }, parentElement:GetWindow(), parentElement);
 
@@ -79,5 +78,15 @@ function Input:GetFieldEditElement(parentElement)
         self:FocusOut();
     end)
 
+    self.inputEl = InputFieldEditElement;
+
     return InputFieldEditElement;
+end
+
+function Input:OnBeginEdit()
+    if (self.inputEl) then self.inputEl:FocusIn() end
+end
+
+function Input:OnEndEdit()
+    if (self.inputEl) then self.inputEl:FocusOut() end
 end

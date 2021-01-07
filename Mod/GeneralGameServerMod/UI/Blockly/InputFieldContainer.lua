@@ -113,3 +113,15 @@ function InputFieldContainer:Render(painter)
         inputField:Render(painter);
     end
 end
+
+function InputFieldContainer:ForEach(callback)
+    for _, inputField in ipairs(self.inputFields) do
+        if (type(callback) == "function") then callback(inputField) end
+
+        local nextBlock = inputField:GetNextBlock();
+        if (nextBlock) then
+            if (type(callback) == "function") then callback(nextBlock) end
+            nextBlock:ForEach(callback);
+        end
+    end
+end

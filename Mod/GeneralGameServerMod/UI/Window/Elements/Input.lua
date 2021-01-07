@@ -39,14 +39,15 @@ Input:Property("BaseStyle", {
 
 function Input:ctor()
     self:Reset();
+
+    self:SetCanFocus(true);
 end
 
 function Input:Init(xmlNode, window, parent)
     self:InitElement(xmlNode, window, parent);
     self.text = UniString:new(xmlNode.attr and xmlNode.attr.value or "");
 
-    if (self:GetAttrBoolValue("autofocus")) then self:FocusIn() end
-
+    -- if (self:GetAttrBoolValue("autofocus")) then self:FocusIn() end
     return self;
 end
 
@@ -428,7 +429,7 @@ function Input:RenderContent(painter)
         painter:DrawText(x, y + (h - fontSize) / 2, tostring(value));
     else 
         painter:SetPen("#A8A8A8"); -- placeholder color;
-        painter:DrawText(x, y + (h - fontSize) / 2, self:GetAttrStringValue("placeholder", "测试"));
+        painter:DrawText(x, y + (h - fontSize) / 2, self:GetAttrStringValue("placeholder", ""));
     end
     painter:Translate(scrollX, 0);
     painter:Restore();

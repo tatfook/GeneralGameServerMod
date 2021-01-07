@@ -242,9 +242,12 @@ function LoadUserInfo()
         _, _, _, UserDetail.bean = KeepWorkItemManager.HasGSItem(998);
 
          -- 设置模型
-         GlobalScope:Set("UserDetail", UserDetail);
-         GlobalScope:Set("UserId", UserDetail.id);
- 
+        GlobalScope:Set("UserDetail", UserDetail);
+        GlobalScope:Set("UserId", UserDetail.id);
+        
+        echo(UserDetail.paraMini, true);
+        echo(UserDetail.schoolParaWorld, true);
+
         -- echo(data)
         if (System.User.keepworkUsername == UserDetail.username) then
             GlobalScope:Set("AuthUserId", UserDetail.id);

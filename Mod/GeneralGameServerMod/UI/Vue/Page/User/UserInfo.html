@@ -23,9 +23,10 @@
             <!-- <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div> -->
             <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
             <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
-            <div v-on:click="ClickPersonalPage" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
+            <div v-on:click="ClickPersonalPage" class="btn" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
+            <div v-on:click="ClickHomeBtn" class="btn" style="position: absolute; left: 60px; bottom: 10px; height:42px; width: 42px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jiayuan_42X42_32bits.png#0 0 42 42);"></div>
             <div v-if="isAuthUser and not isRealName" v-on:click="ClickGoRealName" style="position: absolute; left: 120px; bottom: 6px;  text-align: center; line-height: 24px; width:100px; height: 30px; font-size: 14px; base-font-size: 14px; color: #000000; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#673 198 38 64:12 10 12 15);">实名认证</div>
-            <!-- <div v-if="isAuthUser" v-on:click="ClickChangeSkinBtn" style="position: absolute; right: 15px; bottom: 15px; height:39px; width: 38px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_genghuan_38X39_32bits.png#0 0 38 39);"></div> -->
+            <div v-on:click="ClickSendMsgBtn" class="btn" style="position: absolute; right: 15px; bottom: 15px; height:48px; width: 44px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_faxiaoxi_44X48_32bits.png#0 0 44 48);"></div>
             <ScaleSlider v-if="isAuthUser" onscale="OnScale" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
         </div>
         <div style="padding-left: 4px; width: 316px; height: 360px; margin-left: 11px;">
@@ -60,7 +61,7 @@
                         <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
                         <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 34px; height: 17px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_xuexiao_34X17_32bits.png#0 0 34 17);"></div>
                     </div>
-                    <div  style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{schoolName}}</div>
+                    <div onclick=ClickSchoolbtn style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{schoolName}}</div>
                 </div>
                 <div style="margin-top: 16px; height: 24px;">
                     <div style="position: relative; width: 70px; height: 24px; display: inline;">
@@ -198,20 +199,27 @@ function OnEditNickNameFinish(nickname)
     userinfo.nickname = nickname;
 end 
 
-function ClickChangeSkinBtn()
-    CloseWindow();
-    NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/SkinPage.lua", true);
-    local SkinPage = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.SkinPage");
-    
-    SkinPage.ShowPage(nil, function()
-        UpdatePlayerInfo();
-    end);
+function ClickSchoolbtn()
+    local schoolParaWorld = UserDetail.schoolParaWorld;
+    if (not schoolParaWorld) then return end 
+    GameLogic.RunCommand(string.format("/loadworld %s", schoolParaWorld.projectId)); 
+end 
+
+function ClickHomeBtn()
+    local paramin = UserDetail.paraMini;
+    if (not paramin) then return end 
+    GameLogic.RunCommand(string.format("/loadworld %s", paramin.projectId)); 
+end 
+
+function ClickSendMsgBtn()
+    local FriendManager = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/Friend/FriendManager.lua");
+    FriendManager.ChatWithFriend(UserDetail.id); 
 end
 
 -- 获取昵称
 function GetNickName(text)
     if type(text) ~= 'string' then return '' end
-    local utf8Text = UniString:new(text)
+    local utf8Text = UniString:new(text);
     if _guihelper.GetTextWidth(text) > 112 then
         return utf8Text:sub(1, 8).text .. '...'
     else
@@ -288,12 +296,6 @@ function UpdatePlayerInfo()
         userinfo.extra = extra;
     end);
 end 
-
-function ClickPrevRotate()
-end 
-
-function ClickNextRotate()
-end
 
 function ClickPersonalPage()
     ParaGlobal.ShellExecute("open", "https://keepwork.com/u/" .. UserDetail.username, "", "", 1);

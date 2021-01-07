@@ -95,6 +95,7 @@ Select:Property("BaseStyle", {
 });
 
 function Select:ctor()
+    self:SetCanFocus(true);
 end
 
 function Select:Init(xmlNode, window, parent)
@@ -103,7 +104,7 @@ function Select:Init(xmlNode, window, parent)
     local ListBox = ListBox:new():Init({
         name = "ListBox",
         attr = {
-            style = "position: absolute; left: 0px; top: 0px;  max-height: 130px; width: 100%; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px;",
+            style = "position: absolute; left: 0px; top: 105%;  max-height: 130px; width: 100%; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px;",
         }
     }, window, self);
     self:SetListBoxElement(ListBox);
@@ -169,6 +170,18 @@ function Select:OnValueAttrValueChange(attrValue)
     end
 end
 
+function Select:FilterOptions(filter)
+    local ListBox = self:GetListBoxElement();
+    for _, option in ipairs(ListBox.childrens) do
+        local value = option:GetValue();
+        if (not filter or filter == "") then option:SetVisible(true)
+        elseif (type(filter) == "string" and (string.find(value, filter, 1, true))) then option:SetVisible(true)
+        elseif (type(filter) == "function" and filter(value)) then option:SetVisible(true) 
+        else option:SetVisible(false) end
+    end
+    ListBox:UpdateLayout();
+end
+
 function Select:OnSelect(option)
     self:SetSelectedOptionElement(option);
     local value = option and option:GetValue();
@@ -180,22 +193,12 @@ end
 function Select:OnFocusIn(event)
     self:GetListBoxElement():SetVisible(true);
     self:GetListBoxElement():UpdateLayout();
-    self:OnAfterUpdateLayout();
     Select._super.OnFocusIn(self, event);
 end
 
 function Select:OnFocusOut(event)
     self:GetListBoxElement():SetVisible(false);
     Select._super.OnFocusOut(self, event);
-end
-
-function Select:OnAfterUpdateLayout()
-    local width, height = self:GetSize();
-
-    self:GetListBoxElement():SetStyleValue("top", (height or 0) + 2);
-
-    -- 自动聚焦有问题
-    -- if (self:GetAttrBoolValue("autofocus")) then self:OnFocusIn() end
 end
 
 local ArrowAreaSize = 20;
