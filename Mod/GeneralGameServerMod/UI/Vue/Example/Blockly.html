@@ -33,14 +33,15 @@ end
 
 function ClickCode()
     local rawcode, prettycode = BlocklyEl:GetCode();
-    code = string.gsub(prettycode, "\t", "    ");
+    code = prettycode;
     tab = "code";
     print(code);
 end
 
 function ClickExec()
     tab = "exec";
-    out = BlocklyEl:ExecCode(code);
+    local rawcode, prettycode = BlocklyEl:GetCode();
+    out = BlocklyEl:ExecCode(rawcode);
 end
 </script>
 
