@@ -12,6 +12,7 @@ local Blockly = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blockly.l
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
+local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Sandbox = NPL.load("./Sandbox/Sandbox.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
@@ -276,8 +277,7 @@ function Blockly:IsInnerDeleteArea(x, y)
 end
 
 function Blockly:OnMouseWheel(event)
-    local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);  -- 防止减去偏移量
-    if (self.toolbox:IsContainPoint(x, y)) then return self.toolbox:OnMouseWheel(event) end
+    if (self:IsInnerToolBox(event)) then return self.toolbox:OnMouseWheel(event) end
 end
 
 -- 获取代码
@@ -293,4 +293,19 @@ end
 -- 执行代码
 function Blockly:ExecCode(code)
     return Sandbox.ExecCode(code);
+end
+
+-- 转换成xml
+function Blockly:Lua2XmlString()
+    local xmlNode = {name = "Blockly", attr = {}};
+    local attr = xmlNode.attr;
+
+    attr.offsetX = self.offsetX;
+    attr.offsetY = self.offsetY;
+
+    for _, block in ipairs(self.blocks) do
+        table.insert(xmlNode, block:GetXmlNode());
+    end
+
+    return Helper.Lua2XmlString(xmlNode);
 end

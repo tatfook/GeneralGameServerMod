@@ -468,3 +468,8 @@ function Block:GetBlockCode()
     end
     return code;
 end
+
+
+-- 获取xmlNode
+function Block:GetXmlNode()
+end

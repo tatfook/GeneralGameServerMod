@@ -63,6 +63,9 @@ function TutorialSandbox:Reset()
     GameLogic.options.CanJump = true;
     GameLogic.options.CanJumpInAir = true;
 
+    self.OnWorldLoadedCallBack = nil;
+    self.OnWorldUnloadedCallBack = nil;
+
     self:ActiveTutorialContext();
 end
 
@@ -78,12 +81,24 @@ function TutorialSandbox:Restore()
     self:DeactiveTutorialContext()
 end
 
+-- 注册世界加载事件回调
+function TutorialSandbox:RegisterWorldLoadedCallBack(callback)
+    self.OnWorldLoadedCallBack = callback;
+end
+
+-- 注册世界退出事件回调
+function TutorialSandbox:RegisterWorldUnloadedCallBack(callback)
+    self.OnWorldUnloadedCallBack = callback;
+end
 
 function TutorialSandbox:OnWorldLoaded()
     -- self:Reset();
+    if (type(self.OnWorldLoadedCallBack) == "function") then self.OnWorldLoadedCallBack() end
 end
 
 function TutorialSandbox:OnWorldUnloaded()
+    if (type(self.OnWorldUnloadedCallBack) == "function") then self.OnWorldUnloadedCallBack() end
+
     self:Restore();
 end
 

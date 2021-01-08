@@ -236,6 +236,11 @@ TutorialSandbox:SelectBlock(19189,5,19224);
 TutorialSandbox:DeselectBlock(19189,5,19224);
 -- 取消选择所有块
 TutorialSandbox:DeselectAllBlock();
+
+-- 注册世界加载事件回调
+TutorialSandbox:RigsterWorldLoadedCallBack(callback);
+-- 注册世界退出事件回调
+TutorialSandbox:RegisterWorldUnloadedCallBack(callback);
 ```
 
 ## 快速开始
