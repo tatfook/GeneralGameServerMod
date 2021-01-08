@@ -202,12 +202,14 @@ end
 function ClickSchoolbtn()
     local schoolParaWorld = UserDetail.schoolParaWorld;
     if (not schoolParaWorld) then return end 
+    CloseWindow();
     GameLogic.RunCommand(string.format("/loadworld %s", schoolParaWorld.projectId)); 
 end 
 
 function ClickHomeBtn()
     local paramin = UserDetail.paraMini;
     if (not paramin) then return end 
+    CloseWindow();
     GameLogic.RunCommand(string.format("/loadworld %s", paramin.projectId)); 
 end 
 
