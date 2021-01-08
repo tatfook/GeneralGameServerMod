@@ -238,12 +238,15 @@ TutorialSandbox:DeselectBlock(19189,5,19224);
 TutorialSandbox:DeselectAllBlock();
 
 -- 注册世界加载事件回调
-TutorialSandbox:RigsterWorldLoadedCallBack(callback);
+TutorialSandbox:RegisterWorldLoadedCallBack(callback);
 -- 注册世界退出事件回调
 TutorialSandbox:RegisterWorldUnloadedCallBack(callback);
 
 -- 获取共享数据
 TutorialSandbox:GetShareData();  -- 该函数返回一个表对象, 该对象不会被Reset函数修改,  可用于存储世界间的共享数据.
+
+-- 显示窗口
+TutorialSandbox:ShowWindow(G, params);  -- 使用同Page.Show, 区别 Page.Show 创建的窗口不会随世界退出自动关闭,    TutorialSandbox:ShowWindow 创建的窗口会随世界退出而自动关闭
 ```
 
 ## 快速开始

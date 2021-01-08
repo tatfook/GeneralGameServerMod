@@ -12,6 +12,7 @@ local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 local Vue = NPL.load("./Vue/Vue.lua", IsDevEnv);
 local Page = NPL.export();
 local pages = {};
+
 function Page.Show(G, params, isNew)
     params = params or {};
     if (not params.url) then return end

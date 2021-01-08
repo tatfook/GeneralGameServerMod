@@ -19,6 +19,7 @@ local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local BlockStrategy = NPL.load("./BlockStrategy.lua", IsDevEnv);
 local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 -- local Page = NPL.load("./Page/Page.lua", IsDevEnv);
 
 local TutorialSandbox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
@@ -51,6 +52,7 @@ function TutorialSandbox:Reset()
     self.stepTasks = {};                   -- 每步任务
     self.loadItems = {};                   -- 代码方块加载表
     self.allLoadFinishCallback = nil;      -- 全部加载完成回调
+    self.pages = {};                       -- UI 窗口集
 
     self.keyPressEvent = {};
 
@@ -66,7 +68,6 @@ function TutorialSandbox:Reset()
 
     self.OnWorldLoadedCallBack = nil;
     self.OnWorldUnloadedCallBack = nil;
-
     self:ActiveTutorialContext();
 end
 
@@ -87,6 +88,13 @@ function TutorialSandbox:GetShareData()
     return ShareData;
 end
 
+-- 显示窗口
+function TutorialSandbox:ShowWindow(G, params, isNew)
+    local page = Page.Show(G, params, isNew);
+    if (page) then table.insert(self.pages, page) end
+    return page;
+end
+
 -- 注册世界加载事件回调
 function TutorialSandbox:RegisterWorldLoadedCallBack(callback)
     self.OnWorldLoadedCallBack = callback;
@@ -104,7 +112,7 @@ end
 
 function TutorialSandbox:OnWorldUnloaded()
     if (type(self.OnWorldUnloadedCallBack) == "function") then self.OnWorldUnloadedCallBack() end
-
+    for _, page in ipairs(self.pages) do page:CloseWindow() end
     self:Restore();
 end
 
