@@ -16,3 +16,10 @@ local Space = commonlib.inherit(Field, NPL.export());
 function Space:UpdateWidthHeightUnitCount()
     return Const.FieldSpaceWidthUnitCount, 0;
 end
+
+function Space:SaveToXmlNode()
+    return nil;
+end
+
+function Space:LoadFromXmlNode(xmlNode)
+end

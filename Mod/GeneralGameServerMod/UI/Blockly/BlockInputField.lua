@@ -43,6 +43,8 @@ function BlockInputField:Init(block, option)
     -- 解析颜色值
     self:SetColor(option.color);
 
+    if (option.name and option.name ~= "") then block.inputFieldMap[option.name] = self end
+
     return self;
 end
 

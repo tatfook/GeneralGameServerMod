@@ -355,7 +355,8 @@ function BaseLayout:PrepareLayout()
 		self:SetPositionElement(false);
 		style["z-index"] = style["z-index"] or 0;  -- 普通元素默认为0
 	end
-
+	self:SetZIndex(style["z-index"]);
+	
     -- 溢出
     self.overflowX = style["overflow-x"] or "visible";
 	self.overflowY = style["overflow-y"] or "visible";

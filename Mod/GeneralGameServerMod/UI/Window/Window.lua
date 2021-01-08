@@ -239,6 +239,9 @@ function Window:CreateNativeWindow()
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
     native_window:SetField("InputMethodEnabled", true);
+    local zorder = self:GetParams().zorder;
+    if (zorder) then native_window.zorder = zorder end
+    
     -- 加到有效窗口上
     native_window:AttachToRoot();
 	

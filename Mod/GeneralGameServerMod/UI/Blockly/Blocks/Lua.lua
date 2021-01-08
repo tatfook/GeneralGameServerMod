@@ -198,7 +198,7 @@ NPL.export({
     },
 
     {
-        type = "print",
+        type = "Print",
         message0 = "打印 %1",
         arg0 = {
             {

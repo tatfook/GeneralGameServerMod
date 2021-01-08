@@ -32,3 +32,10 @@ end
 function Label:UpdateWidthHeightUnitCount()
     return self:GetTextWidthUnitCount(self:GetValue()), self:GetTextHeightUnitCount();
 end
+
+function Label:SaveToXmlNode()
+    return nil;
+end
+
+function Label:LoadFromXmlNode(xmlNode)
+end

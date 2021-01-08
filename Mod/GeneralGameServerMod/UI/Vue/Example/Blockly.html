@@ -5,6 +5,7 @@
             <div onclick=ClickBlockly class="text">图块</div>
             <div onclick=ClickCode class="text">代码</div>
             <div onclick=ClickExec class="text">运行</div>
+            <div onclick=ClickSave class="text">保存</div>
         </div>
         <div onclick=CloseWindow class="btn" style="width: 22px; height: 22px; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);"></div>
     </template>
@@ -43,6 +44,11 @@ function ClickExec()
     local rawcode, prettycode = BlocklyEl:GetCode();
     out = BlocklyEl:ExecCode(rawcode);
 end
+
+function ClickSave()
+    echo(BlocklyEl:SaveToXmlNode(), true);
+end
+
 </script>
 
 <style>

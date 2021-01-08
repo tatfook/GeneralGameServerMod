@@ -34,6 +34,7 @@ local UnitSize = Const.UnitSize;
 Block:Property("Blockly");
 Block:Property("Id");
 Block:Property("Name", "Block");
+Block:Property("TopBlock", false, "IsTopBlock");    -- 是否是顶层块
 Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");
 
 function Block:ctor()
@@ -43,6 +44,7 @@ function Block:ctor()
     self.isDraggable = true;
     self.isDragClone = false;
     self.inputFieldContainerList = {};           -- 输入字段容器列表
+    self.inputFieldMap = {};
 end
 
 function Block:Init(blockly, opt)
@@ -431,26 +433,19 @@ end
 
 -- 获取字段值
 function Block:GetFieldValue(name)
-    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
-        local inputAndFields = inputAndFieldContainer:GetInputFields();
-        for _, inputAndField in ipairs(inputAndFields) do
-            if (inputAndField:GetName() == name) then return inputAndField:GetFieldValue() end
-        end
-    end
-    return nil;
+    local inputAndField = self.inputFieldMap[name];
+    return inputAndField and inputAndField:GetFieldValue() or nil;
 end
 
 -- 获取字段
 function Block:GetValueAsString(name)
-    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
-        local inputAndFields = inputAndFieldContainer:GetInputFields();
-        for _, inputAndField in ipairs(inputAndFields) do
-            if (inputAndField:GetName() == name) then 
-                return inputAndField:GetValueAsString();
-            end
-        end
-    end
-    return "";
+    local inputAndField = self.inputFieldMap[name];
+    return inputAndField and inputAndField:GetValueAsString() or "";
+end
+
+-- 获取输入字段
+function Block:GetInputField(name)
+    return self.inputFieldMap[name];
 end
 
 -- 获取块代码
@@ -471,5 +466,37 @@ end
 
 
 -- 获取xmlNode
-function Block:GetXmlNode()
+function Block:SaveToXmlNode()
+    local xmlNode = {name = "Block", attr = {}};
+    local attr = xmlNode.attr;
+    
+    attr.type = self:GetType();
+    attr.leftUnitCount, attr.topUnitCount = self:GetLeftTopUnitCount();
+
+    for _, inputAndField in pairs(self.inputFieldMap) do
+        local subXmlNode = inputAndField:SaveToXmlNode();
+        if (subXmlNode) then table.insert(xmlNode, subXmlNode) end
+    end
+
+    local nextBlock = self:GetNextBlock();
+    if (nextBlock) then table.insert(xmlNode, nextBlock:SaveToXmlNode()) end
+
+    return xmlNode;
+end
+
+-- 加载xmlNode
+function Block:LoadFromXmlNode(xmlNode)
+    local attr = xmlNode.attr;
+
+    self:SetLeftTopUnitCount(attr.leftUnitCount, attr.topUnitCount);
+    
+    for _, childXmlNode in ipairs(xmlNode) do
+        if (childXmlNode.attr.type == "Block") then
+            local nextBlock = self:GetBlockly():GetBlockInstanceByXmlNode(childXmlNode);
+            self.nextConnection:Connection(nextBlock.previousConnection);
+        else
+            local inputField = self:GetInputField(childXmlNode.attr.name);
+            if (inputField) then inputField:LoadFromXmlNode(childXmlNode) end
+        end
+    end
 end

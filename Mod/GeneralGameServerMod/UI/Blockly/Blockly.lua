@@ -6,7 +6,7 @@ Date: 2020/6/30
 Desc: G
 use the lib:
 -------------------------------------------------------
-local Blockly = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blockly.lua");
+local Blockly = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blockly.lua");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
@@ -59,8 +59,18 @@ function Blockly:DefineBlock(block)
 end
 
 -- 获取块
-function Blockly:GetBlockOptionByType(typ)
-    return self.block_types[typ];
+function Blockly:GetBlockInstanceByType(typ)
+    local opts = self.block_types[typ];
+    if (not opts) then return nil end
+    return Block:new():Init(self, opts);
+end
+
+-- 获取块
+function Blockly:GetBlockInstanceByXmlNode(xmlNode)
+    local block = self:GetBlockInstanceByType(xmlNode.attr.type);
+    if (not block) then return nil end
+    block:LoadFromXmlNode(xmlNode);
+    return block;
 end
 
 -- 获取所有顶层块
@@ -86,6 +96,7 @@ end
 
 -- 移除块
 function Blockly:AddBlock(block)
+    block:SetTopBlock(true);
     local index = self:GetBlockIndex(block);
     if (not index) then 
         return table.insert(self.blocks, block);
@@ -97,6 +108,7 @@ end
 
 -- 添加块
 function Blockly:RemoveBlock(block)
+    block:SetTopBlock(false);
     local index = self:GetBlockIndex(block);
     if (not index) then return end
     table.remove(self.blocks, index);
@@ -296,7 +308,7 @@ function Blockly:ExecCode(code)
 end
 
 -- 转换成xml
-function Blockly:Lua2XmlString()
+function Blockly:SaveToXmlNode()
     local xmlNode = {name = "Blockly", attr = {}};
     local attr = xmlNode.attr;
 
@@ -304,8 +316,25 @@ function Blockly:Lua2XmlString()
     attr.offsetY = self.offsetY;
 
     for _, block in ipairs(self.blocks) do
-        table.insert(xmlNode, block:GetXmlNode());
+        table.insert(xmlNode, block:SaveToXmlNode());
     end
 
-    return Helper.Lua2XmlString(xmlNode);
+    return xmlNode;
+    -- return Helper.Lua2XmlString(xmlNode);
+end
+
+function Blockly:LoadFromXmlNode(xmlNode)
+    local attr = xmlNode.attr;
+
+    self.offsetX = attr.offsetX;
+    self.offsetY = attr.offsetY;
+
+    for _, blockXmlNode in ipairs(xmlNode) do
+        local block = self:GetBlockInstanceByXmlNode(blockXmlNode);
+        table.insert(self.blocks, block);
+    end
+
+    for _, block in ipairs(self.blocks) do
+        block:UpdateLayout();
+    end
 end

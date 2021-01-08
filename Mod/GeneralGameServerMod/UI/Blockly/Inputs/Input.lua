@@ -52,3 +52,35 @@ end
 function Input:GetValueAsString()
     return self:GetInputCode();
 end
+
+-- 获取xmlNode
+function Input:SaveToXmlNode()
+    local xmlNode = {name = "Input", attr = {}};
+    local attr = xmlNode.attr;
+    
+    attr.name = self:GetName();
+    attr.label = self:GetLabel();
+    attr.value = self:GetValue();
+
+    local inputBlock = self:GetInputBlock();
+
+    if (not inputBlock and attr.label == "" and attr.value == "") then return nil end
+    
+    if (inputBlock) then table.insert(xmlNode, inputBlock:SaveToXmlNode()) end
+
+    return xmlNode;
+end
+
+function Input:LoadFromXmlNode(xmlNode)
+    local attr = xmlNode.attr;
+
+    self:SetLabel(attr.label);
+    self:SetValue(attr.value);
+
+    local inputBlockXmlNode = xmlNode[1];
+    if (not inputBlockXmlNode) then return end
+
+    local inputBlock = self:GetBlock():GetBlockly():GetBlockInstanceByXmlNode(inputBlockXmlNode);
+    if (not inputBlock) then return end
+    self.inputConnection:Connection(inputBlock.previousConnection);
+end

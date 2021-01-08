@@ -50,3 +50,22 @@ end
 function Field:GetValueAsString()
     return string.format('"%s"', self:GetValue());
 end
+
+-- 获取xmlNode
+function Field:SaveToXmlNode()
+    local xmlNode = {name = "Field", attr = {}};
+    local attr = xmlNode.attr;
+    
+    attr.name = self:GetName();
+    attr.label = self:GetLabel();
+    attr.value = self:GetValue();
+
+    return xmlNode;
+end
+
+function Field:LoadFromXmlNode(xmlNode)
+    local attr = xmlNode.attr;
+
+    self:SetLabel(attr.label);
+    self:SetValue(attr.value);
+end
