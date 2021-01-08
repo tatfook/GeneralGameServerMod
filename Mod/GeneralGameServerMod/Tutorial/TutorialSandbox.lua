@@ -23,6 +23,7 @@ local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
 
 local TutorialSandbox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
+local ShareData = {};                                                    -- 共享数据, 不会被重置
 TutorialSandbox:Property("Context");                                     -- 新手上下文环境
 TutorialSandbox:Property("LastContext");                                 -- 上次上下文环境
 TutorialSandbox:Property("LeftClickToDestroyBlockStrategy");             -- 配置左击删除方块策略
@@ -79,6 +80,11 @@ function TutorialSandbox:Restore()
     GameLogic.options.oldCanJumpInAir = self.oldCanJumpInAir;
     
     self:DeactiveTutorialContext()
+end
+
+-- 获取共享数据
+function TutorialSandbox:GetShareData()
+    return ShareData;
 end
 
 -- 注册世界加载事件回调

@@ -241,6 +241,9 @@ TutorialSandbox:DeselectAllBlock();
 TutorialSandbox:RigsterWorldLoadedCallBack(callback);
 -- 注册世界退出事件回调
 TutorialSandbox:RegisterWorldUnloadedCallBack(callback);
+
+-- 获取共享数据
+TutorialSandbox:GetShareData();  -- 该函数返回一个表对象, 该对象不会被Reset函数修改,  可用于存储世界间的共享数据.
 ```
 
 ## 快速开始
