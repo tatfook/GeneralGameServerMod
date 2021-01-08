@@ -245,8 +245,8 @@ function LoadUserInfo()
         GlobalScope:Set("UserDetail", UserDetail);
         GlobalScope:Set("UserId", UserDetail.id);
         
-        echo(UserDetail.paraMini, true);
-        echo(UserDetail.schoolParaWorld, true);
+        -- echo(UserDetail.paraMini, true);
+        -- echo(UserDetail.schoolParaWorld, true);
 
         -- echo(data)
         if (System.User.keepworkUsername == UserDetail.username) then
