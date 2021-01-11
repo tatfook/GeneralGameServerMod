@@ -65,7 +65,9 @@ end
 
 -- 获取指定世界
 function WorldManager:GetWorld(worldId, worldName, worldType, isNewNoExist, worldKey)
-    worldKey = worldKey or self:GetWorldKey(worldId, worldName);
+    if (not worldKey or not string.find(worldKey, self:GenerateWorldKey(worldId, worldName), 1, true)) then
+        worldKey = self:GetWorldKey(worldId, worldName);
+    end
     if (not self.worldMap[worldKey] and isNewNoExist) then
         self.worldMap[worldKey] = World:new():Init(worldId, worldName, worldType, worldKey);
     end
