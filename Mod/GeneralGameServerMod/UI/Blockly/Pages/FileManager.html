@@ -11,6 +11,7 @@
         <div v-for="file, index in filelist" class="file-container">
             <div style="width: 200px; height: 100%; display: flex; align-items: center;">{{file.filename}}</div>
             <div onclick="ClickDelete(file, index)" class="btn">删除</div>
+            <div onclick="ClickEdit(file, index)" class="btn">编辑</div>
         </div>
     </div>
 </template>
@@ -33,6 +34,11 @@ end
 
 function ClickDelete(file, index)
     table.remove(filelist, index);
+end
+
+function ClickEdit(file, index)
+    FileManager:EditFile(file.filename);
+    CloseWindow();
 end
 
 function OnReady()

@@ -39,13 +39,26 @@ function BlockInputField:Init(block, option)
     self:SetOption(option or {});
     self:SetName(option.name);
     self:SetType(option.type);
-
+    self:SetValue(self:GetOptionText());
+    self:SetLabel(self:GetValue());
     -- 解析颜色值
     self:SetColor(option.color);
 
     if (option.name and option.name ~= "") then block.inputFieldMap[option.name] = self end
 
     return self;
+end
+
+-- 获取选项文本, 默认为字段值(value)
+function BlockInputField:GetOptionText()
+    local opt = self:GetOption();
+    if (type(opt.text) == "function") then 
+        return opt.text(); 
+    elseif (type(opt.text) == "string") then 
+        return opt.text; 
+    else 
+        return "";
+    end
 end
 
 -- 拷贝
@@ -297,7 +310,6 @@ function BlockInputField:BeginEdit(opt)
     editor:InsertChildElement(fieldEditElement);
     editor:UpdateLayout();
     editor:SetVisible(true);
-    -- fieldEditElement:FocusIn();
     self:SetEdit(true);
     self:GetTopBlock():UpdateLayout();
 end

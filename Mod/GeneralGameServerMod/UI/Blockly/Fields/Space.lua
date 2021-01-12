@@ -23,3 +23,7 @@ end
 
 function Space:LoadFromXmlNode(xmlNode)
 end
+
+function Space:IsCanEdit()
+    return false;
+end

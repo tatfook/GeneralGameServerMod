@@ -15,7 +15,6 @@ local Field = commonlib.inherit(BlockInputField, NPL.export());
 
 local MinEditFieldWidth = 120;
 
-
 Field:Property("Type");                     -- label text, value
 
 function Field:ctor()

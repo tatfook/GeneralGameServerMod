@@ -16,6 +16,7 @@ Const.UnitSize = 4;                               -- 单元格大小
 Const.ConnectionRegionHeightUnitCount = 4;        -- 连接区域高度
 Const.ConnectionRegionWidthUnitCount = 16;        -- 连接区域宽度
 Const.ConnectionHeightUnitCount = 2;              -- 连接高度
+Const.ConnectionWidthUnitCount = 16;              -- 连接高度
 Const.BlockEdgeHeightUnitCount = 1;               -- 块边缘高度
 Const.BlockEdgeWidthUnitCount = 1;                -- 块边缘高度
 
@@ -24,9 +25,8 @@ Const.InputValueWidthUnitCount = 10;              -- 输入值宽度
 Const.FieldSpaceWidthUnitCount = 2;               -- 空白字段宽度
 
 Const.MinEditFieldWidthUnitCount = 30;            -- 最小编辑字段宽度
-
-
-
+Const.MaxTextShowWidthUnitCount = 100;            -- 最大文本显示宽度
+Const.MinTextShowWidthUnitCount = 4;              -- 最小文本显示宽度
 -- ToolBox
 Const.ToolBoxWidthUnitCount = 80;
 Const.ToolBoxCategoryWidthUnitCount = 10;

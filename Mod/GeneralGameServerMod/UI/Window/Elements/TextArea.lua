@@ -33,25 +33,36 @@ TextArea:Property("BaseStyle", {
         ["border-color"] = "#cccccc",
         ["color"] = "#000000",
         ["height"] = 50,
-        ["width"] = 100,
+        ["width"] = 120,
         ["padding-left"] = 4, 
         ["padding-right"] = 4, 
         ["padding-top"] = 2, 
         ["padding-bottom"] = 2, 
         ["overflow-y"] = "scroll",
+        ["font-size"] = "14px",
+        ["background-color"] = "#ffffff",
     }
 });
 
+local function Split(str, delim)
+    local list = {};
+    local lastLineStartAt = 1;
+    local startAt, endAt = string.find(str, delim, lastLineStartAt, true);
+    
+    while (startAt) do
+        table.insert(list, #list + 1, string.sub(str, lastLineStartAt, startAt - 1)); 
+        lastLineStartAt = endAt + 1;
+        startAt, endAt = string.find(str, delim, lastLineStartAt, true);
+    end
+    table.insert(list, #list + 1, string.sub(str, lastLineStartAt));
+    
+    return list;
+end
+
 function TextArea:ctor()
     self:SetName("TextArea");
-    self.cursorShowHideTickCount = 0;
-    self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = 0, 0, nil, nil;
-    self.cursorAt = 1;    -- 光标位置 占据下一个输入位置
-    self.undoCmds = {};   -- 撤销命令
-    self.redoCmds = {};   -- 重做命令
-    self.lines = {};      -- 所有文本行
-    self.selectStartAt, self.selectEndAt = nil, nil;  -- 文本选择
 
+    self:Reset();
     self.text = UniString:new();  -- 文本值
     self:UpdateValue();
 end
@@ -62,8 +73,25 @@ function TextArea:Init(xmlNode, window, parent)
 
     self.text = UniString:new(self:GetAttrStringValue("value", ""));
     self:UpdateValue();
-
     return self;
+end
+
+function TextArea:Reset()
+    self.cursorShowHideTickCount = 0;
+    self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = 0, 0, nil, nil;
+    self.cursorAt = 1;    -- 光标位置 占据下一个输入位置
+    self.undoCmds = {};   -- 撤销命令
+    self.redoCmds = {};   -- 重做命令
+    self.lines = {};      -- 所有文本行
+    self.selectStartAt, self.selectEndAt = nil, nil;  -- 文本选择
+end
+
+function TextArea:OnAttrValueChange(attrName, attrValue, oldAttrValue)
+    if (attrName ~= "value" or tostring(attrValue) == self:GetValue()) then return end
+    
+    self:Reset();
+    self.text = UniString:new(tostring(attrValue));
+    self:UpdateValue();
 end
 
 -- 是否选择
@@ -330,7 +358,7 @@ end
 -- 更新文本行信息
 function TextArea:UpdateLineInfo()
     local text = self.text:GetText();
-    local linetexts = commonlib.split(text, "\n");
+    local linetexts = Split(text, "\n");
     local x, y, w, h = self:GetContentGeometry();
     local linecount, lines, line, at = #linetexts, {}, 0, 0;
 
@@ -340,6 +368,7 @@ function TextArea:UpdateLineInfo()
         local linetext = linetexts[i];
         local trimtext, remaintext = _guihelper.TrimUtf8TextByWidth(linetext, w, self:GetFont());
         local startAt, endAt = at + 1, at + self:GetTextLength(trimtext);
+        endAt = math.max(startAt, endAt);   
         TextAreaDebug.Format("UpdateLineInfo line = %s, at = %s, startAt = %s, endAt = %s, trimtext = %s, remaintext = %s", line, at, startAt, endAt, trimtext, remaintext);
         line = line + 1;
         at = endAt;
@@ -347,28 +376,23 @@ function TextArea:UpdateLineInfo()
         while (remaintext and remaintext ~= "" and startAt <= endAt) do
             trimtext, remaintext = _guihelper.TrimUtf8TextByWidth(remaintext, w, self:GetFont());
             startAt, endAt = at + 1, at + self:GetTextLength(trimtext);
+            endAt = math.max(startAt, endAt);   
             line = line + 1;
             at = endAt;
             TextAreaDebug.Format("UpdateLineInfo line = %s, at = %s, startAt = %s, endAt = %s, trimtext = %s, remaintext = %s", line, at, startAt, endAt, trimtext, remaintext);
             table.insert(lines, {line = line, startAt = startAt, endAt = endAt});
         end
-        -- 加一个换行符
-        if (i < linecount) then
-            at = at + 1; 
-            lines[#lines].endAt = at;
-        end
+        at = at + 1; -- 跳过换行符
     end
     
     if (#lines == 0) then table.insert(lines, {line = 1, startAt = 1, endAt = 1}) end
 
     self.lines = lines;
-    -- TextAreaDebug("UpdateLineInfo", text, lines);
+    -- TextAreaDebug("UpdateLineInfo", text, lines, self.cursorAt);
 
     if (not self:GetStyle()) then return end
-
     local LineHeight = self:GetStyle():GetLineHeight(); 
     self:GetLayout():SetRealContentWidthHeight(w, (#lines) * LineHeight);
-    self:OnRealContentSizeChange();
 end
 
 function TextArea:DeleteTextCmd(startAt, count)
@@ -405,7 +429,7 @@ function TextArea:UpdateValue()
     if (self:GetValue() == value) then return end
     self:UpdateLineInfo();
     self:SetValue(value);
-    -- self:OnChange(value);
+    self:OnChange(value);
 end
 
 -- 调整光标的位置, 调整前文本需完整, 因此添加需先添加后调整光标, 移除需先调整光标后移除
@@ -445,8 +469,9 @@ function TextArea:RenderCursor(painter)
     else
         painter:SetPen("#00000000");
     end
-    local offsetX = self.text:sub(line.startAt, self.cursorAt - 1):GetWidth();
+    local offsetX = self.text:sub(line.startAt, self.cursorAt - 1):GetWidth(self:GetFont());
     local offsetY = (line.line - 1) * LineHeight;
+    -- print(x, offsetX, self.text:sub(line.startAt, self.cursorAt - 1):GetText())
     painter:DrawRectTexture(x + offsetX, y + offsetY, 1, LineHeight);
 end
 
@@ -491,6 +516,7 @@ function TextArea:RenderContent(painter)
     end
     
     painter:SetPen(self:GetColor());
+    painter:SetFont(self:GetFont());
     for i, line in ipairs(self.lines) do
         painter:DrawText(x, y + (line.line - 1) * LineHeight, self.text:sub(line.startAt, line.endAt):GetText());
     end

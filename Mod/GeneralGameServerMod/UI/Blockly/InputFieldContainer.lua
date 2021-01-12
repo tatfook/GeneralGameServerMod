@@ -58,6 +58,7 @@ function InputFieldContainer:UpdateWidthHeightUnitCount()
         inputField:SetWidthHeightUnitCount(inputFieldWidthUnitCount, inputFieldHeightUnitCount);
         inputField:SetMaxWidthHeightUnitCount(inputFieldMaxWidthUnitCount, inputFieldMaxHeightUnitCount);
         widthUnitCount = widthUnitCount + inputFieldWidthUnitCount;
+        if (inputField:GetType() == "input_statement") then widthUnitCount = widthUnitCount + Const.ConnectionWidthUnitCount end
         heightUnitCount = math.max(heightUnitCount, inputFieldHeightUnitCount);
         maxWidthUnitCount = maxWidthUnitCount + inputFieldMaxWidthUnitCount;
         maxHeightUnitCount = math.max(maxHeightUnitCount, inputFieldMaxHeightUnitCount);

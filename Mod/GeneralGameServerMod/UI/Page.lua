@@ -6,6 +6,7 @@ Desc: 显示UI入口文件
 use the lib:
 -------------------------------------------------------
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+Page.ShowUserInfoPage({username="xiaoyao"});
 -------------------------------------------------------
 ]]
 
@@ -22,7 +23,9 @@ function Page.Show(G, params, isNew)
         page = Vue:new();
     else
         pages[params.url] = page;
-        if (page:GetNativeWindow()) then return page end
+        if (page:GetNativeWindow()) then 
+            page:CloseWindow();
+        end
     end
 
     params.G = G;
@@ -61,14 +64,21 @@ function Page.ShowDebugInfoPage(G, params)
 end
 
 local BlocklyPage = Vue:new();
-function Page.ShowBlocklyPage()
+function Page.ShowBlocklyPage(G, params)
+    if (IsDevEnv) then
+        if (_G.BlocklyPage) then
+            _G.BlocklyPage:CloseWindow();
+        end        
+        _G.BlocklyPage = BlocklyPage;
+    end
+
     params = params or {};
 
-    params.url = "%vue%/Example/Blockly.html";
+    params.url = "%ui%/Blockly/Pages/Blockly.html";
     params.draggable = false;
     params.G = G;
-    params.width = "100%";
-    params.height = "100%";
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
     BlocklyPage:Show(params);
 
     return BlocklyPage;

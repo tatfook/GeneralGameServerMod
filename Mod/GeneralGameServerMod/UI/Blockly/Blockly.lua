@@ -28,6 +28,7 @@ Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 Blockly:Property("FocusUI");                  -- 聚焦UI
 Blockly:Property("DragBlock");                -- 拖拽块
 Blockly:Property("Language");                 -- 语言
+Blockly:Property("FileManager");              -- 文件管理器
 
 local UnitSize = Const.UnitSize;
 
@@ -50,6 +51,8 @@ function Blockly:Init(xmlNode, window, parent)
     table.insert(self.childrens, blocklyEditor);
     blocklyEditor:SetVisible(false);
     self:SetEditorElement(blocklyEditor);
+
+    -- self:SetFileManager()
     return self;
 end
 
@@ -76,6 +79,12 @@ end
 -- 获取所有顶层块
 function Blockly:GetBlocks()
     return self.blocks;
+end
+
+-- 清空所有块
+function Blockly:ClearBlocks()
+    self.blocks = {};
+    self:SetDragBlock(nil);
 end
 
 -- 遍历
@@ -276,14 +285,14 @@ function Blockly:GetMouseUI(x, y, event)
 end
 
 function Blockly:IsInnerToolBox(event)
-    local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);  -- 防止减去偏移量
+    local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);         -- 防止减去偏移量
     if (self.toolbox:IsContainPoint(x, y)) then return true end
     return false;
 end
 
 -- 是否在删除区域
 function Blockly:IsInnerDeleteArea(x, y)
-    local x, y = Blockly._super.GetRelPoint(self, x, y);  -- 防止减去偏移量
+    local x, y = Blockly._super.GetRelPoint(self, x, y);                      -- 防止减去偏移量
     if (self.toolbox:IsContainPoint(x, y)) then return true end
     return false;
 end
@@ -324,10 +333,12 @@ function Blockly:SaveToXmlNode()
 end
 
 function Blockly:LoadFromXmlNode(xmlNode)
+    if (not xmlNode or xmlNode.name ~= "Blockly") then return end
+
     local attr = xmlNode.attr;
 
-    self.offsetX = attr.offsetX;
-    self.offsetY = attr.offsetY;
+    self.offsetX = tonumber(attr.offsetX) or 0;
+    self.offsetY = tonumber(attr.offsetY) or 0;
 
     for _, blockXmlNode in ipairs(xmlNode) do
         local block = self:GetBlockInstanceByXmlNode(blockXmlNode);
@@ -338,3 +349,16 @@ function Blockly:LoadFromXmlNode(xmlNode)
         block:UpdateLayout();
     end
 end
+
+function Blockly:LoadFromXmlNodeText(text)
+    self:ClearBlocks();
+    local xmlNode = Helper.XmlString2Lua(text);
+    if (not xmlNode) then return end
+    local blocklyXmlNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//Blockly");
+    self:LoadFromXmlNode(blocklyXmlNode);
+end
+
+function Blockly:SaveToXmlNodeText()
+    return Helper.Lua2XmlString(self:SaveToXmlNode());
+end
+

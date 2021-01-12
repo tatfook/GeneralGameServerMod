@@ -395,7 +395,6 @@ function Input:RenderCursor(painter)
     else
         painter:SetPen("#00000000");
     end
-
     painter:DrawRectTexture(x + cursorX, y + cursorY, cursorWidth, cursorHeight);
     -- painter:DrawRectTexture(cursorX, cursorY, cursorWidth, cursorHeight);
 end

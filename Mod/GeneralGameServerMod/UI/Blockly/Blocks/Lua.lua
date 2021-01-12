@@ -78,6 +78,22 @@ NPL.export({
         end,
     },
     {
+        type = "textarea",
+        message0 = "\" %1 \"",
+        arg0 = {
+            {
+                name = "field_textarea",
+                type = "field_textarea",
+                text = "多行文本",
+            },
+        },
+        output = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block) 
+            return block:GetValueAsString("field_textarea");
+        end,
+    },
+    {
         type = "variable",
         message0 = "%1",
         arg0 = {
@@ -198,6 +214,41 @@ NPL.export({
     },
 
     {
+        type = "code",
+        message0 = "代码块 %1",
+        arg0 = {
+            {
+                name = "code",
+                type = "field_textarea",
+                text = "-- print('hello world')",
+            },
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            return block:GetFieldValue("code");
+        end,
+    },
+
+    {
+        type = "comment",
+        message0 = "注释块 %1",
+        arg0 = {
+            {
+                name = "code",
+                type = "input_statement",
+            },
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            return string.format("--[[\n%s\n--]]",block:GetFieldValue("code"));
+        end,
+    },
+
+    {
         type = "Print",
         message0 = "打印 %1",
         arg0 = {
@@ -212,5 +263,5 @@ NPL.export({
         ToNPL = function(block)
             return string.format('Print(%s)\n', block:GetValueAsString('val'));
         end,
-    }
+    },
 });

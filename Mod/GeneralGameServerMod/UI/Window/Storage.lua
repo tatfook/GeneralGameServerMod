@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: Storage
 use the lib:
 -------------------------------------------------------
-local Storage = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Storage.lua");
+local Storage = NPL.load("Mod/GeneralGameServerMod/UI/Window/Storage.lua");
 -------------------------------------------------------
 ]]
 
@@ -27,3 +27,18 @@ function SessionStorage.Clear()
 end
 
 Storage.SessionStorage = SessionStorage;
+
+local LocalStorage = {};
+function LocalStorage.SetItem(key, val)
+    return GameLogic.GetPlayerController():SaveLocalData(key, val, true, false);
+end
+
+function LocalStorage.GetItem(key, defaultValue)
+    return GameLogic.GetPlayerController():LoadLocalData(key, defaultValue, true);
+end
+
+function LocalStorage.Clear()
+
+end
+
+Storage.LocalStorage = LocalStorage;

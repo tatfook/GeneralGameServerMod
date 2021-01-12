@@ -20,6 +20,7 @@ local InputFieldContainer = NPL.load("./InputFieldContainer.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
+local FieldTextarea = NPL.load("./Fields/Textarea.lua", IsDevEnv);
 local FieldSelect = NPL.load("./Fields/Select.lua", IsDevEnv);
 local FieldVariable = NPL.load("./Fields/Variable.lua", IsDevEnv);
 local InputValue = NPL.load("./Inputs/Value.lua", IsDevEnv);
@@ -108,6 +109,8 @@ function Block:ParseMessageAndArg(opt)
                 local inputField = arg[no];
                 if (inputField.type == "field_input" or inputField.type == "field_number") then
                     inputFieldContainer:AddInputField(FieldInput:new():Init(self, inputField), true);
+                elseif (inputField.type == "field_textarea") then
+                    inputFieldContainer:AddInputField(FieldTextarea:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_select" or inputField.type == "field_dropdown") then
                     inputFieldContainer:AddInputField(FieldSelect:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_variable") then
@@ -488,10 +491,10 @@ end
 function Block:LoadFromXmlNode(xmlNode)
     local attr = xmlNode.attr;
 
-    self:SetLeftTopUnitCount(attr.leftUnitCount, attr.topUnitCount);
+    self:SetLeftTopUnitCount(tonumber(attr.leftUnitCount) or 0, tonumber(attr.topUnitCount) or 0);
     
     for _, childXmlNode in ipairs(xmlNode) do
-        if (childXmlNode.attr.type == "Block") then
+        if (childXmlNode.name == "Block") then
             local nextBlock = self:GetBlockly():GetBlockInstanceByXmlNode(childXmlNode);
             self.nextConnection:Connection(nextBlock.previousConnection);
         else

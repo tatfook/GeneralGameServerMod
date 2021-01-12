@@ -13,8 +13,6 @@ local Const = NPL.load("../Const.lua", IsDevEnv);
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Label = commonlib.inherit(Field, NPL.export());
 
-Label:Property("Color", "#ffffff");
-
 function Label:Init(block, opt)
     Label._super.Init(self, block, opt);
 
@@ -38,4 +36,8 @@ function Label:SaveToXmlNode()
 end
 
 function Label:LoadFromXmlNode(xmlNode)
+end
+
+function Label:IsCanEdit()
+    return false;
 end

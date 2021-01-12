@@ -74,7 +74,7 @@ function Vue:ExtendG(G)
 
         local page = self.pages[params.url] or Vue:new();
         self.pages[params.url] = page;
-        if (page:GetNativeWindow()) then return page end
+        if (page:GetNativeWindow()) then page:CloseWindow() end
 
         params.G = G;
         

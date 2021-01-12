@@ -6,6 +6,7 @@
             <div onclick=ClickCode class="text">代码</div>
             <div onclick=ClickExec class="text">运行</div>
             <div onclick=ClickSave class="text">保存</div>
+            <div onclick=ClickFileManager class="text">文件管理器</div>
         </div>
         <div onclick=CloseWindow class="btn" style="width: 22px; height: 22px; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);"></div>
     </template>
@@ -17,7 +18,9 @@
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 
+local FileManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/FileManager.lua", IsDevEnv);
 local BlocklyEl = nil;
+local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
 
 tab = "blockly";
 code = "";
@@ -26,6 +29,8 @@ out = "";
 -- 组件解析完成
 function OnReady()
     BlocklyEl = GetRef("blockly");
+    FileManager:SetBlockly(BlocklyEl);
+    FileManager:EditDefaultFile();
 end
 
 function ClickBlockly()
@@ -36,7 +41,7 @@ function ClickCode()
     local rawcode, prettycode = BlocklyEl:GetCode();
     code = prettycode;
     tab = "code";
-    print(code);
+    <!-- print(code); -->
 end
 
 function ClickExec()
@@ -46,7 +51,18 @@ function ClickExec()
 end
 
 function ClickSave()
-    echo(BlocklyEl:SaveToXmlNode(), true);
+    local xmlNodeText = BlocklyEl:SaveToXmlNodeText();
+    if (FileManager:Save(xmlNodeText)) then
+        BroadcastHelper.PushLabel({id="Blockly", label = "保存成功", max_duration=3000, color = "0 255 0", font_size=18, bold=true, shadow=true,});
+    else
+        BroadcastHelper.PushLabel({id="Blockly", label = "无法保存当前文档", max_duration=3000, color = "255 0 0", font_size=18, bold=true, shadow=true,});
+    end
+
+    print(xmlNodeText);
+end
+
+function ClickFileManager()
+    FileManager:Show(BlocklyEl)
 end
 
 </script>

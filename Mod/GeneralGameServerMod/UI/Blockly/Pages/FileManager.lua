@@ -1,4 +1,3 @@
-
 --[[
 Title: FileManager
 Author(s): wxa
@@ -17,13 +16,16 @@ local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
 FileManager:Property("Directory", "");  -- 目录
 FileManager:Property("FileName", "");   -- 当前文件名
-
+FileManager:Property("Blockly");        -- Blockly
+FileManager:Property("DefaultFileName", "index.xml");  -- 默认文件
 
 local function ToCanonicalFilePath(filename)
 	if(System.os.GetPlatform()=="win32") then
-		filename = string.gsub(filename, "/+", "\\");
+        filename = string.gsub(filename, "/+", "\\");
+		filename = string.gsub(filename, "\\+", "\\");
 	else
 		filename = string.gsub(filename, "\\+", "/");
+        filename = string.gsub(filename, "/+", "/");
 	end
 	return filename;
 end
@@ -32,9 +34,11 @@ function FileManager:ctor()
     self.files = {};
 end
 
-function FileManager:Init()
+function FileManager:Init(blockly)
     if (self.inited) then return end
     self.inited = true;
+
+    self:SetBlockly(blockly);
 
     local worlddir = ParaWorld.GetWorldDirectory();
     local directory = ToCanonicalFilePath(worlddir .. "/blockly/");
@@ -43,8 +47,9 @@ function FileManager:Init()
     ParaIO.CreateDirectory(directory);
 
     self:SwitchDirectory(directory);
-end
 
+    return self;
+end
 
 -- 新建文件
 function FileManager:NewFile(filename)
@@ -68,6 +73,24 @@ function FileManager:DeleteFile(filename)
     ParaIO.DeleteFile(file.filepath);
 end
 
+-- 编辑
+function FileManager:EditFile(filename)
+    if (filename == self:GetFileName()) then return end
+    
+    -- print("-----------edit file---------------", filename);
+    
+    self:Save();
+
+    self:SetFileName(filename);
+
+    local text = self:Load();
+
+    local blockly = self:GetBlockly();
+    if (not blockly) then return end
+
+    blockly:LoadFromXmlNodeText(text);
+end
+
 -- 切换目录
 function FileManager:SwitchDirectory(directory)
     if (self:GetDirectory() == directory) then return end
@@ -88,7 +111,26 @@ function FileManager:SwitchDirectory(directory)
             end
         end
     end
+
+    local defaultFileName = self:GetDefaultFileName();
+    if (not self.files[defaultFileName]) then
+        self.files[defaultFileName] = {
+            filepath = ToCanonicalFilePath(self:GetDirectory() .. "/" .. defaultFileName);
+            filename = defaultFileName,
+            text = "",
+        }
+    end
 end
+
+-- 获取默认文件
+function FileManager:GetDefaultFile()
+    return self.files[self:GetDefaultFileName()];
+end
+
+-- 编辑默认文件
+function FileManager:EditDefaultFile()
+    return self:EditFile(self:GetDefaultFileName());
+end 
 
 -- 获取文件集
 function FileManager:GetFileList()
@@ -101,16 +143,34 @@ end
 function FileManager:Save(text)
     local filename = self:GetFileName();
     local file = self.files[filename];
-    if (not file) then return end
-    file.text = text;
-
+    if (not file) then return false end
+    file.text = text or file.text or "";
     local io = ParaIO.open(file.filepath, "w");
-	io:WriteString(text);
-	io:close();
+	io:WriteString(file.text);
+    io:close();
+    return true;
 end
 
-function FileManager:Show()
+-- 加载文件
+function FileManager:Load()
+    local filename = self:GetFileName();
+    if (not filename) then return "" end
+    local file = self.files[filename];
+    if (file and file.text) then return file.text end
+    local io = ParaIO.open(file.filepath, "r");
+    local text = "";
+    if(io:IsValid()) then 
+        text = io:GetText();
+        io:close();
+    end
+    file.text = text;
+    return file.text;
+end
+
+function FileManager:Show(Blockly)
+    self:SetBlockly(Blockly);
     Page.Show({
+        Blockly = Blockly,
         FileManager = FileManager,
     }, {
         url = "%ui%/Blockly/Pages/FileManager.html",
@@ -120,4 +180,4 @@ function FileManager:Show()
     });
 end
 
-FileManager:InitSingleton();
+FileManager:InitSingleton():Init();

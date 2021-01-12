@@ -20,9 +20,11 @@ local ThreadName = "FileSync";
 
 local function ToCanonicalFilePath(filename)
 	if(System.os.GetPlatform()=="win32") then
-		filename = string.gsub(filename, "/+", "\\");
+        filename = string.gsub(filename, "/+", "\\");
+		filename = string.gsub(filename, "\\+", "\\");
 	else
 		filename = string.gsub(filename, "\\+", "/");
+        filename = string.gsub(filename, "/+", "/");
 	end
 	return filename;
 end

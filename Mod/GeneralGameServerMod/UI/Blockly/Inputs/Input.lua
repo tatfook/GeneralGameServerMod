@@ -79,8 +79,11 @@ function Input:LoadFromXmlNode(xmlNode)
 
     local inputBlockXmlNode = xmlNode[1];
     if (not inputBlockXmlNode) then return end
-
     local inputBlock = self:GetBlock():GetBlockly():GetBlockInstanceByXmlNode(inputBlockXmlNode);
     if (not inputBlock) then return end
-    self.inputConnection:Connection(inputBlock.previousConnection);
+    if (self:GetType() == "input_value") then
+        self.inputConnection:Connection(inputBlock.outputConnection);
+    else
+        self.inputConnection:Connection(inputBlock.previousConnection);
+    end
 end
