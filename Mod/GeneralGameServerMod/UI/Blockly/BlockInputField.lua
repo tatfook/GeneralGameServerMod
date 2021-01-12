@@ -24,6 +24,7 @@ BlockInputField:Property("BackgroundColor", "#ffffff");          -- 背景颜色
 BlockInputField:Property("Edit", false, "IsEdit");               -- 是否在编辑
 BlockInputField:Property("Value", "");                           -- 值
 BlockInputField:Property("Label", "");                           -- 显示值
+BlockInputField:Property("Text", "");                            -- 文本值
 
 function BlockInputField:ctor()
     self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount = 0, 0, 0, 0;

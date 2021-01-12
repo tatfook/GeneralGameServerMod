@@ -13,6 +13,10 @@ local Const = NPL.load("../Const.lua", IsDevEnv);
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Space = commonlib.inherit(Field, NPL.export());
 
+
+function Space:RenderContent(painter)
+end
+
 function Space:UpdateWidthHeightUnitCount()
     return Const.FieldSpaceWidthUnitCount, 0;
 end

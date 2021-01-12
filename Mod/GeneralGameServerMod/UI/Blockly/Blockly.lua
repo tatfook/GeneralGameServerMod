@@ -359,6 +359,6 @@ function Blockly:LoadFromXmlNodeText(text)
 end
 
 function Blockly:SaveToXmlNodeText()
-    return Helper.Lua2XmlString(self:SaveToXmlNode());
+    return Helper.Lua2XmlString(self:SaveToXmlNode(), true);
 end
 

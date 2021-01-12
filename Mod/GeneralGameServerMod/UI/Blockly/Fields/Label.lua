@@ -13,13 +13,8 @@ local Const = NPL.load("../Const.lua", IsDevEnv);
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Label = commonlib.inherit(Field, NPL.export());
 
-function Label:Init(block, opt)
-    Label._super.Init(self, block, opt);
-
-    self:SetValue(opt and opt.text or "");
-
-    return self;
-end
+Label:Property("Color", "#ffffff");                    -- 颜色
+Label:Property("BackgroundColor", "#ffffff00");
 
 function Label:RenderContent(painter)
     painter:SetPen(self:GetColor());
@@ -28,7 +23,8 @@ function Label:RenderContent(painter)
 end
 
 function Label:UpdateWidthHeightUnitCount()
-    return self:GetTextWidthUnitCount(self:GetValue()), self:GetTextHeightUnitCount();
+    return self:GetTextWidthUnitCount(self:GetValue()), Const.LineHeightUnitCount;
+    -- return self:GetTextWidthUnitCount(self:GetValue()), self:GetTextHeightUnitCount();
 end
 
 function Label:SaveToXmlNode()

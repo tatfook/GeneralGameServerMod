@@ -22,15 +22,11 @@ Select:Property("AllowNewOption", false, "IsAllowNewOption");  -- 是否允许�
 function Select:Init(block, opt)
     Select._super.Init(self, block, opt);
 
-    local value = nil;
-    if (type(opt.text) == "function") then value = opt.text() 
-    elseif (type(opt.text) == "string") then value = opt.text 
-    else  end
-
-    self:SetLabel(self:GetLabelByValue(value));
+    self:SetLabel(self:GetLabelByValue(self:GetValue()));
     self:SetValue(self:GetValueByLablel(self:GetLabel()));
 
     self:SetAllowNewOption(opt.allowNewOption == true and true or false);
+    
     return self;
 end
 

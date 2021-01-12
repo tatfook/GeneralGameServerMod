@@ -21,6 +21,7 @@ local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
 local FieldTextarea = NPL.load("./Fields/Textarea.lua", IsDevEnv);
+local FieldJson = NPL.load("./Fields/Json.lua", IsDevEnv);
 local FieldSelect = NPL.load("./Fields/Select.lua", IsDevEnv);
 local FieldVariable = NPL.load("./Fields/Variable.lua", IsDevEnv);
 local InputValue = NPL.load("./Inputs/Value.lua", IsDevEnv);
@@ -111,6 +112,8 @@ function Block:ParseMessageAndArg(opt)
                     inputFieldContainer:AddInputField(FieldInput:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_textarea") then
                     inputFieldContainer:AddInputField(FieldTextarea:new():Init(self, inputField), true);
+                elseif (inputField.type == "field_json") then
+                    inputFieldContainer:AddInputField(FieldJson:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_select" or inputField.type == "field_dropdown") then
                     inputFieldContainer:AddInputField(FieldSelect:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_variable") then
@@ -120,6 +123,7 @@ function Block:ParseMessageAndArg(opt)
                 elseif (inputField.type == "input_value") then
                     inputFieldContainer:AddInputField(InputValue:new():Init(self, inputField), true);
                 elseif (inputField.type == "input_statement") then
+                    -- inputFieldContainer:AddInputField(FieldSpace:new():Init(self));
                     inputFieldContainerIndex = inputFieldContainerIndex + 1;
                     inputFieldContainer = GetInputFieldContainer();
                     inputFieldContainer:AddInputField(InputStatement:new():Init(self, inputField));

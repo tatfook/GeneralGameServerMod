@@ -10,12 +10,15 @@ local Field = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Fiel
 ]]
 
 local Const = NPL.load("../Const.lua", IsDevEnv);
+local Shape = NPL.load("../Shape.lua", IsDevEnv);
 local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
 local Field = commonlib.inherit(BlockInputField, NPL.export());
 
 local MinEditFieldWidth = 120;
 
 Field:Property("Type");                     -- label text, value
+Field:Property("Color", "#000000");
+Field:Property("BackgroundColor", "#ffffff");
 
 function Field:ctor()
 end
@@ -28,6 +31,26 @@ function Field:Render(painter)
     painter:Translate(offsetX, offsetY);
     self:RenderContent(painter);
     painter:Translate(-offsetX, -offsetY);
+end
+
+function Field:RenderContent(painter)
+    -- background
+    Shape:SetBrush(self:GetBackgroundColor());
+    Shape:DrawRect(painter, Const.BlockEdgeWidthUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2, self.heightUnitCount);
+    Shape:SetDrawBorder(false);
+    Shape:DrawLeftEdge(painter, self.heightUnitCount);
+    Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
+    Shape:SetDrawBorder(true);
+
+    -- input
+    painter:SetPen(self:GetColor());
+    painter:SetFont(self:GetFont());
+    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
+end
+
+function Field:UpdateWidthHeightUnitCount()
+    local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + Const.BlockEdgeWidthUnitCount * 2;
+    return math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount),  Const.LineHeightUnitCount;
 end
 
 function Field:IsField()

@@ -94,6 +94,23 @@ NPL.export({
         end,
     },
     {
+        type = "json",
+        message0 = "JSON %1 ",
+        arg0 = {
+            {
+                name = "field_json",
+                type = "field_json",
+                text = "{}",
+            },
+        },
+        output = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block) 
+            local json = block:GetFieldValue("field_json");
+            return commonlib.serialize_compact(commonlib.Json.Decode(json));
+        end,
+    },
+    {
         type = "variable",
         message0 = "%1",
         arg0 = {
