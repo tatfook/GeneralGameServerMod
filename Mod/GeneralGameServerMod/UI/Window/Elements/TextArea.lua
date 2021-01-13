@@ -5,6 +5,8 @@ Date: 2020/8/14
 Desc: 文本编辑器
 -------------------------------------------------------
 local TextArea = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/TextArea.lua");
+
+cursorAt 取值为 [0, text:length()] 光标处于指定位置字符后面, 故插入字符位置为 cursorAt + 1
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/Core/UniString.lua");
@@ -96,7 +98,7 @@ end
 
 -- 是否选择
 function TextArea:IsSelected()
-    return self.selectStartAt and self.selectEndAt and self.selectStartAt > 0 and self.selectEndAt > 0;  -- [selectStartAt, selectEndAt]
+    return self.selectStartAt and self.selectEndAt and self.selectStartAt >= 0 and self.selectEndAt >= 0;  -- [selectStartAt, selectEndAt]
 end
 
 -- 获取选择
@@ -122,7 +124,7 @@ function TextArea:IsReadOnly()
 end
 
 function TextArea:handleReturn()
-    self:InsertTextCmd("\n", self.cursorAt);
+    self:InsertTextCmd("\n");
 end
 
 function TextArea:handleEscape()
@@ -132,12 +134,12 @@ function TextArea:handleBackspace()
     if (self:IsSelected()) then
         self:DeleteSelected();
     else
-        self:DeleteTextCmd(self.cursorAt - 1, 1);
+        self:DeleteTextCmd(self.cursorAt, 1);
     end
 end
 
 function TextArea:handleDelete()
-    self:DeleteTextCmd(self.cursorAt, 1);
+    self:DeleteTextCmd(self.cursorAt + 1, 1);
 end
 
 function TextArea:handleUndo()
@@ -230,21 +232,23 @@ function TextArea:handleSelectToNextLine()
     
 end
 
+-- 左开右闭
 function TextArea:handleSelectNextChar()
     TextAreaDebug.Format("handleSelectNextChar Before selectStartAt = %s, selectEndAt = %s", self.selectStartAt, self.selectEndAt);
-    self.selectEndAt = self.selectEndAt or self.cursorAt - 1;
+    self.selectEndAt = self.selectEndAt or self.cursorAt;
     self.selectEndAt = self.selectEndAt + 1;
-    self.selectEndAt = math.max(math.min(self.selectEndAt, self.text:length()), 1);
-    self.selectStartAt = self.selectEndAt >= self.cursorAt and self.cursorAt or self.cursorAt -1;
+    self.selectEndAt = math.max(math.min(self.selectEndAt, self.text:length()), 0);
+    self.selectStartAt = self.selectStartAt or self.cursorAt;
     TextAreaDebug.Format("handleSelectNextChar After selectStartAt = %s, selectEndAt = %s", self.selectStartAt, self.selectEndAt);
 end
 
 function TextArea:handleSelectPrevChar()
-    TextAreaDebug("handleSelectPrevChar");
+    TextAreaDebug.Format("handleSelectPrevChar Before selectStartAt = %s, selectEndAt = %s", self.selectStartAt, self.selectEndAt);
     self.selectEndAt = self.selectEndAt or self.cursorAt;
     self.selectEndAt = self.selectEndAt - 1;
-    self.selectEndAt = math.max(math.min(self.selectEndAt, self.text:length()), 1);
-    self.selectStartAt = self.selectEndAt >= self.cursorAt and self.cursorAt or self.cursorAt -1;
+    self.selectEndAt = math.max(math.min(self.selectEndAt, self.text:length()), 0);
+    self.selectStartAt = self.selectStartAt or self.cursorAt;
+    TextAreaDebug.Format("handleSelectPrevChar After selectStartAt = %s, selectEndAt = %s", self.selectStartAt, self.selectEndAt);
 end
 
 function TextArea:handleMoveToNextWord()
@@ -315,7 +319,9 @@ end
 function TextArea:GetLineText(line)
     local line = self.lines[line];
     if (not line) then return UniString:new() end
-    return self.text:sub(line.startAt, line.endAt);
+    local text = self.text:sub(line.startAt, line.endAt);
+    if (text[text:length()] == "\n") then text = text:sub(1, text:length() -1) end
+    return text;
 end
 
 -- 返回值指定文本长度
@@ -328,7 +334,7 @@ function TextArea:InsertTextCmd(text)
     if (self:IsSelected()) then self:DeleteSelected() end
     if (not text or text == "") then return end
     text = UniString:new(string.gsub(text, "\r", ""));
-    local startAt = self.cursorAt;
+    local startAt = self.cursorAt + 1;
     local textLength = text:length();
     local endAt = startAt + textLength - 1;
     table.insert(self.undoCmds, {startAt = startAt, endAt = endAt, action = "insert", text = text});
@@ -340,19 +346,16 @@ end
 function TextArea:InsertText(startAt, endAt, text)
     self.text:insert(startAt - 1, text);
     self:UpdateValue();
-    if (startAt <= self.cursorAt) then self:AdjustCursorAt(endAt - startAt + 1) end
+    if ((startAt - 1) <= self.cursorAt) then self:AdjustCursorAt(endAt - startAt + 1) end
 end
 
 -- 获取位置信息
 function TextArea:GetLineByAt(at)
-    if (at < 1) then return self.lines[1] end
-    if (at > self.text:length()) then return self.lines[#(self.lines)] end
-    
     for i, line in ipairs(self.lines) do
-        if (line.startAt <= at and at <= line.endAt) then return line end
+        if (at < line.endAt) then return line end 
     end
 
-    return self.lines[1];
+    return self.lines[#(self.lines)];
 end
 
 -- 更新文本行信息
@@ -368,7 +371,6 @@ function TextArea:UpdateLineInfo()
         local linetext = linetexts[i];
         local trimtext, remaintext = _guihelper.TrimUtf8TextByWidth(linetext, w, self:GetFont());
         local startAt, endAt = at + 1, at + self:GetTextLength(trimtext);
-        endAt = math.max(startAt, endAt);   
         TextAreaDebug.Format("UpdateLineInfo line = %s, at = %s, startAt = %s, endAt = %s, trimtext = %s, remaintext = %s", line, at, startAt, endAt, trimtext, remaintext);
         line = line + 1;
         at = endAt;
@@ -376,19 +378,22 @@ function TextArea:UpdateLineInfo()
         while (remaintext and remaintext ~= "" and startAt <= endAt) do
             trimtext, remaintext = _guihelper.TrimUtf8TextByWidth(remaintext, w, self:GetFont());
             startAt, endAt = at + 1, at + self:GetTextLength(trimtext);
-            endAt = math.max(startAt, endAt);   
             line = line + 1;
             at = endAt;
             TextAreaDebug.Format("UpdateLineInfo line = %s, at = %s, startAt = %s, endAt = %s, trimtext = %s, remaintext = %s", line, at, startAt, endAt, trimtext, remaintext);
             table.insert(lines, {line = line, startAt = startAt, endAt = endAt});
         end
-        at = at + 1; -- 跳过换行符
+
+        if (i < linecount) then
+            at = at + 1;     -- 换行符放置行末尾
+            lines[#lines].endAt = at;
+        end
     end
     
     if (#lines == 0) then table.insert(lines, {line = 1, startAt = 1, endAt = 1}) end
 
     self.lines = lines;
-    -- TextAreaDebug("UpdateLineInfo", text, lines, self.cursorAt);
+    TextAreaDebug("UpdateLineInfo", text, lines, self.cursorAt);
 
     if (not self:GetStyle()) then return end
     local LineHeight = self:GetStyle():GetLineHeight(); 
@@ -417,9 +422,9 @@ end
 
 function TextArea:DeleteText(startAt, endAt)
     local count = endAt - startAt + 1;
-    if (self.cursorAt <= startAt) then
+    if (self.cursorAt < startAt) then
     elseif (self.cursorAt >= endAt) then self:AdjustCursorAt(-count)
-    else self:AdjustCursorAt(startAt - self.cursorAt) end 
+    else self:AdjustCursorAt(startAt - self.cursorAt -1) end 
     self.text:remove(startAt, count);
     self:UpdateValue();
 end
@@ -435,8 +440,8 @@ end
 -- 调整光标的位置, 调整前文本需完整, 因此添加需先添加后调整光标, 移除需先调整光标后移除
 function TextArea:AdjustCursorAt(offset)
     self.cursorAt = self.cursorAt + offset;
-    self.cursorAt = math.max(self.cursorAt, 1);
-    self.cursorAt = math.min(self.cursorAt, self.text:length() + 1);
+    self.cursorAt = math.max(self.cursorAt, 0);
+    self.cursorAt = math.min(self.cursorAt, self.text:length());
 
     local x, y, w, h = self:GetContentGeometry();
     local line = self:GetLineByAt(self.cursorAt);
@@ -445,7 +450,7 @@ function TextArea:AdjustCursorAt(offset)
     local scrollValue = self:GetScrollBarValue();
     if ((offsetY + LineHeight) > h) then scrollValue = offsetY + LineHeight - h end
     if (offsetY < scrollValue) then scrollValue = offsetY end
-    TextAreaDebug.Format("AdjustCursorAt offsetY = %s, scrollValue = %s, h = %s", offsetY, scrollValue, h);
+    TextAreaDebug.Format("AdjustCursorAt cursorAt = %s, offsetY = %s, scrollValue = %s, h = %s", self.cursorAt, offsetY, scrollValue, h);
     self:SetScrollBarValue(scrollValue);
 end
 
@@ -469,7 +474,7 @@ function TextArea:RenderCursor(painter)
     else
         painter:SetPen("#00000000");
     end
-    local offsetX = self.text:sub(line.startAt, self.cursorAt - 1):GetWidth(self:GetFont());
+    local offsetX = self.cursorAt < line.startAt and 0 or (self.text:sub(line.startAt, self.cursorAt):GetWidth(self:GetFont()));
     local offsetY = (line.line - 1) * LineHeight;
     -- print(x, offsetX, self.text:sub(line.startAt, self.cursorAt - 1):GetText())
     painter:DrawRectTexture(x + offsetX, y + offsetY, 1, LineHeight);
@@ -496,8 +501,8 @@ function TextArea:RenderContent(painter)
     if (self:IsSelected()) then
         painter:SetPen("#3390ff");
         local function RenderSelectedBG(line, baseAt, startAt, endAt)
-            local offsetX = self.text:sub(baseAt, startAt - 1):GetWidth(self:GetFont());
-            local width = self.text:sub(startAt, endAt):GetWidth(self:GetFont());
+            local offsetX = baseAt > startAt and 0 or (self.text:sub(baseAt, startAt):GetWidth(self:GetFont()));
+            local width = startAt >= endAt and 0 or (self.text:sub(startAt + 1, endAt):GetWidth(self:GetFont()));
             painter:DrawRectTexture(x + offsetX, y + (line - 1) * LineHeight, width, LineHeight);
         end
         local selectStartAt, selectEndAt = self:GetSelected();
@@ -509,9 +514,9 @@ function TextArea:RenderContent(painter)
             RenderSelectedBG(startPos.line, startPos.startAt, selectStartAt, startPos.endAt);
             for i = startPos.line + 1, endPos.line - 1 do
                 local line = self.lines[i];
-                RenderSelectedBG(line.line, line.startAt, line.startAt, line.endAt)
+                RenderSelectedBG(line.line, line.startAt, line.startAt - 1, line.endAt)
             end
-            RenderSelectedBG(endPos.line, endPos.startAt, endPos.startAt, selectEndAt);
+            RenderSelectedBG(endPos.line, endPos.startAt, endPos.startAt - 1, selectEndAt);
         end
     end
     
@@ -553,7 +558,7 @@ function TextArea:GetAtByPos(x, y)
         y = y - LineHeight;
         lineNo = lineNo + 1;
     end
-    local startAt = self.text:length() + 1;
+    local startAt = self.text:length();
     if (self.lines[lineNo]) then startAt = self.lines[lineNo].startAt end
     local text = _guihelper.AutoTrimTextByWidth(self:GetLineText(lineNo):GetText(), x, self:GetFont());
     local textlen = ParaMisc.GetUnicodeCharNum(text);
@@ -564,9 +569,9 @@ function TextArea:GetAtByPos(x, y)
         textWidth = _guihelper.GetTextWidth(text, self:GetFont());
     end
 
-    TextAreaDebug.Format("GetAtByPos, x = %s, textWidth = %s textlen = %s, cursorAt = %s", x, textWidth, textlen, self.cursorAt);
+    TextAreaDebug.Format("GetAtByPos, lineNo = %s, x = %s, textWidth = %s textlen = %s, cursorAt = %s", lineNo, x, textWidth, textlen, startAt + textlen);
 
-    return startAt + textlen;
+    return startAt + textlen - 1;
 end
 
 function TextArea:GloablToContentGeometryPos(x, y)
@@ -600,7 +605,7 @@ function TextArea:OnMouseMove(event)
     local x, y = ParaUI.GetMousePosition();
     if (not self:IsContainPoint(x, y)) then return self:OnMouseUp() end
     local cursorAt = self:GetAtByPos(self:GloablToContentGeometryPos(x, y));
-    self.selectStartAt = cursorAt < self.cursorAt and self.cursorAt - 1 or self.cursorAt;
+    self.selectStartAt = self.cursorAt;
     self.selectEndAt = cursorAt;
 end
 

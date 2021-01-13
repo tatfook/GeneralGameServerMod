@@ -31,7 +31,9 @@ function Canvas:RenderContent(painter)
 
     -- print(x, y, w, h)
     painter:Translate(x, y);
-    -- painter:SetPen("#00ff00");
+    painter:SetPen("#00ff00");
+    painter:DrawText(0, 0, "hello\nworld\n");
+    painter:DrawText(0, 0, "hello\nworld\n");
     -- painter:SetBrush({texture="Texture/Aries/Creator/keepwork/ggs/test.jpg"})
     -- painter:DrawCircle(50, -50, 0, 50, "z", true);
     painter:Translate(-x, -y);

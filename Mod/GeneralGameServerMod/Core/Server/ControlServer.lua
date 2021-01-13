@@ -160,7 +160,9 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
     -- 最后选择控制服务器
     local server, workerServer, controlServer = nil, nil, nil; -- 设置最大值
     local curTick = os.time();
-    local worldKey, worldClientCount, threadName = nil, nil, nil;
+    local worldKey, threadName = nil, nil;
+    local clientCountPerRate = 20;                             -- 单个分值对应的世界人数
+    local worldRate = -1;                                      -- 世界评分 评分越大优先选取
     for key, svr in pairs(servers) do
         local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
         -- 忽略已挂服务器或超负荷服务器
@@ -169,12 +171,15 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
             for key, world in pairs(svr.worlds) do
                 if (world.worldId == worldId and world.worldName == worldName 
                     and world.clientCount < world.maxClientCount 
-                    and svr.threads[world.threadName].clientCount < svr.threadMaxClientCount
-                    and (not worldClientCount or worldClientCount > world.clientCount)) then
-                    worldClientCount = world.clientCount;
-                    server = svr;
-                    worldKey = key;
-                    threadName = world.threadName;
+                    and svr.threads[world.threadName].clientCount < svr.threadMaxClientCount) then
+                    local curWorldRate = world.clientCount > (world.maxClientCount - clientCountPerRate) and 0 or math.ceil(world.clientCount / clientCountPerRate);
+                    -- 优先选世界人数较多且未进入上限缓冲区的世界    
+                    if (worldRate < curWorldRate) then
+                        worldRate = curWorldRate;
+                        server = svr;
+                        worldKey = key;
+                        threadName = world.threadName;
+                    end
                 end
             end
             -- 选出压力最小的工作主机 
@@ -238,9 +243,14 @@ end
 function ControlServer:handleWorldInfo(world)
     local server = self:GetServer();
     if (not server or not world) then return end;
-    server.lastTick = os.time();                                                   -- 上次发送时间
-    server.worlds[world.worldKey] = server.worlds[world.worldKey] or {}; 
-    commonlib.partialcopy(server.worlds[world.worldKey], world);
+    local worldKey = world.worldKey;
+    server.lastTick = os.time();         -- 上次发送时间
+    if (world.clientCount == 0) then
+        server.worlds[worldKey] = nil;   -- 世界无人清除世界信息
+    else
+        server.worlds[world.worldKey] = server.worlds[world.worldKey] or {}; 
+        commonlib.partialcopy(server.worlds[world.worldKey], world);
+    end                                          
     self:UpdateServerInfo();
     return server;
 end
