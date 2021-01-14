@@ -49,7 +49,7 @@ http:Delete(url, config);
 -- config 同 http:new():Init(config) 参考该实例重写相关字段即可
 
 -- http请求为异步, 返回的结果为一个Promise对象, 可以使用 Promise API 对其链式处理, 如
-httt:Get("keepworks/currentTime"):Then(function(response)
+http:Get("keepworks/currentTime"):Then(function(response)
     -- 请求成功
     echo({
         response.status,  -- 响应码
@@ -59,4 +59,15 @@ httt:Get("keepworks/currentTime"):Then(function(response)
 end):Catch(function(response)
     -- 请求失败
 end);
+```
+
+## Date
+
+```lua
+-- 构建日期对象
+local date = Date:new():Init(t); -- t 等同 ostime(t)
+-- 获取日期
+date:GetDate(fmt);     -- os.date(fmt)  
+date:GetTimeStamp();   -- 获取 date 对应的时间戳
+date:SetTimeStamp(timestamp);  -- 设置 date 时间戳 
 ```

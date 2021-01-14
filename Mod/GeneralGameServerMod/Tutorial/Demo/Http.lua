@@ -12,10 +12,10 @@ local TutorialSandbox = NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSand
 
 local KeepworkAPI = TutorialSandbox:GetKeepworkAPI();
 
-local Http = NPL.export();
+local HttpDemo = NPL.export();
 
 -- 获取服务器时间
-function Http.GetServerTime()
+function HttpDemo.GetServerTime()
     KeepworkAPI:Get("keepworks/currentTime"):Then(function(response)
         -- 请求成功
         echo({

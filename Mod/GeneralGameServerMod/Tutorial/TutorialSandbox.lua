@@ -21,6 +21,7 @@ local BlockStrategy = NPL.load("./BlockStrategy.lua", IsDevEnv);
 local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
 local Http = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Http.lua", IsDevEnv);
 local Promise = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Promise.lua", IsDevEnv);
+local Date = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Date.lua");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 -- local Page = NPL.load("./Page/Page.lua", IsDevEnv);
 
@@ -44,6 +45,7 @@ function TutorialSandbox:ctor()
     -- 全局变量导出
     self.Http = Http;
     self.Promise = Promise;
+    self.Date = Date;
     
     self:SetKeepworkAPI(Http:new():Init({
         baseURL = "https://api.keepwork.com/core/v0/",
