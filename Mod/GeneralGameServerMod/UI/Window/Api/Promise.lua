@@ -33,7 +33,6 @@ function Promise:Init(callback)
         if (self:GetState() ~= "pending") then return end
         self:SetResult(data);
         self:SetState(state);
-        print(state, data, self.state_callback == nil);
         if (type(self.state_callback) == "function") then self.state_callback(state, data) end
     end
 

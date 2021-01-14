@@ -129,7 +129,10 @@ end
 
 function TutorialSandbox:OnWorldUnloaded()
     if (type(self.OnWorldUnloadedCallBack) == "function") then self.OnWorldUnloadedCallBack() end
+
+    if (not self.isReseted) then return end
     for _, page in ipairs(self.pages) do page:CloseWindow() end
+
     self:Restore();
 end
 
