@@ -19,6 +19,8 @@ local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local BlockStrategy = NPL.load("./BlockStrategy.lua", IsDevEnv);
 local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
+local Http = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Http.lua", IsDevEnv);
+local Promise = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Promise.lua", IsDevEnv);
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 -- local Page = NPL.load("./Page/Page.lua", IsDevEnv);
 
@@ -31,12 +33,27 @@ TutorialSandbox:Property("LeftClickToDestroyBlockStrategy");             -- 配�
 TutorialSandbox:Property("RightClickToCreateBlockStrategy");             -- 配置右击创建方块策略
 TutorialSandbox:Property("ClickStrategy");                               -- 点击策略
 TutorialSandbox:Property("Step", 0);                                     -- 第几步
+TutorialSandbox:Property("KeepworkAPI");                                 -- keepwork API
 
 function TutorialSandbox:ctor()
     self.CodeAPI = CodeAPI:new()
 
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
     GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
+
+    -- 全局变量导出
+    self.Http = Http;
+    self.Promise = Promise;
+    
+    self:SetKeepworkAPI(Http:new():Init({
+        baseURL = "https://api.keepwork.com/core/v0/",
+        headers = {
+            ["content-type"] = "application/json", 
+        },
+        transformRequest = function(request)
+            request.headers["Authorization"] = string.format("Bearer %s", commonlib.getfield("System.User.keepworktoken"));
+        end
+    }));
 end
 
 -- 重置教学环境

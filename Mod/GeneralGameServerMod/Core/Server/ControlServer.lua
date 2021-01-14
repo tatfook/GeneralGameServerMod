@@ -172,6 +172,7 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
                 if (world.worldId == worldId and world.worldName == worldName 
                     and world.clientCount < world.maxClientCount 
                     and svr.threads[world.threadName].clientCount < svr.threadMaxClientCount) then
+                    -- 对可选择的世界进行评分
                     local curWorldRate = world.clientCount > (world.maxClientCount - clientCountPerRate) and 0 or math.ceil(world.clientCount / clientCountPerRate);
                     -- 优先选世界人数较多且未进入上限缓冲区的世界    
                     if (worldRate < curWorldRate) then

@@ -10,6 +10,9 @@ local G = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/G.lua");
 ]]
 
 local Storage = NPL.load("./Storage.lua", IsDevEnv);
+local Http = NPL.load("./Api/Http.lua", IsDevEnv);
+local Promise = NPL.load("./Api/Promise.lua", IsDevEnv);
+
 local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua", true);
 local G = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -33,6 +36,8 @@ function G.New(window, g)
     end
 
     g.Log = Debug.GetModuleDebug("UI");
+    g.Promise = Promise;
+    g.Http = Http;
     g._G = g;
     
     return g;

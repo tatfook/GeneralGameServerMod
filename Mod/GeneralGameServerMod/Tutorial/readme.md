@@ -247,6 +247,14 @@ TutorialSandbox:GetShareData();  -- 该函数返回一个表对象, 该对象不
 
 -- 显示窗口
 TutorialSandbox:ShowWindow(G, params);  -- 使用同Page.Show, 区别 Page.Show 创建的窗口不会随世界退出自动关闭,    TutorialSandbox:ShowWindow 创建的窗口会随世界退出而自动关闭
+
+-- 获取 keepwork api 实例对象
+TutorialSandbox:GetKeepworkAPI();
+
+
+-- 沙盒 API 类, 同窗口脚本中的全局 API 类, 参考文档 UI/Window/Api/Api.md
+TutorialSandbox.Http      -- http 请求类
+TutorialSandbox.Promise   -- 异步辅助类
 ```
 
 ## 快速开始
