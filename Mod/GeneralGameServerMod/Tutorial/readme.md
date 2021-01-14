@@ -251,6 +251,10 @@ TutorialSandbox:ShowWindow(G, params);  -- 使用同Page.Show, 区别 Page.Show 
 -- 获取 keepwork api 实例对象
 TutorialSandbox:GetKeepworkAPI();
 
+-- 发送联机数据
+TutorialSandbox:SendNetData(data);
+-- 注册联机数据接收回调
+TutorialSandbox:RegisterNetDataCallBack(function(data) echo(data) end);
 
 -- 沙盒 API 类, 同窗口脚本中的全局 API 类, 参考文档 UI/Window/Api/Api.md
 TutorialSandbox.Http      -- http 请求类

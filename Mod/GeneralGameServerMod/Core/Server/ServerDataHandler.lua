@@ -38,7 +38,7 @@ end
 
 -- 发送数据给所有玩家
 function ServerDataHandler:SendDataToAllPlayer(data, bIncludeSelf)
-    self:GetNetHandler():GetPlayerManager():SendPacketToAllPlayers(self:GetDataPacket(data), if_else(bIncludeSelf, nil, self:GetPlayer()));
+    self:GetNetHandler():GetPlayerManager():SendPacketToAllPlayers(self:GetDataPacket(data), if_else(bIncludeSelf, nil, self:GetPlayer()), nil, false);
 end
 
 -- 重载此函数 处理收到网络数据

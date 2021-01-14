@@ -11,6 +11,8 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeAPI.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/CameraController.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldLoginAdapter.lua");
+NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
+local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
 local ParaWorldLoginAdapter = commonlib.gettable("MyCompany.Aries.Game.Tasks.ParaWorld.ParaWorldLoginAdapter");
 local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController")
 local CodeAPI = commonlib.gettable("MyCompany.Aries.Game.Code.CodeAPI");
@@ -56,6 +58,23 @@ function TutorialSandbox:ctor()
             request.headers["Authorization"] = string.format("Bearer %s", commonlib.getfield("System.User.keepworktoken"));
         end
     }));
+
+    GameLogic.GetFilters():add_filter("ggs_net_data", function(_, data, client)
+        if (type(self.netdataCallBack) == "function") then self.netdataCallBack(data, client) end
+    end);
+end
+
+-- 发送网络数据
+function TutorialSandbox:SendNetData(data)
+    local dataHandler = AppGeneralGameClient:GetClientDataHandler();
+    if (not dataHandler) then return false end
+    dataHandler:SendData(data);
+    return true;
+end
+
+-- 注册网络数据回调
+function TutorialSandbox:RegisterNetDataCallBack(callback)
+    self.netdataCallBack = callback;
 end
 
 -- 重置教学环境

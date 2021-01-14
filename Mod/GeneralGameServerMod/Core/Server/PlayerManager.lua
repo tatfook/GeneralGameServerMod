@@ -290,7 +290,7 @@ function PlayerManager:SendPacketPlayerLogout(player, reason)
     });
 
     -- 发送退出包给其它玩家
-    self:SendPacketToAllPlayers(packet, player);              -- 通知其它人退出
+    self:SendPacketToAllPlayers(packet, player);                      -- 通知其它人退出
 
     -- 发送退出包给自己
     player:SendPacketToPlayer(packet);                                -- 单独发, 确保自己一定知道自己退出
@@ -306,12 +306,16 @@ function PlayerManager:SendPacketPlayerInfo(player)
 end
 
 -- 发数据给所有玩家 curPlayer 为 nil 就包含自己
-function PlayerManager:SendPacketToAllPlayers(packet, curPlayer, filter)
+function PlayerManager:SendPacketToAllPlayers(packet, curPlayer, filter, delay)
     for i = 1, #(self.onlinePlayerList) do 
         local username = self.onlinePlayerList[i];
         local player = self.players[username];
         if (player and player ~= curPlayer and (not filter or filter(player))) then
-            player:AddPacketToSendQueue(packet);
+            if (delay == nil or delay) then
+                player:AddPacketToSendQueue(packet);
+            else 
+                player:SendPacketToPlayer(packet);
+            end
         end
     end
 end

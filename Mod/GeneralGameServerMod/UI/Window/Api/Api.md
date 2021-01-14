@@ -61,13 +61,17 @@ end):Catch(function(response)
 end);
 ```
 
+## Promise
+
+异步逻辑同步写法辅助类, 用法参考: https://www.runoob.com/w3cnote/javascript-promise-object.html
+
 ## Date
 
 ```lua
 -- 构建日期对象
-local date = Date:new():Init(t); -- t 等同 ostime(t)
+local date = Date:new():Init(t);     -- t 等同 ostime(t)
 -- 获取日期
-date:GetDate(fmt);     -- os.date(fmt)  
-date:GetTimeStamp();   -- 获取 date 对应的时间戳
-date:SetTimeStamp(timestamp);  -- 设置 date 时间戳 
+date:GetDate(fmt);                   -- os.date(fmt)  
+date:GetTimeStamp();                 -- 获取 date 对应的时间戳(单位秒)
+date:SetTimeStamp(timestamp);        -- 设置 date 时间戳(单位秒) 
 ```

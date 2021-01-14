@@ -16,4 +16,5 @@ local AppClientDataHandler = commonlib.inherit(commonlib.gettable("Mod.GeneralGa
 
 function AppClientDataHandler:RecvData(data)
     -- GGS.INFO("AppClientDataHandler", data);
+    GameLogic.GetFilters():apply_filters("ggs_net_data", nil, data, self);
 end

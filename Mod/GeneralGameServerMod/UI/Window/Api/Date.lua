@@ -17,7 +17,7 @@ end
 
 function Date:Init(t)
     self:SetTimeStamp(os.time(t));
-    return t;
+    return self;
 end
 
 -- os.date
@@ -65,5 +65,6 @@ os.date ([format [, time\]\])
 %Y	完整的年份	(2016)
 %%	字符串'%'	(%)
 *t	返回一个table，里面包含全部的数据	hour 14
+
 https://www.cnblogs.com/zhaoqingqing/p/9892694.html
 ]]

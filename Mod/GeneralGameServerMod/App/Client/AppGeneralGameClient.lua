@@ -118,6 +118,12 @@ function AppGeneralGameClient:GetClientDataHandlerClass()
     return AppClientDataHandler;
 end
 
+function AppGeneralGameClient:GetClientDataHandler()
+    local world = self:GetWorld();
+    local netHandler = world and world:GetNetHandler();
+    return netHandler and netHandler:GetDataHandler();
+end
+
 -- 拷贝KeepWork用户信息
 function AppGeneralGameClient:CopyKpUserInfo(userinfo)
     self.userinfo = self.userinfo or {};

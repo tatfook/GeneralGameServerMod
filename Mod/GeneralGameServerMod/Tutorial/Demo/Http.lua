@@ -28,3 +28,15 @@ function HttpDemo.GetServerTime()
     end);
 end
 
+--[[
+TutorialSandbox:SetStepTask(1, function()
+    KeepworkAPI:Get("keepworks/currentTime"):Then(function(response)
+        -- 请求成功
+        local currentTime = response.data;
+        -- 其它逻辑
+        TutorialSandbox:NextStep(true);
+    end):Catch(function(response)
+        -- 请求失败
+    end);
+end);
+]]

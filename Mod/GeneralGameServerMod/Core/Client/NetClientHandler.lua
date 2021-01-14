@@ -488,7 +488,8 @@ end
 -- clean up connection. 
 function NetClientHandler:Cleanup()
     self:SetLogout(true);
-
+    self:SetDataHandler(nil);
+    
     -- 关闭连接
     if (self.connection) then
         self.connection:CloseConnection();

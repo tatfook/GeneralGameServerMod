@@ -19,6 +19,8 @@ local AppServerDataHandler = commonlib.inherit(ServerDataHandler, NPL.export());
 function AppServerDataHandler:RecvData(data)
 	-- GGS.DEBUG("AppServerConnection", data);
 
+	self:SendDataToAllPlayer(data);
+
 	-- -- 发送数据给当前用户
 	-- if (data == "player") then 
 	-- 	self:SendData("hello player");
