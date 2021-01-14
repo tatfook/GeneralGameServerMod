@@ -13,7 +13,6 @@ NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
-local Sandbox = NPL.load("./Sandbox/Sandbox.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
@@ -33,7 +32,6 @@ Blockly:Property("FileManager");              -- 文件管理器
 local UnitSize = Const.UnitSize;
 
 function Blockly:ctor()
-    self.widthUnitCount, self.heightUnitCount = 0, 0;
     self.offsetX, self.offsetY = 0, 0;
     self.blocks = {};
     self.block_types = {};
@@ -171,9 +169,9 @@ function Blockly:UpdateWindowPos()
         block:UpdateLayout();
     end
     local _, _, width, height = self:GetContentGeometry();
-    self.widthUnitCount = math.ceil(width / UnitSize);
-    self.heightUnitCount = math.ceil(height / UnitSize);
-    self.toolbox:SetWidthHeightUnitCount(nil, self.heightUnitCount);
+    local widthUnitCount = math.ceil(width / UnitSize);
+    local heightUnitCount = math.ceil(height / UnitSize);
+    self.toolbox:SetWidthHeightUnitCount(nil, heightUnitCount);
 end
 
 -- 捕获鼠标
@@ -311,11 +309,6 @@ function Blockly:GetCode(language)
     return code, LuaFmt.Pretty(code);
 end
 
--- 执行代码
-function Blockly:ExecCode(code)
-    return Sandbox.ExecCode(code);
-end
-
 -- 转换成xml
 function Blockly:SaveToXmlNode()
     local xmlNode = {name = "Blockly", attr = {}};
@@ -361,4 +354,3 @@ end
 function Blockly:SaveToXmlNodeText()
     return Helper.Lua2XmlString(self:SaveToXmlNode(), true);
 end
-

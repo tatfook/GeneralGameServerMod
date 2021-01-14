@@ -19,6 +19,8 @@
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 
 local FileManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/FileManager.lua", IsDevEnv);
+local Sandbox = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Sandbox/Sandbox.lua");
+
 local BlocklyEl = nil;
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
 
@@ -47,7 +49,7 @@ end
 function ClickExec()
     tab = "exec";
     local rawcode, prettycode = BlocklyEl:GetCode();
-    out = BlocklyEl:ExecCode(rawcode);
+    out = Sandbox:ExecCode(rawcode);
 end
 
 function ClickSave()

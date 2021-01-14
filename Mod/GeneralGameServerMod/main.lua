@@ -59,6 +59,10 @@ function GeneralGameServerMod:init()
 
 		-- tutorial
 		-- NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua");
+
+		-- blockly
+		-- local sandbox = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Sandbox/Sandbox.lua");
+		-- sandbox:Init();
 	end
 end
 

@@ -34,14 +34,17 @@ function FileManager:ctor()
     self.files = {};
 end
 
+function FileManager:GetDefaultDirectory()
+    return ToCanonicalFilePath(ParaIO.GetCurDirectory(0) .. ParaWorld.GetWorldDirectory() .. "/blockly/");
+end
+
 function FileManager:Init(blockly)
     if (self.inited) then return end
     self.inited = true;
 
     self:SetBlockly(blockly);
 
-    local worlddir = ParaWorld.GetWorldDirectory();
-    local directory = ToCanonicalFilePath(worlddir .. "/blockly/");
+    local directory = self:GetDefaultDirectory();
 
     -- 确保目存在
     ParaIO.CreateDirectory(directory);
@@ -93,6 +96,8 @@ end
 
 -- 切换目录
 function FileManager:SwitchDirectory(directory)
+    directory = directory or self:GetDefaultDirectory();
+
     if (self:GetDirectory() == directory) then return end
 
     self:SetDirectory(directory);
@@ -152,8 +157,8 @@ function FileManager:Save(text)
 end
 
 -- 加载文件
-function FileManager:Load()
-    local filename = self:GetFileName();
+function FileManager:Load(filename)
+    filename = filename or self:GetFileName();
     if (not filename) then return "" end
     local file = self.files[filename];
     if (file and file.text) then return file.text end
@@ -165,6 +170,20 @@ function FileManager:Load()
     end
     file.text = text;
     return file.text;
+end
+
+-- 加载所有文件
+function FileManager:LoadAll()
+    for filename in pairs(self.files) do 
+        self:Load(filename);
+    end
+end
+
+-- 遍历
+function FileManager:Each(callback)
+    for _, file in pairs(self.files) do
+        callback(file);
+    end
 end
 
 function FileManager:Show(Blockly)
