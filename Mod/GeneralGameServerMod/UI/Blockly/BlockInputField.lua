@@ -10,6 +10,8 @@ local BlockInputField = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/B
 ]]
 
 local Const = NPL.load("./Const.lua", IsDevEnv);
+local Validator = NPL.load("./Validator.lua", IsDevEnv);
+
 local BlockInputField = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local UnitSize = Const.UnitSize;
@@ -22,6 +24,7 @@ BlockInputField:Property("Option");
 BlockInputField:Property("Color", "#ffffff");                    -- 颜色
 BlockInputField:Property("BackgroundColor", "#ffffff");          -- 背景颜色
 BlockInputField:Property("Edit", false, "IsEdit");               -- 是否在编辑
+BlockInputField:Property("Validator", nil);                      -- 验证器
 BlockInputField:Property("Value", "");                           -- 值
 BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
@@ -40,6 +43,7 @@ function BlockInputField:Init(block, option)
     self:SetOption(option or {});
     self:SetName(option.name);
     self:SetType(option.type);
+    self:SetValidator(option.validator);
     self:SetValue(self:GetOptionText());
     self:SetLabel(self:GetValue());
     -- 解析颜色值
@@ -257,8 +261,15 @@ function BlockInputField:GetLastNextBlock()
     return prevBlock;
 end
 
+function BlockInputField:GetOutputBlock()
+    local block = self:GetBlock();
+    local connection = block.outputConnection and block.outputConnection:GetConnection();
+    return connection and connection:GetBlock();
+end
+
 function BlockInputField:GetTopBlock()
-    local prevBlock, nextBlock = self:GetPrevBlock(), self:GetBlock();
+    local prevBlock, nextBlock = self:GetPrevBlock() or self:GetOutputBlock(), self:GetBlock();
+
     while (prevBlock) do 
         nextBlock = prevBlock;
         prevBlock = nextBlock:GetPrevBlock();
@@ -342,4 +353,15 @@ end
 
 function BlockInputField:GetLanguage()
     return self:GetBlock():GetBlockly():GetLanguage();
+end
+
+function BlockInputField:GetFieldValue()
+    return self:GetValue();
+end
+
+function BlockInputField:SetFieldValue(value)
+    local validator = self:GetValidator();
+    if (type(validator) == "function") then value = validator(value) end
+    if (type(validator) == "string" and type(Validator[validator]) == "function") then value = (Validator[validator])(value) end
+    self:SetValue(value);
 end

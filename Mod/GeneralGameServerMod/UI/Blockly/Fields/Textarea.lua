@@ -22,8 +22,8 @@ function Textarea:OnBeginEdit()
         text = self:GetValue(),
 
         confirm = function(value)
-            self:SetValue(value);
-            self:SetLabel(value);
+            self:SetFieldValue(value);
+            self:SetLabel(self:GetValue());
             self:FocusOut();
         end,
 

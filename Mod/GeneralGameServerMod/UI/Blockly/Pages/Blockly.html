@@ -19,7 +19,7 @@
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 
 local FileManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/FileManager.lua", IsDevEnv);
-local Sandbox = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Sandbox/Sandbox.lua");
+local Sandbox = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Sandbox/Sandbox.lua", IsDevEnv);
 
 local BlocklyEl = nil;
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
@@ -43,7 +43,7 @@ function ClickCode()
     local rawcode, prettycode = BlocklyEl:GetCode();
     code = prettycode;
     tab = "code";
-    <!-- print(code); -->
+    print(rawcode);
 end
 
 function ClickExec()
@@ -60,7 +60,7 @@ function ClickSave()
         BroadcastHelper.PushLabel({id="Blockly", label = "无法保存当前文档", max_duration=3000, color = "255 0 0", font_size=18, bold=true, shadow=true,});
     end
 
-    print(xmlNodeText);
+    <!-- print(xmlNodeText); -->
 end
 
 function ClickFileManager()
@@ -99,5 +99,6 @@ end
     white-space: pre;
     font-size: 16px;
     padding: 16px;
+    overflow-y: auto;
 }
 </style>

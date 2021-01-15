@@ -26,7 +26,13 @@ function MouseEvent:init(event_type, window)
     self.screenX, self.screenY = self.x, self.y;
     self.accepted = false;
     
+    if (event_type == "mousePressEvent") then self.mouse_down_x, self.mouse_down_y = self.x, self.y end
+    if (event_type == "mouseReleaseEvent") then self.mouse_up_x, self.mouse_up_y = self.x, self.y end
 	return self;
+end
+
+function MouseEvent:IsMove()
+    return not (math.abs(self.x - self.mouse_down_x) < 4 and math.abs(self.y - self.mouse_down_y) < 4);
 end
 
 function MouseEvent:UpdateElement(element)

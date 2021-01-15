@@ -71,7 +71,7 @@ function Value:UpdateWidthHeightUnitCount()
         _, _, _, _, widthUnitCount, heightUnitCount = inputBlock:UpdateWidthHeightUnitCount();
         return widthUnitCount, heightUnitCount;
     end
-    widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetLabel()), 6) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
+    widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetLabel()), Const.MinTextShowWidthUnitCount) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
     return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), heightUnitCount;
 end
 
@@ -90,7 +90,7 @@ function Value:ConnectionBlock(block)
         self.inputConnection:Connection(block.outputConnection);
         self:GetTopBlock():UpdateLayout();
         if (inputConnectionConnection) then
-            block:GetBlockly():AddBlock(inputConnectionConnection:GetBlock());
+            block:GetBlockly():AddBlock(inputConnectionConnection:GetBlock(), true);
         end
         return true;
     end
@@ -128,8 +128,8 @@ function Value:GetFieldEditElement(parentElement)
     InputFieldEditElement:SetAttrValue("type", self:GetShadowType() == "math_number" and "number" or "text");
     InputFieldEditElement:SetAttrValue("onkeydown.enter", function()
         local value = InputFieldEditElement:GetValue();
-        self:SetValue(value);
-        self:SetLabel(value);
+        self:SetFieldValue(value);
+        self:SetLabel(self:GetValue());
         self:FocusOut();
     end)
 

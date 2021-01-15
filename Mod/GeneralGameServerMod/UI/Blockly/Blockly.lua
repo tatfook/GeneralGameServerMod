@@ -102,15 +102,23 @@ function Blockly:GetBlockIndex(block)
 end
 
 -- 移除块
-function Blockly:AddBlock(block)
+function Blockly:AddBlock(block, isHeadBlock)
     block:SetTopBlock(true);
     local index = self:GetBlockIndex(block);
     if (not index) then 
-        return table.insert(self.blocks, block);
+        if (isHeadBlock) then
+            return table.insert(self.blocks, 1, block);
+        else
+            return table.insert(self.blocks, block); 
+        end
     end
     
-    local tail = #self.blocks;
-    self.blocks[tail], self.blocks[index] = self.blocks[index], self.blocks[tail];  -- 放置尾部
+    local head, tail = 1, #self.blocks;
+    if (isHeadBlock) then
+        self.blocks[head], self.blocks[index] = self.blocks[index], self.blocks[head];  -- 放置头部
+    else
+        self.blocks[tail], self.blocks[index] = self.blocks[index], self.blocks[tail];  -- 放置尾部
+    end
 end
 
 -- 添加块
@@ -306,7 +314,13 @@ function Blockly:GetCode(language)
     for _, block in ipairs(self.blocks) do
         code = code .. (block:GetBlockCode() or "") .. "\n";
     end
-    return code, LuaFmt.Pretty(code);
+    local prettyCode = code;
+    local ok, errinfo = pcall(function()
+        prettyCode = LuaFmt.Pretty(code);
+    end);
+    if (not ok) then print("=============code error==========", errinfo) end
+
+    return code, ok and prettyCode or code;
 end
 
 -- 转换成xml

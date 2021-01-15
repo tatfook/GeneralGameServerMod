@@ -50,7 +50,8 @@ end
 
 function Field:UpdateWidthHeightUnitCount()
     local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + Const.BlockEdgeWidthUnitCount * 2;
-    return math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount),  Const.LineHeightUnitCount;
+    local widthUnitCount = math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount);
+    return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), Const.LineHeightUnitCount;
 end
 
 function Field:IsField()
