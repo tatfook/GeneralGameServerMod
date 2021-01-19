@@ -27,6 +27,12 @@ local DefaultStyleString = [[
         flex-direction: column;
         justify-content: center;
     }
+    .full-height {
+        height: 100%;
+    }
+    .full-width {
+        width: 100%;
+    }
     .btn {
         background-color: #e6e6e6;
     }

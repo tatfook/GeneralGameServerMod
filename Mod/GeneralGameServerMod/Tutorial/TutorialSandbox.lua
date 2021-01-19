@@ -158,6 +158,7 @@ function TutorialSandbox:OnWorldUnloaded()
 end
 
 function TutorialSandbox:SetCanFly(bFly)
+    if (not bFly) then self:GetPlayer():ToggleFly(false) end
     self:GetContext():SetCanFly(bFly);
 end
 
@@ -233,6 +234,16 @@ end
 function TutorialSandbox:GetPlayerSpeedScale()
     local player = EntityManager:GetFocus();
     return player and player:GetSpeedScale();
+end
+
+-- 获取玩家块位置
+function TutorialSandbox:GetPlayerBlockPos()
+    return self:GetPlayer():GetBlockPos();
+end
+
+-- 设置玩家块位置
+function TutorialSandbox:SetPlayerBlockPos(bx, by, bz)
+    return self:GetPlayer():SetBlockPos(bx, by, bz);
 end
 
 -- 左击清除方块策略
@@ -362,6 +373,16 @@ function TutorialSandbox:GetUserInfo()
     return KeepWorkItemManager.GetProfile();
 end
 
+-- 获取系统用户
+function TutorialSandbox:GetSystemUser()
+    return System.User;
+end
+
+-- 获取系统消息框
+function TutorialSandbox:GetSystemMessageBox()
+    return _guihelper.MessageBox;
+end
+
 -- 获取当前时间的毫秒数
 function TutorialSandbox:GetTimeStamp()
     return ParaGlobal.timeGetTime();
@@ -382,5 +403,23 @@ function TutorialSandbox:DeselectAllBlock(groupindex)
     ParaTerrain.DeselectAllBlock(groupindex or 6);
 end
 
+-- 文件是否存在
+function TutorialSandbox:IsExistFile(filename)
+    filename = ParaWorld.GetWorldDirectory() .. filename;
+
+    local file = ParaIO.open(filename, "r");
+    if (file:IsValid()) then
+        file:close();
+        return true;
+    end
+
+    return false;
+end
+
+-- 是否启用键盘鼠标
+function TutorialSandbox:SetKeyboardMouse(bEnableKeyboard, bEnableMouse)
+    ParaScene.GetAttributeObject():SetField("BlockInput", not bEnableMouse);
+    ParaCamera.GetAttributeObject():SetField("BlockInput", not bEnableKeyboard);
+end
 -- 初始化成单列模式
 TutorialSandbox:InitSingleton();

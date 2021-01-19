@@ -194,7 +194,7 @@ function Component:InitByScriptNode(scriptNode)
     local scriptFile = scriptNode.attr and scriptNode.attr.src;
     local scriptText = scriptNode[1] or "";
     scriptText = string.gsub(scriptText, "^%s*", "");
-    scriptText = "-- " .. Helper.FormatFilename(self.filename) .. "\n" .. scriptText;   -- 第一行作为文件名 方便日志输出
+    scriptText = "-- " .. Helper.FormatFilename(self.filename) .. "\n" .. scriptText;        -- 第一行作为文件名 方便日志输出
     self:ExecCode(scriptText);
 
     local fileScriptText = Helper.ReadFile(scriptFile);

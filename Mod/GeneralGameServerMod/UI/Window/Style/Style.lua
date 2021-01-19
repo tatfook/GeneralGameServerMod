@@ -341,7 +341,6 @@ function Style.GetStyleValue(name, value)
 	if (type(value) ~= "string") then return end
 	
     if(dimension_fields[name]) then
-		local isPercentage = string.match(value, "^[%+%-]?%d+%%$");
 		if (string.match(value, "^[%+%-]?%d+px$")) then   -- 像素值
 			value = tonumber(string.match(value, "^([%+%-]?%d+)px$"));
 		elseif (string.match(value, "^[%+%-]?%d+%%$")) then  -- 百分比

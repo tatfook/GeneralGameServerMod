@@ -100,7 +100,7 @@ function Input:IsReadOnly()
 end
 
 function Input:handleReturn()
-    return self:CallAttrFunction("onkeydown.enter")
+    return self:CallAttrFunction("onkeydown.enter", nil, self:GetValue());
 end
 
 function Input:handleEscape()

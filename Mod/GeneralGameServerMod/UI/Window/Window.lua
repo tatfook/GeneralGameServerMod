@@ -241,6 +241,7 @@ function Window:CreateNativeWindow()
     native_window:SetField("InputMethodEnabled", true);
     local zorder = self:GetParams().zorder;
     if (zorder) then native_window.zorder = zorder end
+    -- native_window.isPinned = true;
     
     -- 加到有效窗口上
     native_window:AttachToRoot();

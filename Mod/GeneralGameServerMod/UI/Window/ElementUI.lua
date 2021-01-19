@@ -515,7 +515,7 @@ end
 function ElementUI:OnMouseMove(event)
     self:CallAttrFunction("onmousemove", nil, self, event);
 
-    if(event:isAccepted()) then return end
+    if(event:isAccepted() or not ParaUI.IsMousePressed(0)) then return end
     local x, y = ParaUI.GetMousePosition();
 	if(self.isMouseDown and self:IsDraggable() and event:button() == "left") then
 		if(not self.isDragging) then
@@ -691,16 +691,16 @@ function ElementUI:SetFocus(element)
     local window = self:GetWindow();
     if (not window) then return end
     local focusElement = window:GetFocusElement();
-    if (focusElement == element) then return end
-    if (focusElement) then
-        focusElement:OnFocusOut();
-        -- self:UpdateLayout(true);  -- 太过耗时
-    end
     window:SetFocusElement(element);
+    if (focusElement == element) then return end
     if (element) then
         element:OnFocusIn();
         -- self:UpdateLayout(true);
         ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
+    end
+    if (focusElement) then
+        focusElement:OnFocusOut();
+        -- self:UpdateLayout(true);  -- 太过耗时
     end
 end
 

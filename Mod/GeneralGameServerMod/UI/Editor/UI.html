@@ -1,0 +1,87 @@
+<template class="container">
+    <template class="header-container">
+        <div class="title">UI 编辑器</div>
+        <div style="display: flex;">
+        </div>
+        <div onclick=CloseWindow class="btn" style="width: 22px; height: 22px; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);"></div>
+    </template>
+    <div class="tab-item text-code">
+        <div class="action-container">
+            <div class="action-btn btn" onclick=ClickNewElementBtn>新增</div>
+            <div class="action-btn btn" onclick=ClickDeleteBtn>删除</div>
+        </div>
+        <div class="window-container">
+            <div ref="window" style="width: 100%; height: 100%;">
+                <div class="draggable" draggable=true onmousedown=DraggableElementOnMouseDown onmousemove=DraggableElementOnMouseMove onmouseup=DraggableElementOnMouseUp>test</div>
+            </div>
+        </div>
+        
+    </div>
+    <StyleEditor></StyleEditor>
+</template>
+
+<script type="text/lua" src="%ui%/Editor/UI.lua">
+RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+RegisterComponent("StyleEditor", "%ui%/Editor/Style.html");
+
+
+-- 组件解析完成
+function OnReady()
+end
+
+
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    display: flex;
+    flex-direction: column;
+    padding: 2px;
+    background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);
+}
+
+.header-container {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    color: #ffffff;
+    height: 37px;
+    width: 100%;
+    font-size: 16px;
+    padding: 0px 20px;
+}
+
+.tab-item {
+    width: 100%; 
+    flex: 1;
+    /* border: 1px solid #ff0000; */
+}
+
+.text-code {
+    white-space: pre;
+    font-size: 16px;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.window-container {
+    width: 500px;
+    height: 300px;
+    border: 1px solid #cccccc;
+}
+
+.action-container {
+    display: flex;
+}
+
+.action-btn {
+    width: 100px;
+    height: 32px;
+}
+
+.draggable {
+    position: absolute;
+}
+</style>

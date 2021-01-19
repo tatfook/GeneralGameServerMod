@@ -649,6 +649,27 @@ function Element:SetStyleValue(styleKey, styleValue)
     return ;
 end
 
+-- 获取元素计算样式
+function Element:GetComputedStyle()
+    local curStyle = self:GetStyle();
+    local layout = self:GetLayout();
+    local style = {};
+    for key, val in pairs(curStyle) do
+        if (type(val) ~= "table" and type(val) ~= "function") then
+            style[key] = val;
+        end
+    end
+    style["min-width"], style["min-height"] = layout:GetMinWidthHeight();
+	style["max-width"], style["max-height"] = layout:GetMaxWidthHeight();
+    style["margin-top"], style["margin-right"], style["margin-bottom"], style["margin-left"] = layout:GetMargin();
+    style["padding-top"], style["padding-right"], style["padding-bottom"], style["padding-left"] = layout:GetPadding();
+    style.top, style.right, style.bottom, style.left = layout:GetPosition();
+    style.left, style.top, style.width, style.height = self:GetGeometry();
+    style.display = style.display or "block";
+    -- echo(style, true);
+    return style;
+end
+
 -- 获取内联文本
 function Element:GetInnerText()
     local function GetInnerText(xmlNode)
