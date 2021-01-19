@@ -10,6 +10,7 @@ local WinterCamp = NPL.load("Mod/GeneralGameServerMod/Tutorial/Demo/WinterCamp.l
 如何测试
 更新 ggs 模块代码, 拷贝本文件内容至代码方块
 开幕配声文件放置 assets/school_xxx.ogg (xxx 为学校ID) 默认配声文件 assets/principal_speech.ogg
+响铃声音文件放置 assets/ring.mp3   Note: 文件都是相对当前世界根目录
 开幕动画电影方块 OpeningCeremonyAnimBlockPos = {x = 0, y = 0, z = 0};  更改x,y,z 为正确位置
 指定时间测试, 解除 IsDevEnv=true 的注释, 更新 local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=35, sec=57, isdst=false}) * 1000; 中时间值为服务器时间的起始值
 -----------------------------------------------
@@ -76,17 +77,17 @@ end
 -- 开始前10分钟
 function WinterCamp:StartBefore10Minute()
     tip("冬令营开营典礼马上就要开始了，请尽快前往大礼堂")
-    playSound("assets/info.mp3");
+    playSound("assets/ring.mp3");
     -- wait(30);
-    -- stopSound("assets/info.mp3");
+    -- stopSound("assets/ring.mp3");
 end
 
 -- 开始前2分钟
 function WinterCamp:StartBefore2Minute()
     tip("冬令营开营典礼将在两分钟后开始，请尽快前往大礼堂");
-    playSound("assets/info.mp3");
+    playSound("assets/ring.mp3");
     -- wait(30);
-    -- stopSound("assets/info.mp3");
+    -- stopSound("assets/ring.mp3");
 end
 
 -- 开营典礼
@@ -270,11 +271,11 @@ function WinterCamp:AttendClassRingCheck()
             sounds[no] = sound;
             if (isStartBefore10Minute and not sound.isStartBefore10Minute) then 
                 tip("马上就要开始上课了, 请大家尽快前往教学楼集合!")
-                playSound("assets/info.mp3");
+                playSound("assets/ring.mp3");
                 sound.isStartBefore10Minute = true;
             elseif (isStartBefore2Minute and not sound.isStartBefore2Minute) then
                 tip("两分钟后就要开始上课了, 请大家尽快前往教学楼集合!")
-                playSound("assets/info.mp3");
+                playSound("assets/ring.mp3");
                 sound.isStartBefore2Minute = true;
             else
             end
