@@ -12,6 +12,8 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeAPI.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/CameraController.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldLoginAdapter.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
 local ParaWorldLoginAdapter = commonlib.gettable("MyCompany.Aries.Game.Tasks.ParaWorld.ParaWorldLoginAdapter");
 local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController")
@@ -244,6 +246,14 @@ end
 -- 设置玩家块位置
 function TutorialSandbox:SetPlayerBlockPos(bx, by, bz)
     return self:GetPlayer():SetBlockPos(bx, by, bz);
+end
+
+-- 获取坐标通过块位置
+function TutorialSandbox:GetPosByBlockPos(bx, by, bz)
+    local x, y, z = BlockEngine:real(bx, by, bz);
+    y = y - BlockEngine.half_blocksize;
+    return x, y, z;
+    -- return BlockEngine:ConvertToRealPosition_float(bx, by, bz);
 end
 
 -- 左击清除方块策略
