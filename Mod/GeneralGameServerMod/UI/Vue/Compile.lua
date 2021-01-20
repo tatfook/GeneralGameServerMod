@@ -263,7 +263,7 @@ function Compile:VShow(element)
     self:ExecCode(xmlNode.attr["v-show"], element, function(val)
         element:SetVisible(val and true or false);
         local parentElement = element:GetParentElement();
-        if (parentElement) then parentElement:UpdateLayout() end
+        if (not xmlNode.compiling and parentElement) then parentElement:UpdateLayout() end
     end, true);
 end
 
@@ -299,7 +299,7 @@ function Compile:VIf(element)
             curElement:SetVisible(false);
         end
         vif = val;
-        if (parentElement) then parentElement:UpdateLayout(true) end
+        if (not xmlNode.compiling and parentElement) then parentElement:UpdateLayout(true) end
     end, true);
 end
 
@@ -374,7 +374,9 @@ function Compile:VFor(element)
             scopes[i] = nil;
         end
         lastCount = count;
-        parentElement:UpdateLayout(true);
+        if (not xmlNode.compiling) then
+            parentElement:UpdateLayout(true);
+        end
     end, true);
 
     return true;
@@ -456,7 +458,16 @@ function Compile:CompileElement(element)
     local xmlNode = element:GetXmlNode();
 
     if (not isCurrentComponentElement) then
-        if (self:VFor(element)) then return end
+        -- local BeginTime = ParaGlobal.timeGetTime();
+
+        -- 设置为编译中
+        if (type(xmlNode) == "table") then xmlNode.compiling = true end
+
+        if (self:VFor(element)) then
+            -- 编译完成
+            if (type(xmlNode) == "table") then xmlNode.compiling = false end
+            return;
+        end
 
         self:Text(element);
         self:Ref(element);
@@ -465,6 +476,16 @@ function Compile:CompileElement(element)
         self:VOn(element);
         self:VBind(element);
         self:VModel(element);
+
+        -- 编译完成
+        if (type(xmlNode) == "table") then xmlNode.compiling = false end
+        
+        -- local EndTime = ParaGlobal.timeGetTime();
+        -- local UseTime = EndTime - BeginTime;
+        -- if (UseTime > 10) then
+        --     print("编译元素耗时: ", ParaGlobal.timeGetTime() - BeginTime)
+        --     CompileDebug(element:GetAttr());
+        -- end
     end
 
     if (isComponent and not isCurrentComponentElement) then return end
