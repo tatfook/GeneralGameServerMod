@@ -431,5 +431,12 @@ function TutorialSandbox:SetKeyboardMouse(bEnableKeyboard, bEnableMouse)
     ParaScene.GetAttributeObject():SetField("BlockInput", not bEnableMouse);
     ParaCamera.GetAttributeObject():SetField("BlockInput", not bEnableKeyboard);
 end
+
+-- 获取环境
+function TutorialSandbox:Env()
+    if (IsDevEnv) then return "local" end
+    if (string.lower(ParaEngine.GetAppCommandLineByParam("http_env", "online")) == "release") then return "release" end
+    return "online";
+end
 -- 初始化成单列模式
 TutorialSandbox:InitSingleton();

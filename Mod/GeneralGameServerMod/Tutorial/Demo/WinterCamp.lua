@@ -17,7 +17,7 @@ local WinterCamp = NPL.load("Mod/GeneralGameServerMod/Tutorial/Demo/WinterCamp.l
 -----------------------------------------------
 ]]
 
-IsDevEnv = true;
+local IsDevEnv = true;
 local TutorialSandbox = NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua", IsDevEnv ~= nil and IsDevEnv or false);
 local KeepworkAPI = TutorialSandbox:GetKeepworkAPI();
 local MessageBox = TutorialSandbox:GetSystemMessageBox();
@@ -57,7 +57,7 @@ end
 -- 冬令营上课
 function IsWinterCampAttendClassDate()
     local curdate = GetCurrentDateObject();
-    return curdate.year == 2021 and ((curdate.month == 1 and curdate.day > 25) or (curdate.month == 2 and curdate.day < 6));
+    return curdate.year == 2021 and ((curdate.month == 1 and curdate.day >= 25) or (curdate.month == 2 and curdate.day < 6));
 end
 
 -- 冬令营结束
@@ -87,7 +87,7 @@ function WinterCamp:OpeningCeremony(second)
     -- 播放声音
     local filename = string.format("school_%s.ogg", GetSchoolId());
     if (not TutorialSandbox:IsExistFile(filename)) then filename = "assets/principal_speech.ogg" end
-    print(string.format("开幕典礼, 开始时间 = %ss 声音文件 = %s", second, filename));
+    -- print(string.format("开幕典礼, 开始时间 = %ss 声音文件 = %s", second, filename));
     playSound(filename, nil, second);
     -- 播放动画
     if (self.isAllowInAuditorium) then
@@ -143,7 +143,7 @@ function WinterCamp:StartOpeningCeremony()
                 break;
             end
         end
-        print(string.format("StartOpeningCeremony wait = %ss sound_no = %s", waitSecond, soundNo));
+        -- print(string.format("StartOpeningCeremony wait = %ss sound_no = %s", waitSecond, soundNo));
         if (soundNo ~= nil) then
             local no = math.ceil(soundNo / 2);
             local sound = sounds[no] or {};
@@ -221,7 +221,7 @@ function WinterCamp:ForbidFlyCheck()
                             end
                         end
                     else
-                        print(self.isJoinOpeningCeremony and "正在参加开幕典礼" or "迟到太久无法进入");
+                        -- print(self.isJoinOpeningCeremony and "正在参加开幕典礼" or "迟到太久无法进入");
                         TutorialSandbox:SetPlayerBlockPos(19237,12,19250);
                     end
                 else
@@ -267,7 +267,7 @@ function WinterCamp:GuideLogic(actor)
             end
         end
         
-        print(string.format("wait = %ss, guide_no = %s", waitSecond, guideNo));
+        -- print(string.format("wait = %ss, guide_no = %s", waitSecond, guideNo));
 
         if (guideNo) then
             local guide = guides[guideNo] or {};
@@ -277,7 +277,9 @@ function WinterCamp:GuideLogic(actor)
                 guide.isFinish = true;
             end
 
-            -- actor:SetBlockPos(19263,14,19250);
+            if (actor) then
+                actor:SetBlockPos(19263,14,19250);
+            end
             
             for i = 1, 15 do
                 if (i % 2 == 1) then
@@ -287,6 +289,9 @@ function WinterCamp:GuideLogic(actor)
                 end
                 wait(60);
             end
+
+            -- TODO 激活导游电影
+            
         end
         
         wait(waitSecond);
@@ -295,25 +300,28 @@ end
 
 -- 冬令营逻辑开始
 function WinterCamp:Start()
-    print("current date", os.date("%Y-%m-%d %H:%M:%S", GetCurrentTimeStamp() / 1000));
+    -- print("current date", os.date("%Y-%m-%d %H:%M:%S", GetCurrentTimeStamp() / 1000));
 
     -- 导游
-    -- self:GuideLogic(actor);
-
-    -- local actor = getActor(GuideActorName);
-    -- runForActor(actor, function()
-    --     self:GuideLogic(actor);
-    -- end)
-
+    local actor = getActor(GuideActorName);
+    if (actor) then
+        runForActor(actor, function()
+            self:GuideLogic(actor);
+        end)
+    else
+        -- print("导游不存在");
+    end
+    
     if (IsWinterCampStartDate()) then
-        print("=========================OpeningCeremonyDate=========================")
+        -- print("=========================OpeningCeremonyDate=========================")
         self.isAllowInAuditorium = IsVipSchoolStudent() or IsVip() or false;
         -- self.isAllowInAuditorium = true;
         self.isJoinOpeningCeremony = nil;
         self:ForbidFlyCheck();
         self:StartOpeningCeremony();
-    elseif (IsWinterCampAttendClassDate()) then
-        print("=========================AttendClassDate=========================")
+    end
+    if (IsWinterCampAttendClassDate()) then
+        -- print("=========================AttendClassDate=========================")
         self:AttendClassRingCheck();
     elseif (IsWinterCampEndDate()) then
     
@@ -349,7 +357,7 @@ function WinterCamp:AttendClassRingCheck()
                 break;
             end
         end
-        print(string.format("AttendClassRingCheck wait = %ss sound_no = %s", waitSecond, soundNo));
+        -- print(string.format("AttendClassRingCheck wait = %ss sound_no = %s", waitSecond, soundNo));
         if (soundNo ~= nil) then
             local no = math.ceil(soundNo / 2);
             local sound = sounds[no] or {};
@@ -386,6 +394,7 @@ local function Main()
 end
 
 registerStopEvent(function()
+    TutorialSandbox:Restore();
 end)
 
 Main();

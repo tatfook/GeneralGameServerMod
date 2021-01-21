@@ -51,6 +51,7 @@ Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
 Window:Property("Params");                          -- 窗口参数
 Window:Property("Event");                           -- 事件对象
+Window:Property("3DUI", false, "Is3DUI");           -- 是否是3DUI
 
 function Window:ctor()
     windowId = windowId + 1;
@@ -140,6 +141,8 @@ function Window.Show(self, params)
         self:SetNativeWindow(self:CreateNativeWindow());
     end
     
+    if (params.is3DUI) then self:Set3DUI(true) end
+
     -- 初始化
     self:Init();
     -- 文档化
@@ -251,7 +254,10 @@ function Window:CreateNativeWindow()
     _this:SetScript("onsize", function()
 		self:handleGeometryChangeEvent();
 	end);
-	_this:SetScript("ondraw", function()
+    _this:SetScript("ondraw", function()
+        -- if (self:Is3DUI()) then 
+        --     self:GetPainterContext():LoadBillboardMatrix();
+        -- end
 		self:handleRender();
 	end);
 	_this:SetScript("onmousedown", function()
