@@ -18,7 +18,7 @@ local WinterCamp = NPL.load("Mod/GeneralGameServerMod/Tutorial/Demo/WinterCamp.l
 ]]
 
 local IsDevEnv = true;
-local TutorialSandbox = NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua", IsDevEnv ~= nil and IsDevEnv or false);
+local TutorialSandbox = NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua", IsDevEnv);
 local KeepworkAPI = TutorialSandbox:GetKeepworkAPI();
 local MessageBox = TutorialSandbox:GetSystemMessageBox();
 local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=29, sec=58, isdst=false}) * 1000;

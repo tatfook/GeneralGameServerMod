@@ -8,8 +8,12 @@ _G.StyleNameList = {
     "margin-top", "margin-right", "margin-bottom", "margin-left", "padding-top", "padding-right", "padding-bottom", "padding-left", 
 };
 
+local ElementId = 0;
+
 GlobalScope:Set("CurrentElement", nil);
 GlobalScope:Set("CurrentElementStyle", {});
+GlobalScope:Set("ElementList", {});
+
 
 local function SetCurrentElement(CurrentElement)
     GlobalScope:Set("CurrentElement", CurrentElement);
@@ -38,6 +42,9 @@ end
 
 
 function ClickNewElementBtn()
+    local list = GlobalScope:Get("ElementList");
+    ElementId = ElementId + 1;
+    table.insert(list, {text = "元素", id = ElementId});
 end
 
 function ClickDeleteElementBtn()
