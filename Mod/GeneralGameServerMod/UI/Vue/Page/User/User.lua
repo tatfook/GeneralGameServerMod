@@ -21,6 +21,7 @@ GlobalScope:Set("ProjectList", {});                      -- 用户项目列表
 GlobalScope:Set("ProjectListLoadFinish", false);
 GlobalScope:Set("ProjectListType", "works");
 GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
+GlobalScope:Set("MainSkin", player and player:GetSkin());
 GlobalScope:Set("IsFollow", false);
 
 
@@ -373,6 +374,7 @@ _G.GetAllAssets = function()
                 desc = tpl.desc,
                 owned = IsOwned(tpl),
                 requireVip = tpl.extra and tpl.extra.vip_enabled,
+                skin = tpl.extra and tpl.extra.skin;
             });
         end
     end

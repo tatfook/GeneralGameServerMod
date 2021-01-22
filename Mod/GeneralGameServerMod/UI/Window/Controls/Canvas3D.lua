@@ -184,12 +184,16 @@ function Canvas3D:OnAttrValueChange()
     self:SetRenderTargetSize(renderTargetSize, renderTargetSize);
 
     local filename = self:GetAttrStringValue("assetfile");
+	local skin = self:GetAttrStringValue("skin");
     PlayerAssetFile:Init();
 
     local obj_params = ObjEditor.GetObjectParams(ParaScene.GetPlayer());
     if (filename) then
         obj_params.AssetFile = PlayerAssetFile:GetValidAssetByString(filename);
     end
+	if (skin) then
+		obj_params.CustomGeosets = skin;
+	end
 
     NPL.load("(gl)script/apps/Aries/Creator/Game/PlayerController.lua");
     

@@ -14,7 +14,7 @@
 <script type="text/lua">
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
-local function ChangePlayerAsset(assetfile)
+local function ChangePlayerAsset(assetfile, skin)
 	assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
 	local playerEntity = GameLogic.GetPlayerController():GetPlayer();
 	if(assetfile and assetfile~=playerEntity:GetMainAssetPath()) then
@@ -26,12 +26,17 @@ local function ChangePlayerAsset(assetfile)
         end
         GameLogic.options:SetMainPlayerAssetName(assetfile);
         GetGlobalScope():Set("MainAsset", assetfile);
+        GetGlobalScope():Set("MainSkin", skin);
 		-- this ensure that at least one default skin is selected
-		if(playerEntity:GetSkin()) then
-			playerEntity:SetSkin(nil);
-		else
-			playerEntity:RefreshSkin();
-		end
+        if (skin) then
+            playerEntity:SetSkin(skin);
+        else
+		    if(playerEntity:GetSkin()) then
+			    playerEntity:SetSkin(nil);
+		    else
+			    playerEntity:RefreshSkin();
+		    end
+        end
 		if(math.abs(EntityManager.PlayerAssetFile:GetDefaultScale(oldAssetFile) - playerEntity:GetScaling()) < 0.01) then
 			playerEntity:SetScaling(EntityManager.PlayerAssetFile:GetDefaultScale(assetfile))
 		end
@@ -53,7 +58,7 @@ function ClickPlayerAsset(asset)
         return 
     end
 
-    ChangePlayerAsset(asset.modelUrl);
+    ChangePlayerAsset(asset.modelUrl, asset.skin);
     UpdatePlayerEntityInfo();
 end
 
