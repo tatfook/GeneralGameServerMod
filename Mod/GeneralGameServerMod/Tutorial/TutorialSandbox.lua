@@ -80,7 +80,9 @@ function TutorialSandbox:RegisterNetDataCallBack(callback)
 end
 
 -- 重置教学环境
-function TutorialSandbox:Reset()
+function TutorialSandbox:Reset(bForceReset)
+    if (self.isReseted and not bForceReset) then return end
+
     self.isReseted = true;
 
     self:SetContext(TutorialContext:new():Init(self));

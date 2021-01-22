@@ -11,8 +11,9 @@ local WinterCamp = NPL.load("Mod/GeneralGameServerMod/Tutorial/Demo/WinterCamp.l
 更新 ggs 模块代码, 拷贝本文件内容至代码方块
 开幕配声文件放置 assets/school_xxx.ogg (xxx 为学校ID) 默认配声文件 assets/principal_speech.ogg
 响铃声音文件放置 assets/ring.mp3   Note: 文件都是相对当前世界根目录
-开幕动画电影方块 OpeningCeremonyAnimBlockPos = {x = 0, y = 0, z = 0};  更改x,y,z 为正确位置
-导游演员名称: guide
+开幕动画电影频道 OpeningCeremony
+导游演员名称: guide 
+导游动画电影频道: GuideMovie 
 指定时间测试, 解除 IsDevEnv=true 的注释, 更新 local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=35, sec=57, isdst=false}) * 1000; 中时间值为服务器时间的起始值
 -----------------------------------------------
 ]]
@@ -23,7 +24,6 @@ local KeepworkAPI = TutorialSandbox:GetKeepworkAPI();
 local MessageBox = TutorialSandbox:GetSystemMessageBox();
 local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=29, sec=58, isdst=false}) * 1000;
 local ClientTimeStamp = TutorialSandbox:GetTimeStamp();
-local OpeningCeremonyAnimBlockPos = {x = 19139, y = 12, z = 19189};  --local OpeningCeremonyAnimBlockPos = {x = 19186, y = 12, z = 19202}; 19139,12,19189
 local GuideActorName = "guide";
 local WinterCamp = gettable("WinterCamp");
 
@@ -91,14 +91,8 @@ function WinterCamp:OpeningCeremony(second)
     playSound(filename, nil, second);
     -- 播放动画
     if (self.isAllowInAuditorium) then
-        -- print("-------------------------播放开幕动画--------------------------", OpeningCeremonyAnimBlockPos.x , OpeningCeremonyAnimBlockPos.y, OpeningCeremonyAnimBlockPos.z);
-        if (OpeningCeremonyAnimBlockPos.x == 0) then
-            wait(60); -- 模拟开幕动画 120s
-        else
-            -- setMovie("OpeningCeremony", OpeningCeremonyAnimBlockPos.x , OpeningCeremonyAnimBlockPos.y, OpeningCeremonyAnimBlockPos.z);
-            playMovie("OpeningCeremony", second * 1000, -1);
-            stopMovie("OpeningCeremony");
-        end
+        playMovie("OpeningCeremony", second * 1000, -1);
+        stopMovie("OpeningCeremony");
     end
     TutorialSandbox:SetKeyboardMouse(true, true);
 end
@@ -298,8 +292,7 @@ function WinterCamp:GuideLogic()
                     wait(60);
                 end
 
-                -- TODO 激活导游电影 
-                -- TutorialSandbox:ActivateBlock(x, y, z);  -- x, y, z为触发电影的按钮块坐标
+                -- 激活导游电影 
                 playMovie("GuideMovie", 0, -1);
                 stopMovie("GuideMovie");
             end
