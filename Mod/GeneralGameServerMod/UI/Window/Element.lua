@@ -146,6 +146,7 @@ function Element:InitElement(xmlNode, window, parent)
     if (parent) then parent.ElementClassMap[self:GetTagName()] = self:class() end 
 
     self:SetAttrStyle(Style.ParseString(self:GetAttrStringValue("style")));
+    -- if (self:GetAttrStringValue("id") == "test") then echo(self:GetAttrStyle()) end
 
     -- 初始化样式表
     if (not self:GetStyleSheet()) then

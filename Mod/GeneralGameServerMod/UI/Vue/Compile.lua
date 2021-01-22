@@ -437,14 +437,17 @@ function Compile:VModel(element)
     local xmlNode = element:GetXmlNode();
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-model"] == nil) then return end
     local vmodel = xmlNode.attr["v-model"];
-    if (not string.match(vmodel, "^%a%w*$")) then return end
+    if (not string.match(vmodel, "^%a[%w%.]*$")) then return end
     local scope = self:GetScope();
     self:ExecCode(vmodel, element, function(val)
         element:SetAttrValue("value", val);
     end, true);
     -- 注意死循环
     element:SetAttrValue("onchange", function(val)
-        scope[vmodel] = val;
+        local keys = commonlib.split(vmodel, "%.");
+        local subscope, size = scope, #keys;
+        for i = 1, size - 1 do subscope = scope[keys[i]] end
+        subscope[keys[size]] = val;
     end)
 end
 

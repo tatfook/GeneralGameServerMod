@@ -245,7 +245,10 @@ end
 
 -- 编译后回调
 function Component:OnAfterCompile()
-    self:ExecCode([[return type(OnReady) == "function" and OnReady()]]);
+    local OnReady = self:GetScope():__get_data__()["OnReady"];
+    if (type(OnReady) == "function") then
+        self:ExecCode([[OnReady()]]);
+    end
 end
 
 -- 设置引用元素
@@ -284,7 +287,10 @@ end
 -- 属性值更新
 function Component:OnAttrValueChange(attrName, attrValue)
     Component._super.OnAttrValueChange(self, attrName, attrValue);
-    self:ExecCode(string.format([[return type(OnAttrValueChange) == "function" and OnAttrValueChange("%s", GetAttrValue("%s"))]], attrName, attrName));
+    local OnAttrValueChange = self:GetScope():__get_data__()["OnAttrValueChange"];
+    if (type(OnAttrValueChange) == "function") then
+        self:ExecCode(string.format([[OnAttrValueChange("%s", GetAttrValue("%s"))]], attrName, attrName));
+    end
 end
 
 -- 全局注册组件

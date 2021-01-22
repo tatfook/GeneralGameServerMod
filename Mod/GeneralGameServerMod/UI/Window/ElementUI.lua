@@ -169,20 +169,20 @@ end
 
 -- 绘制元素
 function ElementUI:OnRender(painter)
-    -- local style = self:GetStyle();
-    -- painter:Rotate(self:GetRotation() / math.pi * 180);
-	-- painter:Scale(self:GetScalingX(), self:GetScalingY());
-    -- painter:Translate(self:GetTranslationX(), self:GetTranslationY());
+    local transform = self:GetStyle().transform;
+    if (type(transform) == "table" and #transform > 0) then
+        local x, y, w, h = self:GetGeometry();
+        local ratate = transform[1].to;
+        painter:Translate(x + w / 2, y + h / 2);
+        painter:Rotate(ratate);
+        painter:Translate(-(x + w / 2), -(y + h / 2));
+    end
     
     self:RenderOutline(painter);
     self:RenderBackground(painter);
     self:RenderBorder(painter);
     -- 绘制元素内容
     self:RenderContent(painter);
-
-    -- painter:Translate(-self:GetTranslationX(), -self:GetTranslationY());
-	-- painter:Scale(1, 1);
-	-- painter:Rotate(0);
 end
 
 -- 绘制外框线

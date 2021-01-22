@@ -103,6 +103,9 @@
                 <input style="width: 80px;" v-bind:value="GetStyleValue('padding-bottom')" onkeydown.enter="SetStyleValue('padding-bottom', ...)"></input>
             </div>
         </div>
+
+        <div class="title">文本</div>
+        <textarea v-model="CurrentListItem.text" style="margin-left: 10%; width: 80%; height: 120px;"></textarea>
     </div>
 </template>
 
