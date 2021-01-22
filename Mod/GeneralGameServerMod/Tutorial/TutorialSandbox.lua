@@ -12,6 +12,8 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeAPI.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/CameraController.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldLoginAdapter.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
 local ParaWorldLoginAdapter = commonlib.gettable("MyCompany.Aries.Game.Tasks.ParaWorld.ParaWorldLoginAdapter");
 local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController")
@@ -78,7 +80,9 @@ function TutorialSandbox:RegisterNetDataCallBack(callback)
 end
 
 -- 重置教学环境
-function TutorialSandbox:Reset()
+function TutorialSandbox:Reset(bForceReset)
+    if (self.isReseted and not bForceReset) then return end
+
     self.isReseted = true;
 
     self:SetContext(TutorialContext:new():Init(self));
@@ -158,6 +162,7 @@ function TutorialSandbox:OnWorldUnloaded()
 end
 
 function TutorialSandbox:SetCanFly(bFly)
+    if (not bFly) then self:GetPlayer():ToggleFly(false) end
     self:GetContext():SetCanFly(bFly);
 end
 
@@ -233,6 +238,24 @@ end
 function TutorialSandbox:GetPlayerSpeedScale()
     local player = EntityManager:GetFocus();
     return player and player:GetSpeedScale();
+end
+
+-- 获取玩家块位置
+function TutorialSandbox:GetPlayerBlockPos()
+    return self:GetPlayer():GetBlockPos();
+end
+
+-- 设置玩家块位置
+function TutorialSandbox:SetPlayerBlockPos(bx, by, bz)
+    return self:GetPlayer():SetBlockPos(bx, by, bz);
+end
+
+-- 获取坐标通过块位置
+function TutorialSandbox:GetPosByBlockPos(bx, by, bz)
+    local x, y, z = BlockEngine:real(bx, by, bz);
+    y = y - BlockEngine.half_blocksize;
+    return x, y, z;
+    -- return BlockEngine:ConvertToRealPosition_float(bx, by, bz);
 end
 
 -- 左击清除方块策略
@@ -362,6 +385,16 @@ function TutorialSandbox:GetUserInfo()
     return KeepWorkItemManager.GetProfile();
 end
 
+-- 获取系统用户
+function TutorialSandbox:GetSystemUser()
+    return System.User;
+end
+
+-- 获取系统消息框
+function TutorialSandbox:GetSystemMessageBox()
+    return _guihelper.MessageBox;
+end
+
 -- 获取当前时间的毫秒数
 function TutorialSandbox:GetTimeStamp()
     return ParaGlobal.timeGetTime();
@@ -380,6 +413,33 @@ end
 -- 取消所有选择块
 function TutorialSandbox:DeselectAllBlock(groupindex)
     ParaTerrain.DeselectAllBlock(groupindex or 6);
+end
+
+-- 文件是否存在
+function TutorialSandbox:IsExistFile(filename)
+    filename = ParaWorld.GetWorldDirectory() .. filename;
+
+    local file = ParaIO.open(filename, "r");
+    if (file:IsValid()) then
+        file:close();
+        return true;
+    end
+
+    return false;
+end
+
+-- 是否启用键盘鼠标
+function TutorialSandbox:SetKeyboardMouse(bEnableKeyboard, bEnableMouse)
+    ParaScene.GetAttributeObject():SetField("BlockInput", not bEnableMouse);
+    ParaCamera.GetAttributeObject():SetField("BlockInput", not bEnableKeyboard);
+end
+
+-- 激活方块
+function TutorialSandbox:ActivateBlock(x, y, z)
+    local block = BlockEngine:GetBlock(x,y,z);
+    if(block) then
+        block:OnActivated(x,y,z, fromEntity);
+    end
 end
 
 -- 初始化成单列模式

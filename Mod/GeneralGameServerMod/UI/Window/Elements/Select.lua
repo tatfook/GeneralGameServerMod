@@ -9,6 +9,7 @@ local Select = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Se
 ]]
 
 local Element = NPL.load("../Element.lua", IsDevEnv);
+local InputElement = NPL.load("./Input.lua");
 
 local Option = commonlib.inherit(Element, {});
 Option:Property("Name", "Option");
@@ -82,15 +83,19 @@ ListBox:Property("Name", "ListBox");
 local Select = commonlib.inherit(Element, NPL.export());
 
 Select:Property("Name", "Select");
+Select:Property("Label", "");
+Select:Property("Value", "");
 Select:Property("ListBoxElement");
+Select:Property("InputBoxElement");
 Select:Property("SelectedOptionElement");
 Select:Property("BaseStyle", {
     NormalStyle = {
         ["display"] = "inline-block",
         ["background-color"] = "#ffffff",
         ["width"] = "120px",
-        ["height"] = "28px",
-        ["padding"] = "4px",
+        ["height"] = "30px",
+        ["padding"] = "2px 4px",
+        ["border"] = "1px solid #cccccc",
     }
 });
 
@@ -107,7 +112,24 @@ function Select:Init(xmlNode, window, parent)
             style = "position: absolute; left: 0px; top: 105%;  max-height: 130px; width: 100%; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px;",
         }
     }, window, self);
+    local InputBox = InputElement:new():Init({
+        name = "input",
+        attr = {
+            style = "position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px;",
+            onblur = function()
+                self:OnFocusOut();
+            end,
+            ["onkeydown.enter"] = function(value)
+                self:SetValue(value);
+                self:SetLabel(self:GetLabelByValue(value));
+                self:SetFocus(nil);
+                print(self:GetLabel());
+            end
+        }
+    }, window, self);
     self:SetListBoxElement(ListBox);
+    self:SetInputBoxElement(InputBox);
+    self:InsertChildElement(InputBox);
     self:InsertChildElement(ListBox);
 
     local options = self:GetAttrValue("options");
@@ -126,9 +148,14 @@ function Select:Init(xmlNode, window, parent)
 
     self:OnValueAttrValueChange(self:GetAttrStringValue("value"));
 
+    InputBox:SetVisible(false);
     ListBox:SetVisible(false);
 
     return self;
+end
+
+function Select:IsAllowCreate()
+    return self:GetAttrBoolValue("AllowCreate");
 end
 
 function Select:OnAttrValueChange(attrName, attrValue)
@@ -170,6 +197,14 @@ function Select:OnValueAttrValueChange(attrValue)
     end
 end
 
+function Select:GetLabelByValue(value)
+    local ListBox = self:GetListBoxElement();
+    for _, option in ipairs(ListBox.childrens) do
+        if (value == option:GetValue()) then return option:GetLabel() end
+    end
+    return value;
+end
+
 function Select:FilterOptions(filter)
     local ListBox = self:GetListBoxElement();
     for _, option in ipairs(ListBox.childrens) do
@@ -186,17 +221,29 @@ function Select:OnSelect(option)
     self:SetSelectedOptionElement(option);
     local value = option and option:GetValue();
     local label = option and option:GetLabel();
+    self:SetValue(value);
+    self:SetLabel(label);
+    self:SetFocus(nil);
     self:OnFocusOut();
     self:CallAttrFunction("onselect", nil, value, label);
 end
 
 function Select:OnFocusIn(event)
+    if (self:IsAllowCreate()) then
+        self:GetInputBoxElement():SetAttrValue("value", self:GetValue());
+        self:GetInputBoxElement():FocusIn();
+        self:GetInputBoxElement():SetVisible(true);
+        self:GetInputBoxElement():UpdateLayout();
+    end
     self:GetListBoxElement():SetVisible(true);
     self:GetListBoxElement():UpdateLayout();
     Select._super.OnFocusIn(self, event);
 end
 
 function Select:OnFocusOut(event)
+    if (self:GetInputBoxElement():IsFocus()) then return end
+
+    self:GetInputBoxElement():SetVisible(false);
     self:GetListBoxElement():SetVisible(false);
     Select._super.OnFocusOut(self, event);
 end
@@ -207,14 +254,13 @@ function Select:RenderContent(painter)
     self:RenderArrowIcon(painter);
 
     local text = self:GetAttrStringValue("placeholder");
-    local option = self:GetSelectedOptionElement();
     local x, y, w, h = self:GetContentGeometry();
     local fontSize = self:GetFontSize(14);
 
     painter:SetPen(self:GetColor("#000000"));
     painter:SetFont(self:GetFont());
-    if (option) then
-        text = option:GetLabel(); 
+    if (self:GetLabel() ~= "") then
+        text = self:GetLabel(); 
     else
         painter:SetPen("#A8A8A8"); -- placeholder color;
     end

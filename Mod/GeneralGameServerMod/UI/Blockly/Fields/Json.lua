@@ -28,8 +28,8 @@ function Json:OnBeginEdit()
             self:SetText(value);
             -- 识别 JSON 有效性
             local json = commonlib.Json.Decode(value);
-            print(value);
-            echo(json, true);
+            -- print(value);
+            -- echo(json, true);
             if (not json) then
                 self:SetValue(commonlib.Json.Encode({}));
                 self:SetLabel("无效 JSON 对象");

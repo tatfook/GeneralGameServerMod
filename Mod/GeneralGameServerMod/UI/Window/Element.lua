@@ -146,6 +146,7 @@ function Element:InitElement(xmlNode, window, parent)
     if (parent) then parent.ElementClassMap[self:GetTagName()] = self:class() end 
 
     self:SetAttrStyle(Style.ParseString(self:GetAttrStringValue("style")));
+    -- if (self:GetAttrStringValue("id") == "test") then echo(self:GetAttrStyle()) end
 
     -- 初始化样式表
     if (not self:GetStyleSheet()) then
@@ -604,8 +605,8 @@ end
 -- 调用事件函数
 function Element:CallAttrFunction(attrName, defaultValue, ...)
     local func = self:GetAttrFunctionValue(attrName, defaultValue);
-    if (not func) then return end
-    func(...)
+    if (not func) then return nil end
+    return func(...);
 end
 
 -- 样式属性值改变
@@ -647,6 +648,27 @@ function Element:SetStyleValue(styleKey, styleValue)
     style:GetNormalStyle()[styleKey] = value;
     self:GetAttrStyle()[styleKey] = value;
     return ;
+end
+
+-- 获取元素计算样式
+function Element:GetComputedStyle()
+    local curStyle = self:GetStyle();
+    local layout = self:GetLayout();
+    local style = {};
+    for key, val in pairs(curStyle) do
+        if (type(val) ~= "table" and type(val) ~= "function") then
+            style[key] = val;
+        end
+    end
+    style["min-width"], style["min-height"] = layout:GetMinWidthHeight();
+	style["max-width"], style["max-height"] = layout:GetMaxWidthHeight();
+    style["margin-top"], style["margin-right"], style["margin-bottom"], style["margin-left"] = layout:GetMargin();
+    style["padding-top"], style["padding-right"], style["padding-bottom"], style["padding-left"] = layout:GetPadding();
+    style.top, style.right, style.bottom, style.left = layout:GetPosition();
+    style.left, style.top, style.width, style.height = self:GetGeometry();
+    style.display = style.display or "block";
+    -- echo(style, true);
+    return style;
 end
 
 -- 获取内联文本

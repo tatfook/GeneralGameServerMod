@@ -192,7 +192,7 @@ end
 function StyleSheet:ApplyIdSelectorStyle(element, style)
     local id = element:GetAttrStringValue("id",  "");
 
-    if (type(id) ~= "string" and id ~= "") then 
+    if (type(id) == "string" and id ~= "") then 
         self:ApplySelectorStyle("#" .. id, style, element);
     end
 end

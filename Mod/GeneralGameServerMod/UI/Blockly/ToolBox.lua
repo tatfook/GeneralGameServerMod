@@ -12,12 +12,32 @@ local BlockInputField = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/B
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
 local LuaBlocks = NPL.load("./Blocks/Lua.lua", IsDevEnv);
+local DataBlocks = NPL.load("./Blocks/Data.lua", IsDevEnv);
+local VarBlocks = NPL.load("./Blocks/Var.lua", IsDevEnv);
+local ControlBlocks = NPL.load("./Blocks/Control.lua", IsDevEnv);
+local EventBlocks = NPL.load("./Blocks/Event.lua", IsDevEnv);
+local LogBlocks = NPL.load("./Blocks/Log.lua", IsDevEnv);
+local HelperBlocks = NPL.load("./Blocks/Helper.lua", IsDevEnv);
 local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local UnitSize = Const.UnitSize;
-
+local AllBlocks = {};
 ToolBox:Property("Blockly");
 -- ToolBox:Property("");
+
+local function AddToAllBlocks(blocks)
+    for _, block in ipairs(blocks) do
+        table.insert(AllBlocks, #AllBlocks + 1, block);
+    end
+end
+
+-- AddToAllBlocks(LuaBlocks);
+AddToAllBlocks(DataBlocks);
+AddToAllBlocks(VarBlocks);
+AddToAllBlocks(ControlBlocks);
+AddToAllBlocks(EventBlocks);
+AddToAllBlocks(LogBlocks);
+AddToAllBlocks(HelperBlocks);
 
 function ToolBox:ctor()
     self.leftUnitCount, self.topUnitCount = 0, 0;
@@ -31,7 +51,7 @@ function ToolBox:Init(blockly)
     self:SetBlockly(blockly);
 
     local offsetX, offsetY = 5, 5;
-    for index, blockOption in ipairs(LuaBlocks) do
+    for index, blockOption in ipairs(AllBlocks) do
         local block = Block:new():Init(blockly, blockOption);
         block.isDragClone = true;
         local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
@@ -97,7 +117,7 @@ function ToolBox:OnMouseWheel(event)
 
     if (delta < 0) then
         local block = self.blocks[#self.blocks];
-        if (block.topUnitCount <= (self.heightUnitCount - offset)) then return end  
+        if ((block.topUnitCount + block.heightUnitCount) <= (self.heightUnitCount - offset)) then return end  
     else
         local block = self.blocks[1];
         if (block.topUnitCount >= offset) then return end

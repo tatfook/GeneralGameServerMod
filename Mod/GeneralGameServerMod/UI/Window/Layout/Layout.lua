@@ -173,8 +173,13 @@ function Layout:ApplyPositionStyle()
 	if (bottom and height and not top) then top = relHeight - bottom - height end
 	if (not width and left and right) then width = relWidth - left - right end 
 	if (not height and top and bottom) then height = relHeight - top - bottom end 
+	if (width and left) then right = relWidth - left - width end
+	if (height and top) then bottom = relHeight - top - height end
+	
 	left, top = left or 0, top or 0;
+	right, bottom = right or 0, bottom or 0;
 	self:SetPos(left, top);
+	self:SetPosition(top, right, bottom, left);
 	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", 
 		"ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s, parentLayoutId = %s", 
 		self:GetTagNameAndName(), left, top, right, bottom, width, height, relWidth, relHeight, self:GetParentLayout().nid);

@@ -9,26 +9,60 @@ local Sandbox = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Sandbox/Sandbox.lu
 -------------------------------------------------------
 ]]
 
-local Global = NPL.load("./Global.lua", IsDevEnv);
+local G = NPL.load("./G.lua", IsDevEnv);
+local FileManager = NPL.load("../Pages/FileManager");
+local Blockly = NPL.load("../Blockly.lua");
 
-local Sandbox = NPL.export();
+local Sandbox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-function Sandbox.GetG()
-    return Global;
+Sandbox:Property("G");
+Sandbox:Property("BlocklyInstance");
+
+function Sandbox:ctor()
+    self:SetG(G:new():Init(nil, self));
+    self:SetBlocklyInstance(Blockly:new());
 end
 
-function Sandbox.ExecCode(code)
-    -- 清空输出缓存区
-    Global.ClearOut();
+function Sandbox:Init()
+    if (self.inited) then return end
+    self.inited = true;
 
-    if (type(code) ~= "string" or code == "") then return Global.GetOut() end
+    GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+    GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
+end
+
+function Sandbox:OnWorldLoaded()
+    FileManager:SwitchDirectory();
+    FileManager:LoadAll();
+    local blocklyInstance = self:GetBlocklyInstance();
+    local allcode = "";
+    FileManager:Each(function(file)
+        local text = file.text;
+        blocklyInstance:LoadFromXmlNodeText(text);
+        allcode =  allcode .. (string.format("\n-- %s\n", file.filename)) .. blocklyInstance:GetCode();
+    end);
+    allcode = allcode .. "\n--noitfy ready\nEvent:Emit('__ready__')";
+    self:ExecCode(allcode);
+end
+
+function Sandbox:OnWorldUnloaded()
+
+end
+
+function Sandbox:ExecCode(code)
+    -- 清空输出缓存区
+    local G = self:GetG();
+    G:Reset();
+
+    if (type(code) ~= "string" or code == "") then return "" end
+
     local func, errmsg = loadstring(code);
     if (not func) then 
         print("===============================Exec Code Error=================================", errmsg) 
-        return Global.GetOut();
+        return "";
     end
 
-    setfenv(func, Sandbox.GetG());
+    setfenv(func, G);
 
     xpcall(function()
         func();
@@ -37,5 +71,9 @@ function Sandbox.ExecCode(code)
         DebugStack();
     end);
 
-    return Global.GetOut();
+    return G.Log:GetText();
 end
+
+
+-- 初始化成单列模式
+Sandbox:InitSingleton();

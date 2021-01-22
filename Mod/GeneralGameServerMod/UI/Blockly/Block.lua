@@ -173,17 +173,19 @@ function Block:Render(painter)
     Shape:SetBrush(self:GetColor());
     -- painter:SetPen(self:GetColor());
     painter:Translate(self.left, self.top);
-    -- 绘制左右边缘
-    if (self:IsOutput()) then
-        Shape:DrawUpEdge(painter, self.widthUnitCount);
-        Shape:DrawDownEdge(painter, self.widthUnitCount, 0, 0, self.heightUnitCount - Const.BlockEdgeHeightUnitCount);
-        Shape:DrawLeftEdge(painter, self.heightUnitCount);
-        Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
-    end
+
     -- 绘制上下连接
     if (self:IsStatement()) then
         Shape:DrawPrevConnection(painter, self.widthUnitCount);
         Shape:DrawNextConnection(painter, self.widthUnitCount, 0, self.heightUnitCount - Const.ConnectionHeightUnitCount);
+    else
+        -- 绘制左右边缘
+        Shape:DrawUpEdge(painter, self.widthUnitCount);
+        Shape:DrawDownEdge(painter, self.widthUnitCount, 0, 0, self.heightUnitCount - Const.BlockEdgeHeightUnitCount);
+        Shape:DrawLeftEdge(painter, self.heightUnitCount);
+        if (self:IsOutput()) then
+            Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
+        end
     end
     painter:Translate(-self.left, -self.top);
 
@@ -208,23 +210,21 @@ function Block:UpdateWidthHeightUnitCount()
         maxHeightUnitCount = maxHeightUnitCount + inputFieldContainerMaxHeightUnitCount;
     end
     
-    widthUnitCount = math.max(widthUnitCount, self:IsOutput() and 8 or 14);
+    widthUnitCount = math.max(widthUnitCount, not self:IsStatement() and 8 or 14);
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
         if (not inputFieldContainer:IsInputStatementContainer()) then
             inputFieldContainer:SetWidthHeightUnitCount(widthUnitCount, nil);
         end
     end
 
-    if (self:IsOutput()) then 
+    if (self:IsStatement()) then 
+        heightUnitCount = heightUnitCount + Const.ConnectionHeightUnitCount * 2;
+        maxHeightUnitCount = maxHeightUnitCount + Const.ConnectionHeightUnitCount * 2;
+    else
         -- widthUnitCount = widthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
         -- maxWidthUnitCount = maxWidthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
         heightUnitCount = heightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
         maxHeightUnitCount = maxHeightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
-    end
-
-    if (self:IsStatement()) then 
-        heightUnitCount = heightUnitCount + Const.ConnectionHeightUnitCount * 2;
-        maxHeightUnitCount = maxHeightUnitCount + Const.ConnectionHeightUnitCount * 2;
     end
 
     self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
@@ -247,9 +247,11 @@ function Block:UpdateLeftTopUnitCount()
     local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
     local offsetX, offsetY = leftUnitCount, topUnitCount;
     
-    -- if (self:IsOutput()) then offsetX, offsetY = leftUnitCount + Const.BlockEdgeWidthUnitCount, topUnitCount + Const.BlockEdgeHeightUnitCount end
-    if (self:IsOutput()) then offsetY = topUnitCount + Const.BlockEdgeHeightUnitCount end
-    if (self:IsStatement()) then offsetY = topUnitCount + Const.ConnectionHeightUnitCount end
+    if (self:IsStatement()) then 
+        offsetY = topUnitCount + Const.ConnectionHeightUnitCount;
+    else
+        offsetY = topUnitCount + Const.BlockEdgeHeightUnitCount
+    end
 
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
         local inputFieldContainerTotalWidthUnitCount, inputFieldContainerTotalHeightUnitCount = inputFieldContainer:GetWidthHeightUnitCount();
@@ -283,7 +285,7 @@ function Block:GetMouseUI(x, y, event)
     end
 
     -- 上下边缘高度
-    local height = (self:IsOutput() and Const.BlockEdgeHeightUnitCount or Const.ConnectionHeightUnitCount) * self:GetUnitSize();
+    local height = (not self:IsStatement() and Const.BlockEdgeHeightUnitCount or Const.ConnectionHeightUnitCount) * self:GetUnitSize();
 
     -- 在block上下边缘
     if (self.left < x and x < (self.left + self.width) and ((self.top < y and y < (self.top + height)) or (y > (self.top + self.height - height) and y < (self.top + self.height)))) then return self end

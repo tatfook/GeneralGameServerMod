@@ -416,6 +416,8 @@ end
 function TextArea:DeleteSelected()
     if (not self:IsSelected()) then return end
     local selectStartAt, selectEndAt = self:GetSelected();
+    TextAreaDebug.Format("DeleteSelected selectStartAt = %s, selectEndAt = %s", selectStartAt, selectEndAt);
+
     self:DeleteTextCmd(selectStartAt, selectEndAt - selectStartAt + 1);
     self:ClearSelected();
 end
@@ -600,9 +602,9 @@ function TextArea:OnMouseDown(event)
 end
 
 function TextArea:OnMouseMove(event)
-    if (not self.mouseDown) then return end
-    local sx, sy = self:GetScreenPos();
+    if (not self.mouseDown or not ParaUI.IsMousePressed(0) or not event:IsMove()) then return end
     local x, y = ParaUI.GetMousePosition();
+    local sx, sy = self:GetScreenPos();
     if (not self:IsContainPoint(x, y)) then return self:OnMouseUp() end
     local cursorAt = self:GetAtByPos(self:GloablToContentGeometryPos(x, y));
     self.selectStartAt = self.cursorAt;

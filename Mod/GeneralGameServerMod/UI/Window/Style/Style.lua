@@ -165,7 +165,7 @@ end
 function Style:GetCurStyle()
 	local style = {};
 	for key, val in pairs(self) do
-		if (type(val) ~= "table") then
+		if (type(val) ~= "table" or key == "transform") then
 			style[key] = val;
 		end
 	end
@@ -336,12 +336,9 @@ function  Style.FilterImage(filename)
 end
 
 function Style.GetStyleValue(name, value)
-	if (type(name) ~= "string") then return end
-	if (type(value) == "number" and (dimension_fields[name] or number_fields[name])) then return value end
-	if (type(value) ~= "string") then return end
+	if (type(name) ~= "string" or type(value) ~= "string") then return value end
 	
     if(dimension_fields[name]) then
-		local isPercentage = string.match(value, "^[%+%-]?%d+%%$");
 		if (string.match(value, "^[%+%-]?%d+px$")) then   -- 像素值
 			value = tonumber(string.match(value, "^([%+%-]?%d+)px$"));
 		elseif (string.match(value, "^[%+%-]?%d+%%$")) then  -- 百分比
@@ -355,18 +352,17 @@ function Style.GetStyleValue(name, value)
 		value = StyleColor.ConvertTo16(value);
 	elseif(transform_fields[name]) then
 		if(name == "transform") then
-			local transform = self.transform
-			local degree = value:match("^%s*rotate%(%s*(%-?%d+)")
-			if(degree) then
-				transform = transform or {};
-				transform.rotate = tonumber(degree);
-			else
-				local scaleX, scaleY = value:match("^%s*scale%(%s*(%d+)[%s,]*(%d+)")
-				if(scaleX and scaleY) then
-					transform = transform or {};
-					transform.scale = {tonumber(scaleX), tonumber(scaleY)};
-				end
-			end
+			local transform = {}
+			-- while(true) do
+				-- 解析旋转
+				local degree = string.match(value, "^%s*rotate%(%s*(.*)%)")
+				if(degree) then table.insert(transform, {action = "rotate", from = 0, to = tonumber(string.match(degree, "%s*(%-?%d+)"))}) end
+				-- local scaleX, scaleY = value:match("^%s*scale%(%s*(%d+)[%s,]*(%d+)")
+				-- if(scaleX and scaleY) then
+				-- 	transform = transform or {};
+				-- 	transform.scale = {tonumber(scaleX), tonumber(scaleY)};
+				-- end
+			-- end
 			value = transform;
 		elseif(name == "transform-origin") then
 			local values = {}

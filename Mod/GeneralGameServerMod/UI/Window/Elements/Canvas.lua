@@ -28,13 +28,14 @@ end
 -- 绘制内容
 function Canvas:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
-
-    -- print(x, y, w, h)
-    painter:Translate(x, y);
-    painter:SetPen("#00ff00");
-    painter:DrawText(0, 0, "hello\nworld\n");
-    painter:DrawText(0, 0, "hello\nworld\n");
-    -- painter:SetBrush({texture="Texture/Aries/Creator/keepwork/ggs/test.jpg"})
-    -- painter:DrawCircle(50, -50, 0, 50, "z", true);
-    painter:Translate(-x, -y);
+    painter:SetPen("#ffffff");
+    -- painter:Translate(x, y);
+    painter:DrawRect(x, y, w, h);
+    painter:Translate(x + w / 2, y + h / 2);
+    painter:Rotate(30);
+    painter:Translate(-x -w / 2, -y -h / 2);
+    painter:SetPen("#ffff00");
+    painter:DrawRect(x, y, w, h);
+    painter:Rotate(-30);
+    -- painter:Translate(-x, -y);
 end

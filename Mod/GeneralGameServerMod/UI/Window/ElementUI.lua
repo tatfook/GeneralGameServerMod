@@ -169,20 +169,20 @@ end
 
 -- 绘制元素
 function ElementUI:OnRender(painter)
-    -- local style = self:GetStyle();
-    -- painter:Rotate(self:GetRotation() / math.pi * 180);
-	-- painter:Scale(self:GetScalingX(), self:GetScalingY());
-    -- painter:Translate(self:GetTranslationX(), self:GetTranslationY());
+    local transform = self:GetStyle().transform;
+    if (type(transform) == "table" and #transform > 0) then
+        local x, y, w, h = self:GetGeometry();
+        local ratate = transform[1].to;
+        painter:Translate(x + w / 2, y + h / 2);
+        painter:Rotate(ratate);
+        painter:Translate(-(x + w / 2), -(y + h / 2));
+    end
     
     self:RenderOutline(painter);
     self:RenderBackground(painter);
     self:RenderBorder(painter);
     -- 绘制元素内容
     self:RenderContent(painter);
-
-    -- painter:Translate(-self:GetTranslationX(), -self:GetTranslationY());
-	-- painter:Scale(1, 1);
-	-- painter:Rotate(0);
 end
 
 -- 绘制外框线
@@ -498,10 +498,10 @@ function ElementUI:OnChange(value)
 end
 
 function ElementUI:OnMouseDown(event)
-    self:CallAttrFunction("onmousedown", nil, self, event);
+    if(event:isAccepted()) then return end
+    if (self:CallAttrFunction("onmousedown", nil, self, event)) then return end
 
     -- 默认拖拽处理
-    if(event:isAccepted()) then return end
     if(self:IsDraggable() and event:button() =="left") then
         self.isMouseDown = true;
         self.isDragging = false;
@@ -513,11 +513,11 @@ function ElementUI:OnMouseDown(event)
 end
 
 function ElementUI:OnMouseMove(event)
-    self:CallAttrFunction("onmousemove", nil, self, event);
-
     if(event:isAccepted()) then return end
+    if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
+
     local x, y = ParaUI.GetMousePosition();
-	if(self.isMouseDown and self:IsDraggable() and event:button() == "left") then
+	if(self.isMouseDown and ParaUI.IsMousePressed(0) and self:IsDraggable() and event:button() == "left") then
 		if(not self.isDragging) then
 			if(math.abs(x - self.startDragX) > 2 or math.abs(y - self.startDragY) > 2) then
                 self.isDragging = true;
@@ -539,15 +539,15 @@ function ElementUI:OnMouseMove(event)
 end
 
 function ElementUI:OnMouseUp(event)
-    self:CallAttrFunction("onmouseup", nil, self, event);
+    if(event:isAccepted()) then return end
+
+    if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end;
 
     if (event:button() == "right") then 
         self:OnContextMenu(event);
     else
         self:OnClick(event)
     end
-
-    if(event:isAccepted()) then return end
     
 	if(self.isDragging) then
         self.isDragging = false;
@@ -691,16 +691,16 @@ function ElementUI:SetFocus(element)
     local window = self:GetWindow();
     if (not window) then return end
     local focusElement = window:GetFocusElement();
-    if (focusElement == element) then return end
-    if (focusElement) then
-        focusElement:OnFocusOut();
-        -- self:UpdateLayout(true);  -- 太过耗时
-    end
     window:SetFocusElement(element);
+    if (focusElement == element) then return end
     if (element) then
         element:OnFocusIn();
         -- self:UpdateLayout(true);
         ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
+    end
+    if (focusElement) then
+        focusElement:OnFocusOut();
+        -- self:UpdateLayout(true);  -- 太过耗时
     end
 end
 

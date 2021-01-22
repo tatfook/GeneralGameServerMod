@@ -19,13 +19,13 @@ local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "tru
 local IsServer = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
 local Env = ParaEngine.GetAppCommandLineByParam("env", "online");  -- online release stage local
 
-_G.IsDevEnv = true and IsDevEnv;
+_G.IsDevEnv = IsDevEnv or Env == "local";
 _G.IsServer = IsServer;
 _G.IsClient = not IsServer;
 _G.Env = Env;
 
 -- ENV
-GGS.IsDevEnv = IsDevEnv or Env == "local";
+GGS.IsDevEnv = IsDevEnv;
 GGS.IsTestEnv = Env == "release";
 GGS.IsProdEnv = Env == "online";
 GGS.IsServer = IsServer;

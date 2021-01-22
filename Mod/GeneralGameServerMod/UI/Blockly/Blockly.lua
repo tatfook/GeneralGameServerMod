@@ -13,7 +13,6 @@ NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
-local Sandbox = NPL.load("./Sandbox/Sandbox.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
@@ -33,7 +32,6 @@ Blockly:Property("FileManager");              -- 文件管理器
 local UnitSize = Const.UnitSize;
 
 function Blockly:ctor()
-    self.widthUnitCount, self.heightUnitCount = 0, 0;
     self.offsetX, self.offsetY = 0, 0;
     self.blocks = {};
     self.block_types = {};
@@ -104,15 +102,23 @@ function Blockly:GetBlockIndex(block)
 end
 
 -- 移除块
-function Blockly:AddBlock(block)
+function Blockly:AddBlock(block, isHeadBlock)
     block:SetTopBlock(true);
     local index = self:GetBlockIndex(block);
     if (not index) then 
-        return table.insert(self.blocks, block);
+        if (isHeadBlock) then
+            return table.insert(self.blocks, 1, block);
+        else
+            return table.insert(self.blocks, block); 
+        end
     end
     
-    local tail = #self.blocks;
-    self.blocks[tail], self.blocks[index] = self.blocks[index], self.blocks[tail];  -- 放置尾部
+    local head, tail = 1, #self.blocks;
+    if (isHeadBlock) then
+        self.blocks[head], self.blocks[index] = self.blocks[index], self.blocks[head];  -- 放置头部
+    else
+        self.blocks[tail], self.blocks[index] = self.blocks[index], self.blocks[tail];  -- 放置尾部
+    end
 end
 
 -- 添加块
@@ -171,9 +177,9 @@ function Blockly:UpdateWindowPos()
         block:UpdateLayout();
     end
     local _, _, width, height = self:GetContentGeometry();
-    self.widthUnitCount = math.ceil(width / UnitSize);
-    self.heightUnitCount = math.ceil(height / UnitSize);
-    self.toolbox:SetWidthHeightUnitCount(nil, self.heightUnitCount);
+    local widthUnitCount = math.ceil(width / UnitSize);
+    local heightUnitCount = math.ceil(height / UnitSize);
+    self.toolbox:SetWidthHeightUnitCount(nil, heightUnitCount);
 end
 
 -- 捕获鼠标
@@ -308,12 +314,13 @@ function Blockly:GetCode(language)
     for _, block in ipairs(self.blocks) do
         code = code .. (block:GetBlockCode() or "") .. "\n";
     end
-    return code, LuaFmt.Pretty(code);
-end
+    local prettyCode = code;
+    local ok, errinfo = pcall(function()
+        prettyCode = LuaFmt.Pretty(code);
+    end);
+    if (not ok) then print("=============code error==========", errinfo) end
 
--- 执行代码
-function Blockly:ExecCode(code)
-    return Sandbox.ExecCode(code);
+    return code, ok and prettyCode or code;
 end
 
 -- 转换成xml
@@ -361,4 +368,3 @@ end
 function Blockly:SaveToXmlNodeText()
     return Helper.Lua2XmlString(self:SaveToXmlNode(), true);
 end
-

@@ -90,8 +90,8 @@ function Select:GetFieldEditElement(parentElement)
         }, window, divEl);
         inputEl:SetAttrValue("onkeydown.enter", function()
             local value = inputEl:GetValue();
-            self:SetValue(value);
-            self:SetLabel(value);
+            self:SetFieldValue(value);
+            self:SetLabel(self:GetValue());
             self:FocusOut();
         end);
         inputEl:SetAttrValue("onchange", function()

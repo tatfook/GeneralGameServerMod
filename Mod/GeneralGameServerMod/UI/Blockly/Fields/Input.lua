@@ -29,8 +29,8 @@ function Input:GetFieldEditElement(parentElement)
     InputFieldEditElement:SetAttrValue("type", self:GetType() == "field_number" and "number" or "text");
     InputFieldEditElement:SetAttrValue("onkeydown.enter", function()
         local value = InputFieldEditElement:GetValue();
-        self:SetValue(value);
-        self:SetLabel(value);
+        self:SetFieldValue(value);
+        self:SetLabel(tostring(self:GetValue()));
         self:FocusOut();
     end)
 
