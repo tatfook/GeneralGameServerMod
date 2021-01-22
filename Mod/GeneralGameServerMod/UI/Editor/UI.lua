@@ -1,7 +1,9 @@
 
 local GlobalScope = GetGlobalScope();
 
-local WindowElement = nil;
+_G.WindowElement = nil;
+_G.CurrentElement = nil;
+_G.ListItemMap = {};
 
 _G.StyleNameList = {
     "width", "height", "left", "top", "right", "bottom", "display", "position", "font-size", "color", "background", "background-color",
@@ -11,20 +13,28 @@ _G.StyleNameList = {
 local ElementId = 0;
 
 WindowDataItem = {id = 0, text = ""};
-GlobalScope:Set("CurrentElement", nil);
+GlobalScope:Set("CurrentElementId", nil);
 GlobalScope:Set("CurrentElementStyle", {});
 GlobalScope:Set("ElementList", {});
 GlobalScope:Set("CurrentListItem", WindowDataItem);
 
+
+ListItemMap[WindowDataItem.id] = WindowDataItem;
+
 local function SetCurrentElement(curElement)
-    GlobalScope:Set("CurrentElement", curElement);
-    GlobalScope:Set("CurrentElementStyle", curElement and curElement:GetComputedStyle() or {});
-    local listitem = GetListItemById(curElement:GetAttrNumberValue("id"));
-    GlobalScope:Set("CurrentListItem", listitem);
+    CurrentElement = curElement;
+    local CurrentElementId = CurrentElement and CurrentElement:GetAttrNumberValue("id");
+    GlobalScope:Set("CurrentElementId", CurrentElementId);
+    GlobalScope:Set("CurrentElementStyle", CurrentElement and CurrentElement:GetComputedStyle() or {});
+    GlobalScope:Set("CurrentListItem", ListItemMap[CurrentElementId]);
 end
 
 local function RegisterElementEvent(el)
     -- el:SetAttrValue("onmousedown", )
+end
+
+function GetCurrentElementId()
+    return GlobalScope:Get("CurrentElementId");
 end
 
 function DraggableElementOnMouseDown(el)
@@ -34,6 +44,7 @@ function DraggableElementOnMouseMove(el)
 end
 
 function DraggableElementOnMouseUp(el)
+    GetEvent():accept();
     SetCurrentElement(el);
 end
 
@@ -57,14 +68,19 @@ end
 function ClickNewElementBtn()
     local list = GlobalScope:Get("ElementList");
     ElementId = ElementId + 1;
-    table.insert(list, {text = "元素", id = ElementId});
+    local listitem = {text = "元素", id = ElementId};
+    table.insert(list, listitem);
+    ListItemMap[listitem.id] = listitem;
 end
 
 function ClickDeleteElementBtn()
-    local el = GlobalScope:Get("CurrentElement");
-    if (not el or el == WindowElement) then return end
-    local _, index = GetListItemById(el:GetAttrNumberValue("id"));
-    if (index > 0) then table.remove(GlobalScope:Get("ElementList"), index) end
+    local CurrentElementId = GetCurrentElementId()
+    if (not CurrentElementId) then return end
+    local _, index = GetListItemById(CurrentElementId);
+    if (index > 0) then 
+        table.remove(GlobalScope:Get("ElementList"), index);
+        ListItemMap[CurrentElementId] = nil;
+    end
 end
 
 function ClickGenerateCodeBtn()

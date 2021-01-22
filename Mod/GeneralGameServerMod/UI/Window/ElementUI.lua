@@ -498,10 +498,10 @@ function ElementUI:OnChange(value)
 end
 
 function ElementUI:OnMouseDown(event)
-    self:CallAttrFunction("onmousedown", nil, self, event);
+    if(event:isAccepted()) then return end
+    if (self:CallAttrFunction("onmousedown", nil, self, event)) then return end
 
     -- 默认拖拽处理
-    if(event:isAccepted()) then return end
     if(self:IsDraggable() and event:button() =="left") then
         self.isMouseDown = true;
         self.isDragging = false;
@@ -513,11 +513,11 @@ function ElementUI:OnMouseDown(event)
 end
 
 function ElementUI:OnMouseMove(event)
-    self:CallAttrFunction("onmousemove", nil, self, event);
+    if(event:isAccepted()) then return end
+    if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
 
-    if(event:isAccepted() or not ParaUI.IsMousePressed(0)) then return end
     local x, y = ParaUI.GetMousePosition();
-	if(self.isMouseDown and self:IsDraggable() and event:button() == "left") then
+	if(self.isMouseDown and ParaUI.IsMousePressed(0) and self:IsDraggable() and event:button() == "left") then
 		if(not self.isDragging) then
 			if(math.abs(x - self.startDragX) > 2 or math.abs(y - self.startDragY) > 2) then
                 self.isDragging = true;
@@ -539,15 +539,15 @@ function ElementUI:OnMouseMove(event)
 end
 
 function ElementUI:OnMouseUp(event)
-    self:CallAttrFunction("onmouseup", nil, self, event);
+    if(event:isAccepted()) then return end
+
+    if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end;
 
     if (event:button() == "right") then 
         self:OnContextMenu(event);
     else
         self:OnClick(event)
     end
-
-    if(event:isAccepted()) then return end
     
 	if(self.isDragging) then
         self.isDragging = false;

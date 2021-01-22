@@ -605,8 +605,8 @@ end
 -- 调用事件函数
 function Element:CallAttrFunction(attrName, defaultValue, ...)
     local func = self:GetAttrFunctionValue(attrName, defaultValue);
-    if (not func) then return end
-    func(...)
+    if (not func) then return nil end
+    return func(...);
 end
 
 -- 样式属性值改变

@@ -432,5 +432,13 @@ function TutorialSandbox:SetKeyboardMouse(bEnableKeyboard, bEnableMouse)
     ParaCamera.GetAttributeObject():SetField("BlockInput", not bEnableKeyboard);
 end
 
+-- 激活方块
+function TutorialSandbox:ActivateBlock(x, y, z)
+    local block = BlockEngine:GetBlock(x,y,z);
+    if(block) then
+        block:OnActivated(x,y,z, fromEntity);
+    end
+end
+
 -- 初始化成单列模式
 TutorialSandbox:InitSingleton();

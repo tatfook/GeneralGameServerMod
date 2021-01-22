@@ -290,8 +290,8 @@ function WinterCamp:GuideLogic(actor)
                 wait(60);
             end
 
-            -- TODO 激活导游电影
-            
+            -- TODO 激活导游电影 
+            -- TutorialSandbox:ActivateBlock(x, y, z);  -- x, y, z为触发电影的按钮块坐标
         end
         
         wait(waitSecond);

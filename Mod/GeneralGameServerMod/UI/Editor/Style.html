@@ -104,8 +104,10 @@
             </div>
         </div>
 
-        <div class="title">文本</div>
-        <textarea v-model="CurrentListItem.text" style="margin-left: 10%; width: 80%; height: 120px;"></textarea>
+        <div v-if="CurrentElementId ~= 0">
+            <div class="title">文本</div>
+            <textarea v-model="CurrentListItem.text" style="margin-left: 10%; width: 80%; height: 120px;"></textarea>
+        </div>
     </div>
 </template>
 
