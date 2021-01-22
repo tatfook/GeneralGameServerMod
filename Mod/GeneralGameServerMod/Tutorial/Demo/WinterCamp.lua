@@ -23,7 +23,7 @@ local KeepworkAPI = TutorialSandbox:GetKeepworkAPI();
 local MessageBox = TutorialSandbox:GetSystemMessageBox();
 local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=29, sec=58, isdst=false}) * 1000;
 local ClientTimeStamp = TutorialSandbox:GetTimeStamp();
-local OpeningCeremonyAnimBlockPos = {x = 0, y = 0, z = 0};  --local OpeningCeremonyAnimBlockPos = {x = 19186, y = 12, z = 19202}; 
+local OpeningCeremonyAnimBlockPos = {x = 19139, y = 12, z = 19189};  --local OpeningCeremonyAnimBlockPos = {x = 19186, y = 12, z = 19202}; 19139,12,19189
 local GuideActorName = "guide";
 local WinterCamp = gettable("WinterCamp");
 
@@ -95,7 +95,7 @@ function WinterCamp:OpeningCeremony(second)
         if (OpeningCeremonyAnimBlockPos.x == 0) then
             wait(60); -- 模拟开幕动画 120s
         else
-            setMovie("OpeningCeremony", OpeningCeremonyAnimBlockPos.x , OpeningCeremonyAnimBlockPos.y, OpeningCeremonyAnimBlockPos.z);
+            -- setMovie("OpeningCeremony", OpeningCeremonyAnimBlockPos.x , OpeningCeremonyAnimBlockPos.y, OpeningCeremonyAnimBlockPos.z);
             playMovie("OpeningCeremony", second * 1000, -1);
             stopMovie("OpeningCeremony");
         end
@@ -237,7 +237,13 @@ function WinterCamp:ForbidFlyCheck()
 end
 
 -- 导游
-function WinterCamp:GuideLogic(actor)
+function WinterCamp:GuideLogic()
+    local actor = getActor(GuideActorName);
+    while(not actor) do
+        wait(2);
+        actor = getActor(GuideActorName);
+    end
+
     local guides = {};
     local seconds = {
         10 * 3600 + 45 * 60,  -- 10:45:00 11:00:00
@@ -251,51 +257,57 @@ function WinterCamp:GuideLogic(actor)
         18 * 3600 + 15 * 60,  -- 18:15:00 18:30:00
         18 * 3600 + 45 * 60,  -- 18:45:00 19:00:00
     }
-    while (true) do
-        local curdate = GetCurrentDateObject(curdate);
-        local second = curdate.hour * 3600 + curdate.min * 60 + curdate.sec;
-        local waitSecond, guideNo = 600, nil;
-        for i = 1, #seconds do
-            if (math.abs(seconds[i] - second) < 10) then
-                guideNo = i;
-                waitSecond = 60;
-                break;
-            end
-            if (seconds[i] > second) then
-                waitSecond = seconds[i] - second;
-                break;
-            end
-        end
-        
-        -- print(string.format("wait = %ss, guide_no = %s", waitSecond, guideNo));
 
-        if (guideNo) then
-            local guide = guides[guideNo] or {};
-            guides[guideNo] = guide;
-
-            if (not guide.isFinish) then
-                guide.isFinish = true;
-            end
-
-            if (actor) then
-                actor:SetBlockPos(19263,14,19250);
+    runForActor(actor, function()
+        while (true) do
+            local curdate = GetCurrentDateObject(curdate);
+            local second = curdate.hour * 3600 + curdate.min * 60 + curdate.sec;
+            local waitSecond, guideNo = 600, nil;
+            for i = 1, #seconds do
+                if (math.abs(seconds[i] - second) < 10) then
+                    guideNo = i;
+                    waitSecond = 60;
+                    break;
+                end
+                if (seconds[i] > second) then
+                    waitSecond = seconds[i] - second;
+                    break;
+                end
             end
             
-            for i = 1, 15 do
-                if (i % 2 == 1) then
-                    say("游学活动就要开始了啦");
-                else
-                    say("同学们请做好准备！");
-                end
-                wait(60);
-            end
+            -- print(string.format("wait = %ss, guide_no = %s", waitSecond, guideNo));
 
-            -- TODO 激活导游电影 
-            -- TutorialSandbox:ActivateBlock(x, y, z);  -- x, y, z为触发电影的按钮块坐标
+            if (guideNo) then
+                local guide = guides[guideNo] or {};
+                guides[guideNo] = guide;
+
+                if (not guide.isFinish) then
+                    guide.isFinish = true;
+                end
+
+                if (actor) then
+                    actor:SetBlockPos(19263,14,19250);
+                end
+                
+                for i = 1, 15 do
+                    if (i % 2 == 1) then
+                        say("游学活动就要开始了啦");
+                    else
+                        say("同学们请做好准备！");
+                    end
+                    wait(60);
+                end
+
+                -- TODO 激活导游电影 
+                -- TutorialSandbox:ActivateBlock(x, y, z);  -- x, y, z为触发电影的按钮块坐标
+                playMovie("GuideMovie", 0, -1);
+                stopMovie("GuideMovie");
+            end
+            
+            wait(waitSecond);
         end
-        
-        wait(waitSecond);
-    end
+    end)
+    
 end
 
 -- 冬令营逻辑开始
@@ -303,15 +315,12 @@ function WinterCamp:Start()
     -- print("current date", os.date("%Y-%m-%d %H:%M:%S", GetCurrentTimeStamp() / 1000));
 
     -- 导游
-    local actor = getActor(GuideActorName);
-    if (actor) then
-        runForActor(actor, function()
-            self:GuideLogic(actor);
-        end)
-    else
-        -- print("导游不存在");
-    end
+    run(function() 
+        self:GuideLogic(actor);
+    end);
     
+    if (true) then return end
+
     if (IsWinterCampStartDate()) then
         -- print("=========================OpeningCeremonyDate=========================")
         self.isAllowInAuditorium = IsVipSchoolStudent() or IsVip() or false;
