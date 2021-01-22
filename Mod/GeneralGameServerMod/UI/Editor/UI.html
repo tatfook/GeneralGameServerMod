@@ -36,8 +36,6 @@ RegisterComponent("StyleEditor", "%ui%/Editor/Style.html");
 .container {
     height: 100%; 
     width: 100%; 
-    display: flex;
-    flex-direction: column;
     padding: 2px;
     background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);
 }
@@ -53,8 +51,11 @@ RegisterComponent("StyleEditor", "%ui%/Editor/Style.html");
 }
 
 .body-container {
-    flex: 1;
-    width: 100%;
+    position: absolute;
+    top: 40px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
     border: 1px solid #ff0000;
 }
 
