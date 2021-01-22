@@ -27,7 +27,7 @@ local IsDevEnv = true;
 local TutorialSandbox = NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua", IsDevEnv);
 local KeepworkAPI = TutorialSandbox:GetKeepworkAPI();
 local MessageBox = TutorialSandbox:GetSystemMessageBox();
-local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=29, sec=58, isdst=false}) * 1000;
+local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=59, sec=50, isdst=false}) * 1000;
 local ClientTimeStamp = TutorialSandbox:GetTimeStamp();
 local GuideActorName = "guide";
 local WinterCamp = gettable("WinterCamp");
@@ -256,17 +256,23 @@ function WinterCamp:GuideLogic()
         18 * 3600 + 15 * 60,  -- 18:15:00 18:30:00
         18 * 3600 + 45 * 60,  -- 18:45:00 19:00:00
     }
-
+    local _15min = 15 * 60;
     runForActor(actor, function()
         while (true) do
-            local curdate = GetCurrentDateObject(curdate);
-            local second = curdate.hour * 3600 + curdate.min * 60 + curdate.sec;
-            local waitSecond, guideNo = 600, nil;
+            local second = GetDaySecond();
+            local waitSecond, remainMinute, guideNo = 600, 0, nil;
+
             for i = 1, #seconds do
-                if (math.abs(seconds[i] - second) < 10) then
+                if (second > seconds[i] and (seconds[i] + _15min) >= second) then
                     guideNo = i;
                     waitSecond = 60;
-                    break;
+                    local remainWaitSecond = _15min + seconds[i] - second;  -- 剩余秒数
+                    
+                    remainMinute = math.floor(remainWaitSecond / 60);
+                    remainWaitSecond = remainWaitSecond % 60;
+                    if (remainWaitSecond > 0) then wait(remainWaitSecond) end
+
+                    break; 
                 end
                 if (seconds[i] > second) then
                     waitSecond = seconds[i] - second;
@@ -288,7 +294,7 @@ function WinterCamp:GuideLogic()
                     actor:SetBlockPos(19263,14,19250);
                 end
                 
-                for i = 1, 15 do
+                for i = 1, remainMinute do
                     if (i % 2 == 1) then
                         say("游学活动就要开始了啦");
                     else
