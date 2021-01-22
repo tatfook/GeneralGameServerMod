@@ -139,16 +139,13 @@ function SetStyleValue(styleName, styleValue)
     print(styleStr)
 end
 
-GlobalScope:Watch("CurrentElement", function(el)
-    if (not CurrentElement) then return end 
-end)
 </script>
 
 <style scoped=true>
 .style-container {
     position: absolute;
     right: 0px;
-    top: 40px;
+    top: 0px;
     width: 300px;
     height: 100%;
     border: 1px solid #ff00ff;

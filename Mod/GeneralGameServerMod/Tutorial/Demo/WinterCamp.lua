@@ -17,8 +17,12 @@ getActor():SetName("ActorName");        -- 演员名
 开幕配声文件放置 assets/school_xxx.ogg (xxx 为学校ID) 默认配声文件 assets/principal_speech.ogg
 响铃声音文件放置 assets/ring.mp3   Note: 文件都是相对当前世界根目录
 开幕动画电影频道 OpeningCeremony
+开幕电影激活按钮方块位置 OpeningCeremonyMovieActiveBlockPos = {x = 0, y = 0, z = 0};    更改x,y,z 为正确位置
+开幕动画电影时长 OpeningCeremonyTime=10  -- 单位秒
+导游电影激活按钮方块位置  GuideMovieActiveBlockPos = {x = 0, y = 0, z = 0};             更改x,y,z 为正确位置
 导游演员名称: guide 
 导游动画电影频道: GuideMovie 
+
 指定时间测试, 解除 IsDevEnv=true 的注释, 更新 local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=35, sec=57, isdst=false}) * 1000; 中时间值为服务器时间的起始值
 -----------------------------------------------
 ]]
@@ -30,13 +34,12 @@ local MessageBox = TutorialSandbox:GetSystemMessageBox();
 local ServerTimeStamp = os.time({year=2021, month=1, day=25, hour=10, min=59, sec=50, isdst=false}) * 1000;
 local ClientTimeStamp = TutorialSandbox:GetTimeStamp();
 local GuideActorName = "guide";
+local GuideMovieActiveBlockPos = {x = 19327, y = 12, z = 19462};                      -- 19327,12,19462
+local OpeningCeremonyMovieActiveBlockPos = {x = 19139, y = 12, z = 19189};            -- 19139,12,19189
+local OpeningCeremonyTime = 150;
 local WinterCamp = gettable("WinterCamp");
 
 TutorialSandbox:Reset();
-
--- 
-TutorialSandbox:SetStepTask(1, function()
-end);
 
 function GetCurrentTimeStamp()
     return TutorialSandbox:GetTimeStamp() - ClientTimeStamp + ServerTimeStamp;
@@ -93,11 +96,14 @@ function WinterCamp:OpeningCeremony(second)
     local filename = string.format("school_%s.ogg", GetSchoolId());
     if (not TutorialSandbox:IsExistFile(filename)) then filename = "assets/principal_speech.ogg" end
     -- print(string.format("开幕典礼, 开始时间 = %ss 声音文件 = %s", second, filename));
-    playSound(filename, nil, second);
+    -- playSound(filename, nil, second);
+    playSound(filename);
     -- 播放动画
     if (self.isAllowInAuditorium) then
-        playMovie("OpeningCeremony", second * 1000, -1);
-        stopMovie("OpeningCeremony");
+        -- playMovie("OpeningCeremony", second * 1000, -1);
+        -- stopMovie("OpeningCeremony");
+        TutorialSandbox:ActivateBlock(OpeningCeremonyMovieActiveBlockPos.x, OpeningCeremonyMovieActiveBlockPos.y, OpeningCeremonyMovieActiveBlockPos.z);
+        wait(OpeningCeremonyTime);
     end
     TutorialSandbox:SetKeyboardMouse(true, true);
 end
@@ -304,8 +310,10 @@ function WinterCamp:GuideLogic()
                 end
 
                 -- 激活导游电影 
-                playMovie("GuideMovie", 0, -1);
-                stopMovie("GuideMovie");
+                -- playMovie("GuideMovie", 0, -1);
+                -- stopMovie("GuideMovie");
+                TutorialSandbox:ActivateBlock(GuideMovieActiveBlockPos.x, GuideMovieActiveBlockPos.y, GuideMovieActiveBlockPos.z);
+
             end
             
             wait(waitSecond);

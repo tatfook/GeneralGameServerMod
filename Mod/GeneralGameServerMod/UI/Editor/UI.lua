@@ -11,26 +11,32 @@ _G.StyleNameList = {
 };
 
 local ElementId = 0;
+local function GetNextElementId()
+    ElementId = ElementId + 1;
+    return string.format("ID_%s", ElementId);
+end
 
-WindowDataItem = {id = 0, text = ""};
+local function GenerateListItem()
+    return {
+        id = GetNextElementId(),
+        text = "元素",
+    }
+end
+
+WindowDataItem = GenerateListItem();
 GlobalScope:Set("CurrentElementId", nil);
 GlobalScope:Set("CurrentElementStyle", {});
 GlobalScope:Set("ElementList", {});
 GlobalScope:Set("CurrentListItem", WindowDataItem);
 
-
-ListItemMap[WindowDataItem.id] = WindowDataItem;
+ListItemMap[WindowDataItem.id] = GlobalScope:Get("CurrentListItem");
 
 local function SetCurrentElement(curElement)
     CurrentElement = curElement;
-    local CurrentElementId = CurrentElement and CurrentElement:GetAttrNumberValue("id");
+    local CurrentElementId = CurrentElement and CurrentElement:GetAttrStringValue("id");
     GlobalScope:Set("CurrentElementId", CurrentElementId);
     GlobalScope:Set("CurrentElementStyle", CurrentElement and CurrentElement:GetComputedStyle() or {});
     GlobalScope:Set("CurrentListItem", ListItemMap[CurrentElementId]);
-end
-
-local function RegisterElementEvent(el)
-    -- el:SetAttrValue("onmousedown", )
 end
 
 function GetCurrentElementId()
@@ -67,10 +73,10 @@ end
 
 function ClickNewElementBtn()
     local list = GlobalScope:Get("ElementList");
-    ElementId = ElementId + 1;
-    local listitem = {text = "元素", id = ElementId};
-    table.insert(list, listitem);
-    ListItemMap[listitem.id] = listitem;
+    local item = GenerateListItem();
+    table.insert(list, item);
+    item = GetListItemById(item.id);
+    ListItemMap[item.id] = item;
 end
 
 function ClickDeleteElementBtn()
@@ -97,7 +103,7 @@ function ClickGenerateCodeBtn()
         return string.format([[<%s style="%s">%s</%s>]], tagname, styleStr, data.text, tagname)
     end
     for _, childElement in ipairs(WindowElement.childrens) do
-        local listitem, index = GetListItemById(childElement:GetAttrNumberValue("id"));
+        local listitem, index = GetListItemById(childElement:GetAttrStringValue("id"));
         if (index > 0) then
             str = str .. "\n\t" .. generateElementCode(childElement, listitem);
         end
@@ -106,4 +112,11 @@ function ClickGenerateCodeBtn()
     ParaMisc.CopyTextToClipboard(str);
     print(str);
     return str;
+end
+
+
+function ClickUIBtn()
+end
+
+function ClickLogicBtn()
 end
