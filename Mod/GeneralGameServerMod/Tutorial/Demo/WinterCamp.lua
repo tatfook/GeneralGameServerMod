@@ -7,7 +7,12 @@ local WinterCamp = NPL.load("Mod/GeneralGameServerMod/Tutorial/Demo/WinterCamp.l
 
 世界ID release: 1471  online: 41570
 
-如何测试
+电影匹配的代码方块前缀代码
+```lua
+setMovie("MovieChannelName", 0, 0, 0);  -- 参数根据实际改之
+getActor():SetName("ActorName");        -- 演员名 
+```
+
 更新 ggs 模块代码, 拷贝本文件内容至代码方块
 开幕配声文件放置 assets/school_xxx.ogg (xxx 为学校ID) 默认配声文件 assets/principal_speech.ogg
 响铃声音文件放置 assets/ring.mp3   Note: 文件都是相对当前世界根目录
