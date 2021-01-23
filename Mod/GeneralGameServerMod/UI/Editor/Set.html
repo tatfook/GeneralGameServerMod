@@ -1,0 +1,63 @@
+<template class="set-container">
+    <div v-if="CurrentElementId ~= WindowDataItem.id">
+        <div class="title">静态文本</div>
+        <textarea v-bind:value="text" onchange=OnTextChange style="margin-left: 10px; width: 80%; height: 120px;"></textarea>
+        <div class="title">动态文本</div>
+        <input v-bind:value="textVarName" placeholder="变量名" onchange=OnTextVarNameChange style="margin-left: 10px; width: 80%;"></input>
+       
+    </div>
+</template>
+
+<script type="text/lua">
+local GlobalScope = GetGlobalScope();
+local ListItem = {};
+
+text = "";
+textVarName = "";
+
+function OnTextChange(val)
+    if (val == "") then return end
+    text = val;
+    CurrentListItemData.text = val;
+    ListItem.text = val;
+    CurrentListItemData.textVarName = "";
+    textVarName = "";
+end
+
+function OnTextVarNameChange(val)
+    if (val == "") then return end
+    textVarName = val;
+    print(textVarName);
+    CurrentListItemData.textVarName = val;
+    CurrentListItemData.text = "";
+    ListItem.text = "";
+    text = "";
+end
+
+GlobalScope:Watch("CurrentElementId", function() 
+    ListItem = GetListItemById(CurrentElementId);
+    text = ListItem.text;
+    textVarName = CurrentListItemData.textVarName;
+end);
+
+</script>
+
+<style scoped=true>
+
+.set-container {
+    position: absolute;
+    top: 60px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    padding-left: 4px;
+}
+
+.title {
+    font-size: 18px;
+    padding: 20px 0px 10px 10px;
+}
+
+</style>
+
+

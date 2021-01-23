@@ -423,7 +423,7 @@ function Compile:VBind(element)
         local realVal = nil;
         if (realKey and realKey ~= "") then
             self:ExecCode(val, element, function(realVal)
-                -- CompileDebug.If(realKey == "NextPagePorjectList", realVal);
+                -- CompileDebug.If(realKey == "value", realVal);
                 if (type(realVal) == "table" and realVal.ToPlainObject) then realVal = realVal:ToPlainObject() end
                 element:SetAttrValue(realKey, realVal);
                 -- CompileDebug.If(realKey == "NextPagePorjectList", element:GetAttrValue("NextPagePorjectList"));

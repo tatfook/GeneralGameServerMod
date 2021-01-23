@@ -1,28 +1,28 @@
-<template class="attr-container">
+<template class="style-container">
     <div class="title">默认样式</div>
-    <div class="attr-item">
-        <input placeholder="属性名" v-model="attrDynamicName"></input>
-        <input placeholder="属性值" v-model="attrDynamicValue"></input>
-        <div class="attr-item-btn" onclick=AddDynamicAttr>添加</div>
+    <div class="style-item">
+        <input placeholder="样式名" v-model="styleName"></input>
+        <input placeholder="样式值" v-model="styleValue"></input>
+        <div class="style-item-btn" onclick=AddStyle>添加</div>
     </div>
-    <div class="attr-list">
-        <div class="attr-list-item" v-for="attr, index in dynamicAttrList">
-            <input v-bind:value="attr.attrName"></input>
-            <input v-bind:value="attr.attrValue"></input>
-            <div class="attr-item-btn" style="height: 30px" onclick="RemoveDynamicAttr(attr, index)">移除</div>
+    <div class="style-list">
+        <div class="style-list-item" v-for="style, index in styleList">
+            <input v-bind:value="style.styleName"></input>
+            <input v-bind:value="style.styleValue"></input>
+            <div class="style-item-btn" style="height: 30px" onclick="RemoveStyle(style, index)">移除</div>
         </div>
     </div>
     <div class="title">悬浮样式</div>
-    <div class="attr-item">
-        <input placeholder="属性名" v-model="attrName"></input>
-        <input placeholder="属性值" v-model="attrValue"></input>
-        <div class="attr-item-btn" onclick=AddAttr>添加</div>
+    <div class="style-item">
+        <input placeholder="样式名" v-model="hoverStyleName"></input>
+        <input placeholder="样式值" v-model="hoverStyleValue"></input>
+        <div class="style-item-btn" onclick=AddHoverStyle>添加</div>
     </div>
-    <div class="attr-list">
-        <div class="attr-list-item" v-for="attr, index in attrList">
-            <input v-bind:value="attr.attrName"></input>
-            <input v-bind:value="attr.attrValue"></input>
-            <div class="attr-item-btn" style="height: 30px" onclick="RemoveAttr(attr, index)">移除</div>
+    <div class="style-list">
+        <div class="style-list-item" v-for="style, index in hoverStyleList">
+            <input v-bind:value="style.styleName"></input>
+            <input v-bind:value="style.styleValue"></input>
+            <div class="style-item-btn" style="height: 30px" onclick="RemoveHoverStyle(style, index)">移除</div>
         </div>
     </div>
 </template>
@@ -38,58 +38,63 @@ hoverStyleName = "";
 hoverStyleValue = "";
 hoverStyleList = {};
 
-function AddDynamicAttr()
+function AddStyle()
     if (styleName == "" or styleValue == "") then return end
      
-    if (not CurrentListItem.style[styleName]) then
+    if (not CurrentListItemData.style[styleName]) then
         table.insert(styleList, {styleName = styleName, styleValue = styleValue});
     else 
-        for _, item in ipairs(dynamicAttrList) do 
+        for _, item in ipairs(styleList) do 
             if (item.styleName == styleName) then
                 item.styleValue = styleValue;
             end
         end
     end
-    CurrentListItem.style[styleName] = styleValue;
+    CurrentListItemData.style[styleName] = styleValue;
     styleName, styleValue = "", "";    
+    StyleChange();
 end 
 
-function RemoveDynamicAttr(item, index)
-    CurrentListItem.vbind[item.attrName] = nil;
-    table.remove(dynamicAttrList, index)
+function RemoveStyle(item, index)
+    CurrentListItemData.style[item.styleName] = nil;
+    table.remove(styleList, index)
+    StyleChange();
 end
 
-function AddAttr()
-    if (attrName == "" or attrValue == "") then return end
+function StyleChange()
+    CurrentElement:SetAttrValue("style", CurrentListItemData.style);
+end 
 
-    if (not CurrentListItem.attr[attrName]) then
-        table.insert(attrList, {attrName = attrName, attrValue = attrValue});
-    else
-        for _, item in ipairs(attrList) do 
-            if (item.attrName == attrName) then
-                item.attrValue = attrValue;
+function AddHoverStyle()
+    if (hoverStyleName == "" or hoverStyleValue == "") then return end
+     
+    if (not CurrentListItemData.style[hoverStyleName]) then
+        table.insert(styleList, {styleName = hoverStyleName, styleValue = hoverStyleValue});
+    else 
+        for _, item in ipairs(styleList) do 
+            if (item.styleName == hoverStyleName) then
+                item.styleValue = hoverStyleValue;
             end
         end
     end
-    
-    CurrentListItem.attr[attrName] = attrValue;
-    attrName, attrValue = "", "";    
+    CurrentListItemData.hoverStyle[hoverStyleName] = hoverStyleValue;
+    hoverStyleName, hoverStyleValue = "", "";    
 end 
 
-function RemoveAttr(item, index)
-    CurrentListItem.attr[item.attrName] = nil;
-    table.remove(attrList, index)
+function RemoveHoverStyle(item, index)
+    CurrentListItemData.hoverStyle[item.styleName] = nil;
+    table.remove(hoverStyleList, index)
 end
 
-GlobalScope:Watch("CurrentListItem", function() 
-    dynamicAttrList = {};
-    for key, val in pairs(CurrentListItem.vbind) do 
-        table.insert(dynamicAttrList, {attrName = key, attrValue = val});
+GlobalScope:Watch("CurrentElementId", function() 
+    styleList = {};
+    for key, val in pairs(CurrentListItemData.style) do 
+        table.insert(styleList, {styleName = key, styleValue = val});
     end
 
-    attrList = {};
-    for key, val in pairs(CurrentListItem.atrr) do 
-        table.insert(attrList, {attrName = key, attrValue = val});
+    hoverStyleList = {};
+    for key, val in pairs(CurrentListItemData.hoverStyle) do 
+        table.insert(hoverStyleList, {styleName = key, styleValue = val});
     end
 end);
 
@@ -98,7 +103,7 @@ end);
 
 <style scoped=true>
 
-.attr-container {
+.style-container {
     position: absolute;
     top: 60px;
     bottom: 0px;
@@ -112,13 +117,13 @@ end);
     padding: 20px 0px 10px 10px;
 }
 
-.attr-item {
+.style-item {
     display: flex;
     align-items: center;
     height: 40px;
 }
 
-.attr-item-btn {
+.style-item-btn {
     height: 30px;
     width: 50px;
     display: flex;
@@ -126,11 +131,11 @@ end);
     justify-content: center;
 }
 
-.attr-item-btn:hover {
+.style-item-btn:hover {
     background-color: #ffffff;
 }
 
-.attr-list-item {
+.style-list-item {
     display: flex;
     align-items: center;
 } 

@@ -23,7 +23,6 @@ local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NP
 local UnitSize = Const.UnitSize;
 local AllBlocks = {};
 ToolBox:Property("Blockly");
--- ToolBox:Property("");
 
 local function AddToAllBlocks(blocks)
     for _, block in ipairs(blocks) do
@@ -31,7 +30,6 @@ local function AddToAllBlocks(blocks)
     end
 end
 
--- AddToAllBlocks(LuaBlocks);
 AddToAllBlocks(DataBlocks);
 AddToAllBlocks(VarBlocks);
 AddToAllBlocks(ControlBlocks);
@@ -50,21 +48,37 @@ end
 function ToolBox:Init(blockly)
     self:SetBlockly(blockly);
 
-    local offsetX, offsetY = 5, 5;
-    for index, blockOption in ipairs(AllBlocks) do
-        local block = Block:new():Init(blockly, blockOption);
-        block.isDragClone = true;
-        local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
-        block:SetLeftTopUnitCount(offsetX, offsetY);
-        block:UpdateLeftTopUnitCount();
-        offsetY = offsetY + heightUnitCount + 5;
-        if (not blockOption.hide_in_toolbox) then
-            table.insert(self.blocks, block);
-        end
-        blockly:DefineBlock(blockOption);
-    end
+    -- local offsetX, offsetY = 5, 5;
+    -- for index, blockOption in ipairs(AllBlocks) do
+    --     local block = Block:new():Init(blockly, blockOption);
+    --     block.isDragClone = true;
+    --     local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
+    --     block:SetLeftTopUnitCount(offsetX, offsetY);
+    --     block:UpdateLeftTopUnitCount();
+    --     offsetY = offsetY + heightUnitCount + 5;
+    --     if (not blockOption.hide_in_toolbox) then
+    --         table.insert(self.blocks, block);
+    --     end
+    --     blockly:DefineBlock(blockOption);
+    -- end
 
     return self;
+end
+
+function ToolBox:SetBlockList(blocklist)
+    self.blocks = {};
+    local offsetX, offsetY = 5, 5;
+    for index, blockType in ipairs(blocklist) do
+        local block = self:GetBlockly():GetBlockInstanceByType(blockType);
+        if (block) then
+            block.isDragClone = true;
+            local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
+            block:SetLeftTopUnitCount(offsetX, offsetY);
+            block:UpdateLeftTopUnitCount();
+            offsetY = offsetY + heightUnitCount + 5;
+            table.insert(self.blocks, block);
+        end
+    end
 end
 
 function ToolBox:Render(painter)

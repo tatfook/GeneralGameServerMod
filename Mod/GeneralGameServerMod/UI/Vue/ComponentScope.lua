@@ -33,9 +33,9 @@ function ComponentScope.New(component)
 
     for method in pairs(ComponentScope) do
         if (type(rawget(ComponentScope, method)) == "function" and not exclude_scope_methods[method]) then
-            scope[method] = function(...) 
+            rawset(scope,method, function(...) 
                 return _scope[method](_scope, ...);
-            end
+            end)
         end
     end
    
@@ -50,6 +50,11 @@ function ComponentScope:Init(component, scope)
     self:SetComponent(component);
     self:SetScope(scope);
     return self;
+end
+
+function ComponentScope:Watch(varname, callback)
+    local scope = self:GetScope();
+    scope:__get_scope_metatable__().Watch(scope, varname, callback);
 end
 
 function ComponentScope:SetArguments(...)

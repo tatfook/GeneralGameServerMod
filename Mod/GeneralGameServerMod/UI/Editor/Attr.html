@@ -41,7 +41,7 @@ attrList = {};
 function AddDynamicAttr()
     if (attrDynamicValue == "" or attrName == "style" or attrDynamicName == "") then return end
      
-    if (not CurrentListItem.vbind[attrDynamicName]) then
+    if (not CurrentListItemData.vbind[attrDynamicName]) then
         table.insert(dynamicAttrList, {attrName = attrDynamicName, attrValue = attrDynamicValue});
     else 
         for _, item in ipairs(dynamicAttrList) do 
@@ -50,19 +50,19 @@ function AddDynamicAttr()
             end
         end
     end
-    CurrentListItem.vbind[attrDynamicName] = attrDynamicValue;
+    CurrentListItemData.vbind[attrDynamicName] = attrDynamicValue;
     attrDynamicName, attrDynamicValue = "", "";    
 end 
 
 function RemoveDynamicAttr(item, index)
-    CurrentListItem.vbind[item.attrName] = nil;
+    CurrentListItemData.vbind[item.attrName] = nil;
     table.remove(dynamicAttrList, index)
 end
 
 function AddAttr()
     if (attrName == "" or attrName == "style" or attrValue == "") then return end
 
-    if (not CurrentListItem.attr[attrName]) then
+    if (not CurrentListItemData.attr[attrName]) then
         table.insert(attrList, {attrName = attrName, attrValue = attrValue});
     else
         for _, item in ipairs(attrList) do 
@@ -72,23 +72,22 @@ function AddAttr()
         end
     end
     
-    CurrentListItem.attr[attrName] = attrValue;
+    CurrentListItemData.attr[attrName] = attrValue;
     attrName, attrValue = "", "";    
 end 
 
 function RemoveAttr(item, index)
-    CurrentListItem.attr[item.attrName] = nil;
+    CurrentListItemData.attr[item.attrName] = nil;
     table.remove(attrList, index)
 end
 
-GlobalScope:Watch("CurrentListItem", function() 
+GlobalScope:Watch("CurrentElementId", function() 
     dynamicAttrList = {};
-    for key, val in pairs(CurrentListItem.vbind) do 
+    for key, val in pairs(CurrentListItemData.vbind) do 
         table.insert(dynamicAttrList, {attrName = key, attrValue = val});
     end
-
     attrList = {};
-    for key, val in pairs(CurrentListItem.atrr) do 
+    for key, val in pairs(CurrentListItemData.attr) do 
         table.insert(attrList, {attrName = key, attrValue = val});
     end
 end);

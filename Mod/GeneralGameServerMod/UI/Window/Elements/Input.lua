@@ -322,6 +322,8 @@ end
 function Input:UpdateValue()
     local value = self.text:GetText();
     if (self:GetValue() == value) then return end
+    -- self:SetAttrValue("value", value);
+    self:GetAttr()["value"] = value;
     self:SetValue(value);
     self:OnChange(value);
 end

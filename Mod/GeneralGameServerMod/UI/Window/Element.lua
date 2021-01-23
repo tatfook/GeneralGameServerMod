@@ -610,11 +610,11 @@ end
 
 -- 样式属性值改变
 function Element:OnAttrStyleValueChange(attrValue, oldAttrValue)
-    -- ElementDebug.If(self:GetAttrValue("id") == "test", attrValue, oldAttrValue, tostring(self));
+    oldAttrValue = self:GetAttrStyle();
+    -- ElementDebug(attrValue, oldAttrValue, tostring(attrValue), tostring(oldAttrValue), commonlib.compare(attrValue, oldAttrValue));
     if (commonlib.compare(attrValue, oldAttrValue)) then return end
-    self:SetAttrStyle(Style.ParseString(attrValue));
-    -- ElementDebug.If(self:GetAttrValue("id") == "test", self:GetAttrStyle());
-
+    local style = type(attrValue) == "string" and Style.ParseString(attrValue) or commonlib.copy(attrValue);
+    self:SetAttrStyle(style);
     self:ApplyElementStyle();
     self:UpdateLayout(false);
 end

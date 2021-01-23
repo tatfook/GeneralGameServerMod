@@ -12,6 +12,7 @@ local Blockly = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blockly.lua");
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
+local VueBlocks = NPL.load("./Blocks/VueBlocks.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
@@ -50,8 +51,20 @@ function Blockly:Init(xmlNode, window, parent)
     blocklyEditor:SetVisible(false);
     self:SetEditorElement(blocklyEditor);
 
-    -- self:SetFileManager()
+    local allBlocks, toolboxBlockList = {}, {};
+    if (self:GetAttrStringValue("type") == "vue") then
+        allBlocks = VueBlocks.GetAllBlocks();
+        toolboxBlockList = VueBlocks.GetToolBoxBlockList();
+    end
+
+    for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end
+    self.toolbox:SetBlockList(toolboxBlockList);
+
     return self;
+end
+
+-- 设置工具块
+function Blockly:SetToolBoxBlockList()
 end
 
 -- 定义块
