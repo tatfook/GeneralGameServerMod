@@ -3,6 +3,7 @@ local GlobalScope = GetGlobalScope();
 
 _G.WindowElement = nil;
 _G.CurrentElement = nil;
+_G.CurrentListItem = {};
 _G.ListItemMap = {};
 
 _G.StyleNameList = {
@@ -20,27 +21,49 @@ local function GenerateListItem()
     return {
         id = GetNextElementId(),
         text = "元素",
+        style = {},
+        hoverStyle = {},
+        attr = {},
+        vbind = {},
     }
 end
 
+_G.CurrentElementStyleChange = function ()
+
+end
+
 WindowDataItem = GenerateListItem();
-GlobalScope:Set("CurrentElementId", nil);
+GlobalScope:Set("CurrentElementId", "");
+GlobalScope:Set("CurrentElementText", "");
 GlobalScope:Set("CurrentElementStyle", {});
 GlobalScope:Set("ElementList", {});
-GlobalScope:Set("CurrentListItem", WindowDataItem);
 
-ListItemMap[WindowDataItem.id] = GlobalScope:Get("CurrentListItem");
+ListItemMap[WindowDataItem.id] = WindowDataItem;
 
 local function SetCurrentElement(curElement)
     CurrentElement = curElement;
     local CurrentElementId = CurrentElement and CurrentElement:GetAttrStringValue("id");
+
+    CurrentListItem = ListItemMap[CurrentElementId];
     GlobalScope:Set("CurrentElementId", CurrentElementId);
+    GlobalScope:Set("CurrentElementText", CurrentListItem.text);
     GlobalScope:Set("CurrentElementStyle", CurrentElement and CurrentElement:GetComputedStyle() or {});
-    GlobalScope:Set("CurrentListItem", ListItemMap[CurrentElementId]);
 end
 
 function GetCurrentElementId()
     return GlobalScope:Get("CurrentElementId");
+end
+
+function DraggableFlagElementOnMouseDown(el)
+    el:GetParentElement():OnMouseDown(GetEvent());
+end
+
+function DraggableFlagElementOnMouseMove(el)
+    el:GetParentElement():OnMouseMove(GetEvent());
+end
+
+function DraggableFlagElementOnMouseUp(el)
+    el:GetParentElement():OnMouseUp(GetEvent());
 end
 
 function DraggableElementOnMouseDown(el)
@@ -74,9 +97,8 @@ end
 function ClickNewElementBtn()
     local list = GlobalScope:Get("ElementList");
     local item = GenerateListItem();
-    table.insert(list, item);
-    item = GetListItemById(item.id);
     ListItemMap[item.id] = item;
+    table.insert(list, {id = item.id, text = item.text});
 end
 
 function ClickDeleteElementBtn()

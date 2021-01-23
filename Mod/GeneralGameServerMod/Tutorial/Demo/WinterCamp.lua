@@ -79,6 +79,11 @@ function IsVipSchoolStudent()
     return TutorialSandbox:GetSystemUser().isVipSchool;
 end
 
+-- 是否允许进入会场
+function IsAllowInAuditorium()
+    return IsVipSchoolStudent() or IsVip() or false;
+end
+
 -- 是否是vip
 function IsVip()
     return TutorialSandbox:GetSystemUser().isVip;
@@ -99,7 +104,7 @@ function WinterCamp:OpeningCeremony(second)
     -- playSound(filename, nil, second);
     playSound(filename);
     -- 播放动画
-    if (self.isAllowInAuditorium) then
+    if (IsAllowInAuditorium()) then
         -- playMovie("OpeningCeremony", second * 1000, -1);
         -- stopMovie("OpeningCeremony");
         TutorialSandbox:ActivateBlock(OpeningCeremonyMovieActiveBlockPos.x, OpeningCeremonyMovieActiveBlockPos.y, OpeningCeremonyMovieActiveBlockPos.z);
@@ -194,20 +199,18 @@ function WinterCamp:ForbidFlyCheck()
             local isInnerAuditorium = false;
             if (x >= 19241 and x <= 19285 and z >= 19230 and z <= 19270) then isInnerAuditorium = true end
             TutorialSandbox:SetCanFly(not isInnerAuditorium);
-            if (isInnerAuditorium and not self.isAllowInAuditorium) then 
+            if (isInnerAuditorium and not IsAllowInAuditorium()) then 
                 -- 不允许进入会场
                 TutorialSandbox:SetPlayerBlockPos(19237,12,19250);
-                MessageBox("冬令营就要开始了！你所在的学校已经有。128名同学报名了冬令营的会员活动！你也立即来参加吧！", function(res)
+                MessageBox("冬令营就要开始了！你所在的学校已经有128名同学报名了冬令营的会员活动！你也快来参加吧！", function(res)
                     if(res == 6) then
                         -- GameLogic.GetFilters():apply_filters("cellar.vip_notice.init");
-                        GameLogic.GetFilters():apply_filters("VipNotice", true, "vip_wintercamp1_join", function()
-                            if (IsVip()) then
-                                self.isAllowInAuditorium = true;
-                            end
-						end);
+                        -- GameLogic.GetFilters():apply_filters("VipNotice", true, "vip_wintercamp1_join", function() end);
+                        local MacroCodeCampActIntro = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/MacroCodeCamp/MacroCodeCampActIntro.lua");
+                        MacroCodeCampActIntro.ShowView();
                     end
                 end, 10, nil,nil,nil,nil, {ok = "我要报名"});
-            elseif (isInnerAuditorium and self.isAllowInAuditorium) then
+            elseif (isInnerAuditorium and IsAllowInAuditorium()) then
                 -- 允许进入会场
                 if (self.isOpeningCeremonyTime) then
                     if (self.isJoinOpeningCeremony == nil) then
@@ -331,12 +334,8 @@ function WinterCamp:Start()
         self:GuideLogic(actor);
     end);
     
-    if (true) then return end
-
     if (IsWinterCampStartDate()) then
         -- print("=========================OpeningCeremonyDate=========================")
-        self.isAllowInAuditorium = IsVipSchoolStudent() or IsVip() or false;
-        -- self.isAllowInAuditorium = true;
         self.isJoinOpeningCeremony = nil;
         self:ForbidFlyCheck();
         self:StartOpeningCeremony();

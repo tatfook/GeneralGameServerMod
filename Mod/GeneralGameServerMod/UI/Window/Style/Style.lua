@@ -534,9 +534,6 @@ function Style:GetLineHeight(defaultValue)
 	else
 		lineHeight = defaultValue or math.floor(1.4 * fontSize);
 	end
-
-	self["line-height"] = lineHeight;
-
 	return lineHeight; 
 end
 

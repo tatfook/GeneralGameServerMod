@@ -565,6 +565,9 @@ function TextArea:GetAtByPos(x, y)
     local text = _guihelper.AutoTrimTextByWidth(self:GetLineText(lineNo):GetText(), x, self:GetFont());
     local textlen = ParaMisc.GetUnicodeCharNum(text);
     local textWidth = _guihelper.GetTextWidth(text, self:GetFont());
+    
+    if (x > textWidth) then return startAt + textlen end
+
     while (textWidth > x and textlen > 0) do
         textlen = textlen - 1;
         text = ParaMisc.UniSubString(text, 1, textlen);

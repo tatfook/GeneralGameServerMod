@@ -133,7 +133,6 @@ function Element:InitElement(xmlNode, window, parent)
     self:SetAttr({});
     if (type(xmlNode) ~= "table") then 
         self:SetTagName("");
-        self:SetAttr({});
         self:SetXmlNode(xmlNode);
     else 
         self:SetTagName(xmlNode.name);

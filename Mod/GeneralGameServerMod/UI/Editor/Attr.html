@@ -1,5 +1,5 @@
 <template class="attr-container">
-    <div class="title">默认样式</div>
+    <div class="title">动态属性</div>
     <div class="attr-item">
         <input placeholder="属性名" v-model="attrDynamicName"></input>
         <input placeholder="属性值" v-model="attrDynamicValue"></input>
@@ -12,7 +12,7 @@
             <div class="attr-item-btn" style="height: 30px" onclick="RemoveDynamicAttr(attr, index)">移除</div>
         </div>
     </div>
-    <div class="title">悬浮样式</div>
+    <div class="title">静态属性</div>
     <div class="attr-item">
         <input placeholder="属性名" v-model="attrName"></input>
         <input placeholder="属性值" v-model="attrValue"></input>
@@ -30,28 +30,28 @@
 <script type="text/lua">
 local GlobalScope = GetGlobalScope();
 
-styleName = "";
-styleValue = "";
-styleList = {};
+attrDynamicName = "";
+attrDynamicValue = "";
+dynamicAttrList = {};
 
-hoverStyleName = "";
-hoverStyleValue = "";
-hoverStyleList = {};
+attrName = "";
+attrValue = "";
+attrList = {};
 
 function AddDynamicAttr()
-    if (styleName == "" or styleValue == "") then return end
+    if (attrDynamicValue == "" or attrName == "style" or attrDynamicName == "") then return end
      
-    if (not CurrentListItem.style[styleName]) then
-        table.insert(styleList, {styleName = styleName, styleValue = styleValue});
+    if (not CurrentListItem.vbind[attrDynamicName]) then
+        table.insert(dynamicAttrList, {attrName = attrDynamicName, attrValue = attrDynamicValue});
     else 
         for _, item in ipairs(dynamicAttrList) do 
-            if (item.styleName == styleName) then
-                item.styleValue = styleValue;
+            if (item.attrName == attrDynamicName) then
+                item.attrValue = attrDynamicValue;
             end
         end
     end
-    CurrentListItem.style[styleName] = styleValue;
-    styleName, styleValue = "", "";    
+    CurrentListItem.vbind[attrDynamicName] = attrDynamicValue;
+    attrDynamicName, attrDynamicValue = "", "";    
 end 
 
 function RemoveDynamicAttr(item, index)
@@ -60,7 +60,7 @@ function RemoveDynamicAttr(item, index)
 end
 
 function AddAttr()
-    if (attrName == "" or attrValue == "") then return end
+    if (attrName == "" or attrName == "style" or attrValue == "") then return end
 
     if (not CurrentListItem.attr[attrName]) then
         table.insert(attrList, {attrName = attrName, attrValue = attrValue});

@@ -130,6 +130,15 @@ function Layout:PrepareLayout()
 	bottom = self:PercentageToNumber(bottom, parentHeight);
 	self:SetPosition(top, right, bottom, left);
 
+	-- 父元素是固定大小
+	if (parentWidth and parentHeight and self:IsPositionElement()) then
+		self:ApplyPositionStyle();
+		local width, height = self:GetWidthHeight();
+		if (width and height) then self:SetFixedSize(true) end
+		if (width) then self:SetFixedWidth(true) end
+		if (height) then self:SetFixedHeight(true) end
+	end
+	
     LayoutDebug.If(
 		self:GetElement():GetAttrValue("id") == "debug",
         "PrepareLayout TagName = " .. self:GetTagName() ..  " ElementName = " .. self:GetName(), 
