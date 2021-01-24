@@ -638,7 +638,7 @@ function Element:SetAttrValue(attrName, attrValue)
     local attr = self:GetAttr();
     local oldAttrValue = attr[attrName];
     attr[attrName] = attrValue;
-    if (oldAttrValue == attrValue) then return end
+    if (type(attrValue) ~= "table" and oldAttrValue == attrValue) then return end
     self:OnAttrValueChange(attrName, attrValue, oldAttrValue);
 end
 

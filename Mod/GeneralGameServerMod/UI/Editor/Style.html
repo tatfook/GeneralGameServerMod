@@ -7,8 +7,8 @@
     </div>
     <div class="style-list">
         <div class="style-list-item" v-for="style, index in styleList">
-            <input v-bind:value="style.styleName"></input>
-            <input v-bind:value="style.styleValue"></input>
+            <input v-model="style.styleName" onkeydown.enter="SetStyleValue(style.styleName, style.styleValue)"></input>
+            <input v-model="style.styleValue" onkeydown.enter="SetStyleValue(style.styleName, style.styleValue)"></input>
             <div class="style-item-btn" style="height: 30px" onclick="RemoveStyle(style, index)">移除</div>
         </div>
     </div>
@@ -52,6 +52,12 @@ function AddStyle()
     end
     CurrentListItemData.style[styleName] = styleValue;
     styleName, styleValue = "", "";    
+    StyleChange();
+end 
+
+function SetStyleValue(styleName, styleValue)
+    if (styleName == "" or styleValue == "") then return end
+    CurrentListItemData.style[styleName] = styleValue;
     StyleChange();
 end 
 

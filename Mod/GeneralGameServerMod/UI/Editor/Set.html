@@ -1,10 +1,14 @@
 <template class="set-container">
+    <div class="title">背景图片</div>
+    <div class="item-container">
+        <div class="image" v-bind:style="GetImageStyle()"></div>
+        <input style="width: 100%; margin-top: 10px" v-bind:value="background" placeholder="背景图片url" onkeydown.enter=ChangeImageUrl></input>
+    </div>
     <div v-if="CurrentElementId ~= WindowItemData.id">
         <div class="title">静态文本</div>
         <textarea v-bind:value="text" onchange=OnTextChange style="margin-left: 10px; width: 80%; height: 120px;"></textarea>
         <div class="title">动态文本</div>
         <input v-bind:value="textVarName" placeholder="变量名" onchange=OnTextVarNameChange style="margin-left: 10px; width: 80%;"></input>
-       
     </div>
 </template>
 
@@ -14,6 +18,18 @@ local ListItem = {};
 
 text = "";
 textVarName = "";
+
+background = "";
+
+function GetImageStyle()
+    return string.format('background: url(%s);', background); 
+end 
+
+function ChangeImageUrl(val)
+    background = val;
+    CurrentListItemData.style["background"] = string.format("url(%s)", background);
+    CurrentElement:SetStyleValue("background", background);
+end 
 
 function OnTextChange(val)
     if (val == "") then return end
@@ -57,6 +73,16 @@ end);
     padding: 20px 0px 10px 10px;
 }
 
+.item-container {
+    margin-left: 10%;
+    width: 80%;
+}
+
+.image {
+    width: 100%;
+    height: 160px;
+    background-color: #ffffff;
+}
 </style>
 
 

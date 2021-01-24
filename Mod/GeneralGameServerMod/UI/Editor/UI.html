@@ -20,8 +20,8 @@
         <div v-show="HeaderNavIndex == 'ui'" class="tab-item">
             <div style="position: absolute; left: 2px; top: 0px; bottom: 0px; right: 300px;">
                 <div class="action-container">
-                    <div class="action-btn btn" onclick=ClickNewElementBtn>新增</div>
-                    <div class="action-btn btn" onclick=ClickDeleteElementBtn>删除</div>
+                    <div class="action-btn" onclick=ClickNewElementBtn>新增</div>
+                    <div class="action-btn" onclick=ClickDeleteElementBtn>删除</div>
                 </div>
                 <div class="window-container">
                     <div v-bind:id="WindowItemData.id" ref="window" style="width: 100%; height: 100%;" onmouseup=DraggableElementOnMouseUp>
@@ -36,9 +36,9 @@
                 <div class="right-aside-header" style="height: 60px;">
                     <div style="position: absolute; left: -200px; top:12px; width: 200px; font-size: 18px; color: #cccccc;">{{"当前元素: " .. CurrentElementId}}</div>
                     <div style="display: flex; margin-top: 12px;">
-                        <div class="action-btn btn" onclick="ClickRightAsideNavBtn('style')">样式</div>
-                        <div class="action-btn btn" onclick="ClickRightAsideNavBtn('attr')">属性</div>
-                        <div class="action-btn btn" onclick="ClickRightAsideNavBtn('set')">设置</div>
+                        <div class="action-btn" onclick="ClickRightAsideNavBtn('style')">样式</div>
+                        <div class="action-btn" onclick="ClickRightAsideNavBtn('attr')">属性</div>
+                        <div class="action-btn" onclick="ClickRightAsideNavBtn('set')">设置</div>
                     </div>
                 </div>
                 <StyleEditor v-show="RightAsideNavIndex == 'style'" ></StyleEditor>
@@ -52,6 +52,7 @@
         </div>
 
         <div v-show="HeaderNavIndex == 'code'" class="tab-item text-code">
+            <div style="position: absolute; right: 10px; top: 10px; width: 200px; height: 100px; font-size: 24px;" class="action-btn" onclick=ClickCopyCutBoard>复制到剪切板</div>
             {{AllCode}}
         </div>
 
@@ -69,7 +70,7 @@ RegisterComponent("StyleEditor", "%ui%/Editor/Style.html");
 RegisterComponent("AttrEditor", "%ui%/Editor/Attr.html");
 RegisterComponent("SetEditor", "%ui%/Editor/Set.html");
 
-HeaderNavIndex = "file";             -- ui logic code exec
+HeaderNavIndex = "ui";             -- ui logic code exec file
 RightAsideNavIndex = "style";      -- style attr
 
 function ClickRightAsideNavBtn(index)
@@ -80,6 +81,12 @@ function ClickHeaderNavBtn(index)
     if (index == "code" or index == "exec") then GenerateCode() end
     HeaderNavIndex = index;
 end 
+
+function ClickCopyCutBoard()
+    ParaMisc.CopyTextToClipboard(GetGlobalScope():Get("AllCode"));
+    Tip("代码已复制到剪切板");
+end 
+
 </script>
 
 <style scoped=true>

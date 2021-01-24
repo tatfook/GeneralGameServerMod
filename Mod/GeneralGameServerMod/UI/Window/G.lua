@@ -95,3 +95,7 @@ function G:ClearInterval(timer)
     if (not timer) then return end
     return commonlib.TimerManager.ClearInterval(timer);
 end
+
+function G:Tip(text, duration, color)
+    GameLogic.AddBBS("CodeGlobals", text and tostring(text), duration, color);
+end

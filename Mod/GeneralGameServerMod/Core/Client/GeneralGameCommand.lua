@@ -124,6 +124,8 @@ blockly 图块编程
 				__this__:handleFileSyncCommond(cmd_text);
 			elseif (cmd == "blockly") then
 				__this__:handleBlocklyCommond(cmd_text)
+			elseif (cmd == "uieditor") then
+				__this__:handleUIEditorCommond(cmd_text)
 			end
 			-- 确保进入联机世界
 			if (not __this__:GetGeneralGameClient()) then return end;
@@ -144,6 +146,11 @@ end
 function GeneralGameCommand:handleBlocklyCommond(cmd_text)
 	local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 	Page.ShowBlocklyPage();
+end
+
+function GeneralGameCommand:handleUIEditorCommond(cmd_text)
+	local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+	Page.ShowUIEditorPage();
 end
 
 function GeneralGameCommand:handleFileSyncCommond(cmd_text)

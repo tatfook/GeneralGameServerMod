@@ -72,6 +72,7 @@ local function SetCurrentElement(curElement)
     local CurrentElementId = CurrentElement and CurrentElement:GetAttrStringValue("id");
 
     _G.CurrentListItemData = ListItemDataMap[CurrentElementId];
+    _G.CurrentListItemData.style.left, _G.CurrentListItemData.style.top = CurrentElement:GetPosition();
     GlobalScope:Set("CurrentElementId", CurrentElementId);
 end
 
@@ -176,7 +177,6 @@ _G.GenerateCode = function()
 
     -- allcode = string.format('<template id="%s_%s" style="%s">%s\n</template>', WindowItemData.id, IdSuffix, GetStyleString(WindowItemData), allcode);
     allcode = string.format('<template style="%s">%s\n</template>', GetStyleString(WindowItemData.style), allcode);
-    ParaMisc.CopyTextToClipboard(allcode);
 
     -- script
     local rawcode, prettycode = BlocklyElement:GetCode();

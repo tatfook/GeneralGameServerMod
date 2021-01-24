@@ -119,3 +119,15 @@ function Page.ShowMessageBoxPage(G)
 
     return MessageBoxPage;
 end
+
+local UIEditorPage = Vue:new();
+function Page.ShowUIEditorPage(G, params)
+    params = params or {};
+    params.url = "%ui%/Editor/UI.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
+    UIEditorPage:Show(params);
+    return UIEditorPage;
+end
