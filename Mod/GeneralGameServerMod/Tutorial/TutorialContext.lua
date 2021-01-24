@@ -115,10 +115,16 @@ function TutorialContext:handleMouseEvent(event)
 		-- local blockId = itemStack and itemStack.id or 0;
 		-- local data = {blockX = blockX, blockY = blockY, blockZ = blockZ, blockId = blockId, mouseKeyState = event:buttons(), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
 		-- if(not self:GetTutorialSandbox():IsCanClick(data) and blockId > 0) then return event:accept() end
+	elseif (result.entity ~= nil) then
+		-- 点击实体
+	elseif (event.mouse_button == "left" and (not result.block_id or result.block_id == 0)) then
+		-- 左击空气
 	else
 		-- 左击 或者 功能键按下
 		local handBlockId = self:GetTutorialSandbox():GetBlockInRightHand();
 		local data = {event_type = event_type, blockX = result.blockX or 0, blockY = result.blockY or 0, blockZ = result.blockZ or 0, blockId = result.block_id or 0, handBlockId = handBlockId or 0, mouseKeyState = GetMouseKeyState(event), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
+		echo({data, result.entity == nil});
+		print(result.block_id, result.entity == nil)
 		if(not self:GetTutorialSandbox():IsCanClick(data)) then 
 			return event:accept();
 		end
