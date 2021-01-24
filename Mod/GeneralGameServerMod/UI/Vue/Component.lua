@@ -63,13 +63,19 @@ end
 
 -- 初始化
 function Component:Init(xmlNode, window, parent)
-    self.template = xmlNode.template;
-    
-    self:SetTagName(xmlNode.name);
-    self:InitSlotXmlNode(xmlNode);
-
-    local htmlNode, scriptNode, styleNodes, xmlRoot = self:LoadXmlNode(xmlNode);
     self:SetWindow(window);
+    self:SetParentComponent(parent);
+    self:SetTagName(xmlNode.name);
+    self:SetXmlNode(xmlNode);
+    self:LoadComponent(false);
+    return self;
+end
+
+function Component:LoadComponent(isReload)
+    local xmlNode, window, parent = self:GetXmlNode(), self:GetWindow(), self:GetParentElement();
+    local htmlNode, scriptNode, styleNodes, xmlRoot = self:LoadXmlNode(xmlNode, isReload);
+    -- 清楚所有子元素
+    self:ClearChildElement();
     -- 加载组件样式
     self:InitByStyleNode(styleNodes);
     -- 合并XmlNode
@@ -82,8 +88,15 @@ function Component:Init(xmlNode, window, parent)
     self:InitByScriptNode(scriptNode);
     -- 初始化子元素  需要重写创建子元素逻辑
     self:InitChildElement(htmlNode, window);
-    
-    return self;
+    -- 初始化插槽
+    self:InitSlotXmlNode(xmlNode);
+
+    -- 如果是重新加载
+    if (isReload) then
+        self:SetCompiled(false);
+        self:Attach();
+        self:UpdateLayout(true);
+    end
 end
 
 -- 初始化Slot
@@ -126,20 +139,23 @@ function Component:InitComponent(xmlNode)
 end
 
 -- 加载文件
-function Component:LoadXmlNode(xmlNode)
-    if (self.xmlRoot) then return self.htmlNode, self.scriptNode, self.styleNodes, self.xmlRoot end
-    local src = xmlNode.attr and xmlNode.attr.src or self.filename;
-    self.filename = self.filename or src or "";
+function Component:LoadXmlNode(xmlNode, isReload)
+    if (self.xmlRoot and not isReload) then return self.htmlNode, self.scriptNode, self.styleNodes, self.xmlRoot end
+
+    local filename, template = self.filename, self.template;
+    if (self:class() == Component) then
+        filename = self:GetAttrStringValue("src") or (xmlNode.attr and xmlNode.attr.src);
+        template = self:GetAttrStringValue("template") or self.template or (xmlNode.attr and xmlNode.attr.template);
+    end
+    
     -- 从字符串加载
     local xmlRoot = nil;
-    if (xmlNode.template and xmlNode.template ~= "") then
-        xmlRoot = type(xmlNode.template) == "table" and xmlNode.template or ParaXML.LuaXML_ParseString(xmlNode.template);
-    elseif (src and src ~= "") then
-        local template = LoadXmlFile(src);
-        -- 解析template
+    if (template and template ~= "") then
+        xmlRoot = type(template) == "table" and template or ParaXML.LuaXML_ParseString(template);
+    elseif (filename and filename ~= "") then
+        local template = LoadXmlFile(filename);
         xmlRoot = ParaXML.LuaXML_ParseString(template);
     end
-    -- print(self.template);
 
     local htmlNode = xmlRoot and commonlib.XPath.selectNode(xmlRoot, "//template");
     local scriptNode = xmlRoot and commonlib.XPath.selectNode(xmlRoot, "//script");
@@ -169,6 +185,8 @@ function Component:InitByStyleNode(styleNodes)
     -- 强制使用css样式
     self:SetStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(styleText));
     if (scopedStyleText ~= "") then self:SetScopedStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(scopedStyleText)) end
+
+    -- ComponentDebug.If(self:GetTagName() == "GoodsTooltip", "==============",scopedStyleText, styleText);
 end
 
 -- 合并XmlNode
@@ -276,16 +294,13 @@ function Component:ExecCode(code)
     end);
 end
 
--- 设置属性值
-function Component:SetAttrValue(attrName, attrValue)
-    local oldAttrValue = self:GetAttrValue(attrName);
-    Component._super.SetAttrValue(self, attrName, attrValue);
-    self:OnAttrValueChange(attrName, attrValue, oldAttrValue);
-    -- self:GetComponentScope():Set(attrName, attrValue);
-end
-
 -- 属性值更新
 function Component:OnAttrValueChange(attrName, attrValue)
+    if (self:class() == Component and (attrName == "template" or attrName == "src")) then
+        self:LoadComponent(true);
+        return;
+    end
+
     Component._super.OnAttrValueChange(self, attrName, attrValue);
     local OnAttrValueChange = self:GetScope():__get_data__()["OnAttrValueChange"];
     if (type(OnAttrValueChange) == "function") then

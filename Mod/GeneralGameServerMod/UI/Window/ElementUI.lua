@@ -177,6 +177,8 @@ function ElementUI:OnRender(painter)
         painter:Rotate(ratate);
         painter:Translate(-(x + w / 2), -(y + h / 2));
     end
+
+    -- ElementUIDebug.If(self:GetTagName() == "GoodsTooltip", self:GetWindowPos());
     
     self:RenderOutline(painter);
     self:RenderBackground(painter);

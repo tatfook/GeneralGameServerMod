@@ -166,6 +166,9 @@ end
 -- 生效类选择器样式
 function StyleSheet:ApplyClassSelectorStyle(element, style)
     local classes = element:GetAttrStringValue("class",  "");
+
+    -- StyleSheetDebug.If(element:GetTagName() == "GoodsTooltip", classes, self.SelectorStyle);
+    
     for class in string.gmatch(classes, "%s*([^%s]+)%s*") do 
         self:ApplySelectorStyle("." .. class, style, element);
     end

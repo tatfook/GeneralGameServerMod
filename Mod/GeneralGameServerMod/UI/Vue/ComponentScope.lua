@@ -81,6 +81,10 @@ function ComponentScope:SetAttrValue(attrName, attrValue)
     self:GetComponent():SetAttrValue(attrName, attrValue);
 end
 
+function ComponentScope:CallAttrFunction(funcname, ...)
+    self:GetComponent():CallAttrFunction(funcname, nil, ...);
+end
+
 function ComponentScope:GetAttrValue(attrName, defaultValue, valueType) 
     if (valueType == "string") then return self:GetComponent():GetAttrStringValue(attrName, defaultValue)
     elseif (valueType == "number") then return self:GetComponent():GetAttrNumberValue(attrName, defaultValue)
@@ -104,3 +108,5 @@ end
 function ComponentScope:GetAttrFunctionValue(attrName, defaultValue)
     return self:GetComponent():GetAttrFunctionValue(attrName, defaultValue);
 end
+
+

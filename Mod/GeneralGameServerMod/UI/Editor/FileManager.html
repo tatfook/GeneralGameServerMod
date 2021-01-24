@@ -3,38 +3,35 @@
     <div class="operation-container">
         <div style="display: flex; align-items: center;">
             <input v-model="FileName" placeholder="请输入文件名..." style="width: 200px;"></input>
-            <div onclick=ClickNew class="btn">新增</div>
+            <div onclick=ClickNewBtn class="btn">新增</div>
         </div>
     </div>
     <div class="filelist-container">
         <div v-for="file, index in FileList" class="file-container">
-            <div style="width: 200px; height: 100%; display: flex; align-items: center;">{{file.filename}}</div>
-            <div onclick="ClickDelete(file, index)" class="btn">删除</div>
-            <div onclick="ClickEdit(file, index)" class="btn">编辑</div>
+            <div style="width: 200px; height: 100%; display: flex; align-items: center; color: #000000;">{{file.filename}}</div>
+            <div onclick="ClickDeleteBtn(file, index)" class="btn">删除</div>
+            <div onclick="ClickEditBtn(file, index)" class="btn">{{file.filename == CurrentFileName and "正在编辑" or "编辑"}}</div>
         </div>
     </div>
 </template>
 
-<script type="text/lua"  src="%ui%/Common/FileManager.lua">
+<script type="text/lua"  src="%ui%/Editor/FileManager.lua">
 </script>
 
 <style scoped=true>
 .container {
     height: 100%; 
     width: 100%; 
-    padding: 0px 2px 2px 2px;
+    padding: 10px;
 }
 
 .operation-container {
     display: flex;
-    justify-content: center;
-    padding: 20px 0px;
 }
 
 .filelist-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
 }
 
 .file-container {
@@ -43,9 +40,12 @@
     height: 40px;
 }
 .btn {
-    padding: 6px 16px;
+    height: 30px;
     border-radius: 5px;
-    background-color: #e6e6e6;
+    width: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .btn:hover {
     background-color: #ffffff;

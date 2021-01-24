@@ -427,6 +427,8 @@ function Element:ApplyElementStyle()
 
     -- 选择合适样式
     self:SelectStyle();
+
+    -- ElementDebug.If(self:GetTagName() == "GoodsTooltip", self:GetElementScopedStyleSheet(), self:GetParentElement() == nil);
     
     -- 构建滚动条
     local ScrollBar = self:GetWindow():GetElementManager().ScrollBar;
@@ -565,7 +567,7 @@ end
 -- 获取属性值
 function Element:GetAttrValue(attrName, defaultValue)
     local attr = self:GetAttr();
-    return attr[attrName] or defaultValue;
+    return attr and attr[attrName] or defaultValue;
 end
 
 -- 获取数字属性值
@@ -636,6 +638,7 @@ function Element:SetAttrValue(attrName, attrValue)
     local attr = self:GetAttr();
     local oldAttrValue = attr[attrName];
     attr[attrName] = attrValue;
+    if (oldAttrValue == attrValue) then return end
     self:OnAttrValueChange(attrName, attrValue, oldAttrValue);
 end
 

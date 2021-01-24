@@ -1,5 +1,5 @@
 <template class="set-container">
-    <div v-if="CurrentElementId ~= WindowDataItem.id">
+    <div v-if="CurrentElementId ~= WindowItemData.id">
         <div class="title">静态文本</div>
         <textarea v-bind:value="text" onchange=OnTextChange style="margin-left: 10px; width: 80%; height: 120px;"></textarea>
         <div class="title">动态文本</div>

@@ -37,7 +37,6 @@ function OnMouseMove(goods)
     ToolTipEl:SetPosition(windowX, windowY);
     hoverGoods = goods;
     ToolTipEl:SetVisible(hoverGoods and true or false);
-    --print(goods, event.x, event.y, event.windowX, event.windowY);
 end
 
 function GoodsStyle(goods)
@@ -46,7 +45,6 @@ end
 
 function OnReady()
     ToolTipEl = GetRef("tooltip");
-    ToolTipEl:SetVisible(false);
 end
 </script>
 
@@ -59,10 +57,4 @@ end
     background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/wupingbj_146X140_32bits.png#0 0 146 140);
 }
 
-.goods-tooltip {
-    position: fixed;
-    left: -10000px;
-    top: -10000px;
-    z-index: 100;
-}
 </style>

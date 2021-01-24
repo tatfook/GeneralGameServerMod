@@ -59,8 +59,8 @@ function Vue:LoadXmlNodeByTemplate(template)
         }, 
         {
             name = "component",
-            template = template,
             attr = {
+                template = template,
             }
         }
     }
@@ -78,7 +78,9 @@ function Vue:ExtendG(G)
 
         params.G = G;
         
-        return page:Show(params);
+        page:Show(params);
+
+        return page;
     end
 
     G.GetGlobalScope = function()
