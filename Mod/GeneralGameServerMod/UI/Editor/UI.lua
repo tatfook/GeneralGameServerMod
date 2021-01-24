@@ -153,10 +153,9 @@ _G.GenerateCode = function()
         
         if (item.text ~= "") then textString = item.text end
         if (item.textVarName ~= "") then textString = "{{" .. item.textVarName .. "}}" end
-
         -- local idString = string.format("%s_%s", item.id, IdSuffix);
         -- return string.format([[<%s id="%s" %s %s style="%s">%s</%s>]], tagname, idString, vbindAttrString, attrString, GetStyleString(item.style), item.text, tagname)
-        return string.format([[<%s %s %s style="%s">%s</%s>]], tagname, vbindAttrString, attrString, GetStyleString(item.style), item.text, tagname)
+        return string.format([[<%s %s %s style="%s">%s</%s>]], tagname, vbindAttrString, attrString, GetStyleString(item.style), textString, tagname)
     end
 
     for _, childElement in ipairs(WindowElement.childrens) do

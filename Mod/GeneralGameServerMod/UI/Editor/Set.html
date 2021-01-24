@@ -27,7 +27,6 @@ end
 function OnTextVarNameChange(val)
     if (val == "") then return end
     textVarName = val;
-    print(textVarName);
     CurrentListItemData.textVarName = val;
     CurrentListItemData.text = "";
     ListItem.text = "";

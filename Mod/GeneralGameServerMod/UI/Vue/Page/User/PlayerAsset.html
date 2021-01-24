@@ -45,7 +45,7 @@ end
 
 function ClickPlayerAsset(asset)
     local userinfo = GetGlobalScope():Get("UserDetail");
-    if (not asset.owned) then
+    <!-- if (not asset.owned) then
         -- 如果已近是vip或该物品不需要vip直接返回
         if (userinfo.vip == 1 or not asset.requireVip) then return end 
         GameLogic.GetFilters():apply_filters("VipNotice", true, "ChangeAvatarSkin", function()
@@ -56,14 +56,15 @@ function ClickPlayerAsset(asset)
             end
 		end);
         return 
-    end
+    end -->
 
+    GlobalScope:Set("AssetSkinGoodsItemId", asset.id);
     ChangePlayerAsset(asset.modelUrl, asset.skin);
     UpdatePlayerEntityInfo();
 end
 
 function AssetContainerClass(asset) 
-    return "asset-container " .. (asset.modelUrl == MainAsset and "used-asset-container" or (asset.owned and "unused-asset-container" or ""));
+    return "asset-container " .. (asset.id == AssetSkinGoodsItemId and "used-asset-container" or (asset.owned and "unused-asset-container" or ""));
 end
 
 function AssetStyle(asset)

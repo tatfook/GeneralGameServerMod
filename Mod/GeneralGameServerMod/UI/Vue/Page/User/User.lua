@@ -22,8 +22,8 @@ GlobalScope:Set("ProjectListLoadFinish", false);
 GlobalScope:Set("ProjectListType", "works");
 GlobalScope:Set("MainAsset", player and player:GetMainAssetPath());
 GlobalScope:Set("MainSkin", player and player:GetSkin());
+GlobalScope:Set("AssetSkinGoodsItemId", 0);
 GlobalScope:Set("IsFollow", false);
-
 
 local ProjectMap = {};
 
@@ -242,9 +242,13 @@ function LoadUserInfo()
         -- 设置知识豆
         _, _, _, UserDetail.bean = KeepWorkItemManager.HasGSItem(998);
 
-         -- 设置模型
+        local extra = UserDetail.extra or {};
+        local ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+        
+        -- 设置模型
         GlobalScope:Set("UserDetail", UserDetail);
         GlobalScope:Set("UserId", UserDetail.id);
+        GlobalScope:Set("AssetSkinGoodsItemId", ParacraftPlayerEntityInfo.assetSkinGoodsItemId or 0);
         
         -- echo(UserDetail.paraMini, true);
         -- echo(UserDetail.schoolParaWorld, true);
@@ -295,7 +299,8 @@ _G.GetUserAssets = function()
                     modelUrl = tpl.modelUrl,
                     icon = GetItemIcon(tpl),
                     name = tpl.name,
-                });
+                    skin = tpl.extra and tpl.extra.skin;
+            });
             end
         end
     end
@@ -443,6 +448,7 @@ _G.UpdatePlayerEntityInfo = function()
     extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
     extra.ParacraftPlayerEntityInfo.asset = asset;
     extra.ParacraftPlayerEntityInfo.skin = skin;
+    extra.ParacraftPlayerEntityInfo.assetSkinGoodsItemId = GlobalScope:Get("AssetSkinGoodsItemId");
     keepwork.user.setinfo({
         router_params = {id = AuthUserId},
         extra = extra,

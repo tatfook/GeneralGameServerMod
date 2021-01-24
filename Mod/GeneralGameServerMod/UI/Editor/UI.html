@@ -2,6 +2,7 @@
     <div class="header-container">
         <div class="title center full-height">UI 编辑器</div>
         <div style="display: flex; margin-top: 2px;" class="full-height">
+            <div class="header-nav-btn" onclick="ClickHeaderNavBtn('file')">文件</div>
             <div class="header-nav-btn" onclick="ClickHeaderNavBtn('ui')">界面</div>
             <div class="header-nav-btn" onclick="ClickHeaderNavBtn('logic')">逻辑</div>
             <div class="header-nav-btn" onclick="ClickHeaderNavBtn('code')">代码</div>
@@ -11,6 +12,9 @@
         </div>
     </div>
     <div class="body-container">
+        <div v-show="HeaderNavIndex == 'file'" class="tab-item">
+            <FileManager></FileManager>
+        </div>
         <div v-show="HeaderNavIndex == 'ui'" class="tab-item">
             <div style="position: absolute; left: 2px; top: 0px; bottom: 0px; right: 300px;">
                 <div class="action-container">
@@ -54,11 +58,12 @@
 
 <script type="text/lua" src="%ui%/Editor/UI.lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+RegisterComponent("FileManager", "%ui%/Common/FileManager.html");
 RegisterComponent("StyleEditor", "%ui%/Editor/Style.html");
 RegisterComponent("AttrEditor", "%ui%/Editor/Attr.html");
 RegisterComponent("SetEditor", "%ui%/Editor/Set.html");
 
-HeaderNavIndex = "ui";             -- ui logic code
+HeaderNavIndex = "file";             -- ui logic code
 RightAsideNavIndex = "style";      -- style attr
 
 function ClickRightAsideNavBtn(index)
