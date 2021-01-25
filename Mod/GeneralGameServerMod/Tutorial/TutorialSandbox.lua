@@ -438,7 +438,7 @@ end
 function TutorialSandbox:ActivateBlock(x, y, z)
     local block = BlockEngine:GetBlock(x,y,z);
     if(block) then
-        block:OnActivated(x,y,z, fromEntity);
+        block:OnActivated(x,y,z, nil);
     end
 end
 

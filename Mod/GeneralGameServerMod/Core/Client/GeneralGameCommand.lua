@@ -159,7 +159,6 @@ function GeneralGameCommand:handleFileSyncCommond(cmd_text)
 	local filepath, cmd_text = CmdParser.ParseString(cmd_text);
 	local ip = IsDevEnv and "127.0.0.1" or (options.ip or "ggs.keepwork.com");
 	local port = options.port or 9000;
-	FileSync:SetIpPort(ip, port);
 	if (not filepath or filepath == "") then
 		FileSync:GetSyncFileList();
 	elseif (filepath == "refresh") then

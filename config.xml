@@ -56,7 +56,7 @@
   <World 
     areaSize=0
     minClientCount=50 
-    maxClientCount=200>
+    maxClientCount=100>
   </World>
   <!-- 平行世界配置, 平行世界以区域为单位进行管理和控制
     areaSize: 每个区域的大小
@@ -68,9 +68,9 @@
   <ParaWorld
     areaSize=128
     areaMinClientCount=50
-    areaMaxClientCount=200
-    minClientCount=500
-    maxClientCount=2000>
+    areaMaxClientCount=100
+    minClientCount=50
+    maxClientCount=100>
   </ParaWorld>
   <!-- 家园世界配置
     areaSize: 每个区域的大小
@@ -82,9 +82,9 @@
   <ParaWorldMini
     areaSize=128
     areaMinClientCount=50
-    areaMaxClientCount=200
+    areaMaxClientCount=100
     minClientCount=0
-    maxClientCount=200>
+    maxClientCount=100>
   </ParaWorldMini>
   <!-- 玩家配置
     sendPacketFrequency 合并多少秒内用户数据包 用户接受数据包频率, 

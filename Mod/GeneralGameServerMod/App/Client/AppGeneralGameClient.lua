@@ -69,7 +69,8 @@ function AppGeneralGameClient:Init()
         });
     elseif (GGS.IsDevEnv) then
         self:SetOptions({
-            serverIp = "127.0.0.1";
+            -- serverIp = "127.0.0.1";
+            serverIp = "106.52.146.54";
             serverPort = "9000";
         });
     else 
