@@ -17,7 +17,7 @@ local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local function ChangePlayerAsset(assetfile, skin)
 	assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
 	local playerEntity = GameLogic.GetPlayerController():GetPlayer();
-	if(assetfile and assetfile~=playerEntity:GetMainAssetPath()) then
+	if(assetfile and (assetfile~=playerEntity:GetMainAssetPath() or skin ~= playerEntity:GetSkin())) then
 		local oldAssetFile = playerEntity:GetMainAssetPath()
 		if(playerEntity.SetModelFile) then
 			playerEntity:SetModelFile(assetfile);
@@ -26,9 +26,10 @@ local function ChangePlayerAsset(assetfile, skin)
         end
         GameLogic.options:SetMainPlayerAssetName(assetfile);
         GetGlobalScope():Set("MainAsset", assetfile);
-        GetGlobalScope():Set("MainSkin", skin);
 		-- this ensure that at least one default skin is selected
         if (skin) then
+            GameLogic.options:SetMainPlayerSkins(skin);
+            GetGlobalScope():Set("MainSkin", skin);
             playerEntity:SetSkin(skin);
         else
 		    if(playerEntity:GetSkin()) then
