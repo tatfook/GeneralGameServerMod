@@ -28,7 +28,7 @@
     <ControlServer
       innerIp="10.28.18.2"
       innerPort="9000"
-      outerIp="120.132.120.175"
+      outerIp="106.52.146.54"
       outerPort="9000">
     </ControlServer>   
     <!-- 控制节点配置 内网Ip和Port用于服务端互联, 外网Ip和Port用于客户端与服务端互联 
@@ -40,7 +40,7 @@
     <WorkerServer
       innerIp="10.28.18.2"
       innerPort="9000"
-      outerIp="120.132.120.175"
+      outerIp="106.52.146.54"
       outerPort="9000">
     </WorkerServer>
   </Server>
