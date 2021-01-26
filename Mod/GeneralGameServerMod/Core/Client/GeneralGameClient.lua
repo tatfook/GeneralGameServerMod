@@ -35,7 +35,7 @@ local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.Tool
 
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
-GeneralGameClient:Property("World", nil);  -- 当前世界
+GeneralGameClient:Property("World", nil);                  -- 当前世界
 GeneralGameClient:Property("MainPlayerEntityScale", nil);  -- 玩家实体大小
 GeneralGameClient:Property("MainPlayerEntityAsset", nil);  -- 玩家实体模型
 GeneralGameClient:Property("MainPlayerEntitySkin", nil);   -- 玩家实体模型皮肤

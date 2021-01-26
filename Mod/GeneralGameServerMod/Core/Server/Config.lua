@@ -132,6 +132,16 @@ function Config:LoadConfig(filename)
     local World = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/World");
     CopyXmlAttr(self.World, World and World.attr);
 
+    -- ParaWorld 世界配置
+    self.ParaWorld = self.ParaWorld or {};
+    local ParaWorld = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/ParaWorld");
+    CopyXmlAttr(self.ParaWorld, ParaWorld and ParaWorld.attr);
+    
+    -- ParaWorld 世界配置
+    self.ParaWorldMini = self.ParaWorldMini or {};
+    local ParaWorldMini = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/ParaWorldMini");
+    CopyXmlAttr(self.ParaWorldMini, ParaWorldMini and ParaWorldMini.attr);
+    
     -- 控制器服务配置
     local ControlServer = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Server/ControlServer");
     CopyXmlAttr(self.ControlServer, ControlServer and ControlServer.attr);

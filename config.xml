@@ -169,7 +169,7 @@
   <World 
     areaSize=0
     minClientCount=50 
-    maxClientCount=200>
+    maxClientCount=100>
   </World>
   <!-- 平行世界配置, 平行世界以区域为单位进行管理和控制
     areaSize: 每个区域的大小
@@ -181,9 +181,9 @@
   <ParaWorld
     areaSize=128
     areaMinClientCount=50
-    areaMaxClientCount=200
-    minClientCount=500
-    maxClientCount=2000>
+    areaMaxClientCount=100
+    minClientCount=50
+    maxClientCount=100>
   </ParaWorld>
   <!-- 家园世界配置
     areaSize: 每个区域的大小
@@ -195,9 +195,9 @@
   <ParaWorldMini
     areaSize=128
     areaMinClientCount=50
-    areaMaxClientCount=200
+    areaMaxClientCount=100
     minClientCount=0
-    maxClientCount=200>
+    maxClientCount=100>
   </ParaWorldMini>
   <!-- 玩家配置
     minAliveTime 最小存活时间 默认1分钟, 为玩家离线缓存的必要条件. 不支持离线缓存可忽略
@@ -249,6 +249,27 @@
     minClientCount=0 
     maxClientCount=10>
   </World>
+  <ParaWorld
+    areaSize=128
+    areaMinClientCount=50
+    areaMaxClientCount=100
+    minClientCount=50
+    maxClientCount=100>
+  </ParaWorld>
+  <!-- 家园世界配置
+    areaSize: 每个区域的大小
+    areaMinClientCount: 单区域的最小用户数
+    areaMaxClientCount: 单区域的最大用户数
+    minClientCount: 世界最小客户端数
+    maxClientCount: 世界最大客户端数
+  -->
+  <ParaWorldMini
+    areaSize=128
+    areaMinClientCount=50
+    areaMaxClientCount=100
+    minClientCount=0
+    maxClientCount=100>
+  </ParaWorldMini>
   <Player
     sendPacketFrequency=0ms
     minAliveTime=60s
