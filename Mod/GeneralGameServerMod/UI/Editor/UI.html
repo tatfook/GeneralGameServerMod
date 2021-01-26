@@ -52,8 +52,7 @@
         </div>
 
         <div v-show="HeaderNavIndex == 'code'" class="tab-item text-code">
-            <div style="position: absolute; right: 10px; top: 10px; width: 200px; height: 100px; font-size: 24px;" class="action-btn" onclick=ClickCopyCutBoard>复制到剪切板</div>
-            {{AllCode}}
+            <code></code>
         </div>
 
         <div v-show="HeaderNavIndex == 'exec'" class="tab-item text-code">
@@ -69,6 +68,7 @@ RegisterComponent("FileManager", "%ui%/Editor/FileManager.html");
 RegisterComponent("StyleEditor", "%ui%/Editor/Style.html");
 RegisterComponent("AttrEditor", "%ui%/Editor/Attr.html");
 RegisterComponent("SetEditor", "%ui%/Editor/Set.html");
+RegisterComponent("Code", "%ui%/Editor/Code.html");
 
 HeaderNavIndex = "ui";             -- ui logic code exec file
 RightAsideNavIndex = "style";      -- style attr
@@ -82,10 +82,6 @@ function ClickHeaderNavBtn(index)
     HeaderNavIndex = index;
 end 
 
-function ClickCopyCutBoard()
-    ParaMisc.CopyTextToClipboard(GetGlobalScope():Get("AllCode"));
-    Tip("代码已复制到剪切板");
-end 
 
 </script>
 
@@ -131,6 +127,8 @@ end
 
 .action-container {
     display: flex;
+    padding-top: 12px;
+    padding-left: 20px;
 }
 
 .action-btn {

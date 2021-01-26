@@ -12,6 +12,7 @@ local Blockly = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blockly.lua");
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
+local Blocks = NPL.load("./Blocks/Blocks.lua", IsDevEnv);
 local VueBlocks = NPL.load("./Blocks/VueBlocks.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
@@ -26,7 +27,7 @@ Blockly:Property("Name", "Blockly");
 Blockly:Property("EditorElement");            -- 编辑元素 用户输入
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 Blockly:Property("FocusUI");                  -- 聚焦UI
-Blockly:Property("DragBlock");                -- 拖拽块
+Blockly:Property("CurrentBlock");             -- 当前拽块
 Blockly:Property("Language");                 -- 语言
 Blockly:Property("FileManager");              -- 文件管理器
 
@@ -55,6 +56,9 @@ function Blockly:Init(xmlNode, window, parent)
     if (self:GetAttrStringValue("type") == "vue") then
         allBlocks = VueBlocks.GetAllBlocks();
         toolboxBlockList = VueBlocks.GetToolBoxBlockList();
+    else
+        allBlocks = Blocks.GetAllBlocks();
+        toolboxBlockList = Blocks.GetToolBoxBlockList();
     end
 
     for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end
@@ -95,7 +99,7 @@ end
 -- 清空所有块
 function Blockly:ClearBlocks()
     self.blocks = {};
-    self:SetDragBlock(nil);
+    self:SetCurrentBlock(nil);
 end
 
 -- 遍历
@@ -154,7 +158,7 @@ function Blockly:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
     -- 设置绘图类
     -- Shape:SetPainter(painter);
-    local dragBlock = self:GetDragBlock();
+    local CurrentBlock = self:GetCurrentBlock();
     local toolboxWidth = Const.ToolBoxWidthUnitCount * Const.UnitSize;
     painter:Translate(x, y);
 
@@ -162,7 +166,7 @@ function Blockly:RenderContent(painter)
     painter:SetClipRegion(toolboxWidth, 0, w - toolboxWidth, h);
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
-        if (dragBlock ~= block) then
+        if (CurrentBlock ~= block) then
             block:Render(painter);
             painter:Flush();
         end
@@ -172,9 +176,9 @@ function Blockly:RenderContent(painter)
 
     self.toolbox:Render(painter);
 
-    if (dragBlock) then
+    if (CurrentBlock) then
         painter:Translate(self.offsetX, self.offsetY);
-        dragBlock:Render(painter);
+        CurrentBlock:Render(painter);
         painter:Flush();
         painter:Translate(-self.offsetX, -self.offsetY);
     end
@@ -316,8 +320,47 @@ function Blockly:IsInnerDeleteArea(x, y)
     return false;
 end
 
+-- 鼠标滚动事件
 function Blockly:OnMouseWheel(event)
     if (self:IsInnerToolBox(event)) then return self.toolbox:OnMouseWheel(event) end
+end
+
+-- 键盘事件
+function Blockly:OnKeyDown(event)
+    if (not self:IsFocus()) then return end
+    event:accept();
+
+	local keyname = event.keyname;
+	if (keyname == "DIK_RETURN") then 
+	-- elseif (event:IsKeySequence("Undo")) then self:handleUndo(event)
+	-- elseif (event:IsKeySequence("Redo")) then self:handleRedo(event)
+	elseif (event:IsKeySequence("Copy")) then self:handleCopy(event)
+	elseif (event:IsKeySequence("Paste")) then self:handlePaste(event, "Clipboard");
+    elseif (event:IsKeySequence("Delete")) then self:handleDelete(event)
+    else -- 处理普通输入
+	end
+end
+
+-- 删除当前块
+function Blockly:handleDelete()
+    local block = self:GetCurrentBlock();
+    if (not block) then return end
+    self:RemoveBlock(block);
+    self:OnDestroyBlock(block);
+    self:SetCurrentBlock(nil);
+end
+
+-- 复制当前块
+function Blockly:handlePaste()
+    local block = self:GetCurrentBlock();
+    if (not block) then return end
+    local cloneBlock = block:Clone();
+    local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+    cloneBlock:SetLeftTopUnitCount(leftUnitCount + 4, topUnitCount + 4);
+    cloneBlock:UpdateLeftTopUnitCount();
+
+    self:AddBlock(cloneBlock);
+    self:SetCurrentBlock(cloneBlock);
 end
 
 -- 获取代码

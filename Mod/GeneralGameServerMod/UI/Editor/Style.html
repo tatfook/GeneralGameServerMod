@@ -74,10 +74,10 @@ end
 function AddHoverStyle()
     if (hoverStyleName == "" or hoverStyleValue == "") then return end
      
-    if (not CurrentListItemData.style[hoverStyleName]) then
-        table.insert(styleList, {styleName = hoverStyleName, styleValue = hoverStyleValue});
+    if (not CurrentListItemData.hoverStyle[hoverStyleName]) then
+        table.insert(hoverStyleList, {styleName = hoverStyleName, styleValue = hoverStyleValue});
     else 
-        for _, item in ipairs(styleList) do 
+        for _, item in ipairs(hoverStyleList) do 
             if (item.styleName == hoverStyleName) then
                 item.styleValue = hoverStyleValue;
             end

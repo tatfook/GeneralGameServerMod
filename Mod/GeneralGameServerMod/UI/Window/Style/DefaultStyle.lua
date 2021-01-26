@@ -34,7 +34,10 @@ local DefaultStyleString = [[
         width: 100%;
     }
     .btn {
-        background-color: #e6e6e6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 5px;
     }
     .btn:hover {
         background-color: #ffffff;

@@ -343,8 +343,8 @@ function Style.GetStyleValue(name, value)
 			value = tonumber(string.match(value, "^([%+%-]?%d+)px$"));
 		elseif (string.match(value, "^[%+%-]?%d+%%$")) then  -- 百分比
 			value = value;
-		else 
-			value = tonumber(value);
+		else
+			-- value = tonumber(value);
 		end
 	elseif (number_fields[name]) then
 		value = tonumber(string.match(value, "[%+%-]?%d+"));

@@ -4,6 +4,7 @@ local GlobalScope = GetGlobalScope();
 
 _G.Directory = "";
 _G.FileMap = {};
+_G.DefaultFileName = "index";
 
 FileList = {};          -- 目录
 FileName = "";          -- 新增文件名
@@ -17,40 +18,6 @@ end
 
 local function GetCurrentFileName()
     return GlobalScope:Get("CurrentFileName");
-end
-
--- 切换目录
-local function SwitchDirectory(directory)
-    if (not directory or directory == "") then return end
-
-    directory = ToCanonicalFilePath(ParaWorld.GetWorldDirectory() .. "/" .. directory .. "/");
-
-    if (_G.Directory == directory) then return end
-
-    print("UI 目录:", directory);
-    ParaIO.CreateDirectory(directory);
-
-    _G.Directory = directory;
-
-    for filename in lfs.dir(directory) do
-        if (filename ~= "." and filename ~= "..") then
-            local filepath = ToCanonicalFilePath(directory .. "/" .. filename);
-            local fileattr = lfs.attributes(filepath);
-
-            if (fileattr.mode ~= "directory" and not string.match(filename, "%.html$")) then
-                _G.FileMap[filename] = {
-                    filename = filename,
-                    filepath = filepath,
-                };
-            end
-        end
-    end
-
-    local filelist = {};
-    for key, file in pairs(_G.FileMap) do
-        table.insert(filelist, {filename = file.filename});
-    end
-    FileList = filelist;
 end
 
 -- 新建文件
@@ -116,10 +83,51 @@ local function EditFile(filename)
     _G.LoadFromText(LoadFile(filename));
 end
 
+-- 切换目录
+local function SwitchDirectory(directory)
+    if (not directory or directory == "") then return end
+
+    directory = ToCanonicalFilePath(ParaWorld.GetWorldDirectory() .. "/" .. directory .. "/");
+
+    if (_G.Directory == directory) then return end
+
+    print("UI 目录:", directory);
+    ParaIO.CreateDirectory(directory);
+
+    _G.Directory = directory;
+
+    for filename in lfs.dir(directory) do
+        if (filename ~= "." and filename ~= "..") then
+            local filepath = ToCanonicalFilePath(directory .. "/" .. filename);
+            local fileattr = lfs.attributes(filepath);
+
+            if (fileattr.mode ~= "directory" and not string.match(filename, "%.html$")) then
+                _G.FileMap[filename] = {
+                    filename = filename,
+                    filepath = filepath,
+                };
+            end
+        end
+    end
+
+    -- 新建默认文件名
+    NewFile(DefaultFileName);
+    
+    local filelist = {};
+    for key, file in pairs(_G.FileMap) do
+        table.insert(filelist, {filename = file.filename});
+    end
+    FileList = filelist;
+end
+
 _G.SaveCurrentFile = function()
     local CurrentFileName = GetCurrentFileName();
     SaveFile(CurrentFileName, _G.SaveToText());
     SaveHtml(CurrentFileName, _G.GenerateCode())
+end
+
+_G.EditDefaultFile = function()
+    EditFile(DefaultFileName);
 end
 
 function ClickNewBtn()
@@ -135,6 +143,9 @@ end
 function ClickDeleteBtn(file, index)
     table.remove(FileList, index);
     DeleteFile(file.filename);
+    if (file.filename == GetCurrentFileName()) then
+        EditFile(DefaultFileName);
+    end
 end
 
 function ClickEditBtn(file, index)
@@ -226,24 +237,12 @@ end
 --     end
 -- end
 
--- -- 获取默认文件
--- function FileManager:GetDefaultFile()
---     return self.files[self:GetDefaultFileName()];
--- end
-
--- -- 编辑默认文件
--- function FileManager:EditDefaultFile()
---     return self:EditFile(self:GetDefaultFileName());
--- end 
-
 -- -- 获取文件集
 -- function FileManager:GetFileList()
 --     local filelist = {};
 --     for filename in pairs(self.files) do table.insert(filelist, {filename = filename}) end
 --     return filelist;
 -- end
-
-
 
 -- -- 加载所有文件
 -- function FileManager:LoadAll()

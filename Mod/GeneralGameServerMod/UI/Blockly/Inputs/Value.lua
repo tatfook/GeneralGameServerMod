@@ -107,7 +107,7 @@ function Value:GetMouseUI(x, y, event)
 end
 
 function Value:IsCanEdit()
-    return true;
+    return if_else(self:GetOption().editable == false, false, true);
 end
 
 function Value:GetShadowType()
@@ -148,7 +148,7 @@ end
 
 function Value:GetValueAsString()
     if (not self:GetInputBlock()) then 
-        if (self:GetShadowType() == "math_number") then
+        if (self:GetShadowType() == "math_number" or self:GetShadowType() == "field_number") then
             return string.format('%s', self:GetValue());
         else 
             return string.format('"%s"', self:GetValue());
@@ -156,3 +156,11 @@ function Value:GetValueAsString()
     end
     return self:GetInputBlock():GetBlockCode();
 end
+
+
+-- function Value:GetFieldValue() 
+--     if (not self:GetInputBlock()) then 
+--         return self:GetValue();
+--     end
+--     return self:GetInputBlock():GetBlockCode();
+-- end

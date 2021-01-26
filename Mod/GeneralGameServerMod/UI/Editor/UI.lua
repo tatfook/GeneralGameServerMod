@@ -61,11 +61,19 @@ end
 
 _G.WindowItemData = GenerateWindowItemData();
 
-GlobalScope:Set("CurrentElementId", "");
-GlobalScope:Set("ElementList", {});
-GlobalScope:Set("AllCode", "");
 
 _G.ListItemDataMap[WindowItemData.id] = WindowItemData;
+
+_G.Reset = function()
+    GlobalScope:Set("CurrentElementId", "");
+    GlobalScope:Set("ElementList", {});
+    GlobalScope:Set("AllCode", "");
+    GlobalScope:Set("CssCode", "");
+    GlobalScope:Set("ScriptCode", "");
+    GlobalScope:Set("ScriptFileName", "");
+end
+
+_G.Reset();
 
 local function SetCurrentElement(curElement)
     _G.CurrentElement = curElement;
@@ -107,6 +115,8 @@ function OnReady()
     _G.WindowElement = GetRef("window");
     _G.BlocklyElement = GetRef("blockly");
     SetCurrentElement(_G.WindowElement);
+
+    _G.EditDefaultFile();
 end
 
 _G.GetListItemById = function(id)
@@ -144,10 +154,12 @@ end
 
 function ClickSaveBtn()
     _G.SaveCurrentFile();
+    Tip("保存成功");
 end
 
 _G.GenerateCode = function()
     local allcode = "";
+    local scopedCssText = "";
     -- local IdSuffix = os.time();
     -- template
     local function generateElementCode(el, item)
@@ -156,8 +168,16 @@ _G.GenerateCode = function()
         local left, top = el:GetPosition();
         item.style.left = left .. "px";
         item.style.top = top .. "px";
+
+        local hoverStyleString = GetStyleString(item.hoverStyle);
+        if (hoverStyleString ~= "") then scopedCssText = string.format(".%s { %s }\n%s", item.id, hoverStyleString, scopedCssText) end
+
+        local oldClassString = item.attr["class"];
+        item.attr["class"] = string.format("%s %s", item.id, oldClassString or "");  -- 追加ID为类名
         local attrString = "";
         for key, val in pairs(item.attr) do attrString = string.format('%s="%s" %s', key, val, attrString) end
+        item.attr["class"] = oldClassString;
+
         local vbindAttrString = "";
         for key, val in pairs(item.vbind) do vbindAttrString = string.format('v-bind:%s="%s" %s', key, val, vbindAttrString) end
         local textString = "";
@@ -180,7 +200,13 @@ _G.GenerateCode = function()
 
     -- script
     local rawcode, prettycode = BlocklyElement:GetCode();
-    allcode = allcode .. '\n<script type="text/lua">\n' .. prettycode .. '</script>\n';
+    local GlobalCssCode = GlobalScope:Get("CssCode");
+    local scriptCode = GlobalScope:Get("ScriptCode");
+    if (scriptCode ~= "") then prettycode = prettycode .. "\n" .. scriptCode .. "\n" end
+    local scriptFileName = GlobalScope:Get("ScriptFileName");
+    local scriptStartTag = '\n<script type="text/lua">\n';
+    if (scriptFileName ~= "") then scriptStartTag = string.format('\n<script type="text/lua" src="%s">\n', scriptFileName) end
+    allcode = allcode .. scriptStartTag .. prettycode .. '</script>\n\n<style scoped=true>\n' .. scopedCssText .. "\n" .. GlobalCssCode .. '\n</style>';
     GlobalScope:Set("AllCode", allcode);
 
     -- print(allcode);
@@ -205,6 +231,8 @@ end
 
 -- 从文本加载
 _G.LoadFromText = function (text)
+    _G.Reset();
+
     local obj = NPL.LoadTableFromString(text) or {};
     -- echo(obj, true);
 

@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: Lua
 use the lib:
 -------------------------------------------------------
-local VueBlocks = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks/VueBlocks.lua");
+local Blocks = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks/Blocks.lua");
 -------------------------------------------------------
 ]]
 
@@ -17,7 +17,7 @@ local EventBlocks = NPL.load("./Event.lua", IsDevEnv);
 local LogBlocks = NPL.load("./Log.lua", IsDevEnv);
 local HelperBlocks = NPL.load("./Helper.lua", IsDevEnv);
 
-VueBlocks = NPL.export();
+Blocks = NPL.export();
 
 local AllBlocks = {};
 
@@ -36,11 +36,11 @@ AddToAllBlocks(LogBlocks);
 AddToAllBlocks(HelperBlocks);
 
 
-function VueBlocks.GetAllBlocks()
+function Blocks.GetAllBlocks()
     return AllBlocks;
 end
 
-function VueBlocks.GetToolBoxBlockList()
+function Blocks.GetToolBoxBlockList()
     local list = {};
     for _, block in ipairs(AllBlocks) do table.insert(list, #list + 1, block.type) end
     return list;

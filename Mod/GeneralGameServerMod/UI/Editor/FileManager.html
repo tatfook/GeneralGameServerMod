@@ -9,8 +9,8 @@
     <div class="filelist-container">
         <div v-for="file, index in FileList" class="file-container">
             <div style="width: 200px; height: 100%; display: flex; align-items: center; color: #000000;">{{file.filename}}</div>
-            <div onclick="ClickDeleteBtn(file, index)" class="btn">删除</div>
             <div onclick="ClickEditBtn(file, index)" class="btn">{{file.filename == CurrentFileName and "正在编辑" or "编辑"}}</div>
+            <div v-show="file.filename ~= DefaultFileName" onclick="ClickDeleteBtn(file, index)" class="btn">删除</div>
         </div>
     </div>
 </template>

@@ -263,6 +263,7 @@ function LoadUserInfo()
        
         local ParacraftPlayerEntityInfo = UserDetail.extra and UserDetail.extra.ParacraftPlayerEntityInfo or {};
         if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
+        if (ParacraftPlayerEntityInfo.skin) then GlobalScope:Set("MainSkin", ParacraftPlayerEntityInfo.skin) end 
 
         -- 先拉取第一页
         NextPageProjectList();

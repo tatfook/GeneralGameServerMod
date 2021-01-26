@@ -9,8 +9,12 @@ title = GetAttrValue("title", "窗口标题", "string");
 
 -- 关闭窗口
 function close()
-    CloseWindow();
-    if (type(_G.close) == "function") then _G.close() end
+    local closeFunc = GetAttrFunctionValue("close");
+    if (type(closeFunc) == "function") then 
+        closeFunc();
+    else
+        CloseWindow();
+    end
 end
 
 -- 组件解析完成

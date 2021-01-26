@@ -322,7 +322,7 @@ function Block:OnMouseMove(event)
 
         block.isDragging = true;
         block:GetBlockly():CaptureMouse(block);
-        block:GetBlockly():SetDragBlock(block);
+        block:GetBlockly():SetCurrentBlock(block);
     end
     local XUnitCount = math.floor((x - block.startX) / UnitSize);
     local YUnitCount = math.floor((y - block.startY) / UnitSize);
@@ -347,11 +347,14 @@ function Block:OnMouseUp(event)
         if (self:GetBlockly():IsInnerDeleteArea(event.x, event.y)) then
             self:GetBlockly():RemoveBlock(self);
             self:GetBlockly():OnDestroyBlock(self);
+            self:GetBlockly():SetCurrentBlock(nil);
+            self:GetBlockly():ReleaseMouseCapture();
+            return ;
         else
             self:CheckConnection();
         end
     end
-    self:GetBlockly():SetDragBlock(nil);
+    self:GetBlockly():SetCurrentBlock(self);
     self.isMouseDown = false;
     self.isDragging = false;
     self:GetBlockly():ReleaseMouseCapture();
