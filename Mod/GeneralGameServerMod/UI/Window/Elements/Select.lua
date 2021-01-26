@@ -192,9 +192,11 @@ function Select:OnValueAttrValueChange(attrValue)
     local ListBox = self:GetListBoxElement();
     for _, childElement in ipairs(ListBox.childrens) do
         if (childElement:GetValue() == attrValue) then
-            self:SetSelectedOptionElement(childElement);
+            return self:SetSelectedOptionElement(childElement);
         end
     end
+    self:SetValue(attrValue);
+    self:SetLabel(attrValue);
 end
 
 function Select:GetLabelByValue(value)
@@ -226,6 +228,7 @@ function Select:OnSelect(option)
     self:SetFocus(nil);
     self:OnFocusOut();
     self:CallAttrFunction("onselect", nil, value, label);
+    self:CallAttrFunction("onchange", nil, value, label);
 end
 
 function Select:OnFocusIn(event)
@@ -265,7 +268,7 @@ function Select:RenderContent(painter)
         painter:SetPen("#A8A8A8"); -- placeholder color;
     end
     text = _guihelper.TrimUtf8TextByWidth(text, w - ArrowAreaSize, self:GetFont());
-    painter:DrawText(x, y + (h - fontSize) / 2 - fontSize / 6, text or "");
+    painter:DrawText(x, y + (h - fontSize) / 2, text or "");
 end
 
 local ArrowSize = 12;

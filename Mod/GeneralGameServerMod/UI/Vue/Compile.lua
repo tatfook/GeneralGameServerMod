@@ -444,6 +444,7 @@ function Compile:VModel(element)
     end, true);
     -- 注意死循环
     element:SetAttrValue("onchange", function(val)
+        element:GetAttr()["value"] = val;
         local keys = commonlib.split(vmodel, "%.");
         local subscope, size = scope, #keys;
         for i = 1, size - 1 do subscope = scope[keys[i]] end

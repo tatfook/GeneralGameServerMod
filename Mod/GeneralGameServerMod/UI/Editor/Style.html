@@ -1,27 +1,27 @@
 <template class="style-container">
     <div class="title">默认样式</div>
     <div class="style-item">
-        <input placeholder="样式名" v-model="styleName"></input>
+        <select placeholder="样式名" v-model="styleName" v-bind:options="StyleOptions"></select>
         <input placeholder="样式值" v-model="styleValue"></input>
         <div class="style-item-btn" onclick=AddStyle>添加</div>
     </div>
     <div class="style-list">
         <div class="style-list-item" v-for="style, index in styleList">
-            <input v-model="style.styleName" onkeydown.enter="SetStyleValue(style.styleName, style.styleValue)"></input>
+            <input readonly=true v-bind:value="GetStyleAliasName(style.styleName)"></input>
             <input v-model="style.styleValue" onkeydown.enter="SetStyleValue(style.styleName, style.styleValue)"></input>
             <div class="style-item-btn" style="height: 30px" onclick="RemoveStyle(style, index)">移除</div>
         </div>
     </div>
     <div class="title">悬浮样式</div>
     <div class="style-item">
-        <input placeholder="样式名" v-model="hoverStyleName"></input>
+        <select placeholder="样式名" v-model="hoverStyleName" v-bind:options="StyleOptions"></select>
         <input placeholder="样式值" v-model="hoverStyleValue"></input>
         <div class="style-item-btn" onclick=AddHoverStyle>添加</div>
     </div>
     <div class="style-list">
         <div class="style-list-item" v-for="style, index in hoverStyleList">
-            <input v-bind:value="style.styleName"></input>
-            <input v-bind:value="style.styleValue"></input>
+            <input readonly=true v-bind:value="GetStyleAliasName(style.styleName)"></input>
+            <input v-model="style.styleValue" onkeydown.enter="SetStyleValue(style.styleName, style.styleValue)"></input>
             <div class="style-item-btn" style="height: 30px" onclick="RemoveHoverStyle(style, index)">移除</div>
         </div>
     </div>
@@ -30,6 +30,8 @@
 <script type="text/lua">
 local GlobalScope = GetGlobalScope();
 
+_G.StyleOptions = {{"宽", "width"}, {"高", "height"}, {"X", "left"}, {"Y", "top"}, {"字体大小", "font-size"}, {"字体颜色", "color"}, {"背景颜色", "background-color"}};
+
 styleName = "";
 styleValue = "";
 styleList = {};
@@ -37,6 +39,13 @@ styleList = {};
 hoverStyleName = "";
 hoverStyleValue = "";
 hoverStyleList = {};
+
+function GetStyleAliasName(styleName) 
+    for _, item in ipairs(StyleOptions) do
+        if (item[2] == styleName) then return item[1] end
+    end
+    return styleName;
+end 
 
 function AddStyle()
     if (styleName == "" or styleValue == "") then return end

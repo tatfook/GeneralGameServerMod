@@ -27,7 +27,6 @@ local Http = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Http.lua", IsDevEn
 local Promise = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Promise.lua", IsDevEnv);
 local Date = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Date.lua");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
--- local Page = NPL.load("./Page/Page.lua", IsDevEnv);
 
 local TutorialSandbox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -106,7 +105,7 @@ function TutorialSandbox:Reset(bForceReset)
 
     GameLogic.options.CanJumpInWater = true;
     GameLogic.options.CanJump = true;
-    GameLogic.options.CanJumpInAir = true;
+    GameLogic.options.CanJumpInAir = false;
 
     self.OnWorldLoadedCallBack = nil;
     self.OnWorldUnloadedCallBack = nil;

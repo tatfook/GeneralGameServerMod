@@ -1,26 +1,26 @@
 <template class="attr-container">
     <div class="title">动态属性</div>
     <div class="attr-item">
-        <input placeholder="属性名" v-model="attrDynamicName"></input>
+        <select placeholder="属性名" v-model="attrDynamicName" v-bind:options="AttrOptions"></select>
         <input placeholder="属性值" v-model="attrDynamicValue"></input>
         <div class="attr-item-btn" onclick=AddDynamicAttr>添加</div>
     </div>
     <div class="attr-list">
         <div class="attr-list-item" v-for="attr, index in dynamicAttrList">
-            <input v-bind:value="attr.attrName"></input>
+            <input readonly=true v-bind:value="GetAttrAliasName(attr.attrName)"></input>
             <input v-bind:value="attr.attrValue"></input>
             <div class="attr-item-btn" style="height: 30px" onclick="RemoveDynamicAttr(attr, index)">移除</div>
         </div>
     </div>
     <div class="title">静态属性</div>
     <div class="attr-item">
-        <input placeholder="属性名" v-model="attrName"></input>
+        <select placeholder="属性名" v-model="attrName" v-bind:options="AttrOptions"></select>
         <input placeholder="属性值" v-model="attrValue"></input>
         <div class="attr-item-btn" onclick=AddAttr>添加</div>
     </div>
     <div class="attr-list">
         <div class="attr-list-item" v-for="attr, index in attrList">
-            <input v-bind:value="attr.attrName"></input>
+            <input readonly=true v-bind:value="GetAttrAliasName(attr.attrName)"></input>
             <input v-bind:value="attr.attrValue"></input>
             <div class="attr-item-btn" style="height: 30px" onclick="RemoveAttr(attr, index)">移除</div>
         </div>
@@ -30,6 +30,8 @@
 <script type="text/lua">
 local GlobalScope = GetGlobalScope();
 
+_G.AttrOptions = {{"鼠标点击", "onclick"}, {"鼠标按下", "onmousedown"}, {"鼠标移动", "onmousemove"}, {"鼠标松开", "onmouseup"}};
+
 attrDynamicName = "";
 attrDynamicValue = "";
 dynamicAttrList = {};
@@ -37,6 +39,13 @@ dynamicAttrList = {};
 attrName = "";
 attrValue = "";
 attrList = {};
+
+function GetAttrAliasName(attrName)
+    for _, item in ipairs(AttrOptions) do
+        if (item[2] == attrName) then return item[1] end
+    end
+    return attrName;
+end 
 
 function AddDynamicAttr()
     if (attrDynamicValue == "" or attrName == "style" or attrDynamicName == "") then return end

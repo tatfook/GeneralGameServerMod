@@ -24,7 +24,7 @@ TutorialContext:Property("ModeCanDestroyBlock", true);
 TutorialContext:Property("ModeCanRightClickToCreateBlock", true);
 TutorialContext:Property("ModeHasJumpRestriction", true);
 TutorialContext:Property("CanFly", false, "IsCanFly");
-TutorialContext:Property("CanJump", false, "IsCanJump");
+TutorialContext:Property("CanJump", true, "IsCanJump");
 TutorialContext:Property("CanClickScene", true, "IsCanClickScene");
 
 
