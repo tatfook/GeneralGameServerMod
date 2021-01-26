@@ -123,8 +123,6 @@ function TutorialContext:handleMouseEvent(event)
 		-- 左击 或者 功能键按下
 		local handBlockId = self:GetTutorialSandbox():GetBlockInRightHand();
 		local data = {event_type = event_type, blockX = result.blockX or 0, blockY = result.blockY or 0, blockZ = result.blockZ or 0, blockId = result.block_id or 0, handBlockId = handBlockId or 0, mouseKeyState = GetMouseKeyState(event), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
-		echo({data, result.entity == nil});
-		print(result.block_id, result.entity == nil)
 		if(not self:GetTutorialSandbox():IsCanClick(data)) then 
 			return event:accept();
 		end
