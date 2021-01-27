@@ -27,8 +27,18 @@ end
 
 function ChangeImageUrl(val)
     background = val;
-    CurrentListItemData.style["background"] = string.format("url(%s)", background);
-    CurrentElement:SetStyleValue("background", background);
+    if (background == "") then
+        CurrentListItemData.style["background"] = nil;
+        CurrentElement:SetStyleValue("background", nil);
+    else
+        if (not string.match(background, "^url%(")) then
+            CurrentListItemData.style["background"] = string.format("url(%s)", background);
+        else 
+            CurrentListItemData.style["background"] = background;
+        end
+        CurrentElement:SetStyleValue("background", background);
+    end
+    
 end 
 
 function OnTextChange(val)

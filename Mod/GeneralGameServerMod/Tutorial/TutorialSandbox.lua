@@ -79,7 +79,7 @@ function TutorialSandbox:RegisterNetDataCallBack(callback)
 end
 
 -- 重置教学环境
-function TutorialSandbox:Reset(bForceReset)
+function TutorialSandbox:Reset(bForceReset, bActiveTutorialContext)
     if (self.isReseted and not bForceReset) then return end
 
     self.isReseted = true;
@@ -109,7 +109,8 @@ function TutorialSandbox:Reset(bForceReset)
 
     self.OnWorldLoadedCallBack = nil;
     self.OnWorldUnloadedCallBack = nil;
-    self:ActiveTutorialContext();
+    
+    if (not bActiveTutorialContext or bActiveTutorialContext) then self:ActiveTutorialContext() end
 end
 
 -- 恢复默认环境

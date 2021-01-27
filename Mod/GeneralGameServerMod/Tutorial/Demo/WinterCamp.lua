@@ -39,7 +39,7 @@ local OpeningCeremonyMovieActiveBlockPos = {x = 19139, y = 12, z = 19189};      
 local OpeningCeremonyTime = 150;
 local WinterCamp = gettable("WinterCamp");
 
-TutorialSandbox:Reset();
+TutorialSandbox:Reset(nil, false);
 
 function GetCurrentTimeStamp()
     return TutorialSandbox:GetTimeStamp() - ClientTimeStamp + ServerTimeStamp;
