@@ -94,6 +94,46 @@ function GetSchoolId()
     return TutorialSandbox:GetUserInfo().schoolId or 0;
 end
 
+-- 播放导游电影
+function PlayGuideMovies()
+    local movieBlockPosList = {
+        -- 导游电影方块坐标列表
+        19328,10,19464,
+        19328,10,19463,
+        -- ...
+        19328,10,19455,
+    };
+    for _, pos in ipairs(movieBlockPosList) do
+        setMovie("curmovie", pos[1], pos[2], pos[3]);
+        playMovie("curmovie",  0,  -1);
+        stopMovie("curmovie");
+    end
+end
+
+registerBroadcastEvent("PlayGuideMovies", function(msg)
+    PlayGuideMovies();
+end);
+
+-- 播放开幕电影
+function PlayOpeningCeremonyMovies()
+    local movieBlockPosList = {
+        -- 导游电影方块坐标列表
+        19328,10,19464,
+        19328,10,19463,
+        -- ...
+        19328,10,19455,
+    };
+    for _, pos in ipairs(movieBlockPosList) do
+        setMovie("curmovie", pos[1], pos[2], pos[3]);
+        playMovie("curmovie",  0,  -1);
+        stopMovie("curmovie");
+    end
+end
+
+registerBroadcastEvent("PlayOpeningCeremonyMovies", function(msg)
+    PlayOpeningCeremonyMovies();
+end);
+
 -- 开营典礼
 function WinterCamp:OpeningCeremony(second)
     TutorialSandbox:SetKeyboardMouse(false, false);
@@ -107,8 +147,9 @@ function WinterCamp:OpeningCeremony(second)
     if (IsAllowInAuditorium()) then
         -- playMovie("OpeningCeremony", second * 1000, -1);
         -- stopMovie("OpeningCeremony");
-        TutorialSandbox:ActivateBlock(OpeningCeremonyMovieActiveBlockPos.x, OpeningCeremonyMovieActiveBlockPos.y, OpeningCeremonyMovieActiveBlockPos.z);
-        wait(OpeningCeremonyTime);
+        -- TutorialSandbox:ActivateBlock(OpeningCeremonyMovieActiveBlockPos.x, OpeningCeremonyMovieActiveBlockPos.y, OpeningCeremonyMovieActiveBlockPos.z);
+        -- wait(OpeningCeremonyTime);
+        PlayOpeningCeremonyMovies();
     end
     TutorialSandbox:SetKeyboardMouse(true, true);
 end
@@ -415,6 +456,7 @@ end
 
 registerStopEvent(function()
     TutorialSandbox:Restore();
-end)
+end);
+
 
 Main();

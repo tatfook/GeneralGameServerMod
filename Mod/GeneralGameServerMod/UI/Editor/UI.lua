@@ -82,6 +82,7 @@ local function SetCurrentElement(curElement)
     _G.CurrentListItemData = ListItemDataMap[CurrentElementId];
     _G.CurrentListItemData.style.left, _G.CurrentListItemData.style.top = CurrentElement:GetPosition();
     GlobalScope:Set("CurrentElementId", CurrentElementId);
+    _G.CurrentElement:SetAttrValue("style", CurrentListItemData.style);
 end
 
 function GetCurrentElementId()
@@ -152,6 +153,14 @@ function ClickDeleteElementBtn()
     end
 end
 
+function ClickCopyElementBtn()
+    local list = GlobalScope:Get("ElementList");
+    local item = commonlib.deepcopy(CurrentListItemData);
+    item.id = GetNextElementId();
+    _G.ListItemDataMap[item.id] = item;
+    table.insert(list, {id = item.id, text = item.text});
+end
+
 function ClickSaveBtn()
     _G.SaveCurrentFile();
     Tip("保存成功");
@@ -173,7 +182,10 @@ _G.GenerateCode = function()
         if (hoverStyleString ~= "") then scopedCssText = string.format(".%s { %s }\n%s", item.id, hoverStyleString, scopedCssText) end
 
         local oldClassString = item.attr["class"];
-        item.attr["class"] = string.format("%s %s", item.id, oldClassString or "");  -- 追加ID为类名
+              -- 追加ID为类名
+        if (oldClassString and oldClassString ~= "") then item.attr["class"] = string.format("%s %s", item.id, oldClassString or "") 
+        else item.attr["class"] = item.id end
+        
         local attrString = "";
         for key, val in pairs(item.attr) do attrString = string.format('%s="%s" %s', key, val, attrString) end
         item.attr["class"] = oldClassString;
@@ -182,8 +194,9 @@ _G.GenerateCode = function()
         for key, val in pairs(item.vbind) do vbindAttrString = string.format('v-bind:%s="%s" %s', key, val, vbindAttrString) end
         local textString = "";
         
-        if (item.text ~= "") then textString = item.text end
-        if (item.textVarName ~= "") then textString = "{{" .. item.textVarName .. "}}" end
+        if (item.textVarName ~= "") then textString = "{{" .. item.textVarName .. "}}" 
+        elseif (item.text ~= "") then textString = item.text 
+        else end
         -- local idString = string.format("%s_%s", item.id, IdSuffix);
         -- return string.format([[<%s id="%s" %s %s style="%s">%s</%s>]], tagname, idString, vbindAttrString, attrString, GetStyleString(item.style), item.text, tagname)
         return string.format([[<%s %s %s style="%s">%s</%s>]], tagname, vbindAttrString, attrString, GetStyleString(item.style), textString, tagname)
@@ -243,6 +256,8 @@ _G.LoadFromText = function (text)
             _G.WindowItemData = item;
         else 
             table.insert(list, {id = item.id, text = item.text});
+            local id = tonumber(string.match(item.id, "%d+")) or 0;
+            ElementId = ElementId < id and id or ElementId;
         end
     end
     GlobalScope:Set("ElementList", list);

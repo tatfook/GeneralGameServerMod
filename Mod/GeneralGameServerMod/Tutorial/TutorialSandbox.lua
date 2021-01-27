@@ -441,5 +441,9 @@ function TutorialSandbox:ActivateBlock(x, y, z)
     end
 end
 
+-- 播放电影
+function TutorialSandbox:PlayMovies()
+end
+
 -- 初始化成单列模式
 TutorialSandbox:InitSingleton();

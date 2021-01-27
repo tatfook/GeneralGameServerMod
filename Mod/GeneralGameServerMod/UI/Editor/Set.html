@@ -36,23 +36,19 @@ function OnTextChange(val)
     text = val;
     CurrentListItemData.text = val;
     ListItem.text = val;
-    CurrentListItemData.textVarName = "";
-    textVarName = "";
 end
 
 function OnTextVarNameChange(val)
     if (val == "") then return end
     textVarName = val;
     CurrentListItemData.textVarName = val;
-    CurrentListItemData.text = "";
-    ListItem.text = "";
-    text = "";
 end
 
 GlobalScope:Watch("CurrentElementId", function() 
     ListItem = GetListItemById(CurrentElementId);
     text = ListItem.text;
     textVarName = CurrentListItemData.textVarName;
+    background = CurrentListItemData.style.background or "";
 end);
 
 </script>
