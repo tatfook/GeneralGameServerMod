@@ -285,6 +285,7 @@ function LoadUserInfo()
                 local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
                 if (itemTpl) then
                     table.insert(honors, {
+                        gsId = item.gsId,
                         icon = GetItemIcon(itemTpl),
                         name = itemTpl.name,
                         desc = itemTpl.desc,
