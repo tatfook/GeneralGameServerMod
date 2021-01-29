@@ -46,7 +46,7 @@ active = "today";
 function GetDateBtnStyle(date)
     if (active == "today") then
         if (date == "yesterday") then return  "position: absolute; width: 55px; height: 60px; left: 415px; top: 100px; background: url(@assets/zuotian2.png#0 0 55 60)" 
-        elseif (date == "today") then return "position: absolute; left: 480px; top: 70px; width: 83px; height: 88px; background: url(@/assets/jintian1.png#0 0 83 88);"
+        elseif (date == "today") then return "position: absolute; left: 480px; top: 70px; width: 83px; height: 88px; background: url(@assets/jintian1.png#0 0 83 88);"
         else return "position: absolute; width: 55px; height: 60px; top: 100px; left: 570px; background: url(@assets/mingtian2.png#0 0 55 60);" end 
     elseif (active == "yesterday") then
         if (date == "yesterday") then return  "position: absolute; width: 83px; height: 88px; left: 415px; top: 70px; background: url(@assets/zuotian1.png#0 0 83 88)" 
