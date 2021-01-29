@@ -15,6 +15,8 @@ function OnAttrValueChange()
 end
 
 function ClickHonor(honor)
+    if (honor.gsId ~= 70007 and honor.gsId ~= 70001 and honor.gsId ~= 70002 and honor.gsId ~= 70003) then return end
+    
     ShowWindow({
         username = string.format("%s(%s)", UserDetail.nickname, UserDetail.username),
         datetime = os.date("%Y-%m-%d", commonlib.timehelp.GetTimeStampByDateTime(honor.createdAt)),
