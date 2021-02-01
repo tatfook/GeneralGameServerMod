@@ -52,17 +52,17 @@ function Blockly:Init(xmlNode, window, parent)
     blocklyEditor:SetVisible(false);
     self:SetEditorElement(blocklyEditor);
 
-    local allBlocks, toolboxBlockList = {}, {};
+    local allBlocks, categoryList = {}, {};
     if (self:GetAttrStringValue("type") == "vue") then
         allBlocks = VueBlocks.GetAllBlocks();
-        toolboxBlockList = VueBlocks.GetToolBoxBlockList();
+        categoryList = VueBlocks.GetCategoryList();
     else
         allBlocks = Blocks.GetAllBlocks();
-        toolboxBlockList = Blocks.GetToolBoxBlockList();
+        categoryList = Blocks.GetCategoryList();
     end
 
     for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end
-    self.toolbox:SetBlockList(toolboxBlockList);
+    self.toolbox:SetCategoryList(categoryList);
 
     return self;
 end
@@ -235,7 +235,7 @@ function Blockly:OnMouseDown(event)
     -- 元素被点击 直接返回元素事件处理
     if (ui ~= self) then 
         event.down_target = ui;
-        return ui:OnMouseDown(event);
+        return ui:OnMouseDown(event, x , y);
     end
     
     -- 工作区被点击
@@ -251,7 +251,7 @@ function Blockly:OnMouseMove(event)
     
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(x, y, event);
-    if (ui and ui ~= self) then return ui:OnMouseMove(event) end
+    if (ui and ui ~= self) then return ui:OnMouseMove(event, x, y) end
     
     if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
     if (not self.isDragging) then
@@ -283,7 +283,7 @@ function Blockly:OnMouseUp(event)
     
     if (ui and ui ~= self) then 
         self:SetFocusUI(ui);
-        return ui:OnMouseUp(event);
+        return ui:OnMouseUp(event, x, y);
     end
 end
 

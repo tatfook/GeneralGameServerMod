@@ -20,28 +20,65 @@ local HelperBlocks = NPL.load("./Helper.lua", IsDevEnv);
 VueBlocks = NPL.export();
 
 local AllBlocks = {};
+local CategoryList = {
+    {
+        name = "数据",
+        color = StyleColor.ConvertTo16("rgb(0,120,215)"),
+        blocktypes = {}
+    },
+    {
+        name = "运算",
+        color = StyleColor.ConvertTo16("rgb(122,187,85)"),
+        blocktypes = {}
+    },
+    {
+        name = "控制",
+        color = StyleColor.ConvertTo16("rgb(118,75,204)"),
+        blocktypes = {}
+    },
+    {
+        name = "事件",
+        color = StyleColor.ConvertTo16("rgb(216,59,1)"),
+        blocktypes = {}
+    },
+    {
+        name = "辅助",
+        color = StyleColor.ConvertTo16("rgb(143,109,64)"),
+        blocktypes = {}
+    },
+}
+local CategoryMap = {};
 
-local function AddToAllBlocks(blocks)
+for _, category in ipairs(CategoryList) do
+    CategoryMap[category.name] = category;
+end
+
+local function AddToAllBlocks(blocks, categoryName)
+    local category = CategoryMap[categoryName];
+
     for _, block in ipairs(blocks) do
+        if (category) then
+            block.color = category.color;
+            block.category = categoryName;
+            -- block.color = block.color or category.color;
+            table.insert(category.blocktypes, #(category.blocktypes) + 1, block.type);
+        end
+
         table.insert(AllBlocks, #AllBlocks + 1, block);
     end
 end
 
-AddToAllBlocks(DataBlocks);
-AddToAllBlocks(MathBlocks);
-AddToAllBlocks(VarBlocks);
-AddToAllBlocks(ControlBlocks);
-AddToAllBlocks(EventBlocks);
-AddToAllBlocks(LogBlocks);
-AddToAllBlocks(HelperBlocks);
-
+AddToAllBlocks(VarBlocks, "数据");
+AddToAllBlocks(DataBlocks, "数据");
+AddToAllBlocks(MathBlocks, "运算");
+AddToAllBlocks(ControlBlocks, "控制");
+AddToAllBlocks(EventBlocks, "事件");
+AddToAllBlocks(LogBlocks, "辅助");
+AddToAllBlocks(HelperBlocks, "辅助");
 
 function VueBlocks.GetAllBlocks()
     return AllBlocks;
 end
 
-function VueBlocks.GetToolBoxBlockList()
-    local list = {};
-    for _, block in ipairs(AllBlocks) do table.insert(list, #list + 1, block.type) end
-    return list;
+function VueBlocks.GetCategoryList()
 end

@@ -1,6 +1,7 @@
 
 local lfs = commonlib.Files.GetLuaFileSystem();
 local GlobalScope = GetGlobalScope();
+local CurrentFileNameKey = "UI_CurrentFileName";
 
 _G.Directory = "";
 _G.FileMap = {};
@@ -9,7 +10,7 @@ _G.DefaultFileName = "index";
 FileList = {};          -- 目录
 FileName = "";          -- 新增文件名
 
-GlobalScope:Set("CurrentFileName", "");  -- 当前文件名
+GlobalScope:Set("CurrentFileName", LocalStorage:GetItem(CurrentFileNameKey, ""));  -- 当前文件名
 
 -- 获取目录
 local function GetDirectory()
@@ -37,7 +38,8 @@ end
 local function DeleteFile(filename)
     local file = _G.FileMap[filename];
     if (not file) then return end
-    ParaIO.DeleteFile(file.filepath);
+    local filepath = commonlib.Encoding.Utf8ToDefault(file.filepath);
+    ParaIO.DeleteFile(filepath);
     _G.FileMap[filename] = nil;
 end
 
@@ -46,7 +48,8 @@ local function SaveFile(filename, text)
     local file = _G.FileMap[filename];
     if (not file) then return false end
     file.text = text or file.text or "";
-    local io = ParaIO.open(file.filepath, "w");
+    local filepath = commonlib.Encoding.Utf8ToDefault(file.filepath);
+    local io = ParaIO.open(filepath, "w");
 	io:WriteString(file.text);
     io:close();
     return true;
@@ -55,6 +58,8 @@ end
 -- 保存Html文件
 local function SaveHtml(filename, text)
     local filepath = ToCanonicalFilePath(GetDirectory() .. "/" .. filename .. ".html");
+    filepath = commonlib.Encoding.Utf8ToDefault(filepath);
+
     local io = ParaIO.open(filepath, "w");
     io:WriteString(text);
     io:close();
@@ -65,7 +70,8 @@ local function LoadFile(filename)
     local file = _G.FileMap[filename];
     if (not file) then return "" end
     if (file.text) then return file.text end
-    local io = ParaIO.open(file.filepath, "r");
+    local filepath = commonlib.Encoding.Utf8ToDefault(file.filepath);
+    local io = ParaIO.open(filepath, "r");
     local text = "";
     if(io:IsValid()) then 
         text = io:GetText();
@@ -80,6 +86,7 @@ local function EditFile(filename)
     -- if (not file) then return end
     if (not file) then return print("编辑文件不存在: ", filename) end
     GlobalScope:Set("CurrentFileName", filename);
+    LocalStorage:SetItem(CurrentFileNameKey, filename);
     _G.LoadFromText(LoadFile(filename));
 end
 
@@ -100,11 +107,12 @@ local function SwitchDirectory(directory)
         if (filename ~= "." and filename ~= "..") then
             local filepath = ToCanonicalFilePath(directory .. "/" .. filename);
             local fileattr = lfs.attributes(filepath);
-
+            local utf8FileName = commonlib.Encoding.DefaultToUtf8(filename);
+            local utf8FilePath = ToCanonicalFilePath(directory .. "/" .. utf8FileName);
             if (fileattr.mode ~= "directory" and not string.match(filename, "%.html$")) then
-                _G.FileMap[filename] = {
-                    filename = filename,
-                    filepath = filepath,
+                _G.FileMap[utf8FileName] = {
+                    filename = utf8FileName,
+                    filepath = utf8FilePath,
                 };
             end
         end
@@ -126,8 +134,17 @@ _G.SaveCurrentFile = function()
     SaveHtml(CurrentFileName, _G.GenerateCode())
 end
 
-_G.EditDefaultFile = function()
-    EditFile(DefaultFileName);
+_G.EditCurrentFile = function()
+    local CurrentFileName = GetCurrentFileName();
+    CurrentFileName = if_else(CurrentFileName == "" or not CurrentFileName, DefaultFileName, CurrentFileName);
+    EditFile(CurrentFileName);
+end
+
+_G.IsUpdateCurrentFile = function()
+    local CurrentFileName = GetCurrentFileName();
+    local file = _G.FileMap[CurrentFileName];
+    local text = _G.SaveToText();
+    return not file or file.text == text;
 end
 
 function ClickNewBtn()
@@ -151,8 +168,7 @@ end
 function ClickEditBtn(file, index)
     local CurrentFileName = GetCurrentFileName();
     if (file.filename == CurrentFileName) then return end
-
-    if (CurrentFileName == "") then
+    if (CurrentFileName == "" or not _G.IsUpdateCurrentFile()) then
         return EditFile(file.filename);
     end
 

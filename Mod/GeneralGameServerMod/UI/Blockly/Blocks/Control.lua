@@ -62,7 +62,7 @@ NPL.export({
         end,
     },
     {
-        type = "for",
+        type = "for_object",
         message0 = "每个 %1 , %2 在 %3 %4",
         arg0 = {
             {
@@ -90,7 +90,7 @@ NPL.export({
         end,
     },
     {
-        type = "for",
+        type = "for_array",
         message0 = "每个 %1 , %2 在数组 %3 %4",
         arg0 = {
             {

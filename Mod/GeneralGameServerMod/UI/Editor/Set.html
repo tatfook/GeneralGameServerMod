@@ -11,9 +11,13 @@
         <input v-bind:value="textVarName" placeholder="变量名" onchange=OnTextVarNameChange style="margin-left: 10px; width: 80%;"></input>
     </div>
     <div class="form-item" style="margin-top: 20px;">
+        <div class="label">标签名</div>
+        <input class="value" placeholder="元素标签名" onchange=OnTagNameChange v-bind:value="tagname"></input>
+    </div>
+    <!-- <div class="form-item" style="margin-top: 20px;">
         <div class="label">父元素 ID</div>
         <select class="value" v-bind:value="parentId" onselect=OnSelectParentId placeholder="父元素ID" v-bind:options="GetIdOptions()"></select>
-    </div>
+    </div> -->
 </template>
 
 <script type="text/lua">
@@ -24,6 +28,7 @@ text = "";
 textVarName = "";
 background = "";
 parentId = "";
+tagname = "";
 
 function GetImageStyle()
     return string.format('background: url(%s);', background); 
@@ -62,12 +67,17 @@ function OnSelectParentId()
     CurrentListItemData.parentId = parentId;
 end 
 
+function OnTagNameChange(value)
+    CurrentListItemData.tagname = value;
+end 
+
 GlobalScope:Watch("CurrentElementId", function() 
     ListItem = GetListItemById(CurrentElementId);
     text = ListItem.text;
     textVarName = CurrentListItemData.textVarName;
     background = CurrentListItemData.style.background or "";
     parentId = CurrentListItemData.parentId;
+    tagname = CurrentListItemData.tagname or "";
 end);
 
 </script>

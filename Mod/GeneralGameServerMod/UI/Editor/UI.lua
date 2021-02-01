@@ -41,6 +41,7 @@ local function GenerateListItemData(opt)
         hoverStyle = {},
         attr = {},
         vbind = {},
+        tagname = "",
     }
 
     commonlib.partialcopy(item, opt);
@@ -53,6 +54,7 @@ local function GenerateWindowItemData()
         id = string.format("ID_%s", 1),
         style = {width = "100%", height = "100%"}, 
         isWindowItemData = true,
+        tagname = "template",
     });
 end
 
@@ -137,7 +139,7 @@ function OnReady()
     _G.BlocklyElement = GetRef("blockly");
     SetCurrentElement(_G.WindowElement);
 
-    _G.EditDefaultFile();
+    _G.EditCurrentFile();
 end
 
 _G.GetIdOptions = function()
@@ -201,7 +203,8 @@ _G.GenerateCode = function()
     -- template
     local function generateElementCode(el, item)
         if (not item) then return "" end
-        local tagname = item.tagname or el:GetTagName();
+        local tagname = if_else(not item.tagname or item.tagname == "", "div", item.tagname);
+
         local left, top = el:GetPosition();
         item.style.left = left .. "px";
         item.style.top = top .. "px";
@@ -274,11 +277,14 @@ end
 _G.LoadFromText = function (text)
     _G.Reset();
 
+    ElementId = 0;
+    
+    local windowItemData = GenerateWindowItemData();
     local obj = NPL.LoadTableFromString(text) or {};
-    -- echo(obj, true);
 
     local list = {};
     _G.ListItemDataMap = obj.ListItemDataMap or {};
+    _G.ListItemDataMap[windowItemData.id] = _G.ListItemDataMap[windowItemData.id] or windowItemData;
     for key, item in pairs(_G.ListItemDataMap) do
         if (item.isWindowItemData) then 
             _G.WindowItemData = item;

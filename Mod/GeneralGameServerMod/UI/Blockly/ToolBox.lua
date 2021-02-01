@@ -20,9 +20,12 @@ local LogBlocks = NPL.load("./Blocks/Log.lua", IsDevEnv);
 local HelperBlocks = NPL.load("./Blocks/Helper.lua", IsDevEnv);
 local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
+local categoryFont = "System;18;norm";
 local UnitSize = Const.UnitSize;
 local AllBlocks = {};
 ToolBox:Property("Blockly");
+ToolBox:Property("CurrentCategoryName");
+
 
 local function AddToAllBlocks(blocks)
     for _, block in ipairs(blocks) do
@@ -43,6 +46,10 @@ function ToolBox:ctor()
     self.width, self.height = 0, 0;
     self.offsetX, self.offsetY = 0, 0;
     self.blocks = {};
+    self.blockMap = {};
+    self.categoryMap = {};
+    self.categoryList = {}
+    self.categoryTotalHeight = 0;
 end
 
 function ToolBox:Init(blockly)
@@ -65,25 +72,70 @@ function ToolBox:Init(blockly)
     return self;
 end
 
-function ToolBox:SetBlockList(blocklist)
-    self.blocks = {};
-    local offsetX, offsetY = 5, 5;
-    for index, blockType in ipairs(blocklist) do
-        local block = self:GetBlockly():GetBlockInstanceByType(blockType);
-        if (block) then
-            block.isDragClone = true;
-            local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
-            block:SetLeftTopUnitCount(offsetX, offsetY);
-            block:UpdateLeftTopUnitCount();
-            offsetY = offsetY + heightUnitCount + 5;
-            table.insert(self.blocks, block);
+function ToolBox:GetCategoryList()
+    return self.categoryList;
+end
+
+function ToolBox:SetCategoryList(categorylist)
+    self.categoryList = categorylist;
+    self.blocks, self.blockMap, self.categoryMap = {}, {}, {};
+
+    local offsetX, offsetY = 25, 0;
+    for _, category in ipairs(categorylist) do
+        self.categoryMap[category.name] = category;
+        local blocktypes = category.blocktypes;
+        category.offsetY = offsetY;
+        for _, blocktype in ipairs(blocktypes) do
+            local block = self:GetBlockly():GetBlockInstanceByType(blocktype);
+            if (block) then
+                block.isDragClone = true;
+                offsetY = offsetY + 5; -- 间隙
+
+                local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
+                block:SetLeftTopUnitCount(offsetX, offsetY);
+                block:UpdateLeftTopUnitCount();
+                self.blockMap[blocktype] = {leftUnitCount = offsetX, topUnitCount = offsetY, widthUnitCount = widthUnitCount, heightUnitCount = heightUnitCount};
+                offsetY = offsetY + heightUnitCount;
+                table.insert(self.blocks, block);
+            end
         end
+    end
+    self:SetCurrentCategoryName(categorylist[1] and categorylist[1].name);
+    self.categoryTotalHeight = #categorylist * Const.ToolBoxCategoryHeightUnitCount * UnitSize;
+    self.categoryTotalWidth = Const.ToolBoxCategoryWidthUnitCount * UnitSize;
+end
+
+-- 绘制分类
+function ToolBox:RenderCategory(painter)
+    local _, _, _, height = self:GetBlockly():GetContentGeometry();
+    local categoryWidth = Const.ToolBoxCategoryWidthUnitCount * UnitSize;
+    local categoryHeight = Const.ToolBoxCategoryHeightUnitCount * UnitSize;
+
+    -- 绘制背景
+    painter:SetPen("#ffffff");
+    painter:DrawRect(0, 0, categoryWidth, height);
+
+    local categories = self:GetCategoryList();
+    local radius = Const.ToolBoxCategoryWidthUnitCount / 5 * UnitSize;
+    for i, category in ipairs(categories) do
+        local offsetY = (i - 1) * categoryHeight;
+        if (category.name == self:GetCurrentCategoryName()) then
+            painter:SetPen("#e0e0e0");
+            painter:DrawRect(0, offsetY, categoryWidth, categoryHeight);
+        end
+        painter:SetPen(category.color);
+        painter:DrawCircle(categoryWidth / 2, -(offsetY + radius + categoryHeight / 7), 0, radius, "z", true);
+        painter:SetFont(categoryFont);
+        painter:SetPen("#808080");
+        painter:DrawText(categoryWidth / 4 + 2, offsetY + radius * 2 + categoryHeight / 6 + 4, category.name);
     end
 end
 
 function ToolBox:Render(painter)
     local _, _, width, height = self:GetBlockly():GetContentGeometry();
     width = self.widthUnitCount * UnitSize;
+
+    self:RenderCategory(painter);
 
     painter:SetPen("#ffffff");
     painter:DrawLine(width, 0, width, height);
@@ -114,7 +166,20 @@ function ToolBox:GetMouseUI(x, y)
     return self;
 end
 
-function ToolBox:OnMouseDown(event)
+function ToolBox:OnMouseDown(event, x, y)
+    if (x > self.categoryTotalWidth or y > self.categoryTotalHeight) then return end
+    local categoryHeight = Const.ToolBoxCategoryHeightUnitCount * UnitSize;
+    local index = math.ceil(y / categoryHeight);
+    local category = self.categoryList[index];
+    if (not category or category.name == self:GetCurrentCategoryName()) then return end
+
+    self:SetCurrentCategoryName(category.name);
+    for _, block in ipairs(self.blocks) do
+        local blocktype = block:GetType();
+        local blockpos = self.blockMap[blocktype];
+        block:SetLeftTopUnitCount(blockpos.leftUnitCount, blockpos.topUnitCount - category.offsetY);
+        block:UpdateLeftTopUnitCount();
+    end
 end
 
 function ToolBox:OnMouseMove(event)
@@ -136,11 +201,15 @@ function ToolBox:OnMouseWheel(event)
         local block = self.blocks[1];
         if (block.topUnitCount >= offset) then return end
     end
+    local categoryName = nil;
     for _, block in ipairs(self.blocks) do
         local left, top = block:GetLeftTopUnitCount();
-        block:SetLeftTopUnitCount(left, top + dist * delta);
+        top = top + dist * delta;
+        if (not categoryName and top > 0) then categoryName = block:GetOption().category end 
+        block:SetLeftTopUnitCount(left, top);
         block:UpdateLeftTopUnitCount();
     end
+    self:SetCurrentCategoryName(categoryName);
 end
 
 function ToolBox:OnFocusOut()
