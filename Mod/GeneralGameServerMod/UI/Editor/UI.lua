@@ -76,6 +76,19 @@ end
 
 _G.Reset();
 
+local function GetElementById(id)
+    local function getElementById(el, id) 
+        if (el:GetAttrStringValue("id") == id) then return el end
+        for _, childEl in ipairs(el.childrens) do 
+            local idEl = getElementById(childEl, id);  
+            if (idEl) then return idEl end
+        end
+        return nil;
+    end
+
+    return getElementById(WindowElement, id);  
+end
+
 local function SetCurrentElement(curElement)
     _G.CurrentElement = curElement;
     local CurrentElementId = CurrentElement and CurrentElement:GetAttrStringValue("id");
@@ -84,6 +97,12 @@ local function SetCurrentElement(curElement)
     _G.CurrentListItemData.style.left, _G.CurrentListItemData.style.top = CurrentElement:GetPosition();
     GlobalScope:Set("CurrentElementId", CurrentElementId);
     _G.CurrentElement:SetAttrValue("style", CurrentListItemData.style);
+end
+
+function SelectCurrentElementId(elementId)
+    local element = GetElementById(elementId);
+    print(elementId);
+    SetCurrentElement(element);
 end
 
 function GetCurrentElementId()
@@ -125,6 +144,7 @@ _G.GetIdOptions = function()
     local opts = {};
     local list = GlobalScope:Get("ElementList");
     for _, item in ipairs(list) do table.insert(opts, #opts + 1, item.id) end 
+    table.sort(opts);
     return opts;
 end 
 

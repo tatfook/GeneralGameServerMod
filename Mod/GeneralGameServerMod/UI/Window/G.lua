@@ -24,8 +24,9 @@ G:Property("G");       -- 真实G
 function G.New(window, g)
     g = setmetatable(g or {}, {__index = _G});
     
-    g.SessionStorage = Storage.SessionStorage;
-    g.LocalStorage = Storage.LocalStorage;
+    local url = window:GetParams().url or "";
+    g.SessionStorage = Storage.SessionStorage:new():Init(url);
+    g.LocalStorage = Storage.LocalStorage:new():Init(url);
 
     local _g = G:new():Init(window, g);
     for method in pairs(G) do

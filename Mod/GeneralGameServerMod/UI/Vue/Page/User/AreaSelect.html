@@ -29,7 +29,7 @@ stateOptions = {};
 cityOptions = {};
 countyOptions = {};
 
-local IsExistRegionGSItem = SessionStorage.GetItem("IsExistRegionGSItem");
+local IsExistRegionGSItem = SessionStorage:GetItem("IsExistRegionGSItem");
 if (IsExistRegionGSItem == nil) then IsExistRegionGSItem = KeepWorkItemManager.HasGSItem(130) end
 
 if (UserRegion and UserRegion.info) then
@@ -176,7 +176,7 @@ function clickConfirm()
             if (UserDetail) then UserDetail.bean = (UserDetail.bean or 0) + 5 end    
             ShowMessageBoxPage({text = "地区修改成功, 获得了5知识豆"});
             IsExistRegionGSItem = true;
-            SessionStorage.SetItem("IsExistRegionGSItem", IsExistRegionGSItem);
+            SessionStorage:SetItem("IsExistRegionGSItem", IsExistRegionGSItem);
         else
             ShowMessageBoxPage({text = "地区修改成功"});
         end -->

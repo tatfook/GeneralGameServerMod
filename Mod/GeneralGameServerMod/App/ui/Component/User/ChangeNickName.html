@@ -8,7 +8,7 @@
 
 <script type="text/lua">
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
-local IsExistNicknameGSItem = SessionStorage.GetItem("IsExistNicknameGSItem");
+local IsExistNicknameGSItem = SessionStorage:GetItem("IsExistNicknameGSItem");
 if (IsExistNicknameGSItem == nil) then IsExistNicknameGSItem = KeepWorkItemManager.HasGSItem(129) end
 echo({IsExistNicknameGSItem or "false"})
 
@@ -57,7 +57,7 @@ function UpdateNickName(value)
         else
             ShowResultBox("昵称修改成功");
             IsExistNicknameGSItem = true;
-            SessionStorage.SetItem("IsExistNicknameGSItem", IsExistNicknameGSItem);
+            SessionStorage:SetItem("IsExistNicknameGSItem", IsExistNicknameGSItem);
         end
         FinishCallback(value, true);
     end);

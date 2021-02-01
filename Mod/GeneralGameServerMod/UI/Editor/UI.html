@@ -33,11 +33,11 @@
                     </div>
                 </div>
             </div>
-            <div style="position: absolute; right: 0px; top: 0px; width: 300px; height: 100%; border: 1px solid #cccccc;">
+            <div style="position: absolute; z-index: 3; right: 0px; top: 0px; width: 300px; height: 100%; border: 1px solid #cccccc;">
                 <div class="right-aside-header" style="height: 60px;">
-                    <div style="position: absolute; left: -200px; top:12px; width: 200px; font-size: 18px; color: #cccccc; ">
-                        <div>当前元素: </div>
-                        <select v-bind:value="CurrentElementId" v-bind:options="GetIdOptions()" placeholder="元素ID"></select>
+                    <div style="position: absolute; left: -300px; top:12px; width: 300px; font-size: 18px; color: #cccccc; display: flex;">
+                        <div style="line-height: 30px; height: 30px; padding-right: 20px;">当前元素: </div>
+                        <select v-bind:value="CurrentElementId" v-bind:options="GetIdOptions()" placeholder="元素ID" onselect=SelectCurrentElementId></select>
                     </div>
                     <div style="display: flex; margin-top: 12px;">
                         <div class="action-btn" onclick="ClickRightAsideNavBtn('style')">样式</div>

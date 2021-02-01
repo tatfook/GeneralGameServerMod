@@ -12,32 +12,54 @@ local Storage = NPL.load("Mod/GeneralGameServerMod/UI/Window/Storage.lua");
 local Storage = NPL.export{};
 
 local __session_storage__ = {};
-local SessionStorage = {};
+local SessionStorage = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
 
-function SessionStorage.SetItem(key, val)
-    __session_storage__[key] = val;
+function SessionStorage:ctor()
 end
 
-function SessionStorage.GetItem(key)
-    return __session_storage__[key];
+function SessionStorage:Init(domain)
+    self.__domain__ = domain or "";
+    __session_storage__[self.__domain__] = __session_storage__[self.__domain__] or {};
+    self.__session_storage__ = __session_storage__[self.__domain__];
+    return self;
 end
 
-function SessionStorage.Clear()
-    __session_storage__ = {};
+function SessionStorage:SetItem(key, val)
+    self.__session_storage__[key] = val;
+end
+
+function SessionStorage:GetItem(key)
+    return self.__session_storage__[key];
+end
+
+function SessionStorage:Clear()
+    __session_storage__[self.__domain__] = {};
+    self.__session_storage__ = __session_storage__[self.__domain__];
 end
 
 Storage.SessionStorage = SessionStorage;
 
-local LocalStorage = {};
-function LocalStorage.SetItem(key, val)
-    return GameLogic.GetPlayerController():SaveLocalData(key, val, true, false);
+
+local LocalStorage = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
+
+function LocalStorage:Init(domain)
+    self.__domain__ = domain or "";
+    return self;
 end
 
-function LocalStorage.GetItem(key, defaultValue)
-    return GameLogic.GetPlayerController():LoadLocalData(key, defaultValue, true);
+function LocalStorage:GetKey(key)
+    return (string.format("%s_%s", self.__domain__, key or ""));
 end
 
-function LocalStorage.Clear()
+function LocalStorage:SetItem(key, val)
+    return GameLogic.GetPlayerController():SaveLocalData(self:GetKey(key), val, true, false);
+end
+
+function LocalStorage:GetItem(key, defaultValue)
+    return GameLogic.GetPlayerController():LoadLocalData(self:GetKey(key), defaultValue, true);
+end
+
+function LocalStorage:Clear()
 
 end
 
