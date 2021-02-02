@@ -96,7 +96,6 @@ function PlayerManager:ClearPlayers()
     self.players = {};
 end
 
-
 -- 隐藏离线用户
 function PlayerManager:HideOfflinePlayers()
     for _, player in pairs(self.players) do 
@@ -108,6 +107,20 @@ end
 
 -- 显示离线用户
 function PlayerManager:ShowOfflinePlayers()
+    for _, player in pairs(self.players) do 
+        player:SetVisible(true);
+    end
+end
+
+-- 隐藏离线用户
+function PlayerManager:HideAllPlayers()
+    for _, player in pairs(self.players) do 
+        player:SetVisible(false);
+    end
+end
+
+-- 显示离线用户
+function PlayerManager:ShowAllPlayers()
     for _, player in pairs(self.players) do 
         player:SetVisible(true);
     end

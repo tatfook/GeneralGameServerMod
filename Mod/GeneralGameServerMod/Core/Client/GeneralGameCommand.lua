@@ -85,7 +85,10 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 	/ggs setSyncForceBlock x y z on|off
 	/ggs setSyncForceBlock 19200 5 19200 on   强制同步位置19200 5 19200的方块信息
 	/ggs setSyncForceBlock 19200 5 19200 off  取消强制同步位置19200 5 19200的方块信息
-offlineuser 显示隐藏离线用户
+user 用户命令
+	/ggs user visible           显示所有用户 
+	/ggs user hidden            隐藏所有用户
+offlineuser 离线用户命令
 	/ggs offlineuser visible    显示离线用户
 	/ggs offlineuser hidden     隐藏离线用户
 debug 调试命令 
@@ -136,6 +139,8 @@ blockly 图块编程
 				__this__:handleCmdCommand(cmd_text);
 			elseif (cmd == "offlineuser") then
 				__this__:handleOfflineUserCommand(cmd_text);
+			elseif (cmd == "user") then
+				__this__:handleUserCommand(cmd_text);
 			end
 		end
 	}
@@ -168,6 +173,17 @@ function GeneralGameCommand:handleFileSyncCommond(cmd_text)
 		FileSync:GetSyncFile(filepath);
 	end
 end
+
+-- 用户命令
+function GeneralGameCommand:handleUserCommand(cmd_text)
+	local action, cmd_text = CmdParser.ParseString(cmd_text);
+	local playerManager = self:GetGeneralGameClient():GetWorld():GetPlayerManager();
+	if (action == "visible") then
+		playerManager:ShowAllPlayers();
+	elseif (action == "hidden") then
+		playerManager:HideAllPlayers();
+	end
+end 
 
 function GeneralGameCommand:handleOfflineUserCommand(cmd_text)
 	local action, cmd_text = CmdParser.ParseString(cmd_text);
