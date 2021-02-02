@@ -166,13 +166,14 @@ function ToolBox:GetMouseUI(x, y)
     return self;
 end
 
-function ToolBox:OnMouseDown(event, x, y)
+function ToolBox:OnMouseDown(event)
+    local blockly = self:GetBlockly();
+    local x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);         -- 防止减去偏移量
     if (x > self.categoryTotalWidth or y > self.categoryTotalHeight) then return end
     local categoryHeight = Const.ToolBoxCategoryHeightUnitCount * UnitSize;
     local index = math.ceil(y / categoryHeight);
     local category = self.categoryList[index];
     if (not category or category.name == self:GetCurrentCategoryName()) then return end
-
     self:SetCurrentCategoryName(category.name);
     for _, block in ipairs(self.blocks) do
         local blocktype = block:GetType();

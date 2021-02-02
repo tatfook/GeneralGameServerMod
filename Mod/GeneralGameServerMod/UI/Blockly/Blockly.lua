@@ -235,7 +235,7 @@ function Blockly:OnMouseDown(event)
     -- 元素被点击 直接返回元素事件处理
     if (ui ~= self) then 
         event.down_target = ui;
-        return ui:OnMouseDown(event, x , y);
+        return ui:OnMouseDown(event);
     end
     
     -- 工作区被点击
@@ -251,7 +251,7 @@ function Blockly:OnMouseMove(event)
     
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(x, y, event);
-    if (ui and ui ~= self) then return ui:OnMouseMove(event, x, y) end
+    if (ui and ui ~= self) then return ui:OnMouseMove(event) end
     
     if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
     if (not self.isDragging) then
@@ -283,7 +283,7 @@ function Blockly:OnMouseUp(event)
     
     if (ui and ui ~= self) then 
         self:SetFocusUI(ui);
-        return ui:OnMouseUp(event, x, y);
+        return ui:OnMouseUp(event);
     end
 end
 
