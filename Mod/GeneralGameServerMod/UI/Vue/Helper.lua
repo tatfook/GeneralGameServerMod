@@ -60,7 +60,8 @@ function Helper.ReadFile(filename)
     -- GGS.INFO("读取文件: " .. filename);
     
     local text = nil;
-	local file = ParaIO.open(commonlib.Encoding.Utf8ToDefault(filename), "r");
+	-- local file = ParaIO.open(commonlib.Encoding.Utf8ToDefault(filename), "r");
+	local file = ParaIO.open(filename, "r");
     if(file:IsValid()) then
         text = file:GetText();
         file:close();
