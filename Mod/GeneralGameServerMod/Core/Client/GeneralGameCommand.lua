@@ -86,8 +86,8 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 	/ggs setSyncForceBlock 19200 5 19200 on   强制同步位置19200 5 19200的方块信息
 	/ggs setSyncForceBlock 19200 5 19200 off  取消强制同步位置19200 5 19200的方块信息
 user 用户命令
-	/ggs user visible           显示所有用户 
-	/ggs user hidden            隐藏所有用户
+	/ggs user visible           显示所有用户 不包含主玩家
+	/ggs user hidden            隐藏所有用户 不包含主玩家
 offlineuser 离线用户命令
 	/ggs offlineuser visible    显示离线用户
 	/ggs offlineuser hidden     隐藏离线用户

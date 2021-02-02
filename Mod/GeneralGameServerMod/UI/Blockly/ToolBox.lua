@@ -113,14 +113,16 @@ function ToolBox:RenderCategory(painter)
 
     -- 绘制背景
     painter:SetPen("#ffffff");
-    painter:DrawRect(0, 0, categoryWidth, height);
+    -- painter:DrawRect(0, 0, categoryWidth, height);
+    painter:DrawLine(categoryWidth, 0, categoryWidth, height);
 
     local categories = self:GetCategoryList();
     local radius = Const.ToolBoxCategoryWidthUnitCount / 5 * UnitSize;
     for i, category in ipairs(categories) do
         local offsetY = (i - 1) * categoryHeight;
         if (category.name == self:GetCurrentCategoryName()) then
-            painter:SetPen("#e0e0e0");
+            -- painter:SetPen("#e0e0e0");
+            painter:SetPen("#f8f8f8");
             painter:DrawRect(0, offsetY, categoryWidth, categoryHeight);
         end
         painter:SetPen(category.color);

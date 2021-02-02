@@ -32,6 +32,10 @@ local BlockDebug = GGS.Debug.GetModuleDebug("BlockDebug").Enable();   --Enable  
 
 local nextBlockId = 1;
 local UnitSize = Const.UnitSize;
+local BlockPen = {width = 1, color = "#ffffff"};
+local CurrentBlockPen = {width = 2, color = "#cccccc"};
+local BlockBrush = {color = "#ffffff"};
+local CurrentBlockBrush = {color = "#ffffff"};
 
 Block:Property("Blockly");
 Block:Property("Id");
@@ -168,10 +172,23 @@ function Block:IsStart()
     return self.previousConnection == nil and self.nextConnection ~= nil;
 end
 
+function Block:GetPen()
+    local isCurrentBlock = self:GetBlockly():GetCurrentBlock() == self;
+    return isCurrentBlock and CurrentBlockPen or BlockPen;
+end
+
+function Block:GetBrush()
+    local isCurrentBlock = self:GetBlockly():GetCurrentBlock() == self;
+    local brush = isCurrentBlock and CurrentBlockBrush or BlockBrush;
+    brush.color = self:GetColor();
+    return brush;
+end
+
 function Block:Render(painter)
     -- 绘制凹陷部分
-    Shape:SetBrush(self:GetColor());
-    -- painter:SetPen(self:GetColor());
+    local isCurrentBlock = self:GetBlockly():GetCurrentBlock() == self;
+    Shape:SetPen(self:GetPen());
+    Shape:SetBrush(self:GetBrush());
     painter:Translate(self.left, self.top);
 
     -- 绘制上下连接

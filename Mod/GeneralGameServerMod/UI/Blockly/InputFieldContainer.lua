@@ -105,8 +105,9 @@ end
 
 function InputFieldContainer:Render(painter)
     if (not self:IsInputStatementContainer()) then
-        Shape:SetBrush(self:GetBlock():GetColor());
+        Shape:SetBrush(self:GetBlock():GetBrush());
         Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
+        Shape:SetPen(self:GetBlock():GetPen());
         Shape:DrawLine(painter, self.leftUnitCount, self.topUnitCount, self.leftUnitCount, self.topUnitCount + self.heightUnitCount);
         Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
     end

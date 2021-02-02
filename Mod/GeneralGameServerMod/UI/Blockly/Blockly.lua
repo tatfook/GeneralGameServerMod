@@ -30,6 +30,11 @@ Blockly:Property("FocusUI");                  -- 聚焦UI
 Blockly:Property("CurrentBlock");             -- 当前拽块
 Blockly:Property("Language");                 -- 语言
 Blockly:Property("FileManager");              -- 文件管理器
+Blockly:Property("BaseStyle", {
+    NormalStyle = {
+        ["padding"] = "2px",
+    }
+});
 
 local UnitSize = Const.UnitSize;
 
@@ -334,7 +339,7 @@ function Blockly:OnKeyDown(event)
 	if (keyname == "DIK_RETURN") then 
 	-- elseif (event:IsKeySequence("Undo")) then self:handleUndo(event)
 	-- elseif (event:IsKeySequence("Redo")) then self:handleRedo(event)
-	elseif (event:IsKeySequence("Copy")) then self:handleCopy(event)
+	-- elseif (event:IsKeySequence("Copy")) then self:handleCopy(event)
 	elseif (event:IsKeySequence("Paste")) then self:handlePaste(event, "Clipboard");
     elseif (event:IsKeySequence("Delete")) then self:handleDelete(event)
     else -- 处理普通输入

@@ -83,4 +83,5 @@ function VueBlocks.GetAllBlocks()
 end
 
 function VueBlocks.GetCategoryList()
+    return CategoryList;
 end
