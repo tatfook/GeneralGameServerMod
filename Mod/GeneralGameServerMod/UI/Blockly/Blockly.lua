@@ -12,8 +12,8 @@ local Blockly = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blockly.lua");
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
-local Blocks = NPL.load("./Blocks/Blocks.lua", IsDevEnv);
-local VueBlocks = NPL.load("./Blocks/VueBlocks.lua", IsDevEnv);
+local Toolbox = NPL.load("./Blocks/Toolbox.lua", IsDevEnv);
+local VueToolbox = NPL.load("./Blocks/VueToolbox.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
@@ -59,11 +59,11 @@ function Blockly:Init(xmlNode, window, parent)
 
     local allBlocks, categoryList = {}, {};
     if (self:GetAttrStringValue("type") == "vue") then
-        allBlocks = VueBlocks.GetAllBlocks();
-        categoryList = VueBlocks.GetCategoryList();
+        allBlocks = VueToolbox.GetAllBlocks();
+        categoryList = VueToolbox.GetCategoryList();
     else
-        allBlocks = Blocks.GetAllBlocks();
-        categoryList = Blocks.GetCategoryList();
+        allBlocks = Toolbox.GetAllBlocks();
+        categoryList = Toolbox.GetCategoryList();
     end
 
     for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end

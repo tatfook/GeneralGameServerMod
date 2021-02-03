@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: Lua
 use the lib:
 -------------------------------------------------------
-local Blocks = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks/Blocks.lua");
+local VueBlocks = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks/VueBlocks.lua");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
@@ -18,8 +18,9 @@ local ControlBlocks = NPL.load("./Control.lua", IsDevEnv);
 local EventBlocks = NPL.load("./Event.lua", IsDevEnv);
 local LogBlocks = NPL.load("./Log.lua", IsDevEnv);
 local HelperBlocks = NPL.load("./Helper.lua", IsDevEnv);
+local VueBlocks = NPL.load("./Vue.lua", IsDevEnv);
 
-Blocks = NPL.export();
+local VueToolbox = NPL.export();
 
 local AllBlocks = {};
 local CategoryList = {
@@ -45,6 +46,11 @@ local CategoryList = {
     },
     {
         name = "辅助",
+        color = StyleColor.ConvertTo16("rgb(143,109,64)"),
+        blocktypes = {}
+    },
+    {
+        name = "界面",
         color = StyleColor.ConvertTo16("rgb(143,109,64)"),
         blocktypes = {}
     },
@@ -77,12 +83,12 @@ AddToAllBlocks(ControlBlocks, "控制");
 AddToAllBlocks(EventBlocks, "事件");
 AddToAllBlocks(LogBlocks, "辅助");
 AddToAllBlocks(HelperBlocks, "辅助");
+AddToAllBlocks(VueBlocks, "界面");
 
-function Blocks.GetAllBlocks()
+function VueToolbox.GetAllBlocks()
     return AllBlocks;
 end
 
-function Blocks.GetCategoryList()
+function VueToolbox.GetCategoryList()
     return CategoryList;
 end
-

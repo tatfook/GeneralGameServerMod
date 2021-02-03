@@ -312,9 +312,10 @@ function BlockInputField:BeginEdit(opt)
 
     local blockly = self:GetBlock():GetBlockly();
     local editor = self:GetEditorElement();
+    local offsetX, offsetY = 2, 2;
     editor:ClearChildElement();
-    editor:SetStyleValue("left", self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX);
-    editor:SetStyleValue("top", self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY);
+    editor:SetStyleValue("left", self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX + offsetX);
+    editor:SetStyleValue("top", self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY + offsetY);
     editor:SetStyleValue("width", math.max(self.width, self:GetMinEditFieldWidthUnitCount() * Const.UnitSize));
     editor:SetStyleValue("height", self.height);
     local fieldEditElement = self:GetFieldEditElement(editor);

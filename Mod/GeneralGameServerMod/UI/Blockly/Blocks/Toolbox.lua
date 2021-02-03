@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: Lua
 use the lib:
 -------------------------------------------------------
-local VueBlocks = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks/VueBlocks.lua");
+local Blocks = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks/Blocks.lua");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
@@ -19,7 +19,7 @@ local EventBlocks = NPL.load("./Event.lua", IsDevEnv);
 local LogBlocks = NPL.load("./Log.lua", IsDevEnv);
 local HelperBlocks = NPL.load("./Helper.lua", IsDevEnv);
 
-VueBlocks = NPL.export();
+local Toolbox = NPL.export();
 
 local AllBlocks = {};
 local CategoryList = {
@@ -78,10 +78,11 @@ AddToAllBlocks(EventBlocks, "事件");
 AddToAllBlocks(LogBlocks, "辅助");
 AddToAllBlocks(HelperBlocks, "辅助");
 
-function VueBlocks.GetAllBlocks()
+function Toolbox.GetAllBlocks()
     return AllBlocks;
 end
 
-function VueBlocks.GetCategoryList()
+function Toolbox.GetCategoryList()
     return CategoryList;
 end
+
