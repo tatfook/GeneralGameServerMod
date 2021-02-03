@@ -52,6 +52,7 @@ end
 
 -- 获取脚本文件
 function Helper.ReadFile(filename)
+	filename = commonlib.Encoding.Utf8ToDefault(filename);
     filename = ToCanonicalFilePath(Helper.FormatFilename(filename));
     if (not filename or filename ==  "") then return end
 
@@ -60,7 +61,6 @@ function Helper.ReadFile(filename)
     -- GGS.INFO("读取文件: " .. filename);
     
     local text = nil;
-	-- local file = ParaIO.open(commonlib.Encoding.Utf8ToDefault(filename), "r");
 	local file = ParaIO.open(filename, "r");
     if(file:IsValid()) then
         text = file:GetText();
@@ -84,3 +84,9 @@ function Helper.EndTime(action, isResetBeginTime)
     GGS.INFO.Format("%s 耗时: %sms", action or "", curTime - BeginTime);
     if (isResetBeginTime) then BeginTime = curTime end
 end
+
+
+-- local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", true);
+-- --Page.ShowVueTestPage(nil, { url = "@/code/ui/测试.html", draggable=false, width = "80%",  height = "80%" });
+-- Page.ShowVueTestPage({}, { url = "%vue%/Example/Canvas.html",  });
+
