@@ -12,9 +12,20 @@ local Flex = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout/Flex.l
 local Flex = NPL.export();
 local FlexDebug = GGS.Debug.GetModuleDebug("FlexDebug").Enable(); --Enable  Disable
 
+
 local function LayoutElementFilter(el)
 	local layout = el:GetLayout();
 	return layout:IsLayout() and layout:IsUseSpace();
+end 
+
+-- 重新布局子元素
+local function RelayoutChildrenElement(element, relayoutReason)
+	for child in element:ChildElementIterator(true, LayoutElementFilter) do
+		local childLayout = element:GetLayout();
+		-- 元素宽度改变而子元素非固定宽度
+		if (relayoutReason == "width_change" and not childLayout:IsFixedWidth()) then child:UpdateLayout() end
+		if (relayoutReason == "height_change" and not childLayout:IsFixedHeight()) then child:UpdateLayout() end
+	end
 end 
 
 local function UpdateRow(layout, style)
@@ -91,6 +102,7 @@ local function UpdateRow(layout, style)
 						offsetLeft = offsetLeft + spaceWidth + autoWidth;
 						local width, height = childLayout:GetWidthHeight();
 						childLayout:SetWidthHeight(width + autoWidth, height); 
+						if (autoWidth ~= 0) then RelayoutChildrenElement(childLayout:GetElement(), "width_change") end
 						-- 是否重新更新子布局
 					end
 				end
@@ -199,6 +211,8 @@ local function UpdateCol(layout, style)
 						offsetTop = offsetTop + spaceHeight + autoHeight;
 						local width, height = childLayout:GetWidthHeight();
 						childLayout:SetWidthHeight(width, height + autoHeight); 
+						if (autoHeight ~= 0) then RelayoutChildrenElement(childLayout:GetElement(), "height_change") end
+
 						-- 是否重新更新子布局
 					end
 				end

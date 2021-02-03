@@ -68,11 +68,13 @@ function Option:OnMouseDown(event)
     Option._super.OnMouseDown(self, event);
     self:GetSelectElement():OnSelect(self);
     event:accept();
+    self:CaptureMouse();
 end
 
 function Option:OnMouseUp(event)
     Option._super.OnMouseUp(self, event);
     event:accept();
+    self:ReleaseMouseCapture();
 end
 
 -- SelectListBox

@@ -68,6 +68,16 @@ function G:CloseWindow()
     self:GetWindow():CloseWindow();
 end
 
+function G:SetWindowSize(width, height, left, top)
+    local window = self:GetWindow();
+    local x, y, w, h = window:GetNativeWindow():GetAbsPosition()
+    local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
+    width, height = width or w, height or h;
+    left, top = left or (screenWidth - width) / 2, top or (screenHeight - height) / 2;
+    window:GetNativeWindow():Reposition("_lt", left, top, width, height);
+    window:SetWindowPosition(0, 0, width, height);
+end
+
 function G:GetTime()
     return ParaGlobal.timeGetTime();
 end

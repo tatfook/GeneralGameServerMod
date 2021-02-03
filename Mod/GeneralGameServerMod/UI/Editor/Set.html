@@ -4,9 +4,9 @@
     
     <div v-if="CurrentElementId ~= WindowItemData.id">
         <div class="title">静态文本</div>
-        <textarea v-bind:value="text" onchange=OnTextChange style="margin-left: 10px; width: 80%; height: 120px;"></textarea>
+        <textarea v-bind:value="text" onchange=OnTextChange style="width: 100%; height: 120px;"></textarea>
         <div class="title">动态文本</div>
-        <input v-bind:value="textVarName" placeholder="变量名" onchange=OnTextVarNameChange style="margin-left: 10px; width: 80%;"></input>
+        <input v-bind:value="textVarName" placeholder="变量名" onchange=OnTextVarNameChange style="width: 100%;"></input>
     </div>
     <div class="form-item">
         <div class="label">标签名</div>

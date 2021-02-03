@@ -60,10 +60,9 @@
         </div>
 
         <div v-show="HeaderNavIndex == 'exec'" class="tab-item text-code">
-            <component v-bind:template="AllCode"></component>
+            <component v-bind:template="HeaderNavIndex == 'exec' and AllCode or ''"></component>
         </div>
     </div>
-
 </template>
 
 <script type="text/lua" src="%ui%/Editor/UI.lua">

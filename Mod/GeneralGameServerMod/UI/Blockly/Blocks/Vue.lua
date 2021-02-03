@@ -12,7 +12,7 @@ local Vue = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks/Vue.lu
 NPL.export({
     {
         type = "Vue:RegisterComponent",
-        message0 = "注册元素 标签名 %1 文件路劲 %2",
+        message0 = "注册元素 标签名 %1 文件路径 %2",
         arg0 = {
             {
                 name = "tagname",
@@ -29,6 +29,17 @@ NPL.export({
             local tagname = block:GetValueAsString("tagname");
             local filename = block:GetValueAsString("filename");
             return string.format('RegisterComponent(%s, %s)\n', tagname, filename);
+        end,
+    },
+    {
+        type = "Vue:CloseWindow",
+        message0 = "关闭当前窗口",
+        arg0 = {
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        ToNPL = function(block)
+            return string.format('CloseWindow()\n');
         end,
     },
 });

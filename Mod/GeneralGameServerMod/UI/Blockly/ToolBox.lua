@@ -44,7 +44,6 @@ function ToolBox:ctor()
     self.leftUnitCount, self.topUnitCount = 0, 0;
     self.widthUnitCount, self.heightUnitCount = 0, 0;
     self.width, self.height = 0, 0;
-    self.offsetX, self.offsetY = 0, 0;
     self.blocks = {};
     self.blockMap = {};
     self.categoryMap = {};
@@ -143,17 +142,15 @@ function ToolBox:Render(painter)
     painter:DrawLine(width, 0, width, height);
     -- painter:DrawRect(0, 0, width, height);
     -- echo({self.widthUnitCount, self.heightUnitCount})
-
+   
     painter:Save();
     painter:SetClipRegion(0, 0, width, height);
-    painter:Translate(self.offsetX, self.offsetY);
 
     for _, block in ipairs(self.blocks) do
         block:Render(painter);
         painter:Flush();
     end
 
-    painter:Translate(-self.offsetX, -self.offsetY);
     painter:Restore();
 end
 

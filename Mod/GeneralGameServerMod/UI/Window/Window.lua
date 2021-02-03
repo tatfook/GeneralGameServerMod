@@ -174,50 +174,34 @@ function Window:InitWindowPosition()
     if (type(windowHeight) == "string" and string.match(windowHeight, "^%d+%%$")) then windowHeight = math.floor(screenHeight * tonumber(string.match(windowHeight, "%d+")) / 100) end
     if (type(offsetX) == "string" and string.match(offsetX, "^%d+%%$")) then offsetX = math.floor(screenWidth * tonumber(string.match(offsetX, "%d+")) / 100) end
     if (type(offsetY) == "string" and string.match(offsetY, "^%d+%%$")) then offsetY = math.floor(screenHeight * tonumber(string.match(offsetY, "%d+")) / 100) end
-    -- *	- "_lt" align to left top of the screen
-    -- *	- "_lb" align to left bottom of the screen
-    -- *	- "_ct" align to center of the screen
-    -- *	- "_ctt": align to center top of the screen
-    -- *	- "_ctb": align to center bottom of the screen
-    -- *	- "_ctl": align to center left of the screen
-    -- *	- "_ctr": align to center right of the screen
-    -- *	- "_rt" align to right top of the screen
-    -- *	- "_rb" align to right bottom of the screen
-    -- *	- "_mt": align to middle top
-    -- *	- "_ml": align to middle left
-    -- *	- "_mr": align to middle right
-    -- *	- "_mb": align to middle bottom
-    -- *	- "_fi": align to left top and right bottom. This is like fill in the parent window.
-    -- *
-    -- *	the layout is given below:
-    -- *	_lt _mt _rt	
-    -- *	_ml _ct _mr 
-    -- *	_lb _mb _rb 
-    if (params.alignment == "_ctb") then
+    
+    if (params.alignment == "_ctb") then -- *	- "_ctb": align to center bottom of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
-    elseif (params.alignment == "_ctt") then
+    elseif (params.alignment == "_ctt") then -- *	- "_ctt": align to center top of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY;
-    elseif (params.alignment == "_ctl") then
+    elseif (params.alignment == "_ctl") then -- *	- "_ctl": align to center left of the screen
         windowX, windowY = offsetX, offsetY + math.floor((screenHeight - windowHeight) / 2);
-    elseif (params.alignment == "_ctr") then
+    elseif (params.alignment == "_ctr") then -- *	- "_ctr": align to center right of the screen
         windowX, windowY = offsetX + screenWidth - windowWidth , offsetY + math.floor((screenHeight - windowHeight) / 2);
-    elseif (params.alignment == "_lt") then
+    elseif (params.alignment == "_lt") then  -- *	- "_lt" align to left top of the screen
         windowX, windowY = offsetX, offsetY;
-    elseif (params.alignment == "_lb") then
+    elseif (params.alignment == "_lb") then  -- *	- "_lb" align to left bottom of the screen
         windowX, windowY = offsetX, offsetY + screenHeight - windowHeight;
-    elseif (params.alignment == "_rt") then
+    elseif (params.alignment == "_rt") then -- *	- "_rt" align to right top of the screen
         windowX, windowY = offsetX + screenWidth - windowWidth, offsetY;
-    elseif (params.alignment == "_rb") then
+    elseif (params.alignment == "_rb") then -- *	- "_rb" align to right bottom of the screen
         windowX, windowY = offsetX + screenWidth - windowWidth, offsetY + screenHeight - windowHeight;
-    elseif (params.alignment == "_mt") then
+    elseif (params.alignment == "_mt") then -- *	- "_mt": align to middle top
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY;
-    elseif (params.alignment == "_mb") then
+    elseif (params.alignment == "_mb") then -- *	- "_mb": align to middle bottom
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
-    elseif (params.alignment == "_ml") then
+    elseif (params.alignment == "_ml") then -- *	- "_ml": align to middle left
         windowX, windowY = offsetX, offsetY + math.floor((screenHeight - windowHeight) / 2);
-    elseif (params.alignment == "_mr") then
+    elseif (params.alignment == "_mr") then -- *	- "_mr": align to middle right
         windowX, windowY = offsetX + screenWidth - windowWidth, offsetY + math.floor((screenHeight - windowHeight) / 2);
-    else
+    elseif (params.alignment == "_fi") then -- *	- "_fi": align to left top and right bottom. This is like fill in the parent window.
+        windowX, windowY, windowWidth, windowHeight = 0, 0, screenWidth, screenHeight;
+    else -- *	- "_ct" align to center of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + math.floor((screenHeight - windowHeight) / 2);
     end
 
@@ -320,7 +304,7 @@ end
 function Window:SetWindowPosition(x, y, w, h)
     local isChangeSize = self.windowWidth ~= w or self.windowHeight ~= h;
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = x, y, w, h;
-    if (isChangeSize) then self:UpdateLayout() end
+    -- if (isChangeSize) then self:UpdateLayout() end
 end
 
 -- 获取元素相对屏幕的坐标

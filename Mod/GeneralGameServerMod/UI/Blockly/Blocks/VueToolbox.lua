@@ -45,12 +45,12 @@ local CategoryList = {
         blocktypes = {}
     },
     {
-        name = "辅助",
-        color = StyleColor.ConvertTo16("rgb(143,109,64)"),
+        name = "界面",
+        color = StyleColor.ConvertTo16("rgb(105,176,144)"),
         blocktypes = {}
     },
     {
-        name = "界面",
+        name = "辅助",
         color = StyleColor.ConvertTo16("rgb(143,109,64)"),
         blocktypes = {}
     },
@@ -81,9 +81,9 @@ AddToAllBlocks(DataBlocks, "数据");
 AddToAllBlocks(MathBlocks, "运算");
 AddToAllBlocks(ControlBlocks, "控制");
 AddToAllBlocks(EventBlocks, "事件");
+AddToAllBlocks(VueBlocks, "界面");
 AddToAllBlocks(LogBlocks, "辅助");
 AddToAllBlocks(HelperBlocks, "辅助");
-AddToAllBlocks(VueBlocks, "界面");
 
 function VueToolbox.GetAllBlocks()
     return AllBlocks;
