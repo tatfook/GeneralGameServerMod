@@ -173,13 +173,22 @@ end
 -- 加载组件样式
 function Component:InitByStyleNode(styleNodes)
     if (not styleNodes) then return end
+
+    -- src 为非标准功能, 不推荐大范围使用
+    local function GetCssCodeByFilename(filename)
+        if (not filename) then return "" end
+        local csstext = Helper.ReadFile(filename);
+        return csstext or "";
+    end
+
     local styleText, scopedStyleText = "", "";
     for _, styleNode in ipairs(styleNodes) do
         local text = styleNode[1] or "";
-        if (styleNode.attr and styleNode.attr.scoped == "true") then
-            scopedStyleText = scopedStyleText .. text;
+        local attr = styleNode.attr;
+        if (attr and attr.scoped == "true") then
+            scopedStyleText = scopedStyleText .. text .. "\n" .. GetCssCodeByFilename(attr and attr.src);
         else 
-            styleText = styleText .. text;
+            styleText = styleText .. text .. "\n" .. GetCssCodeByFilename(attr and attr.src);
         end
     end
     -- 强制使用css样式

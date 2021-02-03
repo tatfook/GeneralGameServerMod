@@ -236,7 +236,8 @@ end
 
 function Select:OnFocusIn(event)
     if (self:IsAllowCreate()) then
-        self:GetInputBoxElement():SetAttrValue("value", self:GetValue());
+        -- self:GetInputBoxElement():SetAttrValue("value", self:GetValue());
+        self:GetInputBoxElement():SetAttrValue("value", "");
         self:GetInputBoxElement():FocusIn();
         self:GetInputBoxElement():SetVisible(true);
         self:GetInputBoxElement():UpdateLayout();

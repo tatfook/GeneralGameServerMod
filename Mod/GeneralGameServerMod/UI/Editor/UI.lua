@@ -42,6 +42,7 @@ local function GenerateListItemData(opt)
         attr = {},
         vbind = {},
         tagname = "",
+        order = ElementId,
     }
 
     commonlib.partialcopy(item, opt);
@@ -199,21 +200,22 @@ end
 _G.GenerateCode = function()
     local allcode = "";
     local scopedCssText = "";
+    local list = {};
+    for _, item in pairs(_G.ListItemDataMap) do
+        if (not WindowItemData or item.id ~= WindowItemData.id) then table.insert(list, item) end
+    end
+    table.sort(list, function(item1, item2) return item1.order < item2.order end);
     -- local IdSuffix = os.time();
     -- template
-    local function generateElementCode(el, item)
+    local function generateElementCode(item)
         if (not item) then return "" end
         local tagname = if_else(not item.tagname or item.tagname == "", "div", item.tagname);
 
-        local left, top = el:GetPosition();
-        item.style.left = left .. "px";
-        item.style.top = top .. "px";
-
         local hoverStyleString = GetStyleString(item.hoverStyle);
-        if (hoverStyleString ~= "") then scopedCssText = string.format(".%s { %s }\n%s", item.id, hoverStyleString, scopedCssText) end
+        if (hoverStyleString ~= "") then scopedCssText = string.format(".%s:hover { %s }\n%s", item.id, hoverStyleString, scopedCssText) end
 
+        -- 追加ID为类名
         local oldClassString = item.attr["class"];
-              -- 追加ID为类名
         if (oldClassString and oldClassString ~= "") then item.attr["class"] = string.format("%s %s", item.id, oldClassString or "") 
         else item.attr["class"] = item.id end
         
@@ -233,10 +235,8 @@ _G.GenerateCode = function()
         return string.format([[<%s %s %s style="%s">%s</%s>]], tagname, vbindAttrString, attrString, GetStyleString(item.style), textString, tagname)
     end
 
-    for _, childElement in ipairs(WindowElement.childrens) do
-        local id = childElement:GetAttrStringValue("id", "");
-        local listitem = _G.ListItemDataMap[id];
-        if (listitem) then allcode = allcode .. "\n\t" .. generateElementCode(childElement, listitem) end
+    for _, item in ipairs(list) do
+        allcode = allcode .. "\n\t" .. generateElementCode(item);
     end
 
     -- allcode = string.format('<template id="%s_%s" style="%s">%s\n</template>', WindowItemData.id, IdSuffix, GetStyleString(WindowItemData), allcode);
@@ -293,6 +293,7 @@ _G.LoadFromText = function (text)
             local id = tonumber(string.match(item.id, "%d+")) or 0;
             ElementId = ElementId < id and id or ElementId;
         end
+        item.order = item.order or ElementId;
     end
     GlobalScope:Set("ElementList", list);
 

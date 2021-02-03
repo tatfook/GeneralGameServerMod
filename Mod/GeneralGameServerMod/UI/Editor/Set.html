@@ -1,38 +1,34 @@
 <template class="set-container">
     <div class="title">背景图片</div>
-    <div class="item-container">
-        <div class="image" v-bind:style="GetImageStyle()"></div>
-        <input style="width: 100%; margin-top: 10px" v-bind:value="background" placeholder="背景图片url" onkeydown.enter=ChangeImageUrl></input>
-    </div>
+    <input style="width: 100%;" v-bind:value="background" placeholder="背景图片url" onkeydown.enter=ChangeImageUrl></input>
+    
     <div v-if="CurrentElementId ~= WindowItemData.id">
         <div class="title">静态文本</div>
         <textarea v-bind:value="text" onchange=OnTextChange style="margin-left: 10px; width: 80%; height: 120px;"></textarea>
         <div class="title">动态文本</div>
         <input v-bind:value="textVarName" placeholder="变量名" onchange=OnTextVarNameChange style="margin-left: 10px; width: 80%;"></input>
     </div>
-    <div class="form-item" style="margin-top: 20px;">
+    <div class="form-item">
         <div class="label">标签名</div>
-        <input class="value" placeholder="元素标签名" onchange=OnTagNameChange v-bind:value="tagname"></input>
+        <input class="value" placeholder="元素标签名" onchange="OnValueChange('tagname', ...)" v-bind:value="value.tagname"></input>
     </div>
-    <!-- <div class="form-item" style="margin-top: 20px;">
-        <div class="label">父元素 ID</div>
-        <select class="value" v-bind:value="parentId" onselect=OnSelectParentId placeholder="父元素ID" v-bind:options="GetIdOptions()"></select>
-    </div> -->
+    <div class="form-item">
+        <div class="label">序 号</div>
+        <input class="value" type="number" placeholder="元素序号" onchange="OnValueChange('order', ...)" v-bind:value="value.order"></input>
+    </div>
 </template>
 
 <script type="text/lua">
 local GlobalScope = GetGlobalScope();
 local ListItem = {};
 
+value = {
+    tagname = "";
+    order = 0;
+}
 text = "";
 textVarName = "";
 background = "";
-parentId = "";
-tagname = "";
-
-function GetImageStyle()
-    return string.format('background: url(%s);', background); 
-end 
 
 function ChangeImageUrl(val)
     background = val;
@@ -48,6 +44,10 @@ function ChangeImageUrl(val)
         CurrentElement:SetStyleValue("background", background);
     end
     
+end 
+
+function OnValueChange(key, val)
+    value[key] = val;
 end 
 
 function OnTextChange(val)
@@ -67,17 +67,13 @@ function OnSelectParentId()
     CurrentListItemData.parentId = parentId;
 end 
 
-function OnTagNameChange(value)
-    CurrentListItemData.tagname = value;
-end 
-
 GlobalScope:Watch("CurrentElementId", function() 
     ListItem = GetListItemById(CurrentElementId);
     text = ListItem.text;
     textVarName = CurrentListItemData.textVarName;
     background = CurrentListItemData.style.background or "";
-    parentId = CurrentListItemData.parentId;
-    tagname = CurrentListItemData.tagname or "";
+    value.tagname = CurrentListItemData.tagname or "";
+    value.order = CurrentListItemData.order or 0;
 end);
 
 </script>
@@ -88,14 +84,14 @@ end);
     position: absolute;
     top: 60px;
     bottom: 0px;
-    left: 0px;
-    right: 0px;
+    left: 10px;
+    right: 10px;
     padding-left: 4px;
 }
 
 .title {
     font-size: 18px;
-    padding: 20px 0px 10px 10px;
+    padding: 20px 0px 10px 0px;
 }
 
 .item-container {
@@ -110,8 +106,10 @@ end);
 }
 
 .form-item {
+    margin-top: 10px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     height: 40px;
     /* border: 1px solid #cccccc; */
 }
@@ -119,7 +117,7 @@ end);
     height: 30px;
     display: flex;
     align-items: center;
-    padding: 0px 10px;
+    justify-content: center;
 }
 .form-item>.value {
     width: 200px;
