@@ -60,7 +60,7 @@
         </div>
 
         <div v-show="HeaderNavIndex == 'exec'" class="tab-item text-code">
-            <component v-bind:template="HeaderNavIndex == 'exec' and AllCode or ''"></component>
+            <!-- <component v-bind:template="HeaderNavIndex == 'exec' and AllCode or ''"></component> -->
         </div>
     </div>
 </template>
@@ -81,7 +81,19 @@ function ClickRightAsideNavBtn(index)
 end
 
 function ClickHeaderNavBtn(index)
-    if (index == "code" or index == "exec") then GenerateCode() end
+    if (index == "code" or index == "exec") then 
+        local allcode = GenerateCode();
+        if (index == "exec") then
+            ShowWindow({
+                template = allcode,
+            }, {
+                url = "%ui%/Editor/Exec.html",
+                width = 500,
+                height = 400,
+            });
+        end
+    end
+    
     HeaderNavIndex = index;
 end 
 

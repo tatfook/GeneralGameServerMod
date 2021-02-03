@@ -10,7 +10,7 @@ _G.ListItemDataMap = {};
 _G.StyleNameList = {
     "width", "height", "left", "top", "right", "bottom", "display", "position", "font-size", "color", "background", "background-color",
     "margin-top", "margin-right", "margin-bottom", "margin-left", "padding-top", "padding-right", "padding-bottom", "padding-left", 
-    "justify-content", "align-items", "align-self",
+    "justify-content", "align-items", "align-self", "border",
 };
 
 local function GetStyleString(style)

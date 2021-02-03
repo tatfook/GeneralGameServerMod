@@ -26,14 +26,20 @@ Component:Property("Compiled", false, "IsCompiled");      -- 是否编译
 local GlobalComponentClassMap = {};
 local XmlFileCache = {};
 
-local function LoadXmlFile(filename)
-    -- if (XmlFileCache[filename]) then return XmlFileCache[filename] end
-
-    local template = Helper.ReadFile(filename) or "";
+local function FormatXmlTemplate(template)
     -- 移除xml注释
     template = string.gsub(template, "<!%-%-.-%-%->", "");
     -- 维持脚本原本格式
     template = string.gsub(template, "[\r\n]<script(.-)>(.-)[\r\n]</script>", "<script%1>\n<![CDATA[\n%2\n]]>\n</script>");
+
+    return template;
+end
+
+local function LoadXmlFile(filename)
+    -- if (XmlFileCache[filename]) then return XmlFileCache[filename] end
+
+    local template = Helper.ReadFile(filename) or "";
+    template = FormatXmlTemplate(template);
     -- 缓存
     -- XmlFileCache[filename] = template;
     
@@ -151,6 +157,7 @@ function Component:LoadXmlNode(xmlNode, isReload)
     -- 从字符串加载
     local xmlRoot = nil;
     if (template and template ~= "") then
+        template = FormatXmlTemplate(template);
         xmlRoot = type(template) == "table" and template or ParaXML.LuaXML_ParseString(template);
     elseif (filename and filename ~= "") then
         local template = LoadXmlFile(filename);

@@ -162,7 +162,25 @@ NPL.export({
         end,
     },
     {
-        type = "call_function",
+        type = "call_function_statement",
+        message0 = "调用函数 %1",
+        arg0 = {
+            {
+                name = "funcname",
+                type = "field_input",
+                validator = "FuncName",
+            },
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            local funcname = block:GetFieldValue("funcname");
+            return string.format('%s()\n', funcname);
+        end,
+    },
+    {
+        type = "call_function_output",
         message0 = "调用函数 %1",
         arg0 = {
             {

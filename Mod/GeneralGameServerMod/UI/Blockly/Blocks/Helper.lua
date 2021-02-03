@@ -44,7 +44,7 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format("--[[\n%s\n--]]",block:GetFieldValue("code"));
+            return string.format("--[[\n%s\n--]]\n",block:GetFieldValue("code"));
         end,
     },
 });

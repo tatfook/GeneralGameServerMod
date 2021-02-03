@@ -218,7 +218,6 @@ end
 -- 创建原生窗口
 function Window:CreateNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
-    local RootUIObject = ParaUI.GetUIObject("root");
     -- 创建窗口
     local windoX, windowY, windowWidth, windowHeight = self:InitWindowPosition();
     local native_window = ParaUI.CreateUIObject("container", "Window", "_lt", windoX, windowY, windowWidth, windowHeight);

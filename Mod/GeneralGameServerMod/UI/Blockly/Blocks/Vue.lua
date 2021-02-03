@@ -42,4 +42,25 @@ NPL.export({
             return string.format('CloseWindow()\n');
         end,
     },
+    {
+        type = "Vue:SetWindowSize",
+        message0 = "设置窗口大小 宽 %1 高 %2",
+        arg0 = {
+            {
+                name = "width",
+                type = "field_number",
+            },
+            {
+                name = "height",
+                type = "field_number"
+            },
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        ToNPL = function(block)
+            local width = block:GetFieldValue("width");
+            local height = block:GetFieldValue("height");
+            return string.format('SetWindowSize(%s, %s)\n', width, height);
+        end,
+    },
 });
