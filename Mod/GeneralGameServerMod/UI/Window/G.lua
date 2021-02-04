@@ -74,7 +74,7 @@ function G:SetWindowSize(width, height, left, top)
     local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
     width, height = width or w, height or h;
     left, top = left or (screenWidth - width) / 2, top or (screenHeight - height) / 2;
-    window:GetNativeWindow():Reposition("_lt", left, top, width, height);
+    if (not window:Is3DWindow()) then window:GetNativeWindow():Reposition("_lt", left, top, width, height) end
     window:SetWindowPosition(0, 0, width, height);
 end
 

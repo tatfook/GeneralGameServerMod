@@ -17,6 +17,7 @@ NPL.load("(gl)script/ide/System/Core/SceneContextManager.lua");
 NPL.load("(gl)script/ide/math/Point.lua");
 NPL.load("(gl)script/ide/math/Rect.lua");
 NPL.load("(gl)script/ide/System/Windows/Screen.lua");
+
 local Screen = commonlib.gettable("System.Windows.Screen");
 local PainterContext = commonlib.gettable("System.Core.PainterContext");
 local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
@@ -51,12 +52,13 @@ Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
 Window:Property("Params");                          -- 窗口参数
 Window:Property("Event");                           -- 事件对象
-Window:Property("3DUI", false, "Is3DUI");           -- 是否是3DUI
+Window:Property("WindowName");                      -- 窗口名称
+Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口
 
 function Window:ctor()
     windowId = windowId + 1;
     self.windowId = windowId;
-
+    self:SetWindowName("WindowUI_" .. windowId);
     --屏幕位置,宽度,高度
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = 0, 0, 0, 0; 
     -- 窗口的位置,宽度,高度
@@ -103,7 +105,9 @@ function Window:NewG(g)
 end
 
 function Window:Init()
-    Screen:Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+    if (not self:Is3DWindow()) then
+        Screen:Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+    end
 
     local params = self:GetParams();
     self:SetG(self:NewG(params.G));      -- 设置全局G表
@@ -135,13 +139,11 @@ function Window.Show(self, params)
         params = self ~= Window and self or params;
         self = Window:new();
     end
+
     params = params or {};
+    self:Set3DWindow(params.is3DUI and true or false);
     self:SetParams(params);
-    if (not self:GetNativeWindow()) then
-        self:SetNativeWindow(self:CreateNativeWindow());
-    end
-    
-    if (params.is3DUI) then self:Set3DUI(true) end
+    self:SetNativeWindow(self:Is3DWindow() and self:Create3DNativeWindow() or self:CreateNativeWindow());
 
     -- 初始化
     self:Init();
@@ -162,6 +164,31 @@ function Window:CloseWindow()
     self:SetVisible(false);
     local G = self:GetG();
     if (G and type(G.OnClose) == "function") then G.OnClose() end
+end
+
+function Window:Init3DWindowPosition()
+    local params = self:GetParams();
+    self.screenX, self.screenY, self.screenWidth, self.screenHeight = -50, -10, 100, 100;
+    self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, params.width or 100, params.height or 100;
+    return self.screenX, self.screenY, self.screenWidth, self.screenHeight
+end
+
+-- 创建原生窗口
+function Window:Create3DNativeWindow()
+    if (self:GetNativeWindow()) then return self:GetNativeWindow() end
+    local windoX, windowY, windowWidth, windowHeight = self:Init3DWindowPosition();
+    local native_window = ParaUI.CreateUIObject("button", self:GetWindowName(), "_lt", windoX, windowY, windowWidth, windowHeight);
+    native_window:SetField("OwnerDraw", true);              
+    native_window.enabled = false;
+    native_window.visible = false;
+    -- 加到有效窗口上
+    native_window:AttachToRoot();
+	
+    native_window:SetScript("ondraw", function()
+		self:handleRender();
+    end);
+   
+    return native_window;
 end
 
 function Window:InitWindowPosition()
@@ -220,28 +247,23 @@ function Window:CreateNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
     -- 创建窗口
     local windoX, windowY, windowWidth, windowHeight = self:InitWindowPosition();
-    local native_window = ParaUI.CreateUIObject("container", "Window", "_lt", windoX, windowY, windowWidth, windowHeight);
+    local native_window = ParaUI.CreateUIObject("container", self:GetWindowName(), "_lt", windoX, windowY, windowWidth, windowHeight);
     -- WindowDebug.Format("CreateNativeWindow windoX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", windoX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
     native_window:SetField("InputMethodEnabled", true);
     local zorder = self:GetParams().zorder;
     if (zorder) then native_window.zorder = zorder end
-    -- native_window.isPinned = true;
-    
     -- 加到有效窗口上
     native_window:AttachToRoot();
 	
 	local _this = native_window;
 	-- redirect events from native ParaUI object to this object. 
+    _this:SetScript("ondraw", function()
+		self:handleRender();
+    end);
     _this:SetScript("onsize", function()
 		self:handleGeometryChangeEvent();
-	end);
-    _this:SetScript("ondraw", function()
-        -- if (self:Is3DUI()) then 
-        --     self:GetPainterContext():LoadBillboardMatrix();
-        -- end
-		self:handleRender();
 	end);
 	_this:SetScript("onmousedown", function()
 		self:handleMouseEvent(Event.MouseEvent:init("mousePressEvent", self));

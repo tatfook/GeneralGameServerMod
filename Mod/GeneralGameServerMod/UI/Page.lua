@@ -10,9 +10,25 @@ Page.ShowUserInfoPage({username="xiaoyao"});
 -------------------------------------------------------
 ]]
 
+NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
+
 local Vue = NPL.load("./Vue/Vue.lua", IsDevEnv);
 local Page = NPL.export();
 local pages = {};
+local _3d_pages = {};
+
+-- 绑定页面到告示牌
+function Page.BindPageToBlockSign(blockX, blockY, blockZ, page)
+    local entity = BlockEngine:GetBlockEntity(blockX, blockY, blockZ); 
+    if (not entity) then return end
+    local obj = entity:GetInnerObject();
+    if (not obj) then return end
+    obj:ShowHeadOnDisplay(true, 0);
+    obj:SetHeadOnUITemplateName(page:GetWindowName(), 0);
+    obj:SetHeadOnOffset(0, 0.42, 0.37, 0);
+    obj:SetField("HeadOn3DFacing", -1.57);
+end
 
 function Page.Show(G, params, isNew)
     params = params or {};
@@ -31,7 +47,49 @@ function Page.Show(G, params, isNew)
     params.G = G;
     page:Show(params);
 
+    Page.BindPageToBlockSign(params.blockX, params.blockY, params.blockZ, page);
+
     return page;
+end
+
+-- 显示3DUI
+function Page.Show3D(G, params)
+    params = params or {};
+    if (not params.url) then return end
+    local page = _3d_pages[params.url] or Vue:new();
+    _3d_pages[params.url] = page;
+    
+    if (page:GetNativeWindow()) then 
+        page:CloseWindow();
+    end
+
+    params.G = G;
+    params.is3DUI = true;
+
+    page:Show(params);
+
+    Page.BindPageToBlockSign(params.blockX, params.blockY, params.blockZ, page);
+
+    return page;
+end
+
+function Page.ShowVue3DTestPage(G, params)
+    if (IsDevEnv) then
+        if (_G.Vue3DTestPage) then
+            _G.VueTestPage:CloseWindow();
+        end        
+        _G.VueTestPage = Vue:new();
+    end
+
+    params = params or {};
+    params.url = params.url or "%vue%/Example/3D.html";
+    params.is3DUI = true;
+    params.G = G;
+
+    _G.VueTestPage:Show(params);
+
+    
+    return  _G.VueTestPage;
 end
 
 -- 显示用户信息
