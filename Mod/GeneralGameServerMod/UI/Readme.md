@@ -61,6 +61,7 @@ local page = Page.Show({
     x, y, width, height, alignment,  -- 窗口位置参数, 支持百分比和数字 默认 x = 0, y = 0, widht = 600, height = 500
     draggable = false,               -- 窗口是否支持拖拽
     url = "",                        -- 窗口html文件路径
+    blockX, blockY, blockZ,          -- 告示牌坐标 Page.Show3D 接口专用
 });
 
 page:CloseWindow();                  -- 关闭窗口

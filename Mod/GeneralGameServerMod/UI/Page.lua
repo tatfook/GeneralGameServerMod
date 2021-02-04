@@ -17,6 +17,27 @@ local Vue = NPL.load("./Vue/Vue.lua", IsDevEnv);
 local Page = NPL.export();
 local pages = {};
 local _3d_pages = {};
+local inited = false;
+
+-- 世界加载
+local function OnWorldLoaded()
+end
+
+-- 世界退出
+local function OnWorldUnloaded()
+    for _, page in pairs(_3d_pages) do 
+        page:CloseWindow();
+    end
+end
+
+-- 初始化
+function Page.StaticInit()
+    if (inited) then return end
+    inited = true;
+
+    GameLogic:Connect("WorldLoaded", nil, OnWorldLoaded, "UniqueConnection");
+    GameLogic:Connect("WorldUnloaded", nil, OnWorldUnloaded, "UniqueConnection");
+end
 
 -- 绑定页面到告示牌
 function Page.BindPageToBlockSign(blockX, blockY, blockZ, page)
@@ -30,6 +51,7 @@ function Page.BindPageToBlockSign(blockX, blockY, blockZ, page)
     obj:SetField("HeadOn3DFacing", -1.57);
 end
 
+-- 显示页面
 function Page.Show(G, params, isNew)
     params = params or {};
     if (not params.url) then return end
@@ -54,6 +76,8 @@ end
 
 -- 显示3DUI
 function Page.Show3D(G, params)
+    Page.StaticInit();
+
     params = params or {};
     if (not params.url) then return end
     local page = _3d_pages[params.url] or Vue:new();

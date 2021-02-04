@@ -112,10 +112,58 @@ end
 
 function StyleSheet:ctor()
     self.SelectorStyle = {};
+    self.AnimationStyle = {};
 end
 
 function StyleSheet:LoadByString(code)
     code = string.gsub(code,"/%*.-%*/","");
+    local csscode, lastCssCodePos, codelen = "", 1, string.len(code);
+    -- 查找动画关键字
+    local startPos, endPos = string.find(code, "@keyframes", 1, true);
+    if (not startPos) then csscode = code end
+    while(startPos) do
+        local animationName = string.match(string.sub(code, endPos + 1), "([^{}]+)");
+        local index, count = string.find(code, "{", endPos + string.len(animationName), true), 1;
+        local sp, ep = nil, nil;
+        while (index and index < codelen) do
+            index = index + 1;
+            if (sp == nil) then sp = index end 
+            local ch = string.sub(code, index, index);
+            if (ch == "{") then count = count + 1 end
+            if (ch == "}") then count = count - 1 end
+            if (count == 0) then 
+                ep = index - 1 
+                break;
+            end
+        end
+        local animationCss = string.sub(code, sp, ep);
+        animationName = string.match(animationName, "^%s*(.-)%s*$");
+        local animation = self.AnimationStyle[animationName] or {};
+        self.AnimationStyle[animationName] = animation;
+
+        -- print(animationName);
+        -- print(animationCss);
+
+        for selector_str, declaration_str in string.gmatch(animationCss, "([^{}]+){([^{}]+)}") do
+            local style = Style.ParseString(declaration_str);
+            for selector in string.gmatch(selector_str, "([^,]+),?") do
+                selector = string.match(selector, "^%s*(.-)%s*$");
+                if (selector == "from") then selector = "0" end
+                if (selector == "to") then selector = "100" end
+                selector = string.match(selector, "(%d+)");
+                animation[selector] = style;
+            end
+        end
+        
+        csscode = csscode .. string.sub(lastCssCodePos, startPos - 1);
+        startPos, endPos = string.find(code, "@keyframes", index + 1, true);
+        if (not startPos) then 
+            csscode = csscode .. string.sub(code, index + 1);
+        else 
+            lastCssCodePos = index + 1;
+        end
+    end
+
     for selector_str, declaration_str in string.gmatch(code, "([^{}]+){([^{}]+)}") do
         local style = Style.ParseString(declaration_str);
         for selector in string.gmatch(selector_str, "([^,]+),?") do
@@ -228,6 +276,22 @@ function StyleSheet:ApplyElementStyle(element, style)
     ApplyElementStyle(self, element, style);
 end
 
+-- 应用元素动画
+function StyleSheet:ApplyElementAnimation(element, style)
+    local animationName = style:GetAnimationName();
+    local function GetAnimation(sheet)
+        if (not sheet) then return nil end
+
+        local animation = sheet.AnimationStyle[animationName];
+        if (animation) then return animation end
+
+        return GetAnimation(sheet.InheritStyleSheet);
+    end
+
+    element:SetAnimation(GetAnimation(self));
+end
+
 function StyleSheet:Clear()
     self.SelectorStyle = {};
+    self.AnimationStyle = {};
 end

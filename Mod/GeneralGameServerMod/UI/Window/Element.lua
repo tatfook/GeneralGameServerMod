@@ -428,6 +428,12 @@ function Element:ApplyElementStyle()
     -- 选择合适样式
     self:SelectStyle();
 
+    -- 为元素添加动画
+    self:GetWindow():GetStyleManager():ApplyElementAnimation(self, style);
+    self:GetStyleSheet():ApplyElementAnimation(self, style);
+    if (scopedStyleSheet) then scopedStyleSheet:ApplyElementAnimation(self, style) end 
+
+    
     -- ElementDebug.If(self:GetTagName() == "GoodsTooltip", self:GetElementScopedStyleSheet(), self:GetParentElement() == nil);
     
     -- 构建滚动条

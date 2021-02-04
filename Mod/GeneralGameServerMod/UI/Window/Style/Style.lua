@@ -276,6 +276,8 @@ local number_fields = {
 	["flex-shrink"] = true,
 
 	["border-radius"] = true,
+
+	["animation-iteration-count"] = true,
 };
 
 local color_fields = {
@@ -291,6 +293,11 @@ local color_fields = {
 local image_fields = {
 	["background"] = true,
 	["background-image"] = true,
+}
+
+local time_fields = {
+	["animation-duration"] = true,
+	["animation-delay"] = true,
 }
 
 local transform_fields = {
@@ -392,6 +399,7 @@ local complex_fields = {
 	["margin"] = "margin-top margin-right margin-bottom margin-left ",
 	["overflow"] = "overflow-x overflow-y",
 	["flex"] = "flex-grow flex-shrink flex-basis",
+	["animation"] = "animation-name animation-duration animation-timing-function animation-delay animation-iteration-count animation-direction animation-fill-mode animation-play-state",
 };
 
 
@@ -425,6 +433,8 @@ local function AddComplexStyleItem(style, name, value)
 		values[1] = values[1] or 1;
 		values[2] = values[2] or 1;
 		values[3] = values[3] or "auto";
+	elseif (name == "animation") then
+		values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8] = values[1], values[2] or "0s", values[3] or "linear", values[4] or "0s", values[5] or 1, values[6] or "normal", values[7], values[8];
     end
 	
 	for i = 1, #names do
@@ -547,4 +557,8 @@ end
 
 function Style:GetWhiteSpace()
 	return self:GetValue("white-space", "normal");
+end
+
+function Style:GetAnimationName()
+	return self["animation-name"];
 end
