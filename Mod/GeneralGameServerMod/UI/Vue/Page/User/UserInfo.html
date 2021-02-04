@@ -16,6 +16,7 @@
                     <ChangeNickName v-bind:finish="OnEditNickNameFinish" v-bind:userId="UserDetail.id" v-bind:nickname="UserDetail.nickname" style="display: inline;"></ChangeNickName>
                 </div>
             </div>
+            <!--
             <div style="margin-top: -44px;">
                 <div class="center">
                     <div style="width:334px;height:50px;margin-top:10px;">
@@ -52,7 +53,8 @@
                     </div>
                 </div>
             </div>
-            <div class="center" style="margin-top: -210px;">
+            -->
+            <div class="center" style="margin-top: 0px;">
                 <canvas3d v-bind:assetfile="MainAsset" v-bind:skin="MainSkin" v-bind:scale="scale" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" IsInteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></canvas3d>
             </div>
             <!-- <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div> -->
