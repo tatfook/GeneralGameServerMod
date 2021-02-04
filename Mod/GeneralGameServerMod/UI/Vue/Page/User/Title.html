@@ -1,11 +1,38 @@
 <template>
     <div style="padding-left:10px; padding-right:20px; height:39px; padding-top: 10px;">
         <div style="float: left; width:128px; height:64px; margin-top:-28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/biaoti_128X64_32bits.png);"></div>
-        <div onclick=CloseWindow class="btn" style="float: right; background:url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22); width:20px; height:20px;"></div>
+        <div onclick=close class="btn" style="float: right; background:url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22); width:20px; height:20px;"></div>
     </div>
 </template>
 
 <script type="text/lua">
+function close()
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
+    local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
+    local assetfile = GetGlobalScope():Get("MainAsset");
+    local skin = GetGlobalScope():Get("MainSkin");
+    if (assetfile == CustomCharItems.defaultModelFile and
+        string.find(skin, "Avatar_boy_body_graduation") == nil and
+        string.find(skin, "Avatar_boy_body_party") == nil and
+        string.find(skin, "Avatar_boy_body_activity") == nil and
+        string.find(skin, "Avatar_girl_body_graduation") == nil and
+        string.find(skin, "Avatar_girl_body_party") == nil and
+        string.find(skin, "Avatar_girl_body_activity") == nil) then
+        local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
+        GameLogic.IsVip("ChangeAvatarSkin", true, function(isVip) 
+	        if(isVip) then
+                local playerEntity = GameLogic.GetPlayerController():GetPlayer();
+                playerEntity:SetMainAssetPath(assetfile);
+                GameLogic.options:SetMainPlayerSkins(skin);
+                playerEntity:SetSkin(skin);
+                UpdatePlayerEntityInfo();
+	        end
+	        CloseWindow();
+        end)
+    else
+        CloseWindow();
+    end
+end
 </script>
 
 <style>

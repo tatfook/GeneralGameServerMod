@@ -15,8 +15,8 @@ end
 function ClickItem(item)
 	NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
 	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
-	local playerEntity = GameLogic.GetPlayerController():GetPlayer();
-	local skin = playerEntity:GetSkin();
+    local assetfile = GetGlobalScope():Get("MainAsset");
+    local skin = GetGlobalScope():Get("MainSkin");
 
 	local skinTable = CustomCharItems:SkinStringToTable(skin);
 	if (item.geoset) then
@@ -33,12 +33,8 @@ function ClickItem(item)
 
 	local currentSkin = CustomCharItems:SkinTableToString(skinTable);
 	if(skin ~= currentSkin) then
-        local assetfile = playerEntity:GetMainAssetPath();
         GetGlobalScope():Set("MainAsset", assetfile);
-        GameLogic.options:SetMainPlayerSkins(currentSkin);
         GetGlobalScope():Set("MainSkin", currentSkin);
-        playerEntity:SetSkin(currentSkin);
-		UpdatePlayerEntityInfo();
 	end
 end 
 

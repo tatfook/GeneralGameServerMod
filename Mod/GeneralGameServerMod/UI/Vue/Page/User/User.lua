@@ -498,8 +498,8 @@ end
 -- end
 
 _G.GetAvatarItems = function(category)
-    local asset = player:GetMainAssetPath();
-    local skin = player:GetSkin();
+    local asset = GetGlobalScope():Get("MainAsset");
+    local skin = GetGlobalScope():Get("MainSkin");
     local items = CustomCharItems:GetModelItems(asset, category, skin);
     GlobalScope:Set("AvatarItems", items);
     return items;
