@@ -1,6 +1,8 @@
 
 NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
+local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
 local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
@@ -25,6 +27,7 @@ GlobalScope:Set("MainSkin", player and player:GetSkin());
 GlobalScope:Set("AssetSkinGoodsItemId", 0);
 GlobalScope:Set("IsFollow", false);
 GlobalScope:Set("HonorList", {});
+GlobalScope:Set("AvatarItems", {});
 
 local ProjectMap = {};
 
@@ -493,5 +496,13 @@ end
 --     verticalScrollBar:GetThumb():SetStyleValue("background", "Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 5 2 5");
 --     verticalScrollBar:GetThumb():SetStyleValue("min-height", 10);
 -- end
+
+_G.GetAvatarItems = function(category)
+    local asset = player:GetMainAssetPath();
+    local skin = player:GetSkin();
+    local items = CustomCharItems:GetModelItems(asset, category, skin);
+    GlobalScope:Set("AvatarItems", items);
+    return items;
+end
 
 LoadUserInfo();
