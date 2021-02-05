@@ -148,13 +148,18 @@ function StyleSheet:LoadByString(code)
             local style = Style.ParseString(declaration_str);
             for selector in string.gmatch(selector_str, "([^,]+),?") do
                 selector = string.match(selector, "^%s*(.-)%s*$");
-                if (selector == "from") then selector = "0" end
-                if (selector == "to") then selector = "100" end
-                selector = string.match(selector, "(%d+)");
-                animation[selector] = style;
+                if (selector == "from") then selector = 0
+                elseif (selector == "to") then selector = 100
+                else 
+                    selector = string.match(selector, "(%d+)");
+                    selector = selector and tonumber(selector) or 0;
+                end
+                style.percentage = selector;
+                table.insert(animation, style);
             end
         end
-        
+        table.sort(animation, function(item1, item2) return item1.percentage < item2.percentage end);
+
         csscode = csscode .. string.sub(lastCssCodePos, startPos - 1);
         startPos, endPos = string.find(code, "@keyframes", index + 1, true);
         if (not startPos) then 
@@ -277,7 +282,7 @@ function StyleSheet:ApplyElementStyle(element, style)
 end
 
 -- 应用元素动画
-function StyleSheet:ApplyElementAnimation(element, style)
+function StyleSheet:ApplyElementAnimationStyle(element, style)
     local animationName = style:GetAnimationName();
     local function GetAnimation(sheet)
         if (not sheet) then return nil end
@@ -288,7 +293,7 @@ function StyleSheet:ApplyElementAnimation(element, style)
         return GetAnimation(sheet.InheritStyleSheet);
     end
 
-    element:SetAnimation(GetAnimation(self));
+    element:GetAnimation():SetKeyFrames(GetAnimation(self));
 end
 
 function StyleSheet:Clear()

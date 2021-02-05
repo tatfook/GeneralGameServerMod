@@ -429,10 +429,10 @@ function Element:ApplyElementStyle()
     self:SelectStyle();
 
     -- 为元素添加动画
-    self:GetWindow():GetStyleManager():ApplyElementAnimation(self, style);
-    self:GetStyleSheet():ApplyElementAnimation(self, style);
-    if (scopedStyleSheet) then scopedStyleSheet:ApplyElementAnimation(self, style) end 
-
+    self:GetWindow():GetStyleManager():ApplyElementAnimationStyle(self, style);
+    self:GetStyleSheet():ApplyElementAnimationStyle(self, style);
+    if (scopedStyleSheet) then scopedStyleSheet:ApplyElementAnimationStyle(self, style) end 
+    self:GetAnimation():ApplyAnimationStyle();
     
     -- ElementDebug.If(self:GetTagName() == "GoodsTooltip", self:GetElementScopedStyleSheet(), self:GetParentElement() == nil);
     

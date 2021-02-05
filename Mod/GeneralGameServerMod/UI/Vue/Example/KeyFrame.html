@@ -1,13 +1,7 @@
 
 <template class="container">
     <WindowTitleBar title="测试"></WindowTitleBar>
-    <DateTimeText fmt="%H:%M:%S"></DateTimeText>
-    <div class="animate"></div>
-    <div>hello world</div>
-    <div>hello world</div>
-    <div>hello world</div>
-    <div>hello world</div>
-    <div>hello world</div>
+    <div class="animate">1</div>
 </template>
 
 <script type="text/lua">
@@ -20,19 +14,22 @@ end
 <style>
 @keyframes test {
     from {
-        width: 100px;
+        /* width: 100px;
         height: 100px;
-        background-color: #ff0000;
+        background-color: #ff0000; */
+        transform: rotate(0);
     }
     50% {
-        width: 150px;
+        /* width: 150px;
         height: 130px;
-        background-color: #00ff00;
+        background-color: #00ff00; */
+        transform: rotate(180);
     }
     to {
-        width: 200px;
+        /* width: 200px;
         height: 200px;
-        background-color: #0000ff;
+        background-color: #0000ff; */
+        transform: rotate(360);
     }
 }
 
@@ -44,10 +41,10 @@ end
 }
 
 .animate {
-    /* animation: test 2s linear 0s infinite alternate; */
+    animation: test 10s linear 0s 1 alternate;
     height: 100px;
     width: 100px;
-    transform: rotate(10) translate(100px, 100px) scale(1, 2);
-    background-color: #0000ff;
+    background-color: #0000ffff;
 }
 </style>
+

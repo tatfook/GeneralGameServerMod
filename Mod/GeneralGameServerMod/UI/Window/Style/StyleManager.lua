@@ -59,8 +59,8 @@ function StyleManager:ApplyElementStyle(element, style)
     end
 end
 
-function StyleManager:ApplyElementAnimation(element, style)
+function StyleManager:ApplyElementAnimationStyle(element, style)
     for _, sheet in ipairs(self.styleSheets) do
-        sheet:ApplyElementAnimation(element, style);
+        sheet:ApplyElementAnimationStyle(element, style);
     end
 end

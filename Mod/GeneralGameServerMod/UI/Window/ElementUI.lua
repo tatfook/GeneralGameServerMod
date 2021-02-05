@@ -13,6 +13,7 @@ NPL.load("(gl)script/ide/System/Windows/Mouse.lua");
 NPL.load("(gl)script/ide/System/Windows/MouseEvent.lua");
 local Mouse = commonlib.gettable("System.Windows.Mouse");
 local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
+local Animation = NPL.load("./Animation.lua", IsDevEnv);
 local ElementUI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 ElementUI:Property("Active", false, "IsActive");            -- 是否激活
@@ -31,7 +32,8 @@ function ElementUI:ctor()
     self.winX, self.winY = 0, 0;                         -- 窗口坐标
     self.winWidth, self.winHeight = 0, 0;                -- 窗口大小
     self.AbsoluteElements, self.FixedElements = {}, {};
-    self.RenderCacheList = {}
+    self.RenderCacheList = {};
+    self:SetAnimation(Animation:new():Init(self));
 end
 
 -- 是否显示
@@ -170,22 +172,63 @@ end
 
 -- 绘制元素
 function ElementUI:OnRender(painter)
-    local transform = self:GetStyle().transform;
-    if (type(transform) == "table" and #transform > 0) then
-        local x, y, w, h = self:GetGeometry();
-        local ratate = transform[1].to;
-        painter:Translate(x + w / 2, y + h / 2);
-        painter:Rotate(ratate);
-        painter:Translate(-(x + w / 2), -(y + h / 2));
-    end
-
-    -- ElementUIDebug.If(self:GetTagName() == "GoodsTooltip", self:GetWindowPos());
-    
+    -- 应用动画
+    self:GetAnimation():FrameMove();
+    self:BeginTransform(painter);
     self:RenderOutline(painter);
     self:RenderBackground(painter);
     self:RenderBorder(painter);
-    -- 绘制元素内容
-    self:RenderContent(painter);
+    self:RenderContent(painter); -- 绘制元素内容
+    self:EndTransform(painter);
+end
+
+-- 开始转换
+function ElementUI:BeginTransform(painter)
+    local transform = self:GetStyle().transform;
+    if (type(transform) ~= "table" or #transform == 0) then return end
+    local x, y, w, h = self:GetGeometry();
+    -- 转换基点默认在中心
+    painter:Translate(x, y);
+
+    for i = 1, #transform do
+        local tf = transform[i];
+        if (tf.action == "rotate") then
+            painter:Translate(w / 2, h / 2);
+            painter:Rotate(tf.rotate);
+            painter:Translate(-w / 2, -h / 2);
+        elseif (tf.action == "translate") then
+            painter:Translate(tf.translateX, tf.translateY);
+        elseif (tf.action == "scale") then
+            painter:Scale(tf.scaleX, tf.scaleY);
+        end
+    end
+
+    painter:Translate(-x, -y);
+end
+
+-- 结束转换
+function ElementUI:EndTransform(painter)
+    local transform = self:GetStyle().transform;
+    if (type(transform) ~= "table" or #transform == 0) then return end
+
+    local x, y, w, h = self:GetGeometry();
+    -- 转换基点默认在中心
+    painter:Translate(x, y);
+
+    for i = #transform, 1, -1 do
+        local tf = transform[i];
+        if (tf.action == "rotate") then
+            painter:Translate(w / 2, h / 2);
+            painter:Rotate(-tf.rotate);
+            painter:Translate(-w / 2, -h / 2);
+        elseif (tf.action == "translate") then
+            painter:Translate(-tf.translateX, -tf.translateY);
+        elseif (tf.action == "scale") then
+            painter:Scale(1 / tf.scaleX, 1 / tf.scaleY);
+        end
+    end
+
+    painter:Translate(-x, -y);
 end
 
 -- 绘制外框线

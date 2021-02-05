@@ -278,6 +278,10 @@ local number_fields = {
 	["border-radius"] = true,
 
 	["animation-iteration-count"] = true,
+	["rotate"] = true,
+	["translateX"] = true,
+	["translateY"] = true,
+
 };
 
 local color_fields = {
@@ -342,6 +346,42 @@ function  Style.FilterImage(filename)
 	return filename;
 end
 
+function Style.GetTransformStyleValue(value)
+	local transform = {};
+	value = string.gsub(value, "^%s*", "");
+	while(string.len(value) > 0) do
+		if (string.find(value, "rotate", 1, true) == 1) then
+			local str = string.match(value, "^(rotate%([^%)]*%))");
+			value = string.sub(value, string.len(str) + 1);
+			value = string.gsub(value, "^%s*", "");
+			local degree =  string.match(str, "([%+%-]?%d+)");
+			table.insert(transform, {action = "rotate", rotate = tonumber(degree)});
+		end
+
+		if (string.find(value, "translate", 1, true) == 1) then
+			local str = string.match(value, "^(translate%([^%)]*%))");
+			value = string.sub(value, string.len(str) + 1);
+			value = string.gsub(value, "^%s*", "");
+			local splitIndex = string.find(str, ",", 1, true);
+			local x =  string.match(string.sub(str, 1, splitIndex), "([%+%-]?%d+)");
+			local y =  string.match(string.sub(str, splitIndex or 1), "([%+%-]?%d+)");
+			table.insert(transform, {action = "translate", translateX = tonumber(x), translateY = tonumber(y)});
+		end
+
+		if (string.find(value, "scale", 1, true) == 1) then
+			local str = string.match(value, "^(scale%([^%)]*%))");
+			value = string.sub(value, string.len(str) + 1);
+			value = string.gsub(value, "^%s*", "");
+			local splitIndex = string.find(str, ",", 1, true) or 1;
+			local x =  string.match(string.sub(str, 1, splitIndex), "([%+%-]?%d+)");
+			local y =  string.match(string.sub(str, splitIndex or 1), "([%+%-]?%d+)");
+			table.insert(transform, {action = "scale", scaleX = tonumber(x), scaleY = tonumber(y)});
+		end
+	end
+	-- echo(transform, true)
+	return transform;
+end
+
 function Style.GetStyleValue(name, value)
 	if (type(name) ~= "string" or type(value) ~= "string") then return value end
 	
@@ -359,18 +399,7 @@ function Style.GetStyleValue(name, value)
 		value = StyleColor.ConvertTo16(value);
 	elseif(transform_fields[name]) then
 		if(name == "transform") then
-			local transform = {}
-			-- while(true) do
-				-- 解析旋转
-				local degree = string.match(value, "^%s*rotate%(%s*(.*)%)")
-				if(degree) then table.insert(transform, {action = "rotate", from = 0, to = tonumber(string.match(degree, "%s*(%-?%d+)"))}) end
-				-- local scaleX, scaleY = value:match("^%s*scale%(%s*(%d+)[%s,]*(%d+)")
-				-- if(scaleX and scaleY) then
-				-- 	transform = transform or {};
-				-- 	transform.scale = {tonumber(scaleX), tonumber(scaleY)};
-				-- end
-			-- end
-			value = transform;
+			value = Style.GetTransformStyleValue(value);
 		elseif(name == "transform-origin") then
 			local values = {}
 			for v in value:gmatch("%-?%d+") do
@@ -387,6 +416,9 @@ function Style.GetStyleValue(name, value)
 		value = string_gsub(value, "url%((.*)%)", "%1");
 		value = string_gsub(value, "#", ";");
 		value = Style.FilterImage(value);
+	elseif (time_fields[name]) then
+		value = string.match(value, "%d+");
+		value = value and tonumber(value);
 	end
 	return value;
 end
@@ -562,3 +594,11 @@ end
 function Style:GetAnimationName()
 	return self["animation-name"];
 end
+
+-- function Style:GetRotate()
+-- 	return self.rotate;
+-- end
+
+-- function Style:GetTranslate()
+
+-- end
