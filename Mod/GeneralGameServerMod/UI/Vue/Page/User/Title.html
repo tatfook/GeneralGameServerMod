@@ -14,13 +14,7 @@ function close()
         local skin = GetGlobalScope():Get("MainSkin");
         if (assetfile and skin and skin ~= "") then
             local geosets, textures, attachments =  string.match(skin, "([^@]+)@([^@]+)@?(.*)");
-            if ((assetfile == CustomCharItems.defaultModelFile and
-                string.find(skin, "Avatar_boy_body_graduation") == nil and
-                string.find(skin, "Avatar_boy_body_party") == nil and
-                string.find(skin, "Avatar_boy_body_activity") == nil and
-                string.find(skin, "Avatar_girl_body_graduation") == nil and
-                string.find(skin, "Avatar_girl_body_party") == nil and
-                string.find(skin, "Avatar_girl_body_activity") == nil) or attachments ~= nil) then
+            if ((assetfile == CustomCharItems.defaultModelFile and not CustomCharItems:CheckAvatarExist(skin)) or (attachments ~= nil and attachments ~= "")) then
                 local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
                 GameLogic.IsVip("ChangeAvatarSkin", true, function(isVip) 
 	                if(isVip) then
@@ -28,6 +22,7 @@ function close()
                         playerEntity:SetMainAssetPath(assetfile);
                         GameLogic.options:SetMainPlayerSkins(skin);
                         playerEntity:SetSkin(skin);
+                        GlobalScope:Set("AssetSkinGoodsItemId", 0);
                         UpdatePlayerEntityInfo();
 	                end
 	                CloseWindow();

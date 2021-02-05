@@ -500,7 +500,7 @@ end
 _G.GetAvatarItems = function(category)
     local asset = GetGlobalScope():Get("MainAsset");
     local skin = GetGlobalScope():Get("MainSkin");
-    local items = CustomCharItems:GetModelItems(asset, category, skin);
+    local items = CustomCharItems:GetModelItems(asset, category, skin, true);
     GlobalScope:Set("AvatarItems", items);
     return items;
 end
