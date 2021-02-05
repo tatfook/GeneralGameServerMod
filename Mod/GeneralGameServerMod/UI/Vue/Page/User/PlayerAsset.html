@@ -19,7 +19,6 @@ local function ChangePlayerAsset(assetfile, skin)
 	local playerEntity = GameLogic.GetPlayerController():GetPlayer();
 	if(assetfile and (assetfile~=playerEntity:GetMainAssetPath() or skin ~= playerEntity:GetSkin())) then
 		local oldAssetFile = playerEntity:GetMainAssetPath()
-        playerEntity:CheckAndRemoveAttachment();
 		if(playerEntity.SetModelFile) then
 			playerEntity:SetModelFile(assetfile);
 		else
