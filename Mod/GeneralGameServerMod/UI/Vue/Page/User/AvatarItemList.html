@@ -13,6 +13,14 @@ function OnAttrValueChange()
 end
 
 function ClickItem(item)
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Movie/CustomSkinPage.lua");
+    local CustomSkinPage = commonlib.gettable("MyCompany.Aries.Game.Movie.CustomSkinPage");
+	local index = CustomSkinPage.GetIconIndexFromName(item.category);
+	local avtarIcons = GetGlobalScope():Get("AvatarIcons");
+	if (avtarIcons and avtarIcons[index] and avtarIcons[index].id == item.id) then
+		return;
+	end
+
 	NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
 	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
     local assetfile = GetGlobalScope():Get("MainAsset");
@@ -35,6 +43,13 @@ function ClickItem(item)
 	if(skin ~= currentSkin) then
         GetGlobalScope():Set("MainAsset", assetfile);
         GetGlobalScope():Set("MainSkin", currentSkin);
+	end
+
+	if (avtarIcons[index] and item.id) then
+		avtarIcons[index].id = item.id;
+		avtarIcons[index].name = item.name;
+		avtarIcons[index].icon = item.icon;
+		GetGlobalScope():Set("AvatarIcons", avtarIcons);
 	end
 end 
 

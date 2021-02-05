@@ -13,8 +13,7 @@ function close()
         local assetfile = GetGlobalScope():Get("MainAsset");
         local skin = GetGlobalScope():Get("MainSkin");
         if (assetfile and skin and skin ~= "" and type(skin) == "string") then
-            local geosets, textures, attachments =  string.match(skin, "([^@]+)@([^@]+)@?(.*)");
-            if ((assetfile == CustomCharItems.defaultModelFile and not CustomCharItems:CheckAvatarExist(skin)) or (attachments ~= nil and attachments ~= "")) then
+            if (assetfile == CustomCharItems.defaultModelFile and not CustomCharItems:CheckAvatarExist(skin)) then
                 local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
                 GameLogic.IsVip("ChangeAvatarSkin", true, function(isVip) 
 	                if(isVip) then

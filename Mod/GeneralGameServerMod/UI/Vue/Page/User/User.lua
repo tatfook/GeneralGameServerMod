@@ -28,6 +28,7 @@ GlobalScope:Set("AssetSkinGoodsItemId", 0);
 GlobalScope:Set("IsFollow", false);
 GlobalScope:Set("HonorList", {});
 GlobalScope:Set("AvatarItems", {});
+GlobalScope:Set("AvatarIcons", {});
 
 local ProjectMap = {};
 
@@ -277,6 +278,25 @@ function LoadUserInfo()
         local ParacraftPlayerEntityInfo = UserDetail.extra and UserDetail.extra.ParacraftPlayerEntityInfo or {};
         if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
         if (ParacraftPlayerEntityInfo.skin) then GlobalScope:Set("MainSkin", ParacraftPlayerEntityInfo.skin) end 
+        
+        NPL.load("(gl)script/apps/Aries/Creator/Game/Movie/CustomSkinPage.lua");
+        local CustomSkinPage = commonlib.gettable("MyCompany.Aries.Game.Movie.CustomSkinPage");
+        local avtarIcons = {};
+	    for i = 1, #CustomSkinPage.category_ds do
+		    avtarIcons[i] = {id = "", icon = "", name = ""}; 
+	    end
+        if (ParacraftPlayerEntityInfo.asset == CustomCharItems.defaultModelFile and not CustomCharItems:CheckAvatarExist(ParacraftPlayerEntityInfo.skin)) then
+	        local items = CustomCharItems:GetUsedItemsBySkin(ParacraftPlayerEntityInfo.skin);
+	        for _, item in ipairs(items) do
+		        local index = CustomSkinPage.GetIconIndexFromName(item.name);
+		        if (index > 0) then
+			        avtarIcons[index].id = item.id;
+			        avtarIcons[index].name = item.name;
+			        avtarIcons[index].icon = item.icon;
+		        end
+	        end
+        end
+        GlobalScope:Set("AvatarIcons", avtarIcons);
 
         -- 获取用户荣誉
         keepwork.user.honors({userId = UserDetail.id}, function(status, msg, data)
