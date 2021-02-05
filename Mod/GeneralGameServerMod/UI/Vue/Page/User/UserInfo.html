@@ -397,6 +397,7 @@ function IsIconValid(index)
 end
 
 function ClickIcon(index)
+    if (not isAuthUser) then return end;
 	NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
 	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
     local avtarIcons = GetGlobalScope():Get("AvatarIcons");
