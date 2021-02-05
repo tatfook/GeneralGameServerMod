@@ -41,48 +41,48 @@
                 <div class="center">
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <div v-if="IsIconValid(1)" v-on:click="ClickIcon(1)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div style="margin-left:9px;margin-top:11px;width:31px;height:27px;background:url(Texture/Aries/Creator/keepwork/Avatar/5mianbu_31X27_32bits.png#0 0 31 27);"></div>
+                            <div v-bind:style="IconStyle(1)"></div>
                         </div>
                         <div v-if="not IsIconValid(1)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
                         <div v-if="IsIconValid(2)" v-on:click="ClickIcon(2)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div style="margin-left:7px;margin-top:13px;width:36px;height:24px;background:url(Texture/Aries/Creator/keepwork/Avatar/6toushi_36X24_32bits.png#0 0 36 24);"></div>
+                            <div v-bind:style="IconStyle(2)"></div>
                         </div>
                         <div v-if="not IsIconValid(2)" style="float:left;margin-left:212px;width:50px;height:50px;">
                         </div>
                     </div>
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <div v-if="IsIconValid(3)" v-on:click="ClickIcon(3)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div style="margin-left:6px;margin-top:16px;width:37px;height:18px;background:url(Texture/Aries/Creator/keepwork/Avatar/10yanjing_37X18_32bits.png#0 0 37 18);"></div>
+                            <div v-bind:style="IconStyle(3)"></div>
                         </div>
                         <div v-if="not IsIconValid(3)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
                         <div v-if="IsIconValid(4)" v-on:click="ClickIcon(4)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div style="margin-left:9px;margin-top:17px;width:32px;height:15px;background:url(Texture/Aries/Creator/keepwork/Avatar/9zuiba_32X15_32bits.png#0 0 32 15);"></div>
+                            <div v-bind:style="IconStyle(4)"></div>
                         </div>
                         <div v-if="not IsIconValid(4)" style="float:left;margin-left:212px;width:50px;height:50px;">
                         </div>
                     </div>
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <div v-if="IsIconValid(5)" v-on:click="ClickIcon(5)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div style="margin-left:9px;margin-top:12px;width:32px;height:26px;background:url(Texture/Aries/Creator/keepwork/Avatar/3yifu_32X26_32bits.png#0 0 32 26);"></div>
+                            <div v-bind:style="IconStyle(5)"></div>
                         </div>
                         <div v-if="not IsIconValid(5)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
                         <div v-if="IsIconValid(6)" v-on:click="ClickIcon(6)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div style="margin-left:9px;margin-top:11px;width:31px;height:27px;background:url(Texture/Aries/Creator/keepwork/Avatar/2kuzi_31X27_32bits.png#0 0 31 27);"></div>
+                            <div v-bind:style="IconStyle(6)"></div>
                         </div>
                         <div v-if="not IsIconValid(6)" style="float:left;margin-left:212px;width:50px;height:50px;">
                         </div>
                     </div>
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <div v-if="IsIconValid(7)" v-on:click="ClickIcon(7)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div style="margin-left:12px;margin-top:10px;width:30px;height:30px;background:url(Texture/Aries/Creator/keepwork/Avatar/4beibu_30X30_32bits.png#0 0 30 30);"></div>
+                            <div v-bind:style="IconStyle(7)"></div>
                         </div>
                         <div v-if="not IsIconValid(7)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
                         <div v-if="IsIconValid(8)" v-on:click="ClickIcon(8)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div style="margin-left:8px;margin-top:7px;width:33px;height:35px;background:url(Texture/Aries/Creator/keepwork/Avatar/8shouchi_33X35_32bits.png#0 0 33 35);"></div>
+                            <div v-bind:style="IconStyle(8)"></div>
                         </div>
                         <div v-if="not IsIconValid(8)" style="float:left;margin-left:212px;width:50px;height:50px;">
                         </div>
@@ -396,12 +396,21 @@ function IsIconValid(index)
     return avtarIcons and avtarIcons[index] and avtarIcons[index].icon ~= "";
 end
 
+function IconStyle(index)
+    local avtarIcons = GetGlobalScope():Get("AvatarIcons");
+    if (avtarIcons and avtarIcons[index]) then
+        return string.format("margin:5px;width:40px;height:40px;background:url(%s);", avtarIcons[index].icon or "");
+    else
+        return "margin:5px;width:40px;height:40px;";
+    end
+end
+
 function ClickIcon(index)
     if (not isAuthUser) then return end;
 	NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
 	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
     local avtarIcons = GetGlobalScope():Get("AvatarIcons");
-    if (avtarIcons and avtarIcons[index]) then
+    if (avtarIcons and avtarIcons[index] and avtarIcons[index].id) then
 		local item = CustomCharItems:GetItemById(avtarIcons[index].id);
         local currentSkin = GetGlobalScope():Get("MainSkin");
 		local skin = CustomCharItems:RemoveItemInSkin(currentSkin, item);
