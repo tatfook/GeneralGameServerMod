@@ -19,6 +19,7 @@ function close()
 	                if(isVip) then
                         local playerEntity = GameLogic.GetPlayerController():GetPlayer();
                         playerEntity:SetMainAssetPath(assetfile);
+                        GameLogic.options:SetMainPlayerAssetName(assetfile);
                         GameLogic.options:SetMainPlayerSkins(skin);
                         playerEntity:SetSkin(skin);
                         GlobalScope:Set("AssetSkinGoodsItemId", 0);
