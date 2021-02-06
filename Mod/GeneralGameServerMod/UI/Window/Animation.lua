@@ -22,10 +22,12 @@ function Animation:ctor()
     self.times = {};                                      -- 正向时间表
     self.reverseTimes = {};                               -- 逆向时间表
     self.totalTime = 0;                                   -- 总时间
-    -- self.keyframes = {};                                  -- 关键帧
+    self.name = "";                                       -- 动画名称
+    -- self.keyframes = {};                               -- 关键帧
 end
 
 function Animation:Init(el)
+    
     self:SetElement(el);
 
     return self;
@@ -35,8 +37,9 @@ function Animation:ApplyAnimationStyle()
     local el = self:GetElement();
     if (not el) then return end
     local style, keyframes = el:GetStyle(), self:GetKeyFrames();
-    if (not keyframes or #keyframes == 0) then return end 
+    if (not keyframes or #keyframes == 0 or self.name == style["animation-name"]) then return end 
 
+    self.name = style["animation-name"];
     self.totalTime = (style["animation-duration"] or 0) * 1000;
     self.delayTime = (style["animation-delay"] or 0) * 1000;
     self.count = style["animation-iteration-count"];                        -- nil表示无限次数
@@ -98,14 +101,8 @@ function Animation:SetAnimationStyle()
     local style = self:GetElement():GetStyle();
 
     if (type(frameStyle) ~= "table") then return end
-    if (not prevFrameStyle) then 
-        for key, val in pairs(frameStyle) do
-            style[key] = val;
-        end
-        return ;
-    end
 
-    local timePercentage = (self.nextTime > self.lastNextTime) and ((curtime - self.lastNextTime) / (self.nextTime - self.lastNextTime)) or 1;
+    local timePercentage = (self.nextTime > self.lastNextTime and curtime < self.nextTime) and ((curtime - self.lastNextTime) / (self.nextTime - self.lastNextTime)) or 1;
     local function GetCurValue(startValue, endValue)
         if (not startValue or not endValue) then return startValue or endValue end
         return math.floor(startValue + (endValue - startValue) * timePercentage)
@@ -113,16 +110,20 @@ function Animation:SetAnimationStyle()
     for key, val in pairs(frameStyle) do
         local value = val;
         if (key == "width" or key == "height") then
-            value = GetCurValue(prevFrameStyle[key], frameStyle[key]);
+            value = GetCurValue(prevFrameStyle and prevFrameStyle[key], frameStyle[key]);
         elseif (key == "transform") then
-            local lastTF, TF, curTF = prevFrameStyle[key], frameStyle[key], style[key];
+            local lastTF, TF, curTF = prevFrameStyle and prevFrameStyle[key], frameStyle[key], style[key];
+            if (not curTF) then 
+                style[key] = commonlib.deepcopy(TF);
+                curTF = style[key];
+            end
             for i = 1, #TF do
-                local lasttf, tf, curtf = lastTF[i], TF[i], curTF[i];
+                local lasttf, tf, curtf = lastTF and lastTF[i], TF[i], curTF[i];
                 if (tf.action == "rotate") then
-                    curtf.rotate = GetCurValue(lasttf.rotate, tf.rotate);
+                    curtf.rotate = GetCurValue(lasttf and lasttf.rotate, tf.rotate);
                 elseif (tf.action == "translate") then
-                    curtf.translateX = GetCurValue(lasttf.translateX, tf.translateX);
-                    curtf.translateY = GetCurValue(lasttf.translateY, tf.translateY);
+                    curtf.translateX = GetCurValue(lasttf and lasttf.translateX, tf.translateX);
+                    curtf.translateY = GetCurValue(lasttf and lasttf.translateY, tf.translateY);
                 end
             end
         end
@@ -133,6 +134,7 @@ function Animation:SetAnimationStyle()
     end
 end
 
+-- local lastCurTime = 0;
 function Animation:FrameMove()
     local keyframes = self:GetKeyFrames();
     if (not keyframes or #keyframes == 0 or self.totalTime == 0 or self.count == 0) then return end
@@ -150,7 +152,16 @@ function Animation:FrameMove()
 
     self:SetAnimationStyle();
 
+    -- if (curtime - lastCurTime > 1000) then
+    --     AnimationDebug(curtime, self.index, self.curDirection, 
+    --         {self:GetFrameStyle()},
+    --         self:GetElement():GetStyle():GetCurStyle(), 
+    --         (self.nextTime > self.lastNextTime) and ((curtime - self.lastNextTime) / (self.nextTime - self.lastNextTime)) or 1);
+    --     lastCurTime = curtime;
+    -- end
+
     if (curtime < self.nextTime) then return end
+    -- self.nextTime = curtime;
     self:NextFrame();
 
     if (self:IsFinish()) then

@@ -41,10 +41,12 @@ end
 
 -- 绑定页面到告示牌
 function Page.BindPageToBlockSign(blockX, blockY, blockZ, page)
+    if (not blockX or not blockY or not blockZ or not page) then return end
     local entity = BlockEngine:GetBlockEntity(blockX, blockY, blockZ); 
-    if (not entity) then return end
+    if (not entity) then return print("3D 实体不存在") end
+    entity.cmd = "<div></div>";
+    entity:Refresh();
     local obj = entity:GetInnerObject();
-    if (not obj) then return end
     obj:ShowHeadOnDisplay(true, 0);
     obj:SetHeadOnUITemplateName(page:GetWindowName(), 0);
     obj:SetHeadOnOffset(0, 0.42, 0.37, 0);
@@ -68,8 +70,6 @@ function Page.Show(G, params, isNew)
 
     params.G = G;
     page:Show(params);
-
-    Page.BindPageToBlockSign(params.blockX, params.blockY, params.blockZ, page);
 
     return page;
 end
@@ -112,8 +112,9 @@ function Page.ShowVue3DTestPage(G, params)
 
     _G.VueTestPage:Show(params);
 
+    Page.BindPageToBlockSign(params.blockX, params.blockY, params.blockZ, _G.VueTestPage);
     
-    return  _G.VueTestPage;
+    return _G.VueTestPage;
 end
 
 -- 显示用户信息

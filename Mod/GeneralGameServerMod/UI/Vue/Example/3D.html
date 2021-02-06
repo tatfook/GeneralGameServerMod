@@ -1,5 +1,31 @@
-<template style="width: 100%; height: 100%">
-    <div class="center full-height full-width">
-        <DateTimeText fmt="%H:%M:%S"></DateTimeText>
+<template style="width: 100%; height: 100%;">
+    <div class="sign" v-for="i in 100" v-bind:style="'left:' .. ((i - 1) * 400) .. 'px'">
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
+        <div class="item">兰州化学工业公司中小学总校第一小学 逍遥</div>
     </div>
 </template>
+
+
+<style>
+.sign {
+    height: 200px;
+    width: 300px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background-color: #ffffff;
+}
+
+.item {
+    height: 20px;
+    width: 100%;
+}
+</style>
