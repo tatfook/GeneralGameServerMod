@@ -23,7 +23,7 @@ RegisterComponent("PlayerAsset", "%vue%/Page/User/PlayerAsset.html");
 RegisterComponent("Honor", "%vue%/Page/User/Honor.html");
 RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
 
-tabindex = "works";               -- 当前选择项
+tabindex = HeaderTabIndex or "works";               -- 当前选择项
 
 function SelectTab(index)
     tabindex = index;
