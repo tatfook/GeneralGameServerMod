@@ -50,7 +50,7 @@ function SelectTab(index)
         if (tabindex == "suit") then
             if (assetfile ~= CustomCharItems.defaultModelFile) then
                 assetfile = CustomCharItems.defaultModelFile;
-                skin = CustomCharItems.defaultSkinString;
+                skin = CustomCharItems:SkinStringToItemIds(CustomCharItems.defaultSkinString);
             end
             GetGlobalScope():Set("MainAsset", assetfile);
             GetGlobalScope():Set("MainSkin", skin);

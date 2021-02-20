@@ -17,6 +17,7 @@ function close()
                 local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
                 GameLogic.IsVip("ChangeAvatarSkin", true, function(isVip) 
 	                if(isVip) then
+                        skin = CustomCharItems:ChangeSkinStringToItems(skin);
                         local playerEntity = GameLogic.GetPlayerController():GetPlayer();
                         playerEntity:SetMainAssetPath(assetfile);
                         GameLogic.options:SetMainPlayerAssetName(assetfile);

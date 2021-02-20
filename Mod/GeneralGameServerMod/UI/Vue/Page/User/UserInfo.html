@@ -411,9 +411,8 @@ function ClickIcon(index)
 	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
     local avtarIcons = GetGlobalScope():Get("AvatarIcons");
     if (avtarIcons and avtarIcons[index] and avtarIcons[index].id) then
-		local item = CustomCharItems:GetItemById(avtarIcons[index].id);
         local currentSkin = GetGlobalScope():Get("MainSkin");
-		local skin = CustomCharItems:RemoveItemInSkin(currentSkin, item);
+		local skin = CustomCharItems:RemoveItemInSkin(currentSkin, avtarIcons[index].id);
 		if (currentSkin ~= skin) then
 			avtarIcons[index].id = "";
 			avtarIcons[index].name = "";
