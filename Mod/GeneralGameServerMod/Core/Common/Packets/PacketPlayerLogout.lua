@@ -23,7 +23,7 @@ function PacketPlayerLogout:Init(packet)
 
 	-- 退出原因
 	self.reason = packet.reason;
-	
+
 	return self;
 end
 

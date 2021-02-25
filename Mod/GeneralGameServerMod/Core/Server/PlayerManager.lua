@@ -234,7 +234,7 @@ function PlayerManager:Offline(player, reason)
     
     -- 如果在线用户数大于最小用户数, 此时逻辑上应没有离线玩家了也不需要离线玩家, 可以直接登出当前用户
     if ((#self.onlinePlayerList) > self.minClientCount) then
-        return self:Logout(player, reason);
+        return self:Logout(player, reason, true);
     end
 
     -- 获取当前玩家
@@ -243,7 +243,7 @@ function PlayerManager:Offline(player, reason)
 
     -- 玩家不存在, 或不是最新玩家直接退出
     if (not curPlayer or curPlayer.entityId ~= player.entityId) then
-        return self:Logout(player, reason);
+        return self:Logout(player, reason, true);
     end
 
     -- 移除玩家
@@ -253,7 +253,7 @@ function PlayerManager:Offline(player, reason)
 end
 
 -- 踢出玩家
-function PlayerManager:Logout(player, reason)
+function PlayerManager:Logout(player, reason, isExcludeSelf)
     if (not player) then return end
     self:GetWorld():GetTrack():RemoveOfflinePlayer(player);
 
@@ -275,11 +275,11 @@ function PlayerManager:Logout(player, reason)
     self:RemoveOfflinePlayer(username);                   -- 从离线队列中移除
     self.offlineQuadtree:RemoveObject(username);
     -- 发送退出包
-    self:SendPacketPlayerLogout(player, reason);
+    self:SendPacketPlayerLogout(player, reason, isExcludeSelf);
 end
 
 -- 发送玩家退出
-function PlayerManager:SendPacketPlayerLogout(player, reason)
+function PlayerManager:SendPacketPlayerLogout(player, reason, isExcludeSelf)
     if (not player) then return end
 
     -- 先发送后移除, 不然移除没法收到自己登出消息
@@ -293,8 +293,13 @@ function PlayerManager:SendPacketPlayerLogout(player, reason)
     self:SendPacketToAllPlayers(packet, player);                      -- 通知其它人退出
 
     -- 发送退出包给自己
-    player:SendPacketToPlayer(packet);                                -- 单独发, 确保自己一定知道自己退出
+    if (not isExcludeSelf) then
+        player:SendPacketToPlayer(packet);                            -- 单独发, 确保自己一定知道自己退出
+    end
     
+    -- 后续请求让其重新登录
+    player.playerNetHandler:SetPlayer(nil);                           -- 置空玩家处理器中玩家对象
+
     -- 打印日志
     GGS.Debug.GetModuleDebug("PlayerLoginLogoutDebug")(string.format("发送玩家退出数据包, reason: %s username : %s, worldkey: %s, entityId: %s", tostring(reason), player:GetUserName(), self:GetWorld():GetWorldKey(), player:GetEntityId()));
 end
@@ -549,7 +554,7 @@ function PlayerManager:CleanOfflinePlayer()
             self.offlineQuadtree:RemoveObject(username);
         else 
             if (player.logoutTick and (curTime - player.logoutTick) > maxOfflineTime) then
-                self:Logout(player);
+                self:Logout(player, "离线用户退出");
             end
         end
     end

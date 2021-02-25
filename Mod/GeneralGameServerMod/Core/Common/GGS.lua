@@ -47,7 +47,8 @@ GGS.NetDebug = Debug.GetModuleDebug("NetDebug");                               -
 GGS.BlockSyncDebug = Debug.GetModuleDebug("BlockSyncDebug");                   -- 方块同步日志
 GGS.AreaSyncDebug = Debug.GetModuleDebug("AreaSyncDebug");                     -- 区域同步日志
 
-GGS.NetDebug.Disable();   -- 默认禁用网络日志
+GGS.NetDebug.Disable();                                                        -- 默认禁用网络日志
+GGS.PlayerLoginLogoutDebug.Enable();                                           -- 开启用户登录登出
 
 -- Util
 GGS.ToString = Debug.ToString;
