@@ -1,7 +1,95 @@
 <template style="display: inline-block;">
     <div style="margin-top: 11px; margin-left: 9px; height:569px; width: 339px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwukuang_339X529_32bits.png#0 0 339 529:50 300 50 50);">
         <div style="height: 298px; position: relative;">
-            <div style="margin-top: 20px;">
+             <div style="margin-top: 4px;">
+                <div class="center">
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <div style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
+                            <div style="margin-left:9px;margin-top:11px;width:31px;height:27px;background:url(Texture/Aries/Creator/keepwork/Avatar/5mianbu_31X27_32bits.png#0 0 31 27);"></div>
+                        </div>
+                        <div style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
+                            <div style="margin-left:7px;margin-top:13px;width:36px;height:24px;background:url(Texture/Aries/Creator/keepwork/Avatar/6toushi_36X24_32bits.png#0 0 36 24);"></div>
+                        </div>
+                    </div>
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <div style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
+                            <div style="margin-left:6px;margin-top:16px;width:37px;height:18px;background:url(Texture/Aries/Creator/keepwork/Avatar/10yanjing_37X18_32bits.png#0 0 37 18);"></div>
+                        </div>
+                        <div style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
+                            <div style="margin-left:9px;margin-top:17px;width:32px;height:15px;background:url(Texture/Aries/Creator/keepwork/Avatar/9zuiba_32X15_32bits.png#0 0 32 15);"></div>
+                        </div>
+                    </div>
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <div style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
+                            <div style="margin-left:9px;margin-top:12px;width:32px;height:26px;background:url(Texture/Aries/Creator/keepwork/Avatar/3yifu_32X26_32bits.png#0 0 32 26);"></div>
+                        </div>
+                        <div style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
+                            <div style="margin-left:9px;margin-top:11px;width:31px;height:27px;background:url(Texture/Aries/Creator/keepwork/Avatar/2kuzi_31X27_32bits.png#0 0 31 27);"></div>
+                        </div>
+                    </div>
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <div style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
+                            <div style="margin-left:12px;margin-top:10px;width:30px;height:30px;background:url(Texture/Aries/Creator/keepwork/Avatar/4beibu_30X30_32bits.png#0 0 30 30);"></div>
+                        </div>
+                        <div style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
+                            <div style="margin-left:8px;margin-top:7px;width:33px;height:35px;background:url(Texture/Aries/Creator/keepwork/Avatar/8shouchi_33X35_32bits.png#0 0 33 35);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: -240px;">
+                <div class="center">
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <div v-if="IsIconValid(1)" v-on:click="ClickIcon(1)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(1)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(1)" style="float:left;margin-left:10px;width:50px;height:50px;">
+                        </div>
+                        <div v-if="IsIconValid(2)" v-on:click="ClickIcon(2)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(2)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(2)" style="float:left;margin-left:212px;width:50px;height:50px;">
+                        </div>
+                    </div>
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <div v-if="IsIconValid(3)" v-on:click="ClickIcon(3)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(3)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(3)" style="float:left;margin-left:10px;width:50px;height:50px;">
+                        </div>
+                        <div v-if="IsIconValid(4)" v-on:click="ClickIcon(4)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(4)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(4)" style="float:left;margin-left:212px;width:50px;height:50px;">
+                        </div>
+                    </div>
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <div v-if="IsIconValid(5)" v-on:click="ClickIcon(5)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(5)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(5)" style="float:left;margin-left:10px;width:50px;height:50px;">
+                        </div>
+                        <div v-if="IsIconValid(6)" v-on:click="ClickIcon(6)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(6)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(6)" style="float:left;margin-left:212px;width:50px;height:50px;">
+                        </div>
+                    </div>
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <div v-if="IsIconValid(7)" v-on:click="ClickIcon(7)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(7)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(7)" style="float:left;margin-left:10px;width:50px;height:50px;">
+                        </div>
+                        <div v-if="IsIconValid(8)" v-on:click="ClickIcon(8)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(8)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(8)" style="float:left;margin-left:212px;width:50px;height:50px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+           <div style="margin-top: -230px;">
                 <div class="center" v-if="not isEditNickName">
                     <div style="display: inline;">
                         <div v-if="isCrown" tooltip="Paracraft 会员" style="margin-left:2px; display: inline-block; width:24px; height:24px; background:url(Texture/Aries/Creator/keepwork/UserInfo/crown_32bits.png#0 0 18 18)"></div>
@@ -16,7 +104,7 @@
                     <ChangeNickName v-bind:finish="OnEditNickNameFinish" v-bind:userId="UserDetail.id" v-bind:nickname="UserDetail.nickname" style="display: inline;"></ChangeNickName>
                 </div>
             </div>
-            <div class="center">
+            <div class="center" style="margin-top: 0px;">
                 <canvas3d v-bind:assetfile="MainAsset" v-bind:skin="MainSkin" v-bind:scale="scale" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" IsInteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></canvas3d>
             </div>
             <!-- <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div> -->
@@ -26,8 +114,8 @@
             <div v-on:click="ClickPersonalPage" class="btn" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
             <div v-show="UserDetail.paraMini" onclick=ClickHomeBtn class="btn" style="position: absolute; left: 60px; bottom: 10px; height:42px; width: 42px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jiayuan_42X42_32bits.png#0 0 42 42);"></div>
             <div v-if="isAuthUser and not isRealName" v-on:click="ClickGoRealName" style="position: absolute; left: 120px; bottom: 6px;  text-align: center; line-height: 24px; width:100px; height: 30px; font-size: 14px; base-font-size: 14px; color: #000000; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#673 198 38 64:12 10 12 15);">实名认证</div>
-            <div v-on:click="ClickSendMsgBtn" class="btn" style="position: absolute; right: 15px; bottom: 15px; height:48px; width: 44px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_faxiaoxi_44X48_32bits.png#0 0 44 48);"></div>
-            <ScaleSlider v-if="isAuthUser" onscale="OnScale" style="position: absolute; left: 10px; top: 50px;"></ScaleSlider>
+            <div v-on:click="ClickSendMsgBtn" class="btn" style="position: absolute; right: 15px; bottom: 10px; height:48px; width: 44px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_faxiaoxi_44X48_32bits.png#0 0 44 48);"></div>
+            <ScaleSlider v-if="isAuthUser" onscale="OnScale" style="position: absolute; left: 60px; top: 50px;"></ScaleSlider>
         </div>
         <div style="padding-left: 4px; width: 316px; height: 360px; margin-left: 11px;">
             <div style="display: flex; margin-top: 20px; height: 38px; width: 310px; background-color: #c1c2c2; font-size: 14px; base-font-size: 14px; color: #313131;">
@@ -301,5 +389,37 @@ end
 
 function ClickPersonalPage()
     ParaGlobal.ShellExecute("open", "https://keepwork.com/u/" .. UserDetail.username, "", "", 1);
+end
+
+function IsIconValid(index)
+    local avtarIcons = GetGlobalScope():Get("AvatarIcons");
+    return avtarIcons and avtarIcons[index] and avtarIcons[index].icon ~= "";
+end
+
+function IconStyle(index)
+    local avtarIcons = GetGlobalScope():Get("AvatarIcons");
+    if (avtarIcons and avtarIcons[index]) then
+        return string.format("margin:5px;width:40px;height:40px;background:url(%s);", avtarIcons[index].icon or "");
+    else
+        return "margin:5px;width:40px;height:40px;";
+    end
+end
+
+function ClickIcon(index)
+    if (not isAuthUser) then return end;
+	NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
+	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
+    local avtarIcons = GetGlobalScope():Get("AvatarIcons");
+    if (avtarIcons and avtarIcons[index] and avtarIcons[index].id) then
+        local currentSkin = GetGlobalScope():Get("MainSkin");
+		local skin = CustomCharItems:RemoveItemInSkin(currentSkin, avtarIcons[index].id);
+		if (currentSkin ~= skin) then
+			avtarIcons[index].id = "";
+			avtarIcons[index].name = "";
+			avtarIcons[index].icon = "";
+            GetGlobalScope():Set("AvatarIcons", avtarIcons);
+            GetGlobalScope():Set("MainSkin", skin);
+		end
+    end
 end
 </script>

@@ -110,22 +110,30 @@ end
 -- 更改人物外观
 function EntityOtherPlayer:UpdateEntityActionState()
     local curAnimId = self:GetAnimId();
+	local curSkinId = self:GetSkinId();
+	local obj = self:GetInnerObject();
     
     -- 没有运动却在走路或跑步则重置为待机动作
     if (self.smoothFrames == 0 and (curAnimId == 4 or curAnimId == 5)) then curAnimId = 0 end
 
 	if(self.lastAnimId ~= curAnimId and curAnimId) then
 		self.lastAnimId = curAnimId;
-		local obj = self:GetInnerObject();
 		if(obj) then
 			obj:SetField("AnimID", curAnimId);
 		end
+
+        NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/PlayerAssetFile.lua");
+        local PlayerAssetFile = commonlib.gettable("MyCompany.Aries.Game.EntityManager.PlayerAssetFile")
+        PlayerAssetFile:ShowWingAttachment(obj, curSkinId, curAnimId == 38);
     end
     
-	local curSkinId = self:GetSkinId();
 	if(self.lastSkinId ~= curSkinId and curSkinId) then
 		self.lastSkinId = curSkinId;
 		self:SetSkin(curSkinId, true);
+
+        NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/PlayerAssetFile.lua");
+        local PlayerAssetFile = commonlib.gettable("MyCompany.Aries.Game.EntityManager.PlayerAssetFile")
+        PlayerAssetFile:ShowWingAttachment(obj, curSkinId, curAnimId == 38);
     end
     
     local dataWatcher = self:GetDataWatcher();

@@ -14,10 +14,21 @@
 <script type="text/lua">
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
+local function ResetAvatarIcons()
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Movie/CustomSkinPage.lua");
+    local CustomSkinPage = commonlib.gettable("MyCompany.Aries.Game.Movie.CustomSkinPage");
+    local avtarIcons = GetGlobalScope():Get("AvatarIcons") or {};
+	for i = 1, #CustomSkinPage.category_ds do
+		avtarIcons[i] = {id = "", icon = "", name = ""}; 
+	end
+    GetGlobalScope():Set("AvatarIcons", avtarIcons);
+end
+
 local function ChangePlayerAsset(assetfile, skin)
 	assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
 	local playerEntity = GameLogic.GetPlayerController():GetPlayer();
 	if(assetfile and (assetfile~=playerEntity:GetMainAssetPath() or skin ~= playerEntity:GetSkin())) then
+        ResetAvatarIcons();
 		local oldAssetFile = playerEntity:GetMainAssetPath()
 		if(playerEntity.SetModelFile) then
 			playerEntity:SetModelFile(assetfile);

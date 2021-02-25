@@ -13,13 +13,13 @@
 
     <div style="height: 540px;">
         <WorksList id="works" type="works" v-show="tabindex == 'works'"></WorksList>
-        <PlayerAsset v-show="tabindex == 'skin'"></PlayerAsset>
+        <AvatarTab v-show="tabindex == 'skin'"></AvatarTab>
         <Honor v-show="tabindex == 'honor'"></Honor>
     </div>
 </template>
 
 <script type="text/lua">
-RegisterComponent("PlayerAsset", "%vue%/Page/User/PlayerAsset.html");
+RegisterComponent("AvatarTab", "%vue%/Page/User/AvatarTab.html");
 RegisterComponent("Honor", "%vue%/Page/User/Honor.html");
 RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
 

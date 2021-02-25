@@ -1,0 +1,61 @@
+<template style="display: inline-block; padding: 6px; width: 100%; height: 100%;">
+    <div class="scroll" style="width: 100%; height: 100%; overflow-y: auto;">
+        <div v-for="item in AvatarItems" class="item" onclick="ClickItem(item)">
+            <div v-bind:style="ItemStyle(item)"></div>
+            <div class="center" style="height: 30px; color: #000000; font-size: 12px;">{{item.name}}</div>
+        </div>
+    </div>
+</template>
+
+<script type="text/lua">
+
+function OnAttrValueChange()
+end
+
+function ClickItem(item)
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Movie/CustomSkinPage.lua");
+    local CustomSkinPage = commonlib.gettable("MyCompany.Aries.Game.Movie.CustomSkinPage");
+	local index = CustomSkinPage.GetIconIndexFromName(item.category);
+	local avtarIcons = GetGlobalScope():Get("AvatarIcons");
+	if (avtarIcons and avtarIcons[index] and avtarIcons[index].id == item.id) then
+		return;
+	end
+
+	NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
+	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
+    local assetfile = GetGlobalScope():Get("MainAsset");
+    local skin = GetGlobalScope():Get("MainSkin");
+
+	local currentSkin = CustomCharItems:AddItemToSkin(skin, item);
+
+	if(skin ~= currentSkin) then
+        GetGlobalScope():Set("MainAsset", assetfile);
+        GetGlobalScope():Set("MainSkin", currentSkin);
+	end
+
+	if (avtarIcons[index] and item.id) then
+		avtarIcons[index].id = item.id;
+		avtarIcons[index].name = item.name;
+		avtarIcons[index].icon = item.icon;
+		GetGlobalScope():Set("AvatarIcons", avtarIcons);
+	end
+end 
+
+function ItemStyle(item)
+    return string.format("margin-left:30px;margin-top: 15px; margin-bottom: 15px; width: 64px; height: 64px; background:url(%s)", item.icon);
+end
+
+function OnReady()
+end 
+
+</script>
+
+<style>
+.item {
+    width: 146px;
+    height: 140px;
+    padding: 10px 9px 0px 9px;
+    display: inline-block;
+    background: url(Texture/Aries/Creator/keepwork/ggs/user/renwuqiehuan/wupingbj_146X140_32bits.png#0 0 146 140);
+}
+</style>

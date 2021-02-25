@@ -1,6 +1,8 @@
 
 NPL.load("(gl)script/ide/System/Encoding/base64.lua");
 NPL.load("(gl)script/ide/Json.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
+local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
 local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
@@ -25,6 +27,8 @@ GlobalScope:Set("MainSkin", player and player:GetSkin());
 GlobalScope:Set("AssetSkinGoodsItemId", 0);
 GlobalScope:Set("IsFollow", false);
 GlobalScope:Set("HonorList", {});
+GlobalScope:Set("AvatarItems", {});
+GlobalScope:Set("AvatarIcons", {});
 
 local ProjectMap = {};
 
@@ -274,6 +278,25 @@ function LoadUserInfo()
         local ParacraftPlayerEntityInfo = UserDetail.extra and UserDetail.extra.ParacraftPlayerEntityInfo or {};
         if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
         if (ParacraftPlayerEntityInfo.skin) then GlobalScope:Set("MainSkin", ParacraftPlayerEntityInfo.skin) end 
+        
+        NPL.load("(gl)script/apps/Aries/Creator/Game/Movie/CustomSkinPage.lua");
+        local CustomSkinPage = commonlib.gettable("MyCompany.Aries.Game.Movie.CustomSkinPage");
+        local avtarIcons = {};
+	    for i = 1, #CustomSkinPage.category_ds do
+		    avtarIcons[i] = {id = "", icon = "", name = ""}; 
+	    end
+        if (ParacraftPlayerEntityInfo.asset == CustomCharItems.defaultModelFile and not CustomCharItems:CheckAvatarExist(ParacraftPlayerEntityInfo.skin)) then
+	        local items = CustomCharItems:GetUsedItemsBySkin(ParacraftPlayerEntityInfo.skin);
+	        for _, item in ipairs(items) do
+		        local index = CustomSkinPage.GetIconIndexFromName(item.name);
+		        if (index > 0) then
+			        avtarIcons[index].id = item.id;
+			        avtarIcons[index].name = item.name;
+			        avtarIcons[index].icon = item.icon;
+		        end
+	        end
+        end
+        GlobalScope:Set("AvatarIcons", avtarIcons);
 
         -- 获取用户荣誉
         keepwork.user.honors({userId = UserDetail.id}, function(status, msg, data)
@@ -493,5 +516,13 @@ end
 --     verticalScrollBar:GetThumb():SetStyleValue("background", "Texture/Aries/Creator/keepwork/ggs/dialog/xiala_12X38_32bits.png#0 0 12 38:2 5 2 5");
 --     verticalScrollBar:GetThumb():SetStyleValue("min-height", 10);
 -- end
+
+_G.GetAvatarItems = function(category)
+    local asset = GetGlobalScope():Get("MainAsset");
+    local skin = GetGlobalScope():Get("MainSkin");
+    local items = CustomCharItems:GetModelItems(asset, category, skin, true);
+    GlobalScope:Set("AvatarItems", items);
+    return items;
+end
 
 LoadUserInfo();
