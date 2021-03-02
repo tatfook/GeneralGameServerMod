@@ -155,7 +155,7 @@ function Blockly:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
     -- 设置绘图类
     -- Shape:SetPainter(painter);
-    local CurrentBlock = self:GetCurrentBlock();
+    local CurrentBlock, captureBlock = self:GetCurrentBlock(), self:GetMouseCaptureUI();
     local toolboxWidth = Const.ToolBoxWidthUnitCount * Const.UnitSize;
     painter:Translate(x, y);
 
@@ -163,7 +163,7 @@ function Blockly:RenderContent(painter)
     painter:SetClipRegion(toolboxWidth, 0, w - toolboxWidth, h);
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
-        if (CurrentBlock ~= block) then
+        if (CurrentBlock ~= block or CurrentBlock ~= captureBlock) then
             block:Render(painter);
             painter:Flush();
         end
@@ -173,7 +173,7 @@ function Blockly:RenderContent(painter)
 
     self.toolbox:Render(painter);
 
-    if (CurrentBlock) then
+    if (CurrentBlock and CurrentBlock == captureBlock) then
         painter:Translate(self.offsetX, self.offsetY);
         CurrentBlock:Render(painter);
         painter:Flush();
