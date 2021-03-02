@@ -424,7 +424,8 @@ function Compile:VBind(element)
         if (realKey and realKey ~= "") then
             self:ExecCode(val, element, function(realVal)
                 -- CompileDebug.If(realKey == "value", realVal);
-                if (type(realVal) == "table" and realVal.ToPlainObject) then realVal = realVal:ToPlainObject() end
+                if (Scope:__is_scope__(realVal)) then realVal = realVal:__get_data__() end
+                -- if (type(realVal) == "table" and realVal.ToPlainObject) then realVal = realVal:ToPlainObject() end
                 element:SetAttrValue(realKey, realVal);
                 -- CompileDebug.If(realKey == "NextPagePorjectList", element:GetAttrValue("NextPagePorjectList"));
             end, true);
@@ -440,6 +441,7 @@ function Compile:VModel(element)
     if (not string.match(vmodel, "^%a[%w%.]*$")) then return end
     local scope = self:GetScope();
     self:ExecCode(vmodel, element, function(val)
+        if (Scope:__is_scope__(val)) then val = val:__get_data__() end
         element:SetAttrValue("value", val);
     end, true);
     -- 注意死循环
@@ -448,7 +450,11 @@ function Compile:VModel(element)
         local keys = commonlib.split(vmodel, "%.");
         local subscope, size = scope, #keys;
         for i = 1, size - 1 do subscope = scope[keys[i]] end
-        subscope[keys[size]] = val;
+        if (Scope:__is_scope__(subscope[keys[size]])) then
+            -- subscope[keys[size]]:__set_data__(val);
+        else 
+            subscope[keys[size]] = val;
+        end
     end)
 end
 

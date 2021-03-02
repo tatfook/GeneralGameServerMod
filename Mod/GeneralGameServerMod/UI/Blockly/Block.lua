@@ -87,13 +87,22 @@ end
 
 function Block:ParseMessageAndArg(opt)
     local index, inputFieldContainerIndex = 0, 1;
-    local messageIndex, argIndex = "message" .. tostring(index), "arg" .. tostring(index);
-    local message, arg = opt[messageIndex], opt[argIndex];
+
+    local function GetMessageArg()
+        local messageIndex, argIndex = "message" .. tostring(index), "arg" .. tostring(index);
+        local message, arg = opt[messageIndex], opt[argIndex];
+        if (index == 0) then message, arg = opt.message or message, opt.arg or arg end
+        index = index + 1;
+        return message, arg;
+    end
+
     local function GetInputFieldContainer(isFillFieldSpace)
         local inputFieldContainer = self.inputFieldContainerList[inputFieldContainerIndex] or InputFieldContainer:new():Init(self, isFillFieldSpace);
         self.inputFieldContainerList[inputFieldContainerIndex] = inputFieldContainer;
         return inputFieldContainer;
     end
+
+    local message, arg = GetMessageArg();
     while (message) do
         local startPos, len = 1, string.len(message);
         while(startPos <= len) do
@@ -138,9 +147,7 @@ function Block:ParseMessageAndArg(opt)
             startPos = pos + 1 + nolen;
         end
         
-        index = index + 1;
-        messageIndex, argIndex = "message" .. tostring(index), "arg" .. tostring(index);
-        message, arg = opt[messageIndex], opt[argIndex];
+        message, arg = GetMessageArg();
     end
 end
 
@@ -470,6 +477,11 @@ end
 function Block:GetValueAsString(name)
     local inputAndField = self.inputFieldMap[name];
     return inputAndField and inputAndField:GetValueAsString() or "";
+end
+
+-- 获取字符串字段
+function Block:getFieldAsString(name)
+    return self:GetValueAsString(name);
 end
 
 -- 获取输入字段

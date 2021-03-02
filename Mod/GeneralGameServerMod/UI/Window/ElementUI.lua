@@ -52,6 +52,7 @@ function ElementUI:IsNeedRender()
 end
 
 function ElementUI:Render(painter)
+
     for i = 1, #self.AbsoluteElements do self.AbsoluteElements[i] = nil end
     for i = 1, #self.FixedElements do self.FixedElements[i] = nil end
     self:RenderStaticElement(painter, self);

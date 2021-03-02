@@ -19,6 +19,10 @@ local EventBlocks = NPL.load("./Event.lua", IsDevEnv);
 local LogBlocks = NPL.load("./Log.lua", IsDevEnv);
 local HelperBlocks = NPL.load("./Helper.lua", IsDevEnv);
 
+
+local VueToolbox = NPL.load("./VueToolbox.lua", IsDevEnv);
+local NplToolbox = NPL.load("./NplToolbox.lua", IsDevEnv);
+
 local Toolbox = NPL.export();
 
 local AllBlocks = {};
@@ -78,11 +82,27 @@ AddToAllBlocks(EventBlocks, "事件");
 AddToAllBlocks(LogBlocks, "辅助");
 AddToAllBlocks(HelperBlocks, "辅助");
 
-function Toolbox.GetAllBlocks()
+function Toolbox.GetAllBlocks(typ)
+    if (typ == "npl") then
+        return NplToolbox.GetAllBlocks();
+    elseif (typ == "vue") then
+        return VueToolbox.GetAllBlocks();
+    else 
+        return AllBlocks;
+    end
+
     return AllBlocks;
 end
 
-function Toolbox.GetCategoryList()
+function Toolbox.GetCategoryList(typ)
+    if (typ == "npl") then
+        return NplToolbox.GetCategoryList();
+    elseif (typ == "vue") then
+        return VueToolbox.GetCategoryList();
+    else 
+        return CategoryList;
+    end
+    
     return CategoryList;
 end
 

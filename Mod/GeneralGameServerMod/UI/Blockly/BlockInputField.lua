@@ -45,7 +45,7 @@ function BlockInputField:Init(block, option)
     self:SetType(option.type);
     self:SetValidator(option.validator);
     self:SetValue(self:GetOptionText());
-    self:SetLabel(self:GetValue());
+    self:SetLabel(tostring(self:GetValue()));
     -- 解析颜色值
     self:SetColor(option.color);
 

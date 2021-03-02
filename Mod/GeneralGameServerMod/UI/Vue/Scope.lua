@@ -318,6 +318,12 @@ function Scope:__get_data__()
     return self.__data__;
 end
 
+-- 设置真实数据
+function Scope:__set_data__(data)
+    if (type(data) ~= "table") then return end
+    self.__data__ = data;
+end
+
 -- 设置数据
 function Scope:Set(key, val)
     self:__set__(self.__scope__, key, val);

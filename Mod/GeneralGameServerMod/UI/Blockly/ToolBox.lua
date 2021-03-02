@@ -128,7 +128,7 @@ function ToolBox:RenderCategory(painter)
         painter:DrawCircle(categoryWidth / 2, -(offsetY + radius + categoryHeight / 7), 0, radius, "z", true);
         painter:SetFont(categoryFont);
         painter:SetPen("#808080");
-        painter:DrawText(categoryWidth / 4 + 2, offsetY + radius * 2 + categoryHeight / 6 + 4, category.name);
+        painter:DrawText(categoryWidth / 4 + 2, offsetY + radius * 2 + categoryHeight / 6 + 4, category.text or category.name);
     end
 end
 
@@ -140,15 +140,17 @@ function ToolBox:Render(painter)
 
     painter:SetPen("#ffffff");
     painter:DrawLine(width, 0, width, height);
-    -- painter:DrawRect(0, 0, width, height);
-    -- echo({self.widthUnitCount, self.heightUnitCount})
    
     painter:Save();
     painter:SetClipRegion(0, 0, width, height);
 
     for _, block in ipairs(self.blocks) do
-        block:Render(painter);
-        painter:Flush();
+        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+        local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
+        if (not ((topUnitCount + heightUnitCount) < 0 or topUnitCount > self.heightUnitCount)) then
+            block:Render(painter);
+            painter:Flush();
+        end
     end
 
     painter:Restore();

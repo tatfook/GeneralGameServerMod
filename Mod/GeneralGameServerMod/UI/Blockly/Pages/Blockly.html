@@ -10,7 +10,7 @@
         </div>
         <div onclick=CloseWindow class="btn" style="width: 22px; height: 22px; background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);"></div>
     </template>
-    <Blockly v-show="tab == 'blockly'" ref="blockly" class="tab-item"></Blockly>
+    <Blockly v-show="tab == 'blockly'" ref="blockly" class="tab-item" type="npl"></Blockly>
     <div v-show="tab == 'code'" class="tab-item text-code">{{code}}</div>
     <div v-show="tab == 'exec'" class="tab-item text-code">{{out}}</div>
 </template>

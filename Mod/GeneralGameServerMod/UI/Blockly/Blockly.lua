@@ -13,7 +13,6 @@ NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
 local Toolbox = NPL.load("./Blocks/Toolbox.lua", IsDevEnv);
-local VueToolbox = NPL.load("./Blocks/VueToolbox.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
@@ -57,15 +56,8 @@ function Blockly:Init(xmlNode, window, parent)
     blocklyEditor:SetVisible(false);
     self:SetEditorElement(blocklyEditor);
 
-    local allBlocks, categoryList = {}, {};
-    if (self:GetAttrStringValue("type") == "vue") then
-        allBlocks = VueToolbox.GetAllBlocks();
-        categoryList = VueToolbox.GetCategoryList();
-    else
-        allBlocks = Toolbox.GetAllBlocks();
-        categoryList = Toolbox.GetCategoryList();
-    end
-
+    local typ = self:GetAttrStringValue("type");
+    local allBlocks, categoryList = Toolbox.GetAllBlocks(typ), Toolbox.GetCategoryList(typ);
     for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end
     self.toolbox:SetCategoryList(categoryList);
 
