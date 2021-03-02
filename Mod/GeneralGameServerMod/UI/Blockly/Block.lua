@@ -479,6 +479,10 @@ function Block:GetValueAsString(name)
     return inputAndField and inputAndField:GetValueAsString() or "";
 end
 
+-- 获取字段值
+function Block:getFieldValue(name)
+    return self:GetFieldValue(name);
+end
 -- 获取字符串字段
 function Block:getFieldAsString(name)
     return self:GetValueAsString(name);
@@ -500,7 +504,7 @@ function Block:GetBlockCode()
     end
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then
-        code = code .. "\n" .. nextBlock:GetBlockCode();
+        code = code .. nextBlock:GetBlockCode();
     end
     return code;
 end

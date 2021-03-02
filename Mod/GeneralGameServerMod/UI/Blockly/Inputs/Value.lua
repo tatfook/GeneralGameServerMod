@@ -157,10 +157,9 @@ function Value:GetValueAsString()
     return self:GetInputBlock():GetBlockCode();
 end
 
-
--- function Value:GetFieldValue() 
---     if (not self:GetInputBlock()) then 
---         return self:GetValue();
---     end
---     return self:GetInputBlock():GetBlockCode();
--- end
+function Value:GetFieldValue() 
+    if (not self:GetInputBlock()) then 
+        return self:GetValue();
+    end
+    return self:GetInputBlock():GetBlockCode();
+end
