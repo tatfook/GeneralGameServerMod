@@ -32,24 +32,12 @@ end
 
 for _, cmd in ipairs(all_cmds) do
     local category = CategoryMap[cmd.category];
-    local message, arg = "", {};
-
-    for i = 0, 10 do
-        local messageName = "message" .. tostring(i);
-        local argName = "arg" .. tostring(i);
-        if (not cmd[messageName]) then break end
-        message = message .. " " .. cmd[messageName];
-        local cmd_arg = cmd[argName];
-        if (type(cmd_arg) == "table") then
-            for _, cmd_arg_item in ipairs(cmd_arg) do table.insert(arg, #arg + 1, cmd_arg_item) end 
-        end
-    end
 
     local block = {
         color = category.color;
         category = cmd.category;
-        message = message,
-        arg = arg,
+        -- message = message,
+        -- arg = arg,
         previousStatement = cmd.previousStatement and true or false,
 	    nextStatement = cmd.nextStatement and true or false,
         output = cmd.output and true or false,
@@ -57,6 +45,20 @@ for _, cmd in ipairs(all_cmds) do
         ToNPL = cmd.ToNPL,
         hideInToolbox = cmd.hide_in_toolbox,
     } 
+
+    local message, arg = "", {};
+    for i = 0, 10 do
+        local messageName = "message" .. tostring(i);
+        local argName = "arg" .. tostring(i);
+        if (not cmd[messageName]) then break end
+        block[messageName] = cmd[messageName];
+        block[argName] = commonlib.deepcopy(cmd[argName]);
+        -- message = message .. " " .. cmd[messageName];
+        -- local cmd_arg = cmd[argName];
+        -- if (type(cmd_arg) == "table") then
+        --     for _, cmd_arg_item in ipairs(cmd_arg) do table.insert(arg, #arg + 1, cmd_arg_item) end 
+        -- end
+    end
 
     if (not block.hideInToolbox) then
         table.insert(category.blocktypes, #(category.blocktypes) + 1, block.type);

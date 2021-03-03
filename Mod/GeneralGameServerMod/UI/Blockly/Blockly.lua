@@ -150,6 +150,16 @@ end
 function Blockly:OnDestroyBlock(block)
 end
 
+-- 是否在工作区内
+function Blockly:IsInnerViewPort(block)
+    local x, y, w, h = self:GetContentGeometry();
+    local hw, hh = w / 2, h / 2;
+    local cx, cy = Const.ToolBoxWidthUnitCount * Const.UnitSize + self.offsetX + hw, self.offsetY + hh;
+    local b_x, b_y, b_hw, b_hh = block.left, block.top, block.width / 2, block.height / 2;
+    local b_cx, b_cy = b_x + b_hw, b_y + b_hh;
+    return math.abs(b_cx - cx) <= (hw + b_hw) and math.abs(b_cy - cy) <= (hh + b_hh);
+end
+
 -- 渲染Blockly
 function Blockly:RenderContent(painter)
     local x, y, w, h = self:GetContentGeometry();
