@@ -15,6 +15,7 @@ local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
 local Field = commonlib.inherit(BlockInputField, NPL.export());
 
 local MinEditFieldWidth = 120;
+local TextMarginUnitCount = 1;    -- 文本边距
 
 Field:Property("Type");                     -- label text, value
 Field:Property("Color", "#000000");
@@ -34,6 +35,8 @@ function Field:Render(painter)
 end
 
 function Field:RenderContent(painter)
+    if (self:IsEdit()) then return end
+    
     -- background
     Shape:SetBrush(self:GetBackgroundColor());
     Shape:DrawRect(painter, Const.BlockEdgeWidthUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2, self.heightUnitCount);
@@ -45,13 +48,14 @@ function Field:RenderContent(painter)
     -- input
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
+    painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
 end
 
 function Field:UpdateWidthHeightUnitCount()
-    local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + Const.BlockEdgeWidthUnitCount * 2;
+    local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + (TextMarginUnitCount + Const.BlockEdgeWidthUnitCount) * 2;
     local widthUnitCount = math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount);
-    return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), Const.LineHeightUnitCount;
+    return widthUnitCount, Const.LineHeightUnitCount;
+    -- return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), Const.LineHeightUnitCount;
 end
 
 function Field:IsField()

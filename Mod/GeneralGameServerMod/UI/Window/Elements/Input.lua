@@ -427,10 +427,10 @@ function Input:RenderContent(painter)
     painter:SetPen(self:GetColor());
     local value = tostring(text);
     if (self:IsFocus() or value ~= "") then
-        painter:DrawText(x, y + (h - fontSize) / 2, tostring(value));
+        painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, tostring(value));
     else 
         painter:SetPen("#A8A8A8"); -- placeholder color;
-        painter:DrawText(x, y + (h - fontSize) / 2, self:GetAttrStringValue("placeholder", ""));
+        painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, self:GetAttrStringValue("placeholder", ""));
     end
     painter:Translate(scrollX, 0);
     painter:Restore();

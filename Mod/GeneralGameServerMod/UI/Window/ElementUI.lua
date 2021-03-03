@@ -291,6 +291,11 @@ function ElementUI:GetFont()
     return self:GetStyle():GetFont();
 end
 
+-- 获取单行文本高度
+function ElementUI:GetSingleLineTextHeight()
+    return math.floor(self:GetFontSize() * 6 / 5);
+end
+
 -- 获取字体大小
 function ElementUI:GetFontSize(defaultValue)
     return self:GetStyle():GetFontSize(defaultValue);

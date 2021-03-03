@@ -49,14 +49,14 @@ function Blockly:Init(xmlNode, window, parent)
     local blocklyEditor = BlocklyEditor:new():Init({
         name = "BlocklyEditor",
         attr = {
-            style = "position: absolute; left: 0px; top: 0px; width: 0px; height: 0px; overflow: hidden; background-color: #ff0000;",
+            style = "position: absolute; left: 0px; top: 0px; width: 0px; height: 0px; overflow: hidden; background-color: #ffffff00;",
         }
     }, window, self)
     table.insert(self.childrens, blocklyEditor);
     blocklyEditor:SetVisible(false);
     self:SetEditorElement(blocklyEditor);
 
-    local typ = self:GetAttrStringValue("type");
+    local typ = self:GetAttrStringValue("type", "");
     local allBlocks, categoryList = Toolbox.GetAllBlocks(typ), Toolbox.GetCategoryList(typ);
     for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end
     self.toolbox:SetCategoryList(categoryList);

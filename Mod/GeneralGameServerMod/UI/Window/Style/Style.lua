@@ -458,6 +458,7 @@ local function AddComplexStyleItem(style, name, value)
 		values[1] = values[1] or 0;
 		values[2] = values[2] or "solid";
 		values[3] = values[3] or "#000000";
+		values[1] = values[1] == "none" and 0 or values[1];
 	elseif (name == "overflow") then
 		values[1] = values[1] or "hidden";
 		values[2] = values[2] or values[1];

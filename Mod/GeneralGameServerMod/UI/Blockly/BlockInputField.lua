@@ -307,24 +307,38 @@ function BlockInputField:GetMinEditFieldWidthUnitCount()
     return Const.MinEditFieldWidthUnitCount;
 end
 
-function BlockInputField:BeginEdit(opt)
-    if (not self:IsCanEdit()) then return end
-
+function BlockInputField:UpdateEditAreaSize()
+    if (not self:IsEdit()) then return end
+    self:GetTopBlock():UpdateLayout();
     local blockly = self:GetBlock():GetBlockly();
     local editor = self:GetEditorElement();
     local offsetX, offsetY = 2, 2;
-    editor:ClearChildElement();
     editor:SetStyleValue("left", self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX + offsetX);
     editor:SetStyleValue("top", self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY + offsetY);
-    editor:SetStyleValue("width", math.max(self.width, self:GetMinEditFieldWidthUnitCount() * Const.UnitSize));
+    editor:SetStyleValue("width", self.width);
     editor:SetStyleValue("height", self.height);
-    local fieldEditElement = self:GetFieldEditElement(editor);
-    if (not fieldEditElement) then return end
-    editor:InsertChildElement(fieldEditElement);
     editor:UpdateLayout();
-    editor:SetVisible(true);
+end
+
+function BlockInputField:BeginEdit(opt)
+    if (not self:IsCanEdit()) then return end
+
+    -- 获取编辑器元素
+    local editor = self:GetEditorElement();
+    -- 清空旧编辑元素
+    editor:ClearChildElement();
+    -- 获取编辑元素
+    local fieldEditElement = self:GetFieldEditElement(editor);
+    -- 不存在退出
+    if (not fieldEditElement) then return end
+    -- 添加编辑元素
+    editor:InsertChildElement(fieldEditElement);
+    -- 设置元素编辑状态
     self:SetEdit(true);
-    self:GetTopBlock():UpdateLayout();
+    -- 更新布局
+    self:UpdateEditAreaSize();
+    -- 显示编辑
+    editor:SetVisible(true);
 end
 
 function BlockInputField:EndEdit()

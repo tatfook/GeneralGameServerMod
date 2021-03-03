@@ -127,18 +127,19 @@ function Value:GetFieldEditElement(parentElement)
 
     InputFieldEditElement:SetAttrValue("type", self:GetShadowType() == "math_number" and "number" or "text");
     
-    local function InputFinish()
+    local function InputChange(bFinish)
         local value = InputFieldEditElement:GetValue();
         self:SetFieldValue(value);
         self:SetLabel(tostring(self:GetValue()));
-        self:FocusOut();
+        self:UpdateEditAreaSize();
+        if (bFinish) then self:FocusOut() end
     end 
 
-    InputFieldEditElement:SetAttrValue("onkeydown.enter", InputFinish);
-    InputFieldEditElement:SetAttrValue("onblur", InputFinish);
+    InputFieldEditElement:SetAttrValue("onkeydown.enter", function() InputChange(true) end);
+    InputFieldEditElement:SetAttrValue("onblur", function() InputChange(true) end);
+    InputFieldEditElement:SetAttrValue("onchange", function() InputChange(false) end);
 
     self.inputEl = InputFieldEditElement;
-
     return InputFieldEditElement;
 end
 

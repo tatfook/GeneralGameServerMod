@@ -21,25 +21,27 @@ function Input:GetFieldEditElement(parentElement)
     local InputFieldEditElement = InputElement:new():Init({
         name = "input",
         attr = {
-            style = "width: 100%; height: 100%; font-size: 14px;",
+            -- style = "width: 100%; height: 100%; font-size: 14px;",
+            style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(),Const.UnitSize, Const.UnitSize * (Const.BlockEdgeWidthUnitCount + 1)) ,
             value = self:GetValue(),
         },
     }, parentElement:GetWindow(), parentElement);
 
     InputFieldEditElement:SetAttrValue("type", self:GetType() == "field_number" and "number" or "text");
    
-    local function InputFinish()
+    local function InputChange(bFinish)
         local value = InputFieldEditElement:GetValue();
         self:SetFieldValue(value);
         self:SetLabel(tostring(self:GetValue()));
-        self:FocusOut();
+        self:UpdateEditAreaSize();
+        if (bFinish) then self:FocusOut() end
     end 
 
-    InputFieldEditElement:SetAttrValue("onkeydown.enter", InputFinish);
-    InputFieldEditElement:SetAttrValue("onblur", InputFinish);
+    InputFieldEditElement:SetAttrValue("onkeydown.enter", function() InputChange(true) end);
+    InputFieldEditElement:SetAttrValue("onblur", function() InputChange(true) end);
+    InputFieldEditElement:SetAttrValue("onchange", function() InputChange(false) end);
 
     self.inputEl = InputFieldEditElement;
-
     return InputFieldEditElement;
 end
 
