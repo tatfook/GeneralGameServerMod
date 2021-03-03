@@ -485,7 +485,7 @@ function Block:getFieldValue(name)
 end
 -- 获取字符串字段
 function Block:getFieldAsString(name)
-    return self:GetValueAsString(name);
+    return self:GetFieldValue(name);
 end
 
 -- 获取输入字段
