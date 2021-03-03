@@ -15,8 +15,7 @@ function OnReady()
 
     _G.GetCode = function()
         local rawcode, prettycode = BlocklyEl:GetCode();
-        <!-- print(rawcode) -->
-        return rawcode;
+        return string.gsub(prettycode, "\t", "    ");
     end
 
     _G.GetXml = function()
