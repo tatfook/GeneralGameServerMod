@@ -63,18 +63,12 @@ end
 
 function TextArea:ctor()
     self:SetName("TextArea");
-
-    self:Reset();
-    self.text = UniString:new();  -- 文本值
-    self:UpdateValue();
 end
 
 -- 初始化完成
 function TextArea:Init(xmlNode, window, parent)
     TextArea._super.Init(self, xmlNode, window, parent);
-
-    self.text = UniString:new(self:GetAttrStringValue("value", ""));
-    self:UpdateValue();
+    self:Reset();
     return self;
 end
 
@@ -86,14 +80,15 @@ function TextArea:Reset()
     self.redoCmds = {};   -- 重做命令
     self.lines = {};      -- 所有文本行
     self.selectStartAt, self.selectEndAt = nil, nil;  -- 文本选择
+    
+    self.text = UniString:new(self:GetAttrStringValue("value", ""));
+    self:SetValue(self.text:GetText());
+    self:UpdateLineInfo();
 end
 
 function TextArea:OnAttrValueChange(attrName, attrValue, oldAttrValue)
     if (attrName ~= "value" or tostring(attrValue) == self:GetValue()) then return end
-    
     self:Reset();
-    self.text = UniString:new(tostring(attrValue));
-    self:UpdateValue();
 end
 
 -- 是否选择

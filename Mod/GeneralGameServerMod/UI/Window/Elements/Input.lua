@@ -46,6 +46,7 @@ end
 function Input:Init(xmlNode, window, parent)
     self:InitElement(xmlNode, window, parent);
     self.text = UniString:new(self:GetAttrStringValue("value", ""));
+    self:SetValue(self.text:GetText());
     -- if (self:GetAttrBoolValue("autofocus")) then self:FocusIn() end
     return self;
 end
