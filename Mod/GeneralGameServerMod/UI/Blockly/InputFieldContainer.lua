@@ -9,8 +9,8 @@ local InputFieldContainer = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Block
 -------------------------------------------------------
 ]]
 
+local Const = NPL.load("./Const.lua");
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
-local Const = NPL.load("./Const.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local BlockInputField = NPL.load("./BlockInputField.lua", IsDevEnv);
 

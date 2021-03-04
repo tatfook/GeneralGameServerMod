@@ -11,7 +11,7 @@ local Block = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Block.lua")
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 
-local Const = NPL.load("./Const.lua", IsDevEnv);
+local Const = NPL.load("./Const.lua");
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local Input = NPL.load("./Inputs/Input.lua", IsDevEnv);
 local Connection = NPL.load("./Connection.lua", IsDevEnv);
@@ -31,7 +31,6 @@ local Block = commonlib.inherit(BlockInputField, NPL.export());
 local BlockDebug = GGS.Debug.GetModuleDebug("BlockDebug").Enable();   --Enable  Disable
 
 local nextBlockId = 1;
-local UnitSize = Const.UnitSize;
 local BlockPen = {width = 1, color = "#ffffff"};
 local CurrentBlockPen = {width = 2, color = "#cccccc"};
 local BlockBrush = {color = "#ffffff"};
@@ -41,14 +40,13 @@ Block:Property("Blockly");
 Block:Property("Id");
 Block:Property("Name", "Block");
 Block:Property("TopBlock", false, "IsTopBlock");    -- 是否是顶层块
-Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");
 
 function Block:ctor()
     self:SetId(nextBlockId);
     nextBlockId = nextBlockId + 1;
 
     self.isDraggable = true;
-    self.isDragClone = false;
+    self.isToolBoxBlock = false;
     self.inputFieldContainerList = {};           -- 输入字段容器列表
     self.inputFieldMap = {};
 end
@@ -59,7 +57,6 @@ function Block:Init(blockly, opt)
     self:SetBlockly(blockly);
     
     self.isDraggable = if_else(opt.isDraggable == false, false, true);
-    self.isDragClone = opt.isDragClone;
 
     if (opt.id) then self:SetId(opt.id) end
 
@@ -81,7 +78,8 @@ function Block:Clone()
     end
     clone:UpdateLayout();
     clone.isDraggable = true;
-    clone.isDragClone = false;
+    clone.isToolBoxBlock = false;
+    clone.isNewBlock = true;
     return clone;
 end
 
@@ -336,11 +334,12 @@ function Block:OnMouseMove(event)
     local blockly, block = self:GetBlockly(), self;
     local x, y = event.x, event.y;
     if (not block.isDragging) then
-        if (math.abs(x - block.startX) < UnitSize and math.abs(y - block.startY) < UnitSize) then return end
-        if (block.isDragClone) then 
+        if (math.abs(x - block.startX) < Const.UnitSize and math.abs(y - block.startY) < Const.UnitSize) then return end
+        if (block.isToolBoxBlock) then 
             block = self:Clone();
-            block.startLeftUnitCount, block.startTopUnitCount = block.leftUnitCount - blockly.offsetX / UnitSize, block.topUnitCount - blockly.offsetY / UnitSize;
-
+            block.startLeftUnitCount, block.startTopUnitCount = (block.leftUnitCount * Const.DefaultUnitSize - blockly.offsetX) / Const.UnitSize, (block.topUnitCount * Const.DefaultUnitSize - blockly.offsetY) / Const.UnitSize;
+            block:SetLeftTopUnitCount(block.startLeftUnitCount, block.startLeftUnitCount);
+            block:UpdateLayout();
             self:GetBlockly():OnCreateBlock(block);
         end
 
@@ -348,8 +347,8 @@ function Block:OnMouseMove(event)
         block:GetBlockly():CaptureMouse(block);
         block:GetBlockly():SetCurrentBlock(block);
     end
-    local XUnitCount = math.floor((x - block.startX) / UnitSize);
-    local YUnitCount = math.floor((y - block.startY) / UnitSize);
+    local XUnitCount = math.floor((x - block.startX) / Const.UnitSize);
+    local YUnitCount = math.floor((y - block.startY) / Const.UnitSize);
     
     if (block.previousConnection and block.previousConnection:IsConnection()) then 
         local connection = block.previousConnection:Disconnection();
@@ -368,22 +367,36 @@ end
 
 function Block:OnMouseUp(event)
     if (self.isDragging) then
-        if (self:GetBlockly():IsInnerDeleteArea(event.x, event.y)) then
+        if (self:GetBlockly():IsInnerDeleteArea(event.x, event.y) or self:GetBlockly():GetMousePosIndex() == 4) then
             self:GetBlockly():RemoveBlock(self);
             self:GetBlockly():OnDestroyBlock(self);
             self:GetBlockly():SetCurrentBlock(nil);
             self:GetBlockly():ReleaseMouseCapture();
+            -- 移除块
+            if (not self.isNewBlock) then self:GetBlockly():Do({action = "DeleteBlock", block = self}) end
             return ;
         else
             self:CheckConnection();
         end
+        if (self.isNewBlock) then 
+            self:GetBlockly():Do({action = "NewBlock", block = self});
+        else
+            self:GetBlockly():Do({action = "MoveBlock", block = self});
+        end
     end
+
     self:GetBlockly():SetCurrentBlock(self);
     self.isMouseDown = false;
     self.isDragging = false;
+    self.isNewBlock = false;
     self:GetBlockly():ReleaseMouseCapture();
 end
 
+function Block:GetConnection()
+    if (self.outputConnection) then return self.outputConnection:GetConnection() end
+    if (self.previousConnection) then return self.previousConnection:GetConnection() end
+    return nil;
+end
 
 function Block:CheckConnection()
     local blocks = self:GetBlockly():GetBlocks();

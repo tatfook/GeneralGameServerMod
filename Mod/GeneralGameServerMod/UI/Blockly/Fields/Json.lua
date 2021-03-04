@@ -10,7 +10,7 @@ local Json = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Json.
 ]]
 NPL.load("(gl)script/ide/Json.lua");
 
-local Const = NPL.load("../Const.lua", IsDevEnv);
+local Const = NPL.load("../Const.lua");
 local Field = NPL.load("./Field.lua", IsDevEnv);
 
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");

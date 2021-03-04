@@ -11,12 +11,10 @@ local BlockInputField = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/B
 local InputElement = NPL.load("../Window/Elements/Input.lua", IsDevEnv);
 local SelectElement = NPL.load("../Window/Elements/Select.lua", IsDevEnv);
 
-local Const = NPL.load("./Const.lua", IsDevEnv);
+local Const = NPL.load("./Const.lua");
 local Validator = NPL.load("./Validator.lua", IsDevEnv);
 
 local BlockInputField = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-
-local UnitSize = Const.UnitSize;
 
 BlockInputField:Property("ClassName", "BlockInputField");
 BlockInputField:Property("Name");
@@ -101,7 +99,7 @@ end
 
 function BlockInputField:SetTotalWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     self.totalWidthUnitCount, self.totalHeightUnitCount = widthUnitCount, heightUnitCount;
-    self.totalWidth, self.totalHeight = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
+    self.totalWidth, self.totalHeight = widthUnitCount * Const.UnitSize, heightUnitCount * Const.UnitSize;
 end
 
 function BlockInputField:GetTotalWidthHeightUnitCount()
@@ -110,7 +108,7 @@ end
 
 function BlockInputField:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     self.maxWidthUnitCount, self.maxHeightUnitCount = widthUnitCount or self.maxWidthUnitCount or self.widthUnitCount, heightUnitCount or self.maxHeightUnitCount or self.heightUnitCount;
-    self.maxWidth, self.maxHeight = self.maxWidthUnitCount * UnitSize, self.maxHeightUnitCount * UnitSize;
+    self.maxWidth, self.maxHeight = self.maxWidthUnitCount * Const.UnitSize, self.maxHeightUnitCount * Const.UnitSize;
 end
 
 function BlockInputField:UpdateWidthHeightUnitCount()
@@ -122,7 +120,7 @@ function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount
     if (self.widthUnitCount == widthUnitCount and self.heightUnitCount == heightUnitCount) then return end
 
     self.widthUnitCount, self.heightUnitCount = widthUnitCount, heightUnitCount;
-    self.width, self.height = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
+    self.width, self.height = widthUnitCount * Const.UnitSize, heightUnitCount * Const.UnitSize;
 
     self:SetMaxWidthHeightUnitCount(math.max(widthUnitCount, self.maxWidthUnitCount or 0), math.max(heightUnitCount, self.maxHeightUnitCount or 0));
 
@@ -142,10 +140,10 @@ end
 
 function BlockInputField:SetLeftTopUnitCount(leftUnitCount, topUnitCount)
     if (self.leftUnitCount == leftUnitCount and self.topUnitCount == topUnitCount) then return end
-
+ 
     self.leftUnitCount, self.topUnitCount = leftUnitCount, topUnitCount;
-    self.left, self.top = leftUnitCount * UnitSize, topUnitCount * UnitSize;
-    
+    self.left, self.top = leftUnitCount * Const.UnitSize, topUnitCount * Const.UnitSize;
+
     self:OnSizeChange();
 end
 
@@ -273,7 +271,6 @@ end
 
 function BlockInputField:GetTopBlock()
     local prevBlock, nextBlock = self:GetPrevBlock() or self:GetOutputBlock(), self:GetBlock();
-
     while (prevBlock) do 
         nextBlock = prevBlock;
         prevBlock = nextBlock:GetPrevBlock();

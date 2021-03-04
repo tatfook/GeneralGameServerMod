@@ -9,10 +9,10 @@ local Const = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Const.lua")
 -------------------------------------------------------
 ]]
 
-
 local Const = NPL.export();
 
 Const.UnitSize = 4;                               -- 单元格大小
+Const.DefaultUnitSize = 4;                        -- 默认单元格大小
 Const.ConnectionRegionHeightUnitCount = 4;        -- 连接区域高度
 Const.ConnectionRegionWidthUnitCount = 16;        -- 连接区域宽度
 Const.ConnectionHeightUnitCount = 2;              -- 连接高度
@@ -29,7 +29,6 @@ Const.MaxTextShowWidthUnitCount = 100;            -- 最大文本显示宽度
 Const.MinTextShowWidthUnitCount = 6;              -- 最小文本显示宽度
 Const.TextMarginUnitCount = 1;                    -- 文本边距
 
--- ToolBox
-Const.ToolBoxWidthUnitCount = 100;
-Const.ToolBoxCategoryWidthUnitCount = 20;         -- 分类宽
-Const.ToolBoxCategoryHeightUnitCount = 20;        -- 分类高
+Const.ToolBoxWidth = 400;                -- 工具栏宽度
+Const.ToolBoxCategoryWidth = 80;         -- 分类宽
+Const.ToolBoxCategoryHeight = 80;        -- 分类高

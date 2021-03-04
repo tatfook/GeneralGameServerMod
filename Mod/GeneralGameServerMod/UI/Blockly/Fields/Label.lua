@@ -9,7 +9,7 @@ local Label = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Labe
 -------------------------------------------------------
 ]]
 
-local Const = NPL.load("../Const.lua", IsDevEnv);
+local Const = NPL.load("../Const.lua");
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Label = commonlib.inherit(Field, NPL.export());
 

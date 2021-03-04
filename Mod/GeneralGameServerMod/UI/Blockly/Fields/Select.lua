@@ -12,7 +12,7 @@ local DivElement = NPL.load("../../Window/Elements/Div.lua", IsDevEnv);
 local InputElement = NPL.load("../../Window/Elements/Input.lua", IsDevEnv);
 local SelectElement = NPL.load("../../Window/Elements/Select.lua", IsDevEnv);
 
-local Const = NPL.load("../Const.lua", IsDevEnv);
+local Const = NPL.load("../Const.lua");
 local Field = NPL.load("./Field.lua", IsDevEnv);
 
 local Select = commonlib.inherit(Field, NPL.export());

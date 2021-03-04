@@ -9,7 +9,7 @@ local Space = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Spac
 -------------------------------------------------------
 ]]
 
-local Const = NPL.load("../Const.lua", IsDevEnv);
+local Const = NPL.load("../Const.lua");
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Space = commonlib.inherit(Field, NPL.export());
 

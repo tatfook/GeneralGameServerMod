@@ -11,12 +11,12 @@ local Blockly = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blockly.lua");
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
+local Const = NPL.load("./Const.lua", IsDevEnv);
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
 local Toolbox = NPL.load("./Blocks/Toolbox.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
-local Const = NPL.load("./Const.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
 local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
@@ -35,13 +35,15 @@ Blockly:Property("BaseStyle", {
     }
 });
 
-local UnitSize = Const.UnitSize;
-
 function Blockly:ctor()
     self.offsetX, self.offsetY = 0, 0;
+    self.mouseMoveX, self.mouseMoveY = 0, 0;
     self.blocks = {};
     self.block_types = {};
     self.toolbox = ToolBox:new():Init(self);
+    self.undos = {}; -- 撤销
+    self.redos = {}; -- 恢复
+    self.CurrentUnitSize = Const.DefaultUnitSize;
 end
 
 function Blockly:Init(xmlNode, window, parent)
@@ -62,6 +64,65 @@ function Blockly:Init(xmlNode, window, parent)
     self.toolbox:SetCategoryList(categoryList);
 
     return self;
+end
+
+function Blockly:EnableDefaultUnitSize()
+    Const.UnitSize = Const.DefaultUnitSize;
+end
+
+function Blockly:EnableCurrentUnitSize()
+    Const.UnitSize = self.CurrentUnitSize;
+end
+
+-- 操作
+function Blockly:Do(cmd)
+    local block = cmd.block;
+    cmd.startLeftUnitCount = block.startLeftUnitCount;
+    cmd.startTopUnitCount = block.startTopUnitCount;
+    cmd.endLeftUnitCount = block.leftUnitCount;
+    cmd.endTopUnitCount = block.topUnitCount;
+    cmd.connection = block:GetConnection();
+    table.insert(self.undos, cmd);
+end
+
+-- 撤销命令
+function Blockly:Undo()
+    local cmd = self.undos[#self.undos];
+    if (not cmd) then return end
+    table.remove(self.undos, #self.undos);
+    local action, block, connection = cmd.action, cmd.block, cmd.connection;
+    if (action == "DeleteBlock" or action == "MoveBlock") then
+        block:SetLeftTopUnitCount(cmd.startLeftUnitCount, cmd.startTopUnitCount);
+        block:UpdateLeftTopUnitCount();
+        block:CheckConnection();
+    elseif (action == "NewBlock") then
+        if (connection) then 
+            connection:Disconnection();
+            connection:GetBlock():GetTopBlock():UpdateLayout();
+        end
+        self:RemoveBlock(block);
+    end
+    table.insert(self.redos, cmd);
+end
+
+-- 恢复
+function Blockly:Redo()
+    local cmd = self.redos[#self.redos];
+    if (not cmd) then return end
+    table.remove(self.redos, #self.redos);
+    local action, block, connection = cmd.action, cmd.block, cmd.connection;
+    if (action == "NewBlock" or action == "MoveBlock") then
+        self:AddBlock(block);
+        block:SetLeftTopUnitCount(cmd.endLeftUnitCount, cmd.endTopUnitCount);
+        block:UpdateLeftTopUnitCount();
+        block:CheckConnection();
+    elseif (action == "DeleteBlock") then
+        if (connection) then 
+            connection:Disconnection();
+            connection:GetBlock():GetTopBlock():UpdateLayout();
+        end
+    end
+    table.insert(self.undos, cmd);
 end
 
 -- 设置工具块
@@ -154,21 +215,64 @@ end
 function Blockly:IsInnerViewPort(block)
     local x, y, w, h = self:GetContentGeometry();
     local hw, hh = w / 2, h / 2;
-    local cx, cy = Const.ToolBoxWidthUnitCount * Const.UnitSize + self.offsetX + hw, self.offsetY + hh;
+    local cx, cy = Const.ToolBoxWidth + self.offsetX + hw, self.offsetY + hh;
     local b_x, b_y, b_hw, b_hh = block.left, block.top, block.width / 2, block.height / 2;
     local b_cx, b_cy = b_x + b_hw, b_y + b_hh;
     return math.abs(b_cx - cx) <= (hw + b_hw) and math.abs(b_cy - cy) <= (hh + b_hh);
 end
 
+function Blockly:GetMousePosIndex()
+    return self.mousePosIndex;
+end
+
+function Blockly:RenderIcons(painter)
+    local x, y, w, h = self:GetGeometry();
+    local offsetX, offsetY = x + w - 82, y + h - 220;
+    painter:Translate(offsetX, offsetY);
+    local mx, my = self.mouseMoveX - offsetX + x, self.mouseMoveY - offsetY + y;
+    self.mousePosIndex = 0;
+    if (10 <= mx and mx <= 42 and 0 <= my and my <= 32) then 
+        painter:SetPen("#ffffffff");
+        self.mousePosIndex = 1;
+    else painter:SetPen("#ffffff80") end
+    painter:DrawRectTexture(10, 0, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;0 64 32 32");
+    if (10 <= mx and mx <= 42 and 42 <= my and my <= 74) then 
+        painter:SetPen("#ffffffff");
+        self.mousePosIndex = 2;
+    else painter:SetPen("#ffffff80") end
+    painter:DrawRectTexture(10, 42, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;32 64 32 32");
+    if (10 <= mx and mx <= 42 and 84 <= my and my <= 116) then 
+        painter:SetPen("#ffffffff");
+        self.mousePosIndex = 3;
+    else painter:SetPen("#ffffff80") end
+    painter:DrawRectTexture(10, 84, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;64 64 32 32");
+
+    if (0 <= mx and mx <= 42 and 148 <= my and my <= 193) then 
+        self.mousePosIndex = 4;
+        painter:SetPen("#ffffffff")
+        painter:Translate(42, 157);
+        painter:Rotate(45);
+        painter:DrawRectTexture(-42, -9, 42, 9, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;0 0 42 9");
+        painter:Rotate(-45);
+        painter:Translate(-42, -157);
+    else 
+        painter:SetPen("#ffffff80");
+        painter:DrawRectTexture(0, 148, 42, 9, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;0 0 42 9");
+    end
+    painter:DrawRectTexture(0, 157, 42, 45, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;0 9 42 45");
+    painter:Translate(-offsetX, -offsetY);
+end
+
 -- 渲染Blockly
 function Blockly:RenderContent(painter)
+    self:RenderIcons(painter);
+
     local x, y, w, h = self:GetContentGeometry();
     -- 设置绘图类
     -- Shape:SetPainter(painter);
     local CurrentBlock, captureBlock = self:GetCurrentBlock(), self:GetMouseCaptureUI();
-    local toolboxWidth = Const.ToolBoxWidthUnitCount * Const.UnitSize;
+    local toolboxWidth = Const.ToolBoxWidth;
     painter:Translate(x, y);
-
     painter:Save();
     painter:SetClipRegion(toolboxWidth, 0, w - toolboxWidth, h);
     painter:Translate(self.offsetX, self.offsetY);
@@ -184,10 +288,13 @@ function Blockly:RenderContent(painter)
     self.toolbox:Render(painter);
 
     if (CurrentBlock and CurrentBlock == captureBlock) then
+        painter:Save();
+        painter:SetClipRegion(0, 0, w, h);
         painter:Translate(self.offsetX, self.offsetY);
         CurrentBlock:Render(painter);
         painter:Flush();
         painter:Translate(-self.offsetX, -self.offsetY);
+        painter:Restore();
     end
 
     painter:Translate(-x, -y);
@@ -196,14 +303,22 @@ end
 -- 布局Blockly
 function Blockly:UpdateWindowPos()
     Blockly._super.UpdateWindowPos(self);
-    
     for _, block in ipairs(self.blocks) do
         block:UpdateLayout();
     end
-    local _, _, width, height = self:GetContentGeometry();
-    local widthUnitCount = math.ceil(width / UnitSize);
-    local heightUnitCount = math.ceil(height / UnitSize);
-    self.toolbox:SetWidthHeightUnitCount(nil, heightUnitCount);
+    self.toolbox:UpdateLayout();
+end
+
+-- 重新布局
+function Blockly:ReLayout(oldUnitSize, newUnitSize)
+    if (oldUnitSize == newUnitSize) then return end
+    for _, block in ipairs(self.blocks) do
+        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+        leftUnitCount = math.floor(leftUnitCount * oldUnitSize / newUnitSize);
+        topUnitCount = math.floor(topUnitCount * oldUnitSize / newUnitSize);
+        block:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
+        block:UpdateLayout();
+    end
 end
 
 -- 捕获鼠标
@@ -245,29 +360,50 @@ function Blockly:OnMouseDown(event)
         return ui:OnMouseDown(event);
     end
     
-    -- 工作区被点击
-    self.isMouseDown = true;
-    self.startX, self.startY = event.x, event.y;
-    self.startOffsetX, self.startOffsetY = self.offsetX, self.offsetY;
+    local mousePosIndex = self:GetMousePosIndex();
+    if (mousePosIndex == 1) then  -- 居中
+        self.offsetX, self.offsetY = 0, 0;
+    elseif (mousePosIndex == 2) then  -- 放大
+        -- local CurrentUnitSize = self.CurrentUnitSize;
+        -- self.CurrentUnitSize = self.CurrentUnitSize + 1;
+        -- self.CurrentUnitSize = math.min(self.CurrentUnitSize, 6);
+        -- self:EnableCurrentUnitSize();
+        -- self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
+    elseif (mousePosIndex == 3) then -- 缩小
+        -- local CurrentUnitSize = self.CurrentUnitSize;
+        -- self.CurrentUnitSize = self.CurrentUnitSize - 1;
+        -- self.CurrentUnitSize = math.max(self.CurrentUnitSize, 2);
+        -- self:EnableCurrentUnitSize();
+        -- self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
+    elseif (mousePosIndex == 4) then
+    else
+        -- 工作区被点击
+        self.isMouseDown = true;
+        self.startX, self.startY = event.x, event.y;
+        self.startOffsetX, self.startOffsetY = self.offsetX, self.offsetY;
+    end
+    
 end
 
 -- 鼠标移动事件
 function Blockly:OnMouseMove(event)
+    local x, y = self:GetRelPoint(event.x, event.y);
+    self.mouseMoveX, self.mouseMoveY = x + self.offsetX, y + self.offsetY;
+
     event:accept();
     if (event.target ~= self) then return end
     
-    local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(x, y, event);
     if (ui and ui ~= self) then return ui:OnMouseMove(event) end
     
     if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
     if (not self.isDragging) then
-        if (math.abs(event.x - self.startX) < UnitSize and math.abs(event.y - self.startY) < UnitSize) then return end
+        if (math.abs(event.x - self.startX) < Const.UnitSize and math.abs(event.y - self.startY) < Const.UnitSize) then return end
         self.isDragging = true;
         self:CaptureMouse(self);
     end
-    local offsetX = math.floor((event.x - self.startX) / UnitSize) * UnitSize;
-    local offsetY = math.floor((event.y - self.startY) / UnitSize) * UnitSize;
+    local offsetX = math.floor((event.x - self.startX) / Const.UnitSize) * Const.UnitSize;
+    local offsetY = math.floor((event.y - self.startY) / Const.UnitSize) * Const.UnitSize;
     self.offsetX = self.startOffsetX + offsetX;
     self.offsetY = self.startOffsetY + offsetY;
 end
@@ -339,8 +475,8 @@ function Blockly:OnKeyDown(event)
 
 	local keyname = event.keyname;
 	if (keyname == "DIK_RETURN") then 
-	-- elseif (event:IsKeySequence("Undo")) then self:handleUndo(event)
-	-- elseif (event:IsKeySequence("Redo")) then self:handleRedo(event)
+	elseif (event:IsKeySequence("Undo")) then self:Undo()
+	elseif (event:IsKeySequence("Redo")) then self:Redo()
 	-- elseif (event:IsKeySequence("Copy")) then self:handleCopy(event)
 	elseif (event:IsKeySequence("Paste")) then self:handlePaste(event, "Clipboard");
     elseif (event:IsKeySequence("Delete")) then self:handleDelete(event)

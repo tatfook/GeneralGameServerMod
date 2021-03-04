@@ -10,7 +10,7 @@ local Variable = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/V
 ]]
 local SelectElement = NPL.load("../../Window/Elements/Select.lua", IsDevEnv);
 
-local Const = NPL.load("../Const.lua", IsDevEnv);
+local Const = NPL.load("../Const.lua");
 local Select = NPL.load("./Select.lua", IsDevEnv);
 
 local Variable = commonlib.inherit(Select, NPL.export());

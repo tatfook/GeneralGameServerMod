@@ -10,12 +10,11 @@ local Value = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Valu
 ]]
 
 local InputElement = NPL.load("../../Window/Elements/Input.lua", IsDevEnv);
+local Const = NPL.load("../Const.lua");
 local Shape = NPL.load("../Shape.lua", IsDevEnv);
-local Const = NPL.load("../Const.lua", IsDevEnv);
 local Input = NPL.load("./Input.lua", IsDevEnv);
 local Value = commonlib.inherit(Input, NPL.export());
 
-local UnitSize = Const.UnitSize;
 local TextMarginUnitCount = Const.TextMarginUnitCount;    -- 文本边距
 
 Value:Property("Value", ""); -- 值
