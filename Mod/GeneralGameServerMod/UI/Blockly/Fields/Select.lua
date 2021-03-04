@@ -13,9 +13,9 @@ local InputElement = NPL.load("../../Window/Elements/Input.lua", IsDevEnv);
 local SelectElement = NPL.load("../../Window/Elements/Select.lua", IsDevEnv);
 
 local Const = NPL.load("../Const.lua", IsDevEnv);
-local Input = NPL.load("./Input.lua", IsDevEnv);
+local Field = NPL.load("./Field.lua", IsDevEnv);
 
-local Select = commonlib.inherit(Input, NPL.export());
+local Select = commonlib.inherit(Field, NPL.export());
 
 Select:Property("AllowNewOption", false, "IsAllowNewOption");  -- 是否允许新增选项
 
@@ -28,6 +28,12 @@ function Select:Init(block, opt)
     self:SetAllowNewOption(opt.allowNewOption == true and true or false);
     
     return self;
+end
+
+function Select:UpdateWidthHeightUnitCount()
+    local widthUnitCount, heightUnitCount = Select._super.UpdateWidthHeightUnitCount(self);
+    widthUnitCount = self:IsEdit() and math.max(widthUnitCount, Const.MinEditFieldWidthUnitCount) or widthUnitCount;
+    return widthUnitCount, heightUnitCount;
 end
 
 function Select:GetOptions()

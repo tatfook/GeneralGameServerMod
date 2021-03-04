@@ -175,7 +175,6 @@ function Select:OnOptionsAttrValueChange(attrValue)
     local option = self:GetSelectedOptionElement();
     local value = option and option:GetValue() or self:GetAttrStringValue("value");
     ListBox:ClearChildElement();
-
     self:SetSelectedOptionElement(nil);
     for _, option in ipairs(attrValue) do
         if (type(option) == "string") then option = {label = option, value = option} end
@@ -184,6 +183,8 @@ function Select:OnOptionsAttrValueChange(attrValue)
             childElement:SetSelectElement(self);
             ListBox:InsertChildElement(childElement);
             if (childElement:GetValue() == value) then
+                self:SetValue(childElement:GetValue());
+                self:SetLabel(childElement:GetLabel());
                 self:SetSelectedOptionElement(childElement);
             end
         end

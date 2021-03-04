@@ -8,6 +8,8 @@ use the lib:
 local BlockInputField = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/BlockInputField.lua");
 -------------------------------------------------------
 ]]
+local InputElement = NPL.load("../Window/Elements/Input.lua", IsDevEnv);
+local SelectElement = NPL.load("../Window/Elements/Select.lua", IsDevEnv);
 
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Validator = NPL.load("./Validator.lua", IsDevEnv);
@@ -28,6 +30,8 @@ BlockInputField:Property("Validator", nil);                      -- 验证器
 BlockInputField:Property("Value", "");                           -- 值
 BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
+BlockInputField:Property("InputEditElement", nil);               -- 输入编辑元素
+
 
 function BlockInputField:ctor()
     self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount = 0, 0, 0, 0;
@@ -306,6 +310,50 @@ end
 function BlockInputField:GetMinEditFieldWidthUnitCount()
     return Const.MinEditFieldWidthUnitCount;
 end
+
+function BlockInputField:GetFieldInputEditElement(parentElement)
+    local InputEditElement = InputElement:new():Init({
+        name = "input",
+        attr = {
+            style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(),Const.UnitSize, Const.UnitSize * (Const.BlockEdgeWidthUnitCount + 1)),
+            value = self:GetValue(),
+            type = (self:GetType() == "field_number" or (self:GetType() == "input_value" and self:GetShadowType() == "math_number")) and "number" or "text",
+        },
+    }, parentElement:GetWindow(), parentElement);
+
+    local function InputChange(bFinish)
+        local value = InputEditElement:GetValue();
+        self:SetFieldValue(value);
+        self:SetLabel(tostring(self:GetValue()));
+        self:UpdateEditAreaSize();
+        if (bFinish) then self:FocusOut() end
+    end 
+
+    InputEditElement:SetAttrValue("onkeydown.enter", function() InputChange(true) end);
+    InputEditElement:SetAttrValue("onblur", function() InputChange(true) end);
+    InputEditElement:SetAttrValue("onchange", function() InputChange(false) end);
+
+    return InputEditElement;
+end 
+
+-- function BlockInputField:GetFieldSelectEditElement(parentElement)
+--     local options = self:GetOptions();
+--     local widthUnitCount = 0;
+--     for _, option in ipairs(options) do
+--         widthUnitCount = math.max(widthUnitCount, self:GetTextWidthUnitCount(option[1]));
+--     end
+    
+--     local SelectEditElement = SelectElement:new():Init({
+--         name = "select",
+--         attr = {
+--             style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(), Const.UnitSize, Const.UnitSize * (Const.BlockEdgeWidthUnitCount + 1)),
+--             value = self:GetValue(),
+--             options = self:GetOptions(),
+--         },
+--     }, parentElement:GetWindow(), parentElement);
+
+--     return SelectEditElement;
+-- end
 
 function BlockInputField:UpdateEditAreaSize()
     if (not self:IsEdit()) then return end

@@ -27,6 +27,7 @@ Const.FieldSpaceWidthUnitCount = 2;               -- 空白字段宽度
 Const.MinEditFieldWidthUnitCount = 30;            -- 最小编辑字段宽度
 Const.MaxTextShowWidthUnitCount = 100;            -- 最大文本显示宽度
 Const.MinTextShowWidthUnitCount = 6;              -- 最小文本显示宽度
+Const.TextMarginUnitCount = 1;                    -- 文本边距
 
 -- ToolBox
 Const.ToolBoxWidthUnitCount = 100;

@@ -15,7 +15,7 @@ local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
 local Field = commonlib.inherit(BlockInputField, NPL.export());
 
 local MinEditFieldWidth = 120;
-local TextMarginUnitCount = 1;    -- 文本边距
+local TextMarginUnitCount = Const.TextMarginUnitCount;    -- 文本边距
 
 Field:Property("Type");                     -- label text, value
 Field:Property("Color", "#000000");
@@ -53,9 +53,7 @@ end
 
 function Field:UpdateWidthHeightUnitCount()
     local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + (TextMarginUnitCount + Const.BlockEdgeWidthUnitCount) * 2;
-    local widthUnitCount = math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount);
-    return widthUnitCount, Const.LineHeightUnitCount;
-    -- return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), Const.LineHeightUnitCount;
+    return math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount), Const.LineHeightUnitCount;
 end
 
 function Field:IsField()

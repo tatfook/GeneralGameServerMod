@@ -16,6 +16,7 @@ local Input = NPL.load("./Input.lua", IsDevEnv);
 local Value = commonlib.inherit(Input, NPL.export());
 
 local UnitSize = Const.UnitSize;
+local TextMarginUnitCount = Const.TextMarginUnitCount;    -- 文本边距
 
 Value:Property("Value", ""); -- 值
 
@@ -33,7 +34,6 @@ function Value:Init(block, opt)
 
     return self;
 end
-
 
 function Value:Render(painter)
     local inputBlock = self:GetInputBlock();
@@ -53,8 +53,7 @@ function Value:Render(painter)
     
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    painter:DrawText(Const.BlockEdgeWidthUnitCount * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
-
+    painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
     painter:Translate(-offsetX, -offsetY);
 end
 
@@ -66,13 +65,13 @@ end
 
 function Value:UpdateWidthHeightUnitCount()
     local inputBlock = self:GetInputBlock();
-    local widthUnitCount, heightUnitCount = 0, 0;
     if (inputBlock) then 
-        _, _, _, _, widthUnitCount, heightUnitCount = inputBlock:UpdateWidthHeightUnitCount();
+        local _, _, _, _, widthUnitCount, heightUnitCount = inputBlock:UpdateWidthHeightUnitCount();
         return widthUnitCount, heightUnitCount;
+    else
+        local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + (TextMarginUnitCount + Const.BlockEdgeWidthUnitCount) * 2;
+        return math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount), Const.LineHeightUnitCount;
     end
-    widthUnitCount, heightUnitCount = math.max(self:GetTextWidthUnitCount(self:GetLabel()), Const.MinTextShowWidthUnitCount) + Const.BlockEdgeWidthUnitCount * 2, Const.LineHeightUnitCount;
-    return if_else(self:IsEdit(), math.max(widthUnitCount, self:GetMinEditFieldWidthUnitCount()), widthUnitCount), heightUnitCount;
 end
 
 function Value:UpdateLeftTopUnitCount()
@@ -111,44 +110,31 @@ function Value:IsCanEdit()
 end
 
 function Value:GetShadowType()
-    local shadow = self:GetOption().shadow or {};
-    return shadow.type;
+    local shadow = self:GetOption().shadow;
+    return shadow and shadow.type;
 end
 
 function Value:GetFieldEditElement(parentElement)
-    local InputFieldEditElement = InputElement:new():Init({
-        name = "input",
-        attr = {
-            style = "width: 100%; height: 100%; font-size: 14px;",
-            value = self:GetValue(),
-            autofocus = true,
-        },
-    }, parentElement:GetWindow(), parentElement);
+    local inputEditElement = self:GetInputEditElement();
+    if (not inputEditElement) then
+        inputEditElement = self:GetFieldInputEditElement(parentElement);
+        self:SetInputEditElement(inputEditElement);
+    end
+    return inputEditElement;
+end
 
-    InputFieldEditElement:SetAttrValue("type", self:GetShadowType() == "math_number" and "number" or "text");
-    
-    local function InputChange(bFinish)
-        local value = InputFieldEditElement:GetValue();
-        self:SetFieldValue(value);
-        self:SetLabel(tostring(self:GetValue()));
-        self:UpdateEditAreaSize();
-        if (bFinish) then self:FocusOut() end
-    end 
-
-    InputFieldEditElement:SetAttrValue("onkeydown.enter", function() InputChange(true) end);
-    InputFieldEditElement:SetAttrValue("onblur", function() InputChange(true) end);
-    InputFieldEditElement:SetAttrValue("onchange", function() InputChange(false) end);
-
-    self.inputEl = InputFieldEditElement;
-    return InputFieldEditElement;
+function Value:GetFieldEditType()
+    return "input";
 end
 
 function Value:OnBeginEdit()
-    if (self.inputEl) then self.inputEl:FocusIn() end
+    local inputEditElement = self:GetInputEditElement();
+    if (inputEditElement) then inputEditElement:FocusIn() end
 end
 
 function Value:OnEndEdit()
-    if (self.inputEl) then self.inputEl:FocusOut() end
+    local inputEditElement = self:GetInputEditElement();
+    if (inputEditElement) then inputEditElement:FocusOut() end
 end
 
 function Value:GetValueAsString()
