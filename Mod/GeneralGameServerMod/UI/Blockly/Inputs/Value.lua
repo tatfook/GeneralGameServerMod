@@ -114,27 +114,8 @@ function Value:GetShadowType()
     return shadow and shadow.type;
 end
 
-function Value:GetFieldEditElement(parentElement)
-    local inputEditElement = self:GetInputEditElement();
-    if (not inputEditElement) then
-        inputEditElement = self:GetFieldInputEditElement(parentElement);
-        self:SetInputEditElement(inputEditElement);
-    end
-    return inputEditElement;
-end
-
 function Value:GetFieldEditType()
     return "input";
-end
-
-function Value:OnBeginEdit()
-    local inputEditElement = self:GetInputEditElement();
-    if (inputEditElement) then inputEditElement:FocusIn() end
-end
-
-function Value:OnEndEdit()
-    local inputEditElement = self:GetInputEditElement();
-    if (inputEditElement) then inputEditElement:FocusOut() end
 end
 
 function Value:GetValueAsString()

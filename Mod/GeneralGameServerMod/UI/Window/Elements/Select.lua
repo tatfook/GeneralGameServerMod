@@ -117,11 +117,12 @@ function Select:Init(xmlNode, window, parent)
     local InputBox = InputElement:new():Init({
         name = "input",
         attr = {
-            style = "position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px;",
+            style = "position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; border: none; background-color: #ffffff00; height: 100%; width: 100%;",
             onblur = function()
                 self:OnFocusOut();
             end,
             ["onkeydown.enter"] = function(value)
+                value = self:GetValueByLabel(value);
                 self:SetValue(value);
                 self:SetLabel(self:GetLabelByValue(value));
                 self:SetFocus(nil);
@@ -213,6 +214,14 @@ function Select:GetLabelByValue(value)
     return value;
 end
 
+function Select:GetValueByLabel(label)
+    local ListBox = self:GetListBoxElement();
+    for _, option in ipairs(ListBox.childrens) do
+        if (label == option:GetLabel()) then return option:GetValue() end
+    end
+    return label;
+end
+
 function Select:FilterOptions(filter)
     local ListBox = self:GetListBoxElement();
     for _, option in ipairs(ListBox.childrens) do
@@ -239,8 +248,8 @@ end
 
 function Select:OnFocusIn(event)
     if (self:IsAllowCreate()) then
-        -- self:GetInputBoxElement():SetAttrValue("value", self:GetValue());
-        self:GetInputBoxElement():SetAttrValue("value", "");
+        self:GetInputBoxElement():SetAttrValue("value", self:GetLabel());
+        -- self:GetInputBoxElement():SetAttrValue("value", "");
         self:GetInputBoxElement():FocusIn();
         self:GetInputBoxElement():SetVisible(true);
         self:GetInputBoxElement():UpdateLayout();
@@ -263,9 +272,10 @@ local ArrowAreaSize = 20;
 function Select:RenderContent(painter)
     self:RenderArrowIcon(painter);
 
+    if (self:GetInputBoxElement():GetVisible()) then return end
+
     local text = self:GetAttrStringValue("placeholder");
     local x, y, w, h = self:GetContentGeometry();
-    local fontSize = self:GetFontSize(14);
 
     painter:SetPen(self:GetColor("#000000"));
     painter:SetFont(self:GetFont());
@@ -275,7 +285,7 @@ function Select:RenderContent(painter)
         painter:SetPen("#A8A8A8"); -- placeholder color;
     end
     text = _guihelper.TrimUtf8TextByWidth(text, w - ArrowAreaSize, self:GetFont());
-    painter:DrawText(x, y + (h - fontSize) / 2, text or "");
+    painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, text or "");
 end
 
 local ArrowSize = 12;

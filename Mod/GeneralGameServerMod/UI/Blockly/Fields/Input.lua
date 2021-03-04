@@ -17,27 +17,8 @@ local Input = commonlib.inherit(Field, NPL.export());
 
 local UnitSize = Const.UnitSize;
 
-function Input:GetFieldEditElement(parentElement)
-    local inputEditElement = self:GetInputEditElement();
-    if (not inputEditElement) then
-        inputEditElement = self:GetFieldInputEditElement(parentElement);
-        self:SetInputEditElement(inputEditElement);
-    end
-    return inputEditElement;
-end
-
 function Input:GetFieldEditType()
     return "input";
-end
-
-function Input:OnBeginEdit()
-    local inputEditElement = self:GetInputEditElement();
-    if (inputEditElement) then inputEditElement:FocusIn() end
-end
-
-function Input:OnEndEdit()
-    local inputEditElement = self:GetInputEditElement();
-    if (inputEditElement) then inputEditElement:FocusOut() end
 end
 
 function Input:GetValueAsString()

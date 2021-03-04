@@ -32,8 +32,14 @@ end
 
 function Select:UpdateWidthHeightUnitCount()
     local widthUnitCount, heightUnitCount = Select._super.UpdateWidthHeightUnitCount(self);
-    widthUnitCount = self:IsEdit() and math.max(widthUnitCount, Const.MinEditFieldWidthUnitCount) or widthUnitCount;
-    return widthUnitCount, heightUnitCount;
+    if (not self:IsEdit()) then return widthUnitCount, heightUnitCount end
+
+    local options = self:GetOptions();
+    for _, option in ipairs(options) do 
+        widthUnitCount = math.max(widthUnitCount, self:GetTextWidthUnitCount(option[1] or option.label));
+    end
+
+    return math.max(widthUnitCount, Const.MinEditFieldWidthUnitCount), heightUnitCount;
 end
 
 function Select:GetOptions()
@@ -59,68 +65,7 @@ function Select:GetLabelByValue(value)
     return options[1] and (options[1][1] or options[1].label);
 end
 
-function Select:GetFieldEditElement(parentElement)
-    local window = parentElement:GetWindow();
-    local divEl = DivElement:new():Init({
-        name = "div",
-        attr = {
-            style = "width: 100%; height: 100%; font-size: 14px;"
-        }
-    }, window, parentElement);
-
-    local selectEl = SelectElement:new():Init({
-        name = "select",
-        attr = {
-            style = "width: 100%; height: 100%;",
-        },
-    }, window, divEl);
-
-    selectEl:SetCanFocus(false);
-    selectEl:SetAttrValue("value", self:GetValue());
-    selectEl:SetAttrValue("options", self:GetOptions());
-    selectEl:SetAttrValue("onselect", function(value, label)
-        self:SetValue(value);
-        self:SetLabel(label);
-        self:FocusOut();
-    end);
-
-    divEl:InsertChildElement(selectEl);
-
-    if (self:IsAllowNewOption()) then
-        local inputEl = InputElement:new():Init({
-            name = "input",
-            attr = {
-                style = "position: absolute; left: 0px; top: 0px; width: 100%; height: 100%",
-                value = self:GetValue(),
-            }
-        }, window, divEl);
-        inputEl:SetAttrValue("onkeydown.enter", function()
-            local value = inputEl:GetValue();
-            self:SetFieldValue(value);
-            self:SetLabel(self:GetValue());
-            self:FocusOut();
-        end);
-        inputEl:SetAttrValue("onchange", function()
-            local value = inputEl:GetValue();
-            selectEl:FilterOptions(value);
-        end)
-    
-        -- inputEl:SetCanFocus(false);
-        divEl:InsertChildElement(inputEl);
-    
-        self.inputEl = inputEl;
-    end
-
-    self.divEl, self.selectEl = divEl, selectEl;
-    return divEl;
+function Select:GetFieldEditType()
+    return "select";
 end
 
-function Select:OnBeginEdit()
-    if (self.selectEl) then self.selectEl:OnFocusIn() end
-    if (self.inputEl) then self.inputEl:FocusIn() end
-end
-
-function Select:OnEndEdit()
-    if (self.selectEl) then self.selectEl:OnFocusOut() end
-    if (self.inputEl) then self.inputEl:FocusOut() end
-end

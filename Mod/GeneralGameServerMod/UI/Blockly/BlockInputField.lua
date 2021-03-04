@@ -30,7 +30,7 @@ BlockInputField:Property("Validator", nil);                      -- 验证器
 BlockInputField:Property("Value", "");                           -- 值
 BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
-BlockInputField:Property("InputEditElement", nil);               -- 输入编辑元素
+BlockInputField:Property("EditElement", nil);                    -- 编辑元素
 
 
 function BlockInputField:ctor()
@@ -304,9 +304,6 @@ function BlockInputField:IsCanEdit()
     return false;
 end
 
-function BlockInputField:GetFieldEditElement(parentElement)
-end
-
 function BlockInputField:GetMinEditFieldWidthUnitCount()
     return Const.MinEditFieldWidthUnitCount;
 end
@@ -336,24 +333,26 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
     return InputEditElement;
 end 
 
--- function BlockInputField:GetFieldSelectEditElement(parentElement)
---     local options = self:GetOptions();
---     local widthUnitCount = 0;
---     for _, option in ipairs(options) do
---         widthUnitCount = math.max(widthUnitCount, self:GetTextWidthUnitCount(option[1]));
---     end
-    
---     local SelectEditElement = SelectElement:new():Init({
---         name = "select",
---         attr = {
---             style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(), Const.UnitSize, Const.UnitSize * (Const.BlockEdgeWidthUnitCount + 1)),
---             value = self:GetValue(),
---             options = self:GetOptions(),
---         },
---     }, parentElement:GetWindow(), parentElement);
+function BlockInputField:GetFieldSelectEditElement(parentElement, isAllowCreate)
+    local SelectEditElement = SelectElement:new():Init({
+        name = "select",
+        attr = {
+            -- style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(), Const.UnitSize, Const.UnitSize * (Const.BlockEdgeWidthUnitCount + 1)),
+            style = "width: 100%; height: 100%; border: none; padding: 2px 4px; " .. string.format("font-size: %spx; border-radius: %spx; ", self:GetFontSize(), Const.UnitSize),
+            value = self:GetValue(),
+            options = self:GetOptions(),
+            AllowCreate = isAllowCreate,
+        },
+    }, parentElement:GetWindow(), parentElement);
 
---     return SelectEditElement;
--- end
+    SelectEditElement:SetAttrValue("onselect", function(value, label)
+        self:SetValue(value);
+        self:SetLabel(label);
+        self:FocusOut();
+    end);
+
+    return SelectEditElement;
+end
 
 function BlockInputField:UpdateEditAreaSize()
     if (not self:IsEdit()) then return end
@@ -366,6 +365,25 @@ function BlockInputField:UpdateEditAreaSize()
     editor:SetStyleValue("width", self.width);
     editor:SetStyleValue("height", self.height);
     editor:UpdateLayout();
+end
+
+function BlockInputField:GetFieldEditType()
+    return "input";
+end
+
+function BlockInputField:GetFieldEditElement(parentElement)
+    local editElement = self:GetEditElement();
+    if (editElement) then return editElement end
+
+    local edittype = self:GetFieldEditType();
+    if (edittype == "input") then
+        editElement = self:GetFieldInputEditElement(parentElement);
+    elseif (edittype == "select") then
+        editElement = self:GetFieldSelectEditElement(parentElement, true);
+    end
+
+    self:SetEditElement(editElement);
+    return editElement;
 end
 
 function BlockInputField:BeginEdit(opt)
@@ -399,9 +417,13 @@ function BlockInputField:EndEdit()
 end
 
 function BlockInputField:OnBeginEdit()
+    local editElement = self:GetEditElement();
+    if (editElement) then editElement:FocusIn() end
 end
 
 function BlockInputField:OnEndEdit()
+    local editElement = self:GetEditElement();
+    if (editElement) then editElement:FocusOut() end
 end
 
 function BlockInputField:OnFocusIn()

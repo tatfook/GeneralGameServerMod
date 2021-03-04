@@ -33,7 +33,6 @@ Input:Property("BaseStyle", {
         ["width"] = "120px",
         ["padding"] = "2px 4px",
         ["background-color"] = "#ffffff",
-        ["font-size"] = "14px",
     }
 });
 
