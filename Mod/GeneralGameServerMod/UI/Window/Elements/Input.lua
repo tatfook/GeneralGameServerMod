@@ -114,7 +114,11 @@ function Input:handleBackspace()
 end
 
 function Input:handleDelete()
-    self:DeleteTextCmd(self.cursorAt, 1);
+    if (self:IsSelected()) then
+        self:DeleteSelected();
+    else
+        self:DeleteTextCmd(self.cursorAt, 1);
+    end
 end
 
 function Input:handleUndo()
@@ -437,19 +441,12 @@ function Input:RenderContent(painter)
 end
 
 function Input:GetAtByPos(x, y)
-    local cursorX = self.scrollX + x;
-    local text = _guihelper.AutoTrimTextByWidth(tostring(self:GetText()), cursorX, self:GetFont());
-    local textlen = ParaMisc.GetUnicodeCharNum(text);
-    local textWidth = _guihelper.GetTextWidth(text, self:GetFont());
-    while (textWidth > cursorX and textlen > 0) do
-        textlen = textlen - 1;
-        text = ParaMisc.UniSubString(text, 1, textlen);
-        textWidth = _guihelper.GetTextWidth(text, self:GetFont());
-    end
+    local cursorAt, cursorX = 0, self.scrollX + x;
+    local cursorAt = self:GetText():xToCursor(cursorX, nil, self:GetFont());
+    local cursorX = self:GetText():sub(1, cursorAt):GetWidth(self:GetFont());
+    InputDebug.Format("GetAtByPos, x = %s, cursorAt = %s, cursorX = %s", x, cursorAt, cursorX);
 
-    InputDebug.Format("GetAtByPos, x = %s, textWidth = %s textlen = %s, scrollX = %s, cursorAt = %s, cursorX = %s", x, textWidth, textlen, self.scrollX, self.cursorAt, self.cursorX);
-
-    return textlen + 1, textWidth - self.scrollX;
+    return cursorAt + 1, cursorX;
 end
 
 function Input:GloablToContentGeometryPos(x, y)
@@ -468,12 +465,9 @@ function Input:OnMouseDown(event)
     self:ClearSelected();
     self.cursorAt, self.cursorX = self:GetAtByPos(x, y);
     self.mouseDown = true;
+    self.mouseDownX, self.mouseDownY = ParaUI.GetMousePosition();
     self:CaptureMouse();
-    self.mouseStartScreenX, self.mouseStartScreenY = ParaUI.GetMousePosition(); 
-    self.mouseLastScreenX, self.mouseLastScreenY = self.mouseStartScreenX, self.mouseStartScreenY;
-
     InputDebug.Format("OnMouseDown, x = %s, scrollX = %s, cursorAt = %s, cursorX = %s", x, self.scrollX, self.cursorAt, self.cursorX);
-
     event:accept();
 end
 
@@ -481,7 +475,13 @@ function Input:OnMouseMove(event)
     if (not self.mouseDown) then return end
     local sx, sy = self:GetScreenPos();
     local x, y = ParaUI.GetMousePosition();
-    if (not self:IsContainPoint(x, y)) then return self:OnMouseUp() end
+    if (not self:IsContainPoint(x, y) or not ParaUI.IsMousePressed(0)) then return self:OnMouseUp() end
+
+    if (not self.mouseMove) then
+        if (math.abs(x - self.mouseDownX) < self:GetFontSize() / 2) then return end
+        self.mouseMove = true;
+    end
+
     local cursorAt = self:GetAtByPos(self:GloablToContentGeometryPos(x, y));
     self.selectStartAt = cursorAt < self.cursorAt and self.cursorAt - 1 or self.cursorAt;
     self.selectEndAt = cursorAt;
@@ -490,6 +490,7 @@ end
 function Input:OnMouseUp(event)
     self:ReleaseMouseCapture();
     self.mouseDown = false;
+    self.mouseMove = false;
     if (not self:IsSelected()) then
         self:ClearSelected();
     end 

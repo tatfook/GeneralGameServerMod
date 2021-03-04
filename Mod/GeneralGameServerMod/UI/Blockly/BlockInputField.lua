@@ -405,6 +405,8 @@ function BlockInputField:BeginEdit(opt)
     self:UpdateEditAreaSize();
     -- 显示编辑
     editor:SetVisible(true);
+    -- 全选
+    if (self:GetFieldEditType() == "input") then fieldEditElement:handleSelectAll() end
 end
 
 function BlockInputField:EndEdit()
