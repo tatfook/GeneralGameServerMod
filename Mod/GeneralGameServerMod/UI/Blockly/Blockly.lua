@@ -81,7 +81,6 @@ function Blockly:Do(cmd)
     cmd.startTopUnitCount = block.startTopUnitCount;
     cmd.endLeftUnitCount = block.leftUnitCount;
     cmd.endTopUnitCount = block.topUnitCount;
-    cmd.connection = block:GetConnection();
     table.insert(self.undos, cmd);
 end
 
@@ -90,16 +89,20 @@ function Blockly:Undo()
     local cmd = self.undos[#self.undos];
     if (not cmd) then return end
     table.remove(self.undos, #self.undos);
-    local action, block, connection = cmd.action, cmd.block, cmd.connection;
+    local action, block = cmd.action, cmd.block;
+    local connection = block and block:GetConnection();
+
+    if (connection) then
+        connection:Disconnection();
+        connection:GetBlock():GetTopBlock():UpdateLayout();
+    end
+
     if (action == "DeleteBlock" or action == "MoveBlock") then
+        self:AddBlock(block);
         block:SetLeftTopUnitCount(cmd.startLeftUnitCount, cmd.startTopUnitCount);
         block:UpdateLeftTopUnitCount();
         block:CheckConnection();
     elseif (action == "NewBlock") then
-        if (connection) then 
-            connection:Disconnection();
-            connection:GetBlock():GetTopBlock():UpdateLayout();
-        end
         self:RemoveBlock(block);
     end
     table.insert(self.redos, cmd);
@@ -110,17 +113,21 @@ function Blockly:Redo()
     local cmd = self.redos[#self.redos];
     if (not cmd) then return end
     table.remove(self.redos, #self.redos);
-    local action, block, connection = cmd.action, cmd.block, cmd.connection;
+    local action, block = cmd.action, cmd.block;
+    local connection = block and block:GetConnection();
+
+    if (connection) then
+        connection:Disconnection();
+        connection:GetBlock():GetTopBlock():UpdateLayout();
+    end
+
     if (action == "NewBlock" or action == "MoveBlock") then
         self:AddBlock(block);
         block:SetLeftTopUnitCount(cmd.endLeftUnitCount, cmd.endTopUnitCount);
         block:UpdateLeftTopUnitCount();
         block:CheckConnection();
     elseif (action == "DeleteBlock") then
-        if (connection) then 
-            connection:Disconnection();
-            connection:GetBlock():GetTopBlock():UpdateLayout();
-        end
+        self:RemoveBlock(block);
     end
     table.insert(self.undos, cmd);
 end
@@ -364,17 +371,17 @@ function Blockly:OnMouseDown(event)
     if (mousePosIndex == 1) then  -- 居中
         self.offsetX, self.offsetY = 0, 0;
     elseif (mousePosIndex == 2) then  -- 放大
-        -- local CurrentUnitSize = self.CurrentUnitSize;
-        -- self.CurrentUnitSize = self.CurrentUnitSize + 1;
-        -- self.CurrentUnitSize = math.min(self.CurrentUnitSize, 6);
-        -- self:EnableCurrentUnitSize();
-        -- self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
+        local CurrentUnitSize = self.CurrentUnitSize;
+        self.CurrentUnitSize = self.CurrentUnitSize + 1;
+        self.CurrentUnitSize = math.min(self.CurrentUnitSize, 6);
+        self:EnableCurrentUnitSize();
+        self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
     elseif (mousePosIndex == 3) then -- 缩小
-        -- local CurrentUnitSize = self.CurrentUnitSize;
-        -- self.CurrentUnitSize = self.CurrentUnitSize - 1;
-        -- self.CurrentUnitSize = math.max(self.CurrentUnitSize, 2);
-        -- self:EnableCurrentUnitSize();
-        -- self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
+        local CurrentUnitSize = self.CurrentUnitSize;
+        self.CurrentUnitSize = self.CurrentUnitSize - 1;
+        self.CurrentUnitSize = math.max(self.CurrentUnitSize, 2);
+        self:EnableCurrentUnitSize();
+        self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
     elseif (mousePosIndex == 4) then
     else
         -- 工作区被点击

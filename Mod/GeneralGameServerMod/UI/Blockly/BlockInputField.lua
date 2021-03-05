@@ -61,29 +61,12 @@ function BlockInputField:GetOptionText()
     local opt = self:GetOption();
     if (type(opt.text) == "function") then 
         return opt.text(); 
-    elseif (type(opt.text) == "string") then 
+    elseif (type(opt.text) == "string" or type(opt.text) == "number") then 
         return opt.text; 
     else 
         return "";
     end
 end
-
--- 拷贝
--- function BlockInputField:Clone()
---     local clone = self:new():Init(self:GetBlock(), self:GetOption());
---     for key, val in pairs(self) do
---         local valtype = type(val);
---         if (valtype ~= "function" and valtype ~= "table" and rawget(self, key) ~= nil) then
---             clone[key] = val;
---         end
-
---         if (valtype == "table" and type(val.Clone) == "function") then
---             clone[key] = val:Clone() or val;
---         end
---     end
-
---     return clone;
--- end
 
 function BlockInputField:IsField()
     return false;
@@ -117,13 +100,11 @@ end
 
 function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
     widthUnitCount, heightUnitCount = widthUnitCount or self.widthUnitCount or 0, heightUnitCount or self.heightUnitCount or 0;
-    if (self.widthUnitCount == widthUnitCount and self.heightUnitCount == heightUnitCount) then return end
-
     self.widthUnitCount, self.heightUnitCount = widthUnitCount, heightUnitCount;
-    self.width, self.height = widthUnitCount * Const.UnitSize, heightUnitCount * Const.UnitSize;
-
+    local width, height = widthUnitCount * Const.UnitSize, heightUnitCount * Const.UnitSize;
+    if (width == self.width and height == self.height) then return end
+    self.width, self.height = width, height;
     self:SetMaxWidthHeightUnitCount(math.max(widthUnitCount, self.maxWidthUnitCount or 0), math.max(heightUnitCount, self.maxHeightUnitCount or 0));
-
     self:OnSizeChange();
 end
 
@@ -139,11 +120,10 @@ function BlockInputField:UpdateLeftTopUnitCount()
 end
 
 function BlockInputField:SetLeftTopUnitCount(leftUnitCount, topUnitCount)
-    if (self.leftUnitCount == leftUnitCount and self.topUnitCount == topUnitCount) then return end
- 
     self.leftUnitCount, self.topUnitCount = leftUnitCount, topUnitCount;
-    self.left, self.top = leftUnitCount * Const.UnitSize, topUnitCount * Const.UnitSize;
-
+    local left, top = leftUnitCount * Const.UnitSize, topUnitCount * Const.UnitSize;
+    if (self.left == left and self.top == top) then return end
+    self.left, self.top = left, top;
     self:OnSizeChange();
 end
 

@@ -27,6 +27,10 @@ function Input:Init(block, opt)
     return self;
 end
 
+function Input:GetBlockly()
+    return self:GetBlock():GetBlockly();
+end
+
 function Input:GetInputBlock()
     return self.inputConnection:GetConnectionBlock();
 end

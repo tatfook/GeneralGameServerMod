@@ -31,10 +31,22 @@ function Value:Init(block, opt)
 
     self.inputConnection:SetType("value");
 
+    local shadow = opt.shadow;
+    if (shadow) then
+        local shadowType = shadow.type;
+        local shadowBlock = self:GetBlockly():GetBlockInstanceByType(shadowType);
+        if (shadowBlock and shadowBlock.outputConnection) then
+            shadowBlock.isDraggable = false;
+            self.inputConnection:Connection(shadowBlock.outputConnection);
+        end
+    end
+
     return self;
 end
 
 function Value:Render(painter)
+    if (self:IsEdit()) then return end
+  
     local inputBlock = self:GetInputBlock();
     if (inputBlock) then return inputBlock:Render(painter) end
 
