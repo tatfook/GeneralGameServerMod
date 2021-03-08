@@ -576,9 +576,9 @@ function TextArea:GetAtByPos(x, y)
 end
 
 function TextArea:GloablToContentGeometryPos(x, y)
-    local parentScreenX, parentScreenY = self:GetParentElement():GetScreenPos();
+    local mouseX, mouseY = self:GetParentElement():GetRelPoint();
     local contentX, contentY = self:GetContentGeometry();
-    return x - parentScreenX - contentX, y - parentScreenY - contentY;
+    return mouseX - contentX, mouseY - contentY;
 end
 
 function TextArea:OnAfterUpdateLayout()
@@ -603,7 +603,6 @@ end
 function TextArea:OnMouseMove(event)
     if (not self.mouseDown or not ParaUI.IsMousePressed(0) or not event:IsMove()) then return end
     local x, y = ParaUI.GetMousePosition();
-    local sx, sy = self:GetScreenPos();
     if (not self:IsContainPoint(x, y)) then return self:OnMouseUp() end
     local cursorAt = self:GetAtByPos(self:GloablToContentGeometryPos(x, y));
     self.selectStartAt = self.cursorAt;

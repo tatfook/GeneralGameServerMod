@@ -158,7 +158,7 @@ function Page.ShowBlocklyPage(G, params)
     params = params or {};
 
     params.url = "%ui%/Blockly/Pages/Blockly.html";
-    params.draggable = false;
+    params.draggable = true;
     params.G = G;
     params.width = params.width or "100%";
     params.height = params.height or "100%";

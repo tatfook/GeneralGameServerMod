@@ -450,9 +450,9 @@ function Input:GetAtByPos(x, y)
 end
 
 function Input:GloablToContentGeometryPos(x, y)
-    local parentScreenX, parentScreenY = self:GetParentElement():GetScreenPos();
+    local mouseX, mouseY = self:GetParentElement():GetRelPoint();
     local contentX, contentY = self:GetContentGeometry();
-    return x - parentScreenX - contentX, y - parentScreenY - contentY;
+    return mouseX - contentX, mouseY - contentY;
 end
 
 function Input:OnClick(event)
@@ -473,7 +473,6 @@ end
 
 function Input:OnMouseMove(event)
     if (not self.mouseDown) then return end
-    local sx, sy = self:GetScreenPos();
     local x, y = ParaUI.GetMousePosition();
     if (not self:IsContainPoint(x, y) or not ParaUI.IsMousePressed(0)) then return self:OnMouseUp() end
 

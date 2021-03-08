@@ -123,7 +123,8 @@ function ToolBox:Render(painter)
     self:RenderCategory(painter);
 
     painter:SetPen("#ffffff");
-    painter:DrawLine(width, 0, width, height);
+    -- painter:DrawLine(width, 0, width, height);
+    painter:DrawRect(width - 1, 0, 1, height);
    
     painter:Save();
     painter:SetClipRegion(0, 0, width, height);

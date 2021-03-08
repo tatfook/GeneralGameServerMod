@@ -54,6 +54,13 @@ Window:Property("Params");                          -- 窗口参数
 Window:Property("Event");                           -- 事件对象
 Window:Property("WindowName");                      -- 窗口名称
 Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口
+Window:Property("AutoScaleWindow", false, "IsAutoScaleWindow");  -- 是否自动缩放窗口
+
+local function GetSceneViewport()
+    NPL.load("(gl)script/ide/System/Scene/Viewports/ViewportManager.lua");
+	local ViewportManager = commonlib.gettable("System.Scene.Viewports.ViewportManager");
+	return ViewportManager:GetSceneViewport();
+end
 
 function Window:ctor()
     windowId = windowId + 1;
@@ -63,6 +70,12 @@ function Window:ctor()
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = 0, 0, 0, 0; 
     -- 窗口的位置,宽度,高度
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, 0, 0; 
+    -- 缩放
+    self.scaleX, self.scaleY = 1, 1;
+    -- self.scaleX, self.scaleY = 0.8, 0.8;
+    -- 最小根屏幕宽高
+    -- self.minRootScreenWidth, self.minRootScreenHeight = 1280, 750;
+
     self:SetName("Window");
     self:SetTagName("Window");
     self:SetStyleManager(StyleManager:new());
@@ -107,6 +120,7 @@ end
 function Window:Init()
     if (not self:Is3DWindow()) then
         Screen:Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+        -- GetSceneViewport():Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     end
 
     local params = self:GetParams();
@@ -144,7 +158,7 @@ function Window.Show(self, params)
     self:Set3DWindow(params.is3DUI and true or false);
     self:SetParams(params);
     self:SetNativeWindow(self:Is3DWindow() and self:Create3DNativeWindow() or self:CreateNativeWindow());
-
+    self:SetMinRootScreenWidthHeight(params.minScreenWidth, params.minScreenHeight);
     -- 初始化
     self:Init();
     -- 文档化
@@ -159,6 +173,8 @@ end
 function Window:CloseWindow()
     if (not self:GetNativeWindow()) then return end
     Screen:Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+    -- GetSceneViewport():Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+
     ParaUI.Destroy(self:GetNativeWindow().id);
     self:SetNativeWindow(nil);
     self:SetVisible(false);
@@ -234,6 +250,9 @@ function Window:InitWindowPosition()
 
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = windowX, windowY, windowWidth, windowHeight;
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, windowWidth, windowHeight;
+    self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = screenX, screenY, screenWidth, screenHeight;
+    -- self.minRootScreenWidth, self.minRootScreenHeight = params.minRootScreenWidth, params.minRootScreenHeight;  -- 1280, 750;
+    
     -- WindowDebug(
     --     string.format("root window screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", screenX, screenY, screenWidth, screenHeight),
     --     string.format("screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", windowX, windowY, windowWidth, windowHeight),
@@ -308,17 +327,14 @@ function Window:CreateNativeWindow()
     return native_window;
 end
 
--- 屏幕窗口大小改变
-function Window:OnScreenSizeChanged()
-    WindowDebug("================OnScreenSizeChanged===============");
-    self:InitWindowPosition();
-    self:GetWindow():GetNativeWindow():Reposition("_lt", self.screenX, self.screenY, self.screenWidth, self.screenHeight);
-    self:UpdateLayout();
-end
-
 -- 获取窗口位置
 function Window:GetWindowPosition()
-    return self.windowX, self.windowY, self.windowWidth, self.windowHeight;
+    -- 自动缩放, 窗口大小变化  虚拟窗口大小不变
+    if (self:IsAutoScaleWindow()) then return 0, 0, self.windowWidth, self.windowHeight end
+    -- 非自动缩放, 窗口大小不变, 虚拟窗口大小变化
+    local scaleWindowWidth, scaleWindowHeight = math.floor(self.windowWidth / self.scaleX + 0.5), math.floor(self.windowHeight / self.scaleY + 0.5);
+    return 0, 0, scaleWindowWidth, scaleWindowHeight;
+    -- return self.windowX, self.windowY, self.windowWidth, self.windowHeight;
 end
 
 -- 设置窗口位置
@@ -341,11 +357,17 @@ end
 -- handle ondraw callback from system ParaUI object. 
 function Window:handleRender()
     if (not self:GetNativeWindow()) then return end
-    self:Render(self:GetPainterContext());
+    local painter = self:GetPainterContext();
+    painter:Scale(self.scaleX, self.scaleY);
+    self:Render(painter);
+    painter:Scale(1 / self.scaleX, 1 / self.scaleY);
 end
 
 -- 获取方法名通过事件名
 function Window:GetEventTypeFuncName(eventName)
+    if (mouse_button == "right") then 
+        return "OnContextMenuCapture", "OnContextMenu";
+    end
     if (eventName == "mousePressEvent") then
         return "OnMouseDownCapture", "OnMouseDown";
     elseif (eventName == "mouseReleaseEvent") then
@@ -489,4 +511,50 @@ function Window:ExecCode(code)
     -- 执行脚本
     local result = code_func();
     return result, nil;
+end
+
+-- 设置最小根窗口宽高
+function Window:SetMinRootScreenWidthHeight(minRootScreenWidth, minRootScreenHeight)
+    self.minRootScreenWidth, self.minRootScreenHeight = minRootScreenWidth, minRootScreenHeight;
+    if (not self.minRootScreenWidth or not self.minRootScreenHeight) then return end
+    self:OnScreenSizeChanged();
+end
+
+-- 屏幕窗口大小改变
+function Window:OnScreenSizeChanged()
+    if (self:Is3DWindow()) then return end;
+    if (not self.rootScreenWidth or not self.rootScreenHeight) then return end
+    local nativeWnd = self:GetNativeWindow();
+	if (not nativeWnd) then return end 
+    local rootScreenX, rootScreenY, rootScreenWidth, rootScreenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
+
+    -- 计算缩放比
+    local oldScaleX, oldScaleY = self.scaleX or 1, self.scaleY or 1;
+    local minRootScreenWidth, minRootScreenHeight = self.minRootScreenWidth or self.screenWidth, self.minRootScreenHeight or self.screenHeight;
+    local scalingWidth, scalingHeight = 1, 1;
+    if(rootScreenWidth < minRootScreenWidth) then scalingWidth = rootScreenWidth / minRootScreenWidth end
+    if(rootScreenHeight < minRootScreenHeight) then scalingHeight = rootScreenHeight / minRootScreenHeight end
+    local scaling = math.min(scalingWidth, scalingHeight);
+    self.scaleX, self.scaleY = scaling, scaling;
+
+    -- 使用缩放比
+    local bNoScale = false;
+    bNoScale = bNoScale or (self.minRootScreenWidth and self.minRootScreenHeight and rootScreenWidth >= self.minRootScreenWidth and rootScreenHeight >= self.minRootScreenHeight);
+    bNoScale = bNoScale or ((not self.minRootScreenWidth or not self.minRootScreenHeight) and rootScreenWidth >= self.screenWidth and rootScreenHeight >= self.screenHeight);
+    if (self:IsAutoScaleWindow()) then
+        if (bNoScale) then
+            self.screenWidth, self.screenHeight = math.floor(self.screenWidth / oldScaleX + 0.5), math.floor(self.screenHeight * oldScaleY + 0.5);
+        else
+            self.screenWidth, self.screenHeight = math.floor(self.screenWidth * scaling + 0.5), math.floor(self.screenHeight * scaling + 0.5);   -- 缩小窗口
+        end
+    else
+        -- 大小未变, 位置则不变, 又不缩放 则直接返回
+        if (self.rootScreenWidth == rootScreenWidth and self.rootScreenHeight == rootScreenHeight) then return end
+    end
+
+    -- 应用缩放比
+    self.screenX, self.screenY = math.floor(self.screenX * rootScreenWidth / self.rootScreenWidth + 0.5), math.floor(self.screenY * rootScreenHeight / self.rootScreenHeight + 0.5);
+    nativeWnd:Reposition("_lt", self.screenX, self.screenY, self.screenWidth, self.screenHeight);
+    self.screenX, self.screenY, self.screenWidth, self.screenHeight = nativeWnd:GetAbsPosition();
+    self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = rootScreenX, rootScreenY, rootScreenWidth, rootScreenHeight;
 end

@@ -129,6 +129,7 @@ function Blockly:Redo()
     elseif (action == "DeleteBlock") then
         self:RemoveBlock(block);
     end
+
     table.insert(self.undos, cmd);
 end
 
@@ -354,6 +355,7 @@ function Blockly:OnMouseDown(event)
 
     local x, y = self:GetRelPoint(event.x, event.y);
     local ui = self:GetMouseUI(x, y, event);
+    
     -- 失去焦点
     local focusUI = self:GetFocusUI();
     if (focusUI ~= ui and focusUI) then 
@@ -368,15 +370,19 @@ function Blockly:OnMouseDown(event)
     end
     
     local mousePosIndex = self:GetMousePosIndex();
-    if (mousePosIndex == 1) then  -- 居中
+    if (mousePosIndex == 1) then         -- 重置
         self.offsetX, self.offsetY = 0, 0;
-    elseif (mousePosIndex == 2) then  -- 放大
+        local CurrentUnitSize = self.CurrentUnitSize;
+        self.CurrentUnitSize = Const.DefaultUnitSize;
+        self:EnableCurrentUnitSize();
+        self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
+    elseif (mousePosIndex == 2) then     -- 放大
         local CurrentUnitSize = self.CurrentUnitSize;
         self.CurrentUnitSize = self.CurrentUnitSize + 1;
         self.CurrentUnitSize = math.min(self.CurrentUnitSize, 6);
         self:EnableCurrentUnitSize();
         self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
-    elseif (mousePosIndex == 3) then -- 缩小
+    elseif (mousePosIndex == 3) then     -- 缩小
         local CurrentUnitSize = self.CurrentUnitSize;
         self.CurrentUnitSize = self.CurrentUnitSize - 1;
         self.CurrentUnitSize = math.max(self.CurrentUnitSize, 2);
@@ -389,7 +395,6 @@ function Blockly:OnMouseDown(event)
         self.startX, self.startY = event.x, event.y;
         self.startOffsetX, self.startOffsetY = self.offsetX, self.offsetY;
     end
-    
 end
 
 -- 鼠标移动事件

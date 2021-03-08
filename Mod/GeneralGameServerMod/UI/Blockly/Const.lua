@@ -29,6 +29,6 @@ Const.MaxTextShowWidthUnitCount = 100;            -- 最大文本显示宽度
 Const.MinTextShowWidthUnitCount = 6;              -- 最小文本显示宽度
 Const.TextMarginUnitCount = 1;                    -- 文本边距
 
-Const.ToolBoxWidth = 400;                -- 工具栏宽度
+Const.ToolBoxWidth = 300;                -- 工具栏宽度
 Const.ToolBoxCategoryWidth = 80;         -- 分类宽
 Const.ToolBoxCategoryHeight = 80;        -- 分类高

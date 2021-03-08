@@ -419,24 +419,6 @@ function ElementUI:GetWindowSize()
     return self.winWidth, self.winHeight;
 end
 
--- 获取元素相对窗口坐标
-function ElementUI:GetRelWindowPos()
-    local windowWindowX, windowWindowY = self:GetWindow():GetWindowPos();
-    local windowX, windowY = self:GetWindowPos();
-    return windowX - windowWindowX, windowY - windowWindowY;
-end
-
--- 全局坐标转窗口坐标
-function ElementUI:GloablToWindowPos()
-end 
-
--- 全局坐标转元素内坐标
-function ElementUI:GloablToGeometryPos()
-end
--- 全局坐标转元素内容区坐标
-function ElementUI:GlobalToContentGeometryPos()
-end
-
 -- 更新元素窗口的坐标
 function ElementUI:UpdateWindowPos(forceUpdate)
     local parentScrollX, parentScrollY, parentWindowX, parentWindowY = 0, 0, 0, 0;
@@ -473,25 +455,33 @@ function ElementUI:UpdateWindowPos(forceUpdate)
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "============End========= windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
 end
 
--- 获取元素相对屏幕的坐标
-function ElementUI:GetScreenPos()
-    local windowX, windowY = self:GetWindowPos();
-    local screenX, screenY = self:GetWindow():GetScreenPosition();
-    return screenX + windowX, screenY + windowY;
+-- 获取窗口缩放
+function ElementUI:GetWindowScale()
+    local win = self:GetWindow();
+    return win.scaleX, win.scaleY;
+end
+
+-- 屏幕坐标转窗口坐标
+function ElementUI:ScreenPointToWindowPoint(screenX, screenY)
+    local screen_x, screen_y = self:GetWindow():GetScreenPosition();
+    local scaleX, scaleY = self:GetWindowScale();
+    return math.floor((screenX - screen_x) / scaleX + 0.5), math.floor((screenY - screen_y) / scaleY + 0.5);
 end
 
 -- 指定点是否在元素视区内
 function ElementUI:IsContainPoint(screenX, screenY)
-    local left, top = self:GetScreenPos();
+    local windowX, windowY = self:ScreenPointToWindowPoint(screenX, screenY);
+    local left, top = self:GetWindowPos();
     local width, height = self:GetWindowSize();
     local right, bottom = left + width, top + height;
-    return left <= screenX and screenX <= right and top <= screenY and screenY <= bottom;
+    return left <= windowX and windowX <= right and top <= windowY and windowY <= bottom;
 end
 
 -- 获取指定点相对元素位置
 function ElementUI:GetRelPoint(screenX, screenY)
-    local sx, sy = self:GetScreenPos();
-    return screenX - sx, screenY - sy;
+    local windowX, windowY = self:ScreenPointToWindowPoint(screenX, screenY);
+    local winX, winY = self:GetWindowPos();
+    return windowX - winX, windowY - winY;
 end
 
 -- 获取滚动条的位置
@@ -776,13 +766,10 @@ end
 
 function ElementUI:OnKeyDown(event)
 end
-
 function ElementUI:OnKeyUp(event)
 end
-
 function ElementUI:OnKey(event)
 end
-
 function ElementUI:OnMouseDownCapture()
 end
 function ElementUI:OnMouseUpCapture()
@@ -798,4 +785,8 @@ end
 function ElementUI:OnMouseCapture()
 end
 function ElementUI:OnMouse()
+end
+function ElementUI:OnContextMenuCapture()
+end
+function ElementUI:OnContextMenu()
 end
