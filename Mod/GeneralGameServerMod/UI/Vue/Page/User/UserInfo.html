@@ -149,30 +149,24 @@
                         <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
                         <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 34px; height: 17px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_xuexiao_34X17_32bits.png#0 0 34 17);"></div>
                     </div>
-                    <div onclick=ClickSchoolbtn style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px; color: rgb(60,158,220);">{{schoolName}}</div>
+                    <div v-if="schoolName ~= ''" onclick=ClickSchoolbtn style="max-width: 180px; display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px; color: rgb(60,158,220);">{{schoolName}}</div>
+                    <div v-if="isAuthUser and schoolName == ''" onclick=ClickSchoolEdit style="display: inline-block; line-height: 28px; text-align: center; margin-left: 8px; width: 86px; height: 28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">加入学校</div>
+                    <div v-if="isAuthUser and schoolName ~= ''" onclick=ClickSchoolEdit style="display: inline; margin-left: 6px; width: 20px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/bianji_20X20_32bits.png#0 0 20 20);"></div>
                 </div>
-                <div style="margin-top: 16px; height: 24px;">
+                <div v-if="schoolType ~= '大学'" style="margin-top: 16px; height: 24px;">
                     <div style="position: relative; width: 70px; height: 24px; display: inline;">
                         <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
-                        <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 33px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_diqu_33X16_32bits.png#0 0 33 16);"></div>
+                        <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 35px; height: 17px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/banji_35X17_32bits.png#0 0 35 17);"></div>
                     </div>
-                    <div style="max-width: 180px; display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{regionname}}</div>
-                    <div v-if="isAuthUser" onclick=ClickRegionEdit style="display: inline; margin-left: 6px; width: 20px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/bianji_20X20_32bits.png#0 0 20 20);"></div>
+                    <div v-if="not isAuthUser or className ~= ''" style="max-width: 180px; display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px; ">{{className}}</div>
+                    <div v-if="isAuthUser and className == ''" onclick=ClickClassbtn style="display: inline-block; line-height: 28px; text-align: center; margin-left: 8px; width: 86px; height: 28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">加入班级</div>
+                    <div v-if="isAuthUser and className ~= ''" onclick=ClickClassbtn style="display: inline; margin-left: 6px; width: 20px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/bianji_20X20_32bits.png#0 0 20 20);"></div>
                 </div>
-
                 <div v-if="isAuthUser" style="margin-top: 16px; height: 24px;">
-                    <div style="position: relative; width: 70px; height: 24px; display: inline;">
-                        <div style="position: absolute; left: 0px; top: 0px; display: inline; width: 70px; height: 24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/wenzidi_70X24_32bits.png#0 0 70 24);"></div>
-                        <div style="position: absolute; left: 10px; top: 4px; display: inline; width: 50px; height: 16px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_zhishidou_50X16_32bits.png#0 0 50 16);"></div>
-                    </div>
-                    <div  style="display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px;">{{bean}}</div>
+                    <div v-show="not isExitPrefectUserInfoItem and not isPrefectUserInfo" style="position: absolute; top: 30px; left: 50px; height: 50px; width: 192px; padding:20px 20px 0px; color: #ffffff; font-size: 12px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/kuang_128X71_32bits.png#0 0 128 71:16 16 16 16);">完善个人资料可获得奖励哦</div>
+                    <div v-show="not isExitPrefectUserInfoItem and isPrefectUserInfo" style="position: absolute; top: 30px; left: -5px; height: 65px; width: 300px; padding: 20px 20px 0px; color: #ffffff; font-size: 12px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/kuang_128X71_32bits.png#0 0 128 71:16 16 16 16);">恭喜你已完善全部资料，奖励请在“任务”中“完善个人资料任务”领取</div>
+                    <div class="center" onclick=ClickEditMoreBtn style="margin-left: 90px; width: 106px; height: 28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">更多资料</div>
                 </div>
-
-                <!-- <div v-if="isNeedUpdateRegion and isAuthUser and isShowUpdateRegionTip" style="position: absolute; top: 165px; left: 10px; height: 34px; width: 280px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tipbj_32bits.png:8 8 8 8);">
-                    <div style="display: inline-block; font-size: 12px; base-font-size: 12px; color: #ffffff; padding-top: 8px; padding-left: 16px;">完善地区信息, 获取知识豆奖励</div>
-                    <div onclick=ClickRegionEdit style="display: inline-block; margin-left: 8px; margin-top: 5px; font-size: 14px; base-font-size: 14px; text-align: center; width: 55px; height: 24px; line-height: 22px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_guanzhu_32X32_32bits.png#0 0 32 32:8 8 8 8);">编辑</div>
-                    <div onclick=ClickCloseRegionEditTip style="display: inline-block; margin-left: 8px; margin-top: 5px; width: 19px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/tipX_19X20_32bits.png#0 0 19 20);"></div>
-                </div> -->
             </div>
         </div>
     </div>    
@@ -189,6 +183,7 @@ local UniString = commonlib.gettable("System.Core.UniString");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local KpUserTag = NPL.load("(gl)script/apps/Aries/Creator/Game/mcml/keepwork/KpUserTag.lua");
 local RegisterModal = NPL.load("(gl)Mod/WorldShare/cellar/RegisterModal/RegisterModal.lua");
+local Keepwork = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keepwork.lua");
 
 local assets = {
     "character/CC/02human/paperman/boy01.x",
@@ -204,11 +199,15 @@ local assets = {
     "character/CC/02human/paperman/girl04.x",
     "character/CC/02human/paperman/girl05.x",
 }
+local Grades = {"一年级", "二年级", "三年级", "四年级", "五年级", "六年级", "七年级", "八年级", "九年级", "高一", "高二", "高三"};
+
 local curAssetIndex = 1;
 
 self.isEditNickName = false;
 self.isNeedUpdateRegion = nil;
 self.isShowUpdateRegionTip = true;
+self.isExitPrefectUserInfoItem = Keepwork:IsExitPrefectUserInfoItem();
+self.isPrefectUserInfo = Keepwork:IsPrefectUserInfo();
 
 function OnAttrValueChange(attrName, attrValue)
     if (attrName == "UserDetail") then
@@ -220,6 +219,10 @@ function OnReady()
     local region = UserDetail.region or {};
     self.bean = tostring(UserDetail.bean or 0);
     self.schoolName = UserDetail.school and UserDetail.school.name or "";
+    self.schoolType = UserDetail.school and UserDetail.school.type or "";
+    local class = UserDetail.class or {};
+    class = KeepWorkItemManager.GetProfile().class or {};
+    self.className = class.grade and (Grades[tonumber(class.grade)] .. (class.classNo and (class.classNo .. "班" or ""))) or "";
     self.userId = UserDetail.id;
     self.username = UserDetail.username;
     self.nickname = MyCompany.Aries.Chat.BadWordFilter.FilterString(UserDetail.nickname);
@@ -249,29 +252,41 @@ function OnScale(scale)
     self.scale = scale;
 end
 
-function ClickRegionEdit()
+function ClickEditMoreBtn()
     ShowWindow({
-        UserDetail = UserDetail,
-        UserRegion = UserDetail.region, 
-        userId = UserDetail.id,
-        confirm = function(region) 
-            if region and region.hasChildren == 0 then
-                GameLogic.QuestAction.AchieveTask("40004_1", 1, true)
-            end
-
-            UserDetail.region = region;
-            self.regionname = region and region.fullname;
-        end
+        OnFinish = function()
+            self.isPrefectUserInfo = Keepwork:IsPrefectUserInfo();
+        end,
     }, {
-        url = "%vue%/Page/User/AreaSelect.html",
-        width = 1025,
-        height = 625,
+        url = "%vue%/Page/User/MoreUserInfo.html",
+        width = 500,
+        height = 382,
         draggable = false,
     });
-end
+end 
 
-function ClickCloseRegionEditTip()
-    isShowUpdateRegionTip = false;
+function ClickClassbtn()
+    ShowWindow({
+        OnFinish = function(className)
+            self.className = className or "";
+            self.isPrefectUserInfo = Keepwork:IsPrefectUserInfo();
+        end
+    }, {
+        url = "%vue%/Page/User/EditClass.html",
+        width = 500,
+        height = 382,
+        draggable = false,
+    })
+end 
+
+function ClickSchoolEdit()
+    GameLogic.GetFilters():apply_filters('cellar.my_school.select_school', function ()
+        KeepWorkItemManager.LoadProfile(false, function()
+            local profile = KeepWorkItemManager.GetProfile();
+            UserDetail.school = profile.school;
+            self.schoolName = UserDetail.school and UserDetail.school.name or "";
+        end)
+    end);
 end
 
 function ClickGoRealName()

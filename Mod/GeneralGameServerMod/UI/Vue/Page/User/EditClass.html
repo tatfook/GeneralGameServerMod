@@ -1,0 +1,95 @@
+
+<template class="container">
+    <WindowTitleBar title="" v-bind:close="UpdateInfo"></WindowTitleBar>
+    <div style="margin-left: 40px; margin-top: 80px;">
+        <select v-bind:value="grade" style="margin-left: 10px;" v-bind:options="ClassOptions" onselect=OnGradeSelect placeholder="年级"></select>
+        <select v-bind:value="year" style="margin-left: 10px;" v-bind:options="YearOptions" onselect=OnYearSelect placeholder="入学年份"></select>
+        <input v-bind:value="classNo" style="margin-left: 10px;" type="number" onchange=OnClassChange placeholder="班级"></input>
+        <div style="display: inline; padding-left: 10px; padding-top: 6px;">班</div>
+    </div>
+</template>
+
+<script type="text/lua">
+local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
+
+RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+
+local dateobj = os.date("*t");
+local UserDetail = KeepWorkItemManager.GetProfile();
+ClassOptions = {
+    {"一年级", "1"},
+    {"二年级", "2"},
+    {"三年级", "3"},
+    {"四年级", "4"},
+    {"五年级", "5"},
+    {"六年级", "6"},
+    {"七年级", "7"},
+    {"八年级", "8"},
+    {"九年级", "9"},
+    {"高一", "10"},
+    {"高二", "11"},
+    {"高三", "12"},
+}
+YearOptions = {};
+for i = 1, 50 do
+    local yearstr = tostring( dateobj.year - i + 1);
+    YearOptions[i] = {label = yearstr, value = yearstr};
+end
+
+grade, classNo, year = "", "", "";
+local gradeLabel = "";
+
+function UpdateInfo()
+    local className, gradeLabel = "", "";
+    for i = 1, 12 do 
+        if (ClassOptions[i][2] == grade) then
+            gradeLabel = ClassOptions[i][1];
+        end
+    end 
+    if (gradeLabel ~= "") then
+        if (classNo ~= "") then className = gradeLabel .. classNo .. "班"
+        else className = gradeLabel end 
+    end
+    if (type(OnFinish) == "function") then OnFinish(className) end 
+    local classinfo = {
+        grade = tonumber(grade),
+        classNo = tonumber(classNo),
+        enrollmentYear = tonumber(year),
+    };
+    UserDetail.class = classinfo;
+    CloseWindow();
+
+    keepwork.user.set_class(classinfo);
+end 
+
+function OnGradeSelect(value, label)
+    grade = value .. "";
+    if (dateobj.month < 9) then
+        year = tostring(dateobj.year - tonumber(value));
+    else
+        year = tostring(dateobj.year - tonumber(value) + 1);
+    end
+end 
+
+function OnYearSelect(value)
+    year = value;
+end 
+
+function OnClassChange(value)
+    classNo = value;
+end 
+
+function OnReady()
+    local classinfo = UserDetail.class or {};
+    grade, classNo, year = tostring(classinfo.grade or ""), tostring(classinfo.classNo or ""), tostring(classinfo.enrollmentYear or "");
+end
+</script>
+
+<style>
+.container {
+    height: 250px; 
+    width: 500px; 
+    padding: 0px 2px 2px 2px;
+    background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);
+}
+</style>

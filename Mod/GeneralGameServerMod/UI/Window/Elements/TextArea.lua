@@ -87,7 +87,7 @@ function TextArea:Reset()
 end
 
 function TextArea:OnAttrValueChange(attrName, attrValue, oldAttrValue)
-    if (attrName ~= "value" or tostring(attrValue) == self:GetValue()) then return end
+    if (attrName ~= "value" or tostring(attrValue or "") == self:GetValue()) then return end
     self:Reset();
 end
 
@@ -576,7 +576,7 @@ function TextArea:GetAtByPos(x, y)
 end
 
 function TextArea:GloablToContentGeometryPos(x, y)
-    local mouseX, mouseY = self:GetParentElement():GetRelPoint();
+    local mouseX, mouseY = self:GetParentElement():GetRelPoint(x, y);
     local contentX, contentY = self:GetContentGeometry();
     return mouseX - contentX, mouseY - contentY;
 end

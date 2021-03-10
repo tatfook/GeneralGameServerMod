@@ -423,7 +423,7 @@ function Compile:VBind(element)
         local realVal = nil;
         if (realKey and realKey ~= "") then
             self:ExecCode(val, element, function(realVal)
-                -- CompileDebug.If(realKey == "value", realVal);
+                -- CompileDebug.If(realKey == "value" and element:GetTagName() == "input", realVal);
                 if (Scope:__is_scope__(realVal)) then realVal = realVal:__get_data__() end
                 -- if (type(realVal) == "table" and realVal.ToPlainObject) then realVal = realVal:ToPlainObject() end
                 element:SetAttrValue(realKey, realVal);
@@ -449,7 +449,7 @@ function Compile:VModel(element)
         element:GetAttr()["value"] = val;
         local keys = commonlib.split(vmodel, "%.");
         local subscope, size = scope, #keys;
-        for i = 1, size - 1 do subscope = scope[keys[i]] end
+        for i = 1, size - 1 do subscope = subscope[keys[i]] end
         if (Scope:__is_scope__(subscope[keys[size]])) then
             -- subscope[keys[size]]:__set_data__(val);
         else 

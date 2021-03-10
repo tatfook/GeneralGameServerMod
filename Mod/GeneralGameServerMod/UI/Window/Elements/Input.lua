@@ -61,9 +61,9 @@ function Input:Reset()
 end
 
 function Input:OnAttrValueChange(attrName, attrValue, oldAttrValue)
-    if (attrName ~= "value" or tostring(attrValue) == self:GetValue()) then return end
+    if (attrName ~= "value" or tostring(attrValue or "") == self:GetValue()) then return end
     self:Reset();
-    self.text = UniString:new(tostring(attrValue));
+    self.text = UniString:new(tostring(attrValue or ""));
     self:UpdateValue();
 end
 
@@ -430,7 +430,7 @@ function Input:RenderContent(painter)
     painter:SetPen(self:GetColor());
     local value = tostring(text);
     if (self:IsFocus() or value ~= "") then
-        painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, tostring(value));
+        painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, tostring(value) .. "");
     else 
         painter:SetPen("#A8A8A8"); -- placeholder color;
         painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, self:GetAttrStringValue("placeholder", ""));
@@ -450,7 +450,7 @@ function Input:GetAtByPos(x, y)
 end
 
 function Input:GloablToContentGeometryPos(x, y)
-    local mouseX, mouseY = self:GetParentElement():GetRelPoint();
+    local mouseX, mouseY = self:GetParentElement():GetRelPoint(x, y);
     local contentX, contentY = self:GetContentGeometry();
     return mouseX - contentX, mouseY - contentY;
 end

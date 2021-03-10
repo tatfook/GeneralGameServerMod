@@ -162,7 +162,9 @@ function Select:IsAllowCreate()
     return self:GetAttrBoolValue("AllowCreate");
 end
 
-function Select:OnAttrValueChange(attrName, attrValue)
+function Select:OnAttrValueChange(attrName, attrValue, oldAttrValue)
+    Select._super.OnAttrValueChange(self, attrName, attrValue, oldAttrValue);
+    
     if (attrName == "value") then
         self:OnValueAttrValueChange(attrValue);
     elseif (attrName == "options") then
@@ -285,7 +287,7 @@ function Select:RenderContent(painter)
         painter:SetPen("#A8A8A8"); -- placeholder color;
     end
     text = _guihelper.TrimUtf8TextByWidth(text, w - ArrowAreaSize, self:GetFont());
-    painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, text or "");
+    painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, (text or "") .. "");
 end
 
 local ArrowSize = 12;
