@@ -592,7 +592,7 @@ function TextArea:OnMouseDown(event)
     self.cursorAt = self:GetAtByPos(x, y);
     self.mouseDown = true;
     self:CaptureMouse();
-    self.mouseStartScreenX, self.mouseStartScreenY = ParaUI.GetMousePosition(); 
+    self.mouseStartScreenX, self.mouseStartScreenY = event.x, event.y; 
     self.mouseLastScreenX, self.mouseLastScreenY = self.mouseStartScreenX, self.mouseStartScreenY;
 
     TextAreaDebug.Format("OnMouseDown, x = %s, cursorAt = %s", x, self.cursorAt);
@@ -601,8 +601,8 @@ function TextArea:OnMouseDown(event)
 end
 
 function TextArea:OnMouseMove(event)
-    if (not self.mouseDown or not ParaUI.IsMousePressed(0) or not event:IsMove()) then return end
-    local x, y = ParaUI.GetMousePosition();
+    if (not self.mouseDown or not event:LeftButton() or not event:IsMove()) then return end
+    local x, y = event.x, event.y;
     if (not self:IsContainPoint(x, y)) then return self:OnMouseUp() end
     local cursorAt = self:GetAtByPos(self:GloablToContentGeometryPos(x, y));
     self.selectStartAt = self.cursorAt;

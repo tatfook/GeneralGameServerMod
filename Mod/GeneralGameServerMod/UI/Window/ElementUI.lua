@@ -468,6 +468,13 @@ function ElementUI:ScreenPointToWindowPoint(screenX, screenY)
     return math.floor((screenX - screen_x) / scaleX + 0.5), math.floor((screenY - screen_y) / scaleY + 0.5);
 end
 
+-- 窗口坐标转屏幕坐标
+function ElementUI:WindowPointToScreenPoint(windowX, windowY)
+    local screen_x, screen_y = self:GetWindow():GetScreenPosition();
+    local scaleX, scaleY = self:GetWindowScale();
+    return math.floor(screen_x + windowX * scaleX + 0.5), math.floor(screen_y + windowY * scaleY + 0.5);
+end
+
 -- 指定点是否在元素视区内
 function ElementUI:IsContainPoint(screenX, screenY)
     local windowX, windowY = self:ScreenPointToWindowPoint(screenX, screenY);
@@ -547,7 +554,7 @@ function ElementUI:OnMouseDown(event)
     if(self:IsDraggable() and event:button() =="left") then
         self.isMouseDown = true;
         self.isDragging = false;
-        self.startDragX, self.startDragY = ParaUI.GetMousePosition();
+        self.startDragX, self.startDragY = event.x, event.y;
         self.startDragElementX, self.startDragElementY = self:GetPosition();
         self.startDragScreenX, self.startDragScreenY = self:GetWindow():GetScreenPosition();
 		event:accept();
@@ -558,25 +565,19 @@ function ElementUI:OnMouseMove(event)
     if(event:isAccepted()) then return end
     if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
 
-    local x, y = ParaUI.GetMousePosition();
-	if(self.isMouseDown and ParaUI.IsMousePressed(0) and self:IsDraggable() and event:button() == "left") then
-		if(not self.isDragging) then
-			if(math.abs(x - self.startDragX) > 2 or math.abs(y - self.startDragY) > 2) then
-                self.isDragging = true;
-				self:CaptureMouse();
-			end
-        elseif(self.isDragging) then
-            local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
-            if (self:IsWindow()) then
-                local _, _, screenWidth, screenHeight = self:GetScreenPosition();
-                self:GetWindow():GetNativeWindow():Reposition("_lt", self.startDragScreenX + offsetX, self.startDragScreenY + offsetY, screenWidth, screenHeight);
-            else 
-                self:SetPosition(self.startDragElementX + offsetX, self.startDragElementY + offsetY);
-            end
-		end
-		if(self.isDragging) then
-			event:accept();
-		end
+    local x, y = event.x, event.y;
+	if(self.isMouseDown and event:LeftButton() and self:IsDraggable() and event:button() == "left") then
+        local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
+		if(not self.isDragging and not event:IsMove()) then return end
+        self.isDragging = true;
+        self:CaptureMouse();
+        if (self:IsWindow()) then
+            local _, _, screenWidth, screenHeight = self:GetScreenPosition();
+            self:GetWindow():GetNativeWindow():Reposition("_lt", self.startDragScreenX + offsetX, self.startDragScreenY + offsetY, screenWidth, screenHeight);
+        else 
+            self:SetPosition(self.startDragElementX + offsetX, self.startDragElementY + offsetY);
+        end
+        event:accept();
 	end
 end
 

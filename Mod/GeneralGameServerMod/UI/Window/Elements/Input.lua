@@ -465,7 +465,7 @@ function Input:OnMouseDown(event)
     self:ClearSelected();
     self.cursorAt, self.cursorX = self:GetAtByPos(x, y);
     self.mouseDown = true;
-    self.mouseDownX, self.mouseDownY = ParaUI.GetMousePosition();
+    self.mouseDownX, self.mouseDownY = event.x, event.y;
     self:CaptureMouse();
     InputDebug.Format("OnMouseDown, x = %s, scrollX = %s, cursorAt = %s, cursorX = %s", x, self.scrollX, self.cursorAt, self.cursorX);
     event:accept();
@@ -473,8 +473,8 @@ end
 
 function Input:OnMouseMove(event)
     if (not self.mouseDown) then return end
-    local x, y = ParaUI.GetMousePosition();
-    if (not self:IsContainPoint(x, y) or not ParaUI.IsMousePressed(0)) then return self:OnMouseUp() end
+    local x, y = event.x, event.y;
+    if (not self:IsContainPoint(x, y) or not event:LeftButton()) then return self:OnMouseUp() end
 
     if (not self.mouseMove) then
         if (math.abs(x - self.mouseDownX) < self:GetFontSize() / 2) then return end

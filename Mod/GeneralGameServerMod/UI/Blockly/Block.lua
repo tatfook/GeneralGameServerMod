@@ -28,7 +28,7 @@ local InputValue = NPL.load("./Inputs/Value.lua", IsDevEnv);
 local InputStatement = NPL.load("./Inputs/Statement.lua", IsDevEnv);
 
 local Block = commonlib.inherit(BlockInputField, NPL.export());
-local BlockDebug = GGS.Debug.GetModuleDebug("BlockDebug").Enable();   --Enable  Disable
+local BlockDebug = GGS.Debug.GetModuleDebug("BlockDebug").Disable();   --Enable  Disable
 
 local nextBlockId = 1;
 local BlockPen = {width = 1, color = "#ffffff"};
@@ -328,13 +328,13 @@ function Block:OnMouseDown(event)
 end
 
 function Block:OnMouseMove(event)
-    if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
+    if (not self.isMouseDown or not event:LeftButton()) then return end
     if (not self.isDraggable) then return end
 
     local blockly, block = self:GetBlockly(), self;
     local x, y = event.x, event.y;
     if (not block.isDragging) then
-        if (math.abs(x - block.startX) < Const.UnitSize and math.abs(y - block.startY) < Const.UnitSize) then return end
+        if (not event:IsMove()) then return end
         if (block.isToolBoxBlock) then 
             block = self:Clone();
             block.startLeftUnitCount, block.startTopUnitCount = (block.leftUnitCount * Const.DefaultUnitSize - blockly.offsetX) / Const.UnitSize, (block.topUnitCount * Const.DefaultUnitSize - blockly.offsetY) / Const.UnitSize;

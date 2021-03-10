@@ -408,7 +408,7 @@ function Blockly:OnMouseMove(event)
     local ui = self:GetMouseUI(x, y, event);
     if (ui and ui ~= self) then return ui:OnMouseMove(event) end
     
-    if (not self.isMouseDown or not ParaUI.IsMousePressed(0)) then return end
+    if (not self.isMouseDown or not event:LeftButton()) then return end
     if (not self.isDragging) then
         if (math.abs(event.x - self.startX) < Const.UnitSize and math.abs(event.y - self.startY) < Const.UnitSize) then return end
         self.isDragging = true;

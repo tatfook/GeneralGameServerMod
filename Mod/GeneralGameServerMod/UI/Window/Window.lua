@@ -35,6 +35,7 @@ local Event = NPL.load("./Event.lua", IsDevEnv);
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local StyleManager = NPL.load("./Style/StyleManager.lua", IsDevEnv);
+local MacroWindow = NPL.load("./MacroWindow.lua", IsDevEnv);
 
 local Window = commonlib.inherit(Element, NPL.export());
 local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug").Enable();
@@ -53,6 +54,7 @@ Window:Property("G");                               -- 全局对象
 Window:Property("Params");                          -- 窗口参数
 Window:Property("Event");                           -- 事件对象
 Window:Property("WindowName");                      -- 窗口名称
+Window:Property("MacroName");                       -- 宏名称
 Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口
 Window:Property("AutoScaleWindow", false, "IsAutoScaleWindow");  -- 是否自动缩放窗口
 
@@ -124,6 +126,12 @@ function Window:Init()
     end
 
     local params = self:GetParams();
+    
+    if (params.macroName) then 
+        self:SetMacroName(params.macroName);
+        MacroWindow.SetWindow(self:GetMacroName(), self);
+    end
+
     self:SetG(self:NewG(params.G));      -- 设置全局G表
     -- 设置窗口元素
     self:InitElement({
@@ -175,6 +183,7 @@ function Window:CloseWindow()
     Screen:Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     -- GetSceneViewport():Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
 
+    MacroWindow.SetWindow(self:GetMacroName(), nil);
     ParaUI.Destroy(self:GetNativeWindow().id);
     self:SetNativeWindow(nil);
     self:SetVisible(false);
@@ -201,7 +210,7 @@ function Window:Create3DNativeWindow()
     native_window:AttachToRoot();
 	
     native_window:SetScript("ondraw", function()
-		self:handleRender();
+        self:HandleRender();
     end);
    
     return native_window;
@@ -271,60 +280,67 @@ function Window:CreateNativeWindow()
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
     native_window:SetField("InputMethodEnabled", true);
+
+	native_window:GetAttributeObject():SetDynamicField("isWindow", true)
+
     local zorder = self:GetParams().zorder;
     if (zorder) then native_window.zorder = zorder end
     -- 加到有效窗口上
     native_window:AttachToRoot();
-	
-	local _this = native_window;
-	-- redirect events from native ParaUI object to this object. 
-    _this:SetScript("ondraw", function()
-		self:handleRender();
-    end);
-    _this:SetScript("onsize", function()
-		self:handleGeometryChangeEvent();
-	end);
-	_this:SetScript("onmousedown", function()
-		self:handleMouseEvent(Event.MouseEvent:init("mousePressEvent", self));
-	end);
-	_this:SetScript("onmouseup", function()
-		self:handleMouseEvent(Event.MouseEvent:init("mouseReleaseEvent", self));
-	end);
-    _this:SetScript("onmousemove", function()
-		self:handleMouseEvent(Event.MouseEvent:init("mouseMoveEvent", self));
-	end);
-	_this:SetScript("onmousewheel", function()
-		self:handleMouseEvent(Event.MouseEvent:init("mouseWheelEvent", self));
-	end);
-	_this:SetScript("onmouseleave", function()
-		self:handleMouseEnterLeaveEvent(Event.MouseEvent:init("mouseLeaveEvent", self));
-	end);
-    _this:SetScript("onmouseenter", function()
-		self:handleMouseEnterLeaveEvent(Event.MouseEvent:init("mouseEnterEvent", self));
-	end);
-	_this:SetScript("onkeydown", function()
-        self:handleKeyEvent(KeyEvent:init("keyPressEvent"));
-	end);
-    _this:SetScript("onkeyup", function()
-        self:handleKeyEvent(KeyEvent:init("keyReleaseEvent"));
-	end);
-    _this:SetScript("oninputmethod", function()
-        self:handleKeyEvent(InputMethodEvent:new():init(msg));
-	end);
-    _this:SetScript("onactivate", function()
-		self:handleActivateEvent(param1 and param1>0);
-	end);
-	_this:SetScript("onfocusin", function()
-		self:handleActivateEvent(true);
-	end);
-	_this:SetScript("onfocusout", function()
-		self:handleActivateEvent(false);
-	end);
-    _this:SetScript("ondestroy", function(...)
-		self:handleDestroyEvent();
-    end);
+	local event_list = {"ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmousewheel", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
+    local function GetHandle(event_type)
+        return function()
+            self:OnEvent(event_type);
+        end
+    end
+    for _, event_type in ipairs(event_list) do
+        native_window:SetScript(event_type, GetHandle(event_type));
+    end
 
     return native_window;
+end
+
+function Window:OnEvent(event_type, event_args)
+    local event = nil;
+    if (event_type == "onmousedown") then event = Event.MouseEvent:init("mousePressEvent", self) 
+    elseif (event_type == "onmouseup") then event = Event.MouseEvent:init("mouseReleaseEvent", self) 
+    elseif (event_type == "onmousemove") then event = Event.MouseEvent:init("mouseMoveEvent", self) 
+    elseif (event_type == "onmousewheel") then event = Event.MouseEvent:init("mouseWheelEvent", self) 
+    elseif (event_type == "onmouseleave") then event = Event.MouseEvent:init("mouseLeaveEvent", self) 
+    elseif (event_type == "onmouseenter") then event = Event.MouseEvent:init("mouseEnterEvent", self) 
+    elseif (event_type == "onkeydown") then event = KeyEvent:init("keyPressEvent")
+    elseif (event_type == "onkeyup") then event = KeyEvent:init("keyReleaseEvent")
+    elseif (event_type == "oninputmethod") then event = InputMethodEvent:new():init(msg)
+    elseif (event_type == "onactivate") then event = param1 and param1 > 0
+    end
+
+    if (event_args and type(event) == "table" and event.isMouseEvent) then
+        event.mouse_button, event.buttons_state = event_args.mouse_button, event_args.buttons_state;
+        event:SetXY(event_args.mouse_x, event_args.mouse_y);
+    end
+
+    self:HandleEvent(event_type, event);
+end
+
+function Window:HandleEvent(event_type, event)
+    MacroWindow.HandleEvent(event_type, self);
+
+    if (event_type == "ondraw") then self:HandleRender() 
+    elseif (event_type == "onsize") then self:HandleGeometryChangeEvent() 
+    elseif (event_type == "onmousedown") then self:HandleMouseEvent(event)
+    elseif (event_type == "onmouseup") then self:HandleMouseEvent(event)
+    elseif (event_type == "onmousemove") then self:HandleMouseEvent(event)
+    elseif (event_type == "onmousewheel") then self:HandleMouseEvent(event)
+    elseif (event_type == "onmouseleave") then self:HandleMouseEnterLeaveEvent(event)
+    elseif (event_type == "onmouseenter") then self:HandleMouseEnterLeaveEvent(event)
+    elseif (event_type == "onkeydown") then self:HandleKeyEvent(event)
+    elseif (event_type == "onkeyup") then self:HandleKeyEvent(event)
+    elseif (event_type == "oninputmethod") then self:HandleKeyEvent(event)
+    elseif (event_type == "onactivate") then self:HandleActivateEvent(event)
+    elseif (event_type == "onfocusin") then self:HandleActivateEvent(true)
+    elseif (event_type == "onfocusout") then self:HandleActivateEvent(false)
+    elseif (event_type == "ondestroy") then self:HandleDestroyEvent()
+    end
 end
 
 -- 获取窗口位置
@@ -350,12 +366,12 @@ function Window:GetScreenPosition()
 end
 
 -- 窗口大小改变
-function Window:handleGeometryChangeEvent()
+function Window:HandleGeometryChangeEvent()
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = self:GetNativeWindow():GetAbsPosition();
 end
 
--- handle ondraw callback from system ParaUI object. 
-function Window:handleRender()
+-- Handle ondraw callback from system ParaUI object. 
+function Window:HandleRender()
     if (not self:GetNativeWindow()) then return end
     local painter = self:GetPainterContext();
     painter:Scale(self.scaleX, self.scaleY);
@@ -386,7 +402,7 @@ function Window:GetEventTypeFuncName(eventName)
 end
 
 -- 鼠标事件处理函数
-function Window:handleMouseEvent(event)
+function Window:HandleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
     self:SetEvent(event);
 
@@ -404,7 +420,7 @@ function Window:handleMouseEvent(event)
         return ;        
     end
     -- 获取悬浮元素
-    local hoverElement = self:Hover(event, true);
+    local hoverElement = self:Hover(event, true) or self;
     local lastHoverElement = self:GetHoverElement();
     if (lastHoverElement ~= hoverElement) then
         if (lastHoverElement) then
@@ -428,6 +444,9 @@ function Window:handleMouseEvent(event)
         el = el:GetParentElement();
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "获取元素列表 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
+    -- 不在任何元素内, 则丢给窗口处理
+    if (#EventElementList == 0) then EventElementList[1] = self end 
+
     -- 捕获事件
     local EventElementCount = #EventElementList;
     for i = EventElementCount, 1, -1 do
@@ -457,13 +476,13 @@ function Window:handleMouseEvent(event)
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "鼠标事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
 end
 
-function Window:handleMouseEnterLeaveEvent(event)
+function Window:HandleMouseEnterLeaveEvent(event)
     if (event:GetType() == "mouseLeaveEvent") then
         -- self:SetHover(nil);
     end
 end
 
-function Window:handleKeyEvent(event)
+function Window:HandleKeyEvent(event)
     if (not self:GetNativeWindow()) then return end
     self:SetEvent(event);
 
@@ -487,7 +506,7 @@ function Window:handleKeyEvent(event)
     end
 end
 
-function Window:handleActivateEvent(isActive)
+function Window:HandleActivateEvent(isActive)
     -- if (isActive) then
     --     self:SetFocus(self.lastFocusElement);
     -- else
@@ -496,7 +515,7 @@ function Window:handleActivateEvent(isActive)
     -- end
 end
 
-function Window:handleDestroyEvent()
+function Window:HandleDestroyEvent()
 end
 
 -- 执行字符串代码  返回 result, errmsg
