@@ -85,7 +85,7 @@ function OnReady()
     userinfo.regionId = UserDetail.regionId;
     userinfo.region = (UserDetail.region or {}).info or {};
     userinfo.sex = UserDetail.sex;
-    local UserInfo = UserDetail.info;
+    local UserInfo = UserDetail.info or {};
     userinfo.info.name = UserInfo.name;
     userinfo.info.mailName = UserInfo.mailName;
     userinfo.info.mailPhone = UserInfo.mailPhone;
