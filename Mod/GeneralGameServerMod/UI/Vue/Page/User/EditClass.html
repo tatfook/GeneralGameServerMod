@@ -23,6 +23,7 @@
 
 <script type="text/lua">
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
+local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
 
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 
@@ -69,6 +70,10 @@ function OnClassChange(value)
 end 
 
 function clickConfirm()
+    if (grade == "" or classNo == "" or year == "") then
+        return BroadcastHelper.PushLabel({id="", label = "请将信息填写完整再保存哦。", max_duration=7000, color = "255 0 0", scaling=1.1, bold=true, shadow=true});
+    end
+
     local className, gradeLabel = "", "";
     for i = 1, 12 do 
         if (ClassOptions[i][2] == grade) then
