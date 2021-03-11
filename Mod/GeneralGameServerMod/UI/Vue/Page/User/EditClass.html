@@ -1,15 +1,23 @@
 
 <template class="container">
-    <WindowTitleBar title=""></WindowTitleBar>
-    <div style="margin-left: 40px; margin-top: 70px;">
-        <select v-bind:value="grade" style="margin-left: 10px;" v-bind:options="ClassOptions" onselect=OnGradeSelect placeholder="年级"></select>
-        <select v-bind:value="year" style="margin-left: 10px;" v-bind:options="YearOptions" onselect=OnYearSelect placeholder="入学年份"></select>
-        <input v-bind:value="classNo" style="margin-left: 10px;" type="number" onchange=OnClassChange placeholder="班级"></input>
-        <div style="display: inline; padding-left: 10px; padding-top: 6px;">班</div>
+    <WindowTitleBar titleStyle="margin-top: 8px; width: 97px; height:25px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/jiarubanji_97X25_32bits.png#0 0 97 25);"></WindowTitleBar>
+    <div style="margin-left: 40px; margin-top: 20px;">
+        <div style="display:inline-block; margin-top:4px; width: 100px; height:24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/zi7_100X24_32bits.png#0 0 100 24);"></div>
+        <select v-bind:value="grade" style="margin-left: 40px; width: 114px; height: 32px;" v-bind:options="ClassOptions" onselect=OnGradeSelect placeholder="年级"></select>
     </div>
-    <div style="margin-top: 40px;">
-        <div onclick=clickCancel class="btn" style="display: inline-block; text-align: center; line-height: 40px; margin-left:110px; width:120px; height:40px; font-size: 20px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huise_32bits.png#0 0 38 64:16 16 16 16);">取消</div>
-        <div onclick=clickConfirm class="btn" style="display: inline-block; text-align: center; line-height: 40px; margin-left:50px; width:120px; height:40px; font-size: 20px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">保存</div>
+    <div style="margin-left: 40px; margin-top: 16px;">
+        <div style="display:inline-block; margin-top:4px; width: 100px; height:24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/zi6_100X24_32bits.png#0 0 100 24);"></div>
+        <input v-bind:value="classNo" style="margin-left: 40px; width: 114px; height: 32px;" type="number" onchange=OnClassChange placeholder="班级"></input>
+        <div style="display:inline-block; margin-top:8px; margin-left: -20px; width: 14px; height:13px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/ban_14X13_32bits.png#0 0 14 13);"></div>
+    </div>
+    <div style="margin-left: 40px; margin-top: 16px;">
+        <div style="display:inline-block; margin-top:4px; width: 100px; height:24px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/zi5_100X24_32bits.png#0 0 100 24);"></div>
+        <select v-bind:value="year" style="margin-left: 40px; width: 114px; height: 32px;" v-bind:options="YearOptions" onselect=OnYearSelect placeholder="入学年份"></select>
+    </div>
+   
+    <div style="margin-top: 16px;">
+        <div onclick=clickCancel class="btn" style="display: inline-block; text-align: center; line-height: 40px; margin-left:30px; width:120px; height:40px; font-size: 20px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huise_32bits.png#0 0 38 64:16 16 16 16);">取消</div>
+        <div onclick=clickConfirm class="btn" style="display: inline-block; text-align: center; line-height: 40px; margin-left:30px; width:120px; height:40px; font-size: 20px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">保存</div>
     </div>
 </template>
 
@@ -97,9 +105,9 @@ end
 
 <style>
 .container {
-    height: 250px; 
-    width: 500px; 
+    height: 260px; 
+    width: 350px; 
     padding: 0px 2px 2px 2px;
-    background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);
+    background: url(Texture/Aries/Creator/keepwork/Window/dakuang2_32bits.png#0 0 64 69:26 44 24 22);
 }
 </style>

@@ -618,6 +618,7 @@ end
 
 -- 样式属性值改变
 function Element:OnAttrStyleValueChange(attrValue, oldAttrValue)
+    if (attrValue == nil) then return end
     oldAttrValue = self:GetAttrStyle();
     -- ElementDebug(attrValue, oldAttrValue, tostring(attrValue), tostring(oldAttrValue), commonlib.compare(attrValue, oldAttrValue));
     if (commonlib.compare(attrValue, oldAttrValue)) then return end
@@ -629,6 +630,7 @@ end
 
 -- 样式类属性值改变
 function Element:OnAttrClassValueChange(attrValue, oldAttrValue)
+    if (attrValue == nil) then return end
     if (commonlib.compare(attrValue, oldAttrValue)) then return end
     self:UpdateLayout(true);
 end

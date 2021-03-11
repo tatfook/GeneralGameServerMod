@@ -1,11 +1,12 @@
 <template style="height: 39px; width: 100%;">
-    <div class="title">{{title}}</div>
+    <div class="title" v-bind:style="titleStyle">{{title}}</div>
     <div v-on:click="close" class="close-btn"></div>
 </template>
 
 <script type="text/lua">
 -- 标题属性
-title = GetAttrValue("title", "窗口标题", "string");
+title = GetAttrValue("title", "", "string");
+titleStyle = GetAttrValue("titleStyle", "", "string");
 
 -- 关闭窗口
 function close()
@@ -23,9 +24,8 @@ end
 
 -- 监听属性变更
 function OnAttrValueChange(attrName, attrValue)
-    if (attrName == "title") then
-        title = attrValue or "";
-    end
+    if (attrName == "title") then title = attrValue or "" end
+    if (attrName == "titleStyle") then titleStyle = attrValue or "" end
 end
 
 </script>
