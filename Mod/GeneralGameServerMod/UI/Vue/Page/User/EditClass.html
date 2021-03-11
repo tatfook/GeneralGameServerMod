@@ -1,11 +1,15 @@
 
 <template class="container">
-    <WindowTitleBar title="" v-bind:close="UpdateInfo"></WindowTitleBar>
-    <div style="margin-left: 40px; margin-top: 80px;">
+    <WindowTitleBar title=""></WindowTitleBar>
+    <div style="margin-left: 40px; margin-top: 70px;">
         <select v-bind:value="grade" style="margin-left: 10px;" v-bind:options="ClassOptions" onselect=OnGradeSelect placeholder="年级"></select>
         <select v-bind:value="year" style="margin-left: 10px;" v-bind:options="YearOptions" onselect=OnYearSelect placeholder="入学年份"></select>
         <input v-bind:value="classNo" style="margin-left: 10px;" type="number" onchange=OnClassChange placeholder="班级"></input>
         <div style="display: inline; padding-left: 10px; padding-top: 6px;">班</div>
+    </div>
+    <div style="margin-top: 40px;">
+        <div onclick=clickCancel class="btn" style="display: inline-block; text-align: center; line-height: 40px; margin-left:110px; width:120px; height:40px; font-size: 20px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huise_32bits.png#0 0 38 64:16 16 16 16);">取消</div>
+        <div onclick=clickConfirm class="btn" style="display: inline-block; text-align: center; line-height: 40px; margin-left:50px; width:120px; height:40px; font-size: 20px; color: #000000;background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">保存</div>
     </div>
 </template>
 
@@ -39,29 +43,6 @@ end
 grade, classNo, year = "", "", "";
 local gradeLabel = "";
 
-function UpdateInfo()
-    local className, gradeLabel = "", "";
-    for i = 1, 12 do 
-        if (ClassOptions[i][2] == grade) then
-            gradeLabel = ClassOptions[i][1];
-        end
-    end 
-    if (gradeLabel ~= "") then
-        if (classNo ~= "") then className = gradeLabel .. classNo .. "班"
-        else className = gradeLabel end 
-    end
-    if (type(OnFinish) == "function") then OnFinish(className) end 
-    local classinfo = {
-        grade = tonumber(grade),
-        classNo = tonumber(classNo),
-        enrollmentYear = tonumber(year),
-    };
-    UserDetail.class = classinfo;
-    CloseWindow();
-
-    keepwork.user.set_class(classinfo);
-end 
-
 function OnGradeSelect(value, label)
     grade = value .. "";
     if (dateobj.month < 9) then
@@ -77,6 +58,35 @@ end
 
 function OnClassChange(value)
     classNo = value;
+end 
+
+function clickConfirm()
+    local className, gradeLabel = "", "";
+    for i = 1, 12 do 
+        if (ClassOptions[i][2] == grade) then
+            gradeLabel = ClassOptions[i][1];
+        end
+    end 
+    if (gradeLabel ~= "") then
+        if (classNo ~= "") then className = gradeLabel .. classNo .. "班"
+        else className = gradeLabel end 
+    end
+    
+    if (type(OnFinish) == "function") then OnFinish(className) end 
+
+    local classinfo = {
+        grade = tonumber(grade),
+        classNo = tonumber(classNo),
+        enrollmentYear = tonumber(year),
+    };
+    UserDetail.class = classinfo;
+
+    CloseWindow();
+    keepwork.user.set_class(classinfo);
+end 
+
+function clickCancel()
+    CloseWindow();
 end 
 
 function OnReady()
