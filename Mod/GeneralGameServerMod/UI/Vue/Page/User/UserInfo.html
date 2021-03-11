@@ -263,6 +263,14 @@ function ClickEditMoreBtn()
 end 
 
 function ClickClassbtn()
+    if (self.schoolName == "") then
+        ShowWindow({
+            text = "请先加入学校",
+        }, {
+            url = "%vue%/Page/User/MessageBox.html",
+            draggable = false,
+        });
+    end
     ShowWindow({
         OnFinish = function(className)
             self.className = className or "";
