@@ -115,25 +115,20 @@ function EntityOtherPlayer:UpdateEntityActionState()
     
     -- 没有运动却在走路或跑步则重置为待机动作
     if (self.smoothFrames == 0 and (curAnimId == 4 or curAnimId == 5)) then curAnimId = 0 end
+	NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/PlayerAssetFile.lua");
+	local PlayerAssetFile = commonlib.gettable("MyCompany.Aries.Game.EntityManager.PlayerAssetFile")
+	PlayerAssetFile:ShowWingAttachment(obj, curSkinId, curAnimId == 38);
 
 	if(self.lastAnimId ~= curAnimId and curAnimId) then
 		self.lastAnimId = curAnimId;
 		if(obj) then
 			obj:SetField("AnimID", curAnimId);
 		end
-
-        NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/PlayerAssetFile.lua");
-        local PlayerAssetFile = commonlib.gettable("MyCompany.Aries.Game.EntityManager.PlayerAssetFile")
-        PlayerAssetFile:ShowWingAttachment(obj, curSkinId, curAnimId == 38);
     end
     
 	if(self.lastSkinId ~= curSkinId and curSkinId) then
 		self.lastSkinId = curSkinId;
 		self:SetSkin(curSkinId, true);
-
-        NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/PlayerAssetFile.lua");
-        local PlayerAssetFile = commonlib.gettable("MyCompany.Aries.Game.EntityManager.PlayerAssetFile")
-        PlayerAssetFile:ShowWingAttachment(obj, curSkinId, curAnimId == 38);
     end
     
     local dataWatcher = self:GetDataWatcher();
