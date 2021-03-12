@@ -214,3 +214,31 @@ function Page.ShowUIEditorPage(G, params)
     UIEditorPage:Show(params);
     return UIEditorPage;
 end
+
+local SubTitlePage = Vue:new();
+function Page.ShowSubTitlePage(G, params)
+    params = params or {};
+    G = G or {};
+
+    if (not G.text or G.text == "") then return end 
+    
+    G.isPlayVoice = if_else(G.isPlayVoice == nil, true, G.isPlayVoice);  -- 是否播放语音
+    G.isAutoClose = if_else(G.isAutoClose == nil, true, G.isAutoClose);  -- 是否自动关闭
+
+    params.url = "%ui%/Page/SubTitle.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or "100%";
+    params.height = params.height or 200;
+    params.alignment = "_lb";
+
+    if (IsDevEnv) then
+        if (_G.VueTestPage) then
+            _G.VueTestPage:CloseWindow();
+        end        
+        _G.VueTestPage = SubTitlePage;
+    end
+
+    SubTitlePage:Show(params);
+    return SubTitlePage; 
+end

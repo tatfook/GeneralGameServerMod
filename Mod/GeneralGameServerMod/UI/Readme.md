@@ -110,6 +110,18 @@ self         -- 当前执行环境   self.globalVal = 1  <==> globalVal = 1    �
 -- 元素常用方法
 ```
 
+## 常用UI
+
+```lua
+-- 字幕UI
+Page.ShowSubTitlePage({
+    text = "语音文本",    -- 字幕内容 
+    isPlayVoice = true,  -- 是否自动播放字幕语音
+    isAutoClose = true,  -- 是否自动关闭字幕窗口
+    style="",            -- 字幕 css 样式
+})
+```
+
 ## TODO
 
 [x] 滚动条样式设定优化

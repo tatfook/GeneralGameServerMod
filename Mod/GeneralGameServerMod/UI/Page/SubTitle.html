@@ -1,0 +1,39 @@
+
+<template class="container">
+    <div class="SubTitle" v-bind:style="style">
+        {{text or ""}}
+    </div>
+</template>
+
+<script type="text/lua">
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+
+function OnReady()
+    if (isPlayVoice) then
+        CommonLib.PlayVoiceText(text, nil, nil, function(sound_time)
+            if (not isAutoClose) then return end
+            if (sound_time == 0) then CloseWindow() end
+            SetTimeout(function()
+                CloseWindow();
+            end, sound_time + 200);
+        end);
+    end
+end 
+
+</script>
+
+<style>
+.SubTitle {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 40px;
+}
+.container {
+    height: 100%; 
+    width: 100%; 
+}
+</style>
