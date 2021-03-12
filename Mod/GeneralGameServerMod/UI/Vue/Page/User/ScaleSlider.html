@@ -13,10 +13,14 @@ local scale = 1;
 
 function clickSelectStep(event)
     local event = GetEvent();
-    local height = math.max(event.elementY, 0);
-    height = math.min(height, Height);
-    scale = 1.2 - height /  Height * 0.2 
-    OnScaleChange(true);
+    if(event)then
+        local elementY = event.elementY or 0;
+        local height = math.max(elementY, 0);
+        height = math.min(height, Height);
+        scale = 1.2 - height /  Height * 0.2 
+        OnScaleChange(true);
+    end
+    
 end
 
 function ClickAddStep()
