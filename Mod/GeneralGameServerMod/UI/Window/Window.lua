@@ -568,6 +568,7 @@ function Window:OnScreenSizeChanged()
         end
     else
         -- 大小未变, 位置则不变, 又不缩放 则直接返回
+        print(self.rootScreenWidth, self.rootScreenHeight, rootScreenWidth, rootScreenHeight)
         if (self.rootScreenWidth == rootScreenWidth and self.rootScreenHeight == rootScreenHeight) then return end
     end
 

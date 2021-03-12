@@ -393,6 +393,8 @@ function BlockInputField:EndEdit()
     editor:SetVisible(false);
 
     self:GetTopBlock():UpdateLayout();
+
+    self:GetBlockly():OnChange(); -- {action = "field_edit"}
 end
 
 function BlockInputField:OnBeginEdit()

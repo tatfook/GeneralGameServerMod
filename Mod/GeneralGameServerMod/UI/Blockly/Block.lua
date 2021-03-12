@@ -322,7 +322,7 @@ function Block:GetMouseUI(x, y, event)
 end
 
 function Block:OnMouseDown(event)
-    self.startX, self.startY = event.x , event.y;
+    self.startX, self.startY = event:GetWindowXY();
     self.startLeftUnitCount, self.startTopUnitCount = self.leftUnitCount, self.topUnitCount;
     self.isMouseDown = true;
 end
@@ -332,7 +332,7 @@ function Block:OnMouseMove(event)
     if (not self.isDraggable) then return end
 
     local blockly, block = self:GetBlockly(), self;
-    local x, y = event.x, event.y;
+    local x, y = event:GetWindowXY();
     if (not block.isDragging) then
         if (not event:IsMove()) then return end
         if (block.isToolBoxBlock) then 

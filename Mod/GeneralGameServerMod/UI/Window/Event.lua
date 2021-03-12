@@ -45,6 +45,10 @@ function MouseEvent:SetXY(x, y)
     self.accepted = false;
 end
 
+function MouseEvent:GetWindowXY()
+    return self:GetWindow():ScreenPointToWindowPoint(self.x, self.y);
+end
+
 function MouseEvent:IsMove()
     return math.abs(self.x - self.mouse_down_x) >= 4 or math.abs(self.y - self.mouse_down_y) >= 4;
 end

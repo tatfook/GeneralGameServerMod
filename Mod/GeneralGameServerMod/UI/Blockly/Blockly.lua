@@ -82,6 +82,7 @@ function Blockly:Do(cmd)
     cmd.endLeftUnitCount = block.leftUnitCount;
     cmd.endTopUnitCount = block.topUnitCount;
     table.insert(self.undos, cmd);
+    self:OnChange();
 end
 
 -- 撤销命令
@@ -106,6 +107,7 @@ function Blockly:Undo()
         self:RemoveBlock(block);
     end
     table.insert(self.redos, cmd);
+    self:OnChange();
 end
 
 -- 恢复
@@ -131,6 +133,7 @@ function Blockly:Redo()
     end
 
     table.insert(self.undos, cmd);
+    self:OnChange();
 end
 
 -- 设置工具块
@@ -578,4 +581,9 @@ end
 
 function Blockly:SaveToXmlNodeText()
     return Helper.Lua2XmlString(self:SaveToXmlNode(), true);
+end
+
+-- 发生改变
+function Blockly:OnChange(event)
+    self:CallAttrFunction("onchange", nil, event);
 end
