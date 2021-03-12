@@ -37,18 +37,9 @@ local function ChangePlayerAsset(assetfile, skin)
         end
         GameLogic.options:SetMainPlayerAssetName(assetfile);
         GetGlobalScope():Set("MainAsset", assetfile);
-		-- this ensure that at least one default skin is selected
-        if (skin) then
-            GameLogic.options:SetMainPlayerSkins(skin);
-            GetGlobalScope():Set("MainSkin", skin);
-            playerEntity:SetSkin(skin);
-        else
-		    if(playerEntity:GetSkin()) then
-			    playerEntity:SetSkin(nil);
-		    else
-			    playerEntity:RefreshSkin();
-		    end
-        end
+        GameLogic.options:SetMainPlayerSkins(skin);
+        GetGlobalScope():Set("MainSkin", skin);
+        playerEntity:SetSkin(skin);
 		if(math.abs(EntityManager.PlayerAssetFile:GetDefaultScale(oldAssetFile) - playerEntity:GetScaling()) < 0.01) then
 			playerEntity:SetScaling(EntityManager.PlayerAssetFile:GetDefaultScale(assetfile))
 		end
