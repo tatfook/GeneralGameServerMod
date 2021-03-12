@@ -315,8 +315,7 @@ function Window:OnEvent(event_type, event_args)
     end
 
     if (event_args and type(event) == "table" and event.isMouseEvent) then
-        event.mouse_button, event.buttons_state = event_args.mouse_button, event_args.buttons_state;
-        event:SetXY(event_args.mouse_x, event_args.mouse_y);
+        event.x, event.y, event.mouse_button, event.buttons_state = event_args.mouse_x, event_args.mouse_y, event_args.mouse_button, event_args.buttons_state;
     end
 
     self:HandleEvent(event_type, event);
@@ -568,7 +567,6 @@ function Window:OnScreenSizeChanged()
         end
     else
         -- 大小未变, 位置则不变, 又不缩放 则直接返回
-        print(self.rootScreenWidth, self.rootScreenHeight, rootScreenWidth, rootScreenHeight)
         if (self.rootScreenWidth == rootScreenWidth and self.rootScreenHeight == rootScreenHeight) then return end
     end
 

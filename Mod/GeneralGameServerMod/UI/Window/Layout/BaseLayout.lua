@@ -10,7 +10,7 @@ local BaseLayout = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Layout/
 ]]
 
 local BaseLayout = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-local BaseLayoutDebug = GGS.Debug.GetModuleDebug("BaseLayoutDebug").Enable(); --Enable  Disable
+local BaseLayoutDebug = GGS.Debug.GetModuleDebug("BaseLayoutDebug").Disable(); --Enable  Disable
 
 local nid = 0;
 

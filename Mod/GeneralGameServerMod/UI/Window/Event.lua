@@ -19,7 +19,7 @@ function MouseEvent:init(event_type, window)
 	MouseEvent._super.init(self, event_type);
 
     self:SetWindow(window);
-    self:SetXY(mouse_x, mouse_y);    
+
     self.shift_pressed = ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_LSHIFT) or ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_RSHIFT);
 	self.ctrl_pressed = ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_LCONTROL) or ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_RCONTROL);
 	self.alt_pressed = ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_LMENU) or ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_RMENU);
@@ -32,17 +32,12 @@ function MouseEvent:init(event_type, window)
     if (event_type == "mouseReleaseEvent") then self.mouse_up_x, self.mouse_up_y = self.x, self.y end
     
     self.isMouseEvent = true;
+    self.accepted = false;
 	return self;
 end
 
-function MouseEvent:SetXY(x, y)
-    local screenX, screenY = self:GetWindow():GetScreenPosition();
-    self.x, self.y = x, y;
-    self.global_pos:set(self.x, self.y);
-    self.local_pos:set(self.x - screenX, self.y - screenY);
-    self.windowX, self.windowY = self.x - screenX, self.y - screenY;
-    self.screenX, self.screenY = self.x, self.y;
-    self.accepted = false;
+function MouseEvent:GetScreenXY()
+    return self.x, self.y;
 end
 
 function MouseEvent:GetWindowXY()
@@ -70,8 +65,9 @@ function MouseEvent:GetElement()
     return self.element;
 end
 
+-- 此函数冬令营再用, 后续废弃, 勿用
 function MouseEvent:GetWindowPos()
-    return self.windowX, self.windowY;
+    return self:GetWindowXY();
 end
 
 Event.MouseEvent = MouseEvent;

@@ -554,7 +554,11 @@ function ElementUI:OnMouseDown(event)
     if(self:IsDraggable() and event:button() =="left") then
         self.isMouseDown = true;
         self.isDragging = false;
-        self.startDragX, self.startDragY = event.x, event.y;
+        if (self:IsWindow()) then
+            self.startDragX, self.startDragY = event:GetScreenXY();
+        else 
+            self.startDragX, self.startDragY = event:GetWindowXY();
+        end
         self.startDragElementX, self.startDragElementY = self:GetPosition();
         self.startDragScreenX, self.startDragScreenY = self:GetWindow():GetScreenPosition();
 		event:accept();
@@ -565,7 +569,9 @@ function ElementUI:OnMouseMove(event)
     if(event:isAccepted()) then return end
     if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
 
-    local x, y = event.x, event.y;
+    local x, y = event:GetScreenXY();
+    if (not self:IsWindow()) then x, y= event:GetWindowXY() end
+    
 	if(self.isMouseDown and event:LeftButton() and self:IsDraggable() and event:button() == "left") then
         local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
 		if(not self.isDragging and not event:IsMove()) then return end

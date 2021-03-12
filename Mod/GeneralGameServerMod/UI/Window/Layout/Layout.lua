@@ -14,7 +14,7 @@ local Flex = NPL.load("./Flex.lua", IsDevEnv);
 
 local Layout = commonlib.inherit(BaseLayout, NPL.export());
 
-local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Enable(); --Enable  Disable
+local LayoutDebug = GGS.Debug.GetModuleDebug("LayoutDebug").Disable(); --Enable  Disable
 
 -- 初始化
 function Layout:Init(element)

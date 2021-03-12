@@ -99,7 +99,7 @@ function ScrollBarThumb:OnMouseDown(event)
     if (event:button() ~= "left") then return end
 
     self.isMouseDown = true;
-    self.lastX, self.lastY = event:screenPos():get();
+    self.lastX, self.lastY = event:GetWindowXY();
     self.startX, self.startY = self.lastX, self.lastY;
     self:CaptureMouse();
     
@@ -110,7 +110,7 @@ function ScrollBarThumb:OnMouseMove(event)
     if(event:isAccepted()) then return end
     
     if(self.isMouseDown and event:button() == "left") then
-        local x, y = event:screenPos():get();
+        local x, y = event:GetWindowXY();
         if (self:GetScrollBar():IsHorizontal()) then
             self.left = self.left + x - self.lastX;
             self.left = math.max(0, math.min(self.left, self.maxLeft));

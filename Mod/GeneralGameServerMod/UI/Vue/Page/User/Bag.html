@@ -30,8 +30,8 @@ function OnMouseMove(goods)
     local event = GetEvent();
     event:accept();
     if (not ToolTipEl) then return end
-    
-    local windowX, windowY = event.windowX + 30, event.windowY + 30;
+    local windowX, windowY = event:GetWindowXY();
+    windowX, windowY = windowX + 30, windowY + 30;
     ToolTipEl:SetStyleValue("left", windowX);
     ToolTipEl:SetStyleValue("top", windowY);
     ToolTipEl:SetPosition(windowX, windowY);
