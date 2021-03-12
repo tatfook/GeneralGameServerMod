@@ -24,7 +24,7 @@ Text:Property("BaseStyle", {
 
 -- 处理实体字符
 local function ReplaceEntityReference(value)
-	value = string.gsub(value, "&nbsp;", " ");
+	value = string.gsub(value or "", "&nbsp;", " ");
 	return value;
 end
 
@@ -37,7 +37,7 @@ function Text:Init(xmlNode, window, parent)
 	self:InitElement(xmlNode, window, parent);
 
 	-- 处理实体字符
-	self:SetValue(self:GetInnerText());
+	self:SetValue(self:GetInnerText() or "");
 
 	return self;
 end
@@ -65,12 +65,12 @@ end
 
 function Text:SetText(value)
 	if (value == self:GetValue()) then return end
-	self:SetValue(value);
+	self:SetValue(value or "");
 	self:UpdateLayout();
 end
 
 function Text:GetText()
-	return self:FormatText(self:GetValue());
+	return self:FormatText(self:GetValue() or "");
 end
 
 function Text:GetTextAlign()

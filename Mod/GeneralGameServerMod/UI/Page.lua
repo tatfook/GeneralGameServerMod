@@ -225,7 +225,7 @@ function Page.ShowSubTitlePage(G, params)
     G.isPlayVoice = if_else(G.isPlayVoice == nil, true, G.isPlayVoice);  -- 是否播放语音
     G.isAutoClose = if_else(G.isAutoClose == nil, true, G.isAutoClose);  -- 是否自动关闭
 
-    params.url = "%ui%/Page/SubTitle.html";
+    params.url = "%ui%/Page/Common/SubTitle.html";
     params.draggable = false;
     params.G = G;
     params.width = params.width or "100%";

@@ -62,6 +62,7 @@ local page = Page.Show({
     draggable = false,               -- 窗口是否支持拖拽
     url = "",                        -- 窗口html文件路径
     blockX, blockY, blockZ,          -- 告示牌坐标 Page.Show3D 接口专用
+    macroName = "",                  -- 宏示教窗口名称, 存在则支持宏示教, 不存在则不支持
 });
 
 page:CloseWindow();                  -- 关闭窗口
