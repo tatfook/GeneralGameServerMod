@@ -571,8 +571,7 @@ function ElementUI:OnMouseMove(event)
 
     local x, y = event:GetScreenXY();
     if (not self:IsWindow()) then x, y= event:GetWindowXY() end
-    
-	if(self.isMouseDown and event:LeftButton() and self:IsDraggable() and event:button() == "left") then
+	if(self.isMouseDown and event:LeftButton() and self:IsDraggable()) then
         local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
 		if(not self.isDragging and not event:IsMove()) then return end
         self.isDragging = true;
@@ -796,4 +795,7 @@ end
 function ElementUI:OnContextMenuCapture()
 end
 function ElementUI:OnContextMenu()
+end
+
+function ElementUI:GetSimulatorName()
 end

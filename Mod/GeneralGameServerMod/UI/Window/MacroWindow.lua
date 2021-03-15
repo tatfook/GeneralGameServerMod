@@ -31,7 +31,7 @@ if (IsDevEnv) then
     windows = _G.windows;
 end
 
-local function SetClickTrigger(mouseX, mouseY, mouseButton)
+function MacroWindow.SetClickTrigger(mouseX, mouseY, mouseButton)
     local callback = {};
     MacroPlayer.SetClickTrigger(mouseX, mouseY, mouseButton, function()
         if(callback.OnFinish) then
@@ -41,7 +41,7 @@ local function SetClickTrigger(mouseX, mouseY, mouseButton)
     return callback;
 end
 
-local function SetDragTrigger(startX, startY, endX, endY, mouseButton)
+function MacroWindow.SetDragTrigger(startX, startY, endX, endY, mouseButton)
     local callback = {};
     MacroPlayer.SetDragTrigger(startX, startY, endX, endY, mouseButton, function()
         if(callback.OnFinish) then
@@ -51,7 +51,7 @@ local function SetDragTrigger(startX, startY, endX, endY, mouseButton)
     return callback;
 end
 
-local function AddMacro(funcname, params)
+function MacroWindow.AddMacro(funcname, params)
     Macros:AddMacro(funcname, params);                   -- 为方便扩展, 参数尽量使用对象
     if (funcname == "UIWindowKeyBoard") then
         local macros = Macros.macros;
@@ -191,6 +191,8 @@ function Macros.UIWindowInputMethod(params)
     window:HandleKeyEvent(InputMethodEvent:new():init(params.commit_string));
 end
 
+
+
 -- 监听处理事件
 function MacroWindow.HandleEvent(event_type, window)
     local macro_name = window:GetMacroName();
@@ -253,8 +255,8 @@ function MacroWindow.HandleEvent(event_type, window)
     if (event_type == "oninputmethod") then
         AddMacro("UIWindowInputMethod", {macro_name = macro_name, commit_string = msg});
     end
-
 end
+
 
 function MacroWindow.SetWindow(name, window)
     if (not name) then return end
@@ -264,4 +266,8 @@ end
 function MacroWindow.GetWindow(name)
     if (not name) then return end
     return windows[name];
+end
+
+function MacroWindow.IsRecording()
+    return Macros:IsRecording()
 end

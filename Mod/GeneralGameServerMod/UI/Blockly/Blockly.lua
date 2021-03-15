@@ -16,6 +16,7 @@ local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
 local Toolbox = NPL.load("./Blocks/Toolbox.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
+local EventSimulator = NPL.load("../Window/EventSimulator.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
@@ -82,6 +83,7 @@ function Blockly:Do(cmd)
     cmd.endLeftUnitCount = block.leftUnitCount;
     cmd.endTopUnitCount = block.topUnitCount;
     table.insert(self.undos, cmd);
+    
     self:OnChange();
 end
 
@@ -587,3 +589,26 @@ end
 function Blockly:OnChange(event)
     self:CallAttrFunction("onchange", nil, event);
 end
+
+function Blockly:GetSimulatorName()
+    return "blockly_event_simulator";
+end
+
+function Blockly.EventSimulatorGenerate(window)
+    local simulator_params = EventSimulator.GetSimulatorParams();
+    local event_type = simulator_params.event_type;
+    if (event_type == "onmouseup") then 
+    end
+
+    return EventSimulator.DefaultGenerate(window);
+end
+
+function Blockly.EventSimulatorTrigger(params, window)
+    return EventSimulator.DefaultTrigger(window);
+end
+
+function Blockly.EventSimulatorHandler(params, window)
+    return EventSimulator.DefaultHandler(window);
+end
+
+EventSimulator.Register(Blockly:GetSimulatorName(), Blockly.EventSimulatorGenerate, Blockly.EventSimulatorTrigger, Blockly.EventSimulatorHandler);
