@@ -394,7 +394,7 @@ function BlockInputField:EndEdit()
 
     self:GetTopBlock():UpdateLayout();
 
-    self:GetBlockly():OnChange(); -- {action = "field_edit"}
+    self:GetBlock():GetBlockly():OnChange(); -- {action = "field_edit"}
 end
 
 function BlockInputField:OnBeginEdit()
