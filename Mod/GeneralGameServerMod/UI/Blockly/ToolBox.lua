@@ -43,7 +43,7 @@ function ToolBox:ctor()
     self.leftUnitCount, self.topUnitCount = 0, 0;
     self.widthUnitCount, self.heightUnitCount = 0, 0;
     self.blocks = {};
-    self.blockMap = {};
+    self.blockPosMap = {};
     self.categoryMap = {};
     self.categoryList = {}
     self.categoryTotalHeight = 0;
@@ -54,13 +54,17 @@ function ToolBox:Init(blockly)
     return self;
 end
 
+function ToolBox:GetUnitSize()
+    return Const.DefaultUnitSize;
+end
+
 function ToolBox:GetCategoryList()
     return self.categoryList;
 end
 
 function ToolBox:SetCategoryList(categorylist)
     self.categoryList = categorylist;
-    self.blocks, self.blockMap, self.categoryMap = {}, {}, {};
+    self.blocks, self.blockPosMap, self.categoryMap = {}, {}, {};
 
     local offsetX, offsetY = 25, 0;
     for _, category in ipairs(categorylist) do
@@ -76,7 +80,7 @@ function ToolBox:SetCategoryList(categorylist)
                 local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
                 block:SetLeftTopUnitCount(offsetX, offsetY);
                 block:UpdateLeftTopUnitCount();
-                self.blockMap[blocktype] = {leftUnitCount = offsetX, topUnitCount = offsetY, widthUnitCount = widthUnitCount, heightUnitCount = heightUnitCount};
+                self.blockPosMap[blocktype] = {leftUnitCount = offsetX, topUnitCount = offsetY, widthUnitCount = widthUnitCount, heightUnitCount = heightUnitCount, block = block};
                 offsetY = offsetY + heightUnitCount;
                 table.insert(self.blocks, block);
             end
@@ -173,7 +177,7 @@ function ToolBox:OnMouseDown(event)
     self:GetBlockly():EnableDefaultUnitSize();
     for _, block in ipairs(self.blocks) do
         local blocktype = block:GetType();
-        local blockpos = self.blockMap[blocktype];
+        local blockpos = self.blockPosMap[blocktype];
         block:SetLeftTopUnitCount(blockpos.leftUnitCount, blockpos.topUnitCount - category.offsetY);
         block:UpdateLeftTopUnitCount();
     end
@@ -232,4 +236,20 @@ end
 
 function ToolBox:IsContainPoint(x, y)
     return x < Const.ToolBoxWidth;
+end
+
+function ToolBox:SetBlockPos(block_type, block_top)
+    local blockpos = self.blockPosMap[block_type];
+    if (not blockpos) then return end
+    local block = blockpos.block;
+    local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+    block_top = block_top / self:GetUnitSize();
+    if (topUnitCount == block_top) then return end
+    offset = block_top - topUnitCount;
+
+    for _, block in ipairs(self.blocks) do
+        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+        block:SetLeftTopUnitCount(leftUnitCount, topUnitCount + offset);
+        block:UpdateLeftTopUnitCount();
+    end 
 end

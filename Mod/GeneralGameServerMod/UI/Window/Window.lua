@@ -55,6 +55,7 @@ Window:Property("Params");                          -- 窗口参数
 Window:Property("Event");                           -- 事件对象
 Window:Property("EventType");                       -- 事件类型
 Window:Property("EventElement");                    -- 事件元素
+Window:Property("SimulatorEventParams");            -- 模拟事件参数
 Window:Property("WindowName");                      -- 窗口名称
 Window:Property("MacroName");                       -- 宏名称
 Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口

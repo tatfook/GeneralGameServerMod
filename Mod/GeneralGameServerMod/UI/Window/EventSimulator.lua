@@ -16,13 +16,9 @@ local InputMethodEvent = commonlib.gettable("System.Windows.InputMethodEvent");
 local MacroPlayer = commonlib.gettable("MyCompany.Aries.Game.Tasks.MacroPlayer");
 local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 
-local MacroWindow = NPL.load("./MacroWindow.lua", IsDevEnv);
-
 local EventSimulator = NPL.export();
 
-local simulator_handler = {};  -- 处理机制
-local simulator_trigger = {};  -- 触发机制
-local simulator_generate = {}; -- 生成机制
+local simulators = {};         -- 模拟器
 local simulator_params = {};   -- 事件参数
 
 local function GetButtonsState()
@@ -78,12 +74,21 @@ function EventSimulator.IsRecording()
     return Macros:IsRecording()
 end
 
+function EventSimulator.IsPlaying()
+    return Macros:IsPlaying()
+end
+
 function EventSimulator.AddMacro(params)
     Macros:AddMacro("UIWindowEvent", params);                   -- 为方便扩展, 参数尽量使用对象
 end
 
 function EventSimulator.GetSimulatorParams()
     return simulator_params;
+end
+
+function EventSimulator.GetEventParams()
+    if (not simulator_params.event_params) then simulator_params.event_params = {} end
+    return simulator_params.event_params;
 end
 
 function EventSimulator.DefaultHandler(params, window)
@@ -156,6 +161,8 @@ function EventSimulator.DefaultGenerate(window)
         EventSimulator.AddMacro({
             macro_type = "UIWindowClick",
             macro_name = macro_name,
+            simulator_name = simulator_params.simulator_name,
+            event_params = simulator_params.event_params,
             mouse_button = simulator_params.mouse_button, 
             buttons_state = simulator_params.mouse_buttons_state, 
             mouse_down_x = simulator_params.down_mouse_win_x, 
@@ -173,6 +180,8 @@ function EventSimulator.DefaultGenerate(window)
         EventSimulator.AddMacro({
             macro_type = "UIWindowKeyBoard", 
             macro_name = macro_name, 
+            simulator_name = simulator_params.simulator_name,
+            event_params = simulator_params.event_params,
             ctrl_pressed = simulator_params.ctrl_pressed,
             shift_pressed = simulator_params.shift_pressed,
             alt_pressed = simulator_params.alt_pressed,
@@ -184,25 +193,29 @@ function EventSimulator.DefaultGenerate(window)
     end
 end
 
-function EventSimulator.Register(simulator_name, generate, trigger, handler)
-    simulator_handler[simulator_name] = handler;
-    simulator_trigger[simulator_name] = trigger;
-    simulator_generate[simulator_name] = generate;
+function EventSimulator.Register(simulator_name, simulator)
+    simulators[simulator_name] = simulator;
 end
 
 function EventSimulator.Generate(simulator_name, window)
-    local generate = simulator_name and simulator_generate[simulator_name] or EventSimulator.DefaultGenerate;
-    return generate(window);
+    local simulator = simulator_name and simulators[simulator_name] or EventSimulator.Simulator;
+    -- 设置模拟器
+    simulator_params.simulator_name = simulator_name;
+    -- 模拟事件
+    simulator.Generate(window);
+    -- 清除事件参数
+    simulator_params.simulator_name = nil;
+    simulator_params.event_params = nil;
 end
 
 function EventSimulator.Trigger(params, window)
-    local trigger = params.simulator_name and simulator_trigger[params.simulator_name] or EventSimulator.DefaultTrigger;
-    return trigger(params, window);
+    local simulator = params.simulator_name and simulators[params.simulator_name] or EventSimulator.Simulator;
+    return simulator.Trigger(params, window);
 end
 
 function EventSimulator.Handler(params, window)
-    local handler = params.simulator_name and simulator_handler[params.simulator_name] or EventSimulator.DefaultHandler;
-    return handler(params, window);
+    local simulator = params.simulator_name and simulators[params.simulator_name] or EventSimulator.Simulator;
+    return simulator.Handler(params, window);
 end
 
 
@@ -292,3 +305,21 @@ function EventSimulator.UIWindowKeyBoardTrigger(params, window)
 
     return EventSimulator.SetKeyPressTrigger(buttons, targetText);
 end
+
+local Simulator = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
+
+function Simulator.Generate(window)
+    return EventSimulator.DefaultGenerate(window);
+end
+
+function Simulator.Trigger(params, window)
+    window:SetSimulatorEventParams(params.event_params);
+    return EventSimulator.DefaultTrigger(params, window);
+end
+
+function Simulator.Handler(params, window)
+    window:SetSimulatorEventParams(params.event_params);
+    return EventSimulator.DefaultHandler(params, window);
+end
+
+EventSimulator.Simulator = Simulator;

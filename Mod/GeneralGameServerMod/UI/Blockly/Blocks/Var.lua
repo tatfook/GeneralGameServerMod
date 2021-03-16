@@ -41,31 +41,6 @@ NPL.export({
         category = "Var",
         keywords = {"变量", "var"},   -- 搜索关键词
     },
-    {
-        type = "Var_Set",
-        message0 = "变量 %1 赋值为 %2",
-        arg0 = {
-            {
-                name = "varname",
-                type = "field_input",
-                validator = "VarName",
-            },
-            {
-                name = "varvalue",
-                type = "input_value",
-            },
-        },
-        previousStatement = true,
-	    nextStatement = true,
-        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
-        ToNPL = function(block)
-            local varname = block:GetFieldValue("varname");
-            local varvalue = block:GetValueAsString("varvalue");
-            return string.format('%s = %s\n', varname, varvalue);
-        end,
-        category = "Var",
-        keywords = {"变量", "var", "赋值"},   -- 搜索关键词
-    },
 
     {
         type = "Var_Global_Set",
@@ -94,6 +69,33 @@ NPL.export({
         keywords = {"全局变量", "var", "赋值"},   -- 搜索关键词
     },
 
+    {
+        type = "Var_Set",
+        message0 = "变量 %1 赋值为 %2",
+        arg0 = {
+            {
+                name = "varname",
+                type = "field_input",
+                validator = "VarName",
+            },
+            {
+                name = "varvalue",
+                type = "input_value",
+            },
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            local varname = block:GetFieldValue("varname");
+            local varvalue = block:GetValueAsString("varvalue");
+            return string.format('%s = %s\n', varname, varvalue);
+        end,
+        category = "Var",
+        keywords = {"变量", "var", "赋值"},   -- 搜索关键词
+    },
+
+   
     {
         type = "Var_Get",
         message0 = "获取变量 %1 值",

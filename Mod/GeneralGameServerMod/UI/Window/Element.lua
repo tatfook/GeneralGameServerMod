@@ -699,38 +699,36 @@ end
 -- 遍历每个元素
 function Element:ForEach(callback)
     local function forEach(element)
-        callback(element);
+        local bExit = callback(element);
+        if (bExit ~= nil) then return bExit end
         for child in element:ChildElementIterator() do
-            forEach(child);
+            bExit = forEach(child);
+            if (bExit ~= nil) then return bExit end
         end
     end
-    forEach(self);
+    return forEach(self);
+end
+
+function Element:GetElements(attrName, attrValue)
+    local list = {};
+
+    self:ForEach(function(element)
+        if (element:GetAttrValue(attrName) == attrValue) then
+            table.insert(list, element);
+        end
+    end);
+
+    return list;
 end
 
 -- 获取元素通过名称
 function Element:GetElementsByName(name)
-    local list = {};
-
-    self:ForEach(function(element)
-        if (element:GetAttrValue("name") == name) then
-            table.insert(list, element);
-        end
-    end)
-
-    return list;
+    return self:GetElements("name", name);
 end
 
 -- 获取元素通过Id
 function Element:GetElementsById(id)
-    local list = {};
-
-    self:ForEach(function(element)
-        if (element:GetAttrValue("id") == id) then
-            table.insert(list, element);
-        end
-    end)
-
-    return list;
+    return self:GetElements("id", id);
 end
 
 -- 获取元素通过Id

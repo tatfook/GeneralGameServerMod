@@ -16,11 +16,11 @@ local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
 local Toolbox = NPL.load("./Blocks/Toolbox.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
-local EventSimulator = NPL.load("../Window/EventSimulator.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
 local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
+local EventSimulator = NPL.load("../Window/EventSimulator.lua");
 local Blockly = commonlib.inherit(Element, NPL.export());
 
 Blockly:Property("Name", "Blockly");  
@@ -49,6 +49,7 @@ end
 
 function Blockly:Init(xmlNode, window, parent)
     Blockly._super.Init(self, xmlNode, window, parent);
+    
     local blocklyEditor = BlocklyEditor:new():Init({
         name = "BlocklyEditor",
         attr = {
@@ -83,13 +84,13 @@ function Blockly:Do(cmd)
     cmd.endLeftUnitCount = block.leftUnitCount;
     cmd.endTopUnitCount = block.topUnitCount;
     table.insert(self.undos, cmd);
-    
-    -- if (cmd.action == "NewBlock") then   -- 从工具栏新增  NewBlock_Copy
-    --     local simulator_params = EventSimulator.GetSimulatorParams();
-    --     simulator_params.simulator_name = self.GetSimulatorName();
-    --     simulator_params.macro_type = "Blockly_NewBlock";
-    --     simulator_params.block_top = cmd.startTopUnitCount * Const.UnitSize;
-    -- end
+
+    if (cmd.action == "NewBlock" and EventSimulator.IsRecording()) then   -- 从工具栏新增  NewBlock_Copy
+        local event_params = EventSimulator.GetEventParams();
+        event_params.action = "Blockly_NewBlock";
+        event_params.block_type = block:GetType();
+        event_params.block_top = cmd.startTopUnitCount * self.toolbox:GetUnitSize();
+    end
 
     self:OnChange();
 end
@@ -598,25 +599,23 @@ function Blockly:OnChange(event)
 end
 
 function Blockly:GetSimulatorName()
-    -- return "blockly_event_simulator";
+    return "blockly_simulator";
 end
 
-function Blockly.EventSimulatorGenerate(window)
-    local simulator_params = EventSimulator.GetSimulatorParams();
-    local event_type = simulator_params.event_type;
-    if (event_type == "onmouseup" and simulator_params.simulator_name == Blockly:GetSimulatorName()) then
+local BlocklySimulator = commonlib.inherit(EventSimulator.Simulator, {});
 
+function BlocklySimulator.Trigger(params, window)
+    local event_params = params.event_params;
+    if (event_params and event_params.action == "Blockly_NewBlock") then
+        local BlocklyName = Blockly:GetName();
+        local blockly = window:ForEach(function(element)
+            if (element:GetName() == BlocklyName) then return element end
+        end);
+        if (blockly) then
+            blockly.toolbox:SetBlockPos(event_params.block_type, event_params.block_top);
+        end
     end
-
-    return EventSimulator.DefaultGenerate(window);
+    return BlocklySimulator._super.Trigger(params, window);
 end
 
-function Blockly.EventSimulatorTrigger(params, window)
-    return EventSimulator.DefaultTrigger(window);
-end
-
-function Blockly.EventSimulatorHandler(params, window)
-    return EventSimulator.DefaultHandler(window);
-end
-
--- EventSimulator.Register(Blockly:GetSimulatorName(), Blockly.EventSimulatorGenerate, Blockly.EventSimulatorTrigger, Blockly.EventSimulatorHandler);
+EventSimulator.Register(Blockly:GetSimulatorName(), BlocklySimulator);
