@@ -181,11 +181,6 @@ function GeneralGameClient:IsCanFly()
     return true;
 end
 
--- 是否获取可用服务器列表
-function GeneralGameClient:IsShowWorldList()
-    return if_else(GGS.IsDevEnv, true, false);
-end
-
 -- 获取当前世界类型
 function GeneralGameClient:GetWorldType()
     if (ParaWorldMain:IsMiniWorld()) then
@@ -332,10 +327,10 @@ end
 
 -- 选择服务器和世界
 function GeneralGameClient:SelectServerAndWorld()
-    if (self:IsShowWorldList()) then
-        self.controlServerConnection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
-            action = "ServerWorldList"
-        }));
+    if (IsDevEnv) then 
+        -- self.controlServerConnection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerInfo", data = {}}));
+        self.controlServerConnection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "ServerList"}));
+        self.controlServerConnection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "StatisticsInfo"}));
     else
     end
     local options = self:GetOptions();
@@ -348,13 +343,14 @@ end
 
 -- 处理通用数据包
 function GeneralGameClient:handleGeneral(packetGeneral)
-    if (packetGeneral.action == "ServerWorldList") then
-        self:handleServerWorldList(packetGeneral);
+    if (packetGeneral.action == "ServerList") then
+        -- self:handleServerList(packetGeneral);
     end
 end
 
 -- 处理服务器推送过来的统计信息
-function GeneralGameClient:handleServerWorldList(packetGeneral)
+function GeneralGameClient:handleServerList(packetGeneral)
+    GGS.INFO(packetGeneral)
 end
 
 -- 发送获取世界服务器

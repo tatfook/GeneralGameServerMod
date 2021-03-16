@@ -84,6 +84,13 @@ function Blockly:Do(cmd)
     cmd.endTopUnitCount = block.topUnitCount;
     table.insert(self.undos, cmd);
     
+    -- if (cmd.action == "NewBlock") then   -- 从工具栏新增  NewBlock_Copy
+    --     local simulator_params = EventSimulator.GetSimulatorParams();
+    --     simulator_params.simulator_name = self.GetSimulatorName();
+    --     simulator_params.macro_type = "Blockly_NewBlock";
+    --     simulator_params.block_top = cmd.startTopUnitCount * Const.UnitSize;
+    -- end
+
     self:OnChange();
 end
 
@@ -591,13 +598,14 @@ function Blockly:OnChange(event)
 end
 
 function Blockly:GetSimulatorName()
-    return "blockly_event_simulator";
+    -- return "blockly_event_simulator";
 end
 
 function Blockly.EventSimulatorGenerate(window)
     local simulator_params = EventSimulator.GetSimulatorParams();
     local event_type = simulator_params.event_type;
-    if (event_type == "onmouseup") then 
+    if (event_type == "onmouseup" and simulator_params.simulator_name == Blockly:GetSimulatorName()) then
+
     end
 
     return EventSimulator.DefaultGenerate(window);
@@ -611,4 +619,4 @@ function Blockly.EventSimulatorHandler(params, window)
     return EventSimulator.DefaultHandler(window);
 end
 
-EventSimulator.Register(Blockly:GetSimulatorName(), Blockly.EventSimulatorGenerate, Blockly.EventSimulatorTrigger, Blockly.EventSimulatorHandler);
+-- EventSimulator.Register(Blockly:GetSimulatorName(), Blockly.EventSimulatorGenerate, Blockly.EventSimulatorTrigger, Blockly.EventSimulatorHandler);

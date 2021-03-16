@@ -68,6 +68,10 @@ function BlockManager:Init(world)
 	return self;
 end
 
+function BlockManager:IsSyncBlock()
+	return self:GetWorld():GetClient():IsSyncBlock();
+end
+
 function BlockManager:CleanUp()
 	GameLogic.GetEvents():RemoveEventListener("OnEditEntity", BlockManager.OnEditEntity, self);
 end
@@ -77,6 +81,8 @@ function BlockManager:GetPlayerId()
 end
 
 function BlockManager:OnEditEntity(event)
+	if (not self:IsSyncBlock()) then return end 
+	
 	local entity = event.entity;
 	local isBegin = event.isBegin;
 	local x,y,z = entity:GetBlockPos();
