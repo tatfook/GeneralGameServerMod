@@ -28,7 +28,7 @@ end
 
 function OnMouseMove(goods)
     local event = GetEvent();
-    event:accept();
+    event:Accept();
     if (not ToolTipEl) then return end
     local windowX, windowY = event:GetWindowXY();
     windowX, windowY = windowX + 30, windowY + 30;

@@ -573,10 +573,11 @@ function Canvas3D:mousePressEvent(e)
 	self.IsMouseDown = true;
 	self.lastMousePos.x = e:pos():x();
 	self.lastMousePos.y = e:pos():y();
-	if (e:button() == "middle") then
+
+	if (e:IsMiddleButton()) then
 		self.IsMidMouseDown = true;
 	end
-	e:accept();
+	e:Accept();
 end
 
 function Canvas3D:mouseMoveEvent(e)
@@ -624,7 +625,7 @@ function Canvas3D:mouseMoveEvent(e)
 				end
 			end
 		end
-		e:accept();
+		e:Accept();
 	end
 
 	self.lastMousePos.x = e:pos():x();
@@ -644,7 +645,7 @@ function Canvas3D:mouseReleaseEvent(e)
 	end
 	self.lastMousePos.x = e:pos():x();
 	self.lastMousePos.y = e:pos():y();
-	e:accept();
+	e:Accept();
 end
 
 function Canvas3D:mouseWheelEvent(e)

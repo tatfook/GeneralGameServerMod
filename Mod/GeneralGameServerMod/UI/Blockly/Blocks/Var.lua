@@ -15,7 +15,7 @@ local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 NPL.export({
     {
         type = "Var_Define",
-        message0 = "定义局部变量 %1 值为 %2",
+        message0 = "定义变量 %1 值为 %2",
         arg0 = {
             {
                 name = "varname",
@@ -40,33 +40,6 @@ NPL.export({
         end,
         category = "Var",
         keywords = {"变量", "var"},   -- 搜索关键词
-    },
-
-    {
-        type = "Var_Global_Set",
-        message0 = "全局变量 %1 赋值为 %2",
-        arg0 = {
-            {
-                name = "varname",
-                type = "field_input",
-                text = "varname",
-                validator = "VarName",
-            },
-            {
-                name = "varvalue",
-                type = "input_value",
-            },
-        },
-        previousStatement = true,
-	    nextStatement = true,
-        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
-        ToNPL = function(block)
-            local varname = block:GetFieldValue("varname");
-            local varvalue = block:GetValueAsString("varvalue");
-            return string.format('_G["%s"] = %s\n', varname, varvalue);
-        end,
-        category = "Var",
-        keywords = {"全局变量", "var", "赋值"},   -- 搜索关键词
     },
 
     {
@@ -95,7 +68,6 @@ NPL.export({
         keywords = {"变量", "var", "赋值"},   -- 搜索关键词
     },
 
-   
     {
         type = "Var_Get",
         message0 = "获取变量 %1 值",
@@ -117,6 +89,33 @@ NPL.export({
         keywords = {"变量值", "var"},   -- 搜索关键词
     },
 
+    {
+        type = "Var_Global_Set",
+        message0 = "全局变量 %1 赋值为 %2",
+        arg0 = {
+            {
+                name = "varname",
+                type = "field_input",
+                text = "varname",
+                validator = "VarName",
+            },
+            {
+                name = "varvalue",
+                type = "input_value",
+            },
+        },
+        previousStatement = true,
+	    nextStatement = true,
+        color = StyleColor.ConvertTo16("rgb(160,110,254)"),
+        ToNPL = function(block)
+            local varname = block:GetFieldValue("varname");
+            local varvalue = block:GetValueAsString("varvalue");
+            return string.format('_G["%s"] = %s\n', varname, varvalue);
+        end,
+        category = "Var",
+        keywords = {"全局变量", "var", "赋值"},   -- 搜索关键词
+    },
+    
     {
         type = "Var_Global_Get",
         message0 = "获取全局变量 %1 值",

@@ -211,7 +211,6 @@ end
 function Input:OnKeyDown(event)
     if (not self:IsFocus()) then return end
     if (self:IsReadOnly()) then return end
-    event:accept();
 
 	local keyname = event.keyname;
 	if (keyname == "DIK_RETURN") then self:handleReturn(event) 
@@ -244,9 +243,8 @@ end
 function Input:OnKey(event)
     if (not self:IsFocus()) then return end
     if (self:IsReadOnly()) then return end
-    event:accept();
 
-    local commitString = event:commitString();
+    local commitString = event:GetCommitString();
 
     -- 忽略控制字符
     local char1 = string.byte(commitString, 1);
@@ -468,13 +466,13 @@ function Input:OnMouseDown(event)
     self.mouseDownX, self.mouseDownY = event.x, event.y;
     self:CaptureMouse();
     InputDebug.Format("OnMouseDown, x = %s, scrollX = %s, cursorAt = %s, cursorX = %s", x, self.scrollX, self.cursorAt, self.cursorX);
-    event:accept();
+    event:Accept();
 end
 
 function Input:OnMouseMove(event)
     if (not self.mouseDown) then return end
     local x, y = event.x, event.y;
-    if (not self:IsContainPoint(x, y) or not event:LeftButton()) then return self:OnMouseUp() end
+    if (not self:IsContainPoint(x, y) or not event:IsLeftButton()) then return self:OnMouseUp() end
 
     if (not self.mouseMove) then
         if (math.abs(x - self.mouseDownX) < self:GetFontSize() / 2) then return end

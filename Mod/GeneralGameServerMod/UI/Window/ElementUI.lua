@@ -547,11 +547,11 @@ function ElementUI:OnChange(value)
 end
 
 function ElementUI:OnMouseDown(event)
-    if(event:isAccepted()) then return end
+    if(event:IsAccepted()) then return end
     if (self:CallAttrFunction("onmousedown", nil, self, event)) then return end
 
     -- 默认拖拽处理
-    if(self:IsDraggable() and event:button() =="left") then
+    if(self:IsDraggable() and event:IsLeftButton()) then
         self.isMouseDown = true;
         self.isDragging = false;
         if (self:IsWindow()) then
@@ -561,17 +561,17 @@ function ElementUI:OnMouseDown(event)
         end
         self.startDragElementX, self.startDragElementY = self:GetPosition();
         self.startDragScreenX, self.startDragScreenY = self:GetWindow():GetScreenPosition();
-		event:accept();
+		event:Accept();
 	end
 end
 
 function ElementUI:OnMouseMove(event)
-    if(event:isAccepted()) then return end
+    if(event:IsAccepted()) then return end
     if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
 
     local x, y = event:GetScreenXY();
     if (not self:IsWindow()) then x, y= event:GetWindowXY() end
-	if(self.isMouseDown and event:LeftButton() and self:IsDraggable()) then
+	if(self.isMouseDown and event:IsLeftButton() and self:IsDraggable()) then
         local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
 		if(not self.isDragging and not event:IsMove()) then return end
         self.isDragging = true;
@@ -582,16 +582,16 @@ function ElementUI:OnMouseMove(event)
         else 
             self:SetPosition(self.startDragElementX + offsetX, self.startDragElementY + offsetY);
         end
-        event:accept();
+        event:Accept();
 	end
 end
 
 function ElementUI:OnMouseUp(event)
-    if(event:isAccepted()) then return end
+    if(event:IsAccepted()) then return end
 
     if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end;
 
-    if (event:button() == "right") then 
+    if (event:IsRightButton()) then 
         self:OnContextMenu(event);
     else
         self:OnClick(event)
@@ -604,7 +604,7 @@ function ElementUI:OnMouseUp(event)
         self:SetStyleValue("top", top);
         self:UpdateWindowPos(true);
 		self:ReleaseMouseCapture();
-		event:accept();
+		event:Accept();
 	end
 	self.isMouseDown = false;
 end
@@ -798,4 +798,18 @@ function ElementUI:OnContextMenu()
 end
 
 function ElementUI:GetSimulatorName()
+end
+
+function ElementUI:OnMouseOut(event)
+    self:CallAttrFunction("onmouseout", nil, event);
+end
+
+function ElementUI:OnMouseOver(event)
+    self:CallAttrFunction("onmouseout", nil, event);
+end
+
+-- 处理事件
+function ElementUI:CallEventCallback(funcname, ...)
+    self:GetWindow():GetEvent():SetElement(self);
+    return (self[funcname])(self, ...);
 end

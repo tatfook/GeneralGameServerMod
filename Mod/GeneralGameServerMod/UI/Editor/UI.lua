@@ -131,7 +131,7 @@ function DraggableElementOnMouseMove(el)
 end
 
 function DraggableElementOnMouseUp(el)
-    GetEvent():accept();
+    GetEvent():Accept();
     SetCurrentElement(el);
 end
 

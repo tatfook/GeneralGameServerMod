@@ -51,7 +51,7 @@ function CheckBox:OnClick(event)
         end
     end
     
-    event:accept();
+    event:Accept();
 end
 
 function CheckBox:RenderContent(painter)

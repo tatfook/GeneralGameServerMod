@@ -261,7 +261,6 @@ end
 function TextArea:OnKeyDown(event)
     if (not self:IsFocus()) then return end
     if (self:IsReadOnly()) then return end
-    event:accept();
 
 	local keyname = event.keyname;
 	if (keyname == "DIK_RETURN") then self:handleReturn(event) 
@@ -298,9 +297,8 @@ end
 function TextArea:OnKey(event)
     if (not self:IsFocus()) then return end
     if (self:IsReadOnly()) then return end
-    event:accept();
 
-    local commitString = event:commitString();
+    local commitString = event:GetCommitString();
 
     -- 忽略控制字符
     local char1 = string.byte(commitString, 1);
@@ -597,11 +595,11 @@ function TextArea:OnMouseDown(event)
 
     TextAreaDebug.Format("OnMouseDown, x = %s, cursorAt = %s", x, self.cursorAt);
 
-    event:accept();
+    event:Accept();
 end
 
 function TextArea:OnMouseMove(event)
-    if (not self.mouseDown or not event:LeftButton() or not event:IsMove()) then return end
+    if (not self.mouseDown or not event:IsLeftButton() or not event:IsMove()) then return end
     local x, y = event.x, event.y;
     if (not self:IsContainPoint(x, y)) then return self:OnMouseUp() end
     local cursorAt = self:GetAtByPos(self:GloablToContentGeometryPos(x, y));

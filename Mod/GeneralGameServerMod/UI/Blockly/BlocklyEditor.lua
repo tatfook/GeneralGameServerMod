@@ -17,9 +17,9 @@ BlocklyEditor:Property("Name", "BlocklyEditor");
 
 
 function BlocklyEditor:OnMouseDown(event)
-    event:accept();
+    event:Accept();
 end
 
 function BlocklyEditor:OnMouseUp(event)
-    event:accept();
+    event:Accept();
 end

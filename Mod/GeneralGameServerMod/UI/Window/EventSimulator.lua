@@ -10,23 +10,14 @@ local EventSimulator = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Eve
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Macros/Macros.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Macros/MacroPlayer.lua");
-NPL.load("(gl)script/ide/System/Windows/KeyEvent.lua");
-local KeyEvent = commonlib.gettable("System.Windows.KeyEvent");
-local InputMethodEvent = commonlib.gettable("System.Windows.InputMethodEvent");
 local MacroPlayer = commonlib.gettable("MyCompany.Aries.Game.Tasks.MacroPlayer");
 local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 
-local EventSimulator = NPL.export();
+local EventSimulator = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local simulators = {};         -- 模拟器
 local simulator_params = {};   -- 事件参数
 
-local function GetButtonsState()
-    local buttons_state = 0;
-    if(ParaUI.IsMousePressed(0)) then buttons_state = buttons_state + 1 end
-    if(ParaUI.IsMousePressed(1)) then buttons_state = buttons_state + 2 end
-    return buttons_state;
-end
 
 function Macros.UIWindowEvent(params)
     local window = EventSimulator.GetWindow(params.macro_name);
@@ -109,8 +100,9 @@ function EventSimulator.DefaultTrigger(params, window)
     end
 end
 
-function EventSimulator.InitSimulatorParams(window)
-    local event_type = window:GetEventType();
+function EventSimulator:Init(event)
+    local window = event:GetWindow();
+    local event_type = event:GetEventType();
 
     simulator_params.macro_type = nil;
     simulator_params.last_event_type = simulator_params.event_type;
@@ -119,39 +111,35 @@ function EventSimulator.InitSimulatorParams(window)
     if (event_type == "ondraw") then return end
 
     if (event_type == "onmousedown") then 
-        simulator_params.down_mouse_x, simulator_params.down_mouse_y = ParaUI.GetMousePosition(); 
-        simulator_params.down_mouse_win_x, simulator_params.down_mouse_win_y = window:ScreenPointToWindowPoint(simulator_params.down_mouse_x, simulator_params.down_mouse_y);   -- 窗口坐标为虚拟的绝对坐标, 不启用窗口自动缩放, 该不会变化
+        simulator_params.down_mouse_x, simulator_params.down_mouse_y = event:GetScreenXY(); 
+        simulator_params.down_mouse_win_x, simulator_params.down_mouse_win_y = event:GetWindowXY();   -- 窗口坐标为虚拟的绝对坐标, 不启用窗口自动缩放, 该不会变化
         simulator_params.down_window_x, simulator_params.down_window_y = window:GetScreenPosition();
         -- 鼠标按键信息以按下为准
-        simulator_params.mouse_buttons_state = GetButtonsState();  
-        simulator_params.mouse_button = mouse_button;
+        simulator_params.buttons_state = event.buttons_state;  
+        simulator_params.mouse_button = event.mouse_button;
     end
     
     if (event_type == "onmouseup") then 
-        simulator_params.up_mouse_x, simulator_params.up_mouse_y = ParaUI.GetMousePosition();
-        simulator_params.up_mouse_win_x, simulator_params.up_mouse_win_y = window:ScreenPointToWindowPoint(simulator_params.up_mouse_x, simulator_params.up_mouse_y);
+        simulator_params.up_mouse_x, simulator_params.up_mouse_y = event:GetScreenXY();
+        simulator_params.up_mouse_win_x, simulator_params.up_mouse_win_y = event:GetWindowXY();
         simulator_params.up_window_x, simulator_params.up_window_y = window:GetScreenPosition();
         simulator_params.window_offset_x, simulator_params.window_offset_y = simulator_params.up_window_x - simulator_params.down_window_x, simulator_params.up_window_y - simulator_params.down_window_y;
         simulator_params.mouse_down_up_distance = math.max(math.abs(simulator_params.up_mouse_x - simulator_params.down_mouse_x), math.abs(simulator_params.up_mouse_y - simulator_params.down_mouse_y));         -- 距离为屏幕距离
     end
 
     if (event_type == "onkeydown") then
-        local event = KeyEvent:init("keyPressEvent");
         simulator_params.ctrl_pressed, simulator_params.shift_pressed, simulator_params.alt_pressed, simulator_params.keyname, simulator_params.key_sequence = event.ctrl_pressed, event.shift_pressed, event.alt_pressed, event.keyname, event.key_sequence;
     end
 
     if (event_type == "oninputmethod") then
-        simulator_params.commit_string = msg;
+        simulator_params.commit_string = event:GetCommitString();
     end
 end
 
 function EventSimulator.DefaultGenerate(window)
     local macro_name = window:GetMacroName();
-    local event_type = window:GetEventType();
+    local event_type = window:GetEvent():GetEventType();
     if (not macro_name) then return end
-
-    -- 提取参数
-    EventSimulator.InitSimulatorParams(window);
 
     if (event_type == "ondraw") then return end
     if (event_type == "onmousedown") then return end
@@ -164,7 +152,7 @@ function EventSimulator.DefaultGenerate(window)
             simulator_name = simulator_params.simulator_name,
             event_params = simulator_params.event_params,
             mouse_button = simulator_params.mouse_button, 
-            buttons_state = simulator_params.mouse_buttons_state, 
+            buttons_state = simulator_params.buttons_state, 
             mouse_down_x = simulator_params.down_mouse_win_x, 
             mouse_down_y = simulator_params.down_mouse_win_y, 
             mouse_up_x = simulator_params.up_mouse_win_x, 
@@ -197,10 +185,8 @@ function EventSimulator.Register(simulator_name, simulator)
     simulators[simulator_name] = simulator;
 end
 
-function EventSimulator.Generate(simulator_name, window)
-    local simulator = simulator_name and simulators[simulator_name] or EventSimulator.Simulator;
-    -- 设置模拟器
-    simulator_params.simulator_name = simulator_name;
+function EventSimulator:Generate(event)
+    local simulator = simulator_params.simulator_name and simulators[simulator_params.simulator_name] or EventSimulator.Simulator;
     -- 模拟事件
     simulator.Generate(window);
     -- 清除事件参数
@@ -263,10 +249,8 @@ function EventSimulator.UIWindowClickTrigger(params, window)
 end
 
 function EventSimulator.UIWindowKeyBoard(params, window)
-    if (params.is_input_method) then window:HandleKeyEvent(InputMethodEvent:new():init(params.commit_string)) end    
-    local event = KeyEvent:init("keyPressEvent");
-    event.keyname, event.shift_pressed, event.alt_pressed, event.ctrl_pressed, event.key_sequence = params.keyname, params.shift_pressed, params.alt_pressed, params.ctrl_pressed, params.key_sequence;
-    window:HandleKeyEvent(event);
+    if (params.is_input_method) then window:OnEvent("oninputmethod", params.commit_string) end  
+    window:OnEvent("onkeydown", params);  
 end
 
 function EventSimulator.UIWindowKeyBoardTrigger(params, window)
@@ -313,12 +297,10 @@ function Simulator.Generate(window)
 end
 
 function Simulator.Trigger(params, window)
-    window:SetSimulatorEventParams(params.event_params);
     return EventSimulator.DefaultTrigger(params, window);
 end
 
 function Simulator.Handler(params, window)
-    window:SetSimulatorEventParams(params.event_params);
     return EventSimulator.DefaultHandler(params, window);
 end
 

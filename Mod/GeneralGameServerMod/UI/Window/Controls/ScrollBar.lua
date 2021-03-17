@@ -95,21 +95,21 @@ function ScrollBarThumb:OnUpdateLayout()
 end
 
 function ScrollBarThumb:OnMouseDown(event)
-    if(event:isAccepted()) then return end
-    if (event:button() ~= "left") then return end
+    if(event:IsAccepted()) then return end
+    if (event:IsLeftButton()) then return end
 
     self.isMouseDown = true;
     self.lastX, self.lastY = event:GetWindowXY();
     self.startX, self.startY = self.lastX, self.lastY;
     self:CaptureMouse();
     
-    event:accept();
+    event:Accept();
 end
 
 function ScrollBarThumb:OnMouseMove(event)
-    if(event:isAccepted()) then return end
+    if(event:IsAccepted()) then return end
     
-    if(self.isMouseDown and event:button() == "left") then
+    if(self.isMouseDown and event:IsLeftButton()) then
         local x, y = event:GetWindowXY();
         if (self:GetScrollBar():IsHorizontal()) then
             self.left = self.left + x - self.lastX;
@@ -129,17 +129,17 @@ function ScrollBarThumb:OnMouseMove(event)
             end
         end
         self:OnScroll();
-		event:accept();
+		event:Accept();
 	end
 end
 
 function ScrollBarThumb:OnMouseUp(event)
-    if(event:isAccepted()) then return end
+    if(event:IsAccepted()) then return end
 
     if (self.isMouseDown) then
         self.isMouseDown = false;
         self:ReleaseMouseCapture();
-        event:accept();
+        event:Accept();
     end
 end
 

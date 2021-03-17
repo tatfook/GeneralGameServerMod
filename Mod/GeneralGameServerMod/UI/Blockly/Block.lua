@@ -328,7 +328,7 @@ function Block:OnMouseDown(event)
 end
 
 function Block:OnMouseMove(event)
-    if (not self.isMouseDown or not event:LeftButton()) then return end
+    if (not self.isMouseDown or not event:IsLeftButton()) then return end
     if (not self.isDraggable) then return end
 
     local blockly, block = self:GetBlockly(), self;

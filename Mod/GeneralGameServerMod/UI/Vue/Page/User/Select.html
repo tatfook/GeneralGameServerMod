@@ -41,7 +41,7 @@
     end
     
     function clickOption(option)
-        GetEvent():accept();
+        GetEvent():Accept();
         local inputEl = GetRef("input");
         inputEl:SetAttrValue("value", option.label or option.value);
         select(option);

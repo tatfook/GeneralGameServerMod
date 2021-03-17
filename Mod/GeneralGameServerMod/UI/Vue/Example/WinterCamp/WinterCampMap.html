@@ -135,7 +135,7 @@ function OnMouseMove()
     local area = WinterCampMap[areaname];
     ToolTipText = area.desc;
 
-    local left, top = GetEvent():GetWindowPos();
+    local left, top = GetEvent():GetWindowPos(); 
     left, top = left + 15, top - 70;
     ToolTipElement:SetPosition(left, top);
     ToolTipElement:SetStyleValue("left", left);

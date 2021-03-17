@@ -130,8 +130,10 @@ blockly 图块编程
 			elseif (cmd == "uieditor") then
 				__this__:handleUIEditorCommond(cmd_text)
 			end
+			
 			-- 确保进入联机世界
-			if (not __this__:GetGeneralGameClient()) then return end;
+			if (not __this__:GetGeneralGameClient() or not __this__:GetGeneralGameClient():IsLogin()) then return end
+
 			-- 联机世界命令
 			if (cmd == "debug") then
 				__this__:handleDebugCommand(cmd_text);

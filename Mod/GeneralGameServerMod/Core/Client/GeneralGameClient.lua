@@ -274,6 +274,11 @@ function GeneralGameClient:OnWorldUnloaded()
     self:SetWorld(nil);
 end
 
+-- 用户是否登录
+function GeneralGameClient:IsLogin()
+    return self:GetWorld() and self:GetWorld():IsLogin();
+end
+
 -- 获取世界网络处理程序
 function GeneralGameClient:GetWorldNetHandler() 
     return self:GetWorld() and self:GetWorld():GetNetHandler();

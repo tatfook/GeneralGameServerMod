@@ -10,32 +10,19 @@ local Window = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Window.lua"
 ]]
 -- Window
 NPL.load("(gl)script/ide/System/Core/PainterContext.lua");
-NPL.load("(gl)script/ide/System/Windows/MouseEvent.lua");
-NPL.load("(gl)script/ide/System/Windows/KeyEvent.lua");
-NPL.load("(gl)script/ide/System/Windows/Mouse.lua");
-NPL.load("(gl)script/ide/System/Core/SceneContextManager.lua");
-NPL.load("(gl)script/ide/math/Point.lua");
-NPL.load("(gl)script/ide/math/Rect.lua");
 NPL.load("(gl)script/ide/System/Windows/Screen.lua");
 
 local Screen = commonlib.gettable("System.Windows.Screen");
 local PainterContext = commonlib.gettable("System.Core.PainterContext");
-local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
-local KeyEvent = commonlib.gettable("System.Windows.KeyEvent");
-local Mouse = commonlib.gettable("System.Windows.Mouse");
-local SceneContextManager = commonlib.gettable("System.Core.SceneContextManager");
-local Point = commonlib.gettable("mathlib.Point");
-local Rect = commonlib.gettable("mathlib.Rect");
 local SizeEvent = commonlib.gettable("System.Windows.SizeEvent");
-local InputMethodEvent = commonlib.gettable("System.Windows.InputMethodEvent");
 local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
 
 local G = NPL.load("./G.lua", IsDevEnv);
-local Event = NPL.load("./Event.lua", IsDevEnv);
 local EventSimulator = NPL.load("./EventSimulator.lua", IsDevEnv);
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local StyleManager = NPL.load("./Style/StyleManager.lua", IsDevEnv);
+local Event = NPL.load("./Event/Event.lua", IsDevEnv);
 
 local Window = commonlib.inherit(Element, NPL.export());
 local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug").Enable();
@@ -43,6 +30,7 @@ local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();  -- Enable 
 local EventElementList = {};
 
 local windowId = 0;
+Window.Event = Event;
 Window:Property("NativeWindow");                    -- 原生窗口
 Window:Property("PainterContext");                  -- 绘制上下文
 Window:Property("ElementManager", ElementManager);  -- 元素管理器
@@ -53,9 +41,6 @@ Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
 Window:Property("Params");                          -- 窗口参数
 Window:Property("Event");                           -- 事件对象
-Window:Property("EventType");                       -- 事件类型
-Window:Property("EventElement");                    -- 事件元素
-Window:Property("SimulatorEventParams");            -- 模拟事件参数
 Window:Property("WindowName");                      -- 窗口名称
 Window:Property("MacroName");                       -- 宏名称
 Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口
@@ -86,6 +71,8 @@ function Window:ctor()
     self:SetStyleManager(StyleManager:new());
     -- 创建绘图上下文
     self:SetPainterContext(System.Core.PainterContext:new():init(self));
+
+    self.Event = Event:new();  -- 每个窗口使用独立的事件对象
 end
 
 function Window:IsWindow()
@@ -304,28 +291,14 @@ function Window:CreateNativeWindow()
 end
 
 function Window:OnEvent(event_type, event_args)
-    local event = nil;
-    if (event_type == "onmousedown") then event = Event.MouseEvent:init("mousePressEvent", self, event_args) 
-    elseif (event_type == "onmouseup") then event = Event.MouseEvent:init("mouseReleaseEvent", self, event_args) 
-    elseif (event_type == "onmousemove") then event = Event.MouseEvent:init("mouseMoveEvent", self, event_args) 
-    elseif (event_type == "onmousewheel") then event = Event.MouseEvent:init("mouseWheelEvent", self, event_args) 
-    elseif (event_type == "onmouseleave") then event = Event.MouseEvent:init("mouseLeaveEvent", self, event_args) 
-    elseif (event_type == "onmouseenter") then event = Event.MouseEvent:init("mouseEnterEvent", self, event_args) 
-    elseif (event_type == "onkeydown") then event = KeyEvent:init("keyPressEvent")
-    elseif (event_type == "onkeyup") then event = KeyEvent:init("keyReleaseEvent")
-    elseif (event_type == "oninputmethod") then event = InputMethodEvent:new():init(msg)
-    elseif (event_type == "onactivate") then event = param1 and param1 > 0
-    end
-
-    self:HandleEvent(event_type, event);
+    self:HandleEvent(self.Event:Init(event_type, self, event_args));
 end
 
-function Window:HandleEvent(event_type, event)
-    self:SetEventType(event_type);
-    self:SetEventElement(nil);
-    local isSimulate = (EventSimulator.IsRecording() and self:GetMacroName()) and true or false;
+function Window:HandleEvent(event)
+    local event_type = event:GetEventType();
 
-    if (isSimulate) then self:EventSimulatorPrepare() end
+    -- 事件模拟器预处理
+    -- if (EventSimulator.IsRecording() and self:GetMacroName()) then EventSimulator:Init(event) end
 
     if (event_type == "ondraw") then self:HandleRender() 
     elseif (event_type == "onsize") then self:HandleGeometryChangeEvent() 
@@ -338,28 +311,16 @@ function Window:HandleEvent(event_type, event)
     elseif (event_type == "onkeydown") then self:HandleKeyEvent(event)
     elseif (event_type == "onkeyup") then self:HandleKeyEvent(event)
     elseif (event_type == "oninputmethod") then self:HandleKeyEvent(event)
-    elseif (event_type == "onactivate") then self:HandleActivateEvent(event)
-    elseif (event_type == "onfocusin") then self:HandleActivateEvent(true)
-    elseif (event_type == "onfocusout") then self:HandleActivateEvent(false)
+    -- elseif (event_type == "onactivate") then self:HandleActivateEvent(event)
+    -- elseif (event_type == "onfocusin") then self:HandleActivateEvent(true)
+    -- elseif (event_type == "onfocusout") then self:HandleActivateEvent(false)
     elseif (event_type == "ondestroy") then self:HandleDestroyEvent()
     end
 
-    if (EventSimulator.IsRecording() and self:GetMacroName()) then
-        self:EventSimulatorGenerate();
-    end
+    -- 事件模拟生成机制
+    -- if (EventSimulator.IsRecording() and self:GetMacroName()) then EventSimulator:Generate(event) end
 end
 
--- 事件模拟器预处理
-function Window:EventSimulatorPrepare()
-    EventSimulator.InitSimulatorParams(self);
-end
-
--- 事件模拟生成机制
-function Window:EventSimulatorGenerate()
-    local element = self:GetEventElement();
-    local simulator_name = element and element:GetSimulatorName();
-    return EventSimulator.Generate(simulator_name, self);
-end
 
 -- 事件模拟触发机制
 function Window:EventSimulatorTrigger(params)
@@ -408,10 +369,12 @@ function Window:HandleRender()
 end
 
 -- 获取方法名通过事件名
-function Window:GetEventTypeFuncName(eventName)
-    if (mouse_button == "right") then 
+function Window:GetEventTypeFuncName(event)
+    if (event:IsRightButton()) then 
         return "OnContextMenuCapture", "OnContextMenu";
     end
+ 
+    local eventName = event:GetType();
     if (eventName == "mousePressEvent") then
         return "OnMouseDownCapture", "OnMouseDown";
     elseif (eventName == "mouseReleaseEvent") then
@@ -429,40 +392,30 @@ function Window:GetEventTypeFuncName(eventName)
     end
 end
 
-function Window:SetCurrentEventElement(el, event)
-    if (event and event.SetElement) then event:SetElement(el) end
-    self:SetEventElement(el);
-end
-
 -- 鼠标事件处理函数
 function Window:HandleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
-    self:SetEvent(event);
 
     -- local BeginTime = ParaGlobal.timeGetTime();
     local eventType = event:GetType();
-    local captureFuncName, bubbleFuncName = self:GetEventTypeFuncName(eventType);
+    local captureFuncName, bubbleFuncName = self:GetEventTypeFuncName(event);
 
     -- 优先捕获鼠标元素
     local captureElement = self:GetMouseCapture();
     event.target = captureElement;
     if (captureElement) then
-        self:SetCurrentEventElement(captureElement, event);
-        (captureElement[captureFuncName])(captureElement, event);
-        (captureElement[bubbleFuncName])(captureElement, event);
+        captureElement:CallEventCallback(captureFuncName, event);
+        captureElement:CallEventCallback(bubbleFuncName, event);
         return ;        
     end
+
     -- 获取悬浮元素
     local hoverElement = self:Hover(event, true) or self;
     local lastHoverElement = self:GetHoverElement();
     if (lastHoverElement ~= hoverElement) then
-        if (lastHoverElement) then
-            self:SetCurrentEventElement(lastHoverElement, event);
-            lastHoverElement:CallAttrFunction("onmouseout", nil, event, lastHoverElement);
-        end
+        if (lastHoverElement) then lastHoverElement:CallEventCallback("OnMouseOut", event) end
         self:SetHoverElement(hoverElement);
-        self:SetCurrentEventElement(hoverElement, event);
-        hoverElement:CallAttrFunction("onmouseover", nil, event, hoverElement);
+        hoverElement:CallEventCallback("OnMouseOver", event);
     end
 
     event.target = hoverElement;
@@ -484,26 +437,23 @@ function Window:HandleMouseEvent(event)
     local EventElementCount = #EventElementList;
     for i = EventElementCount, 1, -1 do
         el = EventElementList[i];
-        self:SetCurrentEventElement(el, event);
-        (el[captureFuncName])(el, event);
-        if (event:isAccepted()) then break end
+        el:CallEventCallback(captureFuncName, event);
+        if (event:IsAccepted()) then break end
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "捕获事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 冒泡事件
     for i = 1, EventElementCount, 1 do
         el = EventElementList[i];
-        self:SetCurrentEventElement(el, event);
-        (el[bubbleFuncName])(el, event);
-        if (event:isAccepted()) then break end
+        el:CallEventCallback(bubbleFuncName, event);
+        if (event:IsAccepted()) then break end
     end 
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "冒泡事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 清空列表
     for i = 1, EventElementCount, 1 do EventElementList[i] = nil end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "清除元素列表 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 聚焦目标元素  聚焦与事件是否处理无关
-    -- if (event:isAccepted()) then return end
+    -- if (event:IsAccepted()) then return end
     if(eventType == "mousePressEvent") then
-        self:SetCurrentEventElement(hoverElement, event);
         self:SetFocus(hoverElement);
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "鼠标事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
@@ -517,7 +467,6 @@ end
 
 function Window:HandleKeyEvent(event)
     if (not self:GetNativeWindow()) then return end
-    self:SetEvent(event);
 
     local focusElement = self:GetFocus();
     if (focusElement) then
@@ -527,14 +476,6 @@ function Window:HandleKeyEvent(event)
             focusElement:OnKeyUp(event);    -- 不生效
         else
             focusElement:OnKey(event);
-        end
-    end
-
-    -- 系统其它事件处理
-    if (not focusElement and not event:isAccepted()) then 
-        local context = SceneContextManager:GetCurrentContext();
-        if(context) then
-            context:handleKeyEvent(event);
         end
     end
 end

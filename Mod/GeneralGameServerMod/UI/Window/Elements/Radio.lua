@@ -52,7 +52,7 @@ function Radio:OnClick(event)
 
     self:OnChange(self.value);
 
-    event:accept();
+    event:Accept();
 end
 
 function Radio:RenderContent(painter)

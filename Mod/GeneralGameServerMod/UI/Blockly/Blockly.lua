@@ -362,7 +362,7 @@ end
 
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
-    event:accept();
+    event:Accept();
 
     if (event.target ~= self) then return end
 
@@ -415,13 +415,13 @@ function Blockly:OnMouseMove(event)
     local x, y = self:GetRelPoint(event.x, event.y);
     self.mouseMoveX, self.mouseMoveY = x + self.offsetX, y + self.offsetY;
 
-    event:accept();
+    event:Accept();
     if (event.target ~= self) then return end
     
     local ui = self:GetMouseUI(x, y, event);
     if (ui and ui ~= self) then return ui:OnMouseMove(event) end
     
-    if (not self.isMouseDown or not event:LeftButton()) then return end
+    if (not self.isMouseDown or not event:IsLeftButton()) then return end
     if (not self.isDragging) then
         if (math.abs(event.x - self.startX) < Const.UnitSize and math.abs(event.y - self.startY) < Const.UnitSize) then return end
         self.isDragging = true;
@@ -435,7 +435,7 @@ end
 
 -- 鼠标抬起事件
 function Blockly:OnMouseUp(event)
-    event:accept();
+    event:Accept();
     self.isDragging = false;
     self.isMouseDown = false;
     if (event.target ~= self) then return end
@@ -496,7 +496,6 @@ end
 -- 键盘事件
 function Blockly:OnKeyDown(event)
     if (not self:IsFocus()) then return end
-    event:accept();
 
 	local keyname = event.keyname;
 	if (keyname == "DIK_RETURN") then 
