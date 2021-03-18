@@ -13,6 +13,7 @@ local BaseEvent = NPL.load("./BaseEvent.lua", IsDevEnv);
 local InputMethodEvent = NPL.load("./InputMethodEvent.lua", IsDevEnv);
 local KeyEvent = NPL.load("./KeyEvent.lua", IsDevEnv);
 local MouseEvent = NPL.load("./MouseEvent.lua", IsDevEnv);
+local ActivateEvent = NPL.load("./ActivateEvent.lua", IsDevEnv);
 
 local Event = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -20,6 +21,7 @@ Event.BaseEvent = BaseEvent;
 Event.InputMethodEvent = InputMethodEvent;
 Event.KeyEvent = KeyEvent;
 Event.MouseEvent = MouseEvent;
+Event.ActivateEvent = ActivateEvent;
 
 function Event:ctor()
     self.BaseEvent = BaseEvent:new();
@@ -37,7 +39,9 @@ function Event:Init(event_type, window, event_args)
 	elseif (event_type == "oninputmethod") then
 		event = self.InputMethodEvent:Init(event_type, window, event_args or msg);
 	elseif (event_type == "onactivate") then
-		event = self.BaseEvent:Init(event_type, window, event_args or (param1 and param1 > 0));
+		event = self.ActivateEvent:Init(event_type, window, if_else(event_args == nil, param1 and param1 > 0, event_args));
+	elseif (event_type == "onfocusin" or event_type == "onfocusout") then
+		event = self.ActivateEvent:Init(event_type, window, if_else(event_args == nil, event_type == "onfocusin", event_args));
 	else
 		event = self.BaseEvent:Init(event_type, window);
 	end 

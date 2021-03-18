@@ -13,6 +13,8 @@ Page.ShowUserInfoPage({username="xiaoyao"});
 NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 
+local MacrosExtend = NPL.load("Mod/GeneralGameServerMod/UI/Page/Macro/MacrosExtend.lua", IsDevEnv);
+
 local Vue = NPL.load("./Vue/Vue.lua", IsDevEnv);
 local Page = NPL.export();
 local pages = {};

@@ -311,8 +311,8 @@ function Window:HandleEvent(event)
     elseif (event_type == "onkeyup") then self:HandleKeyEvent(event)
     elseif (event_type == "oninputmethod") then self:HandleKeyEvent(event)
     -- elseif (event_type == "onactivate") then self:HandleActivateEvent(event)
-    -- elseif (event_type == "onfocusin") then self:HandleActivateEvent(true)
-    -- elseif (event_type == "onfocusout") then self:HandleActivateEvent(false)
+    elseif (event_type == "onfocusin") then self:HandleActivateEvent(event)
+    elseif (event_type == "onfocusout") then self:HandleActivateEvent(event)
     elseif (event_type == "ondestroy") then self:HandleDestroyEvent()
     end
 
@@ -467,13 +467,12 @@ function Window:HandleKeyEvent(event)
     end
 end
 
-function Window:HandleActivateEvent(isActive)
-    -- if (isActive) then
-    --     self:SetFocus(self.lastFocusElement);
-    -- else
-    --     self.lastFocusElement = self:GetFocus();
-    --     self:SetFocus(nil);
-    -- end
+function Window:HandleActivateEvent(event)
+    local isActivate = event:IsActivate();
+    local G = self:GetG();
+    if (type(G.OnActivate) == "function") then
+        G.OnActivate(isActivate);
+    end
 end
 
 function Window:HandleDestroyEvent()

@@ -15,15 +15,21 @@ local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 local MacrosExtend = NPL.export();
 
-function Macros.ShowSubTitlePage(text)
-    Page.ShowSubTitlePage({text = text});
+function Macros.ShowSubTitlePage(params)
+    local callback = {};
+
+    Page.ShowSubTitlePage({
+        text = params.text,
+        OnClose = function() 
+            if(callback.OnFinish) then callback.OnFinish() end
+        end,
+    });
+
+    return callback;
 end
 
-local inited = false;
-function MacrosExtend.StaticInit()
-    if (inited) then return end
-    GameLogic.GetFilters():add_filter("Macro_BeginRecord", function()
-    end);
-    GameLogic.GetFilters():add_filter("Macro_EndRecord", function()
-    end);
-end
+GameLogic.GetFilters():add_filter("Macro_BeginRecord", function()
+end);
+
+GameLogic.GetFilters():add_filter("Macro_EndRecord", function()
+end);
