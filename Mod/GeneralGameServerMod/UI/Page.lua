@@ -48,7 +48,7 @@ function Page.BindPageToBlockSign(blockX, blockY, blockZ, page)
     entity:Refresh();
     local obj = entity:GetInnerObject();
     obj:ShowHeadOnDisplay(true, 0);
-    obj:SetHeadOnUITemplateName(page:GetWindowName(), 0);
+    obj:SetHeadOnUITemplateName(page:GetWindowId(), 0);
     obj:SetHeadOnOffset(0, 0.42, 0.37, 0);
     obj:SetField("HeadOn3DFacing", -1.57);
 end

@@ -18,11 +18,11 @@ local SizeEvent = commonlib.gettable("System.Windows.SizeEvent");
 local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
 
 local G = NPL.load("./G.lua", IsDevEnv);
-local EventSimulator = NPL.load("./EventSimulator.lua", IsDevEnv);
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
 local StyleManager = NPL.load("./Style/StyleManager.lua", IsDevEnv);
 local Event = NPL.load("./Event/Event.lua", IsDevEnv);
+local Simulator = NPL.load("./Event/Simulator.lua", IsDevEnv);
 
 local Window = commonlib.inherit(Element, NPL.export());
 local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug").Enable();
@@ -30,7 +30,6 @@ local MouseDebug = GGS.Debug.GetModuleDebug("MouseDebug").Disable();  -- Enable 
 local EventElementList = {};
 
 local windowId = 0;
-Window.Event = Event;
 Window:Property("NativeWindow");                    -- 原生窗口
 Window:Property("PainterContext");                  -- 绘制上下文
 Window:Property("ElementManager", ElementManager);  -- 元素管理器
@@ -42,7 +41,8 @@ Window:Property("G");                               -- 全局对象
 Window:Property("Params");                          -- 窗口参数
 Window:Property("Event");                           -- 事件对象
 Window:Property("WindowName");                      -- 窗口名称
-Window:Property("MacroName");                       -- 宏名称
+Window:Property("WindowId");                        -- 窗口Id
+Window:Property("EnableSimulator");                 -- 宏名称
 Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口
 Window:Property("AutoScaleWindow", false, "IsAutoScaleWindow");  -- 是否自动缩放窗口
 
@@ -55,7 +55,7 @@ end
 function Window:ctor()
     windowId = windowId + 1;
     self.windowId = windowId;
-    self:SetWindowName("WindowUI_" .. windowId);
+    self:SetWindowId("UIWindowId_" .. windowId);
     --屏幕位置,宽度,高度
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = 0, 0, 0, 0; 
     -- 窗口的位置,宽度,高度
@@ -117,10 +117,9 @@ function Window:Init()
 
     local params = self:GetParams();
     
-    if (params.macroName) then 
-        self:SetMacroName(params.macroName);
-        EventSimulator.SetWindow(self:GetMacroName(), self);
-    end
+    self:SetWindow(self);
+    self:SetWindowName(params.windowName);
+    if (self:IsSupportSimulator()) then Simulator:RegisterWindow(self) end
 
     self:SetG(self:NewG(params.G));      -- 设置全局G表
     -- 设置窗口元素
@@ -172,8 +171,8 @@ function Window:CloseWindow()
     if (not self:GetNativeWindow()) then return end
     Screen:Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     -- GetSceneViewport():Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+    if (self:IsSupportSimulator()) then Simulator:UnregisterWindow(self) end
 
-    EventSimulator.SetWindow(self:GetMacroName(), nil);
     ParaUI.Destroy(self:GetNativeWindow().id);
     self:SetNativeWindow(nil);
     self:SetVisible(false);
@@ -192,7 +191,7 @@ end
 function Window:Create3DNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
     local windoX, windowY, windowWidth, windowHeight = self:Init3DWindowPosition();
-    local native_window = ParaUI.CreateUIObject("button", self:GetWindowName(), "_lt", windoX, windowY, windowWidth, windowHeight);
+    local native_window = ParaUI.CreateUIObject("button", self:GetWindowId(), "_lt", windoX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);              
     native_window.enabled = false;
     native_window.visible = false;
@@ -265,7 +264,7 @@ function Window:CreateNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
     -- 创建窗口
     local windoX, windowY, windowWidth, windowHeight = self:InitWindowPosition();
-    local native_window = ParaUI.CreateUIObject("container", self:GetWindowName(), "_lt", windoX, windowY, windowWidth, windowHeight);
+    local native_window = ParaUI.CreateUIObject("container", self:GetWindowId(), "_lt", windoX, windowY, windowWidth, windowHeight);
     -- WindowDebug.Format("CreateNativeWindow windoX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", windoX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
@@ -298,7 +297,7 @@ function Window:HandleEvent(event)
     local event_type = event:GetEventType();
 
     -- 事件模拟器预处理
-    -- if (EventSimulator.IsRecording() and self:GetMacroName()) then EventSimulator:Init(event) end
+    if (Simulator:IsRecording()) then Simulator:GetDefaultSimulator():Init(event, self) end
 
     if (event_type == "ondraw") then self:HandleRender() 
     elseif (event_type == "onsize") then self:HandleGeometryChangeEvent() 
@@ -318,18 +317,7 @@ function Window:HandleEvent(event)
     end
 
     -- 事件模拟生成机制
-    -- if (EventSimulator.IsRecording() and self:GetMacroName()) then EventSimulator:Generate(event) end
-end
-
-
--- 事件模拟触发机制
-function Window:EventSimulatorTrigger(params)
-    return EventSimulator.Trigger(params, self);
-end
-
--- 事件模拟处理机制
-function Window:EventSimulatorHandler(params)
-    return EventSimulator.Handler(params, self);
+    if (Simulator:IsRecording()) then Simulator:GetDefaultSimulator():Finish(event, self) end
 end
 
 -- 获取窗口位置
@@ -420,7 +408,6 @@ function Window:HandleMouseEvent(event)
 
     event.target = hoverElement;
     -- WindowDebug.If(eventType == "mousePressEvent", hoverElement:GetAttr(), {hoverElement:GetWindowPos()}, {hoverElement:GetWindowSize()});
-
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "Hover 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
 
     -- 获取事件元素列表
@@ -471,11 +458,11 @@ function Window:HandleKeyEvent(event)
     local focusElement = self:GetFocus();
     if (focusElement) then
         if (event:GetType() == "keyPressEvent") then
-            focusElement:OnKeyDown(event);
+            focusElement:CallEventCallback("OnKeyDown", event);
         elseif (event:GetType() == "keyReleaseEvent") then 
-            focusElement:OnKeyUp(event);    -- 不生效
+            focusElement:CallEventCallback("OnKeyUp", event);  -- 不生效
         else
-            focusElement:OnKey(event);
+            focusElement:CallEventCallback("OnKey", event);
         end
     end
 end

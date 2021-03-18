@@ -742,12 +742,12 @@ function ElementUI:SetFocus(element)
     window:SetFocusElement(element);
     if (focusElement == element) then return end
     if (element) then
-        element:OnFocusIn();
+        element:CallEventCallback("OnFocusIn");
         -- self:UpdateLayout(true);
         ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
     end
     if (focusElement) then
-        focusElement:OnFocusOut();
+        focusElement:CallEventCallback("OnFocusOut");
         -- self:UpdateLayout(true);  -- 太过耗时
     end
 end
@@ -797,7 +797,9 @@ end
 function ElementUI:OnContextMenu()
 end
 
-function ElementUI:GetSimulatorName()
+function ElementUI:IsSupportSimulator()
+    local windowName = self:GetWindow():GetWindowName();
+    return windowName and windowName ~= "";
 end
 
 function ElementUI:OnMouseOut(event)
@@ -811,5 +813,6 @@ end
 -- 处理事件
 function ElementUI:CallEventCallback(funcname, ...)
     self:GetWindow():GetEvent():SetElement(self);
+    if (type(self[funcname]) ~= "function") then return end
     return (self[funcname])(self, ...);
 end

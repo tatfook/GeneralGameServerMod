@@ -38,3 +38,17 @@ function CommonLib.PlayVoiceText(text, speed, lang, callback)
         finish(math.floor(total_time * 1000));
     end)
 end
+
+
+local temp_keys = {};
+function CommonLib.ClearTable(t)
+    local size = 0;
+    for key in pairs(t) do
+        size = size + 1;
+        temp_keys[size] = key;
+    end
+
+    for i = 1, size do
+        t[temp_keys[i]] = nil;
+    end
+end
