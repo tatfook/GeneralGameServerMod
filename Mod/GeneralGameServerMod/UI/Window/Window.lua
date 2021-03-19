@@ -297,7 +297,7 @@ function Window:HandleEvent(event)
     local event_type = event:GetEventType();
 
     -- 事件模拟器预处理
-    if (Simulator:IsRecording()) then Simulator:GetDefaultSimulator():Init(event, self) end
+    if (Simulator:IsRecording() and self:IsSupportSimulator()) then Simulator:GetDefaultSimulator():Init(event, self) end
 
     if (event_type == "ondraw") then self:HandleRender() 
     elseif (event_type == "onsize") then self:HandleGeometryChangeEvent() 
@@ -317,7 +317,7 @@ function Window:HandleEvent(event)
     end
 
     -- 事件模拟生成机制
-    if (Simulator:IsRecording()) then Simulator:GetDefaultSimulator():Finish(event, self) end
+    if (Simulator:IsRecording() and self:IsSupportSimulator()) then Simulator:GetDefaultSimulator():Finish(event, self) end
 end
 
 -- 获取窗口位置

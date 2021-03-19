@@ -107,6 +107,7 @@ filesync
 	/ggs filesync            同步所有文件
 	/ggs filesync filepath   同步指定文件
 blockly 图块编程	
+developer                    GGS 开发者模式
 		]],
 -- sync 世界同步
 -- 	/ggs sync -[block|cmd]
@@ -129,6 +130,8 @@ blockly 图块编程
 				__this__:handleBlocklyCommond(cmd_text)
 			elseif (cmd == "uieditor") then
 				__this__:handleUIEditorCommond(cmd_text)
+			elseif (cmd == "developer") then
+				GGS.IsDeveloper = not GGS.IsDeveloper;
 			end
 			
 			-- 确保进入联机世界

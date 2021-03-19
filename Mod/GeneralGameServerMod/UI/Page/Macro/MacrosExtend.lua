@@ -28,8 +28,25 @@ function Macros.ShowSubTitlePage(params)
     return callback;
 end
 
+local MacroManagerPage = nil;
 GameLogic.GetFilters():add_filter("Macro_BeginRecord", function()
+    if (not GGS.IsDeveloper) then return end
+    
+    MacroManagerPage = Page.Show(nil, {
+        url="%ui%/Page/Macro/MacrosManager.html",  
+        alignment="_lt", 
+        x = 80, 
+        y = 0, 
+        width = 500, 
+        height = 80,
+    });
 end);
 
 GameLogic.GetFilters():add_filter("Macro_EndRecord", function()
+    if (not MacroManagerPage) then return end
+    MacroManagerPage:CloseWindow();
+    MacroManagerPage = nil;
 end);
+
+
+-- 

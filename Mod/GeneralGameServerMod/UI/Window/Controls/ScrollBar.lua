@@ -96,7 +96,7 @@ end
 
 function ScrollBarThumb:OnMouseDown(event)
     if(event:IsAccepted()) then return end
-    if (event:IsLeftButton()) then return end
+    if (not event:IsLeftButton()) then return end
 
     self.isMouseDown = true;
     self.lastX, self.lastY = event:GetWindowXY();
@@ -108,7 +108,6 @@ end
 
 function ScrollBarThumb:OnMouseMove(event)
     if(event:IsAccepted()) then return end
-    
     if(self.isMouseDown and event:IsLeftButton()) then
         local x, y = event:GetWindowXY();
         if (self:GetScrollBar():IsHorizontal()) then

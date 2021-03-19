@@ -518,9 +518,15 @@ function TextArea:RenderContent(painter)
     
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    for i, line in ipairs(self.lines) do
-        painter:DrawText(x, y + (line.line - 1) * LineHeight, self.text:sub(line.startAt, line.endAt):GetText());
+    if (self.text:GetText() == "") then
+        painter:SetPen("#A8A8A8"); -- placeholder color;
+        painter:DrawText(x, y, self:GetAttrStringValue("placeholder", ""));
+    else
+        for i, line in ipairs(self.lines) do
+            painter:DrawText(x, y + (line.line - 1) * LineHeight, self.text:sub(line.startAt, line.endAt):GetText());
+        end
     end
+    
 
     -- 恢复裁剪
     if (layout:IsOverflowX() or layout:IsOverflowY()) then

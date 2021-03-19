@@ -44,6 +44,8 @@ function Macros.UIWindowEventTrigger(params)
 end
 
 function Simulator:AddVirtualEvent(virtualEventType, virtualEventParams)
+    if (not self:IsRecording()) then return end 
+    
     Macros:AddMacro("UIWindowEvent", {
         window_name = Params:GetWindowName(),
         event_type = Params:GetEventType(),
