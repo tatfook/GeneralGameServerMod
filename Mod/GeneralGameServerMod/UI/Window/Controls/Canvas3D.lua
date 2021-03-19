@@ -568,11 +568,13 @@ end
 
 function Canvas3D:mousePressEvent(e)
 	if (not self.IsInteractive) then return end
-	self.lastMouseDown.x = e:pos():x();
-	self.lastMouseDown.y = e:pos():y();
+	local screenX, screenY = event:GetScreenXY();
+    local relX, relY = self:GetRelPoint(screenX, screenY);
+	self.lastMouseDown.x = relX;
+	self.lastMouseDown.y = relY;
 	self.IsMouseDown = true;
-	self.lastMousePos.x = e:pos():x();
-	self.lastMousePos.y = e:pos():y();
+	self.lastMousePos.x = relX;
+	self.lastMousePos.y = relY;
 
 	if (e:IsMiddleButton()) then
 		self.IsMidMouseDown = true;
@@ -582,8 +584,10 @@ end
 
 function Canvas3D:mouseMoveEvent(e)
 	if (not self.IsInteractive) then return end
+	local screenX, screenY = event:GetScreenXY();
+    local relX, relY = self:GetRelPoint(screenX, screenY);
 	if (self.IsMouseDown) then
-		local mouse_dx, mouse_dy = e:pos():x() - self.lastMousePos.x, e:pos():y() - self.lastMousePos.y;
+		local mouse_dx, mouse_dy = relX - self.lastMousePos.x, relY - self.lastMousePos.y;
 		if (mouse_dx ~= 0 or mouse_dy ~= 0) then
 			if (self.resourceName ~= nil) then
 				if (self.resourceType == nil) then
@@ -628,8 +632,8 @@ function Canvas3D:mouseMoveEvent(e)
 		e:Accept();
 	end
 
-	self.lastMousePos.x = e:pos():x();
-	self.lastMousePos.y = e:pos():y();
+	self.lastMousePos.x = relX;
+	self.lastMousePos.y = relY;
 end
 
 function Canvas3D:mouseReleaseEvent(e)
@@ -643,8 +647,10 @@ function Canvas3D:mouseReleaseEvent(e)
 	if(dragDist<=2) then
 		-- this is mouse click event if mouse down and mouse up distance is very small.
 	end
-	self.lastMousePos.x = e:pos():x();
-	self.lastMousePos.y = e:pos():y();
+	local screenX, screenY = event:GetScreenXY();
+    local relX, relY = self:GetRelPoint(screenX, screenY);
+	self.lastMousePos.x = relX;
+	self.lastMousePos.y = relY;
 	e:Accept();
 end
 

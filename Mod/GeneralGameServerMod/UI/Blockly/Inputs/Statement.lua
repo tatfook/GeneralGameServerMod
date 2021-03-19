@@ -39,15 +39,15 @@ function Statement:Render(painter)
     Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
     Shape:SetPen(self:GetBlock():GetPen());
     Shape:DrawLine(painter, self.leftUnitCount, self.topUnitCount, self.leftUnitCount, self.topUnitCount + self.heightUnitCount);
-    Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
+    -- Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
 
     painter:Translate(self.left + self.width, self.top);
     local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
     local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
     local connectionWidthUnitCount = blockWidthUnitCount - widthUnitCount;
-    Shape:DrawNextConnection(painter, connectionWidthUnitCount);
+    Shape:DrawNextConnection(painter, connectionWidthUnitCount, nil, nil, true);
     painter:Translate(0, (self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * Const.UnitSize);
-    Shape:DrawPrevConnection(painter, connectionWidthUnitCount);
+    Shape:DrawPrevConnection(painter, connectionWidthUnitCount, nil, nil, true);
     painter:Translate(0, -(self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * Const.UnitSize);
     painter:Translate(-(self.left + self.width), -self.top);
 

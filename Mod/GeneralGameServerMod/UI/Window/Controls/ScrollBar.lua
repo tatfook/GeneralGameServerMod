@@ -359,10 +359,11 @@ end
 
 -- 鼠标点击事件
 function ScrollBar:OnMouseDown(event)
-    local pos = event:pos();
+    local screenX, screenY = event:GetScreenXY();
+    local relX, relY = self:GetRelPoint(screenX, screenY);
     local windowX, windowY = self:GetWindowPos();
     if (not self.thumb) then return end
-    self.thumb:ScrollTo(pos:x() - windowX - self.thumbSize / 2, pos:y() - windowY - self.thumbSize / 2);
+    self.thumb:ScrollTo(relX - windowX - self.thumbSize / 2, relY - windowY - self.thumbSize / 2);
 end
 
 -- 滚动到指定位置

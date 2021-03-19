@@ -90,6 +90,7 @@ function Blockly:Do(cmd)
     if (cmd.action == "NewBlock" and BlocklySimulator:IsRecording() and self:IsSupportSimulator()) then   -- 从工具栏新增  NewBlock_Copy
         BlocklySimulator:AddVirtualEvent("Blockly_NewBlock", {
             block_type = block:GetType(),
+            block_left = cmd.startLeftUnitCount * self.toolbox:GetUnitSize(),
             block_top = cmd.startTopUnitCount * self.toolbox:GetUnitSize(),
         });
     end
