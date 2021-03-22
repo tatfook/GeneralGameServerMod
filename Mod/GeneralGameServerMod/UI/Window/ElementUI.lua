@@ -19,6 +19,7 @@ local ElementUI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), 
 ElementUI:Property("Active", false, "IsActive");            -- 是否激活
 ElementUI:Property("Hover", false, "IsHover");              -- 是否鼠标悬浮
 ElementUI:Property("Visible", true);                        -- 可见性
+ElementUI:Property("ViewVisible", false);                   -- 是否视区可见
 ElementUI:Property("Render", false, "IsRender");            -- 是否渲染
 ElementUI:Property("ZIndex", "");                           -- zindex 序
 ElementUI:Property("CanFocus", false, "IsCanFocus");        -- 是否可以聚焦
@@ -46,13 +47,7 @@ function ElementUI:IsExist()
     return self:GetVisible() and self:GetStyle().display ~= "none";
 end
 
--- 是否需要渲染
-function ElementUI:IsNeedRender()
-    return not (self:IsRender() or not self:IsVisible());
-end
-
 function ElementUI:Render(painter)
-
     for i = 1, #self.AbsoluteElements do self.AbsoluteElements[i] = nil end
     for i = 1, #self.FixedElements do self.FixedElements[i] = nil end
     self:RenderStaticElement(painter, self);
@@ -63,8 +58,12 @@ end
 -- 元素渲染
 function ElementUI:RenderStaticElement(painter, root)
     -- ElementUIDebug.If(self:GetAttrValue("id") == "debug", self:IsVisible(), self:GetWidth(), self:GetHeight());
+    if (self:IsRender()) then return end
+    if (not self:IsVisible()) then
+        self:SetViewVisible(false);
+        return;
+    end
 
-    if (not self:IsNeedRender()) then return end
     local position = self:GetLayout():GetPositionStyle();
     if (self ~= root and (position == "absolute" or position == "fixed")) then
         if (position == "absolute") then 
@@ -79,7 +78,8 @@ function ElementUI:RenderStaticElement(painter, root)
 
     -- 渲染元素
     self:OnRender(painter);
-  
+    self:SetViewVisible(true);
+
     -- 渲染子元素
     local left, top, width, height = self:GetGeometry();
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "debug", "RenderStaticElement left = %s, top = %s, width = %s, height = %s", left, top, width, height);
@@ -90,20 +90,31 @@ function ElementUI:RenderStaticElement(painter, root)
     local layout = self:GetLayout();
     local scrollX, scrollY = self:GetScrollPos();
     local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
+    local isRenderChildElement = true;
     
     -- 绘制子元素
     for childElement in self:ChildElementIterator() do
+        isRenderChildElement = true;
+
         -- ElementUIDebug.If(self:GetAttrValue("id") == "debug", childElement:GetXmlNode().attr);
         if (childElement:GetLayout():IsPositionElement()) then
             childElement:RenderStaticElement(painter, root);
         else 
             if (layout.overflowX == "hidden" or layout.overflowY == "hidden" or isOverflowX or isOverflowY) then
+                -- 判断子元素是否在视窗内
+                local child_left, child_top, child_width, child_height = childElement:GetGeometry();
+                child_left, child_top = child_left - scrollX, child_top - scrollY;
+                if (child_left > width or child_top > height or (child_left + child_width) < 0 or (child_top + child_height) < 0) then isRenderChildElement = false end
                 -- ElementUIDebug.FormatIf(self:GetName() == "TextArea", "Render ScrollX = %s, ScrollY = %s", scrollX, scrollY);
                 painter:Save();
                 painter:SetClipRegion(0, 0, width, height);
                 if (isOverflowX or isOverflowY) then painter:Translate(-scrollX, -scrollY) end
             end
-            childElement:RenderStaticElement(painter, root);
+            if (isRenderChildElement) then
+                childElement:RenderStaticElement(painter, root);
+            else 
+                childElement:SetViewVisible(false);
+            end
             -- 恢复裁剪
             if (layout.overflowX == "hidden" or layout.overflowY == "hidden" or isOverflowX or isOverflowY) then
                 if (isOverflowX or isOverflowY) then painter:Translate(scrollX, scrollY) end
@@ -689,10 +700,14 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
 
     -- 事件序遍历 取第一悬浮元素
     for child in self:ChildElementIterator(false) do
-        local childHoverElement, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
-        if (childHoverElement and maxZIndex < childZIndex) then
-            hoverElement = childHoverElement;
-            maxZIndex = childZIndex;
+        if (child:GetViewVisible()) then
+            local childHoverElement, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
+            if (childHoverElement and maxZIndex < childZIndex) then
+                hoverElement = childHoverElement;
+                maxZIndex = childZIndex;
+            end
+        else 
+            SetElementOffHover(child);
         end
     end
 

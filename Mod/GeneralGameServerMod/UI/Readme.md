@@ -130,7 +130,7 @@ Page.ShowSubTitlePage({
 [x-] 圆角 支持较弱 border: 10px  四角统一设置  不支持圆角裁剪图片
 [x] xpcall pcall 执行代码
 [ ] 远程脚本 动态更新
-[ ] 不可见元素需要屏蔽渲染 scroll 优化 blockly 编辑区 优化
+[x] 不可见元素需要屏蔽渲染 scroll 优化 blockly 编辑区 优化
 
 ## 示教系统
 
