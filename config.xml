@@ -26,7 +26,7 @@
       outerPort 外网端口 
     -->
     <ControlServer
-      innerIp="10.28.18.2"
+      innerIp="172.16.16.22"
       innerPort="9000"
       outerIp="106.52.146.54"
       outerPort="9000">
@@ -38,7 +38,7 @@
       outerPort 外网端口 
     -->
     <WorkerServer
-      innerIp="10.28.18.2"
+      innerIp="172.16.16.22"
       innerPort="9000"
       outerIp="106.52.146.54"
       outerPort="9000">
