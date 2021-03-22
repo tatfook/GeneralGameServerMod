@@ -142,7 +142,7 @@ function ControlServer:SelectWorldServerByWorldKey(worldKey)
 
     local curTick = os.time();
     for key, svr in pairs(servers) do
-        local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
+        local isAlive = svr.isControlServer or ((curTick - svr.lastTick) < ServerAliveDuration); -- 控制节点无需心跳检测
         if (isAlive) then 
             local worldServer = svr.worldServers[worldKey];
             if (worldServer) then return {ip = svr.outerIp, port = svr.outerPort, worldKey = worldKey, threadName = worldServer.threadName} end
@@ -164,7 +164,7 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
     local clientCountPerRate = 20;                             -- 单个分值对应的世界人数
     local worldRate = -1;                                      -- 世界评分 评分越大优先选取
     for key, svr in pairs(servers) do
-        local isAlive = (curTick - svr.lastTick) < ServerAliveDuration; 
+        local isAlive = svr.isControlServer or ((curTick - svr.lastTick) < ServerAliveDuration);   -- 控制节点无需心跳检测
         -- 忽略已挂服务器或超负荷服务器
         if (isAlive and svr.totalClientCount < svr.maxClientCount) then 
             -- 优先找已存在的世界 且世界人数未满 世界人数最少
