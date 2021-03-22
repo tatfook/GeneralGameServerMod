@@ -78,6 +78,9 @@ function Track:AddPosition(bx, by, bz, x, y, z)
     if (area:IsFullPosition()) then return area:AddVisitCount() end
 
     local blockIndex = GetBlockIndex(bx, by, bz);
+    -- 位置已经存在, 则忽略
+    if (self.positions[blockIndex]) then return end
+
     self.positionCount = self.positionCount + 1;
     self.positions[blockIndex] = {x = x, y = y, z = z, bx = bx, by = by, bz = bz, blockIndex = blockIndex, id = self.positionCount};
 

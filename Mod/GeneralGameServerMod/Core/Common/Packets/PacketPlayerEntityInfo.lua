@@ -52,7 +52,8 @@ function PacketPlayerEntityInfo:Init(entityInfo, dataWatcher, isAllObject)
     self.bz = entityInfo.bz;
     self.facing = entityInfo.facing;
     self.pitch = entityInfo.pitch;
-    
+    self.isAir = entityInfo.isAir;
+
     -- 头部信息
     self.headYaw = entityInfo.headYaw;
     self.headPitch = entityInfo.headPitch;

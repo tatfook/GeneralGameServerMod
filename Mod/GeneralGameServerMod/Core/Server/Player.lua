@@ -188,7 +188,7 @@ function Player:UpdatePosInfo()
     local distance = 3;
     if (self.lastBX == nil or math.abs(bx - self.lastBX) >= distance or math.abs(bz - self.lastBZ) >= distance) then
         self.lastBX, self.lastBY, self.lastBZ = bx, self.lastBY or by, bz;
-        if (self.lastBY == by) then
+        if (not self.entityInfo.isAir) then
             self:GetWorld():GetTrack():AddPosition(bx, by, bz, x, y, z);
         end
     end

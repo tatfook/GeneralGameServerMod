@@ -152,6 +152,7 @@ function EntityMainPlayer:SendMotionUpdates()
         if (hasMoved) then
             packet.x, packet.y, packet.z = self.x, self.y, self.z; 
             packet.bx, packet.by, packet.bz = self:GetBlockPos();
+            packet.isAir = self:IsAir();
         end
         
         if (hasRotation) then packet.facing, packet.pitch = self.facing, self.rotationPitch end 
@@ -191,6 +192,11 @@ function EntityMainPlayer:SendMotionUpdates()
     -- 重置计数器
     self.motionUpdateTickCount = 0; 
     self.lastMotionUpdateTickCount = 0;
+end
+
+function EntityMainPlayer:IsAir()
+    local block = BlockEngine:GetBlock(self.bx,self.by-1,self.bz);
+	return not (block and block.obstruction);
 end
 
 -- @param chatmsg: ChatMessage or string. 
