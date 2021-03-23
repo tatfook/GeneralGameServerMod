@@ -13,6 +13,29 @@ _G.StyleNameList = {
     "justify-content", "align-items", "align-self", "border",
 };
 
+_G.StyleOptions = {
+    {"宽", "width"}, 
+    {"高", "height"}, 
+    {"X", "left"}, 
+    {"Y", "top"}, 
+    {"字体大小", "font-size"}, 
+    {"字体颜色", "color"}, 
+    {"背景颜色", "background-color"}, 
+    {"背景图片", "background"},
+    {"display", "display"},
+    {"justify-content", "justify-content"},
+    {"align-items", "align-items"},
+};
+
+_G.StyleValueOptions = {
+    ["display"] = {"flex", "block", "inline-block", "inline"},
+    ["justify-content"] = {"center", "space-between", "space-around","flex-start", "flex-end"},
+    ["align-items"] = {"center", "space-between", "space-around","flex-start", "flex-end"},
+    ["font-size"] = {"10px", "12px", "14px", "16px", "18px", "20px", "24px", "28px", "30px", "36px", "40px", "50px"},
+}
+
+_G.TagNameOptions = {"div", "select", "input", "textarea", "radio", "radiogroup", "checkbox", "checkboxgroup"};
+
 local function GetStyleString(style)
     local styleString = "";
     for _, styleName in ipairs(StyleNameList) do 
@@ -38,6 +61,7 @@ local function GenerateListItemData(opt)
         style = { 
             width = 200,
             height = 100,
+            ["background-color"] = "#ffffff",
         },
         hoverStyle = {},
         attr = {},
@@ -71,6 +95,7 @@ _G.ListItemDataMap[WindowItemData.id] = WindowItemData;
 
 _G.Reset = function()
     GlobalScope:Set("CurrentElementId", "");
+    GlobalScope:Set("IsWindowElement", false);
     GlobalScope:Set("ElementList", {});
     GlobalScope:Set("AllCode", "");
     GlobalScope:Set("CssCode", "");
@@ -100,6 +125,7 @@ local function SetCurrentElement(curElement)
     _G.CurrentListItemData = ListItemDataMap[CurrentElementId];
     _G.CurrentListItemData.style.left, _G.CurrentListItemData.style.top = CurrentElement:GetPosition();
     GlobalScope:Set("CurrentElementId", CurrentElementId);
+    GlobalScope:Set("IsWindowElement", CurrentElementId == WindowItemData.id);
     _G.CurrentElement:SetAttrValue("style", CurrentListItemData.style);
 end
 
@@ -122,6 +148,50 @@ end
 
 function DraggableFlagElementOnMouseUp(el)
     el:GetParentElement():OnMouseUp(GetEvent());
+end
+
+local DraggableData = {};
+function DraggableSizeElementOnMouseDown(el, event)
+    DraggableData.element = el;
+    DraggableData.isMouseDown = true;
+    DraggableData.startDragX, DraggableData.startDragY = event:GetWindowXY(); 
+    DraggableData.elementLeft, DraggableData.elementTop = el:GetPosition();
+    DraggableData.parentElementWidth, DraggableData.parentElementHeight = el:GetParentElement():GetSize();
+end
+
+function DraggableSizeElementOnMouseMove(el, event)
+    if (DraggableData.element == el and DraggableData.isMouseDown and event:IsLeftButton() ) then
+		if(not DraggableData.isDragging and not event:IsMove()) then return end
+        DraggableData.isDragging = true;
+        el:CaptureMouse();
+
+        local DragMoveX, DragMoveY = event:GetWindowXY();
+        local DragOffsetX, DragOffsetY = DragMoveX - DraggableData.startDragX, DragMoveY - DraggableData.startDragY;
+        local style = CurrentListItemData.style;
+        style.width = DraggableData.parentElementWidth + DragOffsetX;
+        style.height = DraggableData.parentElementHeight + DragOffsetY;
+        el:GetParentElement():SetSize(style.width, style.height);
+        el:SetPosition(DraggableData.elementLeft + DragOffsetX, DraggableData.elementTop + DragOffsetY);
+        el:GetParentElement():SetAttrValue("style", CurrentListItemData.style);
+    end
+end
+
+function DraggableSizeElementOnMouseUp(el, event)
+    if (DraggableData.isDragging and DraggableData.element == el) then
+		el:ReleaseMouseCapture();
+        local parentElement = el:GetParentElement();
+        -- parentElement:SetAttrValue("style", CurrentListItemData.style);
+        _G.UpdateCurrentListItemDataStyle();
+    end
+    DraggableData.isDragging = false;
+    DraggableData.isMouseDown = false;
+end
+
+function DraggableSizeElementOnRender(el, painter)
+    local x, y, w, h = el:GetGeometry();
+    painter:SetPen(el:GetColor("#cccccc"));
+    painter:DrawLine(x, y + h / 2, x + w, y + h / 2);
+    painter:DrawLine(x + w / 2, y, x + w / 2, y + h);
 end
 
 function DraggableElementOnMouseDown(el)

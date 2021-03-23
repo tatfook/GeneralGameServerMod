@@ -111,23 +111,28 @@ function Select:Init(xmlNode, window, parent)
     local ListBox = ListBox:new():Init({
         name = "ListBox",
         attr = {
-            style = "position: absolute; left: 0px; top: 105%;  max-height: 130px; width: 100%; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px;",
+            style = "position: absolute; left: 0px; top: 105%;  max-height: 130px; width: 100%; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px; border: 1px solid #cccccc;",
         }
     }, window, self);
+    local function InputValueFinish(value)
+        value = self:GetValueByLabel(value);
+        self:SetValue(value);
+        self:SetLabel(self:GetLabelByValue(value));
+        self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
+        self:CallAttrFunction("onchange", nil, self:GetValue(), self:GetLabel());
+        self:OnFocusOut();
+        self:SetFocus(nil);
+    end
     local InputBox = InputElement:new():Init({
         name = "input",
         attr = {
             style = "position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; border: none; background-color: #ffffff00; height: 100%; width: 100%;",
             onblur = function()
+                -- InputValueFinish(el:GetValue());
                 self:OnFocusOut();
             end,
             ["onkeydown.enter"] = function(value)
-                value = self:GetValueByLabel(value);
-                self:SetValue(value);
-                self:SetLabel(self:GetLabelByValue(value));
-                self:SetFocus(nil);
-                self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
-                self:CallAttrFunction("onchange", nil, self:GetValue(), self:GetLabel());
+                InputValueFinish(value);
             end
         }
     }, window, self);
@@ -244,11 +249,13 @@ function Select:OnSelect(option)
     self:SetLabel(label);
     self:SetFocus(nil);
     self:OnFocusOut();
-    self:CallAttrFunction("onselect", nil, value, label);
     self:CallAttrFunction("onchange", nil, value, label);
+    self:CallAttrFunction("onselect", nil, value, label);
 end
 
 function Select:OnFocusIn(event)
+    if (self:IsDisabled()) then return end
+    
     if (self:IsAllowCreate()) then
         self:GetInputBoxElement():SetAttrValue("value", self:GetLabel());
         -- self:GetInputBoxElement():SetAttrValue("value", "");

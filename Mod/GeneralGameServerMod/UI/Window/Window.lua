@@ -441,7 +441,7 @@ function Window:HandleMouseEvent(event)
     -- 聚焦目标元素  聚焦与事件是否处理无关
     -- if (event:IsAccepted()) then return end
     if(eventType == "mousePressEvent") then
-        self:SetFocus(hoverElement);
+        self:SetFocus(if_else(hoverElement:IsDisabled(), nil, hoverElement));
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "鼠标事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
 end

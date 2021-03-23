@@ -329,11 +329,13 @@ end
 
 -- 获取背景颜色
 function ElementUI:GetBackgroundColor(defaultValue)
+    if (self:IsDisabled()) then return "#cccccc" end
     return self:GetStyle():GetBackgroundColor(defaultValue);
 end
 
 -- 元素位置更新
 function ElementUI:OnSize()
+    -- self:CallAttrFunction("onsize", nil, self);
 end
 
 -- 元素位置
@@ -541,6 +543,11 @@ function ElementUI:IsDraggable()
     return draggable and (self:IsWindow() or style.position == "fixed" or style.position == "absolute");
 end
 
+-- 是否禁用
+function ElementUI:IsDisabled()
+    return self:GetAttrBoolValue("disabled") == true and true or false;
+end
+
 -- https://developer.mozilla.org/en-US/docs/Web/Events
 -- Capture
 function ElementUI:OnMouseDownCapture(event)
@@ -574,33 +581,40 @@ function ElementUI:OnMouseDown(event)
         self.startDragScreenX, self.startDragScreenY = self:GetWindow():GetScreenPosition();
 		event:Accept();
 	end
+
 end
 
 function ElementUI:OnMouseMove(event)
     if(event:IsAccepted()) then return end
     if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
 
-    local x, y = event:GetScreenXY();
-    if (not self:IsWindow()) then x, y= event:GetWindowXY() end
-	if(self.isMouseDown and event:IsLeftButton() and self:IsDraggable()) then
-        local offsetX, offsetY = x - self.startDragX, y - self.startDragY;
+
+    if(self.isMouseDown and event:IsLeftButton() and self:IsDraggable()) then
 		if(not self.isDragging and not event:IsMove()) then return end
+        
+        if (self:IsWindow()) then 
+            self.DragMoveX, self.DragMoveY = event:GetScreenXY();
+        else
+            self.DragMoveX, self.DragMoveY = event:GetWindowXY();
+        end
+
+        self.DragOffsetX, self.DragOffsetY = self.DragMoveX - self.startDragX, self.DragMoveY - self.startDragY;
         self.isDragging = true;
         self:CaptureMouse();
         if (self:IsWindow()) then
             local _, _, screenWidth, screenHeight = self:GetScreenPosition();
-            self:GetWindow():GetNativeWindow():Reposition("_lt", self.startDragScreenX + offsetX, self.startDragScreenY + offsetY, screenWidth, screenHeight);
+            self:GetWindow():GetNativeWindow():Reposition("_lt", self.startDragScreenX + self.DragOffsetX, self.startDragScreenY + self.DragOffsetY, screenWidth, screenHeight);
         else 
-            self:SetPosition(self.startDragElementX + offsetX, self.startDragElementY + offsetY);
+            self:SetPosition(self.startDragElementX + self.DragOffsetX, self.startDragElementY + self.DragOffsetY);
         end
         event:Accept();
 	end
+
 end
 
 function ElementUI:OnMouseUp(event)
     if(event:IsAccepted()) then return end
-
-    if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end;
+    if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end
 
     if (event:IsRightButton()) then 
         self:OnContextMenu(event);
@@ -618,6 +632,7 @@ function ElementUI:OnMouseUp(event)
 		event:Accept();
 	end
 	self.isMouseDown = false;
+
 end
 
 function ElementUI:OnMouseLeave()
@@ -721,12 +736,12 @@ end
 
 function ElementUI:OnFocusOut()
     local onblur = self:GetAttrFunctionValue("onblur");
-	if (onblur) then onblur() end
+	if (onblur) then onblur(self) end
 end
 
 function ElementUI:OnFocusIn()
     local onfocus = self:GetAttrFunctionValue("onfocus");
-	if (onfocus) then onfocus() end
+	if (onfocus) then onfocus(self) end
 end
 
 -- 是否是聚焦元素

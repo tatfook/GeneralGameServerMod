@@ -1,14 +1,14 @@
 <template class="style-container">
     <div class="title">默认样式</div>
     <div class="style-item">
-        <select AllowCreate=true placeholder="样式名" v-model="styleName" v-bind:options="StyleOptions"></select>
-        <input placeholder="样式值" v-model="styleValue"></input>
+        <select AllowCreate=true placeholder="样式名" v-model="styleName" v-bind:options="StyleOptions" onselect=OnStyleNameSelect></select>
+        <select AllowCreate=true placeholder="样式值" v-model="styleValue" v-bind:options="ValueOptions"></select>
         <div class="style-item-btn" onclick=AddStyle>添加</div>
     </div>
     <div class="style-list">
         <div class="style-list-item" v-for="style, index in styleList">
             <input readonly=true v-bind:value="GetStyleAliasName(style.styleName)"></input>
-            <input v-model="style.styleValue" onkeydown.enter="SetStyleValue(style.styleName, style.styleValue)"></input>
+            <input v-model="style.styleValue" onblur="SetStyleValue(style.styleName, style.styleValue)"></input>
             <div class="style-item-btn" style="height: 30px" onclick="RemoveStyle(style, index)">移除</div>
         </div>
     </div>
@@ -21,7 +21,7 @@
     <div class="style-list">
         <div class="style-list-item" v-for="style, index in hoverStyleList">
             <input readonly=true v-bind:value="GetStyleAliasName(style.styleName)"></input>
-            <input v-model="style.styleValue" onkeydown.enter="SetStyleValue(style.styleName, style.styleValue)"></input>
+            <input v-model="style.styleValue" onblur="SetHoverStyleValue(style.styleName, style.styleValue)"></input>
             <div class="style-item-btn" style="height: 30px" onclick="RemoveHoverStyle(style, index)">移除</div>
         </div>
     </div>
@@ -30,15 +30,18 @@
 <script type="text/lua">
 local GlobalScope = GetGlobalScope();
 
-_G.StyleOptions = {{"宽", "width"}, {"高", "height"}, {"X", "left"}, {"Y", "top"}, {"字体大小", "font-size"}, {"字体颜色", "color"}, {"背景颜色", "background-color"}, {"背景图片", "background"}};
-
 styleName = "";
 styleValue = "";
 styleList = {};
+ValueOptions = {};
 
 hoverStyleName = "";
 hoverStyleValue = "";
 hoverStyleList = {};
+
+function OnStyleNameSelect(value)
+    ValueOptions = _G.StyleValueOptions[value] or {};
+end 
 
 function GetStyleAliasName(styleName) 
     for _, item in ipairs(StyleOptions) do
@@ -101,7 +104,14 @@ function RemoveHoverStyle(item, index)
     table.remove(hoverStyleList, index)
 end
 
-GlobalScope:Watch("CurrentElementId", function() 
+function SetHoverStyleValue(styleName, styleValue)
+    if (styleName == "" or styleValue == "") then return end
+    CurrentListItemData.hoverStyle[styleName] = styleValue;
+end 
+
+_G.UpdateCurrentListItemDataStyle = function()
+    StyleChange();
+
     styleList = {};
     for key, val in pairs(CurrentListItemData.style) do 
         table.insert(styleList, {styleName = key, styleValue = val});
@@ -111,6 +121,10 @@ GlobalScope:Watch("CurrentElementId", function()
     for key, val in pairs(CurrentListItemData.hoverStyle) do 
         table.insert(hoverStyleList, {styleName = key, styleValue = val});
     end
+end 
+
+GlobalScope:Watch("CurrentElementId", function() 
+    _G.UpdateCurrentListItemDataStyle();
 end);
 
 

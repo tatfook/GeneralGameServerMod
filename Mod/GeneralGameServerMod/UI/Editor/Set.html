@@ -1,8 +1,11 @@
 <template class="set-container">
     <div class="title">背景图片</div>
-    <input style="width: 100%;" v-bind:value="background" placeholder="背景图片url" onkeydown.enter=ChangeImageUrl></input>
+    <div class="form-item">
+        <input style="width: 100%; padding-right: 30px;" v-model="background" placeholder="背景图片url" onblur=ChangeImageUrl></input>
+        <div onclick=ClickOpenFileDialog style="position: absolute; right: 1px; bottom: 8px; width: 30px; top: 8px;" class="center">...</div>
+    </div>
     
-    <div v-if="CurrentElementId ~= WindowItemData.id">
+    <div v-if="not IsWindowElement">
         <div class="title">静态文本</div>
         <textarea v-bind:value="text" onchange=OnTextChange style="width: 100%; height: 120px;"></textarea>
         <div class="title">动态文本</div>
@@ -10,7 +13,8 @@
     </div>
     <div class="form-item">
         <div class="label">标签名</div>
-        <input class="value" placeholder="元素标签名" onchange="OnValueChange('tagname', ...)" v-bind:value="value.tagname"></input>
+        <!-- <input class="value" placeholder="元素标签名" onchange="OnValueChange('tagname', ...)" v-bind:value="value.tagname"></input> -->
+        <select v-bind:disabled="IsWindowElement" v-bind:options="TagNameOptions" class="value" placeholder="元素标签名" onchange="OnValueChange('tagname', ...)" v-bind:value="value.tagname"></select>
     </div>
     <div class="form-item">
         <div class="label">序 号</div>
@@ -19,6 +23,8 @@
 </template>
 
 <script type="text/lua">
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua", IsDevEnv);
+
 local GlobalScope = GetGlobalScope();
 local ListItem = {};
 
@@ -30,20 +36,31 @@ text = "";
 textVarName = "";
 background = "";
 
-function ChangeImageUrl(val)
-    background = val;
+function ChangeImageUrl()
+    if (background == CurrentListItemData.style.background) then return end
     if (background == "") then
         CurrentListItemData.style["background"] = nil;
-        CurrentElement:SetStyleValue("background", nil);
     else
         if (not string.match(background, "^url%(")) then
             CurrentListItemData.style["background"] = string.format("url(%s)", background);
         else 
             CurrentListItemData.style["background"] = background;
         end
-        CurrentElement:SetStyleValue("background", background);
     end
-    
+    _G.UpdateCurrentListItemDataStyle();
+end 
+
+function ClickOpenFileDialog()
+    local filename = CommonLib.OpenTextureFileDialog();
+    if (not filename) then return end
+    filename = CommonLib.ToCanonicalFilePath(filename, "linux");
+    local width, height = string.match(filename, "(%d+)[xX](%d+)");
+    if (width and height) then 
+        filename = filename .. "#0 0 " .. width .. " " .. height;
+        CurrentListItemData.style["width"] = tonumber(width) or width;
+        CurrentListItemData.style["height"] = tonumber(height) or height;
+    end
+    ChangeImageUrl(filename);
 end 
 
 function OnValueChange(key, val)

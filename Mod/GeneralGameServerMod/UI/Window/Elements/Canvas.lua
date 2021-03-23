@@ -10,9 +10,6 @@ local Canvas = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Ca
 local Element = NPL.load("../Element.lua", IsDevEnv);
 local Canvas = commonlib.inherit(Element, NPL.export());
 
-local pen = {width = 3, color = "#000000"};
-local lines, points = {}, {};
-
 Canvas:Property("Name", "Canvas");
 Canvas:Property("BaseStyle", {
     ["NormalStyle"] = {
@@ -20,19 +17,12 @@ Canvas:Property("BaseStyle", {
         ["width"] = "100%",
         ["height"] = "100%",
     }
-})
+});
+
 function Canvas:ctor()
-    self:SetName("Canvas");
 end
 
 -- 绘制内容
 function Canvas:RenderContent(painter)
-    local x, y, w, h = self:GetContentGeometry();
-    painter:SetPen(pen);
-    painter:SetBrush("#ffffff");
-    painter:Translate(x, y);
-
-    painter:DrawLine(0, 0, 100, 100);
-
-    painter:Translate(-x, -y);
+    self:CallAttrFunction("onrender", nil, self, painter);
 end

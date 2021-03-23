@@ -194,7 +194,7 @@ function Page.ShowMessageBoxPage(G)
     local params = {};
     
     params.G = G;
-    params.url = "%ui%/Common/MessageBox.html";
+    params.url = "%ui%/Page/Common/MessageBox.html";
     params.draggable=false;
     params.width = "80%";
     params.height = "80%";

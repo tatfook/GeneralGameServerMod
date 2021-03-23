@@ -34,7 +34,6 @@ NPL.export({
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
             local varname = block:GetFieldValue("varname");
-            print(varname);
             local varvalue = block:GetValueAsString("varvalue");
             return string.format('local %s = %s\n', varname, varvalue);
         end,

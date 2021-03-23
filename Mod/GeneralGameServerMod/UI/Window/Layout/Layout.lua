@@ -189,9 +189,9 @@ function Layout:ApplyPositionStyle()
 	right, bottom = right or 0, bottom or 0;
 	self:SetPos(left, top);
 	self:SetPosition(top, right, bottom, left);
-	LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", 
-		"ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s, parentLayoutId = %s", 
-		self:GetTagNameAndName(), left, top, right, bottom, width, height, relWidth, relHeight, self:GetParentLayout().nid);
+	-- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", 
+	-- 	"ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s, parentLayoutId = %s", 
+	-- 	self:GetTagNameAndName(), left, top, right, bottom, width, height, relWidth, relHeight, self:GetParentLayout().nid);
 	self:SetWidthHeight(width and math.max(width, 0), height and math.max(height, 0));
 end
 

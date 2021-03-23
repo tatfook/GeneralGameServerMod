@@ -99,7 +99,8 @@ function Input:IsReadOnly()
 end
 
 function Input:handleReturn()
-    return self:CallAttrFunction("onkeydown.enter", nil, self:GetValue());
+    self:CallAttrFunction("onkeydown.enter", nil, self:GetValue());
+    self:SetFocus(nil);
 end
 
 function Input:handleEscape()
@@ -209,7 +210,7 @@ end
 function Input:handleSelectPrevWord()
 end
 function Input:OnKeyDown(event)
-    if (not self:IsFocus()) then return end
+    if (not self:IsFocus() or self:IsDisabled()) then return end
     if (self:IsReadOnly()) then return end
 
 	local keyname = event.keyname;
@@ -241,7 +242,7 @@ function Input:OnKeyDown(event)
 end
 
 function Input:OnKey(event)
-    if (not self:IsFocus()) then return end
+    if (not self:IsFocus() or self:IsDisabled()) then return end
     if (self:IsReadOnly()) then return end
 
     local commitString = event:GetCommitString();
@@ -454,10 +455,12 @@ function Input:GloablToContentGeometryPos(x, y)
 end
 
 function Input:OnClick(event)
+    if (self:IsDisabled()) then return end
     if (not self:IsFocus()) then self:FocusIn() end
 end
 
 function Input:OnMouseDown(event)
+    if (self:IsDisabled()) then return end
     if (not self:IsFocus()) then self:FocusIn() end
     local x, y = self:GloablToContentGeometryPos(event.x, event.y);
     self:ClearSelected();
