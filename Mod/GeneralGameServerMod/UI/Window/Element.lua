@@ -391,6 +391,7 @@ end
 
 function Element:OnBeforeChildDetach()
 end
+
 -- 从DOM树中移除
 function Element:OnDetach()
     self.attached = false;
@@ -467,6 +468,7 @@ end
 -- 元素布局更新后回调
 function Element:OnAfterUpdateLayout()
 end
+
 -- 更新布局, 先进行子元素布局, 再布局当前元素
 function Element:UpdateLayout(bApplyElementStyle)
     -- 是否正在更新布局
@@ -517,7 +519,6 @@ function Element:UpdateLayout(bApplyElementStyle)
     -- 调整布局
     self:GetLayout():Update();
 
-  
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
     

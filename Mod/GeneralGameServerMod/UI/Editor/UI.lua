@@ -61,12 +61,12 @@ local function GenerateListItemData(opt)
         style = { 
             width = 200,
             height = 100,
-            ["background-color"] = "#ffffff",
+            -- ["background-color"] = "#ffffff",
         },
         hoverStyle = {},
         attr = {},
         vbind = {},
-        tagname = "",
+        tagname = "div",
         order = ElementId,
     }
 
@@ -241,7 +241,7 @@ function ClickNewElementBtn()
         }
     });
     _G.ListItemDataMap[item.id] = item;
-    table.insert(list, {id = item.id, text = item.text});
+    table.insert(list, {id = item.id, text = item.text, tagname = item.tagname});
 end
 
 function ClickDeleteElementBtn()
@@ -259,7 +259,7 @@ function ClickCopyElementBtn()
     local item = commonlib.deepcopy(CurrentListItemData);
     item.id = GetNextElementId();
     _G.ListItemDataMap[item.id] = item;
-    table.insert(list, {id = item.id, text = item.text});
+    table.insert(list, {id = item.id, text = item.text, tagname = item.tagname});
 end
 
 function ClickSaveBtn()
@@ -359,7 +359,7 @@ _G.LoadFromText = function (text)
         if (item.isWindowItemData) then 
             _G.WindowItemData = item;
         else 
-            table.insert(list, {id = item.id, text = item.text});
+            table.insert(list, {id = item.id, text = item.text, tagname = item.tagname});
             local id = tonumber(string.match(item.id, "%d+")) or 0;
             ElementId = ElementId < id and id or ElementId;
         end

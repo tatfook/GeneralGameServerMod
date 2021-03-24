@@ -26,9 +26,11 @@
                 </div>
                 <div class="window-container">
                     <div v-bind:id="WindowItemData.id" ref="window" style="width: 100%; height: 100%;" onmouseup=DraggableElementOnMouseUp>
-                        <div v-for="item, index in ElementList" 
-                            v-bind:id="item.id" class="draggable" draggable=true 
+                        <ProxyElement v-for="item, index in ElementList" 
+                            class="draggable" draggable=true 
+                            v-bind:id="item.id" 
                             v-bind:style="ListItemDataMap[item.id].style"  
+                            v-bind:is="item.tagname"
                             onmousedown=DraggableElementOnMouseDown 
                             onmousemove=DraggableElementOnMouseMove 
                             onmouseup=DraggableElementOnMouseUp>
@@ -46,7 +48,7 @@
                                 onmousemove=DraggableSizeElementOnMouseMove 
                                 onmouseup=DraggableSizeElementOnMouseUp>
                             </canvas>
-                        </div>
+                        </ProxyElement>
                     </div>
                 </div>
             </div>

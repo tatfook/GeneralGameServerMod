@@ -66,6 +66,9 @@ end
 function OnValueChange(key, val)
     value[key] = val;
     CurrentListItemData[key] = val;
+    if (key == "tagname") then
+        ListItem[key] = val;
+    end
 end 
 
 function OnTextChange(val)
