@@ -31,6 +31,7 @@ local Canvas = NPL.load("./Elements/Canvas.lua", IsDevEnv);
 local Loading = NPL.load("./Elements/Loading.lua", IsDevEnv);
 local QRCode = NPL.load("./Elements/QRCode.lua", IsDevEnv);
 local DateTimeText = NPL.load("./Elements/DateTimeText.lua", IsDevEnv);
+local ProxyElement = NPL.load("./Elements/ProxyElement.lua", IsDevEnv);
 
 local Component = NPL.load("../Vue/Component.lua", IsDevEnv);
 local Slot = NPL.load("../Vue/Slot.lua", IsDevEnv);
@@ -68,6 +69,7 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("Loading", Loading);
     ElementManager:RegisterByTagName("QRCode", QRCode);
     ElementManager:RegisterByTagName("DateTimeText", DateTimeText);
+    ElementManager:RegisterByTagName("ProxyElement", ProxyElement);
 
     ElementManager:RegisterByTagName("Component", Component);
     ElementManager:RegisterByTagName("Slot", Slot);

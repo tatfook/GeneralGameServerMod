@@ -80,9 +80,9 @@ AddToAllBlocks(VarBlocks, "数据");
 AddToAllBlocks(DataBlocks, "数据");
 AddToAllBlocks(MathBlocks, "运算");
 AddToAllBlocks(ControlBlocks, "控制");
-AddToAllBlocks(EventBlocks, "事件");
+-- AddToAllBlocks(EventBlocks, "事件");
 AddToAllBlocks(VueBlocks, "界面");
-AddToAllBlocks(LogBlocks, "辅助");
+-- AddToAllBlocks(LogBlocks, "辅助");
 AddToAllBlocks(HelperBlocks, "辅助");
 
 function VueToolbox.GetAllBlocks()

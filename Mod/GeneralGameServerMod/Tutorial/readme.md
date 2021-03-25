@@ -255,6 +255,8 @@ TutorialSandbox:GetKeepworkAPI();
 TutorialSandbox:SendNetData(data);
 -- 注册联机数据接收回调
 TutorialSandbox:RegisterNetDataCallBack(function(data) echo(data) end);
+-- 获取在线用户列表
+TutorialSandbox:GetPlayers();
 
 -- 沙盒 API 类, 同窗口脚本中的全局 API 类, 参考文档 UI/Window/Api/Api.md
 TutorialSandbox.Http      -- http 请求类

@@ -182,7 +182,7 @@ function ClickEditBtn(file, index)
             EditFile(file.filename)
         end,
     }, {
-        url = "%ui%/Common/MessageBox.html",
+        url = "%ui%/Page/Common/MessageBox.html",
         draggable = false,
         width = "80%",
         height = "80%",

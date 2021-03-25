@@ -396,6 +396,34 @@ function GeneralGameClient:IsAnonymousUser()
     return true;
 end
 
+-- 获取用户列表
+local playerlist = {}
+function GeneralGameClient:GetPlayers()
+    local world = self:GetWorld();
+    local playerManager = world and world:GetPlayerManager();
+    local players = playerManager and playerManager:GetPlayers();
+    local count = 0;
+    if (players) then
+        for _, player in pairs(players) do
+            if (player:IsOnline()) then
+                count = count + 1;
+                playerlist[count] = player;
+            end
+        end
+    end
+    local mainPlayer = playerManager:GetMainPlayer();
+    if (mainPlayer) then
+        count = count + 1;
+        playerlist[count] = mainPlayer;
+    end
+    count = count + 1;
+    while(playerlist[count]) do
+        playerlist[count] = nil;
+        count = count + 1;
+    end
+    return playerlist;
+end
+
 -- 获取网络命令
 function GeneralGameClient:GetNetCmdList()
     return self.netCmdList;

@@ -33,7 +33,7 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format('if(%s) then\n%s\nend\n', block:GetValueAsString('input_value'), block:GetValueAsString('input_statement'));
+            return string.format('if(%s) then\n%s\nend\n', block:GetFieldValue('input_value'), block:GetValueAsString('input_statement'));
         end,
     },
     {
@@ -57,7 +57,7 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format('if(%s) then\n%s\nelse\n%s\nend\n', block:GetValueAsString('expression'), block:GetValueAsString('input_true'), block:GetValueAsString('input_else'));
+            return string.format('if(%s) then\n%s\nelse\n%s\nend\n', block:GetFieldValue('expression'), block:GetValueAsString('input_true'), block:GetValueAsString('input_else'));
         end,
     },
     {
@@ -66,11 +66,11 @@ NPL.export({
         arg0 = {
             {
                 name = "key",
-                type = "input_value",
+                type = "field_input",
             },
             {
                 name = "value",
-                type = "input_value",
+                type = "field_input",
             },
             {
                 name = "data",
@@ -85,7 +85,7 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format('for %s, %s in pairs(%s) do\n    %s\nend\n', block:GetValueAsString('key'), block:GetValueAsString('value'), block:GetValueAsString('data'), block:GetValueAsString('input'));
+            return string.format('for %s, %s in pairs(%s) do\n    %s\nend\n', block:GetFieldValue('key'), block:GetFieldValue('value'), block:GetFieldValue('data'), block:GetValueAsString('input'));
         end,
     },
     {
@@ -94,11 +94,11 @@ NPL.export({
         arg0 = {
             {
                 name = "i",
-                type = "input_value",
+                type = "field_input",
             },
             {
                 name = "item",
-                type = "input_value",
+                type = "field_input",
             },
             {
                 name = "data",
@@ -113,7 +113,7 @@ NPL.export({
 	    nextStatement = true,
         color = StyleColor.ConvertTo16("rgb(160,110,254)"),
         ToNPL = function(block)
-            return string.format('for %s, %s in ipairs(%s) do\n    %s\nend\n', block:GetValueAsString('i'), block:GetValueAsString('item'), block:GetValueAsString('data'), block:GetValueAsString('input'));
+            return string.format('for %s, %s in ipairs(%s) do\n    %s\nend\n', block:GetFieldValue('i'), block:GetFieldValue('item'), block:GetFieldValue('data'), block:GetValueAsString('input'));
         end,
     },
 });

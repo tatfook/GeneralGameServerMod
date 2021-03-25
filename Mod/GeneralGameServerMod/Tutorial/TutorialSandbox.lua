@@ -65,6 +65,11 @@ function TutorialSandbox:ctor()
     end);
 end
 
+-- 获取 GGS 用户列表
+function TutorialSandbox:GetPlayers()
+    return AppGeneralGameClient:GetPlayers();
+end
+
 -- 发送网络数据
 function TutorialSandbox:SendNetData(data)
     local dataHandler = AppGeneralGameClient:GetClientDataHandler();
