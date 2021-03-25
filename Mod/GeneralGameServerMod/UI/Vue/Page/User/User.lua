@@ -416,7 +416,7 @@ _G.GetAllAssets = function()
     for _, tpl in ipairs(KeepWorkItemManager.globalstore) do
         local extra = tpl.extra or {};
         -- echo(extra, true)
-        if (tpl.bagId == bagId) then
+        if (tpl.bagId == bagId and extra.modelFrom) then
             table.insert(assets, {
                 id = tpl.id,
                 gsId = tpl.gsId,
