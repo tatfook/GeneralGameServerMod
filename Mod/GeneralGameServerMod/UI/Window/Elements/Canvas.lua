@@ -25,6 +25,4 @@ end
 -- 绘制内容
 function Canvas:RenderContent(painter)
     -- self:CallAttrFunction("onrender", nil, self, painter);
-
-    painter:Draw
 end

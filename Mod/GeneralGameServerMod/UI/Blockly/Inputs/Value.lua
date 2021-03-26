@@ -50,17 +50,7 @@ function Value:Render(painter)
     local inputBlock = self:GetInputBlock();
     if (inputBlock) then return inputBlock:Render(painter) end
 
-    local offsetX, offsetY = self:GetOffset();
-    painter:Translate(offsetX, offsetY);
-    Shape:SetBrush(self:GetBackgroundColor());
-    Shape:DrawRect(painter, Const.BlockEdgeWidthUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2, self.heightUnitCount);
-
-    Shape:SetDrawBorder(false);
-    Shape:DrawUpEdge(painter, self.widthUnitCount);
-    Shape:DrawDownEdge(painter, self.widthUnitCount, 0, 0, self.heightUnitCount - Const.BlockEdgeHeightUnitCount);
-    Shape:DrawLeftEdge(painter, self.heightUnitCount);
-    Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
-    Shape:SetDrawBorder(true);
+    Shape:DrawInputField(painter, self.widthUnitCount, self.heightUnitCount + Const.BlockEdgeHeightUnitCount, self.leftUnitCount, self.topUnitCount - Const.BlockEdgeHeightUnitCount / 2);
     
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());

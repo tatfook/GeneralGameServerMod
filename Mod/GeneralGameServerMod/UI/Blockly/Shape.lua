@@ -154,107 +154,49 @@ end
 function Shape:DrawPrevConnection(painter, widthUnitCount, offsetXUnitCount, offsetYUnitCount, isBlockInnerConnection)
     local UnitSize = self:GetUnitSize();
     painter:SetPen(self:GetBrush());
-    
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
-
     local ConnectionSize = Const.ConnectionHeightUnitCount;
-    if (isBlockInnerConnection) then
-        painter:DrawRect(0, 0, UnitSize * 4, UnitSize);
-    else
-        painter:DrawCircle(UnitSize, -UnitSize, 0, UnitSize, "z", true, nil, math.pi / 2, math.pi);
-        painter:DrawRect(UnitSize, 0, UnitSize * 3, UnitSize);
-    end
-    painter:DrawRect(0, UnitSize, UnitSize * 4, UnitSize * (ConnectionSize - 1));
-    painter:Translate(UnitSize * 4, 0);
-
-    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, 0, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, -UnitSize * ConnectionSize;
-    painter:DrawTriangleList(Triangle);
     
-    painter:Translate(UnitSize * (4 + ConnectionSize), 0);
-    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, 0;
-    painter:DrawTriangleList(Triangle);
-    painter:Translate(UnitSize * ConnectionSize, 0);
-    
-    local remainSize = widthUnitCount - 9 - ConnectionSize * 2;
-    painter:DrawRect(0, 0, UnitSize * remainSize, UnitSize);
-    painter:DrawRect(0, UnitSize, UnitSize * (remainSize + 1), UnitSize * (ConnectionSize - 1));
-    painter:Translate(UnitSize * remainSize, 0);
-    painter:DrawCircle(0, -UnitSize, 0, UnitSize, "z", true, nil, 0, math.pi / 2);
-    painter:Translate(-(widthUnitCount - 1) * UnitSize, 0);
-    painter:Flush();
-
-    -- 绘制边框
-    if (self:IsDrawBorder()) then
-        painter:SetPen(self:GetPen());
-        if (isBlockInnerConnection) then
-            painter:DrawLine(0, 0, 4 * UnitSize, 0);
-        else 
-            painter:DrawLine(0, UnitSize, 0, UnitSize * ConnectionSize);
-            painter:DrawCircle(UnitSize, UnitSize, 0, UnitSize, "z", false, nil, math.pi, math.pi * 3 / 2);
-            painter:DrawLine(UnitSize, 0, 4 * UnitSize, 0);
-        end
-        painter:DrawLine(4 * UnitSize, 0, (4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
-        painter:DrawLine((4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
-        painter:DrawLine((8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + 2 * ConnectionSize) * UnitSize, 0);
-        painter:DrawLine((8 + 2 * ConnectionSize) * UnitSize, 0, (widthUnitCount - 1) * UnitSize, 0);
-        painter:DrawCircle(UnitSize * (widthUnitCount - 1), UnitSize, 0, UnitSize, "z", false, nil, math.pi * 3 / 2, math.pi * 2);
-        painter:DrawLine(UnitSize * widthUnitCount, (ConnectionSize - 1) * UnitSize, UnitSize * widthUnitCount, UnitSize * ConnectionSize);
-        painter:Flush();
-    end
+    painter:DrawRectTexture(0, 0, widthUnitCount * UnitSize, Const.ConnectionHeightUnitCount * UnitSize, self:GetPrevConnectionTexture());
 
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end
 
 -- 绘制下边及突出部分 占据高度 4 * UnitSize
-function Shape:DrawNextConnection(painter, widthUnitCount, offsetXUnitCount, offsetYUnitCount, isBlockInnerConnection)
+function Shape:DrawNextConnection(painter, widthUnitCount, offsetXUnitCount, offsetYUnitCount)
     local UnitSize = self:GetUnitSize();
     painter:SetPen(self:GetBrush());
-    
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
 
-    local ConnectionSize = Const.ConnectionHeightUnitCount;
-    self:DrawDownEdge(painter, widthUnitCount, ConnectionSize - Const.BlockEdgeHeightUnitCount, nil, nil, isBlockInnerConnection);
-    painter:Translate(0, ConnectionSize * UnitSize);
+    painter:DrawRectTexture(0, 0, widthUnitCount * UnitSize, (Const.ConnectionHeightUnitCount + 2) * UnitSize, self:GetNextConnectionTexture());
     
-    painter:SetPen(self:GetBrush());
-    -- 下边突出部分
-    painter:Translate(4 * UnitSize, 0);
-    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, UnitSize * ConnectionSize, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, 0;
-    painter:DrawTriangleList(Triangle);
-    painter:Translate(ConnectionSize * UnitSize, 0);
-    painter:DrawRect(0, 0, UnitSize * 4, UnitSize * ConnectionSize);
-    painter:Translate(4 * UnitSize, 0);
-    Triangle[1][1], Triangle[1][2], Triangle[2][1], Triangle[2][2], Triangle[3][1], Triangle[3][2] = 0, 0, 0, -UnitSize * ConnectionSize, UnitSize * ConnectionSize, 0;
-    painter:DrawTriangleList(Triangle);
-    painter:Translate(-(8 + ConnectionSize) * UnitSize,  0);
-    painter:Flush();
-
-    -- 绘制边框
-    if (self:IsDrawBorder()) then
-        painter:SetPen(self:GetBrush());
-        painter:DrawLine(4 * UnitSize, 0, 12 * UnitSize, 0);
-        painter:SetPen(self:GetPen());
-        painter:DrawLine(4 * UnitSize, 0, (4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
-        painter:DrawLine((4 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize);
-        painter:DrawLine((8 + ConnectionSize) * UnitSize, ConnectionSize * UnitSize, (8 + 2 * ConnectionSize) * UnitSize, 0);
-        painter:Flush();
-    end
-    
-    painter:Translate(0, -ConnectionSize * UnitSize);
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
+end
+
+-- 绘制输出块
+function Shape:DrawOutput(painter, widthUnitCount, heightUnitCount, offsetXUnitCount, offsetYUnitCount)
+    local UnitSize = self:GetUnitSize();
+    self:DrawBefore(painter, offsetXUnitCount, offsetYUnitCount);
+    painter:DrawRectTexture(0, 0, widthUnitCount * UnitSize, heightUnitCount * UnitSize, self:GetOutputTexture());
+    self:DrawAfter(painter, offsetXUnitCount, offsetYUnitCount);
+end
+
+-- 绘制输入字段
+function Shape:DrawInputField(painter, widthUnitCount, heightUnitCount, offsetXUnitCount, offsetYUnitCount)
+    local UnitSize = self:GetUnitSize();
+    self:DrawBefore(painter, offsetXUnitCount, offsetYUnitCount);
+    painter:DrawRectTexture(0, 0, widthUnitCount * UnitSize, heightUnitCount * UnitSize, self:GetOutputTexture());
+    self:DrawAfter(painter, offsetXUnitCount, offsetYUnitCount);
 end
 
 -- 绘制矩形
 function Shape:DrawRect(painter, leftUnitCount, topUnitCount, widthUnitCount, heightUnitCount, offsetXUnitCount, offsetYUnitCount)
     local UnitSize = self:GetUnitSize();
-    local painter = painter or self:GetPainter();
-    painter:SetPen(self:GetBrush());
-    offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
-    painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
-    painter:DrawRect(leftUnitCount * UnitSize, topUnitCount * UnitSize, widthUnitCount * UnitSize, heightUnitCount * UnitSize);
-    painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
+    self:DrawBefore(painter, offsetXUnitCount, offsetYUnitCount);
+    painter:DrawRectTexture(leftUnitCount * UnitSize, topUnitCount * UnitSize, widthUnitCount * UnitSize, heightUnitCount * UnitSize, self:GetRectTexture());
+    self:DrawAfter(painter, offsetXUnitCount, offsetYUnitCount);
 end
 
 -- 绘制线条
@@ -263,4 +205,33 @@ function Shape:DrawLine(painter, x1, y1, x2, y2)
     local painter = painter or self:GetPainter();
     painter:SetPen(self:GetPen());
     painter:DrawLine(x1 * UnitSize, y1 * UnitSize, x2 * UnitSize, y2 * UnitSize);
+end
+
+function Shape:DrawBefore(painter, offsetXUnitCount, offsetYUnitCount)
+    local UnitSize = self:GetUnitSize();
+    painter:SetPen(self:GetBrush());
+    offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
+    painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
+end
+
+function Shape:DrawAfter(painter, offsetXUnitCount, offsetYUnitCount)
+    local UnitSize = self:GetUnitSize();
+    offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
+    painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
+end
+
+function Shape:GetPrevConnectionTexture()
+    return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_72X56_32bits.png#0 0 72 8:56 8 8 8";
+end
+
+function Shape:GetRectTexture()
+    return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_72X56_32bits.png#0 16 72 16:4 4 4 4";
+end
+
+function Shape:GetNextConnectionTexture()
+    return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_72X56_32bits.png#0 40 72 16:56 4 12 12";
+end
+
+function Shape:GetOutputTexture()
+    return "Texture/Aries/Creator/keepwork/ggs/blockly/output_block_34X32_32bits.png#0 0 34 32:16 4 16 4";
 end

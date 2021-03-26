@@ -10,35 +10,14 @@ local BlockInputField = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/B
 ]]
 
 local Const = NPL.load("./Const.lua");
-local Block = NPL.load("./Block.lua", IsDevEnv);
-local LuaBlocks = NPL.load("./Blocks/Lua.lua", IsDevEnv);
-local DataBlocks = NPL.load("./Blocks/Data.lua", IsDevEnv);
-local VarBlocks = NPL.load("./Blocks/Var.lua", IsDevEnv);
-local ControlBlocks = NPL.load("./Blocks/Control.lua", IsDevEnv);
-local EventBlocks = NPL.load("./Blocks/Event.lua", IsDevEnv);
-local LogBlocks = NPL.load("./Blocks/Log.lua", IsDevEnv);
-local HelperBlocks = NPL.load("./Blocks/Helper.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua");
 local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local categoryFont = "System;18;norm";
-local AllBlocks = {};
 ToolBox:Property("Blockly");
 ToolBox:Property("CurrentCategoryName");
 
 
-local function AddToAllBlocks(blocks)
-    for _, block in ipairs(blocks) do
-        table.insert(AllBlocks, #AllBlocks + 1, block);
-    end
-end
-
-AddToAllBlocks(DataBlocks);
-AddToAllBlocks(VarBlocks);
-AddToAllBlocks(ControlBlocks);
-AddToAllBlocks(EventBlocks);
-AddToAllBlocks(LogBlocks);
-AddToAllBlocks(HelperBlocks);
 
 function ToolBox:ctor()
     self.leftUnitCount, self.topUnitCount = 0, 0;
@@ -56,7 +35,7 @@ function ToolBox:Init(blockly)
 end
 
 function ToolBox:GetUnitSize()
-    return Const.DefaultUnitSize;
+    return Const.UnitSize;
 end
 
 function ToolBox:GetCategoryList()

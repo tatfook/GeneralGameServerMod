@@ -37,13 +37,9 @@ end
 function Field:RenderContent(painter)
     if (self:IsEdit()) then return end
     local UnitSize = self:GetUnitSize();
-    -- background
+    
     Shape:SetBrush(self:GetBackgroundColor());
-    Shape:DrawRect(painter, Const.BlockEdgeWidthUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2, self.heightUnitCount);
-    Shape:SetDrawBorder(false);
-    Shape:DrawLeftEdge(painter, self.heightUnitCount);
-    Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
-    Shape:SetDrawBorder(true);
+    Shape:DrawInputField(painter, self.widthUnitCount, self.heightUnitCount + Const.BlockEdgeHeightUnitCount, nil, -Const.BlockEdgeHeightUnitCount / 2);
 
     -- input
     painter:SetPen(self:GetColor());

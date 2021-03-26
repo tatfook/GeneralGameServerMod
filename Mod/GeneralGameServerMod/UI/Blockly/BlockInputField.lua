@@ -30,6 +30,7 @@ BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
 BlockInputField:Property("EditElement", nil);                    -- 编辑元素
 
+local UnitSize = Const.UnitSize;
 
 function BlockInputField:ctor()
     self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount = 0, 0, 0, 0;
@@ -160,8 +161,9 @@ end
 function BlockInputField:GetUnitSize()
     local block = self:GetBlock();
     local blockly = self:GetBlock():GetBlockly();
-    if (block:IsToolBoxBlock()) then return blockly:GetToolBox():GetUnitSize() end
-    return blockly:GetUnitSize();
+    local unitsize = blockly:GetUnitSize();
+    if (block:IsToolBoxBlock()) then unitsize = blockly:GetToolBox():GetUnitSize() end
+    return unitsize or UnitSize;
 end
 
 function BlockInputField:GetFontSize()

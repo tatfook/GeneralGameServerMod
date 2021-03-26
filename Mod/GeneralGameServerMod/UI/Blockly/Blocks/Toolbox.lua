@@ -76,12 +76,12 @@ local function AddToAllBlocks(blocks, categoryName)
 end
 
 AddToAllBlocks(VarBlocks, "数据");
-AddToAllBlocks(DataBlocks, "数据");
-AddToAllBlocks(MathBlocks, "运算");
-AddToAllBlocks(ControlBlocks, "控制");
-AddToAllBlocks(EventBlocks, "事件");
-AddToAllBlocks(LogBlocks, "辅助");
-AddToAllBlocks(HelperBlocks, "辅助");
+-- AddToAllBlocks(DataBlocks, "数据");
+-- AddToAllBlocks(MathBlocks, "运算");
+-- AddToAllBlocks(ControlBlocks, "控制");
+-- AddToAllBlocks(EventBlocks, "事件");
+-- AddToAllBlocks(LogBlocks, "辅助");
+-- AddToAllBlocks(HelperBlocks, "辅助");
 
 function Toolbox.GetAllBlocks(typ)
     if (typ == "npl") then

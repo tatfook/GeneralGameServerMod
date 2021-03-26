@@ -104,7 +104,7 @@ function InputFieldContainer:GetMouseUI(x, y, event)
 end
 
 function InputFieldContainer:Render(painter)
-    if (not self:IsInputStatementContainer()) then
+    if (not self:IsInputStatementContainer() and self:GetBlock():IsStatement()) then
         Shape:SetBrush(self:GetBlock():GetBrush());
         Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
         Shape:SetPen(self:GetBlock():GetPen());
