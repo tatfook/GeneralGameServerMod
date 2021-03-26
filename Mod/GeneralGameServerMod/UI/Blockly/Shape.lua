@@ -17,7 +17,7 @@ local Triangle = {{0,0,0}, {0,0,0}, {0,0,0}};       -- 三角形
 Shape:Property("Pen", "#ffffff");              -- 画笔
 Shape:Property("Brush", "#ffffff");            -- 画刷
 Shape:Property("Painter");                     -- 绘图类
-Shape:Property("DrawBorder", true, "IsDrawBorder");  -- 是否绘制边框
+Shape:Property("DrawBorder", false, "IsDrawBorder");  -- 是否绘制边框
 
 -- 绘制上边缘
 function Shape:DrawUpEdge(painter, widthUnitCount, fillHeightUnitCount, offsetXUnitCount, offsetYUnitCount)

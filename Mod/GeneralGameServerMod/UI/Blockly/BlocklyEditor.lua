@@ -14,7 +14,7 @@ local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local BlocklyEditor = commonlib.inherit(Element, NPL.export());
 
 BlocklyEditor:Property("Name", "BlocklyEditor");
-
+BlocklyEditor:Property("Blockly");
 
 function BlocklyEditor:OnMouseDown(event)
     event:Accept();
@@ -22,4 +22,11 @@ end
 
 function BlocklyEditor:OnMouseUp(event)
     event:Accept();
+end
+
+function BlocklyEditor:RenderStaticElement(painter, root)
+    local scale = self:GetBlockly():GetScale();
+    painter:Scale(scale, scale);
+    BlocklyEditor._super.RenderStaticElement(self, painter, root);
+    painter:Scale(1 / scale, 1 / scale);
 end

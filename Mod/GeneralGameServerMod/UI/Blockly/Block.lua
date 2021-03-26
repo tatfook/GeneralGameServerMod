@@ -39,24 +39,25 @@ local CurrentBlockBrush = {color = "#ffffff"};
 Block:Property("Blockly");
 Block:Property("Id");
 Block:Property("Name", "Block");
-Block:Property("TopBlock", false, "IsTopBlock");    -- 是否是顶层块
+Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");       -- 是否是工具箱块
+Block:Property("Draggable", true, "IsDraggable");              -- 是否可以拖拽
 
 function Block:ctor()
     self:SetId(nextBlockId);
     nextBlockId = nextBlockId + 1;
 
-    self.isDraggable = true;
-    self.isToolBoxBlock = false;
     self.inputFieldContainerList = {};           -- 输入字段容器列表
     self.inputFieldMap = {};
+
+    self:SetToolBoxBlock(false);
+    self:SetDraggable(true);
 end
 
 function Block:Init(blockly, opt)
     Block._super.Init(self, self, opt);
 
     self:SetBlockly(blockly);
-    
-    self.isDraggable = if_else(opt.isDraggable == false, false, true);
+    self:SetDraggable(if_else(opt.isDraggable == false, false, true));
 
     if (opt.id) then self:SetId(opt.id) end
 
@@ -77,9 +78,9 @@ function Block:Clone()
         if (type(val) ~= "function" and type(val) ~= "table" and rawget(self, key) ~= nil) then clone[key] = val end
     end
     clone:UpdateLayout();
-    clone.isDraggable = true;
-    clone.isToolBoxBlock = false;
     clone.isNewBlock = true;
+    clone:SetDraggable(true);
+    clone:SetToolBoxBlock(false);
     return clone;
 end
 
@@ -195,7 +196,6 @@ function Block:Render(painter)
     Shape:SetPen(self:GetPen());
     Shape:SetBrush(self:GetBrush());
     painter:Translate(self.left, self.top);
-
     -- 绘制上下连接
     if (self:IsStatement()) then
         Shape:DrawPrevConnection(painter, self.widthUnitCount);
@@ -322,23 +322,26 @@ function Block:GetMouseUI(x, y, event)
 end
 
 function Block:OnMouseDown(event)
-    self.startX, self.startY = event:GetWindowXY();
+    -- self.startX, self.startY = event:GetWindowXY();
+    self.startX, self.startY = self:GetBlockly():GetRelPoint(event.x, event.y);
     self.startLeftUnitCount, self.startTopUnitCount = self.leftUnitCount, self.topUnitCount;
     self.isMouseDown = true;
 end
 
 function Block:OnMouseMove(event)
     if (not self.isMouseDown or not event:IsLeftButton()) then return end
-    if (not self.isDraggable) then return end
+    if (not self:IsDraggable()) then return end
 
     local blockly, block = self:GetBlockly(), self;
-    local x, y = event:GetWindowXY();
+    -- local x, y = event:GetWindowXY();
+    local x, y = self:GetBlockly():GetRelPoint(event.x, event.y);
     if (not block.isDragging) then
         if (not event:IsMove()) then return end
-        if (block.isToolBoxBlock) then 
+        if (block:IsToolBoxBlock()) then 
             block = self:Clone();
-            block.startLeftUnitCount, block.startTopUnitCount = (block.leftUnitCount * Const.DefaultUnitSize - blockly.offsetX) / Const.UnitSize, (block.topUnitCount * Const.DefaultUnitSize - blockly.offsetY) / Const.UnitSize;
-            block:SetLeftTopUnitCount(block.startLeftUnitCount, block.startLeftUnitCount);
+            block.startLeftUnitCount = math.floor((block.leftUnitCount * Const.DefaultUnitSize - blockly.offsetX) / Const.UnitSize);
+            block.startTopUnitCount = math.floor((block.topUnitCount * Const.DefaultUnitSize - blockly.offsetY) / Const.UnitSize);
+            block:SetLeftTopUnitCount(block.startLeftUnitCount, block.startTopUnitCount);
             block:UpdateLayout();
             self:GetBlockly():OnCreateBlock(block);
         end

@@ -32,6 +32,7 @@ Blockly:Property("FocusUI");                  -- 聚焦UI
 Blockly:Property("CurrentBlock");             -- 当前拽块
 Blockly:Property("Language");                 -- 语言
 Blockly:Property("FileManager");              -- 文件管理器
+Blockly:Property("Scale", 1);                 -- 缩放
 Blockly:Property("BaseStyle", {
     NormalStyle = {
         ["padding"] = "2px",
@@ -47,6 +48,7 @@ function Blockly:ctor()
     self.undos = {}; -- 撤销
     self.redos = {}; -- 恢复
     self.CurrentUnitSize = Const.DefaultUnitSize;
+    self:SetScale(1);
 end
 
 function Blockly:Init(xmlNode, window, parent)
@@ -60,6 +62,7 @@ function Blockly:Init(xmlNode, window, parent)
     }, window, self)
     table.insert(self.childrens, blocklyEditor);
     blocklyEditor:SetVisible(false);
+    blocklyEditor:SetBlockly(self);
     self:SetEditorElement(blocklyEditor);
 
     local typ = self:GetAttrStringValue("type", "");
@@ -297,8 +300,11 @@ function Blockly:RenderContent(painter)
     local CurrentBlock, captureBlock = self:GetCurrentBlock(), self:GetMouseCaptureUI();
     local toolboxWidth = Const.ToolBoxWidth;
     painter:Translate(x, y);
+    self.toolbox:Render(painter);
+
     painter:Save();
     painter:SetClipRegion(toolboxWidth, 0, w - toolboxWidth, h);
+    -- painter:Scale(self.scale, self.scale);
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
         if (CurrentBlock ~= block or CurrentBlock ~= captureBlock) then
@@ -307,20 +313,20 @@ function Blockly:RenderContent(painter)
         end
     end
     painter:Translate(-self.offsetX, -self.offsetY);
+    -- painter:Scale(1 / self.scale, 1 / self.scale);
     painter:Restore();
-
-    self.toolbox:Render(painter);
 
     if (CurrentBlock and CurrentBlock == captureBlock) then
         painter:Save();
         painter:SetClipRegion(0, 0, w, h);
+        -- painter:Scale(self.scale, self.scale);
         painter:Translate(self.offsetX, self.offsetY);
         CurrentBlock:Render(painter);
         painter:Flush();
         painter:Translate(-self.offsetX, -self.offsetY);
+        -- painter:Scale(1 / self.scale, 1 / self.scale);
         painter:Restore();
     end
-
     painter:Translate(-x, -y);
 end
 
@@ -387,23 +393,31 @@ function Blockly:OnMouseDown(event)
     
     local mousePosIndex = self:GetMousePosIndex();
     if (mousePosIndex == 1) then         -- 重置
-        self.offsetX, self.offsetY = 0, 0;
-        local CurrentUnitSize = self.CurrentUnitSize;
-        self.CurrentUnitSize = Const.DefaultUnitSize;
-        self:EnableCurrentUnitSize();
-        self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
+        self:SetScale(1);
+        -- self.offsetX, self.offsetY = 0, 0;
+        -- local CurrentUnitSize = self.CurrentUnitSize;
+        -- self.CurrentUnitSize = Const.DefaultUnitSize;
+        -- self:EnableCurrentUnitSize();
+        -- self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
     elseif (mousePosIndex == 2) then     -- 放大
-        local CurrentUnitSize = self.CurrentUnitSize;
-        self.CurrentUnitSize = self.CurrentUnitSize + 1;
-        self.CurrentUnitSize = math.min(self.CurrentUnitSize, 6);
-        self:EnableCurrentUnitSize();
-        self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
+        local scale = self:GetScale();
+        scale = scale + 0.1;
+        self:SetScale(scale);
+        -- local CurrentUnitSize = self.CurrentUnitSize;
+        -- self.CurrentUnitSize = self.CurrentUnitSize + 1;
+        -- self.CurrentUnitSize = math.min(self.CurrentUnitSize, 6);
+        -- self:EnableCurrentUnitSize();
+        -- self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
     elseif (mousePosIndex == 3) then     -- 缩小
-        local CurrentUnitSize = self.CurrentUnitSize;
-        self.CurrentUnitSize = self.CurrentUnitSize - 1;
-        self.CurrentUnitSize = math.max(self.CurrentUnitSize, 2);
-        self:EnableCurrentUnitSize();
-        self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
+        local scale = self:GetScale();
+        scale = scale - 0.1;
+        scale = math.max(scale, 0.5);
+        self:SetScale(scale);
+        -- local CurrentUnitSize = self.CurrentUnitSize;
+        -- self.CurrentUnitSize = self.CurrentUnitSize - 1;
+        -- self.CurrentUnitSize = math.max(self.CurrentUnitSize, 2);
+        -- self:EnableCurrentUnitSize();
+        -- self:ReLayout(CurrentUnitSize, self.CurrentUnitSize);
     elseif (mousePosIndex == 4) then
     else
         -- 工作区被点击
@@ -415,9 +429,9 @@ end
 
 -- 鼠标移动事件
 function Blockly:OnMouseMove(event)
-    local x, y = self:GetRelPoint(event.x, event.y);
-    self.mouseMoveX, self.mouseMoveY = x + self.offsetX, y + self.offsetY;
+    self.mouseMoveX, self.mouseMoveY = Blockly._super.GetRelPoint(self, event.x, event.y);
 
+    local x, y = self:GetRelPoint(event.x, event.y);
     event:Accept();
     if (event.target ~= self) then return end
     

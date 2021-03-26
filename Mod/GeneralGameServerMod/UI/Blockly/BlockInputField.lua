@@ -154,6 +154,8 @@ function BlockInputField:GetLineHeightUnitCount()
 end
 
 function BlockInputField:GetUnitSize()
+    -- local block = self:GetBlock();
+    -- if (block:IsToolBoxBlock()) then return Const.UnitSize end
     return Const.UnitSize;
 end
 
@@ -430,4 +432,8 @@ function BlockInputField:SetFieldValue(value)
     if (type(validator) == "function") then value = validator(value) end
     if (type(validator) == "string" and type(Validator[validator]) == "function") then value = (Validator[validator])(value) end
     self:SetValue(value);
+end
+
+function BlockInputField:GetScale()
+    return self:GetBlock():GetBlockly():GetScale();
 end
