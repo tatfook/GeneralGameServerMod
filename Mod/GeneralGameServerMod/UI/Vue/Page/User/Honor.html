@@ -15,7 +15,7 @@ function OnAttrValueChange()
 end
 
 function ClickHonor(honor)
-    if (honor.gsId ~= 70007 and honor.gsId ~= 70001 and honor.gsId ~= 70002 and honor.gsId ~= 70003) then return end
+    if (honor.gsId ~= 70007 and honor.gsId ~= 70001 and honor.gsId ~= 70002 and honor.gsId ~= 70003 and honor.gsId ~= 70008) then return end
     
     local username = UserDetail.username;
     if (UserDetail.nickname) then username = string.format("%s(%s)", UserDetail.nickname, UserDetail.username) end
@@ -26,9 +26,7 @@ function ClickHonor(honor)
         certurl = honor.certurl,
     }, {
         url = "%vue%/Page/User/Certificate.html",
-        width = 512,
-        height = 368,
-    })
+    });
 end 
 
 function HonorStyle(honor)

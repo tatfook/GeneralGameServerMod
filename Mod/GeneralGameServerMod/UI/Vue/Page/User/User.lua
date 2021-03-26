@@ -276,7 +276,6 @@ function LoadUserInfo()
         end
        
         local ParacraftPlayerEntityInfo = UserDetail.extra and UserDetail.extra.ParacraftPlayerEntityInfo or {};
-        commonlib.echo(ParacraftPlayerEntityInfo);
         if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
         if (ParacraftPlayerEntityInfo.skin) then GlobalScope:Set("MainSkin", ParacraftPlayerEntityInfo.skin) end 
         
@@ -417,7 +416,7 @@ _G.GetAllAssets = function()
     for _, tpl in ipairs(KeepWorkItemManager.globalstore) do
         local extra = tpl.extra or {};
         -- echo(extra, true)
-        if (tpl.bagId == bagId) then
+        if (tpl.bagId == bagId and extra.modelFrom) then
             table.insert(assets, {
                 id = tpl.id,
                 gsId = tpl.gsId,
