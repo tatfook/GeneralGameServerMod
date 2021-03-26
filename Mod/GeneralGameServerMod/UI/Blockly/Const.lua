@@ -12,7 +12,6 @@ local Const = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Const.lua")
 local Const = NPL.export();
 
 Const.UnitSize = 4;                               -- 单元格大小
-Const.DefaultUnitSize = 4;                        -- 默认单元格大小
 Const.ConnectionRegionHeightUnitCount = 4;        -- 连接区域高度
 Const.ConnectionRegionWidthUnitCount = 16;        -- 连接区域宽度
 Const.ConnectionHeightUnitCount = 2;              -- 连接高度

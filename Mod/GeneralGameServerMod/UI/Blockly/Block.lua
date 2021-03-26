@@ -39,6 +39,7 @@ local CurrentBlockBrush = {color = "#ffffff"};
 Block:Property("Blockly");
 Block:Property("Id");
 Block:Property("Name", "Block");
+Block:Property("TopBlock", false, "IsTopBlock");               -- 是否是顶层块
 Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");       -- 是否是工具箱块
 Block:Property("Draggable", true, "IsDraggable");              -- 是否可以拖拽
 
@@ -323,7 +324,7 @@ end
 
 function Block:OnMouseDown(event)
     -- self.startX, self.startY = event:GetWindowXY();
-    self.startX, self.startY = self:GetBlockly():GetRelPoint(event.x, event.y);
+    self.startX, self.startY = self:GetBlockly():GetLogicAbsPoint(event);
     self.startLeftUnitCount, self.startTopUnitCount = self.leftUnitCount, self.topUnitCount;
     self.isMouseDown = true;
 end
@@ -333,25 +334,29 @@ function Block:OnMouseMove(event)
     if (not self:IsDraggable()) then return end
 
     local blockly, block = self:GetBlockly(), self;
+    local scale = blockly:GetScale();
     -- local x, y = event:GetWindowXY();
-    local x, y = self:GetBlockly():GetRelPoint(event.x, event.y);
+    local x, y = self:GetBlockly():GetLogicAbsPoint(event);
     if (not block.isDragging) then
         if (not event:IsMove()) then return end
         if (block:IsToolBoxBlock()) then 
-            block = self:Clone();
-            block.startLeftUnitCount = math.floor((block.leftUnitCount * Const.DefaultUnitSize - blockly.offsetX) / Const.UnitSize);
-            block.startTopUnitCount = math.floor((block.topUnitCount * Const.DefaultUnitSize - blockly.offsetY) / Const.UnitSize);
-            block:SetLeftTopUnitCount(block.startLeftUnitCount, block.startTopUnitCount);
-            block:UpdateLayout();
-            self:GetBlockly():OnCreateBlock(block);
+            clone = self:Clone();
+            local blockX, blockY = math.floor(block.leftUnitCount * block:GetUnitSize() / scale + 0.5) - blockly.offsetX, math.floor(block.topUnitCount * block:GetUnitSize() / scale + 0.5) - blockly.offsetY; 
+            clone.startLeftUnitCount = math.floor(blockX / clone:GetUnitSize());
+            clone.startTopUnitCount = math.floor(blockY / clone:GetUnitSize());
+            clone:SetLeftTopUnitCount(clone.startLeftUnitCount, clone.startTopUnitCount);
+            clone:UpdateLayout();
+            self:GetBlockly():OnCreateBlock(clone);
+            block = clone;
         end
 
         block.isDragging = true;
         block:GetBlockly():CaptureMouse(block);
         block:GetBlockly():SetCurrentBlock(block);
     end
-    local XUnitCount = math.floor((x - block.startX) / Const.UnitSize);
-    local YUnitCount = math.floor((y - block.startY) / Const.UnitSize);
+    local UnitSize = block:GetUnitSize();
+    local XUnitCount = math.floor((x - block.startX) / UnitSize);
+    local YUnitCount = math.floor((y - block.startY) / UnitSize);
     
     if (block.previousConnection and block.previousConnection:IsConnection()) then 
         local connection = block.previousConnection:Disconnection();

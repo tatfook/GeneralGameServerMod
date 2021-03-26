@@ -35,6 +35,7 @@ function Statement:Init(block, opt)
 end
 
 function Statement:Render(painter)
+    local UnitSize = self:GetUnitSize();
     Shape:SetBrush(self:GetBlock():GetBrush());
     Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
     Shape:SetPen(self:GetBlock():GetPen());
@@ -46,17 +47,15 @@ function Statement:Render(painter)
     local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
     local connectionWidthUnitCount = blockWidthUnitCount - widthUnitCount;
     Shape:DrawNextConnection(painter, connectionWidthUnitCount, nil, nil, true);
-    painter:Translate(0, (self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * Const.UnitSize);
+    painter:Translate(0, (self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
     Shape:DrawPrevConnection(painter, connectionWidthUnitCount, nil, nil, true);
-    painter:Translate(0, -(self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * Const.UnitSize);
+    painter:Translate(0, -(self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
     painter:Translate(-(self.left + self.width), -self.top);
 
-    -- painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * Const.UnitSize - Const.UnitSize, Const.UnitSize, Const.UnitSize);
-    -- painter:DrawRect(self.left + self.width, self.top + self.height - Const.ConnectionHeightUnitCount * Const.UnitSize, Const.UnitSize, Const.UnitSize);
     local inputBlock = self:GetInputBlock();
     if (not inputBlock) then return end
-    painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * Const.UnitSize, Const.UnitSize, Const.UnitSize);
-    painter:DrawRect(self.left + self.width, self.top + self.height - Const.ConnectionHeightUnitCount * Const.UnitSize - Const.UnitSize, Const.UnitSize, Const.UnitSize);
+    painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * UnitSize, UnitSize, UnitSize);
+    painter:DrawRect(self.left + self.width, self.top + self.height - Const.ConnectionHeightUnitCount * UnitSize - UnitSize, UnitSize, UnitSize);
     inputBlock:Render(painter)
 end
 
@@ -95,9 +94,10 @@ function Statement:ConnectionBlock(block)
 end
 
 function Statement:GetMouseUI(x, y, event)
+    local UnitSize = self:GetUnitSize();
     if (x >= self.left and x <= (self.left + self.width) and y >= self.top and y <= (self.top + self.height)) then return self end
     local block = self:GetBlock();
-    if (x >= block.left and x <= (block.left + block.width)  and y >= self.top and y <= (self.top + Const.ConnectionHeightUnitCount * Const.UnitSize)) then return self end
+    if (x >= block.left and x <= (block.left + block.width)  and y >= self.top and y <= (self.top + Const.ConnectionHeightUnitCount * UnitSize)) then return self end
     local inputBlock = self:GetInputBlock();
     return inputBlock and inputBlock:GetMouseUI(x, y, event);
 end

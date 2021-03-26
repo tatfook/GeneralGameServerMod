@@ -46,7 +46,7 @@ end
 
 function Value:Render(painter)
     if (self:IsEdit()) then return end
-  
+    local UnitSize = self:GetUnitSize();
     local inputBlock = self:GetInputBlock();
     if (inputBlock) then return inputBlock:Render(painter) end
 
@@ -64,7 +64,7 @@ function Value:Render(painter)
     
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * Const.UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
+    painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
     painter:Translate(-offsetX, -offsetY);
 end
 

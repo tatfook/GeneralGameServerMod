@@ -18,6 +18,7 @@ local ControlBlocks = NPL.load("./Blocks/Control.lua", IsDevEnv);
 local EventBlocks = NPL.load("./Blocks/Event.lua", IsDevEnv);
 local LogBlocks = NPL.load("./Blocks/Log.lua", IsDevEnv);
 local HelperBlocks = NPL.load("./Blocks/Helper.lua", IsDevEnv);
+local Shape = NPL.load("./Shape.lua");
 local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local categoryFont = "System;18;norm";
@@ -119,8 +120,6 @@ function ToolBox:RenderCategory(painter)
 end
 
 function ToolBox:Render(painter)
-    -- self:GetBlockly():EnableDefaultUnitSize();
-
     local _, _, width, height = self:GetBlockly():GetContentGeometry();
     width = Const.ToolBoxWidth;
 
@@ -133,6 +132,9 @@ function ToolBox:Render(painter)
     painter:Save();
     painter:SetClipRegion(0, 0, width, height);
 
+    local UnitSize = self:GetUnitSize();
+    Shape:SetUnitSize(UnitSize);
+
     for _, block in ipairs(self.blocks) do
         local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
         local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
@@ -144,7 +146,6 @@ function ToolBox:Render(painter)
 
     painter:Restore();
 
-    -- self:GetBlockly():EnableCurrentUnitSize();
 end
 
 function ToolBox:GetMouseUI(x, y, event)
@@ -152,17 +153,13 @@ function ToolBox:GetMouseUI(x, y, event)
     x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);
     if (x > Const.ToolBoxWidth) then return nil end
 
-    -- self:GetBlockly():EnableDefaultUnitSize();
-
     for _, block in ipairs(self.blocks) do
         ui = block:GetMouseUI(x, y, event);
         if (ui) then 
-            self:GetBlockly():EnableCurrentUnitSize();
             return ui:GetBlock();
         end
     end
 
-    -- self:GetBlockly():EnableCurrentUnitSize();
     return self;
 end
 
@@ -176,14 +173,12 @@ function ToolBox:OnMouseDown(event)
     if (not category or category.name == self:GetCurrentCategoryName()) then return end
     self:SetCurrentCategoryName(category.name);
 
-    -- self:GetBlockly():EnableDefaultUnitSize();
     for _, block in ipairs(self.blocks) do
         local blocktype = block:GetType();
         local blockpos = self.blockPosMap[blocktype];
         block:SetLeftTopUnitCount(blockpos.leftUnitCount, blockpos.topUnitCount - category.offsetY);
         block:UpdateLeftTopUnitCount();
     end
-    -- self:GetBlockly():EnableCurrentUnitSize();
 end
 
 function ToolBox:OnMouseMove(event)
@@ -206,7 +201,6 @@ function ToolBox:OnMouseWheel(event)
         if (block.topUnitCount >= offset) then return end
     end
 
-    -- self:GetBlockly():EnableDefaultUnitSize();
     local categoryName = nil;
     for _, block in ipairs(self.blocks) do
         local left, top = block:GetLeftTopUnitCount();
@@ -216,7 +210,6 @@ function ToolBox:OnMouseWheel(event)
         block:UpdateLeftTopUnitCount();
     end
     self:SetCurrentCategoryName(categoryName);
-    -- self:GetBlockly():EnableCurrentUnitSize();
 end
 
 function ToolBox:OnFocusOut()
@@ -233,7 +226,7 @@ end
 
 function ToolBox:UpdateLayout(widthUnitCount, heightUnitCount)
     local _, _, width, height = self:GetBlockly():GetContentGeometry();
-    self.widthUnitCount, self.heightUnitCount = math.ceil(Const.ToolBoxWidth / Const.DefaultUnitSize), math.ceil(height / Const.DefaultUnitSize);
+    self.widthUnitCount, self.heightUnitCount = math.ceil(Const.ToolBoxWidth / self:GetUnitSize()), math.ceil(height / self:GetUnitSize());
 end
 
 function ToolBox:IsContainPoint(x, y)

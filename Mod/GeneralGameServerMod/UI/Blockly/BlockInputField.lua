@@ -81,8 +81,9 @@ function BlockInputField:IsBlock()
 end
 
 function BlockInputField:SetTotalWidthHeightUnitCount(widthUnitCount, heightUnitCount)
+    local UnitSize = self:GetUnitSize();
     self.totalWidthUnitCount, self.totalHeightUnitCount = widthUnitCount, heightUnitCount;
-    self.totalWidth, self.totalHeight = widthUnitCount * Const.UnitSize, heightUnitCount * Const.UnitSize;
+    self.totalWidth, self.totalHeight = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
 end
 
 function BlockInputField:GetTotalWidthHeightUnitCount()
@@ -90,8 +91,9 @@ function BlockInputField:GetTotalWidthHeightUnitCount()
 end
 
 function BlockInputField:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCount)
+    local UnitSize = self:GetUnitSize();
     self.maxWidthUnitCount, self.maxHeightUnitCount = widthUnitCount or self.maxWidthUnitCount or self.widthUnitCount, heightUnitCount or self.maxHeightUnitCount or self.heightUnitCount;
-    self.maxWidth, self.maxHeight = self.maxWidthUnitCount * Const.UnitSize, self.maxHeightUnitCount * Const.UnitSize;
+    self.maxWidth, self.maxHeight = self.maxWidthUnitCount * UnitSize, self.maxHeightUnitCount * UnitSize;
 end
 
 function BlockInputField:UpdateWidthHeightUnitCount()
@@ -99,9 +101,10 @@ function BlockInputField:UpdateWidthHeightUnitCount()
 end
 
 function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount)
+    local UnitSize = self:GetUnitSize();
     widthUnitCount, heightUnitCount = widthUnitCount or self.widthUnitCount or 0, heightUnitCount or self.heightUnitCount or 0;
     self.widthUnitCount, self.heightUnitCount = widthUnitCount, heightUnitCount;
-    local width, height = widthUnitCount * Const.UnitSize, heightUnitCount * Const.UnitSize;
+    local width, height = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
     if (width == self.width and height == self.height) then return end
     self.width, self.height = width, height;
     self:SetMaxWidthHeightUnitCount(math.max(widthUnitCount, self.maxWidthUnitCount or 0), math.max(heightUnitCount, self.maxHeightUnitCount or 0));
@@ -120,8 +123,9 @@ function BlockInputField:UpdateLeftTopUnitCount()
 end
 
 function BlockInputField:SetLeftTopUnitCount(leftUnitCount, topUnitCount)
+    local UnitSize = self:GetUnitSize();
     self.leftUnitCount, self.topUnitCount = leftUnitCount, topUnitCount;
-    local left, top = leftUnitCount * Const.UnitSize, topUnitCount * Const.UnitSize;
+    local left, top = leftUnitCount * UnitSize, topUnitCount * UnitSize;
     if (self.left == left and self.top == top) then return end
     self.left, self.top = left, top;
     self:OnSizeChange();
@@ -146,7 +150,7 @@ function BlockInputField:GetTextWidthUnitCount(text)
 end
 
 function BlockInputField:GetTextHeightUnitCount()
-    return math.ceil(self:GetFontSize() / Const.UnitSize);
+    return math.ceil(self:GetFontSize() / self:GetUnitSize());
 end
 
 function BlockInputField:GetLineHeightUnitCount()
@@ -154,14 +158,15 @@ function BlockInputField:GetLineHeightUnitCount()
 end
 
 function BlockInputField:GetUnitSize()
-    -- local block = self:GetBlock();
-    -- if (block:IsToolBoxBlock()) then return Const.UnitSize end
-    return Const.UnitSize;
+    local block = self:GetBlock();
+    local blockly = self:GetBlock():GetBlockly();
+    if (block:IsToolBoxBlock()) then return blockly:GetToolBox():GetUnitSize() end
+    return blockly:GetUnitSize();
 end
 
 function BlockInputField:GetFontSize()
     -- return (self:GetLineHeightUnitCount() - 4) * self:GetUnitSize();
-    return math.floor(Const.LineHeightUnitCount * Const.UnitSize * 3 / 5);
+    return math.floor(Const.LineHeightUnitCount * self:GetUnitSize() * 3 / 5);
 end
 
 function BlockInputField:GetSingleLineTextHeight()
@@ -288,10 +293,11 @@ function BlockInputField:GetMinEditFieldWidthUnitCount()
 end
 
 function BlockInputField:GetFieldInputEditElement(parentElement)
+    local UnitSize = self:GetUnitSize();
     local InputEditElement = InputElement:new():Init({
         name = "input",
         attr = {
-            style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(),Const.UnitSize, Const.UnitSize * (Const.BlockEdgeWidthUnitCount + 1)),
+            style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(), UnitSize, UnitSize * (Const.BlockEdgeWidthUnitCount + 1)),
             value = self:GetValue(),
             type = (self:GetType() == "field_number" or (self:GetType() == "input_value" and self:GetShadowType() == "math_number")) and "number" or "text",
         },
@@ -313,11 +319,11 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
 end 
 
 function BlockInputField:GetFieldSelectEditElement(parentElement, isAllowCreate)
+    local UnitSize = self:GetUnitSize();
     local SelectEditElement = SelectElement:new():Init({
         name = "select",
         attr = {
-            -- style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(), Const.UnitSize, Const.UnitSize * (Const.BlockEdgeWidthUnitCount + 1)),
-            style = "width: 100%; height: 100%; border: none; padding: 2px 4px; " .. string.format("font-size: %spx; border-radius: %spx; ", self:GetFontSize(), Const.UnitSize),
+            style = "width: 100%; height: 100%; border: none; padding: 2px 4px; " .. string.format("font-size: %spx; border-radius: %spx; ", self:GetFontSize(), UnitSize),
             value = self:GetValue(),
             options = self:GetOptions(),
             AllowCreate = isAllowCreate,
