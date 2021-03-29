@@ -11,7 +11,7 @@ local Label = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Labe
 local InputElement = NPL.load("../../Window/Elements/Input.lua", IsDevEnv);
 
 local Const = NPL.load("../Const.lua");
-local Shape = NPL.load("../Shape.lua", IsDevEnv);
+local Shape = NPL.load("../Shape.lua");
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Input = commonlib.inherit(Field, NPL.export());
 

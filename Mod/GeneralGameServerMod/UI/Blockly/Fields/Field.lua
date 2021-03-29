@@ -10,7 +10,7 @@ local Field = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Fiel
 ]]
 
 local Const = NPL.load("../Const.lua");
-local Shape = NPL.load("../Shape.lua", IsDevEnv);
+local Shape = NPL.load("../Shape.lua");
 local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
 local Field = commonlib.inherit(BlockInputField, NPL.export());
 
@@ -27,7 +27,7 @@ end
 function Field:Render(painter)
     painter:SetPen(self:GetBlock():GetColor());
 
-    local offsetX, offsetY = self.left + (self.maxWidth - self.width) / 2, self.top + (self.maxHeight - self.height) / 2;
+    local offsetX, offsetY = self:GetOffset();
     painter:SetPen(self:GetColor());
     painter:Translate(offsetX, offsetY);
     self:RenderContent(painter);
@@ -39,7 +39,7 @@ function Field:RenderContent(painter)
     local UnitSize = self:GetUnitSize();
     
     Shape:SetBrush(self:GetBackgroundColor());
-    Shape:DrawInputField(painter, self.widthUnitCount, self.heightUnitCount + Const.BlockEdgeHeightUnitCount, nil, -Const.BlockEdgeHeightUnitCount / 2);
+    Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
 
     -- input
     painter:SetPen(self:GetColor());

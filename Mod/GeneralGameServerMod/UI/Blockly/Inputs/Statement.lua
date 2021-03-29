@@ -10,11 +10,11 @@ local Statement = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/
 ]]
 
 local Const = NPL.load("../Const.lua");
-local Shape = NPL.load("../Shape.lua", IsDevEnv);
+local Shape = NPL.load("../Shape.lua");
 local Input = NPL.load("./Input.lua", IsDevEnv);
 local Statement = commonlib.inherit(Input, NPL.export());
 
-local StatementWidthUnitCount = 6;
+local StatementWidthUnitCount = 4;
 
 function Statement:ctor()
 end
@@ -36,26 +36,12 @@ end
 
 function Statement:Render(painter)
     local UnitSize = self:GetUnitSize();
-    Shape:SetBrush(self:GetBlock():GetBrush());
-    Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
-    Shape:SetPen(self:GetBlock():GetPen());
-    if (Shape:IsDrawBorder()) then Shape:DrawLine(painter, self.leftUnitCount, self.topUnitCount, self.leftUnitCount, self.topUnitCount + self.heightUnitCount) end
-    -- Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
-
-    painter:Translate(self.left + self.width, self.top);
     local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
     local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
-    local connectionWidthUnitCount = blockWidthUnitCount - widthUnitCount;
-    Shape:DrawNextConnection(painter, connectionWidthUnitCount, nil, nil, true);
-    painter:Translate(0, (self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
-    Shape:DrawPrevConnection(painter, connectionWidthUnitCount, nil, nil, true);
-    painter:Translate(0, -(self.inputHeightUnitCount + Const.ConnectionHeightUnitCount) * UnitSize);
-    painter:Translate(-(self.left + self.width), -self.top);
-
+    Shape:SetBrush(self:GetBlock():GetBrush());
+    Shape:DrawInputStatement(painter, self.leftUnitCount, self.topUnitCount, blockWidthUnitCount, self.heightUnitCount);
     local inputBlock = self:GetInputBlock();
     if (not inputBlock) then return end
-    painter:DrawRect(self.left + self.width, self.top + Const.ConnectionHeightUnitCount * UnitSize, UnitSize, UnitSize);
-    painter:DrawRect(self.left + self.width, self.top + self.height - Const.ConnectionHeightUnitCount * UnitSize - UnitSize, UnitSize, UnitSize);
     inputBlock:Render(painter)
 end
 
@@ -64,9 +50,9 @@ function Statement:UpdateWidthHeightUnitCount()
     if (inputBlock) then 
         _, _, _, _, self.inputWidthUnitCount, self.inputHeightUnitCount = inputBlock:UpdateWidthHeightUnitCount();
     else
-        self.inputWidthUnitCount, self.inputHeightUnitCount = 0, 6;
+        self.inputWidthUnitCount, self.inputHeightUnitCount = 0, 10;
     end
-    local widthUnitCount, heightUnitCount = StatementWidthUnitCount + self.inputWidthUnitCount, Const.ConnectionHeightUnitCount * 2 + self.inputHeightUnitCount;
+    local widthUnitCount, heightUnitCount = StatementWidthUnitCount + self.inputWidthUnitCount, Const.ConnectionHeightUnitCount + Const.BlockEdgeHeightUnitCount * 2 + self.inputHeightUnitCount;
     return widthUnitCount, heightUnitCount, StatementWidthUnitCount, heightUnitCount;
 end
 
@@ -74,7 +60,7 @@ function Statement:UpdateLeftTopUnitCount()
     local inputBlock = self:GetInputBlock();
     if (not inputBlock) then return end
     local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
-    inputBlock:SetLeftTopUnitCount(leftUnitCount + StatementWidthUnitCount, topUnitCount + Const.ConnectionHeightUnitCount);
+    inputBlock:SetLeftTopUnitCount(leftUnitCount + StatementWidthUnitCount, topUnitCount + Const.BlockEdgeHeightUnitCount);
     inputBlock:UpdateLeftTopUnitCount();
 end
 

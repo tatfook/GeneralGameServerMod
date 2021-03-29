@@ -10,7 +10,7 @@ local InputFieldContainer = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Block
 ]]
 
 local Const = NPL.load("./Const.lua");
-local Shape = NPL.load("./Shape.lua", IsDevEnv);
+local Shape = NPL.load("./Shape.lua");
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local BlockInputField = NPL.load("./BlockInputField.lua", IsDevEnv);
 
@@ -68,6 +68,11 @@ function InputFieldContainer:UpdateWidthHeightUnitCount()
         inputField:SetMaxWidthHeightUnitCount(nil, maxHeightUnitCount);
     end
 
+    if (not self:IsInputStatementContainer()) then
+        widthUnitCount = widthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
+        maxWidthUnitCount = maxWidthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
+    end
+
     self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
     self:SetMaxWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
     return maxWidthUnitCount, maxHeightUnitCount, widthUnitCount, heightUnitCount;
@@ -75,6 +80,9 @@ end
 
 function InputFieldContainer:UpdateLeftTopUnitCount()
     local offsetX, offsetY = self:GetLeftTopUnitCount();
+    if (not self:IsInputStatementContainer()) then
+        offsetX = offsetX + Const.BlockEdgeWidthUnitCount;
+    end
     for _, inputField in ipairs(self.inputFields) do
         local maxWidthUnitCount, maxHeightUnitCount = inputField:GetMaxWidthHeightUnitCount();
         inputField:SetLeftTopUnitCount(offsetX, offsetY);
@@ -107,11 +115,6 @@ function InputFieldContainer:Render(painter)
     if (not self:IsInputStatementContainer() and self:GetBlock():IsStatement()) then
         Shape:SetBrush(self:GetBlock():GetBrush());
         Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
-        Shape:SetPen(self:GetBlock():GetPen());
-        if (Shape:IsDrawBorder()) then
-            Shape:DrawLine(painter, self.leftUnitCount, self.topUnitCount, self.leftUnitCount, self.topUnitCount + self.heightUnitCount);
-            Shape:DrawLine(painter, self.leftUnitCount + self.widthUnitCount, self.topUnitCount, self.leftUnitCount + self.widthUnitCount, self.topUnitCount + self.heightUnitCount);
-        end
     end
     for _, inputField in ipairs(self.inputFields) do
         inputField:Render(painter);

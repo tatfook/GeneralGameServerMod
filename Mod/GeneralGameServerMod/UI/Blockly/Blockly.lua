@@ -48,6 +48,7 @@ function Blockly:ctor()
     self.toolbox = ToolBox:new():Init(self);
     self.undos = {}; -- 撤销
     self.redos = {}; -- 恢复
+    -- self:SetScale(0.75);
     self:SetScale(1);
     self:SetToolBox(self.toolbox);
 end
@@ -287,13 +288,33 @@ function Blockly:RenderIcons(painter)
     painter:Translate(-offsetX, -offsetY);
 end
 
+function Blockly:RenderBG(painter)
+    local x, y, w, h = self:GetContentGeometry();
+    local BGWidth, BGHeight, scale = 498, 493, self:GetScale();
+    local row, col = math.ceil(h / BGHeight), math.ceil(w / BGWidth);
+    x = x + Const.ToolBoxWidth;
+
+    painter:Translate(x, y);
+    painter:Save();
+    painter:SetClipRegion(0, 0, w - Const.ToolBoxWidth, h);
+    painter:Scale(scale, scale);
+    painter:SetBrush("#ffffff");
+    for i = 1, row do 
+        for j = 1, col do
+            painter:DrawRectTexture((j - 1) * BGWidth, (i - 1) * BGHeight, BGWidth, BGHeight, "Texture/Aries/Creator/keepwork/ggs/blockly/huawen_512X512_32bits.png#4 9 498 493");
+        end
+    end
+    painter:Scale(1 / scale, 1 / scale);
+    painter:Restore();
+    painter:Translate(-x, -y);
+end
+
 -- 渲染Blockly
 function Blockly:RenderContent(painter)
-    self:RenderIcons(painter);
-
+    local UnitSize, scale = self:GetUnitSize(), self:GetScale();
     local x, y, w, h = self:GetContentGeometry();
-    local UnitSize = self:GetUnitSize();
-    local scale = self:GetScale();
+    self:RenderBG(painter);
+    self:RenderIcons(painter);
     -- 设置绘图类
     -- Shape:SetPainter(painter);
     local CurrentBlock, captureBlock = self:GetCurrentBlock(), self:GetMouseCaptureUI();
@@ -337,18 +358,6 @@ function Blockly:UpdateWindowPos()
         block:UpdateLayout();
     end
     self.toolbox:UpdateLayout();
-end
-
--- 重新布局
-function Blockly:ReLayout(oldUnitSize, newUnitSize)
-    -- if (oldUnitSize == newUnitSize) then return end
-    -- for _, block in ipairs(self.blocks) do
-    --     local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
-    --     leftUnitCount = math.floor(leftUnitCount * oldUnitSize / newUnitSize);
-    --     topUnitCount = math.floor(topUnitCount * oldUnitSize / newUnitSize);
-    --     block:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
-    --     block:UpdateLayout();
-    -- end
 end
 
 -- 捕获鼠标
@@ -398,22 +407,34 @@ function Blockly:OnMouseDown(event)
     
     local mousePosIndex = self:GetMousePosIndex();
     if (mousePosIndex == 1) then         -- 重置
-        self:SetScale(1);
+        self:UpdateScale();
     elseif (mousePosIndex == 2) then     -- 放大
-        local scale = self:GetScale();
-        scale = scale + 0.1;
-        self:SetScale(scale);
+       self:UpdateScale(0.1);
     elseif (mousePosIndex == 3) then     -- 缩小
-        local scale = self:GetScale();
-        scale = scale - 0.1;
-        scale = math.max(scale, 0.5);
-        self:SetScale(scale);
+       self:UpdateScale(-0.1);
     elseif (mousePosIndex == 4) then
     else
         -- 工作区被点击
         self.isMouseDown = true;
         self.startX, self.startY = self:GetLogicViewPoint(event);
         self.startOffsetX, self.startOffsetY = self.offsetX, self.offsetY;
+    end
+end
+
+-- 重新布局
+function Blockly:UpdateScale(offset)
+    local oldScale = self:GetScale();
+    local newScale = offset and (oldScale + offset) or 1;
+    newScale = math.min(newScale, 4);
+    newScale = math.max(newScale, 0.5);
+    if (oldScale == newScale) then return end
+    self:SetScale(newScale);
+    for _, block in ipairs(self.blocks) do
+        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+        leftUnitCount = math.floor(leftUnitCount * oldScale / newScale);
+        topUnitCount = math.floor(topUnitCount * oldScale / newScale);
+        block:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
+        block:UpdateLayout();
     end
 end
 

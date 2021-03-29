@@ -107,7 +107,7 @@ end
 
 function Select:Init(xmlNode, window, parent)
     self:InitElement(xmlNode, window, parent);
-
+    local attrStyle = self:GetAttrStyle();
     local ListBox = ListBox:new():Init({
         name = "ListBox",
         attr = {
@@ -123,6 +123,8 @@ function Select:Init(xmlNode, window, parent)
         self:OnFocusOut();
         self:SetFocus(nil);
     end
+    local listboxAttrStyle = ListBox:GetAttrStyle();
+    listboxAttrStyle["padding-top"], listboxAttrStyle["padding-right"], listboxAttrStyle["padding-bottom"], listboxAttrStyle["padding-left"] = attrStyle["padding-top"], attrStyle["padding-right"], attrStyle["padding-bottom"], attrStyle["padding-left"];
     local InputBox = InputElement:new():Init({
         name = "input",
         attr = {
@@ -136,6 +138,8 @@ function Select:Init(xmlNode, window, parent)
             end
         }
     }, window, self);
+    local inputAttrStyle = InputBox:GetAttrStyle();
+    inputAttrStyle["padding-top"], inputAttrStyle["padding-right"], inputAttrStyle["padding-bottom"], inputAttrStyle["padding-left"] = attrStyle["padding-top"], attrStyle["padding-right"], attrStyle["padding-bottom"], attrStyle["padding-left"];
     self:SetListBoxElement(ListBox);
     self:SetInputBoxElement(InputBox);
     self:InsertChildElement(InputBox);

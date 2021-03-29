@@ -12,6 +12,7 @@ local InputElement = NPL.load("../Window/Elements/Input.lua", IsDevEnv);
 local SelectElement = NPL.load("../Window/Elements/Select.lua", IsDevEnv);
 
 local Const = NPL.load("./Const.lua");
+local Shape = NPL.load("./Shape.lua");
 local Validator = NPL.load("./Validator.lua", IsDevEnv);
 
 local BlockInputField = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
@@ -151,7 +152,7 @@ function BlockInputField:GetTextWidthUnitCount(text)
 end
 
 function BlockInputField:GetTextHeightUnitCount()
-    return math.ceil(self:GetFontSize() / self:GetUnitSize());
+    return math.floor(self:GetFontSize() / self:GetUnitSize());
 end
 
 function BlockInputField:GetLineHeightUnitCount()
@@ -299,7 +300,9 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
     local InputEditElement = InputElement:new():Init({
         name = "input",
         attr = {
-            style = "width: 100%; height: 100%; border: none; " .. string.format("font-size: %spx; border-radius: %spx; padding: 2px %spx", self:GetFontSize(), UnitSize, UnitSize * (Const.BlockEdgeWidthUnitCount + 1)),
+            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding: 2px %spx', 
+                Shape:GetOutputTexture(),
+                self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),
             type = (self:GetType() == "field_number" or (self:GetType() == "input_value" and self:GetShadowType() == "math_number")) and "number" or "text",
         },
@@ -308,8 +311,11 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
     local function InputChange(bFinish)
         local value = InputEditElement:GetValue();
         self:SetFieldValue(value);
-        self:SetLabel(tostring(self:GetValue()));
+        self:SetLabel(tostring(value));
         self:UpdateEditAreaSize();
+        if (value ~= self:GetValue()) then
+            InputEditElement:SetAttrValue("value", self:GetValue());
+        end
         if (bFinish) then self:FocusOut() end
     end 
 
@@ -325,10 +331,12 @@ function BlockInputField:GetFieldSelectEditElement(parentElement, isAllowCreate)
     local SelectEditElement = SelectElement:new():Init({
         name = "select",
         attr = {
-            style = "width: 100%; height: 100%; border: none; padding: 2px 4px; " .. string.format("font-size: %spx; border-radius: %spx; ", self:GetFontSize(), UnitSize),
+            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding: 2px %spx', 
+                Shape:GetOutputTexture(),
+                self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),
             options = self:GetOptions(),
-            AllowCreate = isAllowCreate,
+            -- AllowCreate = isAllowCreate,
         },
     }, parentElement:GetWindow(), parentElement);
 
@@ -400,8 +408,8 @@ function BlockInputField:EndEdit()
     self:SetEdit(false);
 
     local editor = self:GetEditorElement();
+    editor:ClearChildElement();
     editor:SetVisible(false);
-
     self:GetTopBlock():UpdateLayout();
 
     self:GetBlock():GetBlockly():OnChange(); -- {action = "field_edit"}

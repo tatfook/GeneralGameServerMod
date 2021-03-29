@@ -13,11 +13,10 @@ local Const = NPL.load("./Const.lua");
 local Shape = NPL.load("./Shape.lua");
 local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-local categoryFont = "System;18;norm";
+local categoryFont = "System;12;norm";
 ToolBox:Property("Blockly");
 ToolBox:Property("CurrentCategoryName");
-
-
+ToolBox:Property("Scale", 1);
 
 function ToolBox:ctor()
     self.leftUnitCount, self.topUnitCount = 0, 0;
@@ -27,6 +26,8 @@ function ToolBox:ctor()
     self.categoryMap = {};
     self.categoryList = {}
     self.categoryTotalHeight = 0;
+    -- self:SetScale(0.75);
+    self:SetScale(1);
 end
 
 function ToolBox:Init(blockly)
@@ -78,23 +79,28 @@ function ToolBox:RenderCategory(painter)
     local categoryHeight = Const.ToolBoxCategoryHeight;
 
     -- 绘制背景
-    painter:SetPen("#ffffff");
-    painter:DrawLine(categoryWidth, 0, categoryWidth, height);
+    painter:SetPen("#323536");
+    painter:DrawRect(0, 0, categoryWidth, height);
 
     local categories = self:GetCategoryList();
-    local radius = Const.ToolBoxCategoryWidth / 5;
+    local circleSize = 26;
+    local circleOffsetX, circleOffsetY = 17, 8;
+    painter:SetFont(categoryFont);
     for i, category in ipairs(categories) do
-        local offsetY = (i - 1) * categoryHeight;
+        local offsetX = circleOffsetX;
+        local offsetY = (i - 1) * categoryHeight + circleOffsetY;
         if (category.name == self:GetCurrentCategoryName()) then
-            -- painter:SetPen("#e0e0e0");
-            painter:SetPen("#f8f8f8");
-            painter:DrawRect(0, offsetY, categoryWidth, categoryHeight);
+            painter:SetPen("#585D5E");
+            painter:DrawRect(0, offsetY - circleOffsetY, categoryWidth, categoryHeight);
         end
         painter:SetPen(category.color);
-        painter:DrawCircle(categoryWidth / 2, -(offsetY + radius + categoryHeight / 7), 0, radius, "z", true);
-        painter:SetFont(categoryFont);
-        painter:SetPen("#808080");
-        painter:DrawText(categoryWidth / 4 + 2, offsetY + radius * 2 + categoryHeight / 6 + 4, category.text or category.name);
+        painter:DrawRectTexture(offsetX, offsetY, circleSize, circleSize, "Texture/Aries/Creator/keepwork/ggs/blockly/yuan_26X26_32bits.png#0 0 26 26");
+        if (category.name == self:GetCurrentCategoryName()) then
+            painter:SetPen("#ffffff");
+        else 
+            painter:SetPen(category.color);
+        end
+        painter:DrawText(offsetX + 2, offsetY + circleSize + 4, category.text or category.name);
     end
 end
 
@@ -102,43 +108,44 @@ function ToolBox:Render(painter)
     local _, _, width, height = self:GetBlockly():GetContentGeometry();
     width = Const.ToolBoxWidth;
 
-    self:RenderCategory(painter);
+    -- 绘制背景
+    painter:SetBrush("#ffffff");
+    painter:DrawRect(0, 0, Const.ToolBoxWidth, height);
 
-    painter:SetPen("#ffffff");
-    -- painter:DrawLine(width, 0, width, height);
-    painter:DrawRect(width - 1, 0, 1, height);
-   
-    painter:Save();
-    painter:SetClipRegion(0, 0, width, height);
+    -- 绘制分类
+    self:RenderCategory(painter);
 
     local UnitSize = self:GetUnitSize();
     Shape:SetUnitSize(UnitSize);
 
+    local scale = self:GetScale();
+    local toolboxHeightUnitCount = math.floor(self.heightUnitCount / scale);
+    painter:Save();
+    painter:SetClipRegion(0, 0, width, height);
+    painter:Scale(scale, scale);
     for _, block in ipairs(self.blocks) do
         local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
         local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
-        if (not ((topUnitCount + heightUnitCount) < 0 or topUnitCount > self.heightUnitCount)) then
+        if (not ((topUnitCount + heightUnitCount) < 0 or topUnitCount > toolboxHeightUnitCount)) then
             block:Render(painter);
-            painter:Flush();
         end
     end
-
+    painter:Scale(1 / scale, 1 / scale);
     painter:Restore();
-
 end
 
 function ToolBox:GetMouseUI(x, y, event)
     local blockly = self:GetBlockly();
+    local scale = self:GetScale();
     x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);
     if (x > Const.ToolBoxWidth) then return nil end
-
+    x, y = math.floor(x / scale + 0.5), math.floor(y / scale + 0.5);
     for _, block in ipairs(self.blocks) do
         ui = block:GetMouseUI(x, y, event);
         if (ui) then 
             return ui:GetBlock();
         end
     end
-
     return self;
 end
 
@@ -171,10 +178,11 @@ function ToolBox:OnMouseWheel(event)
     local dist, offset = 5, 5;                  -- 滚动距离为5 * Const.DefaultUnitSize  
 
     if (#self.blocks == 0) then return end
-
+    local scale = self:GetScale();
+    local heightUnitCount = math.floor(self.heightUnitCount / scale);
     if (delta < 0) then
         local block = self.blocks[#self.blocks];
-        if ((block.topUnitCount + block.heightUnitCount) <= (self.heightUnitCount - offset)) then return end  
+        if ((block.topUnitCount + block.heightUnitCount) <= (heightUnitCount - offset)) then return end  
     else
         local block = self.blocks[1];
         if (block.topUnitCount >= offset) then return end

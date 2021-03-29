@@ -12,7 +12,7 @@ NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 
 local Const = NPL.load("./Const.lua");
-local Shape = NPL.load("./Shape.lua", IsDevEnv);
+local Shape = NPL.load("./Shape.lua");
 local Input = NPL.load("./Inputs/Input.lua", IsDevEnv);
 local Connection = NPL.load("./Connection.lua", IsDevEnv);
 local BlockInputField = NPL.load("./BlockInputField.lua", IsDevEnv);
@@ -97,6 +97,7 @@ function Block:ParseMessageAndArg(opt)
     end
 
     local function GetInputFieldContainer(isFillFieldSpace)
+        -- isFillFieldSpace = false;
         local inputFieldContainer = self.inputFieldContainerList[inputFieldContainerIndex] or InputFieldContainer:new():Init(self, isFillFieldSpace);
         self.inputFieldContainerList[inputFieldContainerIndex] = inputFieldContainer;
         return inputFieldContainer;
@@ -203,13 +204,6 @@ function Block:Render(painter)
         Shape:DrawNextConnection(painter, self.widthUnitCount, 0, self.heightUnitCount - Const.ConnectionHeightUnitCount);
     else
         Shape:DrawOutput(painter, self.widthUnitCount, self.heightUnitCount);
-        -- 绘制左右边缘
-        -- Shape:DrawUpEdge(painter, self.widthUnitCount);
-        -- Shape:DrawDownEdge(painter, self.widthUnitCount, 0, 0, self.heightUnitCount - Const.BlockEdgeHeightUnitCount);
-        -- Shape:DrawLeftEdge(painter, self.heightUnitCount);
-        -- if (self:IsOutput()) then
-        --     Shape:DrawRightEdge(painter, self.heightUnitCount, 0, self.widthUnitCount - Const.BlockEdgeWidthUnitCount);
-        -- end
     end
     painter:Translate(-self.left, -self.top);
 
@@ -245,8 +239,6 @@ function Block:UpdateWidthHeightUnitCount()
         heightUnitCount = heightUnitCount + Const.ConnectionHeightUnitCount * 2;
         maxHeightUnitCount = maxHeightUnitCount + Const.ConnectionHeightUnitCount * 2;
     else
-        widthUnitCount = widthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
-        maxWidthUnitCount = maxWidthUnitCount + Const.BlockEdgeWidthUnitCount * 2;
         heightUnitCount = heightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
         maxHeightUnitCount = maxHeightUnitCount + Const.BlockEdgeHeightUnitCount * 2;
     end
@@ -274,7 +266,6 @@ function Block:UpdateLeftTopUnitCount()
     if (self:IsStatement()) then 
         offsetY = topUnitCount + Const.ConnectionHeightUnitCount;
     else
-        offsetX = leftUnitCount + Const.BlockEdgeWidthUnitCount;
         offsetY = topUnitCount + Const.BlockEdgeHeightUnitCount;
     end
 
@@ -336,14 +327,14 @@ function Block:OnMouseMove(event)
     if (not self:IsDraggable()) then return end
 
     local blockly, block = self:GetBlockly(), self;
-    local scale = blockly:GetScale();
+    local scale, toolboxScale = blockly:GetScale(), blockly:GetToolBox():GetScale();
     -- local x, y = event:GetWindowXY();
     local x, y = self:GetBlockly():GetLogicAbsPoint(event);
     if (not block.isDragging) then
         if (not event:IsMove()) then return end
         if (block:IsToolBoxBlock()) then 
             clone = self:Clone();
-            local blockX, blockY = math.floor(block.leftUnitCount * block:GetUnitSize() / scale + 0.5) - blockly.offsetX, math.floor(block.topUnitCount * block:GetUnitSize() / scale + 0.5) - blockly.offsetY; 
+            local blockX, blockY = math.floor(block.leftUnitCount * block:GetUnitSize() * toolboxScale / scale + 0.5) - blockly.offsetX, math.floor(block.topUnitCount * block:GetUnitSize() * toolboxScale / scale + 0.5) - blockly.offsetY; 
             clone.startLeftUnitCount = math.floor(blockX / clone:GetUnitSize());
             clone.startTopUnitCount = math.floor(blockY / clone:GetUnitSize());
             clone:SetLeftTopUnitCount(clone.startLeftUnitCount, clone.startTopUnitCount);

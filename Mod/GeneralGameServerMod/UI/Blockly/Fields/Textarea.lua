@@ -10,8 +10,8 @@ local Textarea = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/T
 ]]
 
 local Const = NPL.load("../Const.lua");
+local Shape = NPL.load("../Shape.lua");
 local Field = NPL.load("./Field.lua", IsDevEnv);
-local Shape = NPL.load("../Shape.lua", IsDevEnv);
 
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 

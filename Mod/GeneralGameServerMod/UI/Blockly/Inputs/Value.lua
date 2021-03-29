@@ -11,7 +11,7 @@ local Value = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Valu
 
 local InputElement = NPL.load("../../Window/Elements/Input.lua", IsDevEnv);
 local Const = NPL.load("../Const.lua");
-local Shape = NPL.load("../Shape.lua", IsDevEnv);
+local Shape = NPL.load("../Shape.lua");
 local Input = NPL.load("./Input.lua", IsDevEnv);
 local Value = commonlib.inherit(Input, NPL.export());
 
@@ -50,8 +50,10 @@ function Value:Render(painter)
     local inputBlock = self:GetInputBlock();
     if (inputBlock) then return inputBlock:Render(painter) end
 
-    Shape:DrawInputField(painter, self.widthUnitCount, self.heightUnitCount + Const.BlockEdgeHeightUnitCount, self.leftUnitCount, self.topUnitCount - Const.BlockEdgeHeightUnitCount / 2);
-    
+    local offsetX, offsetY = self:GetOffset();
+    painter:Translate(offsetX, offsetY);
+    Shape:SetBrush("#ffffff");
+    Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
     painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
