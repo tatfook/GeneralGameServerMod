@@ -291,7 +291,7 @@ end
 function Blockly:RenderBG(painter)
     local x, y, w, h = self:GetContentGeometry();
     local BGWidth, BGHeight, scale = 498, 493, self:GetScale();
-    local row, col = math.ceil(h / BGHeight), math.ceil(w / BGWidth);
+    local row, col = math.ceil(h / (BGHeight * scale)), math.ceil(w / (BGWidth * scale));
     x = x + Const.ToolBoxWidth;
 
     painter:Translate(x, y);
