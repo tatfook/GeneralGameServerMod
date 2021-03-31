@@ -36,7 +36,7 @@ function Value:Init(block, opt)
         local shadowType = shadow.type;
         local shadowBlock = self:GetBlockly():GetBlockInstanceByType(shadowType);
         if (shadowBlock and shadowBlock.outputConnection) then
-            shadowBlock.isDraggable = false;
+            shadowBlock:SetDraggable(false);
             self.inputConnection:Connection(shadowBlock.outputConnection);
         end
     end
@@ -134,7 +134,11 @@ end
 
 function Value:GetFieldValue() 
     if (not self:GetInputBlock()) then 
-        return self:GetValue();
+        if (self:GetShadowType() == "math_number" or self:GetShadowType() == "field_number") then
+            return self:GetNumberValue();
+        else 
+            return self:GetValue();
+        end
     end
     return self:GetInputBlock():GetBlockCode();
 end

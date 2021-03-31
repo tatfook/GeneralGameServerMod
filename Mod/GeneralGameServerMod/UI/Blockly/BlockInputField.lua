@@ -27,6 +27,7 @@ BlockInputField:Property("BackgroundColor", "#ffffff");          -- 背景颜色
 BlockInputField:Property("Edit", false, "IsEdit");               -- 是否在编辑
 BlockInputField:Property("Validator", nil);                      -- 验证器
 BlockInputField:Property("Value", "");                           -- 值
+BlockInputField:Property("DefaultValue", "");                    -- 默认值
 BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
 BlockInputField:Property("EditElement", nil);                    -- 编辑元素
@@ -50,6 +51,7 @@ function BlockInputField:Init(block, option)
     self:SetValidator(option.validator);
     self:SetValue(self:GetOptionText());
     self:SetLabel(tostring(self:GetValue()));
+    self:SetDefaultValue(self:GetValue());
     -- 解析颜色值
     self:SetColor(option.color);
 
@@ -437,6 +439,12 @@ end
 
 function BlockInputField:GetLanguage()
     return self:GetBlock():GetBlockly():GetLanguage();
+end
+
+function BlockInputField:GetNumberValue()
+    local value = self:GetValue();
+    value = string.gsub(value, ' ', '');
+    return tonumber(value) or self:GetDefaultValue() or 0;
 end
 
 function BlockInputField:GetFieldValue()
