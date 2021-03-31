@@ -73,6 +73,11 @@ function Window:ctor()
     self:SetPainterContext(System.Core.PainterContext:new():init(self));
 
     self.Event = Event:new();  -- 每个窗口使用独立的事件对象
+
+    -- 世界退出, 关闭窗口
+    GameLogic:Connect("WorldUnloaded", nil, function()
+        self:CloseWindow();
+    end, "UniqueConnection");
 end
 
 function Window:IsWindow()
