@@ -16,8 +16,13 @@ local MouseEvent = commonlib.inherit(BaseEvent, NPL.export());
 function MouseEvent:Init(event_type, window, params)
     MouseEvent._super.Init(self, event_type, window);
 
+    if(event_type == "mouseMoveEvent") then
+        self.x, self.y = ParaUI.GetMousePosition();
+	else
+		if(not mouse_x) then mouse_x, mouse_y = ParaUI.GetMousePosition() end
+		self.x, self.y = mouse_x, mouse_y;
+	end
 
-    self.x, self.y = ParaUI.GetMousePosition();
     self.shift_pressed = ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_LSHIFT) or ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_RSHIFT);
 	self.ctrl_pressed = ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_LCONTROL) or ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_RCONTROL);
 	self.alt_pressed = ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_LMENU) or ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_RMENU);

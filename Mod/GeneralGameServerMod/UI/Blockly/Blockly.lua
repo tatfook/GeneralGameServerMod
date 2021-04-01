@@ -36,7 +36,6 @@ Blockly:Property("ToolBox");                  -- 工具栏
 Blockly:Property("Scale", 1);                 -- 缩放
 Blockly:Property("BaseStyle", {
     NormalStyle = {
-        ["padding"] = "2px",
     }
 });
 
@@ -374,7 +373,7 @@ end
 
 function Blockly:GetLogicViewPoint(event)
     local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);  -- 相对坐标为窗口的缩放后坐标
-    local scale = self:GetScale();                                          -- 获取缩放值
+    local scale = self:GetScale();                                    -- 获取缩放值
     return math.floor(x / scale + 0.5), math.floor(y / scale + 0.5);  -- 转化为逻辑坐标
 end
 

@@ -317,7 +317,7 @@ end
 
 function Block:OnMouseDown(event)
     -- self.startX, self.startY = event:GetWindowXY();
-    self.startX, self.startY = self:GetBlockly():GetLogicAbsPoint(event);
+    self.startX, self.startY = self:GetBlockly():GetLogicViewPoint(event);
     self.startLeftUnitCount, self.startTopUnitCount = self.leftUnitCount, self.topUnitCount;
     self.isMouseDown = true;
 end
@@ -328,8 +328,6 @@ function Block:OnMouseMove(event)
 
     local blockly, block = self:GetBlockly(), self;
     local scale, toolboxScale = blockly:GetScale(), blockly:GetToolBox():GetScale();
-    -- local x, y = event:GetWindowXY();
-    local x, y = self:GetBlockly():GetLogicAbsPoint(event);
     if (not block.isDragging) then
         if (not event:IsMove()) then return end
         if (block:IsToolBoxBlock()) then 
@@ -348,6 +346,7 @@ function Block:OnMouseMove(event)
         block:GetBlockly():SetCurrentBlock(block);
     end
     local UnitSize = block:GetUnitSize();
+    local x, y = self:GetBlockly():GetLogicViewPoint(event);
     local XUnitCount = math.floor((x - block.startX) / UnitSize);
     local YUnitCount = math.floor((y - block.startY) / UnitSize);
     
