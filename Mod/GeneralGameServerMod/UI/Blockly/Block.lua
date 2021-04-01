@@ -316,7 +316,6 @@ function Block:GetMouseUI(x, y, event)
 end
 
 function Block:OnMouseDown(event)
-    -- self.startX, self.startY = event:GetWindowXY();
     self.startX, self.startY = self:GetBlockly():GetLogicViewPoint(event);
     self.startLeftUnitCount, self.startTopUnitCount = self.leftUnitCount, self.topUnitCount;
     self.isMouseDown = true;
@@ -521,7 +520,6 @@ function Block:GetBlockCode()
     end
     return code;
 end
-
 
 -- 获取xmlNode
 function Block:SaveToXmlNode()
