@@ -274,14 +274,18 @@ function Window:CreateNativeWindow()
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
     native_window:SetField("InputMethodEnabled", true);
-
-	native_window:GetAttributeObject():SetDynamicField("isWindow", true)
+	native_window:GetAttributeObject():SetDynamicField("isWindow", true); -- 宏示教忽略
 
     local zorder = self:GetParams().zorder;
     if (zorder) then native_window.zorder = zorder end
+
     -- 加到有效窗口上
     native_window:AttachToRoot();
-	local event_list = {"ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmousewheel", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
+    
+	local event_list = { "ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmousewheel", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
+	if (self:IsTouchMode()) then
+        event_list = {"ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove",  "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
+    end
     local function GetHandle(event_type)
         return function()
             self:OnEvent(event_type);

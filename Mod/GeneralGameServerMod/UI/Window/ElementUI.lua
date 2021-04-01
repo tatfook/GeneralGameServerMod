@@ -34,6 +34,7 @@ function ElementUI:ctor()
     self.winWidth, self.winHeight = 0, 0;                -- 窗口大小
     self.AbsoluteElements, self.FixedElements = {}, {};
     self.RenderCacheList = {};
+    self.MouseWheel = {};
     self:SetAnimation(Animation:new():Init(self));
 end
 
@@ -568,6 +569,11 @@ function ElementUI:OnMouseDown(event)
     if(event:IsAccepted()) then return end
     if (self:CallAttrFunction("onmousedown", nil, self, event)) then return end
 
+    if (self:IsTouchMode() and self:IsOverflow()) then
+        self.MouseWheel.mouseX, self.MouseWheel.mouseY = event:GetScreenXY();
+        self.MouseWheel.isStartWheel = true;
+    end
+
     -- 默认拖拽处理
     if(self:IsDraggable() and event:IsLeftButton()) then
         self.isMouseDown = true;
@@ -588,6 +594,15 @@ function ElementUI:OnMouseMove(event)
     if(event:IsAccepted()) then return end
     if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
 
+    if (self.MouseWheel.isStartWheel) then
+        local x, y = event:GetScreenXY();
+        if (y ~= self.MouseWheel.mouseY) then
+            local mouse_wheel = y < self.MouseWheel.mouseY and 1 or -1;
+            self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
+            event.mouse_wheel = mouse_wheel;
+            self:OnMouseWheel(event);
+        end
+    end
 
     if(self.isMouseDown and event:IsLeftButton() and self:IsDraggable()) then
 		if(not self.isDragging and not event:IsMove()) then return end
@@ -613,6 +628,8 @@ function ElementUI:OnMouseMove(event)
 end
 
 function ElementUI:OnMouseUp(event)
+    if (self.MouseWheel.isStartWheel) then self.MouseWheel.isStartWheel = false end
+
     if(event:IsAccepted()) then return end
     if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end
 
@@ -636,6 +653,8 @@ function ElementUI:OnMouseUp(event)
 end
 
 function ElementUI:OnMouseLeave()
+    if (self.MouseWheel.isStartWheel) then self.MouseWheel.isStartWheel = false end
+
     self:CallAttrFunction("onmouseleave", nil, self, event);
 end
 
@@ -845,4 +864,13 @@ function ElementUI:CallEventCallback(funcname, ...)
     self:GetWindow():GetEvent():SetElement(self);
     if (type(self[funcname]) ~= "function") then return end
     return (self[funcname])(self, ...);
+end
+
+function ElementUI:IsOverflow()
+    local layout = self:GetLayout();
+    return layout:IsOverflowX() or layout:IsOverflowY();
+end
+
+function ElementUI:IsTouchMode()
+    return System.os.IsTouchMode();
 end
