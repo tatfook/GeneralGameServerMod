@@ -356,7 +356,7 @@ function BlockInputField:UpdateEditAreaSize()
     self:GetTopBlock():UpdateLayout();
     local blockly = self:GetBlock():GetBlockly();
     local editor = self:GetEditorElement();
-    local offsetX, offsetY = 2, 2;
+    local offsetX, offsetY = 0, 0;
     editor:SetStyleValue("left", self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX + offsetX);
     editor:SetStyleValue("top", self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY + offsetY);
     editor:SetStyleValue("width", self.width);
