@@ -289,23 +289,25 @@ end
 
 function Blockly:RenderBG(painter)
     local x, y, w, h = self:GetContentGeometry();
-    local BGWidth, BGHeight, scale = 498, 493, self:GetScale();
-    local row, col = math.ceil(h / (BGHeight * scale)), math.ceil(w / (BGWidth * scale));
-    x = x + Const.ToolBoxWidth;
-
-    painter:Translate(x, y);
-    painter:Save();
-    painter:SetClipRegion(0, 0, w - Const.ToolBoxWidth, h);
-    painter:Scale(scale, scale);
-    painter:SetBrush("#ffffff");
-    for i = 1, row do 
-        for j = 1, col do
-            painter:DrawRectTexture((j - 1) * BGWidth, (i - 1) * BGHeight, BGWidth, BGHeight, "Texture/Aries/Creator/keepwork/ggs/blockly/huawen_512X512_32bits.png#4 9 498 493");
-        end
-    end
-    painter:Scale(1 / scale, 1 / scale);
-    painter:Restore();
-    painter:Translate(-x, -y);
+    painter:SetBrush("f9f9f9");
+    painter:DrawRect(x, y, w, h);
+    -- local x, y, w, h = self:GetContentGeometry();
+    -- local BGWidth, BGHeight, scale = 498, 493, self:GetScale();
+    -- local row, col = math.ceil(h / (BGHeight * scale)), math.ceil(w / (BGWidth * scale));
+    -- x = x + Const.ToolBoxWidth;
+    -- painter:Translate(x, y);
+    -- painter:Save();
+    -- painter:SetClipRegion(0, 0, w - Const.ToolBoxWidth, h);
+    -- painter:Scale(scale, scale);
+    -- painter:SetBrush("#ffffff");
+    -- for i = 1, row do 
+    --     for j = 1, col do
+    --         painter:DrawRectTexture((j - 1) * BGWidth, (i - 1) * BGHeight, BGWidth, BGHeight, "Texture/Aries/Creator/keepwork/ggs/blockly/huawen_512X512_32bits.png#4 9 498 493");
+    --     end
+    -- end
+    -- painter:Scale(1 / scale, 1 / scale);
+    -- painter:Restore();
+    -- painter:Translate(-x, -y);
 end
 
 -- 渲染Blockly
