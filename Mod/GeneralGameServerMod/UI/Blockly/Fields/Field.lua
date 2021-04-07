@@ -17,6 +17,7 @@ local Field = commonlib.inherit(BlockInputField, NPL.export());
 local MinEditFieldWidth = 120;
 local TextMarginUnitCount = Const.TextMarginUnitCount;    -- 文本边距
 
+Field:Property("ClassName", "Field");
 Field:Property("Type");                     -- label text, value
 Field:Property("Color", "#000000");
 Field:Property("BackgroundColor", "#ffffff");

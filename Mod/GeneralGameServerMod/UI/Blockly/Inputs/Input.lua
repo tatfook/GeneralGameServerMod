@@ -14,6 +14,7 @@ local Connection = NPL.load("../Connection.lua", IsDevEnv);
 
 local Input = commonlib.inherit(BlockInputField, NPL.export());
 
+Input:Property("ClassName", "Input");
 Input:Property("InputBlock");               -- 输入块
 
 function Input:ctor()

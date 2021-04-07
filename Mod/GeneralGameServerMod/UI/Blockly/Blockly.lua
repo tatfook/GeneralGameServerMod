@@ -18,6 +18,7 @@ local Toolbox = NPL.load("./Blocks/Toolbox.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
+local ContextMenu = NPL.load("./ContextMenu.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
 local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
 
@@ -25,8 +26,9 @@ local BlocklySimulator = NPL.load("./BlocklySimulator.lua", IsDevEnv);
 
 local Blockly = commonlib.inherit(Element, NPL.export());
 
-Blockly:Property("Name", "Blockly");  
+Blockly:Property("ClassName", "Blockly");  
 Blockly:Property("EditorElement");            -- 编辑元素 用户输入
+Blockly:Property("ContextMenu");              -- 上下文菜单
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 Blockly:Property("FocusUI");                  -- 聚焦UI
 Blockly:Property("CurrentBlock");             -- 当前拽块
@@ -60,11 +62,23 @@ function Blockly:Init(xmlNode, window, parent)
         attr = {
             style = "position: absolute; left: 0px; top: 0px; width: 0px; height: 0px; overflow: hidden; background-color: #ffffff00;",
         }
-    }, window, self)
+    }, window, self);
+
     table.insert(self.childrens, blocklyEditor);
     blocklyEditor:SetVisible(false);
     blocklyEditor:SetBlockly(self);
     self:SetEditorElement(blocklyEditor);
+
+    local BlocklyContextMenu = ContextMenu:new():Init({
+        name = "ContextMenu",
+        attr = {
+            style = "position: absolute; left: 0px; top: 0px; width: 0px; height: 0px; overflow: hidden; background-color: #383838; color: #ffffff;",
+        }
+    }, window, self);
+    table.insert(self.childrens, BlocklyContextMenu);
+    BlocklyContextMenu:SetVisible(false);
+    BlocklyContextMenu:SetBlockly(self);
+    self:SetContextMenu(BlocklyContextMenu);
 
     local typ = self:GetAttrStringValue("type", "");
     local allBlocks, categoryList = Toolbox.GetAllBlocks(typ), Toolbox.GetCategoryList(typ);
@@ -387,8 +401,8 @@ end
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
     event:Accept();
-
-    if (event.target ~= self) then return end
+    self:GetContextMenu():Hide();
+    if (event.target ~= self or not event:IsLeftButton()) then return end
 
     local x, y = self:GetLogicAbsPoint(event);
     local ui = self:GetMouseUI(x, y, event);
@@ -443,7 +457,7 @@ end
 function Blockly:OnMouseMove(event)
     event:Accept();
     self.mouseMoveX, self.mouseMoveY = Blockly._super.GetRelPoint(self, event.x, event.y);
-    if (event.target ~= self) then return end
+    if (event.target ~= self or not event:IsLeftButton()) then return end
 
     local UnitSize = self:GetUnitSize();
     local x, y = self:GetLogicAbsPoint(event);
@@ -475,13 +489,27 @@ function Blockly:OnMouseUp(event)
     self:ReleaseMouseCapture();
 
     local focusUI = self:GetFocusUI();  -- 获取焦点
-
     if (focusUI ~= ui and focusUI) then focusUI:OnFocusOut() end
     if (focusUI ~= ui and ui and event.down_target == ui) then ui:OnFocusIn() end
     
     if (ui and ui ~= self) then 
         self:SetFocusUI(ui);
-        return ui:OnMouseUp(event);
+        ui:OnMouseUp(event);
+    end
+
+    if (event:IsRightButton() and not self:IsInnerToolBox(event)) then
+        local contextmenu = self:GetContextMenu();
+        local absX, absY = self:GetLogicViewPoint(event);
+        local menuType = "block";
+        contextmenu:SetStyleValue("left", absX);
+        contextmenu:SetStyleValue("top", absY);
+        if (ui:GetClassName() == "Blockly") then 
+            menuType = "blockly";
+        else 
+            block = ui:GetBlock();
+            self:SetCurrentBlock(block);
+        end
+        self:GetContextMenu():Show(menuType);
     end
 end
 
@@ -532,8 +560,8 @@ function Blockly:OnKeyDown(event)
 	elseif (event:IsKeySequence("Undo")) then self:Undo()
 	elseif (event:IsKeySequence("Redo")) then self:Redo()
 	-- elseif (event:IsKeySequence("Copy")) then self:handleCopy(event)
-	elseif (event:IsKeySequence("Paste")) then self:handlePaste(event, "Clipboard");
-    elseif (event:IsKeySequence("Delete")) then self:handleDelete(event)
+	elseif (event:IsKeySequence("Paste")) then self:handlePaste();
+    elseif (event:IsKeySequence("Delete")) then self:handleDelete()
     else -- 处理普通输入
 	end
 end

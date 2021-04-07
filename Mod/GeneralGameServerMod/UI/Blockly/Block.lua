@@ -38,7 +38,7 @@ local CurrentBlockBrush = {color = "#ffffff"};
 
 Block:Property("Blockly");
 Block:Property("Id");
-Block:Property("Name", "Block");
+Block:Property("ClassName", "Block");
 Block:Property("TopBlock", false, "IsTopBlock");               -- 是否是顶层块
 Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");       -- 是否是工具箱块
 Block:Property("Draggable", true, "IsDraggable");              -- 是否可以拖拽
@@ -56,7 +56,7 @@ end
 
 function Block:Init(blockly, opt)
     Block._super.Init(self, self, opt);
-
+    
     self:SetBlockly(blockly);
     self:SetDraggable(if_else(opt.isDraggable == false, false, true));
 

@@ -14,6 +14,7 @@ local Shape = NPL.load("./Shape.lua");
 local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local categoryFont = "System;12;norm";
+ToolBox:Property("ClassName", "ToolBox");
 ToolBox:Property("Blockly");
 ToolBox:Property("CurrentCategoryName");
 ToolBox:Property("Scale", 1);
