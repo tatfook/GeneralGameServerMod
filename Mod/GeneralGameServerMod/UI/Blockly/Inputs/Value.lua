@@ -97,8 +97,9 @@ function Value:ConnectionBlock(block)
         return true;
     end
 
-    local inputBlock = self:GetInputBlock();
-    return inputBlock and block:ConnectionBlock(inputBlock);
+    return false;
+    -- local inputBlock = self:GetInputBlock();
+    -- return inputBlock and inputBlock:ConnectionBlock(block);
 end
 
 function Value:GetMouseUI(x, y, event)

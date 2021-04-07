@@ -20,6 +20,7 @@ local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local ContextMenu = NPL.load("./ContextMenu.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
+local ShadowBlock = NPL.load("./ShadowBlock.lua", IsDevEnv);
 local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
 
 local BlocklySimulator = NPL.load("./BlocklySimulator.lua", IsDevEnv);
@@ -35,11 +36,8 @@ Blockly:Property("CurrentBlock");             -- 当前拽块
 Blockly:Property("Language");                 -- 语言
 Blockly:Property("FileManager");              -- 文件管理器
 Blockly:Property("ToolBox");                  -- 工具栏
+Blockly:Property("ShadowBlock");              -- 占位块
 Blockly:Property("Scale", 1);                 -- 缩放
-Blockly:Property("BaseStyle", {
-    NormalStyle = {
-    }
-});
 
 function Blockly:ctor()
     self.offsetX, self.offsetY = 0, 0;
@@ -79,6 +77,8 @@ function Blockly:Init(xmlNode, window, parent)
     BlocklyContextMenu:SetVisible(false);
     BlocklyContextMenu:SetBlockly(self);
     self:SetContextMenu(BlocklyContextMenu);
+
+    self:SetShadowBlock(ShadowBlock:new():Init(self));
 
     local typ = self:GetAttrStringValue("type", "");
     local allBlocks, categoryList = Toolbox.GetAllBlocks(typ), Toolbox.GetCategoryList(typ);

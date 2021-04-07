@@ -94,6 +94,12 @@ function Shape:DrawAfter(painter, offsetXUnitCount, offsetYUnitCount)
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end
 
+function Shape:DrawShadowBlock(painter, leftUnitCount, topUnitCount, widthUnitCount, heightUnitCount)
+    local UnitSize = self:GetUnitSize();
+    painter:SetPen(self:GetBrush());
+    painter:DrawRectTexture(leftUnitCount * UnitSize, topUnitCount * UnitSize, widthUnitCount * UnitSize, heightUnitCount * UnitSize, self:GetShadowBlockTexture());
+end
+
 function Shape:GetPrevConnectionTexture()
     if (Const.UnitSize == 3) then return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_54X42_32bits.png#0 0 54 6:42 3 3 3" end
     return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_72X56_32bits.png#0 0 72 8:56 8 8 8";
@@ -122,4 +128,9 @@ end
 function Shape:GetInputStatementTexture()
     if (Const.UnitSize == 3) then return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_input_63X48_32bits.png#0 0 63 48:54 15 6 15" end
     return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_input_84X64_32bits.png#0 0 84 64:72 20 8 20";
+end
+
+function Shape:GetShadowBlockTexture()
+    if (Const.UnitSize == 3) then return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_54X42_32bits.png#0 0 54 42:42 3 3 3" end
+    return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_72X56_32bits.png#0 0 72 56:56 8 8 8";
 end

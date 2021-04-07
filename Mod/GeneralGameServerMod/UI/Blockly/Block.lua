@@ -156,11 +156,11 @@ end
 function Block:OnSizeChange()
     -- 设置连接大小
     if (self.previousConnection) then
-        self.previousConnection:SetGeometry(self.leftUnitCount, self.topUnitCount, Const.ConnectionRegionWidthUnitCount, Const.ConnectionRegionHeightUnitCount);
+        self.previousConnection:SetGeometry(self.leftUnitCount, self.topUnitCount, self.widthUnitCount, Const.ConnectionRegionHeightUnitCount);
     end
 
     if (self.nextConnection) then
-        self.nextConnection:SetGeometry(self.leftUnitCount, self.topUnitCount + self.heightUnitCount + 2 - Const.ConnectionRegionHeightUnitCount, Const.ConnectionRegionWidthUnitCount, Const.ConnectionRegionHeightUnitCount);
+        self.nextConnection:SetGeometry(self.leftUnitCount, self.topUnitCount + self.heightUnitCount + 2 - Const.ConnectionRegionHeightUnitCount, self.widthUnitCount, Const.ConnectionRegionHeightUnitCount);
     end
 
     if (self.outputConnection) then
@@ -194,7 +194,6 @@ end
 
 function Block:Render(painter)
     -- 绘制凹陷部分
-    local isCurrentBlock = self:GetBlockly():GetCurrentBlock() == self;
     Shape:SetPen(self:GetPen());
     Shape:SetBrush(self:GetBrush());
     painter:Translate(self.left, self.top);
@@ -229,6 +228,10 @@ function Block:UpdateWidthHeightUnitCount()
     end
     
     widthUnitCount = math.max(widthUnitCount, not self:IsStatement() and 8 or 14);
+    heightUnitCount = math.max(heightUnitCount, Const.LineHeightUnitCount);
+    maxWidthUnitCount = math.max(widthUnitCount, maxWidthUnitCount);
+    maxHeightUnitCount = math.max(heightUnitCount, maxHeightUnitCount);
+
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
         if (not inputFieldContainer:IsInputStatementContainer()) then
             inputFieldContainer:SetWidthHeightUnitCount(widthUnitCount, nil);
@@ -317,6 +320,7 @@ end
 
 function Block:OnMouseDown(event)
     self.startX, self.startY = self:GetBlockly():GetLogicViewPoint(event);
+    self.lastMouseMoveX, self.lastMouseMoveY = self.startX, self.startY;
     self.startLeftUnitCount, self.startTopUnitCount = self.leftUnitCount, self.topUnitCount;
     self.isMouseDown = true;
 end
@@ -324,6 +328,9 @@ end
 function Block:OnMouseMove(event)
     if (not self.isMouseDown or not event:IsLeftButton()) then return end
     if (not self:IsDraggable()) then return end
+    local x, y = self:GetBlockly():GetLogicViewPoint(event);
+    if (x == self.lastMouseMoveX and y == self.lastMouseMoveY) then return end
+    self.lastMouseMoveX, self.lastMouseMoveY = x, y;
 
     local blockly, block = self:GetBlockly(), self;
     local scale, toolboxScale = blockly:GetScale(), blockly:GetToolBox():GetScale();
@@ -345,7 +352,6 @@ function Block:OnMouseMove(event)
         block:GetBlockly():SetCurrentBlock(block);
     end
     local UnitSize = block:GetUnitSize();
-    local x, y = self:GetBlockly():GetLogicViewPoint(event);
     local XUnitCount = math.floor((x - block.startX) / UnitSize);
     local YUnitCount = math.floor((y - block.startY) / UnitSize);
     
@@ -362,33 +368,44 @@ function Block:OnMouseMove(event)
     block:GetBlockly():AddBlock(block);
     block:SetLeftTopUnitCount(block.startLeftUnitCount + XUnitCount, block.startTopUnitCount + YUnitCount);
     block:UpdateLeftTopUnitCount();
+    local ShadowBlock = blockly:GetShadowBlock();
+    blockly:AddBlock(ShadowBlock);
+    ShadowBlock:Disconnection();
+    ShadowBlock:SetLeftTopUnitCount(block.leftUnitCount, block.topUnitCount);
+    ShadowBlock:SetWidthHeightUnitCount(block.widthUnitCount, ShadowBlock.heightUnitCount);
+    ShadowBlock:TryConnectionBlock();
 end
 
 function Block:OnMouseUp(event)
+    local blockly = self:GetBlockly();
+    local shadowBlock = blockly:GetShadowBlock();
+    shadowBlock:Disconnection();
+    blockly:RemoveBlock(shadowBlock);
+
     if (self.isDragging) then
-        if (self:GetBlockly():IsInnerDeleteArea(event.x, event.y) or self:GetBlockly():GetMousePosIndex() == 4) then
-            self:GetBlockly():RemoveBlock(self);
-            self:GetBlockly():OnDestroyBlock(self);
-            self:GetBlockly():SetCurrentBlock(nil);
-            self:GetBlockly():ReleaseMouseCapture();
+        if (blockly:IsInnerDeleteArea(event.x, event.y) or blockly:GetMousePosIndex() == 4) then
+            blockly:RemoveBlock(self);
+            blockly:OnDestroyBlock(self);
+            blockly:SetCurrentBlock(nil);
+            blockly:ReleaseMouseCapture();
             -- 移除块
-            if (not self.isNewBlock) then self:GetBlockly():Do({action = "DeleteBlock", block = self}) end
+            if (not self.isNewBlock) then blockly:Do({action = "DeleteBlock", block = self}) end
             return ;
         else
-            self:CheckConnection();
+            self:TryConnectionBlock();
         end
         if (self.isNewBlock) then 
-            self:GetBlockly():Do({action = "NewBlock", block = self});
+            blockly:Do({action = "NewBlock", block = self});
         else
-            self:GetBlockly():Do({action = "MoveBlock", block = self});
+            blockly:Do({action = "MoveBlock", block = self});
         end
     end
 
-    self:GetBlockly():SetCurrentBlock(self);
+    blockly:SetCurrentBlock(self);
     self.isMouseDown = false;
     self.isDragging = false;
     self.isNewBlock = false;
-    self:GetBlockly():ReleaseMouseCapture();
+    blockly:ReleaseMouseCapture();
 end
 
 function Block:GetConnection()
@@ -397,27 +414,27 @@ function Block:GetConnection()
     return nil;
 end
 
-function Block:CheckConnection()
+function Block:TryConnectionBlock(targetBlock)
     local blocks = self:GetBlockly():GetBlocks();
     for _, block in ipairs(blocks) do
-        if (self:ConnectionBlock(block)) then return true end
+        if (block:ConnectionBlock(targetBlock or self)) then return true end
     end
     return false;
 end
 
 function Block:IsIntersect(block, isSingleBlock)
-    local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
-    local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
+    local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+    local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
     local halfWidthUnitCount, halfHeightUnitCount = widthUnitCount / 2, heightUnitCount / 2;
     local centerX, centerY = leftUnitCount + halfWidthUnitCount, topUnitCount + halfHeightUnitCount;
 
-    local blockLeftUnitCount, blockTopUnitCount = block:GetLeftTopUnitCount();
-    local blockWidthUnitCount, blockHeightUnitCount = block:GetMaxWidthHeightUnitCount();
-    if (not isSingleBlock) then blockWidthUnitCount, blockHeightUnitCount = block:GetTotalWidthHeightUnitCount() end
+    local blockLeftUnitCount, blockTopUnitCount = self:GetLeftTopUnitCount();
+    local blockWidthUnitCount, blockHeightUnitCount = self:GetMaxWidthHeightUnitCount();
+    if (not isSingleBlock) then blockWidthUnitCount, blockHeightUnitCount = self:GetTotalWidthHeightUnitCount() end
     local blockHalfWidthUnitCount, blockHalfHeightUnitCount = blockWidthUnitCount / 2, blockHeightUnitCount / 2;
     local blockCenterX, blockCenterY = blockLeftUnitCount + blockHalfWidthUnitCount, blockTopUnitCount + blockHalfHeightUnitCount;
     BlockDebug.Format("Id = %s, left = %s, top = %s, width = %s, height = %s, Id = %s, left = %s, top = %s, width = %s, height = %s", 
-        self:GetId(), leftUnitCount, topUnitCount, widthUnitCount, heightUnitCount, block:GetId(), blockLeftUnitCount, blockTopUnitCount, blockWidthUnitCount, blockHeightUnitCount);
+        block:GetId(), leftUnitCount, topUnitCount, widthUnitCount, heightUnitCount, block:GetId(), blockLeftUnitCount, blockTopUnitCount, blockWidthUnitCount, blockHeightUnitCount);
     BlockDebug.Format("centerX = %s, centerY = %s, halfWidthUnitCount = %s, halfHeightUnitCount = %s, blockCenterX = %s, blockCenterY = %s, blockHalfWidthUnitCount = %s, blockHalfHeightUnitCount = %s", 
         centerX, centerY, halfWidthUnitCount, halfHeightUnitCount, blockCenterX, blockCenterY, blockHalfWidthUnitCount, blockHalfHeightUnitCount);
 
@@ -432,32 +449,33 @@ function Block:ConnectionBlock(block)
 
     -- 是否在块区域内
     if (not self:IsIntersect(block, true)) then
-        local nextBlock = block:GetNextBlock();
-        return nextBlock and self:ConnectionBlock(nextBlock);
+        local nextBlock = self:GetNextBlock();
+        return nextBlock and nextBlock:ConnectionBlock(block);
     end
 
-    if (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and self.previousConnection:IsMatch(block.nextConnection)) then
-        self:GetBlockly():RemoveBlock(self);
-        local nextConnectionConnection = block.nextConnection:Disconnection();
-        self.previousConnection:Connection(block.nextConnection);
-        local lastNextBlock = self:GetLastNextBlock();
+    if ((self.topUnitCount + self.heightUnitCount - Const.ConnectionRegionHeightUnitCount) < block.topUnitCount 
+        and self.nextConnection and block.previousConnection and self.nextConnection:IsMatch(block.previousConnection)) then
+        self:GetBlockly():RemoveBlock(block);
+        local nextConnectionConnection = self.nextConnection:Disconnection();
+        self.nextConnection:Connection(block.previousConnection);
+        local lastNextBlock = block:GetLastNextBlock();
         if (lastNextBlock.nextConnection) then lastNextBlock.nextConnection:Connection(nextConnectionConnection) end
-        self:SetLeftTopUnitCount(block.leftUnitCount, block.topUnitCount + block.heightUnitCount);
-        self:GetTopBlock():UpdateLayout();
+        block:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount + self.heightUnitCount);
+        block:GetTopBlock():UpdateLayout();
         BlockDebug("===================previousConnection match nextConnection====================");
         return true;
-    elseif (self.topUnitCount < block.topUnitCount and self.nextConnection and block.previousConnection and 
-        not self.nextConnection:IsConnection() and not block.previousConnection:IsConnection() and self.nextConnection:IsMatch(block.previousConnection)) then
-        self:GetBlockly():RemoveBlock(block);
-        self.nextConnection:Connection(block.previousConnection)
-        self:SetLeftTopUnitCount(block.leftUnitCount, block.topUnitCount - self.heightUnitCount);
-        self:GetTopBlock():UpdateLayout();
+    elseif (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and 
+        not self.previousConnection:IsConnection() and not block.nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
+        self:GetBlockly():RemoveBlock(self);
+        self.previousConnection:Connection(block.nextConnection)
+        block:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount - block.heightUnitCount);
+        block:GetTopBlock():UpdateLayout();
         BlockDebug("===================nextConnection match previousConnection====================");
         return true;
     else
         BlockDebug("===================outputConnection match inputConnection====================");
-        for _, inputAndFieldContainer in ipairs(block.inputFieldContainerList) do
-            if (inputAndFieldContainer:ConnectionBlock(self)) then return true end
+        for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
+            if (inputAndFieldContainer:ConnectionBlock(block)) then return true end
         end
     end
 end
