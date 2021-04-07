@@ -558,7 +558,8 @@ function ElementUI:OnClick(event)
     self:CallAttrFunction("onclick", nil, event, self);
 end
 
-function ElementUI:OnContextMenu()
+function ElementUI:OnContextMenu(event)
+    self:CallAttrFunction("oncontextmenu", nil, event, self);
 end
 
 function ElementUI:OnChange(value)
@@ -842,8 +843,6 @@ end
 function ElementUI:OnMouse()
 end
 function ElementUI:OnContextMenuCapture()
-end
-function ElementUI:OnContextMenu()
 end
 
 function ElementUI:IsSupportSimulator()

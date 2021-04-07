@@ -29,10 +29,12 @@ function MouseEvent:Init(event_type, window, params)
     self.mouse_button = mouse_button;
 	self.mouse_wheel = mouse_wheel;
 
-	self.buttons_state = 0;
-	if(ParaUI.IsMousePressed(0)) then self.buttons_state = self.buttons_state + 1 end
-	if(ParaUI.IsMousePressed(1)) then self.buttons_state = self.buttons_state + 2 end
-    
+    if (event_type == "onmousedown" or event_type == "onmousemove") then
+        self.buttons_state = 0;
+        if(ParaUI.IsMousePressed(0)) then self.buttons_state = self.buttons_state + 1 end
+        if(ParaUI.IsMousePressed(1)) then self.buttons_state = self.buttons_state + 2 end
+    end
+	
     if (type(params) == "table") then
         self.x, self.y, self.mouse_button, self.buttons_state, self.mouse_wheel = params.mouse_x or self.x, params.mouse_y or self.mouse_y, params.mouse_button or self.mouse_button, params.buttons_state or self.buttons_state, params.mouse_wheel or self.mouse_wheel;
         self.shift_pressed, self.ctrl_pressed, self.alt_pressed = params.shift_pressed or self.shift_pressed, params.ctrl_pressed or self.ctrl_pressed, params.alt_pressed or self.alt_pressed;

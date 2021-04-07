@@ -269,7 +269,7 @@ function Input:InsertTextCmd(text, startAt)
     
     -- 先删除已选择的文本
     if (self:IsSelected()) then self:DeleteSelected() end
-    startAt = math.min(startAt, self:GetTextLength() + 1);
+    startAt = math.min(startAt or self.cursorAt, self:GetTextLength() + 1);
     if (not text or text == "") then return end
     startAt = startAt or self.cursorAt;
     local textLength = UniString:new(text):length();

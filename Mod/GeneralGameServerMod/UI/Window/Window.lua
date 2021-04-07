@@ -367,10 +367,6 @@ end
 
 -- 获取方法名通过事件名
 function Window:GetEventTypeFuncName(event)
-    if (event:IsRightButton()) then 
-        return "OnContextMenuCapture", "OnContextMenu";
-    end
- 
     local eventName = event:GetType();
     if (eventName == "mousePressEvent") then
         return "OnMouseDownCapture", "OnMouseDown";
