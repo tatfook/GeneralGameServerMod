@@ -181,7 +181,7 @@ end
 function BlockInputField:GetShowText()
     local text = self:GetLabel();
     local width = (self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2) * self:GetUnitSize();
-    local show_text = _guihelper.AutoTrimTextByWidth(text, width, self:GetFont());
+    local show_text = _guihelper.TrimUtf8TextByWidth(text, width, self:GetFont());  -- AutoTrimTextByWidth 使用此函数中文显示可能异常
     return show_text;
 end
 
