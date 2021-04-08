@@ -13,9 +13,10 @@ local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 
 local Const = NPL.load("./Const.lua");
 local Shape = NPL.load("./Shape.lua");
-local Input = NPL.load("./Inputs/Input.lua", IsDevEnv);
 local Connection = NPL.load("./Connection.lua", IsDevEnv);
 local BlockInputField = NPL.load("./BlockInputField.lua", IsDevEnv);
+local Input = NPL.load("./Inputs/Input.lua", IsDevEnv);
+local Field = NPL.load("./Fields/Field.lua", IsDevEnv);
 local InputFieldContainer = NPL.load("./InputFieldContainer.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
@@ -62,12 +63,9 @@ function Block:Init(blockly, opt)
 
     if (opt.id) then self:SetId(opt.id) end
 
-    if (opt.output) then
-        self.outputConnection = Connection:new():Init(self, "value", opt.output);
-    elseif (opt.previousStatement or opt.nextStatement) then
-        if (opt.previousStatement) then self.previousConnection = Connection:new():Init(self, "statement", opt.previousStatement) end
-        if (opt.nextStatement) then self.nextConnection = Connection:new():Init(self, "statement", opt.nextStatement) end
-    end
+    if (opt.output) then self.outputConnection = Connection:new():Init(self, "value", opt.output) end
+    if (opt.previousStatement) then self.previousConnection = Connection:new():Init(self, "statement", opt.previousStatement) end
+    if (opt.nextStatement) then self.nextConnection = Connection:new():Init(self, "statement", opt.nextStatement) end
 
     self:ParseMessageAndArg(opt);
     return self;
@@ -368,19 +366,13 @@ function Block:OnMouseMove(event)
     block:GetBlockly():AddBlock(block);
     block:SetLeftTopUnitCount(block.startLeftUnitCount + XUnitCount, block.startTopUnitCount + YUnitCount);
     block:UpdateLeftTopUnitCount();
-    local ShadowBlock = blockly:GetShadowBlock();
-    blockly:AddBlock(ShadowBlock);
-    ShadowBlock:Disconnection();
-    ShadowBlock:SetLeftTopUnitCount(block.leftUnitCount, block.topUnitCount);
-    ShadowBlock:SetWidthHeightUnitCount(block.widthUnitCount, ShadowBlock.heightUnitCount);
-    ShadowBlock:TryConnectionBlock();
+    blockly:GetShadowBlock():Shadow(block);
+
 end
 
 function Block:OnMouseUp(event)
     local blockly = self:GetBlockly();
-    local shadowBlock = blockly:GetShadowBlock();
-    shadowBlock:Disconnection();
-    blockly:RemoveBlock(shadowBlock);
+    blockly:GetShadowBlock():Shadow(nil);
 
     if (self.isDragging) then
         if (blockly:IsInnerDeleteArea(event.x, event.y) or blockly:GetMousePosIndex() == 4) then
@@ -443,6 +435,8 @@ end
 
 function Block:ConnectionBlock(block)
     if (not block or self == block) then return end
+    if (block.isShadowBlock and block.shadowBlock == self) then return end
+
     BlockDebug("==========================BlockConnectionBlock============================");
     -- 是否在整个区域内
     if (not self:IsIntersect(block, false)) then return end

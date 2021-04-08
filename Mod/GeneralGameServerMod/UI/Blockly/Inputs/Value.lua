@@ -12,7 +12,8 @@ local Value = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Valu
 local InputElement = NPL.load("../../Window/Elements/Input.lua", IsDevEnv);
 local Const = NPL.load("../Const.lua");
 local Shape = NPL.load("../Shape.lua");
-local Input = NPL.load("./Input.lua", IsDevEnv);
+local Connection = NPL.load("../Connection.lua");
+local Input = NPL.load("./Input.lua");
 local Value = commonlib.inherit(Input, NPL.export());
 
 local TextMarginUnitCount = Const.TextMarginUnitCount;    -- 文本边距
@@ -29,6 +30,7 @@ function Value:Init(block, opt)
 
     Value._super.Init(self, block, opt);
 
+    self.shadowConnection = Connection:new():Init(block);
     self.inputConnection:SetType("value");
 
     local shadow = opt.shadow;
@@ -53,6 +55,9 @@ function Value:Render(painter)
     local offsetX, offsetY = self:GetOffset();
     painter:Translate(offsetX, offsetY);
     Shape:SetBrush("#ffffff");
+    if (self.shadowConnection:IsConnection()) then
+        Shape:DrawInputValue(painter, self.widthUnitCount + 2, self.heightUnitCount + 2, -1, -1);
+    end
     Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
@@ -88,11 +93,15 @@ end
 function Value:ConnectionBlock(block)
     if (block.outputConnection and not block.outputConnection:IsConnection() and self.inputConnection:IsMatch(block.outputConnection)) then
         block:GetBlockly():RemoveBlock(block);
-        local inputConnectionConnection = self.inputConnection:Disconnection();
-        self.inputConnection:Connection(block.outputConnection);
-        self:GetTopBlock():UpdateLayout();
-        if (inputConnectionConnection) then
-            block:GetBlockly():AddBlock(inputConnectionConnection:GetBlock(), true);
+        if (block.isShadowBlock) then
+            self.shadowConnection:Connection(block.outputConnection);
+        else
+            local inputConnectionConnection = self.inputConnection:Disconnection();
+            self.inputConnection:Connection(block.outputConnection);
+            self:GetTopBlock():UpdateLayout();
+            if (inputConnectionConnection) then
+                block:GetBlockly():AddBlock(inputConnectionConnection:GetBlock(), true);
+            end
         end
         return true;
     end

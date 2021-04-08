@@ -11,7 +11,7 @@ local Statement = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/
 
 local Const = NPL.load("../Const.lua");
 local Shape = NPL.load("../Shape.lua");
-local Input = NPL.load("./Input.lua", IsDevEnv);
+local Input = NPL.load("./Input.lua");
 local Statement = commonlib.inherit(Input, NPL.export());
 
 local StatementWidthUnitCount = 4;

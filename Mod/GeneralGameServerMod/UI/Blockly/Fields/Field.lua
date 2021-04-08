@@ -11,7 +11,7 @@ local Field = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Fiel
 
 local Const = NPL.load("../Const.lua");
 local Shape = NPL.load("../Shape.lua");
-local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
+local BlockInputField = NPL.load("../BlockInputField.lua");
 local Field = commonlib.inherit(BlockInputField, NPL.export());
 
 local MinEditFieldWidth = 120;

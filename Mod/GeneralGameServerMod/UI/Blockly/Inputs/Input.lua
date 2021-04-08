@@ -9,8 +9,8 @@ local Input = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Inputs/Inpu
 -------------------------------------------------------
 ]]
 
-local BlockInputField = NPL.load("../BlockInputField.lua", IsDevEnv);
-local Connection = NPL.load("../Connection.lua", IsDevEnv);
+local BlockInputField = NPL.load("../BlockInputField.lua");
+local Connection = NPL.load("../Connection.lua");
 
 local Input = commonlib.inherit(BlockInputField, NPL.export());
 

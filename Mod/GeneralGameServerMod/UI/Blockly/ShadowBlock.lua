@@ -20,6 +20,7 @@ function ShadowBlock:Init(blockly, opt)
         type = "__shadow_block__",
         previousStatement = true,
         nextStatement = true,
+        output = true,
         color = "#00000080",
         isDraggable = false,
     };
@@ -27,23 +28,51 @@ function ShadowBlock:Init(blockly, opt)
     ShadowBlock._super.Init(self, blockly, opt);
     self:SetLeftTopUnitCount(0, 0);
     self:SetWidthHeightUnitCount(0, 12);
+
+    self.next_connection = self.nextConnection;
+    self.previous_connection = self.previousConnection;
+    self.output_connection = self.outputConnection;
+    self.shadowBlock = nil;
+    self.isShadowBlock = true;
+
     return self;
 end
 
 function ShadowBlock:Disconnection()
     local previousConnection = self.previousConnection and self.previousConnection:Disconnection();
     local nextConnection = self.nextConnection and self.nextConnection:Disconnection();
-    if (not previousConnection and not nextConnection) then return end
 
     if (previousConnection) then
         previousConnection:Connection(nextConnection);
         previousConnection:GetBlock():GetTopBlock():UpdateLayout();
     else 
-        self:GetBlockly():AddBlock(nextConnection:GetBlock());
+        if (nextConnection) then
+            self:GetBlockly():AddBlock(nextConnection:GetBlock());
+        end
     end
+
+    if (self.outputConnection) then self.outputConnection:Disconnection() end
+end
+
+function ShadowBlock:Shadow(block)
+    self:Disconnection();
+    self.shadowBlock = block;
+    if (not block) then 
+        self:GetBlockly():RemoveBlock(self);
+        return ;
+    end
+
+    self:GetBlockly():AddBlock(self);
+    self.nextConnection = block.nextConnection and self.next_connection;
+    self.previousConnection = block.previousConnection and self.previous_connection;
+    self.outputConnection = block.outputConnection and self.output_connection;
+    self:SetLeftTopUnitCount(block.leftUnitCount, block.topUnitCount);
+    self:SetWidthHeightUnitCount(block.widthUnitCount, self.heightUnitCount);
+    self:TryConnectionBlock();
 end
 
 function ShadowBlock:Render(painter)
+    if (not self.previousConnection and not self.nextConnection) then return end
     if (not self.previousConnection:IsConnection() and not self.nextConnection:IsConnection()) then return end 
 
     local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
