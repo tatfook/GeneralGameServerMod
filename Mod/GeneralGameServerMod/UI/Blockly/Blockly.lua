@@ -129,7 +129,7 @@ function Blockly:Undo()
         self:AddBlock(block);
         block:SetLeftTopUnitCount(cmd.startLeftUnitCount, cmd.startTopUnitCount);
         block:UpdateLeftTopUnitCount();
-        block:CheckConnection();
+        block:TryConnectionBlock();
     elseif (action == "NewBlock") then
         self:RemoveBlock(block);
     end
@@ -154,7 +154,7 @@ function Blockly:Redo()
         self:AddBlock(block);
         block:SetLeftTopUnitCount(cmd.endLeftUnitCount, cmd.endTopUnitCount);
         block:UpdateLeftTopUnitCount();
-        block:CheckConnection();
+        block:TryConnectionBlock();
     elseif (action == "DeleteBlock") then
         self:RemoveBlock(block);
     end
