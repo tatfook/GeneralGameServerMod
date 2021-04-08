@@ -36,7 +36,7 @@ function Shape:DrawNextConnection(painter, widthUnitCount, offsetXUnitCount, off
     painter:SetPen(self:GetBrush());
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
     painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
-    painter:DrawRectTexture(0, 0, widthUnitCount * UnitSize, (Const.ConnectionHeightUnitCount + 2) * UnitSize, self:GetNextConnectionTexture());
+    painter:DrawRectTexture(0, 0, widthUnitCount * UnitSize, Const.ConnectionHeightUnitCount * 2 * UnitSize, self:GetNextConnectionTexture());
     painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end
 

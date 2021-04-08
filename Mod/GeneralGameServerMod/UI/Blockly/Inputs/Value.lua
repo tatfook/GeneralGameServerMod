@@ -61,7 +61,7 @@ function Value:Render(painter)
     Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
-    painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetLabel());
+    painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetShowText());
     painter:Translate(-offsetX, -offsetY);
 end
 

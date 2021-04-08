@@ -178,6 +178,13 @@ function BlockInputField:GetSingleLineTextHeight()
     return math.floor(self:GetFontSize() * 6 / 5);
 end
 
+function BlockInputField:GetShowText()
+    local text = self:GetLabel();
+    local width = (self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2) * self:GetUnitSize();
+    local show_text = _guihelper.AutoTrimTextByWidth(text, width, self:GetFont());
+    return show_text;
+end
+
 function BlockInputField:GetFont()
     return string.format("System;%s", self:GetFontSize());
 end
