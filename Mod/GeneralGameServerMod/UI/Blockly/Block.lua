@@ -400,6 +400,22 @@ function Block:OnMouseUp(event)
     blockly:ReleaseMouseCapture();
 end
 
+function Block:Disconnection()
+    local previousConnection = self.previousConnection and self.previousConnection:Disconnection();
+    local nextConnection = self.nextConnection and self.nextConnection:Disconnection();
+
+    if (previousConnection) then
+        previousConnection:Connection(nextConnection);
+        previousConnection:GetBlock():GetTopBlock():UpdateLayout();
+    else 
+        if (nextConnection) then
+            self:GetBlockly():AddBlock(nextConnection:GetBlock());
+        end
+    end
+
+    if (self.outputConnection) then self.outputConnection:Disconnection() end
+end
+
 function Block:GetConnection()
     if (self.outputConnection) then return self.outputConnection:GetConnection() end
     if (self.previousConnection) then return self.previousConnection:GetConnection() end

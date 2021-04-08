@@ -570,6 +570,7 @@ end
 function Blockly:handleDelete()
     local block = self:GetCurrentBlock();
     if (not block) then return end
+    block:Disconnection();
     self:RemoveBlock(block);
     self:OnDestroyBlock(block);
     self:SetCurrentBlock(nil);
