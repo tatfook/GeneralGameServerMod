@@ -388,6 +388,14 @@ end
 -- 鼠标事件处理函数
 function Window:HandleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
+    
+    -- 防止鼠标不动但一直触发mouseMoveEvent事件
+    local event_type = event:GetType();
+    if (event_type == "mouseMoveEvent" and self.last_event_type == "mouseMoveEvent") then
+        if (self.last_mouse_x == event.x and self.last_mouse_y == event.y) then return end
+        self.last_mouse_x, self.last_mouse_y = event.x, event.y;
+    end
+    self.last_event_type = event_type;
 
     -- local BeginTime = ParaGlobal.timeGetTime();
     local eventType = event:GetType();
