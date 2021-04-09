@@ -299,7 +299,10 @@ function Window:CreateNativeWindow()
 end
 
 function Window:OnEvent(event_type, event_args)
-    self:HandleEvent(self.Event:Init(event_type, self, event_args));
+    -- 防止鼠标不动但一直触发mouseMoveEvent事件
+    local event = self.Event:Init(event_type, self, event_args);
+    if (not event) then return end
+    self:HandleEvent(event);
 end
 
 function Window:HandleEvent(event)
@@ -385,17 +388,45 @@ function Window:GetEventTypeFuncName(event)
     end
 end
 
+function Window:GetMouseTargetElement(event)
+    if (self:IsTouchMode()) then
+        if (event:GetType() == "mousePressEvent") then 
+            local fingerSize, fingerStepSize = 60, 10;
+            local stepCount = fingerSize / fingerStepSize / 2;
+            local lastZIndex, lastRadius, lastMouseX, lastMouseY, lastEl = "", 0, 0, 0, self;
+            local mouseX, mouseY = event.x, event.y;
+            for i = -stepCount, stepCount do
+                for j = -stepCount, stepCount do 
+                    local newMouseX, newMouseY = mouseX + i * fingerStepSize,  mouseY + j * fingerStepSize;
+                    event.x, event.y = newMouseX, newMouseY;
+                    local el, zindex = self:GetMouseHoverElement(event);
+                    local radius = i * i + j * j;
+                    if (zindex > lastZIndex or (zindex == lastZIndex and radius < lastRadius)) then
+                        lastMouseX, lastMouseY = newMouseX, newMouseY;
+                        lastZIndex, lastRadius, lastEl = zindex, radius, el;
+                    end
+                end
+            end
+            event.x, event.y = lastMouseX, lastMouseY;
+            self.last_mouse_down_x, self.last_mouse_down_y, self.last_hover_element = lastMouseX, lastMouseY, lastEl;
+        end
+        if (event:GetType() == "mouseReleaseEvent" and event:GetLastType() == "mousePressEvent") then
+            event.x, event.y = self.last_mouse_down_x, self.last_mouse_down_y;
+        end
+    end
+
+    local element, eventType = nil, event:GetType();
+    if (eventType == "mouseMoveEvent") then
+        element = self:Hover(event, true);
+    else 
+        element = self:GetMouseHoverElement(event);
+    end
+    return element or self;
+end
+
 -- 鼠标事件处理函数
 function Window:HandleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
-    
-    -- 防止鼠标不动但一直触发mouseMoveEvent事件
-    local event_type = event:GetType();
-    if (event_type == "mouseMoveEvent" and self.last_event_type == "mouseMoveEvent") then
-        if (self.last_mouse_x == event.x and self.last_mouse_y == event.y) then return end
-        self.last_mouse_x, self.last_mouse_y = event.x, event.y;
-    end
-    self.last_event_type = event_type;
 
     -- local BeginTime = ParaGlobal.timeGetTime();
     local eventType = event:GetType();
@@ -411,7 +442,8 @@ function Window:HandleMouseEvent(event)
     end
 
     -- 获取悬浮元素
-    local hoverElement = self:Hover(event, true) or self;
+    -- local hoverElement = self:Hover(event, true) or self;
+    local hoverElement = self:GetMouseTargetElement(event);
     local lastHoverElement = self:GetHoverElement();
     if (lastHoverElement ~= hoverElement) then
         if (lastHoverElement) then lastHoverElement:CallEventCallback("OnMouseOut", event) end

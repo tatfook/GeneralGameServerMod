@@ -754,6 +754,52 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
     return hoverElement, maxZIndex;
 end
 
+-- 获取悬浮元素
+function ElementUI:GetMouseHoverElement(event, zindex, isParentElementHover, isParentPositionElement, scrollElement)
+    isParentElementHover = isParentElementHover == nil and true or isParentElementHover;
+    zindex = zindex or "";
+
+    local hoverElement = nil;
+    local maxZIndex = zindex;
+    local parentElement = self:GetParentElement();
+    local isPositionElement = self:GetLayout():IsPositionElement();
+    local isContainPoint = self:IsContainPoint(event.x, event.y);
+    local isHover = isContainPoint and isParentElementHover;
+    if (isContainPoint) then
+        if (isParentElementHover) then
+            isHover = true;
+        elseif(isPositionElement) then
+            if (not scrollElement or scrollElement == self:GetParentElement()) then
+                isHover = true;
+            end
+        end
+    elseif (scrollElement) then
+        if (isPositionElement) then 
+            scrollElement = nil;
+        else 
+            return nil, maxZIndex; 
+        end
+    end
+    if (isHover) then hoverElement = self end
+    -- 设置滚动元素
+    local scrollX, scrollY = self:GetScrollPos();
+    if (scrollX > 0 or scrollY > 0) then scrollElement = self end
+    -- 初始化zindex
+    zindex = zindex .. "-" .. self:GetZIndex();
+    maxZIndex = zindex;
+    -- 事件序遍历 取第一悬浮元素
+    for child in self:ChildElementIterator(false) do
+        if (child:GetViewVisible()) then
+            local childHoverElement, childZIndex = child:GetMouseHoverElement(event, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
+            if (childHoverElement and maxZIndex < childZIndex) then
+                hoverElement = childHoverElement;
+                maxZIndex = childZIndex;
+            end
+        end
+    end
+    return hoverElement, maxZIndex;
+end
+
 function ElementUI:OnFocusOut()
     local onblur = self:GetAttrFunctionValue("onblur");
 	if (onblur) then onblur(self) end
@@ -871,5 +917,7 @@ function ElementUI:IsOverflow()
 end
 
 function ElementUI:IsTouchMode()
+    -- return true;
     return System.os.IsTouchMode();
 end
+

@@ -751,3 +751,11 @@ function Element:GetPositionElements()
     GetPositionElements(self);
     return list;
 end
+
+-- 当前元素是否是指定元素的祖先
+function ElementUI:IsAncestorOf(element)
+    while (element and element ~= self) do
+        element = element:GetParentElement();
+    end
+    return element == self;
+end

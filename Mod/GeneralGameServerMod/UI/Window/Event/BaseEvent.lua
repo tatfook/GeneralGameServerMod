@@ -15,6 +15,7 @@ BaseEvent:Property("Window");    -- 事件窗口
 BaseEvent:Property("Element");   -- 事件元素
 
 function BaseEvent:Init(event_type, window)
+    self.last_event_type = self.event_type;
     self.event_type = event_type;
     self.accepted = nil;
 
@@ -29,8 +30,8 @@ function BaseEvent:GetEventType()
 	return self.event_type;
 end
 
-function BaseEvent:GetType() 
-	local event_type = self:GetEventType();
+function BaseEvent:GetType(event_type) 
+	event_type = event_type or self:GetEventType();
 
 	if (event_type == "onmousedown") then return "mousePressEvent"
     elseif (event_type == "onmouseup") then return "mouseReleaseEvent"
@@ -43,6 +44,10 @@ function BaseEvent:GetType()
     elseif (event_type == "oninputmethod") then return "inputMethodEvent"
 	else return event_type
     end
+end
+
+function BaseEvent:GetLastType()
+    return self:GetType(self.last_event_type);
 end
 
 function BaseEvent:Accept()

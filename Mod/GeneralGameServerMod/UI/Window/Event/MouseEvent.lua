@@ -40,9 +40,24 @@ function MouseEvent:Init(event_type, window, params)
         self.shift_pressed, self.ctrl_pressed, self.alt_pressed = params.shift_pressed or self.shift_pressed, params.ctrl_pressed or self.ctrl_pressed, params.alt_pressed or self.alt_pressed;
     end
 
-    if (event_type == "onmousedown") then self.down_mouse_screen_x, self.down_mouse_screen_y = self.x, self.y end
-    if (event_type == "onmouseup") then self.up_mouse_screen_x, self.up_mouse_screen_y = self.x, self.y end
+    if (event_type == "onmousedown") then 
+        self.down_mouse_screen_x, self.down_mouse_screen_y = self.x, self.y;
+    end
     
+    self.last_mouse_x, self.last_mouse_y = self.mouse_x, self.mouse_y;
+    self.mouse_x, self.mouse_y = self.x, self.y;
+
+    if (event_type == "onmousemove") then 
+        if (self.last_event_type == "onmousedown" and self.down_mouse_screen_x == self.x and self.down_mouse_screen_y == self.y) then 
+            self.event_type = "onmousedown";  -- 改写事件名    底层bug 触发 onmousedown 后会立即触发onmousemove事件, 但鼠标并未移动, 则忽略掉 
+            return nil; -- 无效事件
+        end
+        if (self.last_event_type == "onmousemove" and self.last_mouse_x == self.x and self.last_mouse_y == self.y) then return nil end
+    end
+    
+    if (event_type == "onmouseup") then 
+        self.up_mouse_screen_x, self.up_mouse_screen_y = self.x, self.y;
+    end
 	return self;
 end
 
