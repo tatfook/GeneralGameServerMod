@@ -37,7 +37,7 @@ function Statement:Render(painter)
     local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
     local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
     Shape:SetBrush(self:GetBlock():GetBrush());
-    Shape:DrawInputStatement(painter, self.leftUnitCount, self.topUnitCount, blockWidthUnitCount, self.heightUnitCount);
+    Shape:DrawInputStatement(painter, blockWidthUnitCount, self.heightUnitCount, self.leftUnitCount, self.topUnitCount);
     local inputBlock = self:GetInputBlock();
     if (not inputBlock) then return end
     inputBlock:Render(painter)

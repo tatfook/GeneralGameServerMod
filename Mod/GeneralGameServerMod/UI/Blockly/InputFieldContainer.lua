@@ -114,7 +114,7 @@ end
 function InputFieldContainer:Render(painter)
     if (not self:IsInputStatementContainer() and self:GetBlock():IsStatement()) then
         Shape:SetBrush(self:GetBlock():GetBrush());
-        Shape:DrawRect(painter, self.leftUnitCount, self.topUnitCount, self.widthUnitCount, self.heightUnitCount);
+        Shape:DrawRect(painter, self.widthUnitCount, self.heightUnitCount, self.leftUnitCount, self.topUnitCount);
     end
     for _, inputField in ipairs(self.inputFields) do
         inputField:Render(painter);

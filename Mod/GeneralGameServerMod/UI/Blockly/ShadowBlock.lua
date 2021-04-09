@@ -23,6 +23,9 @@ function ShadowBlock:Init(blockly, opt)
         output = true,
         color = "#00000080",
         isDraggable = false,
+        ToNPL = function() 
+            return "\n";
+        end,
     };
 
     ShadowBlock._super.Init(self, blockly, opt);
