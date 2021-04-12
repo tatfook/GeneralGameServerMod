@@ -58,6 +58,7 @@ function MouseEvent:Init(event_type, window, params)
     if (event_type == "onmouseup") then 
         self.up_mouse_screen_x, self.up_mouse_screen_y = self.x, self.y;
     end
+
 	return self;
 end
 

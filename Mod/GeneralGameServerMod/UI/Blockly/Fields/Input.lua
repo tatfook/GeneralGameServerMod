@@ -15,6 +15,8 @@ local Shape = NPL.load("../Shape.lua");
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Input = commonlib.inherit(Field, NPL.export());
 
+Input:Property("ClassName", "FieldInput");     -- 类名
+
 function Input:GetFieldEditType()
     return "input";
 end

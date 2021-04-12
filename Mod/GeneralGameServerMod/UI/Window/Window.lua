@@ -391,7 +391,7 @@ end
 function Window:GetMouseTargetElement(event)
     if (self:IsTouchMode()) then
         if (event:GetType() == "mousePressEvent") then 
-            local fingerSize, fingerStepSize = 60, 10;
+            local fingerSize, fingerStepSize = 10, 5;
             local stepCount = fingerSize / fingerStepSize / 2;
             local lastZIndex, lastRadius, lastMouseX, lastMouseY, lastEl = "", 0, 0, 0, self;
             local mouseX, mouseY = event.x, event.y;

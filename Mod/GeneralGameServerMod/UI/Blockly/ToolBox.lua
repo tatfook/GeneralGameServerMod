@@ -27,6 +27,7 @@ function ToolBox:ctor()
     self.categoryMap = {};
     self.categoryList = {}
     self.categoryTotalHeight = 0;
+    self.MouseWheel = {};
     -- self:SetScale(0.75);
     self:SetScale(1);
 end
@@ -140,17 +141,18 @@ function ToolBox:GetMouseUI(x, y, event)
     local scale = self:GetScale();
     x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);
     if (x > Const.ToolBoxWidth) then return nil end
+    if (x <= Const.ToolBoxCategoryWidth) then return self end
     x, y = math.floor(x / scale + 0.5), math.floor(y / scale + 0.5);
     for _, block in ipairs(self.blocks) do
         ui = block:GetMouseUI(x, y, event);
         if (ui) then 
-            return ui:GetBlock();
+            return ui:GetTopBlock();
         end
     end
     return self;
 end
 
-function ToolBox:OnMouseDown(event)
+function ToolBox:OnMouseDownCategory(event)
     local blockly = self:GetBlockly();
     local x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);         -- 防止减去偏移量
     if (x > self.categoryTotalWidth or y > self.categoryTotalHeight) then return end
@@ -168,10 +170,32 @@ function ToolBox:OnMouseDown(event)
     end
 end
 
+
+function ToolBox:OnMouseDown(event)
+    local blockly = self:GetBlockly();
+    local x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);         -- 防止减去偏移量
+    if (x <= Const.ToolBoxCategoryWidth) then return self:OnMouseDownCategory(event) end
+
+    if (self:GetBlockly():IsTouchMode()) then
+        self.MouseWheel.mouseX, self.MouseWheel.mouseY = event:GetScreenXY();
+        self.MouseWheel.isStartWheel = true;
+    end
+end
+
 function ToolBox:OnMouseMove(event)
+    if (self.MouseWheel.isStartWheel) then
+        local x, y = event:GetScreenXY();
+        if (y ~= self.MouseWheel.mouseY) then
+            local mouse_wheel = y < self.MouseWheel.mouseY and 1 or -1;
+            self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
+            event.mouse_wheel = mouse_wheel;
+            self:OnMouseWheel(event);
+        end
+    end
 end
 
 function ToolBox:OnMouseUp(event)
+    if (self.MouseWheel.isStartWheel) then self.MouseWheel.isStartWheel = false end
 end
 
 function ToolBox:OnMouseWheel(event)

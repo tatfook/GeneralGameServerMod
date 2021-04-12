@@ -28,6 +28,8 @@ function DefaultSimulator:Finish(event, window)
     local event_type = event:GetEventType();
     if (event_type == "onmouseup") then
         self:AddVirtualEvent("UIWindowClickEvent", Params:GetVirtualEventParams());
+    elseif (event_type == "onmousewheel") then
+        self:AddVirtualEvent("UIWindowWheelEvent", Params:GetVirtualEventParams());
     elseif (event_type == "onkeydown") then 
         self:AddVirtualEvent("UIWindowKeyBoardEvent" ,Params:GetVirtualEventParams());
     end
@@ -36,6 +38,8 @@ end
 function DefaultSimulator:TriggerVirtualEvent(virtualEventType, virtualEventParams, window)
     if (virtualEventType == "UIWindowClickEvent") then
         return self:UIWindowClickTrigger(virtualEventParams, window);
+    elseif (virtualEventType == "UIWindowWheelEvent") then
+        return self:UIWindowWheelTrigger(virtualEventParams, window);
     elseif (virtualEventType == "UIWindowKeyBoardEvent") then
         return self:UIWindowKeyBoardTrigger(virtualEventParams, window);
     end
@@ -44,6 +48,8 @@ end
 function DefaultSimulator:HandlerVirtualEvent(virtualEventType, virtualEventParams, window)
     if (virtualEventType == "UIWindowClickEvent") then
         return self:UIWindowClick(virtualEventParams, window);
+    elseif (virtualEventType == "UIWindowWheelEvent") then
+        return self:UIWindowWheel(virtualEventParams, window);
     elseif (virtualEventType == "UIWindowKeyBoardEvent") then
         return self:UIWindowKeyBoard(virtualEventParams, window);
     end
@@ -71,6 +77,15 @@ function DefaultSimulator:UIWindowClickTrigger(params, window)
         local x, y = window:WindowPointToScreenPoint(params.down_mouse_window_x, params.down_mouse_window_y);
         return self:SetClickTrigger(x, y, params.mouse_button);
     end
+end
+
+-- 鼠标滚动
+function DefaultSimulator:UIWindowWheel(params, window)
+    local mouse_x, mouse_y = window:WindowPointToScreenPoint(params.mouse_window_x, params.mouse_window_y);
+    window:OnEvent("onmousewheel", {mouse_x = mouse_x, mouse_y = mouse_y, mouse_wheel = params.mouse_wheel});
+end
+
+function DefaultSimulator:UIWindowWheelTrigger(params, window)
 end
 
 function DefaultSimulator:UIWindowKeyBoard(params, window)

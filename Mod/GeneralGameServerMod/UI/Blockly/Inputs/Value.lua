@@ -18,6 +18,7 @@ local Value = commonlib.inherit(Input, NPL.export());
 
 local TextMarginUnitCount = Const.TextMarginUnitCount;    -- 文本边距
 
+Value:Property("ClassName", "InputValue");     -- 类名
 Value:Property("Value", ""); -- 值
 Value:Property("Color", "#000000");
 

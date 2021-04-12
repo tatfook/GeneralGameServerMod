@@ -73,6 +73,16 @@ function Simulator:SetClickTrigger(mouseX, mouseY, mouseButton)
     return callback;
 end
 
+function Simulator:SetMouseWheelTrigger(delta, mouseX, mouseY)
+    local callback = {};
+    MacroPlayer.SetClickTrigger(delta, mouseX, mouseY, function()
+        if(callback.OnFinish) then
+            callback.OnFinish();
+        end
+    end);
+    return callback;
+end
+
 function Simulator:SetDragTrigger(startX, startY, endX, endY, mouseButton)
     local callback = {};
     MacroPlayer.SetDragTrigger(startX, startY, endX, endY, mouseButton, function()

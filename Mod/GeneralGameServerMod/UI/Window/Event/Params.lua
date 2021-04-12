@@ -71,6 +71,13 @@ function Params:Init(event, window)
     if (event_type == "oninputmethod") then
         cache_params.commit_string = event:GetCommitString();
     end
+
+    if (event_type == "onmousewheel") then
+        cache_params.mouse_x, cache_params.mouse_y = event:GetScreenXY(); 
+        cache_params.mouse_window_x, cache_params.mouse_window_y = event:GetWindowXY();   -- 窗口坐标为虚拟的绝对坐标, 不启用窗口自动缩放, 该不会变化
+        cache_params.mouse_wheel = event.mouse_wheel;
+    end
+
 end
 
 function Params:GetVirtualEventParams()
@@ -97,6 +104,10 @@ function Params:GetVirtualEventParams()
         params.key_sequence = cache_params.key_sequence;
         params.is_input_method = cache_params.is_input_method;
         params.commit_string = cache_params.commit_string;
+    end
+
+    if (event_type == "onmousewheel") then
+        params.mouse_window_x, params.mouse_window_y, params.mouse_wheel = cache_params.mouse_window_x, cache_params.mouse_window_y, cache_params.mouse_wheel;
     end
 
     return params;

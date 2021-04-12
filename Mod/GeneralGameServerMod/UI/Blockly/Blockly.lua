@@ -398,14 +398,51 @@ function Blockly:GetLogicAbsPoint(event)
     return x - self.offsetX, y - self.offsetY;
 end
 
+local ClassNameZIndexs = {["BlockInputField"] = 1, ["Block"] = 2, ["Input"] = 3, ["Field"] = 4, ["FieldInput"] = 5};
+function Blockly:GetMouseDownUI(event)
+    if (self:IsTouchMode()) then
+        if (event:GetType() == "mousePressEvent") then 
+            local fingerSize, fingerStepSize = 0, 10;
+            local stepCount = fingerSize / fingerStepSize / 2;
+            local lastRadius, lastZIndex, lastMouseX, lastMouseY, lastUI = 1000000, 0, 0, 0, self;
+            local mouseX, mouseY = event.x, event.y;
+            for i = -stepCount, stepCount do
+                for j = -stepCount, stepCount do 
+                    local newMouseX, newMouseY = mouseX + i * fingerStepSize,  mouseY + j * fingerStepSize;
+                    event.x, event.y = newMouseX, newMouseY;
+                    local x, y = self:GetLogicAbsPoint(event);
+                    local ui = self:GetMouseUI(x, y, event) or self;
+                    local zindex = ClassNameZIndexs[ui:GetClassName()] or 0;
+                    local radius = i * i + j * j;
+                    if (lastZIndex < zindex or (lastZIndex == zindex and radius < lastRadius)) then
+                        lastMouseX, lastMouseY = newMouseX, newMouseY;
+                        lastUI, lastRadius, lastZIndex = ui, radius, zindex;
+                    end
+                end
+            end
+            event.x, event.y = lastMouseX, lastMouseY;
+            self.last_ui_mouse_down_x, self.last_ui_mouse_down_y, self.last_ui = lastMouseX, lastMouseY, lastUI;
+            return self.last_ui;
+        end
+        if (event:GetType() == "mouseReleaseEvent" and event:GetLastType() == "mousePressEvent") then
+            event.x, event.y = self.last_ui_mouse_down_x, self.last_ui_mouse_down_y;
+            return self.last_ui;
+        end
+    end
+    local x, y = self:GetLogicAbsPoint(event);
+    local ui = self:GetMouseUI(x, y, event);
+    return ui;
+end
+
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
     event:Accept();
     self:GetContextMenu():Hide();
     if (event.target ~= self or not event:IsLeftButton()) then return end
 
-    local x, y = self:GetLogicAbsPoint(event);
-    local ui = self:GetMouseUI(x, y, event);
+    -- local x, y = self:GetLogicAbsPoint(event);
+    -- local ui = self:GetMouseUI(x, y, event);
+    local ui = self:GetMouseDownUI(event);
     
     -- 失去焦点
     local focusUI = self:GetFocusUI();
