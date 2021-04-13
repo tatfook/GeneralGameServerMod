@@ -63,9 +63,9 @@ function Block:Init(blockly, opt)
 
     if (opt.id) then self:SetId(opt.id) end
 
-    if (opt.output) then self.outputConnection = Connection:new():Init(self, "value", opt.output) end
-    if (opt.previousStatement) then self.previousConnection = Connection:new():Init(self, "statement", opt.previousStatement) end
-    if (opt.nextStatement) then self.nextConnection = Connection:new():Init(self, "statement", opt.nextStatement) end
+    if (opt.output) then self.outputConnection = Connection:new():Init(self, "output_connection", opt.output) end
+    if (opt.previousStatement) then self.previousConnection = Connection:new():Init(self, "previous_connection", opt.previousStatement) end
+    if (opt.nextStatement) then self.nextConnection = Connection:new():Init(self, "next_connection", opt.nextStatement) end
 
     self:ParseMessageAndArg(opt);
     return self;
@@ -73,9 +73,21 @@ end
 
 function Block:Clone()
     local clone = Block:new():Init(self:GetBlockly(), self:GetOption());
-    for key, val in pairs(self) do
-        if (type(val) ~= "function" and type(val) ~= "table" and rawget(self, key) ~= nil) then clone[key] = val end
-    end
+    clone:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount);
+    for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        for j, inputField in ipairs(inputFieldContainer.inputFields) do
+            local cloneInputField = clone.inputFieldContainerList[i].inputFields[j];
+            if (inputField:IsCanEdit()) then
+                cloneInputField:SetLabel(inputField:GetLabel());
+                cloneInputField:SetValue(inputField:GetValue());
+            end
+            if (inputField:IsInput() and inputField.inputConnection:IsConnection()) then
+                local connectionBlock = inputField.inputConnection:GetConnectionBlock();
+                local cloneConnectionBlock = connectionBlock:Clone();
+                cloneInputField.inputConnection:Connection(cloneConnectionBlock.outputConnection or cloneConnectionBlock.previousConnection);
+            end
+        end
+    end 
     clone:UpdateLayout();
     clone.isNewBlock = true;
     clone:SetDraggable(true);
@@ -336,6 +348,7 @@ function Block:OnMouseMove(event)
         if (not event:IsMove()) then return end
         if (block:IsToolBoxBlock()) then 
             clone = self:Clone();
+            clone.startX, clone.startY, clone.lastMouseMoveX, clone.lastMouseMoveY, clone.isMouseDown = block.startX, block.startY, block.lastMouseMoveX, block.lastMouseMoveY, block.isMouseDown;
             local blockX, blockY = math.floor(block.leftUnitCount * block:GetUnitSize() * toolboxScale / scale + 0.5) - blockly.offsetX, math.floor(block.topUnitCount * block:GetUnitSize() * toolboxScale / scale + 0.5) - blockly.offsetY; 
             clone.startLeftUnitCount = math.floor(blockX / clone:GetUnitSize());
             clone.startTopUnitCount = math.floor(blockY / clone:GetUnitSize());

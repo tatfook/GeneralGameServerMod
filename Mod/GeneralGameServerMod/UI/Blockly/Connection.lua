@@ -42,7 +42,12 @@ end
 
 function Connection:IsMatch(connection)
     if (not connection) then return false end
-    if (self:GetType() ~= connection:GetType()) then return false end
+    local self_type = self:GetType();
+    local conn_type = connection:GetType();
+    if (self_type == "previous_connection" and conn_type ~= "next_connection") then return false end
+    if (self_type == "next_connection" and conn_type ~= "previous_connection") then return false end
+    if (self_type == "output_connection" and conn_type ~= "input_connection") then return false end
+    if (self_type == "input_connection" and conn_type ~= "output_connection") then return false end
     return self:IsIntersect(connection);
 end
 

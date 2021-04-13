@@ -28,7 +28,7 @@ end
 
 function Statement:Init(block, opt)
     Statement._super.Init(self, block, opt);
-    self.inputConnection:SetType("statement");
+    self.inputConnection:SetType("next_connection");
     return self;
 end
 
@@ -72,7 +72,6 @@ function Statement:ConnectionBlock(block)
         block:GetTopBlock():UpdateLayout();
         return true;
     end
-
     local inputBlock = self:GetInputBlock();
     return inputBlock and inputBlock:ConnectionBlock(block);
 end

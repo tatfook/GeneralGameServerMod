@@ -16,10 +16,10 @@ local Connection = NPL.load("../Connection.lua");
 local Input = NPL.load("./Input.lua");
 local Value = commonlib.inherit(Input, NPL.export());
 
-local TextMarginUnitCount = Const.TextMarginUnitCount;    -- 文本边距
+local TextMarginUnitCount = Const.TextMarginUnitCount;     -- 文本边距
 
-Value:Property("ClassName", "InputValue");     -- 类名
-Value:Property("Value", ""); -- 值
+Value:Property("ClassName", "InputValue");                 -- 类名
+Value:Property("Value", "");                               -- 值
 Value:Property("Color", "#000000");
 
 function Value:ctor()
@@ -27,13 +27,11 @@ end
 
 function Value:Init(block, opt)
     opt = opt or {};
-
     opt.color = opt.color or "#000000";
-
     Value._super.Init(self, block, opt);
 
     self.shadowConnection = Connection:new():Init(block);
-    self.inputConnection:SetType("value");
+    self.inputConnection:SetType("input_connection");
 
     local shadow = opt.shadow;
     if (shadow) then

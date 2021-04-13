@@ -53,11 +53,11 @@ end
 function Input:Reset()
     self.cursorShowHideTickCount = 0;
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = 0, 0, nil, nil;
-    self.cursorAt = 1;    -- 光标位置 占据下一个输入位置
-    self.scrollX = 0;     -- 横向滚动的位置 
-    self.undoCmds = {};   -- 撤销命令
-    self.redoCmds = {};   -- 重做命令
-    self.selectStartAt, self.selectEndAt = nil, nil;  -- 文本选择
+    self.cursorAt = 1;                                 -- 光标位置 占据下一个输入位置
+    self.scrollX = 0;                                  -- 横向滚动的位置 
+    self.undoCmds = {};                                -- 撤销命令
+    self.redoCmds = {};                                -- 重做命令
+    self.selectStartAt, self.selectEndAt = nil, nil;   -- 文本选择
 end
 
 function Input:OnAttrValueChange(attrName, attrValue, oldAttrValue)
@@ -244,7 +244,7 @@ end
 function Input:OnKey(event)
     if (not self:IsFocus() or self:IsDisabled()) then return end
     if (self:IsReadOnly()) then return end
-
+    -- 输入串
     local commitString = event:GetCommitString();
 
     -- 忽略控制字符
@@ -259,7 +259,7 @@ end
 function Input:CheckInputText(text)
     local inputType = self:GetAttrStringValue("type", "text");
     if (inputType == "number") then
-        return string.match(text, "^[%d%.]*$");
+        return string.match(text, "^[%-%d%.]*$");
     end
     return true;
 end
