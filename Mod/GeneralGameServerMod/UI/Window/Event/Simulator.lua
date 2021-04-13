@@ -75,7 +75,7 @@ end
 
 function Simulator:SetMouseWheelTrigger(delta, mouseX, mouseY)
     local callback = {};
-    MacroPlayer.SetClickTrigger(delta, mouseX, mouseY, function()
+    MacroPlayer.SetMouseWheelTrigger(delta, mouseX, mouseY, function()
         if(callback.OnFinish) then
             callback.OnFinish();
         end

@@ -86,6 +86,8 @@ function DefaultSimulator:UIWindowWheel(params, window)
 end
 
 function DefaultSimulator:UIWindowWheelTrigger(params, window)
+    local mouse_x, mouse_y = window:WindowPointToScreenPoint(params.mouse_window_x, params.mouse_window_y);
+    return self:SetMouseWheelTrigger(params.mouse_wheel, mouse_x, mouse_y);
 end
 
 function DefaultSimulator:UIWindowKeyBoard(params, window)
