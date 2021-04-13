@@ -19,7 +19,6 @@ function InputMethodEvent:Init(event_type, window, commitString)
     InputMethodEvent._super.Init(self, event_type, window);
 
     self:SetCommitString(commitString or msg);
-	-- print("InputMethodEvent", self:GetCommitString());
     
 	return self;
 end
