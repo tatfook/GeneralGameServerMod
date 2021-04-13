@@ -301,6 +301,12 @@ end
 function Window:OnEvent(event_type, event_args)
     -- 防止鼠标不动但一直触发mouseMoveEvent事件
     local event = self.Event:Init(event_type, self, event_args);
+    -- self.__last_event__ = self.__event__;
+    -- self.__event__ = event;
+    -- if (self.__last_event__ and self.__last_event__.event_type == "oninputmethod" and self.__event__ and self.__event__.event_type == "onkeydown") then
+    --     self.__event__:SetCommitString(self.__last_event__:GetCommitString());
+    -- end
+
     if (not event) then return end
     self:HandleEvent(event);
 end

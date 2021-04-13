@@ -62,11 +62,11 @@ function Params:Init(event, window)
     end
 
     if (event_type == "onkeydown") then
-        local is_input_method = last_event_type == "oninputmethod"; -- oninputmethod => onkeydown
+        local is_input_method = last_event_type == "oninputmethod";                                                            -- oninputmethod => onkeydown  不一定准确 中间可能穿插ondraw事件
         cache_params.ctrl_pressed, cache_params.shift_pressed, cache_params.alt_pressed, cache_params.keyname, cache_params.key_sequence = event.ctrl_pressed, event.shift_pressed, event.alt_pressed, event.keyname, event.key_sequence;
         cache_params.is_input_method = is_input_method; 
-        cache_params.commit_string = is_input_method and cache_params.commit_string or nil;
-    end
+        cache_params.commit_string = is_input_method and cache_params.commit_string or nil;   -- 
+    end 
 
     if (event_type == "oninputmethod") then
         cache_params.commit_string = event:GetCommitString();
@@ -110,5 +110,9 @@ function Params:GetVirtualEventParams()
         params.mouse_window_x, params.mouse_window_y, params.mouse_wheel = cache_params.mouse_window_x, cache_params.mouse_window_y, cache_params.mouse_wheel;
     end
 
+    if (event_type == "oninputmethod") then
+        params.commit_string = cache_params.commit_string;
+    end
+    
     return params;
 end

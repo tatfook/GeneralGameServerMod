@@ -28,6 +28,7 @@ end
 local window_id = 0;
 local simulators = {};
 local default_simulator_name = "DefaultSimulatorName";
+local macro_cache_obj = {};
 
 function Macros.UIWindowEvent(params)
     local window = windows[params.window_name];
@@ -45,14 +46,27 @@ end
 
 function Simulator:AddVirtualEvent(virtualEventType, virtualEventParams)
     if (not self:IsRecording()) then return end 
-    
+    local macroCount = #Macros.macros;
+    local lastMacro = Macros.macros[macroCount];
+
+    if (macro_cache_obj.lastMacro and macro_cache_obj.lastMacro == lastMacro 
+        and macro_cache_obj.virtual_event_type == "UIWindowInputMethodEvent" and virtualEventType == "UIWindowKeyBoardEvent" 
+        and macro_cache_obj.virtual_event_params.commit_string == virtualEventParams.commit_string) then
+        Macros.macros[macroCount - 1], Macros.macros[macroCount] = nil, nil;
+    end
+
     Macros:AddMacro("UIWindowEvent", {
         window_name = Params:GetWindowName(),
         event_type = Params:GetEventType(),
         simulator_name = self:GetSimulatorName(),
         virtual_event_type = virtualEventType,
         virtual_event_params = virtualEventParams,
-    });                 
+    });  
+    
+    macroCount = #Macros.macros;
+    macro_cache_obj.lastMacro = Macros.macros[macroCount];
+    macro_cache_obj.virtual_event_type = virtualEventType;
+    macro_cache_obj.virtual_event_params = virtualEventParams;
 end
 
 function Simulator:IsRecording()

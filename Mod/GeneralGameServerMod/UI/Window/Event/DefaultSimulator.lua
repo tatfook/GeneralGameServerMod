@@ -32,6 +32,8 @@ function DefaultSimulator:Finish(event, window)
         self:AddVirtualEvent("UIWindowWheelEvent", Params:GetVirtualEventParams());
     elseif (event_type == "onkeydown") then 
         self:AddVirtualEvent("UIWindowKeyBoardEvent" ,Params:GetVirtualEventParams());
+    elseif (event_type == "oninputmethod") then 
+        self:AddVirtualEvent("UIWindowInputMethodEvent" ,Params:GetVirtualEventParams());
     end
 end
 
@@ -42,6 +44,7 @@ function DefaultSimulator:TriggerVirtualEvent(virtualEventType, virtualEventPara
         return self:UIWindowWheelTrigger(virtualEventParams, window);
     elseif (virtualEventType == "UIWindowKeyBoardEvent") then
         return self:UIWindowKeyBoardTrigger(virtualEventParams, window);
+    elseif (virtualEventType == "UIWindowInputMethodEvent") then 
     end
 end
 
@@ -52,6 +55,8 @@ function DefaultSimulator:HandlerVirtualEvent(virtualEventType, virtualEventPara
         return self:UIWindowWheel(virtualEventParams, window);
     elseif (virtualEventType == "UIWindowKeyBoardEvent") then
         return self:UIWindowKeyBoard(virtualEventParams, window);
+    elseif (virtualEventType == "UIWindowInputMethodEvent") then 
+        return self:UIWindowInputMethod(virtualEventParams, window);
     end
 end
 
@@ -88,6 +93,10 @@ end
 function DefaultSimulator:UIWindowWheelTrigger(params, window)
     local mouse_x, mouse_y = window:WindowPointToScreenPoint(params.mouse_window_x, params.mouse_window_y);
     return self:SetMouseWheelTrigger(params.mouse_wheel, mouse_x, mouse_y);
+end
+
+function DefaultSimulator:UIWindowInputMethod(params, window)
+    window:OnEvent("oninputmethod", params.commit_string);  
 end
 
 function DefaultSimulator:UIWindowKeyBoard(params, window)

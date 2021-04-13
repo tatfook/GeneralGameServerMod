@@ -12,6 +12,7 @@ local MouseEvent = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Event/M
 local BaseEvent = NPL.load("./BaseEvent.lua");
 
 local KeyEvent = commonlib.inherit(BaseEvent, NPL.export());
+-- KeyEvent:Property("CommitString");
 
 -- return current mouse event object. 
 -- @param event_type: "keyDownEvent", "keyPressedEvent", "keyReleaseEvent"
@@ -27,6 +28,7 @@ function KeyEvent:Init(event_type, window, params)
 
 	if (type(params) == "table") then
 		self.keyname, self.shift_pressed, self.alt_pressed, self.ctrl_pressed, self.key_sequence = params.keyname or self.keyname, params.shift_pressed or self.shift_pressed, params.alt_pressed or self.alt_pressed, params.ctrl_pressed or self.ctrl_pressed, params.key_sequence or self.key_sequence;
+		-- self:SetCommitString(params.commit_string);
 	end
 
 	return self;
