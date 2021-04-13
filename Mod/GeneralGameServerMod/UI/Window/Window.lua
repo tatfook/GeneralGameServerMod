@@ -391,9 +391,9 @@ end
 function Window:GetMouseTargetElement(event)
     if (self:IsTouchMode()) then
         if (event:GetType() == "mousePressEvent") then 
-            local fingerSize, fingerStepSize = 10, 5;
+            local fingerSize, fingerStepSize = 20, 5;
             local stepCount = fingerSize / fingerStepSize / 2;
-            local lastZIndex, lastRadius, lastMouseX, lastMouseY, lastEl = "", 0, 0, 0, self;
+            local lastZIndex, lastRadius, lastMouseX, lastMouseY, lastEl, lastIsExistMouseEvent = "", 0, 0, 0, self, false;
             local mouseX, mouseY = event.x, event.y;
             for i = -stepCount, stepCount do
                 for j = -stepCount, stepCount do 
@@ -401,9 +401,12 @@ function Window:GetMouseTargetElement(event)
                     event.x, event.y = newMouseX, newMouseY;
                     local el, zindex = self:GetMouseHoverElement(event);
                     local radius = i * i + j * j;
-                    if (zindex > lastZIndex or (zindex == lastZIndex and radius < lastRadius)) then
-                        lastMouseX, lastMouseY = newMouseX, newMouseY;
-                        lastZIndex, lastRadius, lastEl = zindex, radius, el;
+                    local isExistMouseEvent = el and el:IsExistMouseEvent();
+                    local selected = not lastIsExistMouseEvent and isExistMouseEvent;
+                    selected = selected or (lastIsExistMouseEvent == isExistMouseEvent and zindex > lastZIndex);
+                    selected = selected or (lastIsExistMouseEvent == isExistMouseEvent and zindex == lastZIndex and radius < lastRadius);
+                    if (selected) then
+                         lastMouseX, lastMouseY, lastZIndex, lastRadius, lastEl, lastIsExistMouseEvent = newMouseX, newMouseY, zindex, radius, el, isExistMouseEvent;
                     end
                 end
             end

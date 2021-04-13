@@ -81,12 +81,20 @@ end
 
 -- 是否鼠标左键按下
 function MouseEvent:IsLeftButton()
-	return self.buttons_state == 1;
+    if (System.os.IsTouchMode()) then
+        return self.mouse_button == "left";
+    else
+	    return self.buttons_state == 1;
+    end
 end
 
 -- 是否鼠标右键按下
 function MouseEvent:IsRightButton()
-	return self.buttons_state == 2;
+    if (System.os.IsTouchMode()) then
+        return self.mouse_button == "right";
+    else
+        return self.buttons_state == 2;
+    end
 end
 
 -- 是否是鼠标中键按下 

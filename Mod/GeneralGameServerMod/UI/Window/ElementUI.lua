@@ -916,8 +916,16 @@ function ElementUI:IsOverflow()
     return layout:IsOverflowX() or layout:IsOverflowY();
 end
 
+function ElementUI:IsExistMouseEvent()
+    local onclick = self:GetAttrFunctionValue("onclick");
+    local onmousedown = self:GetAttrFunctionValue("onmousedown");
+    local onmousemove = self:GetAttrFunctionValue("onmousemove");
+    local onmouseup = self:GetAttrFunctionValue("onmouseup");
+    return (onclick or onmousedown or onmousemove or onmouseup) and true or false;
+end
+
 function ElementUI:IsTouchMode()
-    -- return true;
-    return System.os.IsTouchMode();
+    return true;
+    -- return System.os.IsTouchMode();
 end
 
