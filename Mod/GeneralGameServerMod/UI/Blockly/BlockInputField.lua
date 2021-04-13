@@ -179,6 +179,8 @@ function BlockInputField:GetSingleLineTextHeight()
 end
 
 function BlockInputField:GetShowText()
+    if (self.widthUnitCount < Const.MaxTextShowWidthUnitCount) then return self:GetLabel() end
+    
     local text = self:GetLabel();
     local width = (self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2) * self:GetUnitSize();
     local show_text = _guihelper.TrimUtf8TextByWidth(text, width, self:GetFont());  -- AutoTrimTextByWidth 使用此函数中文显示可能异常
