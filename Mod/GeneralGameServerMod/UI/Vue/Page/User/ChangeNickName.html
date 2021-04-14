@@ -32,7 +32,7 @@ local function FinishCallback(value, notify)
 end
 
 function cancel()
-    FinishCallback(self.nickname, false);
+    FinishCallback(nil, false);
 end
 
 function ShowResultBox(text)

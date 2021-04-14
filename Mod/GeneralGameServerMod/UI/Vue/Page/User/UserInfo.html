@@ -299,8 +299,9 @@ function ClickGoRealName()
 end
 
 function OnEditNickNameFinish(nickname)
-    UserDetail.nickname = nickname;
     self.isEditNickName = false;
+    if (not nickname) then return end
+    UserDetail.nickname = nickname;
     self.nickname = nickname;
     local userinfo = KeepWorkItemManager.GetProfile();
     userinfo.nickname = nickname;
