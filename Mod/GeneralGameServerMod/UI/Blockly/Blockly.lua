@@ -10,6 +10,8 @@ local Blockly = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blockly.lua");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Sound/BlockSound.lua");
+local BlockSound = commonlib.gettable("MyCompany.Aries.Game.Sound.BlockSound");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
@@ -27,6 +29,9 @@ local BlocklySimulator = NPL.load("./BlocklySimulator.lua", IsDevEnv);
 
 local Blockly = commonlib.inherit(Element, NPL.export());
 
+local ConnectionBlockSound = BlockSound:new():Init({"cloth1", "cloth2", "cloth3",});
+local DestroyBlockSound = BlockSound:new():Init({"break3", "break2", });
+
 Blockly:Property("ClassName", "Blockly");  
 Blockly:Property("EditorElement");            -- 编辑元素 用户输入
 Blockly:Property("ContextMenu");              -- 上下文菜单
@@ -38,6 +43,14 @@ Blockly:Property("FileManager");              -- 文件管理器
 Blockly:Property("ToolBox");                  -- 工具栏
 Blockly:Property("ShadowBlock");              -- 占位块
 Blockly:Property("Scale", 1);                 -- 缩放
+
+function Blockly.PlayConnectionBlockSound()
+    ConnectionBlockSound:play2d();
+end
+
+function Blockly.PlayDestroyBlockSound()
+    DestroyBlockSound:play2d();
+end
 
 function Blockly:ctor()
     self.offsetX, self.offsetY = 0, 0;

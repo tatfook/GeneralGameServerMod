@@ -10,7 +10,6 @@ local Block = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Block.lua")
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
-
 local Const = NPL.load("./Const.lua");
 local Shape = NPL.load("./Shape.lua");
 local Connection = NPL.load("./Connection.lua", IsDevEnv);
@@ -404,10 +403,14 @@ function Block:OnMouseUp(event)
             blockly:SetCurrentBlock(nil);
             blockly:ReleaseMouseCapture();
             -- 移除块
-            if (not self.isNewBlock) then blockly:Do({action = "DeleteBlock", block = self}) end
+            if (not self.isNewBlock) then 
+                blockly:Do({action = "DeleteBlock", block = self});
+                blockly:PlayDestroyBlockSound();
+            end
             return ;
         else
-            self:TryConnectionBlock();
+            local isConnection = self:TryConnectionBlock();
+            if (isConnection) then blockly:PlayConnectionBlockSound() end
         end
         if (self.isNewBlock) then 
             blockly:Do({action = "NewBlock", block = self});
