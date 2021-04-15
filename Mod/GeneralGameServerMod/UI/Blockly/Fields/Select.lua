@@ -65,6 +65,11 @@ function Select:GetLabelByValue(value)
     return options[1] and (options[1][1] or options[1].label);
 end
 
+function Select:SetFieldValue(value)
+    value = Select._super.SetFieldValue(self, value);
+    self:SetLabel(self:GetLabelByValue(self:GetValue()));
+end
+
 function Select:GetFieldEditType()
     return "select";
 end

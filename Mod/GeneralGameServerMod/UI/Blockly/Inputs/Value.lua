@@ -39,6 +39,15 @@ function Value:Init(block, opt)
         local shadowBlock = self:GetBlockly():GetBlockInstanceByType(shadowType);
         if (shadowBlock and shadowBlock.outputConnection) then
             shadowBlock:SetDraggable(false);
+            shadowBlock:SetCanCopy(false);
+            shadowBlock:SetCanDelete(false);
+            shadowBlock:SetProxyBlock(block);
+            
+            local values = commonlib.split(self:GetValue(), ' ');
+            for i, opt in ipairs(shadowBlock.inputFieldOptionList) do
+                local field = shadowBlock:GetInputField(opt.name);
+                field:SetFieldValue(values[i]);
+            end
             self.inputConnection:Connection(shadowBlock.outputConnection);
         end
     end

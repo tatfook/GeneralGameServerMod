@@ -544,7 +544,7 @@ function Blockly:OnMouseUp(event)
             menuType = "blockly";
         else 
             block = ui:GetBlock();
-            self:SetCurrentBlock(block);
+            self:SetCurrentBlock(block:GetProxyBlock() or block);
         end
         self:GetContextMenu():Show(menuType);
     end

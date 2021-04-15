@@ -43,6 +43,9 @@ Block:Property("ClassName", "Block");
 Block:Property("TopBlock", false, "IsTopBlock");               -- 是否是顶层块
 Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");       -- 是否是工具箱块
 Block:Property("Draggable", true, "IsDraggable");              -- 是否可以拖拽
+Block:Property("CanCopy", true, "IsCanCopy");                  -- 是否可复制
+Block:Property("CanDelete", true, "IsCanDelete");              -- 是否可删除
+Block:Property("ProxyBlock");                                  -- 代理块
 
 function Block:ctor()
     self:SetId(nextBlockId);
@@ -50,6 +53,7 @@ function Block:ctor()
 
     self.inputFieldContainerList = {};           -- 输入字段容器列表
     self.inputFieldMap = {};
+    self.inputFieldOptionList = {};
 
     self:SetToolBoxBlock(false);
     self:SetDraggable(true);
@@ -83,15 +87,20 @@ function Block:Clone()
             end
             if (inputField:IsInput() and inputField.inputConnection:IsConnection()) then
                 local connectionBlock = inputField.inputConnection:GetConnectionBlock();
-                local cloneConnectionBlock = connectionBlock:Clone();
-                cloneInputField.inputConnection:Connection(cloneConnectionBlock.outputConnection or cloneConnectionBlock.previousConnection);
+                if (connectionBlock:IsCanCopy()) then
+                    local cloneConnectionBlock = connectionBlock:Clone();
+                    cloneInputField.inputConnection:Connection(cloneConnectionBlock.outputConnection or cloneConnectionBlock.previousConnection);
+                end
             end
         end
     end 
     clone:UpdateLayout();
     clone.isNewBlock = true;
-    clone:SetDraggable(true);
+    clone:SetDraggable(self:IsDraggable());
+    clone:SetCanCopy(self:IsCanCopy());
+    clone:SetCanDelete(self:IsCanDelete());
     clone:SetToolBoxBlock(false);
+
     return clone;
 end
 
@@ -154,6 +163,7 @@ function Block:ParseMessageAndArg(opt)
                     inputFieldContainer:SetInputStatementContainer(true);
                     inputFieldContainerIndex = inputFieldContainerIndex + 1;
                 end
+                self.inputFieldOptionList[no] = inputField;
             end
             startPos = pos + 1 + nolen;
         end
