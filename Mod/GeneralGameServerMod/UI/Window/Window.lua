@@ -494,7 +494,7 @@ function Window:HandleMouseEvent(event)
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "清除元素列表 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 聚焦目标元素  聚焦与事件是否处理无关
     -- if (event:IsAccepted()) then return end
-    if(eventType == "mousePressEvent") then
+    if(eventType == "mousePressEvent" and event:IsLeftButton()) then
         self:SetFocus(if_else(hoverElement:IsDisabled(), nil, hoverElement));
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "鼠标事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);

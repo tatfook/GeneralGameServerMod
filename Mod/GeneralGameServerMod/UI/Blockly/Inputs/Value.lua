@@ -38,17 +38,16 @@ function Value:Init(block, opt)
         local shadowType = shadow.type;
         local shadowBlock = self:GetBlockly():GetBlockInstanceByType(shadowType);
         if (shadowBlock and shadowBlock.outputConnection) then
+            self:SetInputShadowBlock(shadowBlock);
+            shadowBlock:SetInputShadowBlock(true);
             shadowBlock:SetDraggable(false);
-            shadowBlock:SetCanCopy(false);
-            shadowBlock:SetCanDelete(false);
-            shadowBlock:SetProxyBlock(block);
-            
-            local values = commonlib.split(self:GetValue(), ' ');
-            for i, opt in ipairs(shadowBlock.inputFieldOptionList) do
-                local field = shadowBlock:GetInputField(opt.name);
-                field:SetFieldValue(values[i]);
-            end
+            shadowBlock:SetProxyBlock(self:GetBlock());
+            shadowBlock:SetFieldsValue(self:GetValue());
             self.inputConnection:Connection(shadowBlock.outputConnection);
+
+            self.inputConnection:SetOnDisconnectionCallback(function()
+                self.inputConnection:Connection(shadowBlock.outputConnection);
+            end);
         end
     end
 
@@ -108,8 +107,9 @@ function Value:ConnectionBlock(block)
             local inputConnectionConnection = self.inputConnection:Disconnection();
             self.inputConnection:Connection(block.outputConnection);
             self:GetTopBlock():UpdateLayout();
-            if (inputConnectionConnection) then
-                block:GetBlockly():AddBlock(inputConnectionConnection:GetBlock(), true);
+            local inputConnectionConnectionBlock = inputConnectionConnection and inputConnectionConnection:GetBlock();
+            if (inputConnectionConnectionBlock and not inputConnectionConnectionBlock:IsInputShadowBlock()) then
+                block:GetBlockly():AddBlock(inputConnectionConnectionBlock, true);
             end
         end
         return true;
@@ -159,5 +159,5 @@ function Value:GetFieldValue()
             return self:GetValue();
         end
     end
-    return self:GetInputBlock():GetBlockCode();
+    return self:GetInputBlock():GetFieldsValue();
 end

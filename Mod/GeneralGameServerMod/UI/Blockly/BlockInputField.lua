@@ -206,15 +206,21 @@ function BlockInputField:UpdateLayout()
 end
 
 function BlockInputField:OnMouseDown(event)
-    self:GetBlock():OnMouseDown(event);
+    local block = self:GetBlock();
+    block = block:GetProxyBlock() or block;
+    block:OnMouseDown(event);
 end
 
 function BlockInputField:OnMouseMove(event)
-    self:GetBlock():OnMouseMove(event);
+    local block = self:GetBlock();
+    block = block:GetProxyBlock() or block;
+    block:OnMouseMove(event);
 end
 
 function BlockInputField:OnMouseUp(event)
-    self:GetBlock():OnMouseUp(event);
+    local block = self:GetBlock();
+    block = block:GetProxyBlock() or block;
+    block:OnMouseUp(event);
 end
 
 function BlockInputField:GetMouseUI(x, y)

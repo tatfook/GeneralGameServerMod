@@ -16,6 +16,7 @@ local Input = commonlib.inherit(BlockInputField, NPL.export());
 
 Input:Property("ClassName", "Input");
 Input:Property("InputBlock");               -- 输入块
+Input:Property("InputShadowBlock");               -- 输入块
 
 function Input:ctor()
 end
@@ -90,5 +91,9 @@ function Input:LoadFromXmlNode(xmlNode)
         self.inputConnection:Connection(inputBlock.outputConnection);
     else
         self.inputConnection:Connection(inputBlock.previousConnection);
+    end
+    if (inputBlock:IsInputShadowBlock()) then
+        inputBlock:SetProxyBlock(self:GetBlock());
+        self:SetInputShadowBlock(inputBlock);
     end
 end

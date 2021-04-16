@@ -39,12 +39,11 @@ local CurrentBlockBrush = {color = "#ffffff"};
 Block:Property("Blockly");
 Block:Property("Id");
 Block:Property("ClassName", "Block");
-Block:Property("TopBlock", false, "IsTopBlock");               -- 是否是顶层块
-Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");       -- 是否是工具箱块
-Block:Property("Draggable", true, "IsDraggable");              -- 是否可以拖拽
-Block:Property("CanCopy", true, "IsCanCopy");                  -- 是否可复制
-Block:Property("CanDelete", true, "IsCanDelete");              -- 是否可删除
-Block:Property("ProxyBlock");                                  -- 代理块
+Block:Property("TopBlock", false, "IsTopBlock");                               -- 是否是顶层块
+Block:Property("InputShadowBlock", false, "IsInputShadowBlock");               -- 是否是输入shadow块
+Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");                       -- 是否是工具箱块
+Block:Property("Draggable", true, "IsDraggable");                              -- 是否可以拖拽
+Block:Property("ProxyBlock");                                                  -- 代理块
 
 function Block:ctor()
     self:SetId(nextBlockId);
@@ -74,8 +73,8 @@ function Block:Init(blockly, opt)
     return self;
 end
 
-function Block:Clone()
-    local clone = Block:new():Init(self:GetBlockly(), self:GetOption());
+function Block:Clone(clone)
+    clone = clone or Block:new():Init(self:GetBlockly(), self:GetOption());
     clone:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount);
     for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
         for j, inputField in ipairs(inputFieldContainer.inputFields) do
@@ -86,20 +85,15 @@ function Block:Clone()
             end
             if (inputField:IsInput() and inputField.inputConnection:IsConnection()) then
                 local connectionBlock = inputField.inputConnection:GetConnectionBlock();
-                if (connectionBlock:IsCanCopy()) then
-                    local cloneConnectionBlock = connectionBlock:Clone();
-                    cloneInputField.inputConnection:Connection(cloneConnectionBlock.outputConnection or cloneConnectionBlock.previousConnection);
-                end
+                local cloneConnectionBlock = connectionBlock:Clone(connectionBlock:IsInputShadowBlock() and cloneInputField.inputConnection:GetConnectionBlock() or nil);
+                cloneInputField.inputConnection:Connection(cloneConnectionBlock.outputConnection or cloneConnectionBlock.previousConnection);
+                if (connectionBlock:GetProxyBlock() == self) then cloneConnectionBlock:SetProxyBlock(clone) end
             end
         end
     end 
     clone:UpdateLayout();
-    clone.isNewBlock = true;
     clone:SetDraggable(self:IsDraggable());
-    clone:SetCanCopy(self:IsCanCopy());
-    clone:SetCanDelete(self:IsCanDelete());
-    clone:SetToolBoxBlock(false);
-
+    clone:SetInputShadowBlock(self:IsInputShadowBlock());
     return clone;
 end
 
@@ -357,6 +351,8 @@ function Block:OnMouseMove(event)
         if (not event:IsMove()) then return end
         if (block:IsToolBoxBlock()) then 
             clone = self:Clone();
+            clone:SetToolBoxBlock(false);
+            clone.isNewBlock = true;
             clone.startX, clone.startY, clone.lastMouseMoveX, clone.lastMouseMoveY, clone.isMouseDown = block.startX, block.startY, block.lastMouseMoveX, block.lastMouseMoveY, block.isMouseDown;
             local blockX, blockY = math.floor(block.leftUnitCount * block:GetUnitSize() * toolboxScale / scale + 0.5) - blockly.offsetX, math.floor(block.topUnitCount * block:GetUnitSize() * toolboxScale / scale + 0.5) - blockly.offsetY; 
             clone.startLeftUnitCount = math.floor(blockX / clone:GetUnitSize());
@@ -533,6 +529,26 @@ function Block:IsBlock()
     return true;
 end
 
+-- 设置所有字段值
+function Block:SetFieldsValue(value)
+    local values = commonlib.split(value, ' ');
+    for i, opt in ipairs(self.inputFieldOptionList) do
+        local field = self:GetInputField(opt.name);
+        if (field) then field:SetFieldValue(values[i]) end 
+    end
+end
+
+-- 获取所有字段值
+function Block:GetFieldsValue()
+    local value = "";
+    for i, opt in ipairs(self.inputFieldOptionList) do
+        local fieldValue = self:GetFieldValue(opt.name);
+        if (i == 1) then value = fieldValue
+        else value = value .. " " .. fieldValue end 
+    end
+    return value;
+end
+
 -- 获取字段值
 function Block:GetFieldValue(name)
     local inputAndField = self.inputFieldMap[name];
@@ -582,6 +598,8 @@ function Block:SaveToXmlNode()
     
     attr.type = self:GetType();
     attr.leftUnitCount, attr.topUnitCount = self:GetLeftTopUnitCount();
+    attr.isInputShadowBlock = self:IsInputShadowBlock() and "true" or "false";
+    attr.isDraggable = self:IsDraggable() and "true" or "false";
 
     for _, inputAndField in pairs(self.inputFieldMap) do
         local subXmlNode = inputAndField:SaveToXmlNode();
@@ -599,7 +617,9 @@ function Block:LoadFromXmlNode(xmlNode)
     local attr = xmlNode.attr;
 
     self:SetLeftTopUnitCount(tonumber(attr.leftUnitCount) or 0, tonumber(attr.topUnitCount) or 0);
-    
+    self:SetInputShadowBlock(attr.isInputShadowBlock == "true");
+    self:SetDraggable(if_else(attr.isDraggable == "false", false, true));
+
     for _, childXmlNode in ipairs(xmlNode) do
         if (childXmlNode.name == "Block") then
             local nextBlock = self:GetBlockly():GetBlockInstanceByXmlNode(childXmlNode);

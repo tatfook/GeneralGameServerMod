@@ -16,7 +16,7 @@ Connection:Property("Connection");        -- 连接的链接
 Connection:Property("Block");             -- 所属块
 Connection:Property("Check");             -- 连接核对 是否可以链接
 Connection:Property("Type");              -- 类型 statement  value
-
+Connection:Property("OnDisconnectionCallback")
 function Connection:ctor()
     self.left, self.top, self.width, self.height = 0, 0, 0, 0;
     self.centerX, self.centerY, self.halfWidth, self.halfHeight = 0, 0, 0, 0;
@@ -70,9 +70,21 @@ end
 -- 解除连接
 function Connection:Disconnection()
     local connection = self:GetConnection();
-    if (connection) then connection:SetConnection(nil) end
-    self:SetConnection(nil)
+    if (connection == nil) then return nil end
+
+    self:SetConnection(nil);
+    self:OnDisconnection(connection);
+    connection:SetConnection(nil);
+    connection:OnDisconnection(self);
+
     return connection;
+end
+
+function Connection:OnDisconnection()
+    local OnDisconnectionCallback = self:GetOnDisconnectionCallback();
+    if (type(OnDisconnectionCallback) == "function") then
+        OnDisconnectionCallback();
+    end
 end
 
 -- 获取连接块

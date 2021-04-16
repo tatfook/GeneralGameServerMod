@@ -538,15 +538,17 @@ function Blockly:OnMouseUp(event)
     local ui = self:GetMouseUI(x, y, event);
     self:ReleaseMouseCapture();
 
-    local focusUI = self:GetFocusUI();  -- 获取焦点
-    if (focusUI ~= ui and focusUI) then focusUI:OnFocusOut() end
-    if (focusUI ~= ui and ui and event.down_target == ui) then ui:OnFocusIn() end
-    
-    if (ui and ui ~= self) then 
-        self:SetFocusUI(ui);
-        ui:OnMouseUp(event);
+    if (event:IsLeftButton()) then
+        local focusUI = self:GetFocusUI();  -- 获取焦点
+        if (focusUI ~= ui and focusUI) then focusUI:OnFocusOut() end
+        if (focusUI ~= ui and ui and event.down_target == ui) then ui:OnFocusIn() end
+        
+        if (ui and ui ~= self) then 
+            self:SetFocusUI(ui);
+            ui:OnMouseUp(event);
+        end
     end
-
+    
     if (event:IsRightButton() and not self:IsInnerToolBox(event)) then
         local contextmenu = self:GetContextMenu();
         local absX, absY = self:GetLogicViewPoint(event);
