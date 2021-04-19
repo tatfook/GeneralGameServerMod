@@ -366,6 +366,7 @@ function Blockly:RenderContent(painter)
         if (block:IsDragging()) then
             if (self:GetMouseCaptureUI() ~= block) then 
                 block:SetDragging(false);
+                self:GetShadowBlock():Shadow(nil);
             else
                 DraggingBlock = block;
             end

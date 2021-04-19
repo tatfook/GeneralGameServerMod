@@ -33,6 +33,9 @@ function MouseEvent:Init(event_type, window, params)
         self.buttons_state = 0;
         if(ParaUI.IsMousePressed(0)) then self.buttons_state = self.buttons_state + 1 end
         if(ParaUI.IsMousePressed(1)) then self.buttons_state = self.buttons_state + 2 end
+        self.down_move_buttons_state = self.buttons_state;
+    elseif (event_type == "onmouseup") then
+        self.buttons_state = self.down_move_buttons_state;
     end
 	
     if (type(params) == "table") then
