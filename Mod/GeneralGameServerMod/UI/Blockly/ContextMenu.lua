@@ -10,6 +10,7 @@ local ContextMenu = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Conte
 ]]
 
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
+local Helper = NPL.load("./Helper.lua", IsDevEnv);
 
 local ContextMenu = commonlib.inherit(Element, NPL.export());
 
@@ -27,6 +28,7 @@ local block_menus = {
 local blockly_menus = {
     { text = "撤销", cmd = "undo"},
     { text = "重做", cmd = "redo"},
+    { text = "导出工具栏XML", cmd = "export_toolbox_xml_text"}
 }
 
 function ContextMenu:Init(xmlNode, window, parent)
@@ -86,7 +88,36 @@ function ContextMenu:OnMouseDown(event)
         blockly:Undo();
     elseif (menuitem.cmd == "redo") then
         blockly:Redo();
+    elseif (menuitem.cmd == "export_toolbox_xml_text") then
+        self:ExportToolboxXmlText();
     end 
+end
+
+function ContextMenu:ExportToolboxXmlText()
+    local blockTypeMap = {};
+    self:GetBlockly():ForEach(function(ui)
+        if (ui:IsBlock()) then
+            blockTypeMap[ui:GetType()] = true;
+        end
+    end);
+    local categoryList = self:GetBlockly():GetToolBox():GetCategoryList();
+    local toolbox = {name = "toolbox"};
+    for _, categoryItem in ipairs(categoryList) do
+        local category = {
+            name = "category",
+            attr = {name = categoryItem.name},
+        }
+        table.insert(toolbox, #toolbox + 1, category);
+        for _, blocktype in ipairs(categoryItem.blocktypes) do 
+            if (blockTypeMap[blocktype]) then
+                table.insert(category, #category + 1, {name = "block", attr = {type = blocktype}});
+            end
+        end
+        if (#category == 0) then table.remove(toolbox, #toolbox) end
+    end
+    local xmlText = Helper.Lua2XmlString(toolbox, true);
+    ParaMisc.CopyTextToClipboard(xmlText);
+    GameLogic.AddBBS("Blockly", "图块工具栏XML已拷贝至剪切板");
 end
 
 function ContextMenu:OnMouseMove(event)
