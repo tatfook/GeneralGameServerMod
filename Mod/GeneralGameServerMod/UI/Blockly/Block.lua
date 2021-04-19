@@ -363,11 +363,11 @@ function Block:OnMouseMove(event)
             self:GetBlockly():OnCreateBlock(clone);
             block = clone;
         end
-
         block.isDragging = true;
-        block:GetBlockly():CaptureMouse(block);
-        block:GetBlockly():SetCurrentBlock(block);
     end
+    block:GetBlockly():CaptureMouse(block);
+    block:GetBlockly():SetCurrentBlock(block);
+
     local UnitSize = block:GetUnitSize();
     local XUnitCount = math.floor((x - block.startX) / UnitSize);
     local YUnitCount = math.floor((y - block.startY) / UnitSize);

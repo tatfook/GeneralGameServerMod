@@ -27,6 +27,7 @@ local Toolbox = NPL.export();
 
 
 local AllBlocks = {};
+local AllBlockMap = {};
 local CategoryList = {
     {
         name = "数据",
@@ -72,6 +73,7 @@ local function AddToAllBlocks(blocks, categoryName)
         end
 
         table.insert(AllBlocks, #AllBlocks + 1, block);
+        AllBlockMap[block.type] = block;
     end
 end
 
@@ -89,21 +91,54 @@ function Toolbox.GetAllBlocks(typ)
     elseif (typ == "vue") then
         return VueToolbox.GetAllBlocks();
     else 
-        return AllBlocks;
     end
 
-    return AllBlocks;
+    return AllBlocks, AllBlockMap;
 end
 
-function Toolbox.GetCategoryList(typ)
+function Toolbox.GetCategoryList(typ, toolboxXmlText)
+    local all_category_list, all_category_map = CategoryList, CategoryMap;
     if (typ == "npl") then
-        return NplToolbox.GetCategoryList();
+        all_category_list, all_category_map = NplToolbox.GetCategoryList();
     elseif (typ == "vue") then
-        return VueToolbox.GetCategoryList();
+        all_category_list, all_category_map = VueToolbox.GetCategoryList();
     else 
-        return CategoryList;
     end
     
-    return CategoryList;
+    if (toolboxXmlText and toolboxXmlText ~= "") then
+        local all_blocks, all_block_map = Toolbox.GetAllBlocks(typ);
+        return Toolbox.GetCategoryListByToolBoxXmlText(toolboxXmlText, all_blocks, all_block_map, all_category_list, all_category_map);
+    end
+
+    return all_category_list, all_category_map;
+end
+
+function Toolbox.GetCategoryListByToolBoxXmlText(toolboxXmlText, all_blocks, all_block_map, all_category_list, all_category_map)
+    local xmlNode = ParaXML.LuaXML_ParseString(toolboxXmlText);
+    local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
+    if (not toolboxNode) then return all_category_list, all_category_map end
+
+    local category_list = {};
+    for _, categoryNode in ipairs(toolboxNode) do
+        if (categoryNode.attr and categoryNode.attr.name) then
+            local category_attr = categoryNode.attr;
+            local default_category = all_category_map[category_attr.name];
+            local category = {
+                name = category_attr.name,
+                text = category_attr.text or (default_category and default_category.text),
+                color = category_attr.color or (default_category and default_category.color),
+                blocktypes = {},
+            }
+            table.insert(category_list, category);
+            local blocktypes = category.blocktypes;
+            for _, blockTypeNode in ipairs(categoryNode) do
+                if (blockTypeNode.attr and blockTypeNode.attr.type) then
+                    local blocktype = blockTypeNode.attr.type;
+                    table.insert(blocktypes, #blocktypes + 1, blocktype);
+                end
+            end
+        end
+    end
+    return category_list;
 end
 

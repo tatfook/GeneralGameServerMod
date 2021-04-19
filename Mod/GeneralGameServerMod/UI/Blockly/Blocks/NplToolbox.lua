@@ -15,15 +15,18 @@ local CodeHelpWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeHelpWin
 local NplToolbox = NPL.export();
 
 local all_blocks_cache = {};
+local all_block_map_cache = {};
 local all_category_list_cache = {};
+local all_category_map_cache = {};
 
 local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
-    if (all_blocks_cache[all_cmds]) then return all_blocks_cache[all_cmds], all_category_list_cache[all_categories] end
+    if (all_blocks_cache[all_cmds]) then return all_blocks_cache[all_cmds], all_category_list_cache[all_categories], all_block_map_cache[all_cmds], all_category_map_cache[all_categories] end
 
     local CategoryList = {};  -- 分类列表
     local CategoryMap = {};   -- 分类MAP
     local AllBlocks = {};     -- 所有块列表
-    
+    local AllBlockMap = {};
+
     for index, category in ipairs(all_categories) do
         table.insert(CategoryList, index, {
             name = category.name,
@@ -51,7 +54,7 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
             type = cmd.type,
             ToNPL = function(block)
                 if (not cmd.func_description) then return cmd.ToNPL(block) end
-                
+
                 local args = {};
                 for i, opt in ipairs(block.inputFieldOptionList) do
                     args[i] = block:GetValueAsString(opt.name) or "";
@@ -80,19 +83,21 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
             table.insert(category.blocktypes, #(category.blocktypes) + 1, block.type);
         end
         table.insert(AllBlocks, #AllBlocks + 1, block);
+        AllBlockMap[block.type] = block;
     end
 
     all_blocks_cache[all_cmds], all_category_list_cache[all_categories] = AllBlocks, CategoryList;
-    return AllBlocks, CategoryList;
+    all_block_map_cache[all_cmds], all_category_map_cache[all_categories] = AllBlockMap, CategoryMap;
+    return AllBlocks, CategoryList, AllBlockMap, CategoryMap;
 end
 
 function NplToolbox.GetAllBlocks()
-    local AllBlocks, CategoryList = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
-    return AllBlocks;
+    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
+    return AllBlocks, AllBlockMap;
 end
 
 function NplToolbox.GetCategoryList()
-    local AllBlocks, CategoryList = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
-    return CategoryList;
+    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
+    return CategoryList, AllCategoryMap;
 end
 

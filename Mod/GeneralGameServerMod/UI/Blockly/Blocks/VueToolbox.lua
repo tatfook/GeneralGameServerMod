@@ -23,6 +23,7 @@ local VueBlocks = NPL.load("./Vue.lua", IsDevEnv);
 local VueToolbox = NPL.export();
 
 local AllBlocks = {};
+local AllBlockMap = {};
 local CategoryList = {
     {
         name = "数据",
@@ -73,6 +74,7 @@ local function AddToAllBlocks(blocks, categoryName)
         end
 
         table.insert(AllBlocks, #AllBlocks + 1, block);
+        AllBlockMap[block.type] = block;
     end
 end
 
@@ -86,9 +88,9 @@ AddToAllBlocks(VueBlocks, "界面");
 AddToAllBlocks(HelperBlocks, "辅助");
 
 function VueToolbox.GetAllBlocks()
-    return AllBlocks;
+    return AllBlocks, AllBlockMap;
 end
 
 function VueToolbox.GetCategoryList()
-    return CategoryList;
+    return CategoryList, CategoryMap;
 end

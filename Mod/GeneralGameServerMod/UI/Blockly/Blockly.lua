@@ -94,11 +94,18 @@ function Blockly:Init(xmlNode, window, parent)
     self:SetShadowBlock(ShadowBlock:new():Init(self));
 
     local typ = self:GetAttrStringValue("type", "");
-    local allBlocks, categoryList = Toolbox.GetAllBlocks(typ), Toolbox.GetCategoryList(typ);
+    local allBlocks, categoryList = Toolbox.GetAllBlocks(typ), Toolbox.GetCategoryList(typ, self:GetAttrStringValue("ToolBoxXmlText"));
     for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end
     self.toolbox:SetCategoryList(categoryList);
 
     return self;
+end
+
+function Blockly:OnAttrValueChange(attrName, attrValue, oldAttrValue)
+    if (attrName == "ToolBoxXmlText") then
+        local categoryList = Toolbox.GetCategoryList(self:GetAttrStringValue("type", ""), self:GetAttrStringValue("ToolBoxXmlText"));
+        self.toolbox:SetCategoryList(categoryList);
+    end
 end
 
 function Blockly:GetUnitSize()
