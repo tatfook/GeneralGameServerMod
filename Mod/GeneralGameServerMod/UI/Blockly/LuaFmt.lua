@@ -15,7 +15,7 @@
 
 --------------------------------------------------------------------------------
 
-local LuaFmt = NPL.export();
+local LuaFmt = NPL and NPL.export() or {};
 
 local COLUMN_LIMIT = 80
 local TAB_COLUMNS = 4
@@ -203,7 +203,7 @@ local TOKENS = {
 
 	-- identifiers and keywords
 	function(text, offset)
-		local from, to = text:find("^[a-zA-Z0-9_]+", offset)
+		local from, to = text:find("^[a-zA-Z0-9_\128-\244]+", offset)
 		if to then
 			local word = text:sub(from, to)
 			local size = #word
@@ -789,6 +789,10 @@ function LuaFmt.Pretty(luacode)
     return (renderTokens(tree, 0, 0))
 end
 
+-- local testcode = [[
+-- 	变量名
+-- ]]
+-- print(LuaFmt.Pretty(testcode))
 --------------------------------------------------------------------------------
 
 -- -- Get command line arguments

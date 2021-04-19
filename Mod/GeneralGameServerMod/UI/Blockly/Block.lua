@@ -156,7 +156,8 @@ function Block:ParseMessageAndArg(opt)
                     inputFieldContainer:SetInputStatementContainer(true);
                     inputFieldContainerIndex = inputFieldContainerIndex + 1;
                 end
-                self.inputFieldOptionList[no] = inputField;
+
+                table.insert(self.inputFieldOptionList, inputField);
             end
             startPos = pos + 1 + nolen;
         end

@@ -70,7 +70,8 @@ function Field:GetFieldValue()
 end
 
 function Field:GetValueAsString()
-    return string.format('"%s"', self:GetValue());
+    return self:GetValue();
+    -- return string.format('"%s"', self:GetValue());
 end
 
 -- 获取xmlNode

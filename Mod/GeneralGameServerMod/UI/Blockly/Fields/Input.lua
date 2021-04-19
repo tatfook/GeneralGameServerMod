@@ -21,10 +21,3 @@ function Input:GetFieldEditType()
     return "input";
 end
 
-function Input:GetValueAsString()
-    if (self:GetType() == "field_number") then 
-        return string.format('%s', self:GetValue());
-    else 
-        return string.format('"%s"', self:GetValue());
-    end
-end

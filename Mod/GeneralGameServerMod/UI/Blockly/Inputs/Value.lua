@@ -145,7 +145,7 @@ function Value:GetValueAsString()
         if (self:GetShadowType() == "math_number" or self:GetShadowType() == "field_number") then
             return string.format('%s', self:GetValue());
         else 
-            return string.format('"%s"', self:GetValue());
+            return string.format('"%s"', self:GetValue());   -- 虚拟一个图块
         end
     end
     return self:GetInputBlock():GetBlockCode();
@@ -159,5 +159,6 @@ function Value:GetFieldValue()
             return self:GetValue();
         end
     end
-    return self:GetInputBlock():GetFieldsValue();
+    -- return self:GetInputBlock():GetFieldsValue();
+    return self:GetInputBlock():GetBlockCode();
 end

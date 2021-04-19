@@ -38,7 +38,8 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
     for i = 1, cmd_count do
         local cmd = all_cmds[i];
         local category = CategoryMap[cmd.category];
-    
+        -- if (not cmd.func_description) then echo(cmd) end
+        local func_description = string.gsub(cmd.func_description or "", "\\n", "\n");
         local block = {
             color = category.color;
             category = cmd.category;
@@ -48,10 +49,17 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
             nextStatement = cmd.nextStatement and true or false,
             output = cmd.output and true or false,
             type = cmd.type,
-            ToNPL = cmd.ToNPL,
+            ToNPL = function(block)
+                local args = {};
+                for i, opt in ipairs(block.inputFieldOptionList) do
+                    args[i] = block:GetValueAsString(opt.name) or "";
+                end
+                return string.format(func_description, table.unpack(args));
+            end,
             hideInToolbox = cmd.hide_in_toolbox,
         } 
-    
+        if (block.previousStatement or block.nextStatement) then func_description = func_description .. "\n" end 
+
         local message, arg = "", {};
         for i = 0, 10 do
             local messageName = "message" .. tostring(i);
