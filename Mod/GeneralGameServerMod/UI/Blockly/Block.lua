@@ -43,7 +43,9 @@ Block:Property("TopBlock", false, "IsTopBlock");                               -
 Block:Property("InputShadowBlock", false, "IsInputShadowBlock");               -- 是否是输入shadow块
 Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");                       -- 是否是工具箱块
 Block:Property("Draggable", true, "IsDraggable");                              -- 是否可以拖拽
+Block:Property("Dragging", true, "IsDragging");                                -- 是否在拖拽中
 Block:Property("ProxyBlock");                                                  -- 代理块
+
 
 function Block:ctor()
     self:SetId(nextBlockId);
@@ -55,6 +57,7 @@ function Block:ctor()
 
     self:SetToolBoxBlock(false);
     self:SetDraggable(true);
+    self:SetDragging(false);
 end
 
 function Block:Init(blockly, opt)
@@ -348,7 +351,7 @@ function Block:OnMouseMove(event)
 
     local blockly, block = self:GetBlockly(), self;
     local scale, toolboxScale = blockly:GetScale(), blockly:GetToolBox():GetScale();
-    if (not block.isDragging) then
+    if (not block:IsDragging()) then
         if (not event:IsMove()) then return end
         if (block:IsToolBoxBlock()) then 
             clone = self:Clone();
@@ -363,10 +366,11 @@ function Block:OnMouseMove(event)
             self:GetBlockly():OnCreateBlock(clone);
             block = clone;
         end
-        block.isDragging = true;
+        block:SetDragging(true);
+        blockly:CaptureMouse(block);
     end
-    block:GetBlockly():CaptureMouse(block);
-    block:GetBlockly():SetCurrentBlock(block);
+    if (block:IsDragging() and blockly:GetMouseCaptureUI() ~= block) then blockly:CaptureMouse(block) end
+    blockly:SetCurrentBlock(block);
 
     local UnitSize = block:GetUnitSize();
     local XUnitCount = math.floor((x - block.startX) / UnitSize);
@@ -393,7 +397,7 @@ function Block:OnMouseUp(event)
     local blockly = self:GetBlockly();
     blockly:GetShadowBlock():Shadow(nil);
 
-    if (self.isDragging) then
+    if (self:IsDragging()) then
         if (blockly:IsInnerDeleteArea(event.x, event.y) or blockly:GetMousePosIndex() == 4) then
             blockly:RemoveBlock(self);
             blockly:OnDestroyBlock(self);
@@ -404,6 +408,7 @@ function Block:OnMouseUp(event)
                 blockly:Do({action = "DeleteBlock", block = self});
                 blockly:PlayDestroyBlockSound();
             end
+            self:SetDragging(false);
             return ;
         else
             local isConnection = self:TryConnectionBlock();
@@ -418,8 +423,8 @@ function Block:OnMouseUp(event)
 
     blockly:SetCurrentBlock(self);
     self.isMouseDown = false;
-    self.isDragging = false;
     self.isNewBlock = false;
+    self:SetDragging(false);
     blockly:ReleaseMouseCapture();
 end
 
@@ -624,10 +629,14 @@ function Block:LoadFromXmlNode(xmlNode)
     for _, childXmlNode in ipairs(xmlNode) do
         if (childXmlNode.name == "Block") then
             local nextBlock = self:GetBlockly():GetBlockInstanceByXmlNode(childXmlNode);
-            self.nextConnection:Connection(nextBlock.previousConnection);
+            if (nextBlock) then
+                self.nextConnection:Connection(nextBlock.previousConnection);
+            end
         else
             local inputField = self:GetInputField(childXmlNode.attr.name);
-            if (inputField) then inputField:LoadFromXmlNode(childXmlNode) end
+            if (inputField) then 
+                inputField:LoadFromXmlNode(childXmlNode);
+            end
         end
     end
 end

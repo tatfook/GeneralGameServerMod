@@ -352,7 +352,7 @@ function Blockly:RenderContent(painter)
     self:RenderIcons(painter);
     -- 设置绘图类
     -- Shape:SetPainter(painter);
-    local CurrentBlock, captureBlock = self:GetCurrentBlock(), self:GetMouseCaptureUI();
+    local DraggingBlock = nil;
     local toolboxWidth = Const.ToolBoxWidth;
     painter:Translate(x, y);
     self.toolbox:Render(painter);
@@ -363,7 +363,13 @@ function Blockly:RenderContent(painter)
     painter:Scale(scale, scale);
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
-        if (CurrentBlock ~= block or CurrentBlock ~= captureBlock) then
+        if (block:IsDragging()) then
+            if (self:GetMouseCaptureUI() ~= block) then 
+                block:SetDragging(false);
+            else
+                DraggingBlock = block;
+            end
+        else 
             block:Render(painter);
             painter:Flush();
         end
@@ -372,12 +378,12 @@ function Blockly:RenderContent(painter)
     painter:Scale(1 / scale, 1 / scale);
     painter:Restore();
 
-    if (CurrentBlock and CurrentBlock == captureBlock) then
+    if (DraggingBlock) then
         painter:Save();
         painter:SetClipRegion(0, 0, w, h);
         painter:Scale(scale, scale);
         painter:Translate(self.offsetX, self.offsetY);
-        CurrentBlock:Render(painter);
+        DraggingBlock:Render(painter);
         painter:Flush();
         painter:Translate(-self.offsetX, -self.offsetY);
         painter:Scale(1 / scale, 1 / scale);

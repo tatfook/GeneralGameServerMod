@@ -129,7 +129,7 @@ function Toolbox.GetCategoryListByToolBoxXmlText(toolboxXmlText, all_blocks, all
                 color = category_attr.color or (default_category and default_category.color),
                 blocktypes = {},
             }
-            table.insert(category_list, category);
+            table.insert(category_list, #category_list + 1, category);
             local blocktypes = category.blocktypes;
             for _, blockTypeNode in ipairs(categoryNode) do
                 if (blockTypeNode.attr and blockTypeNode.attr.type) then
@@ -137,6 +137,7 @@ function Toolbox.GetCategoryListByToolBoxXmlText(toolboxXmlText, all_blocks, all
                     table.insert(blocktypes, #blocktypes + 1, blocktype);
                 end
             end
+            if (#blocktypes == 0) then table.remove(category_list, #category_list) end
         end
     end
     return category_list;
