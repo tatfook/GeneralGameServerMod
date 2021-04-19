@@ -50,6 +50,8 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
             output = cmd.output and true or false,
             type = cmd.type,
             ToNPL = function(block)
+                if (not cmd.func_description) then return cmd.ToNPL(block) end
+                
                 local args = {};
                 for i, opt in ipairs(block.inputFieldOptionList) do
                     args[i] = block:GetValueAsString(opt.name) or "";
