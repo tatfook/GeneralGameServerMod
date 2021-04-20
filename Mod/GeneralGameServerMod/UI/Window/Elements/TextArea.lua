@@ -75,7 +75,7 @@ end
 function TextArea:Reset()
     self.cursorShowHideTickCount = 0;
     self.cursorX, self.cursorY, self.cursorWidth, self.cursorHeight = 0, 0, nil, nil;
-    self.cursorAt = 1;    -- 光标位置 占据下一个输入位置
+    self.cursorAt = 0;    -- 光标位置 占据下一个输入位置
     self.undoCmds = {};   -- 撤销命令
     self.redoCmds = {};   -- 重做命令
     self.lines = {};      -- 所有文本行
@@ -164,7 +164,7 @@ function TextArea:handleRedo()
 end
 
 function TextArea:handleSelectAll()
-    self.selectStartAt, self.selectEndAt = 1, self.text:length();
+    self.selectStartAt, self.selectEndAt = 1, self.text:length() + 1;
     TextAreaDebug.Format("handleSelectAll selectStartAt = %s, selectEndAt = %s", self.selectStartAt, self.selectEndAt);
 end
 
@@ -497,8 +497,8 @@ function TextArea:RenderContent(painter)
     if (self:IsSelected()) then
         painter:SetPen("#3390ff");
         local function RenderSelectedBG(line, baseAt, startAt, endAt)
-            local offsetX = baseAt > startAt and 0 or (self.text:sub(baseAt, startAt):GetWidth(self:GetFont()));
-            local width = startAt >= endAt and 0 or (self.text:sub(startAt + 1, endAt):GetWidth(self:GetFont()));
+            local offsetX = baseAt >= startAt and 0 or (self.text:sub(baseAt, startAt):GetWidth(self:GetFont()));
+            local width = startAt > endAt and 0 or (self.text:sub(startAt, endAt - 1):GetWidth(self:GetFont()));
             painter:DrawRectTexture(x + offsetX, y + (line - 1) * LineHeight, width, LineHeight);
         end
         local selectStartAt, selectEndAt = self:GetSelected();

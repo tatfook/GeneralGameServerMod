@@ -98,6 +98,8 @@ function BlockInputField:SetMaxWidthHeightUnitCount(widthUnitCount, heightUnitCo
     local UnitSize = self:GetUnitSize();
     self.maxWidthUnitCount, self.maxHeightUnitCount = widthUnitCount or self.maxWidthUnitCount or self.widthUnitCount, heightUnitCount or self.maxHeightUnitCount or self.heightUnitCount;
     self.maxWidth, self.maxHeight = self.maxWidthUnitCount * UnitSize, self.maxHeightUnitCount * UnitSize;
+    if (self.width and self.maxWidth and self.width > self.maxWidth) then self.maxWidth, self.maxWidthUnitCount = self.width, self.widthUnitCount end
+    if (self.height and self.maxHeight and self.height > self.maxHeight) then self.maxHeight, self.maxHeightUnitCount = self.height, self.heightUnitCount end
 end
 
 function BlockInputField:UpdateWidthHeightUnitCount()
@@ -111,6 +113,8 @@ function BlockInputField:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount
     local width, height = widthUnitCount * UnitSize, heightUnitCount * UnitSize;
     if (width == self.width and height == self.height) then return end
     self.width, self.height = width, height;
+    if (self.width and self.maxWidth and self.width > self.maxWidth) then self.maxWidth, self.maxWidthUnitCount = self.width, self.widthUnitCount end
+    if (self.height and self.maxHeight and self.height > self.maxHeight) then self.maxHeight, self.maxHeightUnitCount = self.height, self.heightUnitCount end
     self:SetMaxWidthHeightUnitCount(math.max(widthUnitCount, self.maxWidthUnitCount or 0), math.max(heightUnitCount, self.maxHeightUnitCount or 0));
     self:OnSizeChange();
 end

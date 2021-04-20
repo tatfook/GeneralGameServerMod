@@ -43,6 +43,7 @@ Blockly:Property("FileManager");              -- 文件管理器
 Blockly:Property("ToolBox");                  -- 工具栏
 Blockly:Property("ShadowBlock");              -- 占位块
 Blockly:Property("Scale", 1);                 -- 缩放
+Blockly:Property("ReadOnly", false, "IsReadOnly");                 -- 缩放
 
 function Blockly.PlayConnectionBlockSound()
     ConnectionBlockSound:play2d();
@@ -98,6 +99,9 @@ function Blockly:Init(xmlNode, window, parent)
     for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end
     self.toolbox:SetCategoryList(categoryList);
 
+    self.isHideToolBox = self:GetAttrBoolValue("isHideToolBox", false);
+    self.isHideIcons = self:GetAttrBoolValue("isHideIcons", false);
+    self:SetReadOnly(self:GetAttrBoolValue("readonly", false));
     return self;
 end
 
@@ -284,6 +288,7 @@ function Blockly:GetMousePosIndex()
 end
 
 function Blockly:RenderIcons(painter)
+    if (self.isHideIcons) then return end
     local x, y, w, h = self:GetGeometry();
     local offsetX, offsetY = x + w - 82, y + h - 220;
     painter:Translate(offsetX, offsetY);
@@ -325,23 +330,6 @@ function Blockly:RenderBG(painter)
     local x, y, w, h = self:GetContentGeometry();
     painter:SetBrush("f9f9f9");
     painter:DrawRect(x, y, w, h);
-    -- local x, y, w, h = self:GetContentGeometry();
-    -- local BGWidth, BGHeight, scale = 498, 493, self:GetScale();
-    -- local row, col = math.ceil(h / (BGHeight * scale)), math.ceil(w / (BGWidth * scale));
-    -- x = x + Const.ToolBoxWidth;
-    -- painter:Translate(x, y);
-    -- painter:Save();
-    -- painter:SetClipRegion(0, 0, w - Const.ToolBoxWidth, h);
-    -- painter:Scale(scale, scale);
-    -- painter:SetBrush("#ffffff");
-    -- for i = 1, row do 
-    --     for j = 1, col do
-    --         painter:DrawRectTexture((j - 1) * BGWidth, (i - 1) * BGHeight, BGWidth, BGHeight, "Texture/Aries/Creator/keepwork/ggs/blockly/huawen_512X512_32bits.png#4 9 498 493");
-    --     end
-    -- end
-    -- painter:Scale(1 / scale, 1 / scale);
-    -- painter:Restore();
-    -- painter:Translate(-x, -y);
 end
 
 -- 渲染Blockly
@@ -355,11 +343,15 @@ function Blockly:RenderContent(painter)
     local DraggingBlock = nil;
     local toolboxWidth = Const.ToolBoxWidth;
     painter:Translate(x, y);
-    self.toolbox:Render(painter);
+    if (not self.isHideToolBox) then self.toolbox:Render(painter) end 
 
     Shape:SetUnitSize(UnitSize);
     painter:Save();
-    painter:SetClipRegion(toolboxWidth, 0, w - toolboxWidth, h);
+    if (self.isHideToolBox) then
+        painter:SetClipRegion(0, 0, w, h);
+    else
+        painter:SetClipRegion(toolboxWidth, 0, w - toolboxWidth, h);
+    end
     painter:Scale(scale, scale);
     painter:Translate(self.offsetX, self.offsetY);
     for _, block in ipairs(self.blocks) do
@@ -563,7 +555,7 @@ function Blockly:OnMouseUp(event)
         end
     end
     
-    if (event:IsRightButton() and not self:IsInnerToolBox(event)) then
+    if (event:IsRightButton() and not self:IsInnerToolBox(event) and not self:IsReadOnly()) then
         local contextmenu = self:GetContextMenu();
         local absX, absY = self:GetLogicViewPoint(event);
         local menuType = "block";
@@ -581,6 +573,8 @@ end
 
 -- 获取鼠标元素
 function Blockly:GetMouseUI(x, y, event)
+    if (self:IsReadOnly()) then return self end 
+
     local ui = self:GetMouseCaptureUI();
     if (ui) then return ui end
 
@@ -600,6 +594,7 @@ function Blockly:GetMouseUI(x, y, event)
 end
 
 function Blockly:IsInnerToolBox(event)
+    if (self.isHideToolBox) then return false end
     local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);         -- 防止减去偏移量
     if (self.toolbox:IsContainPoint(x, y)) then return true end
     return false;
@@ -607,6 +602,7 @@ end
 
 -- 是否在删除区域
 function Blockly:IsInnerDeleteArea(x, y)
+    if (self.isHideIcons) then return false end;
     local x, y = Blockly._super.GetRelPoint(self, x, y);                      -- 防止减去偏移量
     if (self.toolbox:IsContainPoint(x, y)) then return true end
     return false;

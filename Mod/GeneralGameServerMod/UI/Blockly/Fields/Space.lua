@@ -18,7 +18,7 @@ function Space:RenderContent(painter)
 end
 
 function Space:UpdateWidthHeightUnitCount()
-    return Const.FieldSpaceWidthUnitCount, 0;
+    return Const.FieldSpaceWidthUnitCount, Const.LineHeightUnitCount;
 end
 
 function Space:SaveToXmlNode()

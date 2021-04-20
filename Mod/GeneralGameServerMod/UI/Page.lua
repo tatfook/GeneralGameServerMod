@@ -169,6 +169,19 @@ function Page.ShowBlocklyPage(G, params)
     return BlocklyPage;
 end
 
+local BlocklyFactoryPage = Vue:new(G, params);
+function Page.ShowBlocklyFactoryPage()
+    params = params or {};
+
+    params.url = "%ui%/Blockly/Pages/BlocklyFactory.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or 1200;
+    params.height = params.height or 800;
+    BlocklyFactoryPage:Show(params);
+    return BlocklyFactoryPage;
+end
+
 local VueTestPage = Vue:new();
 function Page.ShowVueTestPage(G, params)
     if (IsDevEnv) then

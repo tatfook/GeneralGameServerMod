@@ -14,7 +14,7 @@ local Shape = NPL.load("../Shape.lua");
 local Input = NPL.load("./Input.lua");
 local Statement = commonlib.inherit(Input, NPL.export());
 
-local StatementWidthUnitCount = 4;
+local StatementWidthUnitCount = Const.StatementWidthUnitCount;
 
 function Statement:ctor()
 end

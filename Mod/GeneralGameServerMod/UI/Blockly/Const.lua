@@ -18,6 +18,7 @@ Const.ConnectionHeightUnitCount = 2;              -- 连接高度
 Const.ConnectionWidthUnitCount = 16;              -- 连接高度
 Const.BlockEdgeHeightUnitCount = 1;               -- 块边缘高度
 Const.BlockEdgeWidthUnitCount = 4;                -- 块边缘高度
+Const.StatementWidthUnitCount = 4;                -- 输入语句左边宽度
 
 Const.LineHeightUnitCount = 8;                    -- 每行内容高为8
 Const.InputValueWidthUnitCount = 10;              -- 输入值宽度

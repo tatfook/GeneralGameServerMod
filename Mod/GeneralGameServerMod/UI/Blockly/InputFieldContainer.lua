@@ -99,26 +99,35 @@ function InputFieldContainer:ConnectionBlock(block)
 end
 
 function InputFieldContainer:GetMouseUI(x, y, event)
+    local blockWidth = self:GetBlock().width;
     if (x < self.left or x > (self.left + self.maxWidth) or y < self.top or y > (self.top + self.maxHeight)) then return end
 
     for _, inputField in ipairs(self.inputFields) do
         local ui = inputField:GetMouseUI(x, y, event);
         if (ui) then return ui end
     end
-    
     if (x < self.left or x > (self.left + self.width) or y < self.top or y > (self.top + self.height)) then return end
-
+    if (self:IsInputStatementContainer()) then
+        local UnitSize = self:GetUnitSize(); 
+        local offsetX, offsetY = Const.StatementWidthUnitCount * UnitSize, (Const.ConnectionHeightUnitCount + Const.BlockEdgeHeightUnitCount) * UnitSize;
+        local left, top, width, height = self.left + offsetX, self.top + offsetY, self.width - offsetX, self.height - offsetY * 2;
+        if (left < x and x < (left + width) and top < y and y < (top + height)) then return nil end 
+    end
     return self;
 end
 
-function InputFieldContainer:Render(painter)
+function InputFieldContainer:Render(painter, offsetXUnitCount, offsetYUnitCount)
     if (not self:IsInputStatementContainer() and self:GetBlock():IsStatement()) then
         Shape:SetBrush(self:GetBlock():GetBrush());
         Shape:DrawRect(painter, self.widthUnitCount, self.heightUnitCount, self.leftUnitCount, self.topUnitCount);
     end
+    local UnitSize = self:GetUnitSize();
+    offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;
+    painter:Translate(offsetXUnitCount * UnitSize, offsetYUnitCount * UnitSize);
     for _, inputField in ipairs(self.inputFields) do
         inputField:Render(painter);
     end
+    painter:Translate(-offsetXUnitCount * UnitSize, -offsetYUnitCount * UnitSize);
 end
 
 function InputFieldContainer:ForEach(callback)

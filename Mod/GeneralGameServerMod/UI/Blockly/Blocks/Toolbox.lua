@@ -22,10 +22,11 @@ local HelperBlocks = NPL.load("./Helper.lua", IsDevEnv);
 
 local VueToolbox = NPL.load("./VueToolbox.lua", IsDevEnv);
 local NplToolbox = NPL.load("./NplToolbox.lua", IsDevEnv);
+local BlockToolbox = NPL.load("./BlockToolbox.lua", IsDevEnv);
 
 local Toolbox = NPL.export();
 
-
+local Colors = {"#2E9BEF", "#76CE62", "#764BCC", "#EC522E", "#C38A3F", "#69B090", "#569138", "#459197"};
 local AllBlocks = {};
 local AllBlockMap = {};
 local CategoryList = {
@@ -68,7 +69,6 @@ local function AddToAllBlocks(blocks, categoryName)
         if (category) then
             block.color = category.color;
             block.category = categoryName;
-            -- block.color = block.color or category.color;
             table.insert(category.blocktypes, #(category.blocktypes) + 1, block.type);
         end
 
@@ -85,25 +85,24 @@ AddToAllBlocks(EventBlocks, "事件");
 AddToAllBlocks(LogBlocks, "辅助");
 AddToAllBlocks(HelperBlocks, "辅助");
 
-function Toolbox.GetAllBlocks(typ)
-    if (typ == "npl") then
-        return NplToolbox.GetAllBlocks();
-    elseif (typ == "vue") then
-        return VueToolbox.GetAllBlocks();
-    else 
-    end
+function GetToolbox(typ)
+    if (typ == "npl") then return NplToolbox end
+    if (typ == "vue") then return VueToolbox end
+    if (typ == "block") then return BlockToolbox end
 
-    return AllBlocks, AllBlockMap;
+    return nil;
+end
+
+function Toolbox.GetAllBlocks(typ)
+    local toolbox = GetToolbox(typ);
+    if (not toolbox) then return {}, {} end
+    return toolbox.GetAllBlocks();
 end
 
 function Toolbox.GetCategoryList(typ, toolboxXmlText)
-    local all_category_list, all_category_map = CategoryList, CategoryMap;
-    if (typ == "npl") then
-        all_category_list, all_category_map = NplToolbox.GetCategoryList();
-    elseif (typ == "vue") then
-        all_category_list, all_category_map = VueToolbox.GetCategoryList();
-    else 
-    end
+    local toolbox = GetToolbox(typ);
+    if (not toolbox) then return {}, {} end
+    local all_category_list, all_category_map = toolbox.GetCategoryList();
     
     if (toolboxXmlText and toolboxXmlText ~= "") then
         local all_blocks, all_block_map = Toolbox.GetAllBlocks(typ);
@@ -140,6 +139,6 @@ function Toolbox.GetCategoryListByToolBoxXmlText(toolboxXmlText, all_blocks, all
             if (#blocktypes == 0) then table.remove(category_list, #category_list) end
         end
     end
-    return category_list;
+    return category_list, all_category_map;
 end
 

@@ -120,12 +120,13 @@ function Block:ParseMessageAndArg(opt)
 
     local message, arg = GetMessageArg();
     while (message) do
+        local lastNo = 0;
         local startPos, len = 1, string.len(message);
         while(startPos <= len) do
             local inputFieldContainer = GetInputFieldContainer(true);
             local pos = string.find(message, "%%", startPos);
             if (not pos) then pos = len + 1 end
-            local nostr = string.match(message, "%%(%d+)", startPos) or "";
+            local nostr = string.match(message, "%%([%*%d]+)", startPos) or "";
             local no, nolen = tonumber(nostr), string.len(nostr);
             local text = string.sub(message, startPos, pos - 1) or "";
             local textlen = string.len(text);
@@ -134,6 +135,7 @@ function Block:ParseMessageAndArg(opt)
             if (text ~= "") then 
                 inputFieldContainer:AddInputField(FieldLabel:new():Init(self, {text = text}), true);
             end
+            no = no or (nolen > 0 and lastNo + 1 or nil);
             if (no and arg and arg[no]) then
                 -- 添加InputAndField
                 local inputField = arg[no];
@@ -163,10 +165,13 @@ function Block:ParseMessageAndArg(opt)
                 table.insert(self.inputFieldOptionList, inputField);
             end
             startPos = pos + 1 + nolen;
+            lastNo = no;
         end
         
         message, arg = GetMessageArg();
     end
+
+    if (#self.inputFieldContainerList == 0) then GetInputFieldContainer(true) end
 end
 
 -- 大小改变
@@ -224,8 +229,12 @@ function Block:Render(painter)
     painter:Translate(-self.left, -self.top);
 
     -- 绘制输入字段
-    for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
-        inputFieldContainer:Render(painter);
+    local UnitSize = self:GetUnitSize();
+    for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        local prev, next = self.inputFieldContainerList[i - 1], self.inputFieldContainerList[i + 1];
+        local isOffset = prev and prev:IsInputStatementContainer() and next and next:IsInputStatementContainer() and (not inputFieldContainer:IsInputStatementContainer());
+        if (isOffset) then inputFieldContainer:Render(painter, 0, -1)
+        else inputFieldContainer:Render(painter) end 
     end
 
     local nextBlock = self:GetNextBlock();
@@ -244,15 +253,13 @@ function Block:UpdateWidthHeightUnitCount()
         maxHeightUnitCount = maxHeightUnitCount + inputFieldContainerMaxHeightUnitCount;
     end
     
-    widthUnitCount = math.max(widthUnitCount, not self:IsStatement() and 8 or 14);
+    widthUnitCount = math.max(widthUnitCount, not self:IsStatement() and 8 or 16);
     heightUnitCount = math.max(heightUnitCount, Const.LineHeightUnitCount);
     maxWidthUnitCount = math.max(widthUnitCount, maxWidthUnitCount);
     maxHeightUnitCount = math.max(heightUnitCount, maxHeightUnitCount);
 
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
-        if (not inputFieldContainer:IsInputStatementContainer()) then
-            inputFieldContainer:SetWidthHeightUnitCount(widthUnitCount, nil);
-        end
+        inputFieldContainer:SetWidthHeightUnitCount(widthUnitCount, nil);
     end
 
     if (self:IsStatement()) then 
@@ -324,7 +331,10 @@ function Block:GetMouseUI(x, y, event)
     local height = (not self:IsStatement() and Const.BlockEdgeHeightUnitCount or Const.ConnectionHeightUnitCount) * self:GetUnitSize();
 
     -- 在block上下边缘
-    if (self.left < x and x < (self.left + self.width) and ((self.top < y and y < (self.top + height)) or (y > (self.top + self.height - height) and y < (self.top + self.height)))) then return self end
+    if (self.left < x and x < (self.left + self.width)) then
+        if (self.top < y and y < (self.top + height)) then return self end
+        if (y > (self.top + self.height - height) and y < (self.top + self.height + (self.nextConnection and height or 0))) then return self end
+    end
     
     -- 遍历输入
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
