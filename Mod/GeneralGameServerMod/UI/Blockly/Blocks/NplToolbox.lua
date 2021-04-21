@@ -43,6 +43,7 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
         local category = CategoryMap[cmd.category];
         -- if (not cmd.func_description) then echo(cmd) end
         local func_description = string.gsub(cmd.func_description or "", "\\n", "\n");
+        func_description = string.gsub(func_description, "%%d", "%%s");
         local block = {
             color = category.color;
             category = cmd.category;
@@ -59,6 +60,8 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
                 for i, opt in ipairs(block.inputFieldOptionList) do
                     args[i] = block:GetValueAsString(opt.name) or "";
                 end
+                print(func_description);
+                echo(args, true)
                 return string.format(func_description, table.unpack(args));
             end,
             hideInToolbox = cmd.hide_in_toolbox,
