@@ -57,9 +57,11 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
                 if (not cmd.func_description) then return cmd.ToNPL(block) end
 
                 local args = {};
+                local index = 1;
                 for i, opt in ipairs(block.inputFieldOptionList) do
                     if (opt.type ~= "input_dummy") then
-                        args[i] = block:GetValueAsString(opt.name) or "";
+                        args[index] = block:GetValueAsString(opt.name) or "";
+                        index = index + 1;
                     end
                 end
                 return string.format(func_description, table.unpack(args));
