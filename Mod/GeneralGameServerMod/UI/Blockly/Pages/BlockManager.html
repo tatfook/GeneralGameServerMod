@@ -1,5 +1,5 @@
 <template class="container">
-    <WindowTitleBar title="图块管理器"></WindowTitleBar>
+    <WindowTitleBar title="图块管理器" v-bind:close=Close></WindowTitleBar>
     <div style="position: absolute; left: 2px; top: 39px; right: 0px; bottom: 2px;">
         <div class="category-container">
             <div class="category-form">
@@ -15,14 +15,79 @@
                 </div>
             </div>
         </div>
+        <div class="block-container">
+            <div class="block-preview" style="height: 150px; border-bottom: 1px solid #cccccc;"></div>
+            <div class="block-list">
+                <div style="height: 30px; display: flex; justify-content: center;">
+                    <div class="btn" style="width: 200px; height: 100%;">图块编辑器</div>
+                </div>
+                <div class="block-item" v-for="block in AllBlockList">
+                    <div style="width: 120px; text-align: center; font-size: 18px;">{{block.type}}</div>
+                    <div class="btn" style="width: 80px; margin-left: 20px;">编辑</div>
+                    <div class="btn" style="width: 80px; margin-left: 20px;">删除</div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
-<script type="text/lua" src="%ui%/Blockly/Pages/BlockManager.lua">
+<script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/BlockManager.lua", IsDevEnv).StaticInit();
+local AllCategoryMap = BlockManager.GetAllCategoryMap();
+local AllBlockMap = BlockManager.GetAllBlockMap();
+
+AllCategoryList, AllBlockList = {}, {};
+NewCategoryName, NewCategoryColor = "", "";
+
+for _, category in pairs(AllCategoryMap) do
+    table.insert(AllCategoryList, {name = category.name, text = category.text, color = category.color});
+end
+
+for _, block in pairs(AllBlockMap) do
+    table.insert(AllBlockList, {type = block.type, category = block.category});
+end
+
+function Close()
+    CloseWindow();
+    BlockManager.SaveCategoryAndBlock();
+end
 
 function GetCategoryColorStyle(category)
     return string.format([[width: 24px; height: 24px; background-color: %s; border-radius: 12px; padding: 0px 10px;]], category.color);
+end
+
+function ClickNewCategoryBtn()
+    if (NewCategoryName == "" or AllCategoryMap[NewCategoryName]) then return end 
+    
+    AllCategoryMap[NewCategoryName] = {
+        name = NewCategoryName,
+        color = NewCategoryColor,
+    }
+
+    table.insert(AllCategoryList, AllCategoryMap[NewCategoryName]);
+    NewCategoryName, NewCategoryColor = "", "";
+end
+
+function ClickDeleteCategoryBtn(categoryName)
+    AllCategoryMap[categoryName] = nil;
+    for i, category in ipairs(AllCategoryList) do 
+        if (category.name == categoryName) then
+            table.remove(AllCategoryList, i);
+        end
+    end
+end
+
+function ClickDeleteBlockBtn(blockType)
+    AllBlockMap[blockType] = nil;
+    for i, block in ipairs(AllBlockList) do
+        if (block.type == blockType) then
+            table.remove(AllBlockList, i);
+        end
+    end
+end
+
+function ClickOpenBlocklyFactoryPage(block)
 end
 </script>
 
@@ -51,6 +116,22 @@ end
 }
 
 .category-item {
+    padding: 0px 20px;
+    height: 30px;
+    align-items: center;
+    display: flex;
+    font-size: 18px;
+}
+
+.block-container {
+    position: absolute;
+    top: 0px;
+    left: 300px;
+    width: 400px;
+    bottom: 0px;
+    border-right: 1px solid #cccccc;
+}
+.block-item {
     padding: 0px 20px;
     height: 30px;
     align-items: center;

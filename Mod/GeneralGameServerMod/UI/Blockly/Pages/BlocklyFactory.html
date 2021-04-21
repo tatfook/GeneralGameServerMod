@@ -1,5 +1,5 @@
 <template class="container">
-    <WindowTitleBar title="自定义图块"></WindowTitleBar>
+    <WindowTitleBar title="自定义图块" v-bind:close="Close"></WindowTitleBar>
     <div style="position: absolute; left: 2px; top: 39px; right: 0px; bottom: 2px;">
         <Blockly ref="BlocklyEditor" class="blockly-editor" type="block" onchange=OnBlocklyChange></Blockly>
         <Blockly readonly=true ref="BlocklyPreview" class="blockly-preview" onchange=OnBlocklyChange isHideToolBox=true isHideIcons="true"></Blockly>
@@ -9,9 +9,11 @@
 
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
 local BlocklyEditor = nil;
 local BlocklyPreview = nil;
+local BlockOption = {};
 BlockDefineCode = "";
 function OnReady()
     BlocklyEditor = GetRef("BlocklyEditor");
@@ -19,15 +21,26 @@ function OnReady()
     OnBlocklyChange();
 end
 
+function Close()
+    Page.ShowMessageBoxPage({
+        text = "是否保存修改?",
+        confirm = function()
+            BlockOption.xml_text = BlocklyEditor:SaveToXmlNodeText();
+            CloseWindow();
+        end,
+        cancel = CloseWindow,
+    });
+end
+
 function GenerateBlockOption()
     local rawcode, prettycode = BlocklyEditor:GetCode();
     local prettycode = string.gsub(prettycode, "\t", "    ");
-    local G = {message = "", arg = {}, field_count = 0, type="block", category = "category", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true,};
+    local G = {message = "", arg = {}, field_count = 0, type="block", category = "category", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true};
     <!-- print(prettycode) -->
     local func, errmsg = loadstring(prettycode);
     setfenv(func, G);
     func();
-    G.message =string.gsub(G.message, "^ ", "");
+    G.message = string.gsub(G.message, "^ ", "");
     return G;
 end
 
@@ -84,9 +97,9 @@ function GenerateBlockDefineCode(option)
 end
 
 function OnBlocklyChange()
-    local blockOption = GenerateBlockOption();
-    BlockDefineCode = GenerateBlockDefineCode(blockOption);
-    PreviewBlockOption(blockOption);
+    BlockOption = GenerateBlockOption();
+    BlockDefineCode = GenerateBlockDefineCode(BlockOption);
+    PreviewBlockOption(BlockOption);
 end
 
 </script>

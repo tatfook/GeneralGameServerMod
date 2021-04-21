@@ -112,7 +112,6 @@ function Block:ParseMessageAndArg(opt)
     end
 
     local function GetInputFieldContainer(isFillFieldSpace)
-        -- isFillFieldSpace = false;
         local inputFieldContainer = self.inputFieldContainerList[inputFieldContainerIndex] or InputFieldContainer:new():Init(self, isFillFieldSpace);
         self.inputFieldContainerList[inputFieldContainerIndex] = inputFieldContainer;
         return inputFieldContainer;

@@ -1,27 +1,70 @@
+--[[
+Title: BlockManager
+Author(s): wxa
+Date: 2020/6/30
+Desc: 文件管理器
+use the lib:
+-------------------------------------------------------
+local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/BlockManager.lua");
+-------------------------------------------------------
+]]
 
+
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 
 local AllCategoryMap, AllBlockMap = {}, {};
 
-AllCategoryList, AllBlockList = {}, {};
-NewCategoryName, NewCategoryColor = "", "";
+local BlockManager = NPL.export();
 
-function ClickNewCategoryBtn()
-    if (NewCategoryName == "" or AllCategoryMap[NewCategoryName]) then return end 
-    
-    AllCategoryMap[NewCategoryName] = {
-        name = NewCategoryName,
-        color = NewCategoryColor,
-    }
+local inited = false;
+local Directory = nil; 
+local FileName = nil; 
 
-    table.insert(AllCategoryList, AllCategoryMap[NewCategoryName]);
-    NewCategoryName, NewCategoryColor = "", "";
+function BlockManager.LoadCategoryAndBlock()
+    local io = ParaIO.open(FileName, "r");
+    if(not io:IsValid()) then return nil end 
+    local text = io:GetText();
+    io:close();
+    return NPL.LoadTableFromString(text);
 end
 
-function ClickDeleteCategoryBtn(categoryName)
-    AllCategoryMap[categoryName] = nil;
-    for i, category in ipairs(AllCategoryList) do 
-        if (category.name == categoryName) then
-            table.remove(AllCategoryList, i);
-        end
-    end
+function BlockManager.SaveCategoryAndBlock()
+    local text = commonlib.serialize_compact({AllBlockMap = AllBlockMap, AllCategoryMap = AllCategoryMap});
+    local io = ParaIO.open(FileName, "w");
+	io:WriteString(text);
+    io:close();
 end
+
+function BlockManager.SaveBlock(block)
+    if (not block.type) then return end
+    AllBlockMap[block.type] = block;
+    BlockManager.SaveCategoryAndBlock();
+end
+
+function BlockManager.GetAllCategoryMap()
+    return AllCategoryMap;
+end
+
+function BlockManager.GetAllBlockMap()
+    return AllBlockMap;
+end
+
+function BlockManager.StaticInit()
+    if (inited) then return end
+    inited = true;
+
+    Directory = CommonLib.ToCanonicalFilePath(ParaIO.GetCurDirectory(0) .. ParaWorld.GetWorldDirectory() .. "/blockly/");
+    FileName = CommonLib.ToCanonicalFilePath(Directory .. "/category_block.config");
+
+    -- 确保目存在
+    ParaIO.CreateDirectory(directory);
+
+    --加载数据
+    local AllCategoryBlock = BlockManager.LoadCategoryAndBlock();
+    AllCategoryMap = AllCategoryBlock and AllCategoryBlock.AllCategoryMap or {};
+    AllBlockMap = AllCategoryBlock and AllCategoryBlock.AllBlockMap or {};
+
+    return BlockManager;
+end
+
+-- BlockManager.StaticInit();
