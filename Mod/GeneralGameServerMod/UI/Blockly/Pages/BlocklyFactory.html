@@ -23,7 +23,7 @@ function GenerateBlockOption()
     local rawcode, prettycode = BlocklyEditor:GetCode();
     local prettycode = string.gsub(prettycode, "\t", "    ");
     local G = {message = "", arg = {}, field_count = 0, type="block", category = "category", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true,};
-    print(prettycode)
+    <!-- print(prettycode) -->
     local func, errmsg = loadstring(prettycode);
     setfenv(func, G);
     func();
@@ -60,7 +60,7 @@ function GenerateBlockDefineCode(option)
     else
         code_description = "[[\n" .. code_description .. "\n]]";
     end
-
+    local func_description = string.gsub(code_description, "%$(%w+)", "%%s");
     local block_define_code = string.format([[
 {
     type = "%s",
@@ -70,13 +70,14 @@ function GenerateBlockDefineCode(option)
     nextStatement = "%s",
     message = "%s",
     %s,
+    func_description = %s,
     ToNPL = function(block)
 %s
         -- 更改下行为图块实际生成代码
-        return string.gsub("%s", "%%$(%%w+)", args); 
+        return string.gsub(%s, "%%$(%%w+)", args); 
     end
 }]], option.type, option.category, option.output, option.previousStatement, option.nextStatement, option.message, 
-    commonlib.dump(option.arg, "arg", false, 2), 
+    commonlib.dump(option.arg, "arg", false, 2), func_description,
     arg_var_define, code_description);
 
     return block_define_code;

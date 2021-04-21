@@ -407,22 +407,33 @@ function Block:OnMouseUp(event)
     local blockly = self:GetBlockly();
     blockly:GetShadowBlock():Shadow(nil);
 
+    local function delete_block()
+        blockly:RemoveBlock(self);
+        blockly:OnDestroyBlock(self);
+        blockly:SetCurrentBlock(nil);
+        blockly:ReleaseMouseCapture();
+        -- 移除块
+        if (not self.isNewBlock) then 
+            blockly:Do({action = "DeleteBlock", block = self});
+            blockly:PlayDestroyBlockSound();
+        end
+        self:SetDragging(false);
+        self.isMouseDown = false;
+        self.isNewBlock = false;
+    end
+
     if (self:IsDragging()) then
         if (blockly:IsInnerDeleteArea(event.x, event.y) or blockly:GetMousePosIndex() == 4) then
-            blockly:RemoveBlock(self);
-            blockly:OnDestroyBlock(self);
-            blockly:SetCurrentBlock(nil);
-            blockly:ReleaseMouseCapture();
-            -- 移除块
-            if (not self.isNewBlock) then 
-                blockly:Do({action = "DeleteBlock", block = self});
-                blockly:PlayDestroyBlockSound();
-            end
-            self:SetDragging(false);
-            return ;
+            return delete_block();
         else
             local isConnection = self:TryConnectionBlock();
-            if (isConnection) then blockly:PlayConnectionBlockSound() end
+            if (isConnection) then 
+                blockly:PlayConnectionBlockSound();
+            else
+                if (self.previousConnection and not self.previousConnection:IsConnection() and self.previousConnection:GetCheck()) then
+                    return delete_block();
+                end
+            end
         end
         if (self.isNewBlock) then 
             blockly:Do({action = "NewBlock", block = self});

@@ -24,7 +24,7 @@ end
 function Input:Init(block, opt)
     Input._super.Init(self, block, opt);
     
-    self.inputConnection = Connection:new():Init(block);
+    self.inputConnection = Connection:new():Init(block, nil, opt.check);
 
     return self;
 end

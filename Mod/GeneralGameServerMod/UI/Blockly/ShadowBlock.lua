@@ -50,9 +50,24 @@ function ShadowBlock:Shadow(block)
     end
 
     self:GetBlockly():AddBlock(self);
-    self.nextConnection = block.nextConnection and self.next_connection;
-    self.previousConnection = block.previousConnection and self.previous_connection;
-    self.outputConnection = block.outputConnection and self.output_connection;
+    if (block.nextConnection) then
+        self.nextConnection = self.next_connection;
+        self.nextConnection:SetCheck(block.nextConnection:GetCheck());
+    else
+        self.nextConnection = nil;
+    end
+    if (block.previousConnection) then
+        self.previousConnection = self.previous_connection;
+        self.previousConnection:SetCheck(block.previousConnection:GetCheck());
+    else
+        self.previousConnection = nil;
+    end
+    if (block.outputConnection) then
+        self.outputConnection = self.output_connection;
+        self.outputConnection:SetCheck(block.outputConnection:GetCheck());
+    else
+        self.outputConnection = nil;
+    end
     self:SetLeftTopUnitCount(block.leftUnitCount, block.topUnitCount);
     self:SetWidthHeightUnitCount(block.widthUnitCount, self.heightUnitCount);
     self:TryConnectionBlock();

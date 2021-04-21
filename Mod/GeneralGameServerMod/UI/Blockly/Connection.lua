@@ -22,10 +22,12 @@ function Connection:ctor()
     self.centerX, self.centerY, self.halfWidth, self.halfHeight = 0, 0, 0, 0;
 end
 
-function Connection:Init(block, type, check)
+function Connection:Init(block, typ, check)
     self:SetBlock(block);
-    self:SetType(type);
-    self:SetCheck(check ~= true and check or nil);
+    self:SetType(typ);
+    if (type(check) == "string") then check = {check} end 
+    if (type(check) == "boolean") then check = nil end
+    self:SetCheck(check);
 
     return self;
 end
@@ -54,6 +56,18 @@ function Connection:IsMatch(connection)
     if (self_type == "next_connection" and conn_type ~= "previous_connection") then return false end
     if (self_type == "output_connection" and conn_type ~= "input_connection") then return false end
     if (self_type == "input_connection" and conn_type ~= "output_connection") then return false end
+    local self_check, conn_check = self:GetCheck(), connection:GetCheck();
+    if (self_check or conn_check) then
+        if (not self_check or not conn_check) then return false end
+        for _, self_type in ipairs(self_check) do
+            for _, conn_type in ipairs(conn_check) do
+                if (self_type == conn_type) then 
+                    return self:IsIntersect(connection);
+                end                
+            end
+        end
+        return false;
+    end
     return self:IsIntersect(connection);
 end
 
