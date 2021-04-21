@@ -23,6 +23,7 @@ function GenerateBlockOption()
     local rawcode, prettycode = BlocklyEditor:GetCode();
     local prettycode = string.gsub(prettycode, "\t", "    ");
     local G = {message = "", arg = {}, field_count = 0, type="block", category = "category", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true,};
+    print(prettycode)
     local func, errmsg = loadstring(prettycode);
     setfenv(func, G);
     func();
@@ -40,16 +41,25 @@ function PreviewBlockOption(blockOption)
 end
 
 function GenerateBlockDefineCode(option)
-    local field_values = {};
-    local fields = {};
+    local indent = "        ";
+    local arg_var_define = indent .. "local args = {};\n";
+
     for i, arg in ipairs(option.arg) do
-        fields[i] = "%s";
         if (arg.type == "input_value" or arg.type == "input_statement") then
-            field_values[i] = string.format('block:GetValueAsString("%s")', arg.name);   
+            arg_var_define = arg_var_define .. string.format('%sargs["%s"] = block:GetValueAsString("%s");\n', indent, arg.name, arg.name);
         else
-            field_values[i] = string.format('block:GetFieldValue("%s")', arg.name);   
+            arg_var_define = arg_var_define .. string.format('%sargs["%s"] = block:GetFieldValue("%s");\n', indent, arg.name, arg.name);
         end
     end 
+
+    local code_description = option.code_description or "";
+    code_description = string.gsub(code_description, "\n+$", "");
+    code_description = string.gsub(code_description, "^\n+", "");
+    if (option.output) then
+        code_description = "[[" .. code_description .. "]]";
+    else
+        code_description = "[[\n" .. code_description .. "\n]]";
+    end
 
     local block_define_code = string.format([[
 {
@@ -61,13 +71,14 @@ function GenerateBlockDefineCode(option)
     message = "%s",
     %s,
     ToNPL = function(block)
-        local values = {%s};
+%s
         -- 更改下行为图块实际生成代码
-        return string.format('%s\n', table.unpack(values)); 
+        return string.gsub("%s", "%%$(%%w+)", args); 
     end
 }]], option.type, option.category, option.output, option.previousStatement, option.nextStatement, option.message, 
     commonlib.dump(option.arg, "arg", false, 2), 
-    table.concat(field_values, ","), table.concat(fields, " "));
+    arg_var_define, code_description);
+
     return block_define_code;
 end
 

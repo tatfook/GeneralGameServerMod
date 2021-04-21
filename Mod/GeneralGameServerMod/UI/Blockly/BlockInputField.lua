@@ -182,12 +182,14 @@ function BlockInputField:GetSingleLineTextHeight()
     return math.floor(self:GetFontSize() * 6 / 5);
 end
 
-function BlockInputField:GetShowText()
-    if (self.widthUnitCount < Const.MaxTextShowWidthUnitCount) then return self:GetLabel() end
-    
+function BlockInputField:GetShowText(text)
     local text = self:GetLabel();
+    if (self.widthUnitCount < Const.MaxTextShowWidthUnitCount) then return text end
+    if (self.show_text_label == label) then return self.show_text end
+
     local width = (self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2) * self:GetUnitSize();
     local show_text = _guihelper.TrimUtf8TextByWidth(text, width, self:GetFont());  -- AutoTrimTextByWidth 使用此函数中文显示可能异常
+    self.show_text, self.show_text_label = show_text, text;
     return show_text;
 end
 
@@ -384,7 +386,7 @@ function BlockInputField:UpdateEditAreaSize()
 end
 
 function BlockInputField:GetFieldEditType()
-    return "input";
+    return "none";
 end
 
 function BlockInputField:GetFieldEditElement(parentElement)

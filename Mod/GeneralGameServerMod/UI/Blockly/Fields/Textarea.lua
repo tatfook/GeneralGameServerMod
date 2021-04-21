@@ -23,7 +23,7 @@ function Textarea:OnBeginEdit()
 
         confirm = function(value)
             self:SetFieldValue(value);
-            self:SetLabel(self:GetValue());
+            self:SetLabel(string.gsub(self:GetValue(), "\n", " "));
             self:FocusOut();
         end,
 
