@@ -284,14 +284,36 @@ end
 -- 绘制边框
 function ElementUI:RenderBorder(painter)
     local style = self:GetStyle();
-    local borderWidth, borderColor = style["border-width"], style["border-color"];
     local x, y, w, h = self:GetGeometry();
-    if (not borderWidth or not borderColor) then return end
-    painter:SetPen(borderColor);
-    painter:DrawRectTexture(x, y, w, borderWidth); -- 上
-    painter:DrawRectTexture(x + w - borderWidth, y , borderWidth, h); -- 右
-    painter:DrawRectTexture(x, y + h - borderWidth, w, borderWidth); -- 下
-    painter:DrawRectTexture(x, y , borderWidth, h); -- 左
+    local borderWidth, borderColor = style["border-width"], style["border-color"];
+    if (borderWidth and borderColor) then 
+        painter:SetPen(borderColor);
+        painter:DrawRectTexture(x, y, w, borderWidth); -- 上
+        painter:DrawRectTexture(x + w - borderWidth, y , borderWidth, h); -- 右
+        painter:DrawRectTexture(x, y + h - borderWidth, w, borderWidth); -- 下
+        painter:DrawRectTexture(x, y , borderWidth, h); -- 左
+    else 
+        borderWidth, borderColor = style["border-top-width"], style["border-top-color"];
+        if (borderWidth and borderColor) then 
+            painter:SetPen(borderColor);
+            painter:DrawRectTexture(x, y, w, borderWidth); 
+        end
+        borderWidth, borderColor = style["border-right-width"], style["border-right-color"];
+        if (borderWidth and borderColor) then 
+            painter:SetPen(borderColor);
+            painter:DrawRectTexture(x + w - borderWidth, y , borderWidth, h); 
+        end
+        borderWidth, borderColor = style["border-bottom-width"], style["border-bottom-color"];
+        if (borderWidth and borderColor) then 
+            painter:SetPen(borderColor);
+            painter:DrawRectTexture(x, y + h - borderWidth, w, borderWidth);
+        end
+        borderWidth, borderColor = style["border-left-width"], style["border-left-color"];
+        if (borderWidth and borderColor) then 
+            painter:SetPen(borderColor);
+            painter:DrawRectTexture(x, y , borderWidth, h);
+        end
+    end
 end
 
 -- 绘制内容

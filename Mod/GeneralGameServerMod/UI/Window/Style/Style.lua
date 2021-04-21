@@ -287,6 +287,7 @@ local number_fields = {
 local color_fields = {
 	["color"] = true, 
 	["border-color"] = true,
+	["border-top-color"] = true, ["border-right-color"] = true, ["border-bottom-color"] = true, ["border-left-color"] = true,
 	["outline-color"] = true,
 	["background-color"] = true,
 	["outer-background-color"] = true,
@@ -426,6 +427,10 @@ end
 -- 缩写字段
 local complex_fields = {
 	["border"] = "border-width border-style border-color",
+	["border-top"] = "border-top-width border-top-style border-top-color",
+	["border-right"] = "border-right-width border-right-style border-right-color",
+	["border-bottom"] = "border-bottom-width border-bottom-style border-bottom-color",
+	["border-left"] = "border-left-width border-left-style border-left-color",
 	["border-width"] = "border-top-width border-right-width border-bottom-width border-left-width",
     ["padding"] = "padding-top padding-right padding-bottom padding-left",
 	["margin"] = "margin-top margin-right margin-bottom margin-left ",
@@ -454,7 +459,7 @@ local function AddComplexStyleItem(style, name, value)
 		values[4] = values[4] or values[2] or values[1];
         values[3] = values[3] or values[1];
 		values[2] = values[2] or values[1];
-	elseif (name == "border") then
+	elseif (name == "border" or name == "border-top" or name == "border-right" or name == "border-bottom" or name == "border-left") then
 		values[1] = values[1] or 0;
 		values[2] = values[2] or "solid";
 		values[3] = values[3] or "#000000";

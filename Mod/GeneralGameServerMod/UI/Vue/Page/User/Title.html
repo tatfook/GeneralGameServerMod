@@ -1,6 +1,7 @@
 <template>
     <div style="padding-left:10px; padding-right:20px; height:39px; padding-top: 10px;">
         <div style="float: left; width:128px; height:64px; margin-top:-28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/biaoti_128X64_32bits.png);"></div>
+        <div onclick=ClickHelp style="float: left; width:32px; height: 32px; margin-top: -6px; margin-left: -16px; background: url(Texture/Aries/Creator/keepwork/Help/btn_32X32_32bits.png;0 0 32 32);"></div>
         <div onclick=close class="btn" style="float: right; background:url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22); width:20px; height:20px;"></div>
     </div>
 </template>
@@ -9,6 +10,10 @@
     local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
     NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
     local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
+
+    function ClickHelp()
+        NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/Help/HelpPage.lua").Show("role");
+    end 
 
     function removeAllUnvalidItems(skin)
         local currentSkin = skin;

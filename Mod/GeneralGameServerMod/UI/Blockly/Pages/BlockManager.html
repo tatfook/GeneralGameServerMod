@@ -5,13 +5,13 @@
             <div class="category-form">
                 <input v-model="NewCategoryName" style="margin-top: 10px" placeholder="分类名"></input>
                 <input v-model="NewCategoryColor" style="margin-top: 10px;" placeholder="分类颜色值"></input>
-                <div class="btn" style="width: 120px; height: 30px; margin-top:10px;">新增图块分类</div>
+                <div onclick=ClickNewCategoryBtn class="btn" style="width: 120px; height: 30px; margin-top:10px;">新增图块分类</div>
             </div>
             <div class="category-list" style="margin-top: 20px;">
                 <div v-for="category in AllCategoryList" class="category-item">
                     <div style="width: 80px; text-align: center;">{{category.text or category.name}}</div>
                     <div v-bind:style="GetCategoryColorStyle(category)"></div>
-                    <div class="btn" style="width: 80px; margin-left: 20px;">移除</div>
+                    <div onclick="ClickDeleteCategoryBtn(category.name)" class="btn" style="width: 80px; margin-left: 20px;">移除</div>
                 </div>
             </div>
         </div>
@@ -39,6 +39,7 @@ end
     left: 0px;
     width: 300px;
     bottom: 0px;
+    border-right: 1px solid #cccccc;
 }
 
 .category-form {
