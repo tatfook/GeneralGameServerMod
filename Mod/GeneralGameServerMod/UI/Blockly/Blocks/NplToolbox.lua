@@ -60,8 +60,6 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
                 for i, opt in ipairs(block.inputFieldOptionList) do
                     args[i] = block:GetValueAsString(opt.name) or "";
                 end
-                print(func_description);
-                echo(args, true)
                 return string.format(func_description, table.unpack(args));
             end,
             hideInToolbox = cmd.hide_in_toolbox,
