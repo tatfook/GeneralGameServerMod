@@ -54,6 +54,7 @@ function ToolBox:SetCategoryList(categorylist)
         self.categoryMap[category.name] = category;
         local blocktypes = category.blocktypes;
         category.offsetY = offsetY;
+        category.textWidth = _guihelper.GetTextWidth(category.text or category.name, categoryFont);
         for _, blocktype in ipairs(blocktypes) do
             local block = self:GetBlockly():GetBlockInstanceByType(blocktype);
             if (block) then
@@ -102,7 +103,7 @@ function ToolBox:RenderCategory(painter)
         else 
             painter:SetPen(category.color);
         end
-        painter:DrawText(offsetX + 2, offsetY + circleSize + 4, category.text or category.name);
+        painter:DrawText((categoryWidth - category.textWidth) / 2, offsetY + circleSize + 4, category.text or category.name);
     end
 end
 

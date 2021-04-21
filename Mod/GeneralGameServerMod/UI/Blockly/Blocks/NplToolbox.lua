@@ -58,7 +58,9 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
 
                 local args = {};
                 for i, opt in ipairs(block.inputFieldOptionList) do
-                    args[i] = block:GetValueAsString(opt.name) or "";
+                    if (opt.type ~= "input_dummy") then
+                        args[i] = block:GetValueAsString(opt.name) or "";
+                    end
                 end
                 return string.format(func_description, table.unpack(args));
             end,
