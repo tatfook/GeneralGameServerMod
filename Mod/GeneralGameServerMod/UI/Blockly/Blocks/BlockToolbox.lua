@@ -97,7 +97,7 @@ local AllBlockList = {
 	    nextStatement = true,
         ToNPL = function(block)
             local field_text = block:GetFieldValue("field_text");
-            return string.format('message = message .. " " .. "%s";\n', field_text);
+            return string.format('message = message .. " " .. [[%s]];\n', field_text);
         end,
     },
     {

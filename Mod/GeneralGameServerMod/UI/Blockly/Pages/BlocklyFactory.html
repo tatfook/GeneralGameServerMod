@@ -116,6 +116,10 @@ function GenerateBlockOption()
     local G = {message = "", arg = {}, field_count = 0, type="", category = "图块", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true};
     <!-- print(prettycode) -->
     local func, errmsg = loadstring(prettycode);
+    if (not func) then
+        print("============================loadstring error==========================", errmsg);
+        print(prettycode)
+    end
     setfenv(func, G);
     func();
     G.message = string.gsub(G.message, "^ ", "");
