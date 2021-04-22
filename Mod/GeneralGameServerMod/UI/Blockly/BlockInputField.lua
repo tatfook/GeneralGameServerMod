@@ -169,7 +169,9 @@ function BlockInputField:GetUnitSize()
     local block = self:GetBlock();
     local blockly = self:GetBlock():GetBlockly();
     local unitsize = blockly:GetUnitSize();
-    if (block:IsToolBoxBlock()) then unitsize = blockly:GetToolBox():GetUnitSize() end
+    if (block:IsToolBoxBlock()) then 
+        unitsize = blockly:GetToolBox():GetUnitSize();
+    end
     return unitsize or UnitSize;
 end
 

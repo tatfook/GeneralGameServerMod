@@ -1,41 +1,116 @@
 <template class="container">
-    <WindowTitleBar title="自定义图块" v-bind:close="Close"></WindowTitleBar>
-    <div style="position: absolute; left: 2px; top: 39px; right: 0px; bottom: 2px;">
-        <Blockly ref="BlocklyEditor" class="blockly-editor" type="block" onchange=OnBlocklyChange></Blockly>
-        <Blockly readonly=true ref="BlocklyPreview" class="blockly-preview" onchange=OnBlocklyChange isHideToolBox=true isHideIcons="true"></Blockly>
-        <div class="textarea-container"><textarea v-model="BlockDefineCode" style="width: 100%; height: 100%;"></textarea></div>
+    <div style="height: 40px; width: 100%; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex;">
+            <div onclick="SetContentType('block')" class="header-btn" v-bind:style="GetHeaderBtnStyle('block')">自定义图块</div>
+            <div onclick="SetContentType('blockly')" class="header-btn" v-bind:style="GetHeaderBtnStyle('blockly')">图块编辑器</div>
+        </div>
+        <div onclick=CloseWindow class="close-btn btn"></div>
+    </div>
+    <div v-show="ContentType == 'block'" style="position: absolute; left: 2px; top: 40px; right: 0px; bottom: 2px;">
+        <Blockly ref="BlocklyEditor" class="blockly-editor" type="block" onchange=OnBlocklyEditorChange></Blockly>
+        <Blockly readonly=true ref="BlocklyPreview" class="blockly-preview" isHideToolBox=true isHideIcons="true"></Blockly>
+        <div class="textarea-container"><textarea v-model="BlockDefineCode" style="width: 100%; height: 100%;" readonly=true></textarea></div>
+        <div class="block-form" style="background-color: #c8c8c8;">
+            <div style="width: 200px;">
+                <select v-bind:value="BlockType" style="width: 100%;" placeholder="分类名" v-bind:options="BlockOptions" onselect=SelectBlock></select>
+                <div style="margin-top: 10px; display: flex; justify-content: space-between; padding: 0px 10px;">
+                    <div onclick=ClickSaveBlockBtn class="btn" style="width: 80; height: 30px; background-color: #cccccc;">保存</div>
+                    <div onclick=ClickDeleteBlockBtn class="btn" style="width: 80px; height: 30px;">删除</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-show="ContentType == 'blockly'" style="position: absolute; left: 2px; top: 40px; right: 0px; bottom: 2px;">
+        <Blockly ref="Blockly" class="blockly-editor" type="custom" onchange=OnBlocklyChange></Blockly>
+        <div style="position: absolute; left: 802px; top: 0px; right: 0px; bottom: 0px;">
+            <textarea v-bind:value="BlocklyCode" readonly=true style="width: 100%; height: 100%;"></textarea>
+        </div>
     </div>
 </template>
 
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/BlockManager.lua").StaticInit();
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
+local AllBlockMap = BlockManager.GetAllBlockMap();
+local Blockly = nil;
 local BlocklyEditor = nil;
 local BlocklyPreview = nil;
 local BlockOption = {};
+ContentType = "block"; -- block blockly
+BlocklyCode = "";
+BlockType = "";
 BlockDefineCode = "";
-function OnReady()
-    BlocklyEditor = GetRef("BlocklyEditor");
-    BlocklyPreview = GetRef("BlocklyPreview");
-    OnBlocklyChange();
+BlockOptions = {};
+for blockType, block in pairs(AllBlockMap) do
+    if (blockType ~= "") then
+        table.insert(BlockOptions, {label = blockType, value = blockType});
+    end
 end
 
-function Close()
-    Page.ShowMessageBoxPage({
-        text = "是否保存修改?",
-        confirm = function()
-            BlockOption.xml_text = BlocklyEditor:SaveToXmlNodeText();
-            CloseWindow();
-        end,
-        cancel = CloseWindow,
-    });
+function OnReady()
+    Blockly = GetRef("Blockly");
+    BlocklyEditor = GetRef("BlocklyEditor");
+    BlocklyPreview = GetRef("BlocklyPreview");
+    OnBlocklyEditorChange();
+end
+
+function SetContentType(contentType)
+    ContentType = contentType;
+end
+
+function GetHeaderBtnStyle(contentType)
+    if (ContentType == contentType) then return "border-bottom: 1px solid #ffffff" end
+    return "";
+end
+
+function SelectBlock(blockType)
+    if (BlockType == blockType) then return end
+    BlockType = blockType;
+    LoadBlockXmlText(AllBlockMap[BlockType]);
+    OnBlocklyEditorChange();
+end 
+
+function ClickSaveBlockBtn()
+    BlockOption.xml_text = BlocklyEditor:SaveToXmlNodeText();
+    if (BlockType == "") then return end
+    local isExist = false;
+    for i, opt in ipairs(BlockOptions) do
+        if (opt.value == BlockType) then
+            isExist = true;
+            break;
+        end
+    end 
+    if (not isExist) then
+        table.insert(BlockOptions, {label = BlockType, value = BlockType});
+    end
+    BlockManager.NewBlock(BlockOption);
+    GameLogic.AddBBS("Blockly", "图块更改已保存");
+end
+
+function ClickDeleteBlockBtn()
+    if (BlockType == "") then return end
+    for i, opt in ipairs(BlockOptions) do
+        if (opt.value == BlockType) then
+            table.remove(BlockOptions, i);
+            break;
+        end
+    end 
+    BlockManager.DeleteBlock(BlockType);
+    BlockType = "";
+    BlocklyEditor:Reset();
+end
+
+function LoadBlockXmlText(block)
+    if (not block or not block.xml_text) then return end
+    BlocklyEditor:LoadFromXmlNodeText(block.xml_text);
 end
 
 function GenerateBlockOption()
     local rawcode, prettycode = BlocklyEditor:GetCode();
     local prettycode = string.gsub(prettycode, "\t", "    ");
-    local G = {message = "", arg = {}, field_count = 0, type="block", category = "category", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true};
+    local G = {message = "", arg = {}, field_count = 0, type="", category = "图块", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true};
     <!-- print(prettycode) -->
     local func, errmsg = loadstring(prettycode);
     setfenv(func, G);
@@ -73,14 +148,16 @@ function GenerateBlockDefineCode(option)
     else
         code_description = "[[\n" .. code_description .. "\n]]";
     end
+    option.code_description = code_description;
+    
     local func_description = string.gsub(code_description, "%$(%w+)", "%%s");
     local block_define_code = string.format([[
 {
     type = "%s",
     category = "%s",
-    output = "%s",
-    previousStatement = "%s", 
-    nextStatement = "%s",
+    output = %s,
+    previousStatement = %s, 
+    nextStatement = %s,
     message = "%s",
     %s,
     func_description = %s,
@@ -96,19 +173,58 @@ function GenerateBlockDefineCode(option)
     return block_define_code;
 end
 
-function OnBlocklyChange()
+function OnBlocklyEditorChange()
     BlockOption = GenerateBlockOption();
     BlockDefineCode = GenerateBlockDefineCode(BlockOption);
     PreviewBlockOption(BlockOption);
+
+    if (BlockOption.type ~= BlockType) then
+        BlockType = BlockOption.type;
+        if (AllBlockMap[BlockOption.type]) then
+            Page.ShowMessageBoxPage({
+                text = string.format("图块 %s 已经存在, 是否加载已有信息?", BlockOption.type),
+                confirm = function()
+                    LoadBlockXmlText(AllBlockMap[BlockOption.type]);
+                end,
+            });
+        end
+    end
+end
+
+function OnBlocklyChange()
+    if (not Blockly) then return end
+    BlocklyCode = Blockly:GetCode();
 end
 
 </script>
 
 <style scoped=true>
 .container {
-    width: 100%;
-    height: 100%;
-    background: url(Texture/Aries/Creator/keepwork/Window/dakuang2_32bits.png#0 0 64 69:26 44 24 22);
+    width: 1200px;
+    height: 800px;
+    background-color: #191C13;
+    /* background: url(Texture/Aries/Creator/keepwork/Window/dakuang2_32bits.png#0 0 64 69:26 44 24 22); */
+}
+
+.header-btn {
+    width: 120px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 5px;
+    color: #e6e6e6;
+}
+.header-btn:hover {
+    color: #ffffff;
+}
+
+.close-btn {
+    margin-top: 5px;
+    margin-right: 20px;
+    width: 22px; 
+    height: 22px; 
+    background-color: #e6e6e6;
+    background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);
 }
 
 .blockly-editor {
@@ -124,14 +240,27 @@ end
     left: 802px;
     top: 0px;
     right: 2px;
-    height: 300px;
+    height: 200px;
 }
 
 .textarea-container {
     position: absolute;
     left: 802px;
-    top: 302px;
+    top: 202px;
+    right: 2px;
+    bottom: 102px;
+}
+
+.block-form {
+    position: absolute;
+    left: 802px;
     right: 2px;
     bottom: 0px;
+    height: 100px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 </style>

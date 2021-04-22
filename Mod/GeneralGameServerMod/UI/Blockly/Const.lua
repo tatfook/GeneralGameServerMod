@@ -33,3 +33,5 @@ Const.ToolBoxWidth = 300;                         -- 工具栏宽度
 Const.ToolBoxCategoryWidth = 60;                  -- 分类宽
 Const.ToolBoxCategoryHeight = 60;                 -- 分类高
 
+-- 图块颜色
+Const.Colors = {"#2E9BEF", "#76CE62", "#764BCC", "#EC522E", "#C38A3F", "#69B090", "#569138", "#459197"};

@@ -298,10 +298,10 @@ for _, block in ipairs(AllBlockList) do
     end
 end
 
-function BlockToolbox.GetAllBlocks()
+function BlockToolbox.GetAllBlockList()
     return AllBlockList, AllBlockMap;
 end
 
-function BlockToolbox.GetCategoryList()
+function BlockToolbox.GetAllCategoryList()
     return AllCategoryList, AllCategoryMap;
 end

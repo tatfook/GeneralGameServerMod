@@ -497,8 +497,8 @@ function TextArea:RenderContent(painter)
     if (self:IsSelected()) then
         painter:SetPen("#3390ff");
         local function RenderSelectedBG(line, baseAt, startAt, endAt)
-            local offsetX = baseAt >= startAt and 0 or (self.text:sub(baseAt, startAt):GetWidth(self:GetFont()));
-            local width = startAt > endAt and 0 or (self.text:sub(startAt, endAt - 1):GetWidth(self:GetFont()));
+            local offsetX = baseAt >= startAt and 0 or (self.text:sub(baseAt == 0 and 1 or baseAt, startAt):GetWidth(self:GetFont()));
+            local width = startAt > endAt and 0 or (self.text:sub(startAt == 0 and 1 or startAt, endAt - 1):GetWidth(self:GetFont()));
             painter:DrawRectTexture(x + offsetX, y + (line - 1) * LineHeight, width, LineHeight);
         end
         local selectStartAt, selectEndAt = self:GetSelected();

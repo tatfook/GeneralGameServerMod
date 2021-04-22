@@ -19,8 +19,14 @@ Option:Property("Text", "");
 Option:Property("SelectElement");
 Option:Property("BaseStyle", {
     NormalStyle = {
-        width = "100%"
-    }
+        width = "100%",
+        height = "28px",
+        ["line-height"] = "28px",
+        padding = "0px 4px",
+    },
+    HoverStyle = {
+        ["background-color"] = "#cccccc",
+    },
 });
 
 function Option:Init(xmlNode, window, parent)

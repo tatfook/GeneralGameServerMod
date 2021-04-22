@@ -35,9 +35,14 @@ function BlockManager.SaveCategoryAndBlock()
     io:close();
 end
 
-function BlockManager.SaveBlock(block)
+function BlockManager.NewBlock(block)
     if (not block.type) then return end
     AllBlockMap[block.type] = block;
+    BlockManager.SaveCategoryAndBlock();
+end
+
+function BlockManager.DeleteBlock(blockType)
+    AllBlockMap[blockType] = nil;
     BlockManager.SaveCategoryAndBlock();
 end
 
@@ -50,7 +55,7 @@ function BlockManager.GetAllBlockMap()
 end
 
 function BlockManager.StaticInit()
-    if (inited) then return end
+    if (inited) then return BlockManager end
     inited = true;
 
     Directory = CommonLib.ToCanonicalFilePath(ParaIO.GetCurDirectory(0) .. ParaWorld.GetWorldDirectory() .. "/blockly/");
@@ -67,4 +72,57 @@ function BlockManager.StaticInit()
     return BlockManager;
 end
 
--- BlockManager.StaticInit();
+local function ToNPL(block)
+    local blockType = block:GetType();
+    local option = AllBlockMap[blockType];
+    if (not option) then return "" end
+    local args = {};
+    for i, arg in ipairs(option.arg) do
+        if (arg.type == "input_value" or arg.type == "input_statement") then
+            args[arg.name] = block:GetValueAsString(arg.name);
+        else
+            args[arg.name] = block:GetFieldValue(arg.name);
+        end
+    end 
+    return string.gusb(option.code_description, "%$(%w+)", args);
+end
+
+function BlockManager.GetAllBlockList()
+    local BlockList = {};
+    for block_type, block in pairs(AllBlockMap) do 
+        if (block_type ~= "") then
+            table.insert(BlockList, block);
+        end
+    end
+    return BlockList, AllBlockMap;
+end
+
+function BlockManager.GetAllCategoryList()
+    local CategoryList = {};
+    local CategoryMap = {};
+    for _, category in pairs(AllCategoryMap) do
+        local data = {
+            name = category.name,
+            text = category.text,
+            color = category.color,
+            blocktypes = {},
+        }
+        CategoryMap[data.name] = data;
+        table.insert(CategoryList, data);
+    end
+    for block_type, block in pairs(AllBlockMap) do 
+        if (block_type ~= "") then
+            local categoryName = block.category;
+            local category = CategoryMap[categoryName];
+            if (not category) then
+                category = {name = categoryName, blocktypes = {}}
+                CategoryMap[categoryName] = category;
+                table.insert(CategoryList, category);
+            end
+            table.insert(category.blocktypes, #(category.blocktypes) + 1, block_type);
+        end
+    end
+    return CategoryList, CategoryMap;
+end
+
+BlockManager.StaticInit();

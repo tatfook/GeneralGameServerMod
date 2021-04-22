@@ -54,16 +54,18 @@ function Blockly.PlayDestroyBlockSound()
 end
 
 function Blockly:ctor()
+    self:Reset();
+    self.block_types = {};
+    self:SetToolBox(ToolBox:new():Init(self));
+end
+
+function Blockly:Reset()
+    self.undos = {};
+    self.redos = {};
+    self.blocks = {};
     self.offsetX, self.offsetY = 0, 0;
     self.mouseMoveX, self.mouseMoveY = 0, 0;
-    self.blocks = {};
-    self.block_types = {};
-    self.toolbox = ToolBox:new():Init(self);
-    self.undos = {}; -- 撤销
-    self.redos = {}; -- 恢复
-    -- self:SetScale(0.75);
     self:SetScale(1);
-    self:SetToolBox(self.toolbox);
 end
 
 function Blockly:Init(xmlNode, window, parent)
@@ -95,9 +97,10 @@ function Blockly:Init(xmlNode, window, parent)
     self:SetShadowBlock(ShadowBlock:new():Init(self));
 
     local typ = self:GetAttrStringValue("type", "");
-    local allBlocks, categoryList = Toolbox.GetAllBlocks(typ), Toolbox.GetCategoryList(typ, self:GetAttrStringValue("ToolBoxXmlText"));
-    for _, blockOption in ipairs(allBlocks) do self:DefineBlock(blockOption) end
-    self.toolbox:SetCategoryList(categoryList);
+    local allBlockList = Toolbox.GetAllBlockList(typ);
+    local allCategoryList = Toolbox.GetAllCategoryList(typ, self:GetAttrStringValue("ToolBoxXmlText"));
+    for _, blockOption in ipairs(allBlockList) do self:DefineBlock(blockOption) end
+    self:GetToolBox():SetCategoryList(allCategoryList);
 
     self.isHideToolBox = self:GetAttrBoolValue("isHideToolBox", false);
     self.isHideIcons = self:GetAttrBoolValue("isHideIcons", false);
@@ -107,8 +110,14 @@ end
 
 function Blockly:OnAttrValueChange(attrName, attrValue, oldAttrValue)
     if (attrName == "ToolBoxXmlText") then
-        local categoryList = Toolbox.GetCategoryList(self:GetAttrStringValue("type", ""), self:GetAttrStringValue("ToolBoxXmlText"));
-        self.toolbox:SetCategoryList(categoryList);
+        local allCategoryList = Toolbox.GetAllCategoryList(self:GetAttrStringValue("type", ""), self:GetAttrStringValue("ToolBoxXmlText"));
+        self:GetToolBox():SetCategoryList(allCategoryList);
+    elseif (attrName == "type") then
+        self.block_types = {};
+        local allBlockList = Toolbox.GetAllBlockList(attrValue);
+        local allCategoryList = Toolbox.GetAllCategoryList(attrValue, self:GetAttrStringValue("ToolBoxXmlText"));
+        for _, blockOption in ipairs(allBlockList) do self:DefineBlock(blockOption) end
+        self:GetToolBox():SetCategoryList(allCategoryList);
     end
 end
 
@@ -128,8 +137,8 @@ function Blockly:Do(cmd)
     if (cmd.action == "NewBlock" and BlocklySimulator:IsRecording() and self:IsSupportSimulator()) then   -- 从工具栏新增  NewBlock_Copy
         BlocklySimulator:AddVirtualEvent("Blockly_NewBlock", {
             block_type = block:GetType(),
-            block_left = cmd.startLeftUnitCount * self.toolbox:GetUnitSize(),
-            block_top = cmd.startTopUnitCount * self.toolbox:GetUnitSize(),
+            block_left = cmd.startLeftUnitCount * self:GetToolBox():GetUnitSize(),
+            block_top = cmd.startTopUnitCount * self:GetToolBox():GetUnitSize(),
         });
     end
 
@@ -343,7 +352,7 @@ function Blockly:RenderContent(painter)
     local DraggingBlock = nil;
     local toolboxWidth = Const.ToolBoxWidth;
     painter:Translate(x, y);
-    if (not self.isHideToolBox) then self.toolbox:Render(painter) end 
+    if (not self.isHideToolBox) then self:GetToolBox():Render(painter) end 
 
     Shape:SetUnitSize(UnitSize);
     painter:Save();
@@ -391,7 +400,7 @@ function Blockly:UpdateWindowPos()
     for _, block in ipairs(self.blocks) do
         block:UpdateLayout();
     end
-    self.toolbox:UpdateLayout();
+    self:GetToolBox():UpdateLayout();
 end
 
 -- 捕获鼠标
@@ -579,8 +588,8 @@ function Blockly:GetMouseUI(x, y, event)
     if (ui) then return ui end
 
     if (self:IsInnerToolBox(event)) then
-        ui = self.toolbox:GetMouseUI(x + self.offsetX, y + self.offsetY, event);
-        return ui or self.toolbox;
+        ui = self:GetToolBox():GetMouseUI(x + self.offsetX, y + self.offsetY, event);
+        return ui or self:GetToolBox();
     end
     
     local size = #self.blocks;
@@ -596,7 +605,7 @@ end
 function Blockly:IsInnerToolBox(event)
     if (self.isHideToolBox) then return false end
     local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);         -- 防止减去偏移量
-    if (self.toolbox:IsContainPoint(x, y)) then return true end
+    if (self:GetToolBox():IsContainPoint(x, y)) then return true end
     return false;
 end
 
@@ -604,13 +613,13 @@ end
 function Blockly:IsInnerDeleteArea(x, y)
     if (self.isHideIcons) then return false end;
     local x, y = Blockly._super.GetRelPoint(self, x, y);                      -- 防止减去偏移量
-    if (self.toolbox:IsContainPoint(x, y)) then return true end
+    if (self:GetToolBox():IsContainPoint(x, y)) then return true end
     return false;
 end
 
 -- 鼠标滚动事件
 function Blockly:OnMouseWheel(event)
-    if (self:IsInnerToolBox(event)) then return self.toolbox:OnMouseWheel(event) end
+    if (self:IsInnerToolBox(event)) then return self:GetToolBox():OnMouseWheel(event) end
 end
 
 -- 键盘事件

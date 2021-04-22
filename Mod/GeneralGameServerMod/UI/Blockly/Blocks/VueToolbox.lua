@@ -87,10 +87,10 @@ AddToAllBlocks(VueBlocks, "界面");
 -- AddToAllBlocks(LogBlocks, "辅助");
 AddToAllBlocks(HelperBlocks, "辅助");
 
-function VueToolbox.GetAllBlocks()
+function VueToolbox.GetAllBlockList()
     return AllBlocks, AllBlockMap;
 end
 
-function VueToolbox.GetCategoryList()
+function VueToolbox.GetAllCategoryList()
     return CategoryList, CategoryMap;
 end

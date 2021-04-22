@@ -23,6 +23,7 @@ local HelperBlocks = NPL.load("./Helper.lua", IsDevEnv);
 local VueToolbox = NPL.load("./VueToolbox.lua", IsDevEnv);
 local NplToolbox = NPL.load("./NplToolbox.lua", IsDevEnv);
 local BlockToolbox = NPL.load("./BlockToolbox.lua", IsDevEnv);
+local BlockManager = NPL.load("../Pages/BlockManager.lua", IsDevEnv);
 
 local Toolbox = NPL.export();
 
@@ -89,23 +90,23 @@ function GetToolbox(typ)
     if (typ == "npl") then return NplToolbox end
     if (typ == "vue") then return VueToolbox end
     if (typ == "block") then return BlockToolbox end
-
+    if (typ == "custom") then return BlockManager end 
     return nil;
 end
 
-function Toolbox.GetAllBlocks(typ)
+function Toolbox.GetAllBlockList(typ)
     local toolbox = GetToolbox(typ);
     if (not toolbox) then return {}, {} end
-    return toolbox.GetAllBlocks();
+    return toolbox.GetAllBlockList();
 end
 
-function Toolbox.GetCategoryList(typ, toolboxXmlText)
+function Toolbox.GetAllCategoryList(typ, toolboxXmlText)
     local toolbox = GetToolbox(typ);
     if (not toolbox) then return {}, {} end
-    local all_category_list, all_category_map = toolbox.GetCategoryList();
+    local all_category_list, all_category_map = toolbox.GetAllCategoryList();
     
     if (toolboxXmlText and toolboxXmlText ~= "") then
-        local all_blocks, all_block_map = Toolbox.GetAllBlocks(typ);
+        local all_blocks, all_block_map = Toolbox.GetAllBlockList(typ);
         return Toolbox.GetCategoryListByToolBoxXmlText(toolboxXmlText, all_blocks, all_block_map, all_category_list, all_category_map);
     end
 
@@ -141,4 +142,3 @@ function Toolbox.GetCategoryListByToolBoxXmlText(toolboxXmlText, all_blocks, all
     end
     return category_list, all_category_map;
 end
-

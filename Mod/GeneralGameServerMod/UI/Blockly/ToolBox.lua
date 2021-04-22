@@ -19,6 +19,8 @@ ToolBox:Property("Blockly");
 ToolBox:Property("CurrentCategoryName");
 ToolBox:Property("Scale", 1);
 
+local DefaultCategoryColor = "#459197";
+
 function ToolBox:ctor()
     self.leftUnitCount, self.topUnitCount = 0, 0;
     self.widthUnitCount, self.heightUnitCount = 0, 0;
@@ -28,7 +30,6 @@ function ToolBox:ctor()
     self.categoryList = {}
     self.categoryTotalHeight = 0;
     self.MouseWheel = {};
-    -- self:SetScale(0.75);
     self:SetScale(1);
 end
 
@@ -52,7 +53,7 @@ function ToolBox:SetCategoryList(categorylist)
     local offsetX, offsetY = 25, 0;
     for _, category in ipairs(categorylist) do
         self.categoryMap[category.name] = category;
-        local blocktypes = category.blocktypes;
+        local blocktypes = category.blocktypes or {};
         category.offsetY = offsetY;
         category.textWidth = _guihelper.GetTextWidth(category.text or category.name, categoryFont);
         for _, blocktype in ipairs(blocktypes) do
@@ -90,18 +91,19 @@ function ToolBox:RenderCategory(painter)
     local circleOffsetX, circleOffsetY = 17, 8;
     painter:SetFont(categoryFont);
     for i, category in ipairs(categories) do
+        local categoryColor = category.color or DefaultCategoryColor;
         local offsetX = circleOffsetX;
         local offsetY = (i - 1) * categoryHeight + circleOffsetY;
         if (category.name == self:GetCurrentCategoryName()) then
             painter:SetPen("#585D5E");
             painter:DrawRect(0, offsetY - circleOffsetY, categoryWidth, categoryHeight);
         end
-        painter:SetPen(category.color);
+        painter:SetPen(categoryColor);
         painter:DrawRectTexture(offsetX, offsetY, circleSize, circleSize, "Texture/Aries/Creator/keepwork/ggs/blockly/yuan_26X26_32bits.png#0 0 26 26");
         if (category.name == self:GetCurrentCategoryName()) then
             painter:SetPen("#ffffff");
         else 
-            painter:SetPen(category.color);
+            painter:SetPen(categoryColor);
         end
         painter:DrawText((categoryWidth - category.textWidth) / 2, offsetY + circleSize + 4, category.text or category.name);
     end

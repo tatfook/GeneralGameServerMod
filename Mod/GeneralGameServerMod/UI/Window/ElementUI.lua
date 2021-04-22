@@ -261,12 +261,11 @@ end
 function ElementUI:RenderBackground(painter)
     local background, backgroundColor = self:GetBackground(), self:GetBackgroundColor();
     local x, y, w, h = self:GetGeometry();
-    backgroundColor = backgroundColor or (background and "#ffffffff" or "#ffffff00");
-    -- ElementUIDebug.FormatIf(self:GetName() == "ScrollBarThumb", "RenderBackground Name = %s, x = %s, y = %s, w = %s, h = %s, background = %s, backgroundColor = %s", self:GetName(), x, y, w, h, background, backgroundColor);
-    -- ElementUIDebug.If(self:GetAttrValue("id") == "test", background);
-    painter:SetPen(backgroundColor);
+    local painterBackgroundColor = backgroundColor or (background and "#ffffffff" or "#ffffff00");
     local borderRadius = self:GetStyle()["border-radius"];
+    painter:SetPen(painterBackgroundColor);
     if (background or not borderRadius) then
+        -- if (backgroundColor) then painter:DrawRect(x, y, w, h) end
         painter:DrawRectTexture(x, y, w, h, background);
     else 
         painter:DrawRect(x + borderRadius, y + borderRadius, w - 2 * borderRadius, h - 2 * borderRadius);

@@ -16,10 +16,10 @@
             </div>
         </div>
         <div class="block-container">
-            <div class="block-preview" style="height: 150px; border-bottom: 1px solid #cccccc;"></div>
+            <!-- <div class="block-preview" style="height: 150px; border-bottom: 1px solid #cccccc;"></div> -->
             <div class="block-list">
                 <div style="height: 30px; display: flex; justify-content: center;">
-                    <div class="btn" style="width: 200px; height: 100%;">图块编辑器</div>
+                    <div onclick=ClickOpenBlocklyFactoryPage class="btn" style="width: 200px; height: 100%;">图块编辑器</div>
                 </div>
                 <div class="block-item" v-for="block in AllBlockList">
                     <div style="width: 120px; text-align: center; font-size: 18px;">{{block.type}}</div>
@@ -34,6 +34,8 @@
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/BlockManager.lua", IsDevEnv).StaticInit();
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+
 local AllCategoryMap = BlockManager.GetAllCategoryMap();
 local AllBlockMap = BlockManager.GetAllBlockMap();
 
@@ -88,6 +90,10 @@ function ClickDeleteBlockBtn(blockType)
 end
 
 function ClickOpenBlocklyFactoryPage(block)
+    Page.Show({
+        OnClose = function() 
+        end,
+    }, {url = "%ui%/Blockly/Pages/BlocklyFactory.html", width = 1200, height = 800});
 end
 </script>
 

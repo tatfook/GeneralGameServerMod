@@ -259,6 +259,7 @@ function LoadUserInfo()
         local extra = UserDetail.extra or {};
         local ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
         
+        UserDetail.nickname = UserDetail.nickname or UserDetail.username;
         -- 设置模型
         GlobalScope:Set("UserDetail", UserDetail);
         GlobalScope:Set("UserId", UserDetail.id);

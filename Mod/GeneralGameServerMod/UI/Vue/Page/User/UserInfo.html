@@ -215,13 +215,21 @@ function OnAttrValueChange(attrName, attrValue)
     end
 end
 
+local function GetGradeClassName(class)
+    if (not class or not class.grade) then return "" end 
+    local gradeNo = tonumber(class.grade);
+    gradeNo = math.max(gradeNo, 1);
+    gradeNo = math.min(#Grades, gradeNo);
+    class.grade = gradeNo;
+    return Grades[class.grade] .. (class.classNo and (class.classNo .. "班" or ""));
+end 
+
 function OnReady()
     local region = UserDetail.region or {};
     self.bean = tostring(UserDetail.bean or 0);
     self.schoolName = UserDetail.school and UserDetail.school.name or "";
     self.schoolType = UserDetail.school and UserDetail.school.type or "";
-    local class = UserDetail.class or {};
-    self.className = class.grade and (Grades[tonumber(class.grade)] .. (class.classNo and (class.classNo .. "班" or ""))) or "";
+    self.className = GetGradeClassName(UserDetail.class);
     self.userId = UserDetail.id;
     self.username = UserDetail.username;
     self.nickname = MyCompany.Aries.Chat.BadWordFilter.FilterString(UserDetail.nickname);

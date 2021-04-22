@@ -608,7 +608,12 @@ function Block:GetBlockCode()
     local code = ""
     if (language == "lua") then
     else  -- npl
-        code = option.ToNPL(self);
+        if (type(option.ToNPL) == "function") then
+            code = option.ToNPL(self)
+        else 
+            print("---------------------图块转换函数不存在---------------------")
+            echo(option, true);
+        end
     end
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then

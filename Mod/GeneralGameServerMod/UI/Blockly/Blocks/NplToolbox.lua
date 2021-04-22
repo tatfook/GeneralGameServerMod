@@ -96,12 +96,12 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
     return AllBlocks, CategoryList, AllBlockMap, CategoryMap;
 end
 
-function NplToolbox.GetAllBlocks()
+function NplToolbox.GetAllBlockList()
     local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
     return AllBlocks, AllBlockMap;
 end
 
-function NplToolbox.GetCategoryList()
+function NplToolbox.GetAllCategoryList()
     local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
     return CategoryList, AllCategoryMap;
 end
