@@ -86,6 +86,7 @@ local function ToNPL(block)
     end 
     local code_description = string.gsub(option.code_description or "", "\\n", "\n");
     local code = string.gsub(code_description, "%$(%w+)", args);
+    code = string.gsub(code, "%$%{(%w+)%}", args);
     code = string.gsub(code, "\n+$", "");
     code = string.gsub(code, "^\n+", "");
     if (not option.output) then code = code .. "\n" end
