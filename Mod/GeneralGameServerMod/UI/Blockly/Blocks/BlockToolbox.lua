@@ -27,7 +27,7 @@ local AllBlockList = {
             {
                 name = "block_category",
                 type = "field_input",
-                text = "category"
+                text = "图块"
             },
         },
         category = "BlockAttr",

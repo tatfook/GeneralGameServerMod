@@ -84,13 +84,20 @@ local function ToNPL(block)
             args[arg.name] = block:GetFieldValue(arg.name);
         end
     end 
-    return string.gusb(option.code_description, "%$(%w+)", args);
+    local code = string.gsub(option.code_description or "", "%$(%w+)", args);
+    code = string.gsub(code, "\n+$", "");
+    code = string.gsub(code, "^\n+", "");
+    if (not option.output) then
+        code = code .. "\n";
+    end
+    return code;
 end
 
 function BlockManager.GetAllBlockList()
     local BlockList = {};
     for block_type, block in pairs(AllBlockMap) do 
         if (block_type ~= "") then
+            block.ToNPL = ToNPL;
             table.insert(BlockList, block);
         end
     end

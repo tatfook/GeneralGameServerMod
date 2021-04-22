@@ -1,8 +1,8 @@
 <template class="container">
     <div style="height: 40px; width: 100%; display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex;">
-            <div onclick="SetContentType('block')" class="header-btn" v-bind:style="GetHeaderBtnStyle('block')">自定义图块</div>
-            <div onclick="SetContentType('blockly')" class="header-btn" v-bind:style="GetHeaderBtnStyle('blockly')">图块编辑器</div>
+            <div onclick="SetContentType('block')" class="header-btn" v-bind:style="GetHeaderBtnStyle('block')">定制图块</div>
+            <div onclick="SetContentType('blockly')" class="header-btn" v-bind:style="GetHeaderBtnStyle('blockly')">定制图块编辑器</div>
         </div>
         <div onclick=CloseWindow class="close-btn btn"></div>
     </div>
@@ -58,6 +58,9 @@ end
 
 function SetContentType(contentType)
     ContentType = contentType;
+    if (ContentType == "blockly") then
+        Blockly:OnAttrValueChange("type", "custom");
+    end
 end
 
 function GetHeaderBtnStyle(contentType)
@@ -148,7 +151,6 @@ function GenerateBlockDefineCode(option)
     else
         code_description = "[[\n" .. code_description .. "\n]]";
     end
-    option.code_description = code_description;
     
     local func_description = string.gsub(code_description, "%$(%w+)", "%%s");
     local block_define_code = string.format([[
@@ -193,7 +195,8 @@ end
 
 function OnBlocklyChange()
     if (not Blockly) then return end
-    BlocklyCode = Blockly:GetCode();
+    local rawcode, prettycode = Blockly:GetCode();
+    BlocklyCode = string.gsub(prettycode, "\t", "    ");
 end
 
 </script>
