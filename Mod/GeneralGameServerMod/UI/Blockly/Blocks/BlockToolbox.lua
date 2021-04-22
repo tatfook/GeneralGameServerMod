@@ -9,7 +9,7 @@ local AllBlockList = {
             {
                 name = "block_type",
                 type = "field_input",
-                text = "block"
+                text = ""
             },
         },
         category = "BlockAttr",
@@ -241,8 +241,9 @@ local AllBlockList = {
         arg = {
             {
                 name = "code_description",
-                type = "field_textarea",
-                text = "$FieldName",
+                -- type = "field_textarea",
+                type = "field_input",
+                text = "$VALUE",
             },
         },
         category = "BlockCode",

@@ -20,10 +20,10 @@
             </div>
         </div>
     </div>
-    <div v-show="ContentType == 'blockly'" style="position: absolute; left: 2px; top: 40px; right: 0px; bottom: 2px;">
+    <div v-show="ContentType == 'blockly'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px;">
         <Blockly ref="Blockly" class="blockly-editor" type="custom" onchange=OnBlocklyChange></Blockly>
         <div style="position: absolute; left: 802px; top: 0px; right: 0px; bottom: 0px;">
-            <textarea v-bind:value="BlocklyCode" readonly=true style="width: 100%; height: 100%;"></textarea>
+            <textarea v-bind:value="BlocklyCode" readonly=true style="width: 100%; height: 100%; background-color: #cccccc;"></textarea>
         </div>
     </div>
 </template>
@@ -58,7 +58,7 @@ end
 
 function SetContentType(contentType)
     ContentType = contentType;
-    if (ContentType == "blockly") then
+    if (ContentType == "blockly" and Blockly) then
         Blockly:OnAttrValueChange("type", "custom");
     end
 end

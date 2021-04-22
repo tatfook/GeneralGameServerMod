@@ -84,12 +84,11 @@ local function ToNPL(block)
             args[arg.name] = block:GetFieldValue(arg.name);
         end
     end 
-    local code = string.gsub(option.code_description or "", "%$(%w+)", args);
+    local code_description = string.gsub(option.code_description or "", "\\n", "\n");
+    local code = string.gsub(code_description, "%$(%w+)", args);
     code = string.gsub(code, "\n+$", "");
     code = string.gsub(code, "^\n+", "");
-    if (not option.output) then
-        code = code .. "\n";
-    end
+    if (not option.output) then code = code .. "\n" end
     return code;
 end
 
