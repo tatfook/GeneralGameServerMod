@@ -120,9 +120,20 @@ function GenerateBlockOption()
     if (not func) then
         print("============================loadstring error==========================", errmsg);
         print(prettycode)
+        return nil;
     end
     setfenv(func, G);
-    func();
+    <!-- func(); -->
+    local isError = false;
+    xpcall(function()
+        func();
+    end, function(errinfo) 
+        print("ERROR:", errinfo);
+        DebugStack();
+        isError = true;
+    end);
+    if (isError) then return nil end 
+
     G.message = string.gsub(G.message, "^ ", "");
     
     local connections = G.connections;
@@ -196,7 +207,9 @@ function GenerateBlockDefineCode(option)
 end
 
 function OnBlocklyEditorChange()
-    BlockOption = GenerateBlockOption();
+    local option = GenerateBlockOption();
+    if (not option) then return end
+    BlockOption = option;
     BlockDefineCode = GenerateBlockDefineCode(BlockOption);
     PreviewBlockOption(BlockOption);
 
