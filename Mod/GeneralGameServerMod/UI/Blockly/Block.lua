@@ -429,7 +429,7 @@ function Block:OnMouseUp(event)
             if (isConnection) then 
                 blockly:PlayConnectionBlockSound();
             else
-                if (self:IsOutput() or (self.previousConnection and not self.previousConnection:IsConnection() and self.previousConnection:GetCheck())) then
+                if ((false and self:IsOutput()) or (self.previousConnection and not self.previousConnection:IsConnection() and self.previousConnection:GetCheck())) then
                     return delete_block();
                 end
             end
