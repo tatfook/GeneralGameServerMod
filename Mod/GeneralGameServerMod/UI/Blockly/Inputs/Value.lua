@@ -33,9 +33,8 @@ function Value:Init(block, opt)
     self.shadowConnection = Connection:new():Init(block);
     self.inputConnection:SetType("input_connection");
 
-    local shadow = opt.shadow;
-    if (shadow) then
-        local shadowType = shadow.type;
+    local shadowType = self:GetShadowType();
+    if (not self:IsNumberType(shadowType) and not self:IsTextType(shadowType)) then
         local shadowBlock = self:GetBlockly():GetBlockInstanceByType(shadowType);
         if (shadowBlock and shadowBlock.outputConnection) then
             self:SetInputShadowBlock(shadowBlock);
@@ -55,7 +54,8 @@ function Value:Init(block, opt)
 end
 
 function Value:Render(painter)
-    if (self:IsEdit()) then return end
+    if (self:IsEdit() and not self:IsSelectType()) then return end
+    
     local UnitSize = self:GetUnitSize();
     local inputBlock = self:GetInputBlock();
     if (inputBlock) then return inputBlock:Render(painter) end
@@ -132,17 +132,19 @@ function Value:IsCanEdit()
 end
 
 function Value:GetShadowType()
-    local shadow = self:GetOption().shadow;
-    return shadow and shadow.type;
+    local option = self:GetOption();
+    return option.shadowType or (option.shadow and option.shadow.type) or "";
 end
 
 function Value:GetFieldEditType()
-    return "input";
+    return self:GetShadowType() == "field_dropdown" and "select" or "input";
 end
 
 function Value:GetValueAsString()
     if (not self:GetInputBlock()) then 
-        if (self:GetShadowType() == "math_number" or self:GetShadowType() == "field_number") then
+        if (self:IsNumberType()) then
+            return string.format('%s', tonumber(self:GetValue()) or 0);
+        elseif (self:IsCodeType()) then
             return string.format('%s', self:GetValue());
         else 
             return string.format('"%s"', self:GetValue());   -- 虚拟一个图块
@@ -153,7 +155,7 @@ end
 
 function Value:GetFieldValue() 
     if (not self:GetInputBlock()) then 
-        if (self:GetShadowType() == "math_number" or self:GetShadowType() == "field_number") then
+        if (self:IsNumberType()) then
             return self:GetNumberValue();
         else 
             return self:GetValue();

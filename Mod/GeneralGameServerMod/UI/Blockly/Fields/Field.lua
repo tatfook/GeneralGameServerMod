@@ -36,7 +36,7 @@ function Field:Render(painter)
 end
 
 function Field:RenderContent(painter)
-    if (self:IsEdit()) then return end
+    if (self:IsEdit() and not self:IsSelectType()) then return end
     local UnitSize = self:GetUnitSize();
     
     Shape:SetBrush(self:GetBackgroundColor());

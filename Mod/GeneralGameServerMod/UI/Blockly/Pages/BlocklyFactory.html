@@ -103,6 +103,7 @@ function ClickDeleteBlockBtn()
     BlockManager.DeleteBlock(BlockType);
     BlockType = "";
     BlocklyEditor:Reset();
+    OnBlocklyEditorChange();
 end
 
 function LoadBlockXmlText(block)
@@ -113,7 +114,7 @@ end
 function GenerateBlockOption()
     local rawcode, prettycode = BlocklyEditor:GetCode();
     local prettycode = string.gsub(prettycode, "\t", "    ");
-    local G = {message = "", arg = {}, field_count = 0, type="", category = "图块", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true};
+    local G = {message = "", arg = {}, field_count = 0, type="", category = "图块", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true, connections = {}};
     <!-- print(prettycode) -->
     local func, errmsg = loadstring(prettycode);
     if (not func) then
@@ -123,6 +124,21 @@ function GenerateBlockOption()
     setfenv(func, G);
     func();
     G.message = string.gsub(G.message, "^ ", "");
+    
+    local connections = G.connections;
+    G.connections = nil;
+    if (connections.output and connections.output ~= "") then G.output = connections.output end
+    if (connections.previousStatement and connections.previousStatement ~= "") then G.previousStatement = connections.previousStatement end
+    if (connections.nextStatement and connections.nextStatement ~= "") then G.nextStatement = connections.nextStatement end
+    for _, arg in ipairs(G.arg) do
+        if (arg.type == "input_value" or arg.type == "input_statement") then
+            local argname = arg.name;
+            if (connections[argname] and connections[argname] ~= "") then 
+                arg.check = connections[argname];
+            end
+        end
+    end 
+
     return G;
 end
 
@@ -151,9 +167,9 @@ function GenerateBlockDefineCode(option)
     code_description = string.gsub(code_description, "\n+$", "");
     code_description = string.gsub(code_description, "^\n+", "");
     if (option.output) then
-        code_description = "[[" .. code_description .. "]]";
+        code_description = "[====[" .. code_description .. "]====]";
     else
-        code_description = "[[\n" .. code_description .. "\n]]";
+        code_description = "[====[\n" .. code_description .. "\n]====]";
     end
     
     local func_description = string.gsub(code_description, "%$(%w+)", "%%s");

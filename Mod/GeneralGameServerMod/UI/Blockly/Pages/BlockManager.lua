@@ -12,6 +12,11 @@ local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/BlockMa
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 
+local SystemCategoryAndBlockPaths = {
+    "Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemLuaBlock.blockly",
+}
+
+local SystemCategoryMap, SystemBlockMap = {}, {};
 local AllCategoryMap, AllBlockMap = {}, {};
 
 local BlockManager = NPL.export();
@@ -20,15 +25,17 @@ local inited = false;
 local Directory = nil; 
 local FileName = nil; 
 
-function BlockManager.LoadCategoryAndBlock()
-    local io = ParaIO.open(FileName, "r");
+function BlockManager.LoadCategoryAndBlock(filename)
+    filename = filename or FileName;
+    local io = ParaIO.open(filename, "r");
     if(not io:IsValid()) then return nil end 
     local text = io:GetText();
     io:close();
     return NPL.LoadTableFromString(text);
 end
 
-function BlockManager.SaveCategoryAndBlock()
+function BlockManager.SaveCategoryAndBlock(filename)
+    filename = filename or FileName;
     local text = commonlib.serialize_compact({AllBlockMap = AllBlockMap, AllCategoryMap = AllCategoryMap});
     local io = ParaIO.open(FileName, "w");
 	io:WriteString(text);
@@ -54,20 +61,60 @@ function BlockManager.GetAllBlockMap()
     return AllBlockMap;
 end
 
-function BlockManager.StaticInit()
-    if (inited) then return BlockManager end
-    inited = true;
-
+local function OnWorldLoaded()
     Directory = CommonLib.ToCanonicalFilePath(ParaIO.GetCurDirectory(0) .. ParaWorld.GetWorldDirectory() .. "/blockly/");
-    FileName = CommonLib.ToCanonicalFilePath(Directory .. "/category_block.config");
-
+    local filename = CommonLib.ToCanonicalFilePath(Directory .. "/category_block.config");
+    if (filename == FileName) then return end
+    FileName = filename;
+    
     -- 确保目存在
     ParaIO.CreateDirectory(directory);
 
     --加载数据
-    local AllCategoryBlock = BlockManager.LoadCategoryAndBlock();
-    AllCategoryMap = AllCategoryBlock and AllCategoryBlock.AllCategoryMap or {};
-    AllBlockMap = AllCategoryBlock and AllCategoryBlock.AllBlockMap or {};
+    AllBlockMap, AllCategoryMap = {}, {};
+    local WorldCategoryBlock = BlockManager.LoadCategoryAndBlock();
+    CategoryMap = WorldCategoryBlock and WorldCategoryBlock.AllCategoryMap or {};
+    BlockMap = WorldCategoryBlock and WorldCategoryBlock.AllBlockMap or {};
+    for categoryName, category in pairs(SystemCategoryMap) do
+        AllCategoryMap[categoryName] = AllCategoryMap[categoryName] or {name = categoryName};
+        commonlib.partialcopy(AllCategoryMap[categoryName], category);
+    end
+    for blockType, block in pairs(SystemBlockMap) do
+        AllBlockMap[blockType] = block;  -- 直接覆盖
+    end
+    for categoryName, category in pairs(CategoryMap) do
+        AllCategoryMap[categoryName] = AllCategoryMap[categoryName] or {name = categoryName};
+        commonlib.partialcopy(AllCategoryMap[categoryName], category);
+    end
+    for blockType, block in pairs(BlockMap) do
+        AllBlockMap[blockType] = block;  -- 直接覆盖
+    end
+end
+
+local function OnWorldUnloaded()
+end
+
+function BlockManager.StaticInit()
+    if (inited) then return BlockManager end
+    inited = true;
+    
+    for _, path in ipairs(SystemCategoryAndBlockPaths) do
+        local SystemCategoryBlock = BlockManager.LoadCategoryAndBlock(path);
+        local CategoryMap = SystemCategoryBlock.AllCategoryMap or {};
+        local BlockMap = SystemCategoryBlock.AllBlockMap or {};
+        for categoryName, category in pairs(CategoryMap) do
+            SystemCategoryMap[categoryName] = SystemCategoryMap[categoryName] or {name = categoryName};
+            commonlib.partialcopy(SystemCategoryMap[categoryName], category);
+        end
+        for blockType, block in pairs(BlockMap) do
+            SystemBlockMap[blockType] = block;  -- 直接覆盖
+        end
+    end
+
+    GameLogic:Connect("WorldLoaded", nil, OnWorldLoaded, "UniqueConnection");
+    GameLogic:Connect("WorldUnloaded", nil, OnWorldUnloaded, "UniqueConnection");
+    
+    OnWorldLoaded();
 
     return BlockManager;
 end

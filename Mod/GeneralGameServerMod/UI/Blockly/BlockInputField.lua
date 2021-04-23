@@ -31,6 +31,7 @@ BlockInputField:Property("DefaultValue", "");                    -- 默认值
 BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
 BlockInputField:Property("EditElement", nil);                    -- 编辑元素
+BlockInputField:Property("AllowNewOption", false, "IsAllowNewOption");  -- 是否允许新增选项
 
 local UnitSize = Const.UnitSize;
 
@@ -55,9 +56,37 @@ function BlockInputField:Init(block, option)
     -- 解析颜色值
     self:SetColor(option.color);
 
+    self:SetAllowNewOption(option.allowNewOption == true and true or false);
+    if (self:IsSelectType()) then
+        self:SetLabel(self:GetLabelByValue(self:GetValue()));
+        -- self:SetValue(self:GetValueByLablel(self:GetLabel()));
+    end 
+    
     if (option.name and option.name ~= "") then block.inputFieldMap[option.name] = self end
-
     return self;
+end
+
+function BlockInputField:GetOptions()
+    local option = self:GetOption();
+    local options = type(option.options) == "table" and option.options or {};
+    if (type(option.options) == "function") then options = option.options() end
+    return options;
+end
+
+function BlockInputField:GetValueByLablel(label)
+    local options = self:GetOptions();
+    for _, option in ipairs(options) do
+        if (option[1] == label or option.label == label) then return option[2] or option.value end
+    end
+    return options[1] and (options[1][2] or options[1].value);
+end
+
+function BlockInputField:GetLabelByValue(value)
+    local options = self:GetOptions();
+    for _, option in ipairs(options) do
+        if (option[2] == value or option.value == value) then return option[1] or option.label end
+    end
+    return options[1] and (options[1][1] or options[1].label);
 end
 
 -- 获取选项文本, 默认为字段值(value)
@@ -82,6 +111,33 @@ end
 
 function BlockInputField:IsBlock()
     return false;
+end
+
+function BlockInputField:GetInputFieldType()
+    if (not self:IsField() and not self:IsInput()) then return "" end
+    local typ = self:GetType();
+    if (typ == "input_value") then return self:GetShadowType() end
+    return typ;
+end
+
+function BlockInputField:IsNumberType(typ)
+    typ = typ or self:GetInputFieldType();
+    return typ == "field_number" or typ == "math_number" or typ == "number";
+end
+
+function BlockInputField:IsTextType(typ)
+    typ = typ or self:GetInputFieldType();
+    return typ == "field_input" or typ == "field_text" or typ == "text" or self:IsSelectType();
+end
+
+function BlockInputField:IsSelectType(typ)
+    typ = typ or self:GetInputFieldType();
+    return typ == "field_dropdown" or typ == "field_select" or typ == "select";
+end
+
+function BlockInputField:IsCodeType(typ)
+    typ = typ or self:GetInputFieldType();
+    return typ == "field_block" or typ == "block" or typ == "code";
 end
 
 function BlockInputField:SetTotalWidthHeightUnitCount(widthUnitCount, heightUnitCount)
@@ -329,7 +385,7 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
                 Shape:GetOutputTexture(),
                 self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),
-            type = (self:GetType() == "field_number" or (self:GetType() == "input_value" and self:GetShadowType() == "math_number")) and "number" or "text",
+            type = (self:GetType() == "field_number" or (self:GetType() == "input_value" and self:IsNumberType(self:GetShadowType()))) and "number" or "text",
         },
     }, parentElement:GetWindow(), parentElement);
 
@@ -364,6 +420,8 @@ function BlockInputField:GetFieldSelectEditElement(parentElement, isAllowCreate)
             -- AllowCreate = isAllowCreate,
         },
     }, parentElement:GetWindow(), parentElement);
+
+    SelectEditElement.OnRender = function() end
 
     SelectEditElement:SetAttrValue("onselect", function(value, label)
         self:SetValue(value);

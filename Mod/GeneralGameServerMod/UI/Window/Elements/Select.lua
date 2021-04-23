@@ -102,7 +102,7 @@ Select:Property("BaseStyle", {
         ["background-color"] = "#ffffff",
         ["width"] = "120px",
         ["height"] = "30px",
-        ["padding"] = "2px 4px",
+        ["padding"] = "2px 2px",
         ["border"] = "1px solid #cccccc",
     }
 });
@@ -129,8 +129,8 @@ function Select:Init(xmlNode, window, parent)
         self:OnFocusOut();
         self:SetFocus(nil);
     end
-    local listboxAttrStyle = ListBox:GetAttrStyle();
-    listboxAttrStyle["padding-top"], listboxAttrStyle["padding-right"], listboxAttrStyle["padding-bottom"], listboxAttrStyle["padding-left"] = attrStyle["padding-top"], attrStyle["padding-right"], attrStyle["padding-bottom"], attrStyle["padding-left"];
+    -- local listboxAttrStyle = ListBox:GetAttrStyle();
+    -- listboxAttrStyle["padding-top"], listboxAttrStyle["padding-right"], listboxAttrStyle["padding-bottom"], listboxAttrStyle["padding-left"] = attrStyle["padding-top"], attrStyle["padding-right"], attrStyle["padding-bottom"], attrStyle["padding-left"];
     local InputBox = InputElement:new():Init({
         name = "input",
         attr = {

@@ -645,6 +645,7 @@ function Blockly:handleDelete()
     self:RemoveBlock(block);
     self:OnDestroyBlock(block);
     self:SetCurrentBlock(nil);
+    self:OnChange();
 end
 
 -- 复制当前块
@@ -658,6 +659,7 @@ function Blockly:handlePaste()
 
     self:AddBlock(cloneBlock);
     self:SetCurrentBlock(cloneBlock);
+    self:OnChange();
 end
 
 -- 获取代码

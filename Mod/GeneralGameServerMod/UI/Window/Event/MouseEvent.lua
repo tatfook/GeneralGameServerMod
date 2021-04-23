@@ -52,8 +52,9 @@ function MouseEvent:Init(event_type, window, params)
 
     if (event_type == "onmousemove") then 
         if (self.last_event_type == "onmousedown" and self.down_mouse_screen_x == self.x and self.down_mouse_screen_y == self.y) then 
-            self.event_type = "onmousedown";  -- 改写事件名    底层bug 触发 onmousedown 后会立即触发onmousemove事件, 但鼠标并未移动, 则忽略掉 
-            return nil; -- 无效事件
+            self.last_event_type = "onmousemove";           -- 重置上次事件为 onmousemove
+            self.event_type = "onmousedown";                -- 改写事件名     底层bug 触发 onmousedown 后会立即触发onmousemove事件, 但鼠标并未移动, 则忽略掉 
+            return nil;                                     -- 无效事件
         end
         if (self.last_event_type == "onmousemove" and self.last_mouse_x == self.x and self.last_mouse_y == self.y) then return nil end
     end
