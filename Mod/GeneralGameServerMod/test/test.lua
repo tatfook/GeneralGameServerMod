@@ -2,15 +2,15 @@
 
 -- local Test = NPL.load("Mod/GeneralGameServerMod/Test/Test.lua");
 
-local base = {key = 1}
+-- local base = {key = 1}
 
-function base:func()
-end
+-- function base:func()
+-- end
 
-local obj = setmetatable({}, {__index = base});
+-- local obj = setmetatable({}, {__index = base});
 
-print(obj.key, obj.func);
+-- print(obj.key, obj.func);
 
-for key, val in pairs(obj) do
-    print(key, val)
-end
+-- for key, val in pairs(obj) do
+--     print(key, val)
+-- end

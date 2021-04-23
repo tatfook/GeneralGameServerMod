@@ -243,7 +243,7 @@ local AllBlockList = {
                 name = "code_description",
                 -- type = "field_textarea",
                 type = "field_input",
-                text = "$VALUE",
+                text = "${VALUE}",
             },
         },
         category = "BlockCode",
