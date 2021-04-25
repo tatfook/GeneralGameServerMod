@@ -44,7 +44,18 @@ end
 
 function BlockManager.NewBlock(block)
     if (not block.type) then return end
-    AllBlockMap[block.type] = block;
+    AllBlockMap[block.type] = {
+        type = block.type,
+        category = block.category,
+        color = block.color,
+        output = block.output,
+        previousStatement = block.previousStatement,
+        nextStatement = block.nextStatement,
+        message = block.message,
+        arg = block.arg,
+        -- func_description = block.func_description,
+        code_description = block.code_description,
+    };
     BlockManager.SaveCategoryAndBlock();
 end
 
@@ -88,6 +99,7 @@ local function OnWorldLoaded()
     end
     for blockType, block in pairs(BlockMap) do
         AllBlockMap[blockType] = block;  -- 直接覆盖
+        AllCategoryMap[block.category] = AllCategoryMap[block.category] or {name = block.category};
     end
 end
 

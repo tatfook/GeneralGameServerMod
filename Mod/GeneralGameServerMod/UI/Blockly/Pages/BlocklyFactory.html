@@ -6,18 +6,55 @@
         </div>
         <div onclick=CloseWindow class="close-btn btn"></div>
     </div>
-    <div v-show="ContentType == 'block'" style="position: absolute; left: 2px; top: 40px; right: 0px; bottom: 2px;">
+    <div v-show="ContentType == 'block'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px;">
         <Blockly ref="BlocklyEditor" class="blockly-editor" type="block" onchange=OnBlocklyEditorChange></Blockly>
         <Blockly readonly=true ref="BlocklyPreview" class="blockly-preview" isHideToolBox=true isHideIcons="true"></Blockly>
-        <div class="textarea-container"><textarea v-model="BlockDefineCode" style="width: 100%; height: 100%;" readonly=true></textarea></div>
-        <div class="block-form" style="background-color: #c8c8c8;">
-            <div style="width: 200px;">
-                <select v-bind:value="BlockType" style="width: 100%;" placeholder="分类名" v-bind:options="BlockOptions" onselect=SelectBlock></select>
-                <div style="margin-top: 10px; display: flex; justify-content: space-between; padding: 0px 10px;">
-                    <div onclick=ClickSaveBlockBtn class="btn" style="width: 80; height: 30px; background-color: #cccccc;">保存</div>
-                    <div onclick=ClickDeleteBlockBtn class="btn" style="width: 80px; height: 30px;">删除</div>
+        <div class="tab">
+            <div class="tab-nav-item" onclick="ClickTabNavItemBtn('block')" v-bind:style="GetTabNavItemStyle('block')">图块</div>
+            <div class="tab-nav-item" onclick="ClickTabNavItemBtn('category')" v-bind:style="GetTabNavItemStyle('category')">分类</div>
+            <div class="tab-nav-item" onclick="ClickTabNavItemBtn('code')" v-bind:style="GetTabNavItemStyle('code')">代码</div>
+        </div>
+        <div v-show="TabIndex == 'block'" class="tab-pane">
+            <div style="position: absolute; left: 0px; top: 4px; right: 0px; z-index: 2; display: flex; align-items: center; justify-content: center; height: 40px;">
+                <select v-bind:value="BlockType" style="width: 180px;" placeholder="图块类型" v-bind:options="BlockOptions" onselect=SelectBlock></select>
+                <div onclick=ClickSaveBlockBtn class="btn" style="width: 80; height: 30px; background-color: #cccccc;">保存</div>
+                <div onclick=ClickDeleteBlockBtn class="btn" style="width: 80px; height: 30px;">删除</div>
+            </div>
+            <div style="position: absolute; z-index: 1; top: 50px; bottom: 0px; left: 0px; right: 0px; overflow-y: scroll;">
+                <div v-for="block in AllBlockList" style="display: flex; align-items: center; justify-content: space-between; height: 30px;">
+                    <div style="display: flex;">
+                        <div style="margin-left: 8px; width: 180px;">{{block.type}}</div>
+                        <div style="width: 60px;">{{block.category}}</div>
+                    </div>
+                    <div style="display: flex;">
+                        <div onclick="ClickEditBlockBtn(block.type)" class="btn" style="width: 60px; height: 20px;">编辑</div>
+                        <div onclick="ClickDeleteBlockBtn(block.type)" class="btn" style="width: 60px; height: 20px;">移除</div>
+                    </div>
                 </div>
             </div>
+        </div>
+        <div v-show="TabIndex == 'category'" class="tab-pane">
+            <div style="display: flex; align-items: center; justify-content: center; height: 40px; width: 100%;">
+                <div style="margin-top: 8px;">编辑分类</div>
+                <input v-model="Category.name" style="margin-left: 10px" placeholder="分类名"></input>
+                <input v-model="Category.color" style="margin-left: 10px;" placeholder="分类颜色值"></input>
+                <div onclick=ClickEditCategoryBtn class="btn" style="width: 40px; height: 30px; margin-left:10px;">确定</div>
+            </div>
+            <div style="position: absolute; top: 50px; bottom: 0px; left: 0px; right: 0px; overflow-y: scroll;">
+                <div v-for="category in AllCategoryList" style="display: flex; align-items: center; justify-content: space-between; height: 30px;">
+                    <div style="display: flex; margin-left: 16px;">
+                        <div v-bind:style="GetCategoryColorStyle(category)"></div>
+                        <div style="width: 80px; margin-left: 12px;">{{category.text or category.name}}</div>
+                    </div>
+                    <div style="display: flex;">
+                        <!-- <div onclick="ClickDeleteCategoryBtn(category.name)" class="btn" style="width: 60px; height: 20px;">编辑</div> -->
+                        <div onclick="ClickDeleteCategoryBtn(category.name)" class="btn" style="width: 60px; height: 20px;">移除</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-show="TabIndex == 'code'" class="tab-pane">
+            <textarea v-model="BlockDefineCode" style="width: 100%; height: 100%;" readonly=true></textarea>
         </div>
     </div>
     <div v-show="ContentType == 'blockly'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px;">
@@ -32,21 +69,75 @@
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/BlockManager.lua").StaticInit();
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
-
+local AllCategoryMap = BlockManager.GetAllCategoryMap();
 local AllBlockMap = BlockManager.GetAllBlockMap();
 local Blockly = nil;
 local BlocklyEditor = nil;
 local BlocklyPreview = nil;
 local BlockOption = {};
+TabIndex = "block";
 ContentType = "block"; -- block blockly
 BlocklyCode = "";
 BlockType = "";
 BlockDefineCode = "";
 BlockOptions = {};
+AllCategoryList, AllBlockList = {}, {};
+Category = {name = "", color = "#ffffff"};
 for blockType, block in pairs(AllBlockMap) do
     if (blockType ~= "") then
         table.insert(BlockOptions, {label = blockType, value = blockType});
     end
+end
+for _, category in pairs(AllCategoryMap) do
+    table.insert(AllCategoryList, {name = category.name, text = category.text, color = category.color or "#ffffff"});
+end
+
+for _, block in pairs(AllBlockMap) do
+    table.insert(AllBlockList, {type = block.type, category = block.category});
+end
+
+local function SortAllBlockList()
+    table.sort(AllBlockList, function(block1, block2)
+        return block1.category == block2.category and (block1.type < block2.type) or (block1.category < block2.category);
+    end)
+    return AllBlockList;
+end
+SortAllBlockList();
+
+function ClickTabNavItemBtn(tabindex)
+    TabIndex = tabindex;
+end 
+
+function GetTabNavItemStyle(tabindex)
+    return TabIndex == tabindex and "color: #ffffff;" or "";
+end
+
+function GetCategoryColorStyle(category)
+    return string.format([[width: 20px; height: 20px; background-color: %s; border-radius: 10px; padding: 0px 10px;]], category.color);
+end
+
+function ClickEditCategoryBtn()
+    if (Category.name == "") then return end
+    AllCategoryMap[Category.name] = AllCategoryMap[Category.name] or {name = Category.name, color = Category.color};    
+    local isExist = false;
+    for _, category in ipairs(AllCategoryList) do 
+        if (category.name == Category.name) then 
+            category.color = Category.color or category.color; 
+            isExist = true;
+            break;
+        end 
+    end
+    if (not isExist) then table.insert(AllCategoryList, {name = Category.name, color = Category.color}) end 
+end
+
+function ClickDeleteCategoryBtn(categoryName)
+    AllCategoryMap[categoryName] = nil;
+    for i, category in ipairs(AllCategoryList) do 
+        if (category.name == categoryName) then
+            table.remove(AllCategoryList, i);
+        end
+    end
+    BlockManager.SaveCategoryAndBlock();
 end
 
 function OnReady()
@@ -68,11 +159,15 @@ function GetHeaderBtnStyle(contentType)
     return "";
 end
 
-function SelectBlock(blockType)
+local function EditBlock(blockType)
     if (BlockType == blockType) then return end
     BlockType = blockType;
     LoadBlockXmlText(AllBlockMap[BlockType]);
     OnBlocklyEditorChange();
+end 
+
+function SelectBlock(blockType)
+    EditBlock(blockType);
 end 
 
 function ClickSaveBlockBtn()
@@ -88,22 +183,44 @@ function ClickSaveBlockBtn()
     if (not isExist) then
         table.insert(BlockOptions, {label = BlockType, value = BlockType});
     end
+    isExist = false;
+    for i, opt in ipairs(AllBlockList) do
+        if (opt.type == BlockType) then
+            isExist = true;
+            break;
+        end
+    end 
+    if (not isExist) then
+        table.insert(AllBlockList, {type = BlockOption.type, category = BlockOption.category});
+    end
     BlockManager.NewBlock(BlockOption);
     GameLogic.AddBBS("Blockly", "图块更改已保存");
+    SortAllBlockList();
 end
 
-function ClickDeleteBlockBtn()
-    if (BlockType == "") then return end
+function ClickDeleteBlockBtn(blocktype)
+    blocktype = blocktype or BlockType;
+    if (blocktype == "") then return end
     for i, opt in ipairs(BlockOptions) do
-        if (opt.value == BlockType) then
+        if (opt.value == blocktype) then
             table.remove(BlockOptions, i);
             break;
         end
     end 
+    for i, block in ipairs(AllBlockList) do 
+        if (block.type == blocktype) then
+            table.remove(AllBlockList, i);
+            break;
+        end
+    end
     BlockManager.DeleteBlock(BlockType);
     BlockType = "";
     BlocklyEditor:Reset();
     OnBlocklyEditorChange();
+end
+
+function ClickEditBlockBtn(blockType)
+    EditBlock(blockType);
 end
 
 function LoadBlockXmlText(block)
@@ -275,25 +392,43 @@ end
     position: absolute;
     left: 802px;
     top: 0px;
-    right: 2px;
+    right: 0px;
     height: 200px;
 }
 
-.textarea-container {
+.tab {
     position: absolute;
     left: 802px;
+    right: 0px;
     top: 202px;
-    right: 2px;
-    bottom: 102px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    background-color: #c8c8c8;
+    border-bottom: 1px solid #ffffff;
+}
+
+.tab-nav-item {
+    margin-left: 10px;
+}
+
+.tab-pane {
+    position: absolute;
+    left: 802px;
+    top: 232px;
+    right: 0px;
+    bottom: 0px;
+    background-color: #c8c8c8;
+    padding: 8px 4px;
 }
 
 .block-form {
     position: absolute;
-    left: 802px;
-    right: 2px;
+    left: 0px;
+    right: 0px;
     bottom: 0px;
     height: 100px;
-    background-color: #ffffff;
+    background-color: #c8c8c8;
     display: flex;
     flex-direction: column;
     align-items: center;
