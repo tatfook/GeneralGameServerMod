@@ -39,24 +39,6 @@ local AllBlockList = {
         end,
     },
     {
-        type = "set_block_color",
-        message = "图块-颜色 %1",
-        arg = {
-            {
-                name = "block_color",
-                type = "field_input",
-                text = "#2E9BEF"
-            },
-        },
-        category = "BlockAttr",
-        previousStatement = true,
-	    nextStatement = true,
-        ToNPL = function(block)
-            local block_color = block:GetValueAsString("block_color");
-            return string.format('color = "%s";\n', block_color);
-        end,
-    },
-    {
         type = "set_block_connection",
         message = "图块-连接 %1",
         arg = {
@@ -80,6 +62,24 @@ local AllBlockList = {
             else 
                 return "previousStatement = true;\nnextStatement = true;\noutput = false;\n"
             end
+        end,
+    },
+    {
+        type = "set_block_color",
+        message = "图块-颜色 %1",
+        arg = {
+            {
+                name = "block_color",
+                type = "field_input",
+                text = "#2E9BEF"
+            },
+        },
+        category = "BlockAttr",
+        previousStatement = true,
+	    nextStatement = true,
+        ToNPL = function(block)
+            local block_color = block:GetValueAsString("block_color");
+            return string.format('color = "%s";\n', block_color);
         end,
     },
     {
@@ -107,7 +107,7 @@ local AllBlockList = {
             {
                 name = "field_name",
                 type = "field_input",
-                text = "字段名",
+                text = "名称",
             },
             {
                 name = "field_value",
@@ -121,6 +121,7 @@ local AllBlockList = {
                 options = {
                     {"文本", "field_input"},
                     {"数字", "field_number"},
+                    {"列表", "field_dropdown"},
                 }
             },
         },
@@ -131,18 +132,21 @@ local AllBlockList = {
             local field_name = block:GetFieldValue("field_name");
             local field_type = block:GetFieldValue("field_type");
             local field_value = block:GetFieldValue("field_value");
-            return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "%s", text = "%s"};\n', field_name, field_type, field_value);
+            return string.format([==[
+                field_count = field_count + 1;
+                message = message .. " %%" .. field_count;
+                arg[field_count] = {name = "%s", type = "%s", text = "%s"};
+                ]==], field_name, field_type, field_value);
         end,
     },
-
     {
-        type = "set_field_dropdown",
+        type = "set_field_dropdown_code_options",
         message = "字段-列表 %1 %2 %3",
         arg = {
             {
                 name = "field_name",
                 type = "field_input",
-                text = "字段名",
+                text = "名称",
             },
             {
                 name = "field_value",
@@ -151,8 +155,8 @@ local AllBlockList = {
             },
             {
                 name = "field_options",
-                type = "input_statement",
-                check = {"set_field_dropdown_option"},
+                type = "field_input",
+                text = [[{"标签1", "值1"}, {"标签2", "值2"}, {"标签3", "值3"}]]
             },
         },
         category = "BlockField",
@@ -161,35 +165,69 @@ local AllBlockList = {
         ToNPL = function(block)
             local field_name = block:GetFieldValue("field_name");
             local field_value = block:GetFieldValue("field_value");
-            local field_options = block:GetValueAsString("field_options");
-            return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "field_dropdown", text = "%s", options = {}};\nlocal field_dropdown_options = arg[field_count].options;\n%s', field_name, field_value, field_options);
+            local field_options = block:GetFieldValue("field_options");
+            return string.format([==[
+                field_count = field_count + 1;
+                message = message .. " %%" .. field_count;
+                arg[field_count] = {name = "%s", type = "field_dropdown", text = "%s", options = %s};
+                ]==], field_name, field_value, field_options);
         end,
     },
+    -- {
+    --     type = "set_field_dropdown",
+    --     message = "字段-列表 %1 %2 %3",
+    --     arg = {
+    --         {
+    --             name = "field_name",
+    --             type = "field_input",
+    --             text = "字段名",
+    --         },
+    --         {
+    --             name = "field_value",
+    --             type = "field_input",
+    --             text = "默认值",
+    --         },
+    --         {
+    --             name = "field_options",
+    --             type = "input_statement",
+    --             check = {"set_field_dropdown_option"},
+    --         },
+    --     },
+    --     category = "BlockField",
+    --     previousStatement = true,
+	--     nextStatement = true,
+    --     ToNPL = function(block)
+    --         local field_name = block:GetFieldValue("field_name");
+    --         local field_value = block:GetFieldValue("field_value");
+    --         local field_options = block:GetValueAsString("field_options");
+    --         return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "field_dropdown", text = "%s", options = {}};\nlocal field_dropdown_options = arg[field_count].options;\n%s', field_name, field_value, field_options);
+    --     end,
+    -- },
 
-    {
-        type = "set_field_dropdown_option",
-        message = "字段-列表项 %1 %2",
-        arg = {
-            {
-                name = "field_option_label",
-                type = "field_input",
-                text = "标签",
-            },
-            {
-                name = "field_option_value",
-                type = "field_input",
-                text = "值",
-            },
-        },
-        category = "BlockField",
-        previousStatement = {"set_field_dropdown", "set_field_dropdown_option"},
-	    nextStatement = {"set_field_dropdown_option"},
-        ToNPL = function(block)
-            local field_option_label = block:GetFieldValue("field_option_label");
-            local field_option_value = block:GetFieldValue("field_option_value");
-            return string.format('field_dropdown_options[#field_dropdown_options + 1] = {"%s", "%s"};\n', field_option_label, field_option_value);
-        end,
-    },
+    -- {
+    --     type = "set_field_dropdown_option",
+    --     message = "字段-列表项 %1 %2",
+    --     arg = {
+    --         {
+    --             name = "field_option_label",
+    --             type = "field_input",
+    --             text = "标签",
+    --         },
+    --         {
+    --             name = "field_option_value",
+    --             type = "field_input",
+    --             text = "值",
+    --         },
+    --     },
+    --     category = "BlockField",
+    --     previousStatement = {"set_field_dropdown", "set_field_dropdown_option"},
+	--     nextStatement = {"set_field_dropdown_option"},
+    --     ToNPL = function(block)
+    --         local field_option_label = block:GetFieldValue("field_option_label");
+    --         local field_option_value = block:GetFieldValue("field_option_value");
+    --         return string.format('field_dropdown_options[#field_dropdown_options + 1] = {"%s", "%s"};\n', field_option_label, field_option_value);
+    --     end,
+    -- },
 
     {
         type = "set_input_value",
@@ -231,8 +269,8 @@ local AllBlockList = {
     },
 
     {
-        type = "set_input_value_dropdown",
-        message = "输入-列表值 %1 %2 %3",
+        type = "set_input_dropdown_code_options",
+        message = "输入-列表 %1 %2 %3",
         arg = {
             {
                 name = "input_name",
@@ -246,8 +284,8 @@ local AllBlockList = {
             },
             {
                 name = "input_options",
-                type = "input_statement",
-                check = {"set_input_value_dropdown_option"},
+                type = "field_input",
+                text = [[{"标签1", "值1"}, {"标签2", "值2"}, {"标签3", "值3"}]]
             },
         },
         category = "BlockInput",
@@ -256,36 +294,71 @@ local AllBlockList = {
         ToNPL = function(block)
             local input_name = block:GetFieldValue("input_name");
             local input_value = block:GetFieldValue("input_value");
-            local input_options = block:GetValueAsString("input_options");
-            -- return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "field_dropdown", text = "%s", options = {}};\nlocal field_dropdown_options = arg[field_count].options;\n%s', field_name, field_value, field_options);
-            return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "input_value", text = "%s", shadowType = "field_dropdown", options = {}};\nlocal input_dropdown_options = arg[field_count].options;\n%s', input_name, input_value, input_options);
+            local input_options = block:GetFieldValue("input_options");
+            return string.format([==[
+                field_count = field_count + 1;
+                message = message .. " %%" .. field_count;
+                arg[field_count] = {name = "%s", type = "input_value", shadowType = "field_dropdown", text = "%s", options = %s};
+                ]==], input_name, input_value, input_options);
         end,
     },
 
-    {
-        type = "set_input_value_dropdown_option",
-        message = "输入-列表值项 %1 %2",
-        arg = {
-            {
-                name = "input_option_label",
-                type = "field_input",
-                text = "标签",
-            },
-            {
-                name = "input_option_value",
-                type = "field_input",
-                text = "值",
-            },
-        },
-        category = "BlockInput",
-        previousStatement = {"set_input_value_dropdown", "set_input_value_dropdown_option"},
-	    nextStatement = {"set_input_value_dropdown_option"},
-        ToNPL = function(block)
-            local input_option_label = block:GetFieldValue("input_option_label");
-            local input_option_value = block:GetFieldValue("input_option_value");
-            return string.format('input_dropdown_options[#input_dropdown_options + 1] = {"%s", "%s"};\n', input_option_label, input_option_value);
-        end,
-    },
+    -- {
+    --     type = "set_input_value_dropdown",
+    --     message = "输入-列表值 %1 %2 %3",
+    --     arg = {
+    --         {
+    --             name = "input_name",
+    --             type = "field_input",
+    --             text = "名称",
+    --         },
+    --         {
+    --             name = "input_value",
+    --             type = "field_input",
+    --             text = "默认值",
+    --         },
+    --         {
+    --             name = "input_options",
+    --             type = "input_statement",
+    --             check = {"set_input_value_dropdown_option"},
+    --         },
+    --     },
+    --     category = "BlockInput",
+    --     previousStatement = true,
+	--     nextStatement = true,
+    --     ToNPL = function(block)
+    --         local input_name = block:GetFieldValue("input_name");
+    --         local input_value = block:GetFieldValue("input_value");
+    --         local input_options = block:GetValueAsString("input_options");
+    --         -- return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "field_dropdown", text = "%s", options = {}};\nlocal field_dropdown_options = arg[field_count].options;\n%s', field_name, field_value, field_options);
+    --         return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "input_value", text = "%s", shadowType = "field_dropdown", options = {}};\nlocal input_dropdown_options = arg[field_count].options;\n%s', input_name, input_value, input_options);
+    --     end,
+    -- },
+
+    -- {
+    --     type = "set_input_value_dropdown_option",
+    --     message = "输入-列表值项 %1 %2",
+    --     arg = {
+    --         {
+    --             name = "input_option_label",
+    --             type = "field_input",
+    --             text = "标签",
+    --         },
+    --         {
+    --             name = "input_option_value",
+    --             type = "field_input",
+    --             text = "值",
+    --         },
+    --     },
+    --     category = "BlockInput",
+    --     previousStatement = {"set_input_value_dropdown", "set_input_value_dropdown_option"},
+	--     nextStatement = {"set_input_value_dropdown_option"},
+    --     ToNPL = function(block)
+    --         local input_option_label = block:GetFieldValue("input_option_label");
+    --         local input_option_value = block:GetFieldValue("input_option_value");
+    --         return string.format('input_dropdown_options[#input_dropdown_options + 1] = {"%s", "%s"};\n', input_option_label, input_option_value);
+    --     end,
+    -- },
 
     {
         type = "set_input_statement",

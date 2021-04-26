@@ -23,7 +23,7 @@
             <div style="position: absolute; z-index: 1; top: 50px; bottom: 0px; left: 0px; right: 0px; overflow-y: scroll;">
                 <div v-for="block in AllBlockList" style="display: flex; align-items: center; justify-content: space-between; height: 30px;">
                     <div style="display: flex;">
-                        <div style="margin-left: 8px; width: 180px;">{{block.type}}</div>
+                        <div style="margin-left: 8px; width: 200px; text-wrap: none; text-overflow: ellipsis;">{{block.type}}</div>
                         <div style="width: 60px;">{{block.category}}</div>
                     </div>
                     <div style="display: flex;">
@@ -213,7 +213,7 @@ function ClickDeleteBlockBtn(blocktype)
             break;
         end
     end
-    BlockManager.DeleteBlock(BlockType);
+    BlockManager.DeleteBlock(blocktype);
     BlockType = "";
     BlocklyEditor:Reset();
     OnBlocklyEditorChange();
@@ -267,6 +267,8 @@ function GenerateBlockOption()
         end
     end 
 
+    <!-- echo(G, true) -->
+
     return G;
 end
 
@@ -305,20 +307,19 @@ function GenerateBlockDefineCode(option)
 {
     type = "%s",
     category = "%s",
+    color = "%s",
     output = %s,
     previousStatement = %s, 
     nextStatement = %s,
     message = "%s",
     %s,
-    func_description = %s,
     ToNPL = function(block)
 %s
         -- 更改下行为图块实际生成代码
         return string.gsub(%s, "%%$([%%w_]+)", args); 
     end
-}]], option.type, option.category, option.output, option.previousStatement, option.nextStatement, option.message, 
-    commonlib.dump(option.arg, "arg", false, 2), func_description,
-    arg_var_define, code_description);
+}]], option.type, option.category, option.color, option.output, option.previousStatement, option.nextStatement, option.message, 
+    commonlib.dump(option.arg, "arg", false, 2), arg_var_define, code_description);
 
     return block_define_code;
 end

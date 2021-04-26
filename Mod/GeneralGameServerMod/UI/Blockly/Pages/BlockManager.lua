@@ -55,6 +55,7 @@ function BlockManager.NewBlock(block)
         arg = block.arg,
         -- func_description = block.func_description,
         code_description = block.code_description,
+        xml_text = block.xml_text,
     };
     BlockManager.SaveCategoryAndBlock();
 end
