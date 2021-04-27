@@ -55,8 +55,13 @@ function BlockInputField:Init(block, option)
     self:SetLabel(tostring(self:GetValue()));
     self:SetDefaultValue(self:GetValue());
     -- 解析颜色值
-    self:SetColor(option.color);
 
+    if (self:IsBlock()) then
+        self:SetColor(self:GetCategoryColor());
+    else 
+        self:SetColor(option.color);
+    end
+    
     self:SetAllowNewOption(option.allowNewOption == true and true or false);
     if (self:IsSelectType()) then
         self:SetLabel(self:GetLabelByValue(self:GetValue()));
@@ -65,6 +70,12 @@ function BlockInputField:Init(block, option)
     
     if (option.name and option.name ~= "") then block.inputFieldMap[option.name] = self end
     return self;
+end
+
+function BlockInputField:GetCategoryColor()
+    local blockOption = self:GetBlock():GetOption();
+    local CategoryColor = self:GetBlock():GetBlockly().CategoryColor;
+    return CategoryColor[blockOption.category] or blockOption.color;
 end
 
 function BlockInputField:GetOptions(bRefresh)

@@ -56,7 +56,7 @@ end
 
 function Blockly:ctor()
     self:Reset();
-    self.BlockMap, self.CategoryList, self.CategoryMap = {}, {}, {};
+    self.BlockMap, self.CategoryList, self.CategoryMap, self.CategoryColor = {}, {}, {}, {};
     self:SetToolBox(ToolBox:new():Init(self));
 end
 
@@ -111,34 +111,37 @@ end
 function Blockly:OnToolBoxXmlTextChange(toolboxXmlText)
     local xmlNode = ParaXML.LuaXML_ParseString(toolboxXmlText);
     local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
-    if (not toolboxNode) then 
-        self:GetToolBox():SetCategoryList(self.CategoryList);
-        return;
-    end
     local category_map = self.CategoryMap;
-    local category_list = {};
-    for _, categoryNode in ipairs(toolboxNode) do
-        if (categoryNode.attr and categoryNode.attr.name) then
-            local category_attr = categoryNode.attr;
-            local default_category = category_map[category_attr.name];
-            local category = {
-                name = category_attr.name,
-                text = category_attr.text or (default_category and default_category.text),
-                color = category_attr.color or (default_category and default_category.color),
-                blocktypes = {},
-            }
-            table.insert(category_list, #category_list + 1, category);
-            local blocktypes = category.blocktypes;
-            for _, blockTypeNode in ipairs(categoryNode) do
-                if (blockTypeNode.attr and blockTypeNode.attr.type) then
-                    local blocktype = blockTypeNode.attr.type;
-                    table.insert(blocktypes, #blocktypes + 1, blocktype);
+    if (toolboxNode) then
+        local category_list = {};
+        for _, categoryNode in ipairs(toolboxNode) do
+            if (categoryNode.attr and categoryNode.attr.name) then
+                local category_attr = categoryNode.attr;
+                local default_category = category_map[category_attr.name];
+                local category = {
+                    name = category_attr.name,
+                    text = category_attr.text or (default_category and default_category.text),
+                    color = category_attr.color or (default_category and default_category.color),
+                    blocktypes = {},
+                }
+                category_map[category_attr.name] = category;
+                table.insert(category_list, #category_list + 1, category);
+                local blocktypes = category.blocktypes;
+                for _, blockTypeNode in ipairs(categoryNode) do
+                    if (blockTypeNode.attr and blockTypeNode.attr.type) then
+                        local blocktype = blockTypeNode.attr.type;
+                        table.insert(blocktypes, #blocktypes + 1, blocktype);
+                    end
                 end
+                if (#blocktypes == 0) then table.remove(category_list, #category_list) end
             end
-            if (#blocktypes == 0) then table.remove(category_list, #category_list) end
         end
+        self.CategoryList = category_list;
     end
-    self.CategoryList = category_list;
+    for _, category in ipairs(self.CategoryList) do
+        self.CategoryColor[category.name] = category.color;
+        self.CategoryColor[category.text or category.name] = category.color;
+    end
     self:GetToolBox():SetCategoryList(self.CategoryList);
 end
 

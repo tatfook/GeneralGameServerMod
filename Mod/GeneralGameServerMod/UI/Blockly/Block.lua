@@ -61,9 +61,10 @@ function Block:ctor()
 end
 
 function Block:Init(blockly, opt)
+    self:SetBlockly(blockly);
+
     Block._super.Init(self, self, opt);
     
-    self:SetBlockly(blockly);
     self:SetDraggable(if_else(opt.isDraggable == false, false, true));
 
     if (opt.id) then self:SetId(opt.id) end
@@ -601,22 +602,42 @@ function Block:GetInputField(name)
     return self.inputFieldMap[name];
 end
 
+local function DefaultToCode(block)
+    local blockType = block:GetType();
+    local option = block:GetOption();
+    if (not option) then return "" end
+    local args = {};
+    for i, arg in ipairs(option.arg) do
+        if (arg.type == "input_value" or arg.type == "input_statement") then
+            args[arg.name] = block:GetValueAsString(arg.name);
+        else
+            args[arg.name] = block:GetFieldValue(arg.name);
+        end
+    end 
+    local code_description = string.gsub(option.code_description or "", "\\n", "\n");
+    local code = string.gsub(code_description, "%$([%w_]+)", args);
+    code = string.gsub(code, "%$%{([%w_]+)%}", args);
+    code = string.gsub(code, "[;\n]+$", "");
+    code = string.gsub(code, "^\n+", "");
+    if (not option.output) then code = code .. ";\n" end
+    return code;
+end
+
 -- 获取块代码
 function Block:GetBlockCode()
     local language = self:GetLanguage();
     local option = self:GetOption();
-    local ToCode = nil;
+    local ToCode = DefaultToCode;
 
     if (type(option["To" .. language]) == "function") then
         ToCode = option["To" .. language];
     elseif (type(option.ToCode) == "function") then
         ToCode = option.ToCode;
     else 
-        print("---------------------图块转换函数不存在---------------------")
-        echo(option, true);
+        -- print("---------------------图块转换函数不存在---------------------")
     end
 
-    local code = ToCode(self) or "";
+    local code = ToCode and ToCode(self) or "";
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then code = code .. nextBlock:GetBlockCode() end
     return code;
