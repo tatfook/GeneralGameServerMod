@@ -15,8 +15,8 @@ local AllBlockList = {
         category = "BlockAttr",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
-            local block_type = block:GetValueAsString("block_type");
+        ToCode = function(block)
+            local block_type = block:GetFieldValue("block_type");
             return string.format('type = "%s";\n', block_type);
         end,
     },
@@ -33,8 +33,8 @@ local AllBlockList = {
         category = "BlockAttr",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
-            local block_category = block:GetValueAsString("block_category");
+        ToCode = function(block)
+            local block_category = block:GetFieldValue("block_category");
             return string.format('category = "%s";\n', block_category);
         end,
     },
@@ -55,7 +55,7 @@ local AllBlockList = {
         category = "BlockAttr",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local block_connection = block:GetFieldValue("block_connection");
             if (block_connection == "OutputConnection") then
                 return "previousStatement = false;\nnextStatement = false;\noutput = true;\n"
@@ -77,8 +77,8 @@ local AllBlockList = {
         category = "BlockAttr",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
-            local block_color = block:GetValueAsString("block_color");
+        ToCode = function(block)
+            local block_color = block:GetFieldValue("block_color");
             return string.format('color = "%s";\n', block_color);
         end,
     },
@@ -95,7 +95,7 @@ local AllBlockList = {
         category = "BlockField",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local field_text = block:GetFieldValue("field_text");
             return string.format('message = message .. " " .. [[%s]];\n', field_text);
         end,
@@ -121,21 +121,21 @@ local AllBlockList = {
                 options = {
                     {"文本", "field_input"},
                     {"数字", "field_number"},
-                    {"列表", "field_dropdown"},
+                    -- {"代码", "field_code"},
                 }
             },
         },
         category = "BlockField",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local field_name = block:GetFieldValue("field_name");
             local field_type = block:GetFieldValue("field_type");
             local field_value = block:GetFieldValue("field_value");
             return string.format([==[
                 field_count = field_count + 1;
                 message = message .. " %%" .. field_count;
-                arg[field_count] = {name = "%s", type = "%s", text = "%s"};
+                arg[field_count] = {name = "%s", type = "%s", text = [[%s]]};
                 ]==], field_name, field_type, field_value);
         end,
     },
@@ -156,13 +156,13 @@ local AllBlockList = {
             {
                 name = "field_options",
                 type = "field_input",
-                text = [[{"标签1", "值1"}, {"标签2", "值2"}, {"标签3", "值3"}]]
+                text = [[{{"标签1", "值1"}, {"标签2", "值2"}, {"标签3", "值3"}}]]
             },
         },
         category = "BlockField",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local field_name = block:GetFieldValue("field_name");
             local field_value = block:GetFieldValue("field_value");
             local field_options = block:GetFieldValue("field_options");
@@ -196,7 +196,7 @@ local AllBlockList = {
     --     category = "BlockField",
     --     previousStatement = true,
 	--     nextStatement = true,
-    --     ToNPL = function(block)
+    --     ToCode = function(block)
     --         local field_name = block:GetFieldValue("field_name");
     --         local field_value = block:GetFieldValue("field_value");
     --         local field_options = block:GetValueAsString("field_options");
@@ -222,7 +222,7 @@ local AllBlockList = {
     --     category = "BlockField",
     --     previousStatement = {"set_field_dropdown", "set_field_dropdown_option"},
 	--     nextStatement = {"set_field_dropdown_option"},
-    --     ToNPL = function(block)
+    --     ToCode = function(block)
     --         local field_option_label = block:GetFieldValue("field_option_label");
     --         local field_option_value = block:GetFieldValue("field_option_value");
     --         return string.format('field_dropdown_options[#field_dropdown_options + 1] = {"%s", "%s"};\n', field_option_label, field_option_value);
@@ -251,8 +251,7 @@ local AllBlockList = {
                 options = {
                     {"文本", "field_input"},
                     {"数字", "field_number"},
-                    {"代码", "field_block"},
-                    -- {"空对象", "System_Lua_Table"},
+                    {"代码", "field_code"},
                 },
                 check = "System_Lua_String",
             },
@@ -260,11 +259,15 @@ local AllBlockList = {
         category = "BlockInput",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local input_name = block:GetFieldValue("input_name");
             local input_value = block:GetFieldValue("input_value");
             local input_type = block:GetValueAsString("input_type");
-            return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "input_value", text = "%s", shadowType = %s};\n', input_name, input_value, input_type);
+            return string.format([==[
+                field_count = field_count + 1;
+                message = message .. " %%" .. field_count;
+                arg[field_count] = {name = "%s", type = "input_value", text = [[%s]], shadowType = %s};
+                ]==], input_name, input_value, input_type);
         end,
     },
 
@@ -285,13 +288,13 @@ local AllBlockList = {
             {
                 name = "input_options",
                 type = "field_input",
-                text = [[{"标签1", "值1"}, {"标签2", "值2"}, {"标签3", "值3"}]]
+                text = [[{{"标签1", "值1"}, {"标签2", "值2"}, {"标签3", "值3"}}]]
             },
         },
         category = "BlockInput",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local input_name = block:GetFieldValue("input_name");
             local input_value = block:GetFieldValue("input_value");
             local input_options = block:GetFieldValue("input_options");
@@ -326,7 +329,7 @@ local AllBlockList = {
     --     category = "BlockInput",
     --     previousStatement = true,
 	--     nextStatement = true,
-    --     ToNPL = function(block)
+    --     ToCode = function(block)
     --         local input_name = block:GetFieldValue("input_name");
     --         local input_value = block:GetFieldValue("input_value");
     --         local input_options = block:GetValueAsString("input_options");
@@ -353,7 +356,7 @@ local AllBlockList = {
     --     category = "BlockInput",
     --     previousStatement = {"set_input_value_dropdown", "set_input_value_dropdown_option"},
 	--     nextStatement = {"set_input_value_dropdown_option"},
-    --     ToNPL = function(block)
+    --     ToCode = function(block)
     --         local input_option_label = block:GetFieldValue("input_option_label");
     --         local input_option_value = block:GetFieldValue("input_option_value");
     --         return string.format('input_dropdown_options[#input_dropdown_options + 1] = {"%s", "%s"};\n', input_option_label, input_option_value);
@@ -373,7 +376,7 @@ local AllBlockList = {
         category = "BlockInput",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local input_name = block:GetFieldValue("input_name");
             return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "input_statement"};\n', input_name);
         end,
@@ -404,7 +407,7 @@ local AllBlockList = {
         category = "BlockConnection",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local connection_name = block:GetValueAsString("connection_name");
             local connection_type = block:GetFieldValue("connection_type");
             return string.format('connections[%s] = "%s";\n', connection_name, connection_type);
@@ -425,7 +428,7 @@ local AllBlockList = {
         category = "BlockCode",
         previousStatement = true,
 	    nextStatement = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local code_description = block:GetFieldValue("code_description");
             return string.format('code_description = [====[%s]====];\n', code_description);
         end,
@@ -442,7 +445,7 @@ local AllBlockList = {
         },
         category = "BlockData",
 	    output = true,
-        ToNPL = function(block)
+        ToCode = function(block)
             local field_string = block:GetFieldValue("field_string");
             return string.format('"%s"', field_string);
         end,
@@ -504,10 +507,10 @@ for _, block in ipairs(AllBlockList) do
     end
 end
 
-function BlockToolbox.GetAllBlockList()
-    return AllBlockList, AllBlockMap;
+function BlockToolbox.GetBlockMap()
+    return AllBlockMap;
 end
 
-function BlockToolbox.GetAllCategoryList()
+function BlockToolbox.GetCategoryListAndMap()
     return AllCategoryList, AllCategoryMap;
 end

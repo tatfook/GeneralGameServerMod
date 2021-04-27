@@ -70,8 +70,14 @@ function Field:GetFieldValue()
 end
 
 function Field:GetValueAsString()
+    if (self:IsNumberType()) then
+        return string.format('%s', tonumber(self:GetValue()) or 0);
+    elseif (self:IsCodeType()) then
+        return string.format('%s', self:GetValue());
+    else 
+        return string.format('"%s"', self:GetValue());   -- 虚拟一个图块
+    end
     return self:GetValue();
-    -- return string.format('"%s"', self:GetValue());
 end
 
 -- 获取xmlNode

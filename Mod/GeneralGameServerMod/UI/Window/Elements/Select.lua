@@ -19,9 +19,9 @@ Option:Property("Text", "");
 Option:Property("SelectElement");
 Option:Property("BaseStyle", {
     NormalStyle = {
-        width = "100%",
         height = "28px",
         ["line-height"] = "28px",
+        ["min-width"] = "100%",
         padding = "0px 4px",
     },
     HoverStyle = {
@@ -40,9 +40,13 @@ end
 function Option:OnUpdateLayout()
 	local layout, style = self:GetLayout(), self:GetStyle();
 	local parentLayout = self:GetParentElement():GetLayout();
-	local parentContentWidth, parentContentHeight = parentLayout:GetContentWidthHeight();
+    local parentWidth, parentHeight = parentLayout:GetWidthHeight();
 	local width, height = layout:GetWidthHeight();
 	local text = self:GetLabel();
+
+    local marginTop, marginRight, marginBottom, marginLeft = layout:GetMargin();
+	local paddingTop, paddingRight, paddingBottom, paddingLeft = layout:GetPadding();
+    if (width) then width = width - paddingLeft - paddingRight - marginLeft - marginRight end 
 
     local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
     width, height = width or textWidth, height or textHeight;
@@ -55,7 +59,9 @@ function Option:OnUpdateLayout()
         self:SetText(text);    
     end
 
-    self:GetLayout():SetWidthHeight(width, height);
+    width = width + paddingLeft + paddingRight + marginLeft + marginRight;
+
+    layout:SetWidthHeight(width, height);
 
     return true; 
 end
@@ -87,6 +93,18 @@ end
 local ListBox = commonlib.inherit(Element, {});
 ListBox:Property("Name", "ListBox");
 
+function ListBox:OnAfterUpdateLayout()
+    local width, height = self:GetLayout():GetContentWidthHeight();
+    for childElement in self:ChildElementIterator() do
+        local layout = childElement:GetLayout();
+        local childWidth, childHeight = layout:GetWidthHeight();
+        if (width > childWidth) then
+            childElement:SetStyleValue("width", width);
+            layout:SetWidthHeight(width, childHeight);
+        end
+    end
+end
+
 -- Select
 local Select = commonlib.inherit(Element, NPL.export());
 
@@ -102,7 +120,7 @@ Select:Property("BaseStyle", {
         ["background-color"] = "#ffffff",
         ["width"] = "120px",
         ["height"] = "30px",
-        ["padding"] = "2px 2px",
+        ["padding"] = "2px 4px",
         ["border"] = "1px solid #cccccc",
     }
 });
@@ -117,7 +135,7 @@ function Select:Init(xmlNode, window, parent)
     local ListBox = ListBox:new():Init({
         name = "ListBox",
         attr = {
-            style = "position: absolute; left: 0px; top: 105%;  max-height: 130px; width: 100%; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px; border: 1px solid #cccccc;",
+            style = "position: absolute; left: 0px; top: 105%;  min-width: 100%; max-height: 130px; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px; border: 1px solid #cccccc;",
         }
     }, window, self);
     local function InputValueFinish(value)
@@ -252,6 +270,7 @@ function Select:FilterOptions(filter)
 end
 
 function Select:OnSelect(option)
+    if (self:GetSelectedOptionElement() == option) then return end
     self:SetSelectedOptionElement(option);
     local value = option and option:GetValue();
     local label = option and option:GetLabel();

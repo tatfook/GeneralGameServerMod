@@ -1,13 +1,16 @@
 <template class="container">
-    <div style="height: 40px; width: 100%; display: flex; justify-content: space-between; align-items: center;">
+    <div style="position: absolute; left: 0px; top: 0px; height: 40px; width: 100%; z-index: 2; display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex;">
             <div onclick="SetContentType('block')" class="header-btn" v-bind:style="GetHeaderBtnStyle('block')">定制图块</div>
             <div onclick="SetContentType('blockly')" class="header-btn" v-bind:style="GetHeaderBtnStyle('blockly')">定制图块编辑器</div>
+
+            <select v-bind:options=LangOptions v-model=CurrentLang placeholder="选择图块类别" onselect=OnSelectLang style="width: 160px; margin-left: 60px;"></select>
+            <div onclick=ClickSaveBlockBtn class="btn" style="width: 60px; height: 30px; color: #cccccc; margin-left: 10px;">保存</div>
         </div>
         <div onclick=CloseWindow class="close-btn btn"></div>
     </div>
-    <div v-show="ContentType == 'block'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px;">
-        <Blockly ref="BlocklyEditor" class="blockly-editor" type="block" onchange=OnBlocklyEditorChange></Blockly>
+    <div v-show="ContentType == 'block'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px; z-index: 1;">
+        <Blockly ref="BlocklyEditor" class="blockly-editor" language="block" onchange=OnBlocklyEditorChange></Blockly>
         <Blockly readonly=true ref="BlocklyPreview" class="blockly-preview" isHideToolBox=true isHideIcons="true"></Blockly>
         <div class="tab">
             <div class="tab-nav-item" onclick="ClickTabNavItemBtn('block')" v-bind:style="GetTabNavItemStyle('block')">图块</div>
@@ -15,12 +18,12 @@
             <div class="tab-nav-item" onclick="ClickTabNavItemBtn('code')" v-bind:style="GetTabNavItemStyle('code')">代码</div>
         </div>
         <div v-show="TabIndex == 'block'" class="tab-pane">
-            <div style="position: absolute; left: 0px; top: 4px; right: 0px; z-index: 2; display: flex; align-items: center; justify-content: center; height: 40px;">
+            <!-- <div style="position: absolute; left: 0px; top: 4px; right: 0px; z-index: 2; display: flex; align-items: center; justify-content: center; height: 40px;">
                 <select v-bind:value="BlockType" style="width: 180px;" placeholder="图块类型" v-bind:options="BlockOptions" onselect=SelectBlock></select>
                 <div onclick=ClickSaveBlockBtn class="btn" style="width: 80; height: 30px; background-color: #cccccc;">保存</div>
                 <div onclick=ClickDeleteBlockBtn class="btn" style="width: 80px; height: 30px;">删除</div>
-            </div>
-            <div style="position: absolute; z-index: 1; top: 50px; bottom: 0px; left: 0px; right: 0px; overflow-y: scroll;">
+            </div> -->
+            <div style="position: absolute; z-index: 1; top: 10px; bottom: 0px; left: 0px; right: 0px; overflow-y: scroll;">
                 <div v-for="block in AllBlockList" style="display: flex; align-items: center; justify-content: space-between; height: 30px;">
                     <div style="display: flex;">
                         <div style="margin-left: 8px; width: 200px; text-wrap: none; text-overflow: ellipsis;">{{block.type}}</div>
@@ -58,7 +61,7 @@
         </div>
     </div>
     <div v-show="ContentType == 'blockly'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px;">
-        <Blockly ref="Blockly" class="blockly-editor" type="custom" onchange=OnBlocklyChange></Blockly>
+        <Blockly ref="Blockly" class="blockly-editor" onchange=OnBlocklyChange></Blockly>
         <div style="position: absolute; left: 802px; top: 0px; right: 0px; bottom: 0px;">
             <textarea v-bind:value="BlocklyCode" readonly=true style="width: 100%; height: 100%; background-color: #cccccc;"></textarea>
         </div>
@@ -67,14 +70,16 @@
 
 <script type="text/lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
-local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Pages/BlockManager.lua").StaticInit();
+local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/BlockManager.lua").StaticInit();
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
-local AllCategoryMap = BlockManager.GetAllCategoryMap();
-local AllBlockMap = BlockManager.GetAllBlockMap();
+local AllCategoryMap = BlockManager.GetLanguageCategoryMap();
+local AllBlockMap = BlockManager.GetLanguageBlockMap();
 local Blockly = nil;
 local BlocklyEditor = nil;
 local BlocklyPreview = nil;
 local BlockOption = {};
+LangOptions = {{"定制世界图块", "CustomWorldBlock"}, {"系统 NPL 图块", "SystemNplBlock"}, {"系统 Lua 图块", "SystemLuaBlock"}};
+CurrentLang = "CustomWorldBlock";
 TabIndex = "block";
 ContentType = "block"; -- block blockly
 BlocklyCode = "";
@@ -83,18 +88,6 @@ BlockDefineCode = "";
 BlockOptions = {};
 AllCategoryList, AllBlockList = {}, {};
 Category = {name = "", color = "#ffffff"};
-for blockType, block in pairs(AllBlockMap) do
-    if (blockType ~= "") then
-        table.insert(BlockOptions, {label = blockType, value = blockType});
-    end
-end
-for _, category in pairs(AllCategoryMap) do
-    table.insert(AllCategoryList, {name = category.name, text = category.text, color = category.color or "#ffffff"});
-end
-
-for _, block in pairs(AllBlockMap) do
-    table.insert(AllBlockList, {type = block.type, category = block.category});
-end
 
 local function SortAllBlockList()
     table.sort(AllBlockList, function(block1, block2)
@@ -102,7 +95,31 @@ local function SortAllBlockList()
     end)
     return AllBlockList;
 end
-SortAllBlockList();
+
+local function InitData()
+    local AllCategoryMap = BlockManager.GetLanguageCategoryMap();
+    local AllBlockMap = BlockManager.GetLanguageBlockMap();
+    AllCategoryList, AllBlockList = {}, {};
+    for _, category in pairs(AllCategoryMap) do
+        table.insert(AllCategoryList, {name = category.name, text = category.text, color = category.color or "#ffffff"});
+    end
+
+    for _, block in pairs(AllBlockMap) do
+        table.insert(AllBlockList, {type = block.type, category = block.category});
+    end
+    SortAllBlockList();
+end
+
+function OnSelectLang()
+    if (CurrentLang == "SystemNplBlock") then
+        BlockManager.SetCurrentCategoryAndBlockPath("Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemNplBlock");
+    elseif (CurrentLang == "SystemLuaBlock") then 
+        BlockManager.SetCurrentCategoryAndBlockPath("Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemLuaBlock");
+    else
+        BlockManager.SetCurrentCategoryAndBlockPath(nil);
+    end
+    InitData();
+end
 
 function ClickTabNavItemBtn(tabindex)
     TabIndex = tabindex;
@@ -141,6 +158,8 @@ function ClickDeleteCategoryBtn(categoryName)
 end
 
 function OnReady()
+    OnSelectLang();
+
     Blockly = GetRef("Blockly");
     BlocklyEditor = GetRef("BlocklyEditor");
     BlocklyPreview = GetRef("BlocklyPreview");
@@ -174,16 +193,6 @@ function ClickSaveBlockBtn()
     BlockOption.xml_text = BlocklyEditor:SaveToXmlNodeText();
     if (BlockType == "") then return end
     local isExist = false;
-    for i, opt in ipairs(BlockOptions) do
-        if (opt.value == BlockType) then
-            isExist = true;
-            break;
-        end
-    end 
-    if (not isExist) then
-        table.insert(BlockOptions, {label = BlockType, value = BlockType});
-    end
-    isExist = false;
     for i, opt in ipairs(AllBlockList) do
         if (opt.type == BlockType) then
             isExist = true;
@@ -201,12 +210,6 @@ end
 function ClickDeleteBlockBtn(blocktype)
     blocktype = blocktype or BlockType;
     if (blocktype == "") then return end
-    for i, opt in ipairs(BlockOptions) do
-        if (opt.value == blocktype) then
-            table.remove(BlockOptions, i);
-            break;
-        end
-    end 
     for i, block in ipairs(AllBlockList) do 
         if (block.type == blocktype) then
             table.remove(AllBlockList, i);
@@ -313,7 +316,7 @@ function GenerateBlockDefineCode(option)
     nextStatement = %s,
     message = "%s",
     %s,
-    ToNPL = function(block)
+    ToCode = function(block)
 %s
         -- 更改下行为图块实际生成代码
         return string.gsub(%s, "%%$([%%w_]+)", args); 

@@ -605,20 +605,20 @@ end
 function Block:GetBlockCode()
     local language = self:GetLanguage();
     local option = self:GetOption();
-    local code = ""
-    if (language == "lua") then
-    else  -- npl
-        if (type(option.ToNPL) == "function") then
-            code = option.ToNPL(self)
-        else 
-            print("---------------------图块转换函数不存在---------------------")
-            echo(option, true);
-        end
+    local ToCode = nil;
+
+    if (type(option["To" .. language]) == "function") then
+        ToCode = option["To" .. language];
+    elseif (type(option.ToCode) == "function") then
+        ToCode = option.ToCode;
+    else 
+        print("---------------------图块转换函数不存在---------------------")
+        echo(option, true);
     end
+
+    local code = ToCode(self) or "";
     local nextBlock = self:GetNextBlock();
-    if (nextBlock) then
-        code = code .. nextBlock:GetBlockCode();
-    end
+    if (nextBlock) then code = code .. nextBlock:GetBlockCode() end
     return code;
 end
 

@@ -12,6 +12,7 @@ local InputElement = NPL.load("../Window/Elements/Input.lua", IsDevEnv);
 local SelectElement = NPL.load("../Window/Elements/Select.lua", IsDevEnv);
 
 local Const = NPL.load("./Const.lua");
+local Options = NPL.load("./Options.lua");
 local Shape = NPL.load("./Shape.lua");
 local Validator = NPL.load("./Validator.lua", IsDevEnv);
 
@@ -66,11 +67,17 @@ function BlockInputField:Init(block, option)
     return self;
 end
 
-function BlockInputField:GetOptions()
+function BlockInputField:GetOptions(bRefresh)
     local option = self:GetOption();
-    local options = type(option.options) == "table" and option.options or {};
-    if (type(option.options) == "function") then options = option.options() end
-    return options;
+    local options = option.options;
+    if (type(options) == "string") then options = Options[options] end
+    if (type(options) == "table") then return options end 
+    if (type(options) == "function") then 
+        if (not bRefresh and self.option_options) then return self.option_options end
+        self.option_options = options();
+        return self.option_options;
+    end
+    return {};
 end
 
 function BlockInputField:GetValueByLablel(label)
@@ -137,7 +144,7 @@ end
 
 function BlockInputField:IsCodeType(typ)
     typ = typ or self:GetInputFieldType();
-    return typ == "field_block" or typ == "block" or typ == "code";
+    return typ == "field_block" or typ == "block" or typ == "field_code" or typ == "code";
 end
 
 function BlockInputField:SetTotalWidthHeightUnitCount(widthUnitCount, heightUnitCount)
@@ -416,8 +423,7 @@ function BlockInputField:GetFieldSelectEditElement(parentElement, isAllowCreate)
                 Shape:GetOutputTexture(),
                 self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),
-            options = self:GetOptions(),
-            -- AllowCreate = isAllowCreate,
+            options = self:GetOptions(true),
         },
     }, parentElement:GetWindow(), parentElement);
 

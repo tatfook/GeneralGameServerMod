@@ -13,10 +13,11 @@ NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Sound/BlockSound.lua");
 local BlockSound = commonlib.gettable("MyCompany.Aries.Game.Sound.BlockSound");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
+local BlockManager = NPL.load("./Blocks/BlockManager.lua", IsDevEnv);
+local Options = NPL.load("./Options.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
-local Toolbox = NPL.load("./Blocks/Toolbox.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
@@ -55,7 +56,7 @@ end
 
 function Blockly:ctor()
     self:Reset();
-    self.block_types = {};
+    self.BlockMap, self.CategoryList, self.CategoryMap = {}, {}, {};
     self:SetToolBox(ToolBox:new():Init(self));
 end
 
@@ -96,11 +97,10 @@ function Blockly:Init(xmlNode, window, parent)
 
     self:SetShadowBlock(ShadowBlock:new():Init(self));
 
-    local typ = self:GetAttrStringValue("type", "");
-    local allBlockList = Toolbox.GetAllBlockList(typ);
-    local allCategoryList = Toolbox.GetAllCategoryList(typ, self:GetAttrStringValue("ToolBoxXmlText"));
-    for _, blockOption in ipairs(allBlockList) do self:DefineBlock(blockOption) end
-    self:GetToolBox():SetCategoryList(allCategoryList);
+    self:SetLanguage(self:GetAttrStringValue("language"));
+    self.CategoryList, self.CategoryMap = BlockManager.GetCategoryListAndMap(self:GetLanguage());
+    self:OnToolBoxXmlTextChange(self:GetAttrStringValue("ToolBoxXmlText"));
+    self:GetToolBox():SetCategoryList(self.CategoryList);
 
     self.isHideToolBox = self:GetAttrBoolValue("isHideToolBox", false);
     self.isHideIcons = self:GetAttrBoolValue("isHideIcons", false);
@@ -108,16 +108,47 @@ function Blockly:Init(xmlNode, window, parent)
     return self;
 end
 
+function Blockly:OnToolBoxXmlTextChange(toolboxXmlText)
+    local xmlNode = ParaXML.LuaXML_ParseString(toolboxXmlText);
+    local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
+    if (not toolboxNode) then 
+        self:GetToolBox():SetCategoryList(self.CategoryList);
+        return;
+    end
+    local category_map = self.CategoryMap;
+    local category_list = {};
+    for _, categoryNode in ipairs(toolboxNode) do
+        if (categoryNode.attr and categoryNode.attr.name) then
+            local category_attr = categoryNode.attr;
+            local default_category = category_map[category_attr.name];
+            local category = {
+                name = category_attr.name,
+                text = category_attr.text or (default_category and default_category.text),
+                color = category_attr.color or (default_category and default_category.color),
+                blocktypes = {},
+            }
+            table.insert(category_list, #category_list + 1, category);
+            local blocktypes = category.blocktypes;
+            for _, blockTypeNode in ipairs(categoryNode) do
+                if (blockTypeNode.attr and blockTypeNode.attr.type) then
+                    local blocktype = blockTypeNode.attr.type;
+                    table.insert(blocktypes, #blocktypes + 1, blocktype);
+                end
+            end
+            if (#blocktypes == 0) then table.remove(category_list, #category_list) end
+        end
+    end
+    self.CategoryList = category_list;
+    self:GetToolBox():SetCategoryList(self.CategoryList);
+end
+
 function Blockly:OnAttrValueChange(attrName, attrValue, oldAttrValue)
     if (attrName == "ToolBoxXmlText") then
-        local allCategoryList = Toolbox.GetAllCategoryList(self:GetAttrStringValue("type", ""), self:GetAttrStringValue("ToolBoxXmlText"));
-        self:GetToolBox():SetCategoryList(allCategoryList);
-    elseif (attrName == "type") then
-        self.block_types = {};
-        local allBlockList = Toolbox.GetAllBlockList(attrValue);
-        local allCategoryList = Toolbox.GetAllCategoryList(attrValue, self:GetAttrStringValue("ToolBoxXmlText"));
-        for _, blockOption in ipairs(allBlockList) do self:DefineBlock(blockOption) end
-        self:GetToolBox():SetCategoryList(allCategoryList);
+        self:OnToolBoxXmlTextChange(self:GetAttrStringValue("ToolBoxXmlText"));
+    elseif (attrName == "language") then
+        self:SetLanguage(self:GetAttrStringValue("language"));
+        self.CategoryList, self.CategoryMap = BlockManager.GetCategoryListAndMap(self:GetLanguage());
+        self:OnToolBoxXmlTextChange(self:GetAttrStringValue("ToolBoxXmlText"));
     end
 end
 
@@ -202,12 +233,12 @@ end
 
 -- 定义块
 function Blockly:DefineBlock(block)
-    self.block_types[block.type] = block;
+    self.BlockMap[block.type] = block;
 end
 
 -- 获取块
 function Blockly:GetBlockInstanceByType(typ)
-    local opts = self.block_types[typ];
+    local opts = self.BlockMap[typ] or BlockManager.GetBlockOption(typ, self:GetLanguage());
     if (not opts) then return nil end
     return Block:new():Init(self, opts);
 end
@@ -663,8 +694,7 @@ function Blockly:handlePaste()
 end
 
 -- 获取代码
-function Blockly:GetCode(language)
-    self:SetLanguage(language or "NPL");
+function Blockly:GetCode()
     local code = "";
     for _, block in ipairs(self.blocks) do
         code = code .. (block:GetBlockCode() or "") .. "\n";

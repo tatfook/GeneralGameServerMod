@@ -12,7 +12,7 @@ local NplToolbox = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks
 NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeHelpWindow.lua");
 local CodeHelpWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeHelpWindow");
 
-local NplToolbox = NPL.export();
+local NplBlockManager = NPL.export();
 
 local all_blocks_cache = {};
 local all_block_map_cache = {};
@@ -53,14 +53,18 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
             nextStatement = cmd.nextStatement and true or false,
             output = cmd.output and true or false,
             type = cmd.type,
-            ToNPL = function(block)
+            ToCode = function(block)
                 if (not cmd.func_description) then return cmd.ToNPL(block) end
 
                 local args = {};
                 local index = 1;
                 for i, opt in ipairs(block.inputFieldOptionList) do
                     if (opt.type ~= "input_dummy") then
-                        args[index] = block:GetValueAsString(opt.name) or "";
+                        if (opt.type == "input_value" or opt.type == "input_statement") then
+                            args[index] = block:GetValueAsString(opt.name) or "";
+                        else 
+                            args[index] = block:GetFieldValue(opt.name) or "";
+                        end
                         index = index + 1;
                     end
                 end
@@ -96,12 +100,16 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
     return AllBlocks, CategoryList, AllBlockMap, CategoryMap;
 end
 
-function NplToolbox.GetAllBlockList()
-    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
-    return AllBlocks, AllBlockMap;
+function NplBlockManager.IsUseSystemNplBlock()
+    return CodeHelpWindow.GetLanguageConfigFile() == "npl" or CodeHelpWindow.GetLanguageConfigFile() == "";
 end
 
-function NplToolbox.GetAllCategoryList()
+function NplBlockManager.GetBlockMap()
+    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
+    return AllBlockMap;
+end
+
+function NplBlockManager.GetCategoryListAndMap()
     local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
     return CategoryList, AllCategoryMap;
 end

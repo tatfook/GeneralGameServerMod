@@ -23,7 +23,7 @@ local HelperBlocks = NPL.load("./Helper.lua", IsDevEnv);
 local VueToolbox = NPL.load("./VueToolbox.lua", IsDevEnv);
 local NplToolbox = NPL.load("./NplToolbox.lua", IsDevEnv);
 local BlockToolbox = NPL.load("./BlockToolbox.lua", IsDevEnv);
-local BlockManager = NPL.load("../Pages/BlockManager.lua", IsDevEnv);
+local BlockManager = NPL.load("./BlockManager.lua", IsDevEnv);
 
 local Toolbox = NPL.export();
 
@@ -141,4 +141,8 @@ function Toolbox.GetCategoryListByToolBoxXmlText(toolboxXmlText, all_blocks, all
         end
     end
     return category_list, all_category_map;
+end
+
+function Toolbox.GetBlockOption(blockType)
+    return BlockManager.GetBlockOption(blockType);
 end
