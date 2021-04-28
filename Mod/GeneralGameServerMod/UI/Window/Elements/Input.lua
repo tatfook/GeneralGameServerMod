@@ -153,6 +153,11 @@ function Input:handleSelectAll()
     InputDebug.Format("handleSelectAll selectStartAt = %s, selectEndAt = %s", self.selectStartAt, self.selectEndAt);
 end
 
+function Input:handleSelectWorld()
+    local beginPos, endPos = self:GetText():wordPosition(self.cursorAt);
+    self.selectStartAt, self.selectEndAt = beginPos + 1, endPos;
+end
+
 function Input:handleCopy()
     if (not self:IsSelected()) then return end
     local selectedText = self:GetSelectedText();
@@ -169,9 +174,24 @@ function Input:handlePaste()
     self:InsertTextCmd(clip)
 end
 
-function Input:handleHome()
+function Input:handleHome(event, bselected)
+    if (bselected) then
+        self.selectStartAt = 1;
+        self.selectEndAt = self.cursorAt;
+    else
+        self.cursorAt = 0;
+        self.cursorX = 0;
+    end
 end
-function Input:handleEnd()
+
+function Input:handleEnd(event, bselected)
+    if (bselected) then
+        self.selectStartAt = self.cursorAt;
+        self.selectEndAt = self:GetText():length();
+    else
+        self.cursorAt = self:GetText():length();
+        self.cursorX = self:GetText():GetWidth(self:GetFont());
+    end
 end
 
 function Input:handleMoveToNextChar()
@@ -252,7 +272,7 @@ function Input:OnKey(event)
 	if(char1 <= 31) then return end
     
     -- 添加新文本
-    self:InsertTextCmd(commitString, self.cursorAt);
+    self:InsertTextCmd(commitString);
 end
 
 -- 检测输入是否合法
@@ -268,7 +288,11 @@ function Input:InsertTextCmd(text, startAt)
     if (not self:CheckInputText(text)) then return end
     
     -- 先删除已选择的文本
-    if (self:IsSelected()) then self:DeleteSelected() end
+    if (self:IsSelected()) then 
+        local selectStartAt = self:GetSelected();
+        self:DeleteSelected();
+        self.cursorAt = selectStartAt;
+    end
     startAt = math.min(startAt or self.cursorAt, self:GetTextLength() + 1);
     if (not text or text == "") then return end
     startAt = startAt or self.cursorAt;
@@ -466,14 +490,21 @@ end
 function Input:OnMouseDown(event)
     if (self:IsDisabled()) then return end
     if (not self:IsFocus()) then self:FocusIn() end
-    local x, y = self:GloablToContentGeometryPos(event.x, event.y);
-    self:ClearSelected();
-    self.cursorAt, self.cursorX = self:GetAtByPos(x, y);
-    self.mouseDown = true;
-    self.mouseDownX, self.mouseDownY = event.x, event.y;
-    self:CaptureMouse();
-    InputDebug.Format("OnMouseDown, x = %s, scrollX = %s, cursorAt = %s, cursorX = %s", x, self.scrollX, self.cursorAt, self.cursorX);
+    
     event:Accept();
+    if (event:IsTripleClick()) then
+        self:handleSelectAll();
+    elseif (event:IsDoubleClick()) then
+        self:handleSelectWorld();
+    else
+        local x, y = self:GloablToContentGeometryPos(event.x, event.y);
+        self:ClearSelected();
+        self.cursorAt, self.cursorX = self:GetAtByPos(x, y);
+        self.mouseDown = true;
+        self.mouseDownX, self.mouseDownY = event.x, event.y;
+        self:CaptureMouse();
+        InputDebug.Format("OnMouseDown, x = %s, scrollX = %s, cursorAt = %s, cursorX = %s", x, self.scrollX, self.cursorAt, self.cursorX);
+    end
 end
 
 function Input:OnMouseMove(event)

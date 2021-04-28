@@ -11,6 +11,8 @@ local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/BlockManager.
 
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+local Helper = NPL.load("../Helper.lua");
+
 local NplBlockManager = NPL.load("./NplBlockManager.lua", IsDevEnv);
 local BlockBlockManager = NPL.load("./BlockBlockManager.lua", IsDevEnv);
 
@@ -53,12 +55,17 @@ function BlockManager.LoadCategoryAndBlock(filename)
     end
 
     CategoryAndBlockMap.AllCategoryList = CategoryBlockMap.AllCategoryList or CategoryAndBlockMap.AllCategoryList;
+    CategoryAndBlockMap.ToolBoxXmlText = CategoryBlockMap.ToolBoxXmlText or CategoryAndBlockMap.ToolBoxXmlText or BlockManager.GenerateToolBoxXmlText(filename);
+
     return CategoryAndBlockMap;
 end
 
 function BlockManager.SaveCategoryAndBlock(filename)
     filename = filename or CurrentCategoryAndBlockPath;
-    local text = commonlib.serialize_compact(BlockManager.GetCategoryAndBlockMap(filename));
+    local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(filename);
+    CategoryAndBlockMap.ToolBoxXmlText = BlockManager.GenerateToolBoxXmlText(filename);
+    
+    local text = commonlib.serialize_compact(CategoryAndBlockMap);
     local io = ParaIO.open(filename, "w");
 	io:WriteString(text);
     io:close();
@@ -66,6 +73,7 @@ end
 
 function BlockManager.GetCategoryAndBlockMap(path)
     path = path or CurrentCategoryAndBlockPath;
+    path = LanguagePathMap[path] or path;
     AllCategoryAndBlockMap[path] = AllCategoryAndBlockMap[path] or {
         AllCategoryList = {},
         AllCategoryMap = {},
@@ -138,28 +146,6 @@ function BlockManager.StaticInit()
         BlockManager.LoadCategoryAndBlock(path);
     end
 
-    -- 导入旧npl blockly的分类列表
-    -- local CategoryList = NplBlockManager.GetCategoryListAndMap();
-    -- local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(LanguagePathMap["SystemNplBlock"]);
-    -- local BlockMap = CategoryAndBlockMap.AllBlockMap;
-    -- local AllCategoryList = {};
-    -- for _, category in ipairs(CategoryList) do
-    --     local blocktypes = {};
-    --     local index = 1;
-    --     for _, blocktype in ipairs(category.blocktypes) do
-    --         blocktype = "NPL_" .. blocktype;
-    --         if (BlockMap[blocktype]) then
-    --             blocktypes[index] = blocktype;
-    --             index = index + 1;
-    --         end
-    --     end
-    --     category.blocktypes = blocktypes;
-    --     table.insert(AllCategoryList, category);
-    -- end
-    -- echo(AllCategoryList, true);
-    -- CategoryAndBlockMap.AllCategoryList = AllCategoryList;
-    -- BlockManager.SaveCategoryAndBlock(LanguagePathMap["SystemNplBlock"]);
-
     GameLogic:Connect("WorldLoaded", nil, OnWorldLoaded, "UniqueConnection");
     GameLogic:Connect("WorldUnloaded", nil, OnWorldUnloaded, "UniqueConnection");
     
@@ -168,16 +154,89 @@ function BlockManager.StaticInit()
     return BlockManager;
 end
 
-function BlockManager.GetLanguageBlockList(path)
-    local allBlockMap = BlockManager.GetLanguageBlockMap(path);
-    local blockList = {};
-    for block_type, block in pairs(allBlockMap) do 
-        if (block_type ~= "") then
-            block.ToCode = ToCode;
-            table.insert(blockList, block);
+function BlockManager.GetToolBoxXmlText(path)
+    return BlockManager.GetCategoryAndBlockMap(path).ToolBoxXmlText;
+end
+
+function BlockManager.GenerateToolBoxXmlText(path)
+    local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
+    local AllCategoryList, AllCategoryMap, AllBlockMap = CategoryAndBlockMap.AllCategoryList, CategoryAndBlockMap.AllCategoryMap, CategoryAndBlockMap.AllBlockMap;
+    local blockTypeMap, categoryMap = {}, {};
+    for _, category in ipairs(AllCategoryList) do
+        categoryMap[category.name] = category;
+        category.blocktypes = category.blocktypes or {};
+        local blocktypes = {};
+        for index, blocktype in ipairs(category.blocktypes) do
+            if (AllBlockMap[blocktype]) then
+                blockTypeMap[blocktype] = true;
+                table.insert(blocktypes, #blocktypes + 1, blocktype);
+            end
+        end
+        category.blocktypes = blocktypes;
+    end
+
+    local isChange = false;
+    for blocktype, block in pairs(AllBlockMap) do
+        if (not blockTypeMap[blocktype] and not block.hideInToolbox) then
+            -- 分类不存在则添加分类
+            if (not categoryMap[block.category]) then
+                categoryMap[block.category] = AllCategoryMap[block.category] or {name = block.category};
+                categoryMap[block.category].blocktypes = categoryMap[block.category].blocktypes or {};
+                table.insert(AllCategoryList, categoryMap[block.category]);
+            end
+            -- 添加块
+            local blocktypes = categoryMap[block.category].blocktypes;
+            table.insert(blocktypes, #blocktypes + 1, blocktype);
+            isChange = true;
         end
     end
-    return blockList, allBlockMap;
+    local toolbox = {name = "toolbox"};
+    for _, categoryItem in ipairs(AllCategoryList) do
+        local category = {
+            name = "category",
+            attr = {name = categoryItem.name, color = categoryItem.color, text = categoryItem.text},
+        }
+        table.insert(toolbox, #toolbox + 1, category);
+        for _, blocktype in ipairs(categoryItem.blocktypes) do 
+            table.insert(category, #category + 1, {name = "block", attr = {type = blocktype}});
+        end
+    end
+    local xmlText = Helper.Lua2XmlString(toolbox, true);
+
+    return xmlText;
+end
+
+function BlockManager.ParseToolBoxXmlText(path, xmlText)
+    local xmlNode = ParaXML.LuaXML_ParseString(xmlText);
+    local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
+    if (not toolboxNode) then return end
+    local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
+    
+    local AllCategoryList = {};
+    for _, categoryNode in ipairs(toolboxNode) do
+        if (categoryNode.attr and categoryNode.attr.name) then
+            local category_attr = categoryNode.attr;
+            local category = {
+                name = category_attr.name,
+                text = category_attr.text,
+                color = category_attr.color,
+                blocktypes = {},
+            }
+            table.insert(AllCategoryList, #AllCategoryList + 1, category);
+            local blocktypes = category.blocktypes;
+            for _, blockTypeNode in ipairs(categoryNode) do
+                if (blockTypeNode.attr and blockTypeNode.attr.type) then
+                    local blocktype = blockTypeNode.attr.type;
+                    if (AllBlockMap[blocktype]) then
+                        table.insert(blocktypes, #blocktypes + 1, blocktype);
+                    end
+                end
+            end
+        end
+    end
+    CategoryAndBlockMap.AllCategoryList = AllCategoryList;
+    BlockManager.SaveCategoryAndBlock(path);
+    return AllCategoryList;
 end
 
 function BlockManager.GetLanguageCategoryListAndMap(path)
@@ -185,6 +244,7 @@ function BlockManager.GetLanguageCategoryListAndMap(path)
     if (#CategoryAndBlockMap.AllCategoryList > 0) then
         return CategoryAndBlockMap.AllCategoryList, CategoryAndBlockMap.AllCategoryMap;
     end
+
     local allCategoryMap, allBlockMap = CategoryAndBlockMap.AllCategoryMap, CategoryAndBlockMap.AllBlockMap;
     local categoryList = {};
     local categoryMap = {};
@@ -237,6 +297,7 @@ function BlockManager.GetBlockMap(lang)
         end
     end
     if (lang == "block") then return BlockBlockManager.GetBlockMap() end
+    if (LanguagePathMap[lang]) then return BlockManager.GetLanguageBlockMap(LanguagePathMap[lang]) end
 
     return BlockManager.GetLanguageBlockMap(WorldCategoryAndBlockPath);
 end
@@ -250,6 +311,7 @@ function BlockManager.GetCategoryListAndMap(lang)
         end
     end
     if (lang == "block") then return BlockBlockManager.GetCategoryListAndMap() end
+    if (LanguagePathMap[lang]) then return BlockManager.GetLanguageCategoryListAndMap(LanguagePathMap[lang]) end
 
     return BlockManager.GetLanguageCategoryListAndMap(WorldCategoryAndBlockPath);
 end

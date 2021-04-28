@@ -95,7 +95,7 @@ ListBox:Property("Name", "ListBox");
 
 function ListBox:OnAfterUpdateLayout()
     local width, height = self:GetLayout():GetContentWidthHeight();
-    for childElement in self:ChildElementIterator() do
+    for _, childElement in ipairs(self.childrens) do
         local layout = childElement:GetLayout();
         local childWidth, childHeight = layout:GetWidthHeight();
         if (width > childWidth) then
@@ -103,6 +103,7 @@ function ListBox:OnAfterUpdateLayout()
             layout:SetWidthHeight(width, childHeight);
         end
     end
+    self:OnRealContentSizeChange();
 end
 
 -- Select

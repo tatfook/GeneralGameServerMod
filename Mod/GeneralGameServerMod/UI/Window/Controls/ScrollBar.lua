@@ -316,7 +316,7 @@ function ScrollBar:SetScrollWidthHeight(clientWidth, clientHeight, contentWidth,
     self:SetStyleValue("width", self.width);
     self:SetStyleValue("height", self.height);
 
-    self:UpdateLayout();
+    ScrollBar._super.UpdateLayout(self, true);
 
     ScrollBarDebug.Format("SetScrollWidthHeight direction = %s, width = %s, height = %s, thumbSize = %s, isPosition = %s", self:GetDirection(), self.width, self.height, thumbSize, self:GetLayout():IsPositionElement());
 end
@@ -331,6 +331,9 @@ function ScrollBar:OnScroll()
     end
     self:GetParentElement():OnScroll(self);
     -- DebugStack();
+end
+
+function ScrollBar:UpdateLayout()
 end
 
 -- 布局更新完成重置元素几何大小

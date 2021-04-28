@@ -119,6 +119,7 @@ function TextArea:IsReadOnly()
 end
 
 function TextArea:handleReturn()
+    if (self:IsReadOnly()) then return end
     self:InsertTextCmd("\n");
 end
 
@@ -126,6 +127,8 @@ function TextArea:handleEscape()
 end
 
 function TextArea:handleBackspace()
+    if (self:IsReadOnly()) then return end
+
     if (self:IsSelected()) then
         self:DeleteSelected();
     else
@@ -134,10 +137,13 @@ function TextArea:handleBackspace()
 end
 
 function TextArea:handleDelete()
+    if (self:IsReadOnly()) then return end
     self:DeleteTextCmd(self.cursorAt + 1, 1);
 end
 
 function TextArea:handleUndo()
+    if (self:IsReadOnly()) then return end
+
     if (#self.undoCmds == 0) then return end
     local len = #self.undoCmds;
     local cmd = self.undoCmds[len];
@@ -151,6 +157,8 @@ function TextArea:handleUndo()
 end
 
 function TextArea:handleRedo()
+    if (self:IsReadOnly()) then return end
+
     if (#self.redoCmds == 0) then return end
     local len = #self.redoCmds;
     local cmd = self.redoCmds[len];
@@ -175,11 +183,15 @@ function TextArea:handleCopy()
 end
 
 function TextArea:handleCut()
+    if (self:IsReadOnly()) then return end
+
     self:handleCopy();
     self:DeleteSelected();
 end
 
 function TextArea:handlePaste()
+    if (self:IsReadOnly()) then return end
+
     local clip = ParaMisc.GetTextFromClipboard();
     self:InsertTextCmd(clip)
 end
@@ -260,7 +272,6 @@ end
 
 function TextArea:OnKeyDown(event)
     if (not self:IsFocus()) then return end
-    if (self:IsReadOnly()) then return end
 
 	local keyname = event.keyname;
 	if (keyname == "DIK_RETURN") then self:handleReturn(event) 
@@ -609,7 +620,7 @@ function TextArea:OnMouseMove(event)
     local x, y = event.x, event.y;
     if (not self:IsContainPoint(x, y)) then return self:OnMouseUp() end
     local cursorAt = self:GetAtByPos(self:GloablToContentGeometryPos(x, y));
-    self.selectStartAt = self.cursorAt;
+    self.selectStartAt = self.cursorAt == self.text:length() and (self.cursorAt + 1) or self.cursorAt;
     self.selectEndAt = cursorAt;
 end
 

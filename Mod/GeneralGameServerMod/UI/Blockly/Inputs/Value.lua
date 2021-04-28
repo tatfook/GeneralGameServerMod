@@ -104,6 +104,9 @@ end
 
 function Value:ConnectionBlock(block)
     if (block.outputConnection and not block.outputConnection:IsConnection() and self.inputConnection:IsMatch(block.outputConnection)) then
+        local inputBlock = self:GetInputBlock();
+        if (inputBlock and inputBlock:ConnectionBlock(block)) then return true end
+        
         block:GetBlockly():RemoveBlock(block);
         if (block.isShadowBlock) then
             self.shadowConnection:Connection(block.outputConnection);

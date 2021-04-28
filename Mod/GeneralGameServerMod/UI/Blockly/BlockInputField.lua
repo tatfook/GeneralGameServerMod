@@ -425,7 +425,7 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
     return InputEditElement;
 end 
 
-function BlockInputField:GetFieldSelectEditElement(parentElement, isAllowCreate)
+function BlockInputField:GetFieldSelectEditElement(parentElement)
     local UnitSize = self:GetUnitSize();
     local SelectEditElement = SelectElement:new():Init({
         name = "select",
@@ -468,13 +468,17 @@ end
 
 function BlockInputField:GetFieldEditElement(parentElement)
     local editElement = self:GetEditElement();
-    if (editElement) then return editElement end
-
     local edittype = self:GetFieldEditType();
+    
+    if (editElement) then 
+        if (edittype == "select") then editElement:SetAttrValue("options", self:GetOptions(true)) end
+        return editElement;
+    end
+
     if (edittype == "input") then
         editElement = self:GetFieldInputEditElement(parentElement);
     elseif (edittype == "select") then
-        editElement = self:GetFieldSelectEditElement(parentElement, true);
+        editElement = self:GetFieldSelectEditElement(parentElement);
     end
 
     self:SetEditElement(editElement);

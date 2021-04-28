@@ -146,3 +146,27 @@ end
 function Toolbox.GetBlockOption(blockType)
     return BlockManager.GetBlockOption(blockType);
 end
+
+
+
+    -- 导入旧npl blockly的分类列表
+    -- local CategoryList = NplBlockManager.GetCategoryListAndMap();
+    -- local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(LanguagePathMap["SystemNplBlock"]);
+    -- local BlockMap = CategoryAndBlockMap.AllBlockMap;
+    -- local AllCategoryList = {};
+    -- for _, category in ipairs(CategoryList) do
+    --     local blocktypes = {};
+    --     local index = 1;
+    --     for _, blocktype in ipairs(category.blocktypes) do
+    --         blocktype = "NPL_" .. blocktype;
+    --         if (BlockMap[blocktype]) then
+    --             blocktypes[index] = blocktype;
+    --             index = index + 1;
+    --         end
+    --     end
+    --     category.blocktypes = blocktypes;
+    --     table.insert(AllCategoryList, category);
+    -- end
+    -- echo(AllCategoryList, true);
+    -- CategoryAndBlockMap.AllCategoryList = AllCategoryList;
+    -- BlockManager.SaveCategoryAndBlock(LanguagePathMap["SystemNplBlock"]);

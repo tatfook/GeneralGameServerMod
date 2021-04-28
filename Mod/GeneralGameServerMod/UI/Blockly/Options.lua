@@ -8,38 +8,74 @@ use the lib:
 local Options = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Options.lua");
 -------------------------------------------------------
 ]]
+NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeBlockWindow.lua");
+local CodeBlockWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeBlockWindow");
 
 local Options = NPL.export();
 
+local actor_options = {};
+local function GetActorNameOptions()
+    local actors = GameLogic.GetCodeGlobal().actors;
+    local actor_options = {};
+    local size = #actor_options;
+    local index = 1;
+    for key in pairs(actors) do
+        actor_options[index] = {key, key};
+        index = index + 1;
+    end
+    for i = index, size do
+        actor_options[i] = nil;
+    end
+    return actor_options;
+end
+
+local actor_bone_options = {};
+local function GetActorBoneOptions()
+    local codeblock = CodeBlockWindow.GetCodeBlock();
+    local codeEnv = codeblock and codeblock:GetCodeEnv();
+    local actor = codeEnv and codeEnv.actor;
+    local bones = actor and actor:GetBonesVariable():GetVariables();
+    local index, size = 1, #actor_bone_options;
+    if (bones) then
+        for key in pairs(bones) do
+            actor_bone_options[index] = {key, key};
+            index = index + 1;
+        end
+    end
+    for i = index, size do
+        actor_bone_options[i] = nil;
+    end
+    return actor_bone_options;
+end
+
 Options.targetNameType = function()
-    return {
-        { L"鼠标", "mouse-pointer" },
-        { L"摄影机", "camera" },
-        { L"最近的玩家", "@p" },
-    }
+    local actor_options = GetActorNameOptions();
+    table.insert(actor_options, 1, {L"最近的玩家", "@p"});
+    table.insert(actor_options, 1, {L"摄影机", "camera"});
+    table.insert(actor_options, 1, {L"鼠标", "mouse-pointer"});
+    return actor_options;
 end
 
 Options.becomeAgentOptions = function()
-    return {
-        { L"当前玩家", "@p" },
-		{ L"某个角色名", "" },
-    }
+    local actor_options = GetActorNameOptions();
+    table.insert(actor_options, 1, {L"当前玩家", "@p"});
+    return actor_options;
 end
 
 Options.actorNames = function()
-    return {
-        { L"此角色", "myself" },
-        { L"某个角色", "" },
-    }
+    local actor_options = GetActorNameOptions();
+    table.insert(actor_options, 1, {L"此角色", "myself"});
+    return actor_options;
 end
 
 Options.focus_list = function()
-    return {
-        { L"此角色", "myself" },
-        { L"主角", "player" },
-        { L"某个角色名", "" },
-    }
+    local actor_options = GetActorNameOptions();
+    table.insert(actor_options, 1, {L"此角色", "myself"});
+    table.insert(actor_options, 1, {L"主角", "player"});
+    return actor_options;
 end
+
+Options.actorBoneNameOptions = GetActorBoneOptions;
 
 Options.actorProperties = function()
     return {

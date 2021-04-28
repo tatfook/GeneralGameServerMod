@@ -58,7 +58,7 @@ function ToolBox:SetCategoryList(categorylist)
         category.textWidth = _guihelper.GetTextWidth(category.text or category.name, categoryFont);
         for _, blocktype in ipairs(blocktypes) do
             local block = self:GetBlockly():GetBlockInstanceByType(blocktype);
-            if (block) then
+            if (block and not block:IsHideInToolbox()) then
                 block:SetToolBoxBlock(true);
                 offsetY = offsetY + 5; -- 间隙
 

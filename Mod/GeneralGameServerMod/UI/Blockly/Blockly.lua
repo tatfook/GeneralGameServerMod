@@ -13,12 +13,12 @@ NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Sound/BlockSound.lua");
 local BlockSound = commonlib.gettable("MyCompany.Aries.Game.Sound.BlockSound");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
+local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local BlockManager = NPL.load("./Blocks/BlockManager.lua", IsDevEnv);
 local Options = NPL.load("./Options.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
 local LuaFmt = NPL.load("./LuaFmt.lua", IsDevEnv);
-local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);
 local ContextMenu = NPL.load("./ContextMenu.lua", IsDevEnv);
@@ -522,6 +522,7 @@ function Blockly:OnMouseDown(event)
     local mousePosIndex = self:GetMousePosIndex();
     if (mousePosIndex == 1) then         -- 重置
         self:UpdateScale();
+        self:AdjustCenter();
     elseif (mousePosIndex == 2) then     -- 放大
        self:UpdateScale(0.1);
     elseif (mousePosIndex == 3) then     -- 缩小
@@ -532,6 +533,29 @@ function Blockly:OnMouseDown(event)
         self.isMouseDown = true;
         self.startX, self.startY = self:GetLogicViewPoint(event);
         self.startOffsetX, self.startOffsetY = self.offsetX, self.offsetY;
+    end
+end
+
+-- 调整中心
+function Blockly:AdjustCenter()
+    local left, top = nil, nil;
+    local offsetX, offsetY = self.offsetX, self.offsetY;
+    if (not self.isHideToolBox) then offsetX = offsetX - Const.ToolBoxWidth end 
+    -- 以视图中最左一个方块为基准
+    for _, block in ipairs(self.blocks) do
+        local viewLeft, viewTop = block.left + offsetX, block.top + offsetY;
+        if (not left or (left + offsetX) < 0 or (viewLeft > 0  and viewTop > 0 and (viewLeft < left or (viewLeft == left and viewTop < top))))  then
+            left, top = block.left, block.top
+        end
+    end
+    if (not left) then return end
+    local width, height = self:GetSize();
+    if (not self.isHideToolBox) then width = width - Const.ToolBoxWidth end
+    local viewLeft, viewTop = math.floor(width / 3),  math.floor(height / 4);
+    if (self.isHideToolBox) then 
+        self.offsetX, self.offsetY = viewLeft - left, viewTop - top;
+    else
+        self.offsetX, self.offsetY = viewLeft - left + Const.ToolBoxWidth, viewTop - top;
     end
 end
 
@@ -734,7 +758,6 @@ function Blockly:LoadFromXmlNode(xmlNode)
 
     self.offsetX = tonumber(attr.offsetX) or 0;
     self.offsetY = tonumber(attr.offsetY) or 0;
-
     for _, blockXmlNode in ipairs(xmlNode) do
         local block = self:GetBlockInstanceByXmlNode(blockXmlNode);
         table.insert(self.blocks, block);

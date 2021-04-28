@@ -13,10 +13,44 @@ local BaseEvent = NPL.load("./BaseEvent.lua");
 
 local MouseEvent = commonlib.inherit(BaseEvent, NPL.export());
 
+MouseEvent:Property("TripleClick", false, "IsTripleClick");
+MouseEvent:Property("DoubleClick", false, "IsDoubleClick");
+
+local firstPressTime, secondPressTime = 0, 0;
+local firstPressPositionX  = 0;
+local secondPressPositionX = 0;
+local thirdPressPositionX = 0;
+
+local function isDoublePress(self)
+    if(firstPressPositionX == secondPressPositionX and ParaGlobal.timeGetTime() - firstPressTime < 250) then
+        secondPressTime = ParaGlobal.timeGetTime();
+        return true;
+    end
+    firstPressPositionX, firstPressTime = self.x, ParaGlobal.timeGetTime();
+    return false;
+end
+
+local function isTriplePress(self)
+	if(thirdPressPositionX == secondPressPositionX and ParaGlobal.timeGetTime() - secondPressTime < 250) then return true end
+	secondPressPositionX = self.x;
+	return false;
+end
+
+local function isDoubleAndTripleClick(self)
+    if(self.mouse_button == "left" and self.event_type == "onmousedown") then
+		thirdPressPositionX = self.x;
+        self:SetTripleClick(isTriplePress(self));
+        self:SetDoubleClick(isDoublePress(self));
+    end
+end
+
+function MouseEvent:ctor()
+end
+
 function MouseEvent:Init(event_type, window, params)
     MouseEvent._super.Init(self, event_type, window);
 
-    if(event_type == "mouseMoveEvent") then
+    if(event_type == "onmousemove") then
         self.x, self.y = ParaUI.GetMousePosition();
 	else
 		if(not mouse_x) then mouse_x, mouse_y = ParaUI.GetMousePosition() end
@@ -62,6 +96,8 @@ function MouseEvent:Init(event_type, window, params)
     if (event_type == "onmouseup") then 
         self.up_mouse_screen_x, self.up_mouse_screen_y = self.x, self.y;
     end
+
+    isDoubleAndTripleClick(self);
 
 	return self;
 end

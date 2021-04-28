@@ -45,6 +45,7 @@ Block:Property("ToolBoxBlock", false, "IsToolBoxBlock");                       -
 Block:Property("Draggable", true, "IsDraggable");                              -- 是否可以拖拽
 Block:Property("Dragging", true, "IsDragging");                                -- 是否在拖拽中
 Block:Property("ProxyBlock");                                                  -- 代理块
+Block:Property("HideInToolbox", false, "IsHideInToolbox");                     -- 是否在工具栏中隐藏
 
 
 function Block:ctor()
@@ -65,6 +66,7 @@ function Block:Init(blockly, opt)
 
     Block._super.Init(self, self, opt);
     
+    self:SetHideInToolbox(opt.hideInToolbox);
     self:SetDraggable(if_else(opt.isDraggable == false, false, true));
 
     if (opt.id) then self:SetId(opt.id) end

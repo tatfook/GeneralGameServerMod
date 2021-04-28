@@ -15,6 +15,7 @@
         <div class="tab">
             <div class="tab-nav-item" onclick="ClickTabNavItemBtn('block')" v-bind:style="GetTabNavItemStyle('block')">图块</div>
             <div class="tab-nav-item" onclick="ClickTabNavItemBtn('category')" v-bind:style="GetTabNavItemStyle('category')">分类</div>
+            <div class="tab-nav-item" onclick="ClickTabNavItemBtn('toolbox')" v-bind:style="GetTabNavItemStyle('toolbox')">工具栏</div>
             <div class="tab-nav-item" onclick="ClickTabNavItemBtn('code')" v-bind:style="GetTabNavItemStyle('code')">代码</div>
         </div>
         <div v-show="TabIndex == 'block'" class="tab-pane">
@@ -56,12 +57,15 @@
                 </div>
             </div>
         </div>
+        <div v-show="TabIndex == 'toolbox'" class="tab-pane">
+            <textarea v-model="ToolBoxXmlText" style="width: 100%; height: 100%;"></textarea>
+        </div>
         <div v-show="TabIndex == 'code'" class="tab-pane">
             <textarea v-model="BlockDefineCode" style="width: 100%; height: 100%;" readonly=true></textarea>
         </div>
     </div>
     <div v-show="ContentType == 'blockly'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px;">
-        <Blockly ref="Blockly" class="blockly-editor" onchange=OnBlocklyChange></Blockly>
+        <Blockly ref="Blockly" class="blockly-editor" onchange=OnBlocklyChange v-bind:language="CurrentLang"></Blockly>
         <div style="position: absolute; left: 802px; top: 0px; right: 0px; bottom: 0px;">
             <textarea v-bind:value="BlocklyCode" readonly=true style="width: 100%; height: 100%; background-color: #cccccc;"></textarea>
         </div>
@@ -83,7 +87,7 @@ ContentType = "block"; -- block blockly
 BlocklyCode = "";
 BlockType = "";
 BlockDefineCode = "";
-BlockOptions = {};
+ToolBoxXmlText = BlockManager.GetToolBoxXmlText();
 AllCategoryList, AllBlockList = {}, {};
 Category = {name = "", color = "#ffffff"};
 
@@ -201,9 +205,11 @@ function ClickSaveBlockBtn()
     if (not isExist) then
         table.insert(AllBlockList, {type = BlockOption.type, category = BlockOption.category});
     end
+
     BlockManager.NewBlock(BlockOption);
     GameLogic.AddBBS("Blockly", "图块更改已保存");
     SortAllBlockList();
+    ToolBoxXmlText = BlockManager.GetToolBoxXmlText();
 end
 
 function ClickDeleteBlockBtn(blocktype)
@@ -219,6 +225,7 @@ function ClickDeleteBlockBtn(blocktype)
     BlockType = "";
     BlocklyEditor:Reset();
     OnBlocklyEditorChange();
+    ToolBoxXmlText = BlockManager.GetToolBoxXmlText();
 end
 
 function ClickEditBlockBtn(blockType)
