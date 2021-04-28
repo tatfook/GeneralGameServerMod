@@ -607,13 +607,15 @@ local function DefaultToCode(block)
     local option = block:GetOption();
     if (not option) then return "" end
     local args = {};
-    for i, arg in ipairs(option.arg) do
-        if (arg.type == "input_value" or arg.type == "input_statement") then
-            args[arg.name] = block:GetValueAsString(arg.name);
-        else
-            args[arg.name] = block:GetFieldValue(arg.name);
-        end
-    end 
+    if (option.arg) then
+        for i, arg in ipairs(option.arg) do
+            if (arg.type == "input_value" or arg.type == "input_statement") then
+                args[arg.name] = block:GetValueAsString(arg.name);
+            else
+                args[arg.name] = block:GetFieldValue(arg.name);
+            end
+        end 
+    end
     local code_description = string.gsub(option.code_description or "", "\\n", "\n");
     local code = string.gsub(code_description, "%$([%w_]+)", args);
     code = string.gsub(code, "%$%{([%w_]+)%}", args);

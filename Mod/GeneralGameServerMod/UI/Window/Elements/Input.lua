@@ -449,7 +449,7 @@ function Input:GetAtByPos(x, y)
     local cursorX = self:GetText():sub(1, cursorAt):GetWidth(self:GetFont());
     InputDebug.Format("GetAtByPos, x = %s, cursorAt = %s, cursorX = %s", x, cursorAt, cursorX);
 
-    return cursorAt + 1, cursorX;
+    return cursorAt + 1, cursorX - self.scrollX;
 end
 
 function Input:GloablToContentGeometryPos(x, y)

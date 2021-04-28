@@ -58,14 +58,18 @@ function Value:Render(painter)
     
     local UnitSize = self:GetUnitSize();
     local inputBlock = self:GetInputBlock();
-    if (inputBlock) then return inputBlock:Render(painter) end
 
     local offsetX, offsetY = self:GetOffset();
-    painter:Translate(offsetX, offsetY);
     Shape:SetBrush("#ffffff");
     if (self.shadowConnection:IsConnection()) then
+        painter:Translate(offsetX, offsetY);
         Shape:DrawInputValue(painter, self.widthUnitCount + 2, self.heightUnitCount + 2, -1, -1);
+        painter:Translate(-offsetX, -offsetY);
     end
+   
+    if (inputBlock) then return inputBlock:Render(painter) end
+
+    painter:Translate(offsetX, offsetY);
     Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
     painter:SetPen(self:GetColor());
     painter:SetFont(self:GetFont());
