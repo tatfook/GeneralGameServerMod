@@ -262,7 +262,6 @@ function BlockInputField:GetShowText(text)
     local text = self:GetLabel();
     if (self.widthUnitCount < Const.MaxTextShowWidthUnitCount) then return text end
     if (self.show_text_label == text) then return self.show_text end
-
     local width = (self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2) * self:GetUnitSize();
     local show_text = _guihelper.TrimUtf8TextByWidth(text, width, self:GetFont());  -- AutoTrimTextByWidth 使用此函数中文显示可能异常
     self.show_text, self.show_text_label = show_text .. " ...", text;
@@ -410,7 +409,8 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
     local function InputChange(bFinish)
         local value = InputEditElement:GetValue();
         self:SetFieldValue(value);
-        self:SetLabel(tostring(value));
+        local label = string.gsub(tostring(self:GetValue()), "\n", " ");
+        self:SetLabel(label);
         self:UpdateEditAreaSize();
         if (value ~= self:GetValue()) then
             InputEditElement:SetAttrValue("value", self:GetValue());

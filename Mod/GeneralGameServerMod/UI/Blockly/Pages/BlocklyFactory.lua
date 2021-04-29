@@ -16,32 +16,21 @@ BlockDefineCode = "";
 ToolBoxXmlText = "";
 AllCategoryList, AllBlockList = {}, {};
 Category = {name = "", color = "#ffffff"};
-
-local function SortAllBlockList()
-    table.sort(AllBlockList, function(block1, block2)
-        return block1.category == block2.category and (block1.type < block2.type) or (block1.category < block2.category);
-    end)
-    return AllBlockList;
+SearchCategoryOptions = {{"全部", ""}};
+SearchCategoryName = "";
+SearchBlockType = "";
+function SelectSearchCategory()
+    OnChange();
 end
 
-local function InitData()
-    local AllCategoryMap = BlockManager.GetLanguageCategoryMap();
-    local AllBlockMap = BlockManager.GetLanguageBlockMap();
-    AllCategoryList, AllBlockList = {}, {};
-    for _, category in pairs(AllCategoryMap) do
-        table.insert(AllCategoryList, {name = category.name, text = category.text, color = category.color or "#ffffff"});
-    end
-
-    for _, block in pairs(AllBlockMap) do
-        table.insert(AllBlockList, {type = block.type, category = block.category});
-    end
-    SortAllBlockList();
+function OnSearchBlockTypeChange(value)
+    SearchBlockType = value;
     OnChange();
 end
 
 function OnSelectLang()
-    BlockManager.SetCurrentLanguage(CurrentLang)
-    InitData();
+    BlockManager.SetCurrentLanguage(CurrentLang);
+    OnChange();
 end
 
 function ClickUpdateToolBoxXmlText()
@@ -91,14 +80,6 @@ function ClickDeleteCategoryBtn(categoryName)
     OnToolBoxXmlTextChange();
 end
 
-function OnReady()
-    OnSelectLang();
-
-    Blockly = GetRef("Blockly");
-    BlocklyEditor = GetRef("BlocklyEditor");
-    BlocklyPreview = GetRef("BlocklyPreview");
-    OnBlocklyEditorChange();
-end
 
 function SetContentType(contentType)
     ContentType = contentType;
@@ -300,6 +281,49 @@ function OnBlockDefineCodeChange()
 end
 
 function OnChange()
+    OnBlockListChange();
+    OnCategoryListChange();
     OnToolBoxXmlTextChange();
     OnBlockDefineCodeChange();
+end
+
+function OnBlockListChange()
+    if (TabIndex ~= "block" or ContentType ~= "block") then return end
+    local AllBlockMap = BlockManager.GetLanguageBlockMap();
+    local allBlockList = {};
+    for _, block in pairs(AllBlockMap) do
+        if (SearchCategoryName == "" or SearchCategoryName == block.category) then
+            local blocktype = string.lower(block.type);
+            if (SearchBlockType == "" or (string.find(blocktype, SearchBlockType, 1, true))) then
+                table.insert(allBlockList, {type = block.type, category = block.category});
+            end
+        end
+    end
+    table.sort(allBlockList, function(block1, block2)
+        return block1.category == block2.category and (block1.type < block2.type) or (block1.category < block2.category);
+    end);
+    AllBlockList = allBlockList;
+
+    local AllCategoryMap = BlockManager.GetLanguageCategoryMap();
+    SearchCategoryOptions = {{"全部", ""}};
+    for _, category in pairs(AllCategoryMap) do
+        table.insert(SearchCategoryOptions, {category.text or category.name, category.name});
+    end
+end
+
+function OnCategoryListChange()
+    if (TabIndex ~= "category" or ContentType ~= "block") then return end
+    local AllCategoryMap = BlockManager.GetLanguageCategoryMap();
+    AllCategoryList = {};
+    for _, category in pairs(AllCategoryMap) do
+        table.insert(AllCategoryList, {name = category.name, text = category.text, color = category.color or "#ffffff"});
+    end
+end
+
+function OnReady()
+    OnSelectLang();
+    Blockly = GetRef("Blockly");
+    BlocklyEditor = GetRef("BlocklyEditor");
+    BlocklyPreview = GetRef("BlocklyPreview");
+    OnBlocklyEditorChange();
 end

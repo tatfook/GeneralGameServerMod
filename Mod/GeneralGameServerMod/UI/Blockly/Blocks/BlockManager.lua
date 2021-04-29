@@ -62,6 +62,10 @@ end
 
 function BlockManager.SaveCategoryAndBlock(filename)
     filename = filename or CurrentCategoryAndBlockPath;
+    if (filename ~= WorldCategoryAndBlockPath and not IsDevEnv) then
+        -- GameLogic.AddBBS("Blockly", "非开发人员只能定制世界图块, 无法更改系统图块");
+        return ;
+    end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(filename);
     CategoryAndBlockMap.ToolBoxXmlText = BlockManager.GenerateToolBoxXmlText(filename);
     

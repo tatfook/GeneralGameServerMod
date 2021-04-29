@@ -19,12 +19,11 @@
             <div class="tab-nav-item" onclick="ClickTabNavItemBtn('code')" v-bind:style="GetTabNavItemStyle('code')">代码</div>
         </div>
         <div v-show="TabIndex == 'block'" class="tab-pane">
-            <!-- <div style="position: absolute; left: 0px; top: 4px; right: 0px; z-index: 2; display: flex; align-items: center; justify-content: center; height: 40px;">
-                <select v-bind:value="BlockType" style="width: 180px;" placeholder="图块类型" v-bind:options="BlockOptions" onselect=SelectBlock></select>
-                <div onclick=ClickSaveBlockBtn class="btn" style="width: 80; height: 30px; background-color: #cccccc;">保存</div>
-                <div onclick=ClickDeleteBlockBtn class="btn" style="width: 80px; height: 30px;">删除</div>
-            </div> -->
-            <div style="position: absolute; z-index: 1; top: 10px; bottom: 0px; left: 0px; right: 0px; overflow-y: scroll;">
+            <div style="position: absolute; left: 0px; top: 4px; right: 0px; z-index: 2; display: flex; align-items: center; justify-content: center; height: 40px;">
+                <select v-model="SearchCategoryName" style="width: 80px;" v-bind:options="SearchCategoryOptions" onselect=SelectSearchCategory></select>
+                <input style="width: 300px; margin-left: 5px;" placeholder="图块类型名" onchange=OnSearchBlockTypeChange></input>
+            </div>
+            <div style="position: absolute; z-index: 1; top: 50px; bottom: 0px; left: 0px; right: 0px; overflow-y: scroll;">
                 <div v-for="block in AllBlockList" style="display: flex; align-items: center; justify-content: space-between; height: 30px;">
                     <div style="display: flex;">
                         <div style="margin-left: 8px; width: 200px; text-wrap: none; text-overflow: ellipsis;">{{block.type}}</div>
