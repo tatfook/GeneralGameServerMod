@@ -97,6 +97,7 @@ function BlockManager.NewBlock(block)
         type = block.type,
         category = block.category,
         color = block.color,
+        hideInToolbox = block.hideInToolbox,
         output = block.output,
         previousStatement = block.previousStatement,
         nextStatement = block.nextStatement,
@@ -167,7 +168,7 @@ function BlockManager.GenerateToolBoxXmlText(path)
         category.blocktypes = category.blocktypes or {};
         local blocktypes = {};
         for index, blocktype in ipairs(category.blocktypes) do
-            if (AllBlockMap[blocktype]) then
+            if (AllBlockMap[blocktype] and not AllBlockMap[blocktype].hideInToolbox) then
                 blockTypeMap[blocktype] = true;
                 table.insert(blocktypes, #blocktypes + 1, blocktype);
             end
@@ -206,28 +207,35 @@ function BlockManager.GenerateToolBoxXmlText(path)
     return xmlText;
 end
 
-function BlockManager.ParseToolBoxXmlText(path, xmlText)
+function BlockManager.ParseToolBoxXmlText(xmlText, path)
     local xmlNode = ParaXML.LuaXML_ParseString(xmlText);
     local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
     if (not toolboxNode) then return end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
-    
+    local AllCategoryMap, AllBlockMap = CategoryAndBlockMap.AllCategoryMap, CategoryAndBlockMap.AllBlockMap;
+
     local AllCategoryList = {};
     for _, categoryNode in ipairs(toolboxNode) do
         if (categoryNode.attr and categoryNode.attr.name) then
             local category_attr = categoryNode.attr;
+            local default_category = AllCategoryMap[category_attr.name] or {};
             local category = {
                 name = category_attr.name,
-                text = category_attr.text,
-                color = category_attr.color,
+                text = category_attr.text or default_category.text,
+                color = category_attr.color or default_category.color,
                 blocktypes = {},
             }
+            default_category.name = default_category.name or category.name;
+            default_category.text = default_category.text or category.text;
+            default_category.color = default_category.color or category.color;
+            AllCategoryMap[default_category.name] = default_category;
+            
             table.insert(AllCategoryList, #AllCategoryList + 1, category);
             local blocktypes = category.blocktypes;
             for _, blockTypeNode in ipairs(categoryNode) do
                 if (blockTypeNode.attr and blockTypeNode.attr.type) then
                     local blocktype = blockTypeNode.attr.type;
-                    if (AllBlockMap[blocktype]) then
+                    if (AllBlockMap[blocktype] and not AllBlockMap[blocktype].hideInToolbox) then
                         table.insert(blocktypes, #blocktypes + 1, blocktype);
                     end
                 end

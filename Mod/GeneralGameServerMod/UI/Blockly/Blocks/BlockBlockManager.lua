@@ -83,6 +83,25 @@ local AllBlockList = {
         end,
     },
     {
+        type = "set_block_hide_in_toolbox",
+        message = "图块-工具栏中 %1",
+        arg = {
+            {
+                name = "block_hide_in_toolbox",
+                type = "field_dropdown",
+                text = "false",
+                options = {{"显示", "false"}, {"隐藏", "true"}},
+            }
+        },
+        category = "BlockAttr",
+        previousStatement = true,
+	    nextStatement = true,
+        ToCode = function(block)
+            local block_hide_in_toolbox = block:GetFieldValue("block_hide_in_toolbox");
+            return string.format("hideInToolbox = %s;\n", block_hide_in_toolbox);
+        end,
+    },
+    {
         type = "set_field_text",
         message = "字段-文本 %1",
         arg = {

@@ -537,7 +537,6 @@ function TextArea:RenderContent(painter)
             painter:DrawText(x, y + (line.line - 1) * LineHeight, self.text:sub(line.startAt, line.endAt):GetText());
         end
     end
-    
 
     -- 恢复裁剪
     if (layout:IsOverflowX() or layout:IsOverflowY()) then

@@ -329,8 +329,8 @@ function ScrollBar:OnScroll()
     else 
         self.scrollTop = math.max(0, self.thumb.top / self.thumb.maxTop * (self.scrollHeight - self.contentHeight));
     end
+
     self:GetParentElement():OnScroll(self);
-    -- DebugStack();
 end
 
 function ScrollBar:UpdateLayout()

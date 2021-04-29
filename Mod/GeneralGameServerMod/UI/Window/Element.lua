@@ -548,12 +548,16 @@ function Element:OnRealContentSizeChange()
     
     if (self.horizontalScrollBar) then
         self.horizontalScrollBar:SetVisible(isOverflowX and realContentWidth > contentWidth);
-        self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+        if (self.horizontalScrollBar:IsVisible()) then
+            self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+        end
     end
 
     if (self.verticalScrollBar) then
         self.verticalScrollBar:SetVisible(isOverflowY and realContentHeight > contentHeight);
-        self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+        if (self.verticalScrollBar:IsVisible()) then
+            self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+        end
     end
 end
 
