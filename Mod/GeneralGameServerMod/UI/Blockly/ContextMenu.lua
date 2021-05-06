@@ -11,6 +11,7 @@ local ContextMenu = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Conte
 
 local Element = NPL.load("../Window/Element.lua", IsDevEnv);
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
+local Const = NPL.load("./Const.lua", IsDevEnv);
 
 local ContextMenu = commonlib.inherit(Element, NPL.export());
 
@@ -28,7 +29,8 @@ local block_menus = {
 local blockly_menus = {
     { text = "撤销", cmd = "undo"},
     { text = "重做", cmd = "redo"},
-    { text = "导出工具栏XML", cmd = "export_toolbox_xml_text"}
+    { text = "导出工具栏XML", cmd = "export_toolbox_xml_text"},
+    { text = "生成宏示教代码", cmd = "export_macro_code"},
 }
 
 function ContextMenu:Init(xmlNode, window, parent)
@@ -90,7 +92,75 @@ function ContextMenu:OnMouseDown(event)
         blockly:Redo();
     elseif (menuitem.cmd == "export_toolbox_xml_text") then
         self:ExportToolboxXmlText();
+    elseif (menuitem.cmd == "export_macro_code") then
+        self:ExportMacroCode();
     end 
+end
+
+function ContextMenu:ExportMacroCode()
+    local blockly = self:GetBlockly();
+    local toolbox = blockly:GetToolBox();
+    local category_list = toolbox:GetCategoryList();
+    local blocks = blockly:GetBlocks();
+    local params = {};
+    local width, height = blockly:GetSize();
+    local ToolBoxWidth = blockly.isHideToolBox and 0 or Const.ToolBoxWidth;
+    local viewLeft, viewTop = math.floor(width / 5),  math.floor(height / 5);
+    local ViewRight, viewBottom = width - viewLeft, height - viewTop;
+    local oldOffsetX, oldOffsetY, oldCategoryName = 0, 0, category_list[1] and category_list[1].name or "";
+    local function ExportBlockMacroCode(block)
+        -- 调整工作区
+        local left, top = oldOffsetX + block.left - ToolBoxWidth, oldOffsetY + block.top;
+        if (left < viewLeft or left > ViewRight or top < viewTop or top > viewBottom) then
+            local newOffsetX, newOffsetY = viewLeft + ToolBoxWidth - block.left, viewTop - block.top;
+            params[#params + 1] = {action = "SetBlocklyOffset", oldOffsetX = oldOffsetX, oldOffsetY = oldOffsetY, newOffsetX = newOffsetX, newOffsetY = newOffsetY};
+            oldOffsetX, oldOffsetY = newOffsetX, newOffsetY;
+        end
+        -- 校准分类
+        local newCategoryName = block:GetOption().category or "";
+        if (oldCategoryName ~= newCategoryName) then
+            params[#params + 1] = {action = "SetToolBoxCategory", oldCategoryName = oldCategoryName, newCategoryName = newCategoryName}; 
+            oldCategoryName = newCategoryName;
+        end
+        -- 滚动图块使其可见 TODO: 在拖拽图块中自动实现
+
+        -- 拖拽图块
+        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+        params[#params + 1] = {action = "SetBlockPos", blockType = block:GetType(), leftUnitCount = leftUnitCount, topUnitCount = topUnitCount};
+
+        -- 编辑图块字段
+        for _, opt in ipairs(block.inputFieldOptionList) do
+            local inputfield = block:GetInputField(opt.name);
+            if (inputfield:IsField() and inputfield:GetDefaultValue() ~= inputfield:GetValue()) then
+                params[#params + 1] = {action = "SetFieldInput", value = inputfield:GetValue()};
+            elseif (inputfield:IsInput() and inputfield:GetInputBlock()) then
+                ExportBlockMacroCode(inputfield:GetInputBlock());
+            elseif (inputfield:IsInput() and inputfield:GetDefaultValue() ~= inputfield:GetValue()) then
+                params[#params + 1] = {action = "SetInputInput", value = inputfield:GetValue()};
+            end
+        end
+    end
+    for _, block in ipairs(blocks) do
+        local nextBlock = block;
+        while (nextBlock) do
+            ExportBlockMacroCode(nextBlock);
+            nextBlock = nextBlock:GetNextBlock();
+        end
+    end
+    local text = "";
+    local windowName = blockly:GetWindow():GetWindowName();
+    local blocklyId = blockly:GetAttrStringValue("id");
+    for _, param in ipairs(params) do
+        param.blocklyId = blocklyId;
+        local params_text = commonlib.serialize_compact({
+            window_name = windowName,
+            simulator_name = "BlocklySimulator",
+            virtual_event_params = param,
+        });
+        text = text .. string.format("UIWindowEventTrigger(%s)\n", params_text);
+        text = text .. string.format("UIWindowEvent(%s)\n", params_text);
+    end
+    ParaMisc.CopyTextToClipboard(text);
 end
 
 function ContextMenu:ExportToolboxXmlText()

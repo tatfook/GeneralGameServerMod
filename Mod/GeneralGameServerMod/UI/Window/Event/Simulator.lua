@@ -99,7 +99,7 @@ end
 
 function Simulator:SetDragTrigger(startX, startY, endX, endY, mouseButton)
     local callback = {};
-    MacroPlayer.SetDragTrigger(startX, startY, endX, endY, mouseButton, function()
+    MacroPlayer.SetDragTrigger(startX, startY, endX, endY, mouseButton or "left", function()
         if(callback.OnFinish) then
             callback.OnFinish();
         end
@@ -171,6 +171,13 @@ function Simulator:UnregisterWindow(window)
     windows[windowName] = nil;
 end
 
+
+function Simulator:BeginPlay()
+end
+
+function Simulator:EndPlay()
+end
+
 Simulator:InitSingleton();
 
 Simulator.DefaultSimulator = NPL.load("./DefaultSimulator.lua", IsDevEnv);
@@ -181,10 +188,19 @@ local function MacroBeginRecord()
 end
 local function MacroEndRecord()
 end
+
 local function MacroBeginPlay()
     window_id  = 0;
+
+    for _, simulator in pairs(simulators) do
+        simulator:BeginPlay();
+    end
 end
+
 local function MacroEndPlay()
+    for _, simulator in pairs(simulators) do
+        simulator:EndPlay();
+    end
 end
 GameLogic.GetFilters():add_filter("Macro_BeginRecord", MacroBeginRecord);
 GameLogic.GetFilters():add_filter("Macro_EndRecord", MacroEndRecord);

@@ -25,7 +25,6 @@ local ContextMenu = NPL.load("./ContextMenu.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
 local ShadowBlock = NPL.load("./ShadowBlock.lua", IsDevEnv);
 local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
-
 local BlocklySimulator = NPL.load("./BlocklySimulator.lua", IsDevEnv);
 
 local Blockly = commonlib.inherit(Element, NPL.export());
@@ -33,6 +32,7 @@ local Blockly = commonlib.inherit(Element, NPL.export());
 local ConnectionBlockSound = BlockSound:new():Init({"cloth1", "cloth2", "cloth3",});
 local DestroyBlockSound = BlockSound:new():Init({"break3", "break2", });
 
+Blockly:Property("Name", "Blockly");  
 Blockly:Property("ClassName", "Blockly");  
 Blockly:Property("EditorElement");            -- 编辑元素 用户输入
 Blockly:Property("ContextMenu");              -- 上下文菜单
@@ -167,15 +167,6 @@ function Blockly:Do(cmd)
     cmd.endLeftUnitCount = block.leftUnitCount;
     cmd.endTopUnitCount = block.topUnitCount;
     table.insert(self.undos, cmd);
-
-    if (cmd.action == "NewBlock" and BlocklySimulator:IsRecording() and self:IsSupportSimulator()) then   -- 从工具栏新增  NewBlock_Copy
-        BlocklySimulator:AddVirtualEvent("Blockly_NewBlock", {
-            block_type = block:GetType(),
-            block_left = cmd.startLeftUnitCount * self:GetToolBox():GetUnitSize(),
-            block_top = cmd.startTopUnitCount * self:GetToolBox():GetUnitSize(),
-        });
-    end
-
     self:OnChange();
 end
 
@@ -537,17 +528,23 @@ function Blockly:OnMouseDown(event)
 end
 
 -- 调整中心
-function Blockly:AdjustCenter()
+function Blockly:AdjustCenter(targetBlock)
     local left, top = nil, nil;
     local offsetX, offsetY = self.offsetX, self.offsetY;
     if (not self.isHideToolBox) then offsetX = offsetX - Const.ToolBoxWidth end 
-    -- 以视图中最左一个方块为基准
-    for _, block in ipairs(self.blocks) do
-        local viewLeft, viewTop = block.left + offsetX, block.top + offsetY;
-        if (not left or (left + offsetX) < 0 or (viewLeft > 0  and viewTop > 0 and (viewLeft < left or (viewLeft == left and viewTop < top))))  then
-            left, top = block.left, block.top
+    if (targetBlock) then
+        -- 以目标块为基准块
+        left, top = targetBlock.left, targetBlock.top;
+    else 
+        -- 以视图中最左一个方块为基准
+        for _, block in ipairs(self.blocks) do
+            local viewLeft, viewTop = block.left + offsetX, block.top + offsetY;
+            if (not left or (left + offsetX) < 0 or (viewLeft > 0  and viewTop > 0 and (viewLeft < left or (viewLeft == left and viewTop < top))))  then
+                left, top = block.left, block.top;
+            end
         end
     end
+    
     if (not left) then return end
     local width, height = self:GetSize();
     if (not self.isHideToolBox) then width = width - Const.ToolBoxWidth end

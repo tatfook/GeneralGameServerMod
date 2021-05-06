@@ -10,7 +10,7 @@
         <div onclick=CloseWindow class="close-btn btn"></div>
     </div>
     <div v-show="ContentType == 'block'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px; z-index: 1;">
-        <Blockly ref="BlocklyEditor" class="blockly-editor" language="block" onchange=OnBlocklyEditorChange></Blockly>
+        <Blockly id="BlocklyEditor" ref="BlocklyEditor" class="blockly-editor" language="block" onchange=OnBlocklyEditorChange></Blockly>
         <Blockly readonly=true ref="BlocklyPreview" class="blockly-preview" isHideToolBox=true isHideIcons="true"></Blockly>
         <div class="tab">
             <div class="tab-nav-item" onclick="ClickTabNavItemBtn('block')" v-bind:style="GetTabNavItemStyle('block')">图块</div>

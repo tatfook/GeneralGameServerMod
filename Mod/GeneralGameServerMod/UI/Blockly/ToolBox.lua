@@ -139,6 +139,7 @@ function ToolBox:Render(painter)
     painter:Restore();
 end
 
+
 function ToolBox:GetMouseUI(x, y, event)
     local blockly = self:GetBlockly();
     local scale = self:GetScale();
@@ -258,7 +259,21 @@ function ToolBox:SetBlockPos(block_type, block_top)
     if (not blockpos) then return end
     local block = blockpos.block;
     local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
-    block_top = block_top / self:GetUnitSize();
+
+    -- 自动滚动图块到可见位置
+    if (not block_top) then
+        local offset = 5;
+        local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
+        local toolboxHeightUnitCount = math.floor(self.heightUnitCount / self:GetScale());
+        if (topUnitCount < offset) then 
+            block_top = offset;
+        elseif (topUnitCount > (toolboxHeightUnitCount - offset - heightUnitCount)) then 
+            block_top = toolboxHeightUnitCount - offset - heightUnitCount;
+        else 
+            block_top = topUnitCount;
+        end
+    end
+    
     if (topUnitCount == block_top) then return end
     offset = block_top - topUnitCount;
 
@@ -267,4 +282,10 @@ function ToolBox:SetBlockPos(block_type, block_top)
         block:SetLeftTopUnitCount(leftUnitCount, topUnitCount + offset);
         block:UpdateLeftTopUnitCount();
     end 
+end
+
+function ToolBox:GetBlockPos(block_type)
+    local blockpos = self.blockPosMap[block_type];
+    if (not blockpos) then return nil end
+    return blockpos.block:GetLeftTopUnitCount();
 end
