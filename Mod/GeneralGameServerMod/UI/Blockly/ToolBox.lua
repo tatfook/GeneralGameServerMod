@@ -145,6 +145,7 @@ function ToolBox:GetMouseUI(x, y, event)
     x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);
     if (x > Const.ToolBoxWidth) then return nil end
     if (x <= Const.ToolBoxCategoryWidth) then return self end
+    if (self.MouseWheel.isStartWheel) then return self end 
     x, y = math.floor(x / scale + 0.5), math.floor(y / scale + 0.5);
     for _, block in ipairs(self.blocks) do
         ui = block:GetMouseUI(x, y, event);
@@ -182,6 +183,7 @@ function ToolBox:OnMouseDown(event)
     if (self:GetBlockly():IsTouchMode()) then
         self.MouseWheel.mouseX, self.MouseWheel.mouseY = event:GetScreenXY();
         self.MouseWheel.isStartWheel = true;
+        blockly:CaptureMouse(self);
     end
 end
 
@@ -198,7 +200,10 @@ function ToolBox:OnMouseMove(event)
 end
 
 function ToolBox:OnMouseUp(event)
-    if (self.MouseWheel.isStartWheel) then self.MouseWheel.isStartWheel = false end
+    if (self.MouseWheel.isStartWheel) then 
+        self.MouseWheel.isStartWheel = false; 
+        self:GetBlockly():ReleaseMouseCapture();
+    end
 end
 
 function ToolBox:OnMouseWheel(event)

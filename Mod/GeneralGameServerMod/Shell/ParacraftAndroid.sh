@@ -20,7 +20,7 @@ PARACRAFT_PROJECT_DIRECTORY=${ANDROID_PROJECT_DIRECTORY}/${PARACRAFT_PROJECT_NAM
 ## 下载资源文件
 #cd NPLRuntime/Platform/AndroidStudio/app
 #git clone https://gitee.com/__xiaoyao__/ParacraftAssets assets
-## TODO 拷贝正式环境PC版根目下的*.pkg,assets_manifest.txt 文件到assets目录内
+## TODO 拷贝正式环境PC版根目下的*.pkg,assets_manifest.txt,version.txt 文件到assets目录内
 #
 ## 下载交叉编译ndk
 #mkdir -p ${ANDROID_SDK_DIRECTORY}/ndk

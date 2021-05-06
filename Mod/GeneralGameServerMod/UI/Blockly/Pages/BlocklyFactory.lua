@@ -121,7 +121,6 @@ function ClickSaveBlockBtn()
 
     BlockManager.NewBlock(BlockOption);
     GameLogic.AddBBS("Blockly", "图块更改已保存");
-    SortAllBlockList();
     OnToolBoxXmlTextChange();
 end
 
