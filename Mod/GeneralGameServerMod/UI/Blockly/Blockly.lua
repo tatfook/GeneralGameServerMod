@@ -647,14 +647,18 @@ function Blockly:GetMouseUI(x, y, event)
         return ui or self:GetToolBox();
     end
     
+    ui = self:GetXYUI(x, y);
+    return ui or self;
+end
+
+-- 获取XY UI
+function Blockly:GetXYUI(x, y)
     local size = #self.blocks;
     for i = size, 1, -1 do
         local block = self.blocks[i];
-        ui = block:GetMouseUI(x, y, event);
+        ui = block:GetMouseUI(x, y, nil);
         if (ui) then return ui end
     end
-
-    return self;
 end
 
 function Blockly:IsInnerToolBox(event)

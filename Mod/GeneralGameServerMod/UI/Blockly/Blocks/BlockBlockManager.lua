@@ -140,6 +140,7 @@ local AllBlockList = {
                 options = {
                     {"文本", "field_input"},
                     {"数字", "field_number"},
+                    {"颜色", "field_color"},
                     -- {"代码", "field_code"},
                 }
             },
@@ -270,6 +271,7 @@ local AllBlockList = {
                 options = {
                     {"文本", "field_input"},
                     {"数字", "field_number"},
+                    {"颜色", "field_color"},
                     {"代码", "field_code"},
                 },
                 check = "System_Lua_String",

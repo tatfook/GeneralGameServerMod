@@ -77,11 +77,14 @@ function Simulator:IsPlaying()
     return Macros:IsPlaying()
 end
 
-function Simulator:SetClickTrigger(mouseX, mouseY, mouseButton)
+function Simulator:SetClickTrigger(mouseX, mouseY, mouseButton, callbackFunction)
     local callback = {};
-    MacroPlayer.SetClickTrigger(mouseX, mouseY, mouseButton, function()
+    MacroPlayer.SetClickTrigger(mouseX, mouseY, mouseButton or "left", function()
         if(callback.OnFinish) then
             callback.OnFinish();
+        end
+        if (type(callbackFunction) == "function") then
+            callbackFunction();
         end
     end);
     return callback;

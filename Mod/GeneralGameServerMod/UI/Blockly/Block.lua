@@ -18,6 +18,7 @@ local Input = NPL.load("./Inputs/Input.lua", IsDevEnv);
 local Field = NPL.load("./Fields/Field.lua", IsDevEnv);
 local InputFieldContainer = NPL.load("./InputFieldContainer.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
+local FieldColor = NPL.load("./Fields/Color.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
 local FieldTextarea = NPL.load("./Fields/Textarea.lua", IsDevEnv);
@@ -143,6 +144,8 @@ function Block:ParseMessageAndArg(opt)
                 local inputField = arg[no];
                 if (inputField.type == "field_input" or inputField.type == "field_number") then
                     inputFieldContainer:AddInputField(FieldInput:new():Init(self, inputField), true);
+                elseif (inputField.type == "field_color") then
+                    inputFieldContainer:AddInputField(FieldColor:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_textarea") then
                     inputFieldContainer:AddInputField(FieldTextarea:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_json") then
@@ -180,11 +183,11 @@ end
 function Block:OnSizeChange()
     -- 设置连接大小
     if (self.previousConnection) then
-        self.previousConnection:SetGeometry(self.leftUnitCount, self.topUnitCount, self.widthUnitCount, Const.ConnectionRegionHeightUnitCount);
+        self.previousConnection:SetGeometry(self.leftUnitCount, self.topUnitCount - Const.ConnectionRegionHeightUnitCount, self.widthUnitCount, 2 * Const.ConnectionRegionHeightUnitCount);
     end
 
     if (self.nextConnection) then
-        self.nextConnection:SetGeometry(self.leftUnitCount, self.topUnitCount + self.heightUnitCount + 2 - Const.ConnectionRegionHeightUnitCount, self.widthUnitCount, Const.ConnectionRegionHeightUnitCount);
+        self.nextConnection:SetGeometry(self.leftUnitCount, self.topUnitCount + self.heightUnitCount - Const.ConnectionRegionHeightUnitCount, self.widthUnitCount, 2 * Const.ConnectionRegionHeightUnitCount);
     end
 
     if (self.outputConnection) then
@@ -497,7 +500,7 @@ function Block:IsIntersect(block, isSingleBlock)
     BlockDebug.Format("centerX = %s, centerY = %s, halfWidthUnitCount = %s, halfHeightUnitCount = %s, blockCenterX = %s, blockCenterY = %s, blockHalfWidthUnitCount = %s, blockHalfHeightUnitCount = %s", 
         centerX, centerY, halfWidthUnitCount, halfHeightUnitCount, blockCenterX, blockCenterY, blockHalfWidthUnitCount, blockHalfHeightUnitCount);
 
-    return math.abs(centerX - blockCenterX) <= (halfWidthUnitCount + blockHalfWidthUnitCount) and math.abs(centerY - blockCenterY) <= (halfHeightUnitCount + blockHalfHeightUnitCount);
+    return math.abs(centerX - blockCenterX) <= (halfWidthUnitCount + blockHalfWidthUnitCount) and math.abs(centerY - blockCenterY) <= (halfHeightUnitCount + blockHalfHeightUnitCount + Const.ConnectionRegionHeightUnitCount); -- 预留一个连接高度
 end
 
 function Block:ConnectionBlock(block)

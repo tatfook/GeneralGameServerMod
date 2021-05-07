@@ -34,12 +34,6 @@ end
 
 function Connection:SetGeometry(left, top, width, height)
     self.left, self.top, self.width, self.height = left, top, width, height;
-
-    -- local conn_type = self:GetType();
-    -- local offset = 100;
-    -- if (conn_type == "next_connection" or conn_type == "previous_connection") then self.height = self.height + offset end
-    -- if (conn_type == "previous_connection") then self.top = self.top - offset end
-
     self.halfWidth, self.halfHeight = self.width / 2, self.height / 2;
     self.centerX, self.centerY = self.left + self.halfWidth, self.top + self.halfHeight;
 end

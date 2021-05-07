@@ -107,7 +107,9 @@ function ContextMenu:ExportMacroCode()
     local ToolBoxWidth = blockly.isHideToolBox and 0 or Const.ToolBoxWidth;
     local viewLeft, viewTop = math.floor(width / 5),  math.floor(height / 5);
     local ViewRight, viewBottom = width - viewLeft, height - viewTop;
-    local oldOffsetX, oldOffsetY, oldCategoryName = 0, 0, category_list[1] and category_list[1].name or "";
+    local oldOffsetX, oldOffsetY, oldCategoryName = blockly.offsetX, blockly.offsetY, category_list[1] and category_list[1].name or "";
+    -- local offsetX, offsetY = oldOffsetX, oldOffsetY;
+    toolbox:SwitchCategory(oldCategoryName);
     local function ExportBlockMacroCode(block)
         -- 调整工作区
         local left, top = oldOffsetX + block.left - ToolBoxWidth, oldOffsetY + block.top;
@@ -116,9 +118,9 @@ function ContextMenu:ExportMacroCode()
             params[#params + 1] = {action = "SetBlocklyOffset", oldOffsetX = oldOffsetX, oldOffsetY = oldOffsetY, newOffsetX = newOffsetX, newOffsetY = newOffsetY};
             oldOffsetX, oldOffsetY = newOffsetX, newOffsetY;
         end
-        -- 校准分类
+        -- 校准分类  分类不同且不可见时需增加点击分类操作
         local newCategoryName = block:GetOption().category or "";
-        if (oldCategoryName ~= newCategoryName) then
+        if (oldCategoryName ~= newCategoryName and not toolbox:IsVisibleBlock(block:GetType())) then
             params[#params + 1] = {action = "SetToolBoxCategory", oldCategoryName = oldCategoryName, newCategoryName = newCategoryName}; 
             oldCategoryName = newCategoryName;
         end
@@ -131,12 +133,11 @@ function ContextMenu:ExportMacroCode()
         -- 编辑图块字段
         for _, opt in ipairs(block.inputFieldOptionList) do
             local inputfield = block:GetInputField(opt.name);
-            if (inputfield:IsField() and inputfield:GetDefaultValue() ~= inputfield:GetValue()) then
-                params[#params + 1] = {action = "SetFieldInput", value = inputfield:GetValue()};
+            if (inputfield:GetDefaultValue() ~= inputfield:GetValue()) then
+                local leftUnitCount, topUnitCount = inputfield:GetLeftTopUnitCount();
+                params[#params + 1] = {action = "SetInputValue", name = inputfield:GetName(), label = inputfield:GetLabel(), value = inputfield:GetValue(), leftUnitCount = leftUnitCount, topUnitCount = topUnitCount};
             elseif (inputfield:IsInput() and inputfield:GetInputBlock()) then
                 ExportBlockMacroCode(inputfield:GetInputBlock());
-            elseif (inputfield:IsInput() and inputfield:GetDefaultValue() ~= inputfield:GetValue()) then
-                params[#params + 1] = {action = "SetInputInput", value = inputfield:GetValue()};
             end
         end
     end
@@ -147,6 +148,7 @@ function ContextMenu:ExportMacroCode()
             nextBlock = nextBlock:GetNextBlock();
         end
     end
+    -- blockly.offsetX, blockly.offsetY = offsetX, offsetY;
     local text = "";
     local windowName = blockly:GetWindow():GetWindowName();
     local blocklyId = blockly:GetAttrStringValue("id");
@@ -161,6 +163,8 @@ function ContextMenu:ExportMacroCode()
         text = text .. string.format("UIWindowEvent(%s)\n", params_text);
     end
     ParaMisc.CopyTextToClipboard(text);
+    GameLogic.AddBBS("Blockly", "示教代码已拷贝至剪切板");
+
 end
 
 function ContextMenu:ExportToolboxXmlText()

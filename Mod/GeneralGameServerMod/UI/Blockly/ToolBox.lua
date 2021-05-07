@@ -20,6 +20,7 @@ ToolBox:Property("CurrentCategoryName");
 ToolBox:Property("Scale", 1);
 
 local DefaultCategoryColor = "#459197";
+local BlockOffset = 5;  -- 图块之间的偏移量
 
 function ToolBox:ctor()
     self.leftUnitCount, self.topUnitCount = 0, 0;
@@ -60,7 +61,7 @@ function ToolBox:SetCategoryList(categorylist)
             local block = self:GetBlockly():GetBlockInstanceByType(blocktype);
             if (block and not block:IsHideInToolbox()) then
                 block:SetToolBoxBlock(true);
-                offsetY = offsetY + 5; -- 间隙
+                offsetY = offsetY + BlockOffset; -- 间隙
 
                 local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
                 block:SetLeftTopUnitCount(offsetX, offsetY);
@@ -157,16 +158,11 @@ function ToolBox:GetMouseUI(x, y, event)
     return self;
 end
 
-function ToolBox:OnMouseDownCategory(event)
-    local blockly = self:GetBlockly();
-    local x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);         -- 防止减去偏移量
-    if (x > self.categoryTotalWidth or y > self.categoryTotalHeight) then return end
-    local categoryHeight = Const.ToolBoxCategoryHeight;
-    local index = math.ceil(y / categoryHeight);
-    local category = self.categoryList[index];
-    if (not category or category.name == self:GetCurrentCategoryName()) then return end
-    self:SetCurrentCategoryName(category.name);
-
+function ToolBox:SwitchCategory(categoryName)
+    local category = self.categoryMap[categoryName];
+    if (not category) then return end
+     
+    self:SetCurrentCategoryName(categoryName);
     for _, block in ipairs(self.blocks) do
         local blocktype = block:GetType();
         local blockpos = self.blockPosMap[blocktype];
@@ -175,6 +171,16 @@ function ToolBox:OnMouseDownCategory(event)
     end
 end
 
+function ToolBox:OnMouseDownCategory(event)
+    local blockly = self:GetBlockly();
+    local x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);         -- 防止减去偏移量
+    if (x > self.categoryTotalWidth or y > self.categoryTotalHeight) then return end
+    local categoryHeight = Const.ToolBoxCategoryHeight;
+    local index = math.ceil(y / categoryHeight);
+    local category = self.categoryList[index];
+    if (not category or category.name == self:GetCurrentCategoryName()) then return end
+    self:SwitchCategory(category.name);
+end
 
 function ToolBox:OnMouseDown(event)
     local blockly = self:GetBlockly();
@@ -262,7 +268,7 @@ function ToolBox:SetBlockPos(block_type, block_top)
 
     -- 自动滚动图块到可见位置
     if (not block_top) then
-        local offset = 5;
+        local offset = BlockOffset;
         local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
         local toolboxHeightUnitCount = math.floor(self.heightUnitCount / self:GetScale());
         if (topUnitCount < offset) then 
@@ -282,6 +288,16 @@ function ToolBox:SetBlockPos(block_type, block_top)
         block:SetLeftTopUnitCount(leftUnitCount, topUnitCount + offset);
         block:UpdateLeftTopUnitCount();
     end 
+end
+
+function ToolBox:IsVisibleBlock(blockType)
+    local blockpos = self.blockPosMap[blockType];
+    if (not blockpos) then return end
+    local block = blockpos.block;
+    local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+    local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
+    local toolboxHeightUnitCount = math.floor(self.heightUnitCount / self:GetScale());
+    return not (topUnitCount < BlockOffset or topUnitCount > (toolboxHeightUnitCount - BlockOffset - heightUnitCount));
 end
 
 function ToolBox:GetBlockPos(block_type)

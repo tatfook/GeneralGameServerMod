@@ -10,6 +10,7 @@ local BlockInputField = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/B
 ]]
 local InputElement = NPL.load("../Window/Elements/Input.lua", IsDevEnv);
 local SelectElement = NPL.load("../Window/Elements/Select.lua", IsDevEnv);
+local ColorPickerElement = NPL.load("../Window/Elements/ColorPicker.lua", IsDevEnv);
 
 local Const = NPL.load("./Const.lua");
 local Options = NPL.load("./Options.lua");
@@ -449,6 +450,24 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
     return SelectEditElement;
 end
 
+function BlockInputField:GetFieldColorEditElement(parentElement)
+    local UnitSize = self:GetUnitSize();
+    local ColorPickerEditElement = ColorPickerElement:new():Init({
+        name = "ColorPicker",
+        attr = {
+            style = 'position: absolute; left: -135px; top: 30px;', 
+            value = self:GetValue(),
+        },
+    }, parentElement:GetWindow(), parentElement);
+
+    ColorPickerEditElement:SetAttrValue("onchange", function(value) 
+        self:SetFieldValue(value);
+        self:SetLabel(value);
+    end);
+
+    return ColorPickerEditElement;
+end
+
 function BlockInputField:UpdateEditAreaSize()
     if (not self:IsEdit()) then return end
     self:GetTopBlock():UpdateLayout();
@@ -479,6 +498,8 @@ function BlockInputField:GetFieldEditElement(parentElement)
         editElement = self:GetFieldInputEditElement(parentElement);
     elseif (edittype == "select") then
         editElement = self:GetFieldSelectEditElement(parentElement);
+    elseif (edittype == "color") then
+        editElement = self:GetFieldColorEditElement(parentElement);
     end
 
     self:SetEditElement(editElement);

@@ -54,8 +54,6 @@ function Value:Init(block, opt)
 end
 
 function Value:Render(painter)
-    if (self:IsEdit() and not self:IsSelectType()) then return end
-    
     local UnitSize = self:GetUnitSize();
     local inputBlock = self:GetInputBlock();
 
@@ -68,12 +66,18 @@ function Value:Render(painter)
     end
    
     if (inputBlock) then return inputBlock:Render(painter) end
+    if (self:IsEdit() and not self:IsSelectType() and not self:IsColorShadowType()) then return end
 
     painter:Translate(offsetX, offsetY);
-    Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
-    painter:SetPen(self:GetColor());
-    painter:SetFont(self:GetFont());
-    painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetShowText());
+    if (self:IsColorShadowType()) then
+        Shape:SetBrush(self:GetValue());
+        Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
+    else
+        Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
+        painter:SetPen(self:GetColor());
+        painter:SetFont(self:GetFont());
+        painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetShowText());
+    end 
     painter:Translate(-offsetX, -offsetY);
 end
 
@@ -88,10 +92,14 @@ function Value:UpdateWidthHeightUnitCount()
     if (inputBlock) then 
         local _, _, _, _, widthUnitCount, heightUnitCount = inputBlock:UpdateWidthHeightUnitCount();
         return widthUnitCount, heightUnitCount;
-    else
-        local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + (TextMarginUnitCount + Const.BlockEdgeWidthUnitCount) * 2;
-        return math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount), Const.LineHeightUnitCount;
     end
+
+    if (self:IsColorShadowType()) then
+        return Const.MinTextShowWidthUnitCount, Const.LineHeightUnitCount;
+    end 
+
+    local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + (TextMarginUnitCount + Const.BlockEdgeWidthUnitCount) * 2;
+    return math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount), Const.LineHeightUnitCount;
 end
 
 function Value:UpdateLeftTopUnitCount()
@@ -123,8 +131,6 @@ function Value:ConnectionBlock(block)
     end
 
     return false;
-    -- local inputBlock = self:GetInputBlock();
-    -- return inputBlock and inputBlock:ConnectionBlock(block);
 end
 
 function Value:GetMouseUI(x, y, event)
@@ -135,7 +141,7 @@ function Value:GetMouseUI(x, y, event)
 end
 
 function Value:IsCanEdit()
-    return if_else(self:GetOption().editable == false, false, true);
+    return if_else(self:GetInputBlock() ~= nil, false, true);
 end
 
 function Value:GetShadowType()
@@ -143,8 +149,15 @@ function Value:GetShadowType()
     return option.shadowType or (option.shadow and option.shadow.type) or "";
 end
 
+function Value:IsColorShadowType()
+    return self:GetShadowType() == "field_color";
+end
+
 function Value:GetFieldEditType()
-    return self:GetShadowType() == "field_dropdown" and "select" or "input";
+    local shadowType = self:GetShadowType();
+    if (shadowType == "field_dropdown") then return "select" end
+    if (shadowType == "field_color") then return "color" end
+    return "input";
 end
 
 function Value:GetValueAsString()
