@@ -143,8 +143,8 @@ function Select:Init(xmlNode, window, parent)
         value = self:GetValueByLabel(value);
         self:SetValue(value);
         self:SetLabel(self:GetLabelByValue(value));
-        self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
         self:CallAttrFunction("onchange", nil, self:GetValue(), self:GetLabel());
+        self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
         self:OnFocusOut();
         self:SetFocus(nil);
     end
@@ -154,15 +154,18 @@ function Select:Init(xmlNode, window, parent)
         name = "input",
         attr = {
             style = "position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; border: none; background-color: #ffffff00; height: 100%; width: 100%;",
-            onblur = function()
-                -- InputValueFinish(el:GetValue());
-                self:OnFocusOut();
-            end,
-            ["onkeydown.enter"] = function(value)
-                InputValueFinish(value);
-            end
         }
     }, window, self);
+    InputBox:SetAttrValue("onblur", function()
+        -- self:OnFocusOut();
+        InputValueFinish(InputBox:GetValue());
+    end);
+    InputBox:SetAttrValue("onkeydown.enter", function(value)
+        InputValueFinish(value);
+    end);
+    InputBox:SetAttrValue("onchange", function(value)
+        self:CallAttrFunction("onchange", nil, value);
+    end);
     local inputAttrStyle = InputBox:GetAttrStyle();
     inputAttrStyle["padding-top"], inputAttrStyle["padding-right"], inputAttrStyle["padding-bottom"], inputAttrStyle["padding-left"] = attrStyle["padding-top"], attrStyle["padding-right"], attrStyle["padding-bottom"], attrStyle["padding-left"];
     self:SetListBoxElement(ListBox);
@@ -193,7 +196,7 @@ function Select:Init(xmlNode, window, parent)
 end
 
 function Select:IsAllowCreate()
-    return self:GetAttrBoolValue("AllowCreate");
+    return self:GetAttrBoolValue("isAllowCreate");
 end
 
 function Select:OnAttrValueChange(attrName, attrValue, oldAttrValue)
@@ -288,7 +291,7 @@ function Select:OnFocusIn(event)
     
     if (self:IsAllowCreate()) then
         self:GetInputBoxElement():SetAttrValue("value", self:GetLabel());
-        -- self:GetInputBoxElement():SetAttrValue("value", "");
+        self:GetInputBoxElement():handleSelectAll();
         self:GetInputBoxElement():FocusIn();
         self:GetInputBoxElement():SetVisible(true);
         self:GetInputBoxElement():UpdateLayout();
@@ -323,7 +326,8 @@ function Select:RenderContent(painter)
     else
         painter:SetPen("#A8A8A8"); -- placeholder color;
     end
-    text = _guihelper.TrimUtf8TextByWidth(text, w - ArrowAreaSize, self:GetFont());
+    local textWidth = self:IsShowArrowIcon() and (w - ArrowAreaSize) or w;
+    text = _guihelper.TrimUtf8TextByWidth(text, textWidth, self:GetFont());
     painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, (text or "") .. "");
 end
 
@@ -344,7 +348,12 @@ local Points = {
     }
 }
 
+function Select:IsShowArrowIcon()
+    return self:GetAttrBoolValue("isShowArrowIcon", true);
+end
 function Select:RenderArrowIcon(painter)
+    if (not self:IsShowArrowIcon()) then return end
+
     local x, y, w, h = self:GetGeometry();
 
     painter:Translate(x + w - ArrowAreaSize, y + (h - ArrowSize) / 2);

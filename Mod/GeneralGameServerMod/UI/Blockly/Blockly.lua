@@ -415,7 +415,14 @@ function Blockly:RenderContent(painter)
         painter:Translate(-self.offsetX, -self.offsetY);
         painter:Scale(1 / scale, 1 / scale);
         painter:Restore();
+
+        if ((self.mouseMoveX <= toolboxWidth and not self.isHideToolBox) or self.mousePosIndex == 4) then
+            local width, height = 12, 12;
+            painter:SetPen("#ff0000");
+            painter:DrawRectTexture(self.mouseMoveX - width / 2, self.mouseMoveY - height / 2, width, height, Shape:GetCloseTexture());
+        end
     end
+
     painter:Translate(-x, -y);
 end
 
@@ -491,8 +498,7 @@ end
 function Blockly:OnMouseDown(event)
     event:Accept();
     self:GetContextMenu():Hide();
-    if (event.target ~= self or not event:IsLeftButton()) then return end
-
+    if (not event:IsLeftButton()) then return end
     -- local x, y = self:GetLogicAbsPoint(event);
     -- local ui = self:GetMouseUI(x, y, event);
     local ui = self:GetMouseDownUI(event);
@@ -503,6 +509,7 @@ function Blockly:OnMouseDown(event)
         focusUI:OnFocusOut();
         self:SetFocusUI(nil);
     end
+    -- self.mouse_down_ui = ui;
 
     -- 元素被点击 直接返回元素事件处理
     if (ui ~= self) then 
@@ -577,7 +584,7 @@ end
 function Blockly:OnMouseMove(event)
     event:Accept();
     self.mouseMoveX, self.mouseMoveY = Blockly._super.GetRelPoint(self, event.x, event.y);
-    if (event.target ~= self or not event:IsLeftButton()) then return end
+    if (not event:IsLeftButton()) then return end
 
     local UnitSize = self:GetUnitSize();
     local x, y = self:GetLogicAbsPoint(event);
@@ -602,11 +609,13 @@ function Blockly:OnMouseUp(event)
     event:Accept();
     self.isDragging = false;
     self.isMouseDown = false;
-    if (event.target ~= self) then return end
+    -- 优先处理捕获的UI 防止其 OnMouseUp 事件未触发
+    local captureUI = self:GetMouseCaptureUI();
+    self:ReleaseMouseCapture();
+    if (captureUI and captureUI ~= self) then return captureUI:OnMouseUp(event) end
 
     local x, y = self:GetLogicAbsPoint(event);
     local ui = self:GetMouseUI(x, y, event);
-    self:ReleaseMouseCapture();
 
     if (event:IsLeftButton()) then
         local focusUI = self:GetFocusUI();  -- 获取焦点
@@ -670,6 +679,7 @@ end
 
 -- 是否在删除区域
 function Blockly:IsInnerDeleteArea(x, y)
+    if (self.mousePosIndex == 4) then return true end
     if (self.isHideIcons) then return false end;
     local x, y = Blockly._super.GetRelPoint(self, x, y);                      -- 防止减去偏移量
     if (self:GetToolBox():IsContainPoint(x, y)) then return true end

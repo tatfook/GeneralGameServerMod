@@ -138,3 +138,7 @@ function Shape:GetShadowBlockTexture()
     if (Const.UnitSize == 3) then return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_54X42_32bits.png#0 0 54 42:42 3 3 3" end
     return "Texture/Aries/Creator/keepwork/ggs/blockly/statement_block_72X56_32bits.png#0 0 72 56:56 8 8 8";
 end
+
+function Shape:GetCloseTexture()
+    return "Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22";
+end

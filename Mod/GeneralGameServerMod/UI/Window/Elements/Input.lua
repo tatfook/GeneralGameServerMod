@@ -482,6 +482,11 @@ function Input:GloablToContentGeometryPos(x, y)
     return mouseX - contentX, mouseY - contentY;
 end
 
+function Input:FocusIn()
+    Input._super.FocusIn(self);
+    self.cursorShowHideTickCount = 0;
+end
+
 function Input:OnClick(event)
     if (self:IsDisabled()) then return end
     if (not self:IsFocus()) then self:FocusIn() end

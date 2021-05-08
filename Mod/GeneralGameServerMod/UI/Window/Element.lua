@@ -578,7 +578,9 @@ end
 -- 获取属性值
 function Element:GetAttrValue(attrName, defaultValue)
     local attr = self:GetAttr();
-    return attr and attr[attrName] or defaultValue;
+    if (not attr) then return defaultValue end
+    if (attr[attrName] == nil) then return defaultValue end
+    return attr[attrName];
 end
 
 -- 获取数字属性值

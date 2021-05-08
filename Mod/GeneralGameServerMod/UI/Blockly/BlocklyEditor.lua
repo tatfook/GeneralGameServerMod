@@ -20,6 +20,10 @@ function BlocklyEditor:OnMouseDown(event)
     event:Accept();
 end
 
+function BlocklyEditor:OnMouseMove(event)
+    event:Accept();
+end
+
 function BlocklyEditor:OnMouseUp(event)
     event:Accept();
 end

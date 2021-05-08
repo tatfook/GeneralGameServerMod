@@ -465,6 +465,11 @@ function TextArea:GetCursorLine()
     return self:GetLineByAt(self.cursorAt);
 end
 
+function TextArea:FocusIn()
+    TextArea._super.FocusIn(self);
+    self.cursorShowHideTickCount = 0;
+end
+
 function TextArea:RenderCursor(painter)
     local x, y, w, h = self:GetContentGeometry();
     local line = self:GetLineByAt(self.cursorAt);

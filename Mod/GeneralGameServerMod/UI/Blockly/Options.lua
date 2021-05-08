@@ -48,6 +48,21 @@ local function GetActorBoneOptions()
     return actor_bone_options;
 end
 
+
+local variable_options = {};
+Options.variable_options_callback = function()
+    local options = GameLogic.GetCodeGlobal():GetCurrentGlobals();
+    local index, size = 1, #variable_options;
+    for key in pairs(options) do
+        variable_options[index] = {key, key};
+        index = index + 1;
+    end
+    for i = index, size do
+        variable_options[i] = nil;
+    end
+    return variable_options;
+end
+
 Options.targetNameType = function()
     local actor_options = GetActorNameOptions();
     table.insert(actor_options, 1, {L"最近的玩家", "@p"});

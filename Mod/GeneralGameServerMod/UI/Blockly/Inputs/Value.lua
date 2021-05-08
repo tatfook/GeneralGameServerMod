@@ -50,29 +50,32 @@ function Value:Init(block, opt)
         end
     end
 
+    self:SetAllowNewSelectOption(true);
+
     return self;
 end
 
 function Value:Render(painter)
     local UnitSize = self:GetUnitSize();
     local inputBlock = self:GetInputBlock();
-
     local offsetX, offsetY = self:GetOffset();
-    Shape:SetBrush("#ffffff");
+   
     if (self.shadowConnection:IsConnection()) then
+    -- if (self.shadowConnection:IsConnection() or self:IsEdit()) then
         painter:Translate(offsetX, offsetY);
+        Shape:SetBrush("#ffffff");
         Shape:DrawInputValue(painter, self.widthUnitCount + 2, self.heightUnitCount + 2, -1, -1);
         painter:Translate(-offsetX, -offsetY);
     end
-   
-    if (inputBlock) then return inputBlock:Render(painter) end
-    if (self:IsEdit() and not self:IsSelectType() and not self:IsColorShadowType()) then return end
+
+    if (inputBlock) then return inputBlock:Render(painter) end 
 
     painter:Translate(offsetX, offsetY);
     if (self:IsColorShadowType()) then
         Shape:SetBrush(self:GetValue());
         Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
     else
+        Shape:SetBrush("#ffffff");
         Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
         painter:SetPen(self:GetColor());
         painter:SetFont(self:GetFont());

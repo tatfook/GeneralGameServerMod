@@ -33,7 +33,7 @@ BlockInputField:Property("DefaultValue", "");                    -- 默认值
 BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
 BlockInputField:Property("EditElement", nil);                    -- 编辑元素
-BlockInputField:Property("AllowNewOption", false, "IsAllowNewOption");  -- 是否允许新增选项
+BlockInputField:Property("AllowNewSelectOption", false, "IsAllowNewSelectOption");  -- 是否允许新增选项
 
 local UnitSize = Const.UnitSize;
 
@@ -63,7 +63,7 @@ function BlockInputField:Init(block, option)
         self:SetColor(option.color);
     end
     
-    self:SetAllowNewOption(option.allowNewOption == true and true or false);
+    self:SetAllowNewSelectOption(option.isAllowNewSelectOption == true and true or false);
     if (self:IsSelectType()) then
         self:SetLabel(self:GetLabelByValue(self:GetValue()));
         -- self:SetValue(self:GetValueByLablel(self:GetLabel()));
@@ -97,7 +97,8 @@ function BlockInputField:GetValueByLablel(label)
     for _, option in ipairs(options) do
         if (option[1] == label or option.label == label) then return option[2] or option.value end
     end
-    return options[1] and (options[1][2] or options[1].value);
+    if (self:IsAllowNewSelectOption()) then return label end 
+    return options[1] and (options[1][2] or options[1].value) or label;
 end
 
 function BlockInputField:GetLabelByValue(value)
@@ -105,7 +106,8 @@ function BlockInputField:GetLabelByValue(value)
     for _, option in ipairs(options) do
         if (option[2] == value or option.value == value) then return option[1] or option.label end
     end
-    return options[1] and (options[1][1] or options[1].label);
+    if (self:IsAllowNewSelectOption()) then return value end 
+    return options[1] and (options[1][1] or options[1].label) or value;
 end
 
 -- 获取选项文本, 默认为字段值(value)
@@ -428,10 +430,13 @@ end
 
 function BlockInputField:GetFieldSelectEditElement(parentElement)
     local UnitSize = self:GetUnitSize();
+    local isAllowCreate = self:IsAllowNewSelectOption();  -- 只有输入可以新增
     local SelectEditElement = SelectElement:new():Init({
         name = "select",
         attr = {
-            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding: 2px %spx', 
+            isAllowCreate = isAllowCreate,
+            isShowArrowIcon = false, 
+            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding-top: 2px; padding-left: %spx', 
                 Shape:GetOutputTexture(),
                 self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),
@@ -439,7 +444,13 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
         },
     }, parentElement:GetWindow(), parentElement);
 
-    SelectEditElement.OnRender = function() end
+    -- SelectEditElement.OnRender = function() end
+    SelectEditElement:SetAttrValue("onchange", function(value)
+        if (not isAllowCreate) then return end
+        local label = string.gsub(value, "\n", " ");
+        self:SetLabel(label);
+        self:UpdateEditAreaSize();
+    end);
 
     SelectEditElement:SetAttrValue("onselect", function(value, label)
         self:SetValue(value);
@@ -517,6 +528,8 @@ function BlockInputField:BeginEdit(opt)
     local fieldEditElement = self:GetFieldEditElement(editor);
     -- 不存在退出
     if (not fieldEditElement) then return end
+    -- 设置当前值
+    fieldEditElement:SetAttrValue("value", self:GetValue());
     -- 添加编辑元素
     editor:InsertChildElement(fieldEditElement);
     -- 设置元素编辑状态
@@ -527,6 +540,8 @@ function BlockInputField:BeginEdit(opt)
     editor:SetVisible(true);
     -- 全选
     if (self:GetFieldEditType() == "input") then fieldEditElement:handleSelectAll() end
+    -- 聚焦
+    fieldEditElement:FocusIn();
 end
 
 function BlockInputField:EndEdit()
@@ -536,18 +551,17 @@ function BlockInputField:EndEdit()
     editor:ClearChildElement();
     editor:SetVisible(false);
     self:GetTopBlock():UpdateLayout();
-
     self:GetBlock():GetBlockly():OnChange(); -- {action = "field_edit"}
+    -- 失焦
+    local fieldEditElement = self:GetEditElement();
+    if (fieldEditElement) then fieldEditElement:FocusOut() end
 end
 
 function BlockInputField:OnBeginEdit()
-    local editElement = self:GetEditElement();
-    if (editElement) then editElement:FocusIn() end
 end
 
 function BlockInputField:OnEndEdit()
-    local editElement = self:GetEditElement();
-    if (editElement) then editElement:FocusOut() end
+    
 end
 
 function BlockInputField:OnFocusIn()

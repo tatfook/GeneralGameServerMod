@@ -405,7 +405,6 @@ function Block:OnMouseMove(event)
     block:SetLeftTopUnitCount(block.startLeftUnitCount + XUnitCount, block.startTopUnitCount + YUnitCount);
     block:UpdateLeftTopUnitCount();
     blockly:GetShadowBlock():Shadow(block);
-
 end
 
 function Block:OnMouseUp(event)
@@ -428,7 +427,7 @@ function Block:OnMouseUp(event)
     end
 
     if (self:IsDragging()) then
-        if (blockly:IsInnerDeleteArea(event.x, event.y) or blockly:GetMousePosIndex() == 4) then
+        if (blockly:IsInnerDeleteArea(event.x, event.y)) then
             return delete_block();
         else
             local isConnection = self:TryConnectionBlock();
