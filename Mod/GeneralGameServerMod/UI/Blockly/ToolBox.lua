@@ -70,6 +70,7 @@ function ToolBox:SetCategoryList(categorylist)
                 offsetY = offsetY + heightUnitCount;
                 table.insert(self.blocks, block);
             end
+
         end
     end
     self:SetCurrentCategoryName(categorylist[1] and categorylist[1].name);
@@ -215,7 +216,7 @@ end
 
 function ToolBox:OnMouseWheel(event)
     local delta = event:GetDelta();             -- 1 向上滚动  -1 向下滚动
-    local dist, offset = 8, 5;                  -- 滚动距离为5 * Const.DefaultUnitSize  
+    local dist, offset = 16, 5;                 -- 滚动距离为5 * Const.DefaultUnitSize  
 
     if (#self.blocks == 0) then return end
     local scale = self:GetScale();

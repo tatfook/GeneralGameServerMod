@@ -75,14 +75,15 @@ function Field:GetFieldValue()
 end
 
 function Field:GetValueAsString()
+    local value = self:GetValue();
     if (self:IsNumberType()) then
-        return string.format('%s', tonumber(self:GetValue()) or 0);
+        return string.format('%s', tonumber(value) or 0);
     elseif (self:IsCodeType()) then
-        return string.format('%s', self:GetValue());
+        return string.format('%s', value == "" and '""' or value);
     else 
-        return string.format('"%s"', self:GetValue());   -- 虚拟一个图块
+        return string.format('"%s"', value);   -- 虚拟一个图块
     end
-    return self:GetValue();
+    return value;
 end
 
 -- 获取xmlNode

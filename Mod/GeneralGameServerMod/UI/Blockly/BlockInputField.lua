@@ -8,6 +8,7 @@ use the lib:
 local BlockInputField = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/BlockInputField.lua");
 -------------------------------------------------------
 ]]
+local DivElement = NPL.load("../Window/Elements/Div.lua", IsDevEnv);
 local InputElement = NPL.load("../Window/Elements/Input.lua", IsDevEnv);
 local SelectElement = NPL.load("../Window/Elements/Select.lua", IsDevEnv);
 local ColorPickerElement = NPL.load("../Window/Elements/ColorPicker.lua", IsDevEnv);
@@ -34,7 +35,8 @@ BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
 BlockInputField:Property("EditElement", nil);                    -- 编辑元素
 BlockInputField:Property("AllowNewSelectOption", false, "IsAllowNewSelectOption");  -- 是否允许新增选项
-
+BlockInputField:Property("InputFieldContainer");                 -- 所属输入字段容器
+BlockInputField:Property("CanDelete", false, "IsCanDelete");     -- 是否可删除
 local UnitSize = Const.UnitSize;
 
 function BlockInputField:ctor()
@@ -289,6 +291,9 @@ end
 function BlockInputField:UpdateLayout()
 end
 
+function BlockInputField:OnClick()
+end
+
 function BlockInputField:OnMouseDown(event)
     local block = self:GetBlock();
     block = block:GetProxyBlock() or block;
@@ -532,6 +537,20 @@ function BlockInputField:BeginEdit(opt)
     fieldEditElement:SetAttrValue("value", self:GetValue());
     -- 添加编辑元素
     editor:InsertChildElement(fieldEditElement);
+    -- 添加删除 Icon
+    if (self:IsCanDelete()) then 
+        local deleteIcon = DivElement:new():Init({
+            name = "div",
+            attr = {style = "position: absolute; left: 50%; top: -30px; width: 14px; height: 15px; margin-left: -7px; background: url(Texture/Aries/Creator/keepwork/ggs/blockly/delete_14x15_32bits.png#0 0 14 15);"}
+        }, editor:GetWindow(), editor);
+        deleteIcon:SetAttrValue("onmousedown", function()
+            local topBlock = self:GetTopBlock();
+            local InputFieldContainer = self:GetInputFieldContainer();
+            InputFieldContainer:DeleteInputField(self);
+            topBlock:UpdateLayout();
+        end);
+        editor:InsertChildElement(deleteIcon);
+    end
     -- 设置元素编辑状态
     self:SetEdit(true);
     -- 更新布局

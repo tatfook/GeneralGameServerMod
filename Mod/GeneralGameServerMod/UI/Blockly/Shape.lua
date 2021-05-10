@@ -21,6 +21,13 @@ Shape:Property("UnitSize", Const.UnitSize);
 
 local LineHeight = 2;
 
+function Shape:DrawStartEdge(painter, widthUnitCount, offsetXUnitCount, offsetYUnitCount)
+    local UnitSize = self:GetUnitSize();
+    self:DrawBefore(painter, offsetXUnitCount, offsetYUnitCount);
+    painter:DrawRectTexture(0, -4 * UnitSize, widthUnitCount * UnitSize, (Const.ConnectionHeightUnitCount + 4) * UnitSize, self:GetStartTexture());
+    self:DrawAfter(painter, offsetXUnitCount, offsetYUnitCount);
+end
+
 -- 绘制上边及凹陷部分 占据高度 2 * UnitSize
 function Shape:DrawPrevConnection(painter, widthUnitCount, offsetXUnitCount, offsetYUnitCount)
     local UnitSize = self:GetUnitSize();
@@ -141,4 +148,8 @@ end
 
 function Shape:GetCloseTexture()
     return "Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22";
+end
+
+function Shape:GetStartTexture()
+    return "Texture/Aries/Creator/keepwork/ggs/blockly/start_96x54_32bits.png#0 0 96 18:80 18 12 12";
 end

@@ -49,6 +49,7 @@ local AllBlockList = {
                 options = {
                     {"语句链接", "StatementConnection"},
                     {"值连接", "OutputConnection"},
+                    {"开始连接", "StartConnection"},
                 }
             },
         },
@@ -59,6 +60,8 @@ local AllBlockList = {
             local block_connection = block:GetFieldValue("block_connection");
             if (block_connection == "OutputConnection") then
                 return "previousStatement = false;\nnextStatement = false;\noutput = true;\n"
+            elseif (block_connection == "StartConnection") then
+                return "previousStatement = false;\nnextStatement = true;\noutput = false;\n"
             else 
                 return "previousStatement = true;\nnextStatement = true;\noutput = false;\n"
             end
@@ -119,6 +122,25 @@ local AllBlockList = {
             return string.format('message = message .. " " .. [[%s]];\n', field_text);
         end,
     },
+    -- {
+    --     type = "set_field_button",
+    --     message = "字段-按钮 %1",
+    --     arg = {
+    --         {
+    --             name = "field_button",
+    --             type = "field_button",
+    --             texture = "xxx.png",
+    --         },
+    --     },
+    --     category = "BlockField",
+    --     previousStatement = true,
+	--     nextStatement = true,
+    --     ToCode = function(block)
+    --         return "";
+    --         -- local field_text = block:GetFieldValue("field_text");
+    --         -- return string.format('message = message .. " " .. [[%s]];\n', field_text);
+    --     end,
+    -- },
     {
         type = "set_field_input",
         message = "字段-输入 %1 %2 %3",
@@ -403,7 +425,28 @@ local AllBlockList = {
             return string.format('field_count = field_count + 1;\nmessage = message .. " %%" .. field_count;\narg[field_count] = {name = "%s", type = "input_statement"};\n', input_name);
         end,
     },
-
+    {
+        type = "set_input_value_list",
+        message = "输入-值列表 %1 %2",
+        arg = {
+            {
+                name = "input_name",
+                type = "field_input",
+                text = "名称",
+            },
+        },
+        category = "BlockInput",
+        previousStatement = true,
+	    nextStatement = true,
+        ToCode = function(block)
+            local input_name = block:GetFieldValue("input_name");
+            return string.format([==[
+                field_count = field_count + 1;
+                message = message .. " %%" .. field_count;
+                arg[field_count] = {name = "%s", type = "input_value_list"};
+                ]==], input_name);
+        end,
+    },
     {
         type = "set_connection_type",
         message = "连接 %1 类型 %2",

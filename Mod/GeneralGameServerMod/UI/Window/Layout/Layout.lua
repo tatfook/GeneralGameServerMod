@@ -152,6 +152,7 @@ end
 function Layout:ApplyPositionStyle()
 	local style = self:GetStyle();
 	local width, height = self:GetWidthHeight();
+	local marginTop, marginRight, marginBottom, marginLeft = self:GetMargin();
 	local WindowX, WindowY, WindowWidth, WindowHeight = self:GetWindowPosition();
 	local top, right, bottom, left = self:GetPosition()
 	local float, position  = style.float, style.position;
@@ -187,7 +188,7 @@ function Layout:ApplyPositionStyle()
 	
 	left, top = left or 0, top or 0;
 	right, bottom = right or 0, bottom or 0;
-	self:SetPos(left, top);
+	self:SetPos(left + marginLeft, top + marginTop);
 	self:SetPosition(top, right, bottom, left);
 	-- LayoutDebug.FormatIf(self:GetElement():GetAttrValue("id") == "debug", 
 	-- 	"ApplyPositionStyle, name = %s, left = %s, top = %s, right = %s, bottom = %s, width = %s, height = %s, relWidth = %s, relHeight = %s, parentLayoutId = %s", 

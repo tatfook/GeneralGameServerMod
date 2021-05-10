@@ -227,6 +227,9 @@ end
 
 
 function OnToolBoxXmlTextChange()
+    if (Blockly) then
+        Blockly:OnAttrValueChange("language");
+    end
     if (TabIndex ~= "toolbox" or ContentType ~= "block") then return end
     ToolBoxXmlText = BlockManager.GetToolBoxXmlText();
 end
@@ -236,7 +239,7 @@ function GenerateBlockDefineCode(option)
     local arg_var_define = indent .. "local args = {};\n";
 
     for i, arg in ipairs(option.arg) do
-        if (arg.type == "input_value" or arg.type == "input_statement") then
+        if (arg.type == "input_value" or arg.type == "input_value_list" or arg.type == "input_statement") then
             arg_var_define = arg_var_define .. string.format('%sargs["%s"] = block:GetValueAsString("%s");\n', indent, arg.name, arg.name);
         else
             arg_var_define = arg_var_define .. string.format('%sargs["%s"] = block:GetFieldValue("%s");\n', indent, arg.name, arg.name);

@@ -20,12 +20,14 @@ local InputFieldContainer = NPL.load("./InputFieldContainer.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldColor = NPL.load("./Fields/Color.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
+local FieldButton = NPL.load("./Fields/Button.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
 local FieldTextarea = NPL.load("./Fields/Textarea.lua", IsDevEnv);
 local FieldJson = NPL.load("./Fields/Json.lua", IsDevEnv);
 local FieldSelect = NPL.load("./Fields/Select.lua", IsDevEnv);
 local FieldVariable = NPL.load("./Fields/Variable.lua", IsDevEnv);
 local InputValue = NPL.load("./Inputs/Value.lua", IsDevEnv);
+local InputValueList = NPL.load("./Inputs/ValueList.lua", IsDevEnv);
 local InputStatement = NPL.load("./Inputs/Statement.lua", IsDevEnv);
 
 local Block = commonlib.inherit(BlockInputField, NPL.export());
@@ -146,6 +148,8 @@ function Block:ParseMessageAndArg(opt)
                     inputFieldContainer:AddInputField(FieldInput:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_color") then
                     inputFieldContainer:AddInputField(FieldColor:new():Init(self, inputField), true);
+                elseif (inputField.type == "field_button") then
+                    inputFieldContainer:AddInputField(FieldButton:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_textarea") then
                     inputFieldContainer:AddInputField(FieldTextarea:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_json") then
@@ -158,6 +162,8 @@ function Block:ParseMessageAndArg(opt)
                     -- inputFieldContainer:AddInputField(InputDummy:new():Init(self, inputField));
                 elseif (inputField.type == "input_value") then
                     inputFieldContainer:AddInputField(InputValue:new():Init(self, inputField), true);
+                elseif (inputField.type == "input_value_list") then
+                    inputFieldContainer:AddInputField(InputValueList:new():Init(self, inputField), true);
                 elseif (inputField.type == "input_statement") then
                     -- inputFieldContainer:AddInputField(FieldSpace:new():Init(self));
                     inputFieldContainerIndex = inputFieldContainerIndex + 1;
@@ -226,7 +232,11 @@ function Block:Render(painter)
     painter:Translate(self.left, self.top);
     -- 绘制上下连接
     if (self:IsStatement()) then
-        Shape:DrawPrevConnection(painter, self.widthUnitCount);
+        if (self.previousConnection) then
+            Shape:DrawPrevConnection(painter, self.widthUnitCount);
+        else
+            Shape:DrawStartEdge(painter, self.widthUnitCount);
+        end
         Shape:DrawNextConnection(painter, self.widthUnitCount, 0, self.heightUnitCount - Const.ConnectionHeightUnitCount);
     else
         Shape:DrawOutput(painter, self.widthUnitCount, self.heightUnitCount);
@@ -246,6 +256,13 @@ function Block:Render(painter)
     if (nextBlock) then nextBlock:Render(painter) end
 end
 
+function Block:GetMinWidthUnitCount()
+    if (self.outputConnection) then return 8 
+    elseif (not self.previousConnection and self.nextConnection) then return 32 
+    elseif (self.previousConnection and self.nextConnection) then return 16
+    else return 0 end
+end
+
 function Block:UpdateWidthHeightUnitCount()
     local maxWidthUnitCount, maxHeightUnitCount, widthUnitCount, heightUnitCount = 0, 0, 0, 0;                                                           -- 方块宽高
     for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
@@ -258,7 +275,7 @@ function Block:UpdateWidthHeightUnitCount()
         maxHeightUnitCount = maxHeightUnitCount + inputFieldContainerMaxHeightUnitCount;
     end
     
-    widthUnitCount = math.max(widthUnitCount, not self:IsStatement() and 8 or 16);
+    widthUnitCount = math.max(widthUnitCount, self:GetMinWidthUnitCount());
     heightUnitCount = math.max(heightUnitCount, Const.LineHeightUnitCount);
     maxWidthUnitCount = math.max(widthUnitCount, maxWidthUnitCount);
     maxHeightUnitCount = math.max(heightUnitCount, maxHeightUnitCount);
@@ -613,7 +630,7 @@ local function DefaultToCode(block)
     local args = {};
     if (option.arg) then
         for i, arg in ipairs(option.arg) do
-            if (arg.type == "input_value" or arg.type == "input_statement") then
+            if (arg.type == "input_value" or arg.type == "input_value_list" or arg.type == "input_statement") then
                 args[arg.name] = block:GetValueAsString(arg.name);
             else
                 args[arg.name] = block:GetFieldValue(arg.name);

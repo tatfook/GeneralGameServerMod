@@ -13,6 +13,7 @@ local Const = NPL.load("../Const.lua");
 local Field = NPL.load("./Field.lua", IsDevEnv);
 local Space = commonlib.inherit(Field, NPL.export());
 
+Space:Property("ClassName", "FieldSpace");
 
 function Space:RenderContent(painter)
 end

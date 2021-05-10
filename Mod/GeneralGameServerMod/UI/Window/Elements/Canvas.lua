@@ -25,4 +25,6 @@ end
 -- 绘制内容
 function Canvas:RenderContent(painter)
     -- self:CallAttrFunction("onrender", nil, self, painter);
+    painter:SetPen("#ff0000");
+    painter:DrawRectTexture(40, 40, 100, 30, "Texture/Aries/Creator/keepwork/ggs/blockly/value_input_26X24_32bits.png#0 0 26 4");
 end

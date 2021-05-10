@@ -69,7 +69,10 @@
 [ ] 文本代码图块互转
 [ ] https://note.youdao.com/ynoteshare1/index.html?id=8e1d03931b89c03ebff09565a99ebc06&type=note
 [x] 缺少并行图块, 定制世界图块保存报错
-[ ] 图块自动生成宏示教
+[x-] 图块自动生成宏示教
+[ ] 启动块 通过圆去绘制
+[ ] 对象 列表操作图块
+[ ] 动态字段图块
 
 ## 图片
 

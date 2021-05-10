@@ -75,7 +75,7 @@ end
 
 function ShadowBlock:Render(painter)
     if (not self.previousConnection and not self.nextConnection) then return end
-    if (not self.previousConnection:IsConnection() and not self.nextConnection:IsConnection()) then return end 
+    if ((not self.previousConnection or not self.previousConnection:IsConnection()) and not self.nextConnection:IsConnection()) then return end 
 
     local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
     local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();

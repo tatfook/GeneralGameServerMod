@@ -33,12 +33,40 @@ function InputFieldContainer:Init(block, isFillFieldSpace)
     return self;
 end
 
-function InputFieldContainer:AddInputField(inputField, isFillFieldSpace)
+function InputFieldContainer:AddInputField(inputField, isFillFieldSpace, index)
     if (inputField) then
-        table.insert(self.inputFields, inputField);
+        if (index) then
+            table.insert(self.inputFields, index, inputField);
+        else
+            table.insert(self.inputFields, inputField);
+        end
+        inputField:SetInputFieldContainer(self);
     end
     if (isFillFieldSpace) then
-        table.insert(self.inputFields, FieldSpace:new():Init(self:GetBlock()));
+        if (index) then
+            table.insert(self.inputFields, index + 1, FieldSpace:new():Init(self:GetBlock()));
+        else
+            table.insert(self.inputFields, FieldSpace:new():Init(self:GetBlock()));
+        end
+    end
+end
+
+function InputFieldContainer:DeleteInputField(inputField)
+    for i, item in ipairs(self.inputFields) do
+        if (item == inputField) then
+            local nextItem = self.inputFields[i + 1];
+            table.remove(self.inputFields, i);
+            if (nextItem:GetClassName() == "FieldSpace") then
+                table.remove(self.inputFields, i);
+            end
+            return ;
+        end 
+    end
+end
+
+function InputFieldContainer:GetInputFieldIndex(inputField)
+    for i, item in ipairs(self.inputFields) do
+        if (item == inputField) then return i end 
     end
 end
 
@@ -139,5 +167,20 @@ function InputFieldContainer:ForEach(callback)
             if (type(callback) == "function") then callback(nextBlock) end
             nextBlock:ForEach(callback);
         end
+    end
+end
+
+function InputFieldContainer:SaveToXmlNode()
+    local xmlNode = {name = "InputFieldContainer", attr = {index = self:GetIndex()}};
+    return xmlNode;
+end
+
+function InputFieldContainer:LoadFromXmlNode(xmlNode)
+end
+
+function InputFieldContainer:GetIndex()
+    local block = self:GetBlock();
+    for i, item in ipairs(block.inputFieldContainerList) do
+        if (item == self) then return i end
     end
 end
