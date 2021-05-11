@@ -26,17 +26,33 @@ then
     git clone https://github.com/tatfook/GeneralGameServerMod.git
     cd GeneralGameServerMod
     git pull origin master
-    git checkout -b dev origin/dev
-    git pull origin dev
+    # git checkout -b dev origin/dev
+    # git pull origin dev
     cd ..
 fi
 
 # 更新 GeneralGameServerMod
 cd GeneralGameServerMod
 git reset --hard HEAD
-git checkout dev
-git pull origin dev
+git pull origin master
+# git checkout dev
+# git pull origin dev
 cd ..
 rm -fr ParacraftBuildinMod/Mod/GeneralGameServerMod/
 cp -fr GeneralGameServerMod/Mod/GeneralGameServerMod/ ParacraftBuildinMod/Mod/
 
+# zip -r ParacraftBuildinMod.zip ParacraftBuildinMod
+
+# unzip paracraftbuildinmod.zip
+# rm -fr paracraftbuildinmod.zip
+# if ! test -d "GeneralGameServerMod"
+# then
+#     git clone https://github.com/tatfook/GeneralGameServerMod.git
+# fi
+# cd GeneralGameServerMod
+# git reset --hard HEAD
+# git pull origin master
+# rm -fr ParacraftBuildinMod/Mod/GeneralGameServerMod/
+# cp -fr GeneralGameServerMod/Mod/GeneralGameServerMod/ ParacraftBuildinMod/Mod/
+# zip -r ParacraftBuildinMod.zip ParacraftBuildinMod
+# rm -fr ParacraftBuildinMod

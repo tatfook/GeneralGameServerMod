@@ -531,8 +531,8 @@ function Block:ConnectionBlock(block)
     if (block.isShadowBlock and block.shadowBlock == self) then return end
 
     BlockDebug("==========================BlockConnectionBlock============================");
-    -- 是否在整个区域内
-    if (not self:IsIntersect(block, false)) then return end
+    -- 只有顶层块才判定是否在整个区域内
+    if ((not self.previousConnection or not self.previousConnection:IsConnection()) and self.nextConnection and not self:IsIntersect(block, false)) then return end
 
     -- 是否在块区域内
     if (not self:IsIntersect(block, true)) then
@@ -564,6 +564,12 @@ function Block:ConnectionBlock(block)
         for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
             if (inputAndFieldContainer:ConnectionBlock(block)) then return true end
         end
+    end
+    
+    -- 下个块如果相交则继续判定下个块
+    local nextBlock = self:GetNextBlock();
+    if (nextBlock and nextBlock:IsIntersect(block, true)) then
+        return nextBlock:ConnectionBlock(block);
     end
 end
 

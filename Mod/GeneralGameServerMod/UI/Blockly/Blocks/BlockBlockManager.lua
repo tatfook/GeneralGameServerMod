@@ -162,6 +162,7 @@ local AllBlockList = {
                 options = {
                     {"文本", "field_input"},
                     {"数字", "field_number"},
+                    {"列表", "field_dropdown"},
                     {"颜色", "field_color"},
                     {"变量", "field_variable"},
                     -- {"代码", "field_code"},
