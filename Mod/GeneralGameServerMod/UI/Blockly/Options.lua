@@ -34,8 +34,8 @@ local function GetActorBoneOptions()
     local codeblock = CodeBlockWindow.GetCodeBlock();
     local codeEnv = codeblock and codeblock:GetCodeEnv();
     local actor = codeEnv and codeEnv.actor;
-    local variable = actor and actor:GetBonesVariable();
-    local bones = variable and variable:GetVariables();
+    local variable = type(actor) == "table" and type(actor.GetBonesVariable) == "function" and actor:GetBonesVariable() or nil;
+    local bones = type(variable) == "table" and type(variable.GetVariables) == "function" and variable:GetVariables() or nil;
     local index, size = 1, #actor_bone_options;
     if (bones) then
         for key in pairs(bones) do
