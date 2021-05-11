@@ -28,7 +28,7 @@ local function GetBlocklyElement(virtualEventParams, window)
     local blockly = BlocklyCacheMap[windowName] and BlocklyCacheMap[windowName][blocklyId];
     if (not blockly) then
         blockly = window:ForEach(function(element)
-            if (element:GetName() == "Blockly" and element:GetAttrStringValue("id") == blocklyId) then return element end
+            if (element:GetName() == "Blockly" and (not blocklyId or element:GetAttrStringValue("id") == blocklyId)) then return element end
             return nil;
         end);
         BlocklyCacheMap[windowName] = BlocklyCacheMap[windowName] or {};
