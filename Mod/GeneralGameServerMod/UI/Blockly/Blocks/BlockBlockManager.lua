@@ -122,6 +122,40 @@ local AllBlockList = {
             return string.format('message = message .. " " .. [[%s]];\n', field_text);
         end,
     },
+    {
+        type = "set_field_variable",
+        message = "字段-变量 %1 %2 %3",
+        arg = {
+            {
+                name = "field_name",
+                type = "field_input",
+                text = "名称",
+            },
+            {
+                name = "field_value",
+                type = "field_input",
+                text = "默认值",
+            },
+            {
+                name = "field_type",
+                type = "field_input",
+                text = "类型",
+            },
+        },
+        category = "BlockField",
+        previousStatement = true,
+	    nextStatement = true,
+        ToCode = function(block)
+            local field_name = block:GetFieldValue("field_name");
+            local field_value = block:GetFieldValue("field_value");
+            local field_type = block:GetFieldValue("field_type");
+            return string.format([==[
+                field_count = field_count + 1;
+                message = message .. " %%" .. field_count;
+                arg[field_count] = {name = "%s", type = "field_variable", vartype = "%s", text = [[%s]]};
+                ]==], field_name, field_type, field_value);
+        end,
+    },
     -- {
     --     type = "set_field_button",
     --     message = "字段-按钮 %1",
