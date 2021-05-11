@@ -31,27 +31,37 @@ function Variable:GetFieldEditType()
 end
 
 function Variable:OnEndEdit()
-    local index, size = 1, #variable_options;
-
+    local vartype = self:GetVarType();
+    local options = self:GetVarOptions();
+    local index, size = 1, #options;
     self:GetBlockly():ForEach(function(blockInputField)
-        if (not blockInputField:IsField() or blockInputField:GetType() ~= "field_variable") then return end
+        if (not blockInputField:IsField() or blockInputField:GetType() ~= "field_variable" or blockInputField:GetVarType() ~= vartype) then return end
         local varname = blockInputField:GetValue();
         if (varname and varname ~= "") then
-            variable_options[index] = {varname, varname};
+            options[index] = {varname, varname};
             index = index + 1;
         end
     end);
 
     for i = index, size do
-        variable_options[i] = nil;
+        options[i] = nil;
     end
     
-    table.sort(variable_options, function(item1, item2)
+    table.sort(options, function(item1, item2)
         return item1[1] < item2[1];
     end);
 end
 
+function Variable:GetVarOptions()
+    local vartype = self:GetVarType();
+    variable_options[vartype] = variable_options[vartype] or {};
+    return variable_options[vartype];
+end
+
+function Variable:GetVarType()
+    return self:GetOption().vartype or "any";
+end
 
 function Variable:GetOptions()
-    return variable_options;
+    return self:GetVarOptions();
 end

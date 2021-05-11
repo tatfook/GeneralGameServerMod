@@ -62,7 +62,7 @@ function ToolBox:SetCategoryList(categorylist)
             if (block and not block:IsHideInToolbox()) then
                 block:SetToolBoxBlock(true);
                 offsetY = offsetY + BlockOffset; -- 间隙
-
+                if (not block.previousConnection) then offsetY = offsetY + 4 end 
                 local widthUnitCount, heightUnitCount = block:UpdateWidthHeightUnitCount();
                 block:SetLeftTopUnitCount(offsetX, offsetY);
                 block:UpdateLeftTopUnitCount();

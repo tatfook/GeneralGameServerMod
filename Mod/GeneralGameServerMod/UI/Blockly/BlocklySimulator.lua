@@ -32,7 +32,7 @@ local function GetBlocklyElement(virtualEventParams, window)
             return nil;
         end);
         BlocklyCacheMap[windowName] = BlocklyCacheMap[windowName] or {};
-        BlocklyCacheMap[windowName][blocklyId] = blockly;
+        BlocklyCacheMap[windowName][blocklyId or ""] = blockly;
     end
     return blockly; 
 end

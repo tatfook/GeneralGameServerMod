@@ -258,8 +258,15 @@ end
 
 function Block:GetMinWidthUnitCount()
     if (self.outputConnection) then return 8 
-    elseif (not self.previousConnection and self.nextConnection) then return 32 
     elseif (self.previousConnection and self.nextConnection) then return 16
+    elseif (not self.previousConnection and self.nextConnection) then return 32 
+    else return 0 end
+end
+
+function Block:GetMinHeightUnitCount()
+    if (self.outputConnection) then return Const.LineHeightUnitCount + Const.BlockEdgeHeightUnitCount * 2
+    elseif (self.previousConnection and self.nextConnection) then return Const.LineHeightUnitCount + Const.ConnectionHeightUnitCount * 2
+    elseif (not self.previousConnection and self.nextConnection) then return Const.LineHeightUnitCount + Const.ConnectionHeightUnitCount + Const.BlockEdgeHeightUnitCount + 4
     else return 0 end
 end
 
