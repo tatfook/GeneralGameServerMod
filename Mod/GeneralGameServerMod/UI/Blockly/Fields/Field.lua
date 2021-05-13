@@ -39,7 +39,8 @@ function Field:RenderContent(painter)
     if (self:IsEdit()) then 
         -- Shape:SetBrush("#ffffff");
         -- Shape:DrawInputValue(painter, self.widthUnitCount + 2, self.heightUnitCount + 2, -1, -1);
-        return ;
+
+        if (not self:IsEditRender()) then return end
     end
 
     local UnitSize = self:GetUnitSize();
@@ -64,6 +65,10 @@ end
 
 function Field:IsCanEdit()
     return true;
+end
+
+function Field:IsEditRender()
+    return false;
 end
 
 function Field:GetBlockly()

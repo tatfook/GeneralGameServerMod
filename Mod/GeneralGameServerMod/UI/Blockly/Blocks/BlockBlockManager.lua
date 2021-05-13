@@ -119,7 +119,7 @@ local AllBlockList = {
 	    nextStatement = true,
         ToCode = function(block)
             local field_text = block:GetFieldValue("field_text");
-            return string.format('message = message .. " " .. [[%s]];\n', field_text);
+            return string.format('message = message .. " " .. [==[%s]==];\n', field_text);
         end,
     },
     {
@@ -196,6 +196,7 @@ local AllBlockList = {
                 options = {
                     {"文本", "field_input"},
                     {"数字", "field_number"},
+                    {"多行文本", "field_textarea"},
                     {"列表", "field_dropdown"},
                     {"颜色", "field_color"},
                     {"变量", "field_variable"},
@@ -520,8 +521,8 @@ local AllBlockList = {
         arg = {
             {
                 name = "code_description",
-                -- type = "field_textarea",
-                type = "field_input",
+                type = "field_textarea",
+                -- type = "field_input",
                 text = "${VALUE}",
             },
         },

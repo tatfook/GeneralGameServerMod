@@ -12,6 +12,7 @@ local DivElement = NPL.load("../Window/Elements/Div.lua", IsDevEnv);
 local InputElement = NPL.load("../Window/Elements/Input.lua", IsDevEnv);
 local SelectElement = NPL.load("../Window/Elements/Select.lua", IsDevEnv);
 local ColorPickerElement = NPL.load("../Window/Elements/ColorPicker.lua", IsDevEnv);
+local TextAreaElement = NPL.load("../Window/Elements/TextArea.lua", IsDevEnv);
 
 local Const = NPL.load("./Const.lua");
 local Options = NPL.load("./Options.lua");
@@ -269,6 +270,8 @@ function BlockInputField:GetShowText(text)
     if (self.show_text_label == text) then return self.show_text end
     local width = (self.widthUnitCount - Const.BlockEdgeWidthUnitCount * 2) * self:GetUnitSize();
     local show_text = _guihelper.TrimUtf8TextByWidth(text, width, self:GetFont());  -- AutoTrimTextByWidth 使用此函数中文显示可能异常
+    -- local show_text = string.gsub(text, "\n", " ");
+    -- show_text = _guihelper.TrimUtf8TextByWidth(show_text, width, self:GetFont());  -- AutoTrimTextByWidth 使用此函数中文显示可能异常
     self.show_text, self.show_text_label = show_text .. " ...", text;
     return show_text;
 end
@@ -467,7 +470,6 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
 end
 
 function BlockInputField:GetFieldColorEditElement(parentElement)
-    local UnitSize = self:GetUnitSize();
     local ColorPickerEditElement = ColorPickerElement:new():Init({
         name = "ColorPicker",
         attr = {
@@ -482,6 +484,24 @@ function BlockInputField:GetFieldColorEditElement(parentElement)
     end);
 
     return ColorPickerEditElement;
+end
+
+function BlockInputField:GetFieldTextAreaEditElement(parentElement)
+    local TextAreaEditElement = TextAreaElement:new():Init({
+        name = "textarea",
+        attr = {
+            style = 'position: absolute; left: 50%; top: 40px; width: 300px; height: 160px; margin-left: -150px;', 
+            value = self:GetValue(),
+        },
+    }, parentElement:GetWindow(), parentElement);
+
+    TextAreaEditElement:SetAttrValue("onblur", function()
+        local value = TextAreaEditElement:GetValue(); 
+        self:SetValue(value);
+        self:SetLabel(string.gsub(value, "\n", " "));
+    end);
+
+    return TextAreaEditElement;
 end
 
 function BlockInputField:UpdateEditAreaSize()
@@ -512,6 +532,8 @@ function BlockInputField:GetFieldEditElement(parentElement)
 
     if (edittype == "input") then
         editElement = self:GetFieldInputEditElement(parentElement);
+    elseif (edittype == "textarea") then
+        editElement = self:GetFieldTextAreaEditElement(parentElement);
     elseif (edittype == "select") then
         editElement = self:GetFieldSelectEditElement(parentElement);
     elseif (edittype == "color") then
@@ -522,7 +544,7 @@ function BlockInputField:GetFieldEditElement(parentElement)
     return editElement;
 end
 
-function BlockInputField:BeginEdit(opt)
+function BlockInputField:BeginEdit()
     if (not self:IsCanEdit()) then return end
 
     -- 获取编辑器元素
@@ -566,14 +588,16 @@ end
 function BlockInputField:EndEdit()
     self:SetEdit(false);
 
+    -- 失焦
+    local fieldEditElement = self:GetEditElement();
+    if (fieldEditElement) then fieldEditElement:FocusOut() end
+
     local editor = self:GetEditorElement();
     editor:ClearChildElement();
     editor:SetVisible(false);
     self:GetTopBlock():UpdateLayout();
     self:GetBlock():GetBlockly():OnChange(); -- {action = "field_edit"}
-    -- 失焦
-    local fieldEditElement = self:GetEditElement();
-    if (fieldEditElement) then fieldEditElement:FocusOut() end
+    self:GetBlock():GetBlockly():SetFocusUI(nil);
 end
 
 function BlockInputField:OnBeginEdit()

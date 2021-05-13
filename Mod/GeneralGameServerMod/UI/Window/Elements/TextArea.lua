@@ -34,8 +34,8 @@ TextArea:Property("BaseStyle", {
         ["border-width"] = 1,
         ["border-color"] = "#cccccc",
         ["color"] = "#000000",
-        ["height"] = 50,
-        ["width"] = 120,
+        ["min-height"] = 50,
+        ["min-width"] = 120,
         ["padding-left"] = 4, 
         ["padding-right"] = 4, 
         ["padding-top"] = 2, 
@@ -455,7 +455,7 @@ function TextArea:AdjustCursorAt(offset)
     local LineHeight = self:GetStyle():GetLineHeight(); 
     local offsetY = (line.line - 1) * LineHeight;
     local scrollValue = self:GetScrollBarValue();
-    if ((offsetY + LineHeight) > h) then scrollValue = offsetY + LineHeight - h end
+    if ((offsetY + LineHeight) > (h + scrollValue)) then scrollValue = offsetY + LineHeight - h end
     if (offsetY < scrollValue) then scrollValue = offsetY end
     TextAreaDebug.Format("AdjustCursorAt cursorAt = %s, offsetY = %s, scrollValue = %s, h = %s", self.cursorAt, offsetY, scrollValue, h);
     self:SetScrollBarValue(scrollValue);

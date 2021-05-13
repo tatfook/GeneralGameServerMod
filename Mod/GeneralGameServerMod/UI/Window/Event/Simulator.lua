@@ -21,12 +21,14 @@ local Simulator = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), 
 Simulator:Property("SimulatorName", "Simulator");               -- 模拟器名称
 
 local windows = {};
+local simulators = {};
 if (IsDevEnv) then
     _G.windows = _G.windows or {};
     windows = _G.windows;
+    _G.simulators = _G.simulators or {};
+    simulators = _G.simulators;
 end
 local window_id = 0;
-local simulators = {};
 local default_simulator_name = "DefaultSimulatorName";
 local macro_cache_obj = {};
 
@@ -117,6 +119,26 @@ function Simulator:SetKeyPressTrigger(buttons, targetText)
             callback.OnFinish();
         end
     end);
+    return callback;
+end
+
+function Simulator:SetInputTextTrigger(text)
+    local callback = {};
+    local index, size = 1, ParaMisc.GetUnicodeCharNum(text);
+    local function ExecTrigger()
+        local char = ParaMisc.UniSubString(text, index, index);
+        local buttons = Macros.TextToKeyName(char);
+        MacroPlayer.SetKeyPressTrigger(buttons or char, text, function()
+            index = index + 1;
+            if (index <= size) then
+                return ExecTrigger();
+            end
+            if(callback.OnFinish) then 
+                callback.OnFinish();
+            end
+        end);
+    end
+    ExecTrigger();
     return callback;
 end
 

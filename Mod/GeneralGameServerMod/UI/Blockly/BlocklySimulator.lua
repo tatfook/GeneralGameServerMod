@@ -12,6 +12,8 @@ local BlocklySimulator = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/BlocklySi
 ]]
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Macros/Macros.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Macros/MacroPlayer.lua");
+local MacroPlayer = commonlib.gettable("MyCompany.Aries.Game.Tasks.MacroPlayer");
 local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 
 local Simulator = NPL.load("../Window/Event/Simulator.lua");
@@ -21,7 +23,8 @@ local BlocklySimulator = commonlib.inherit(Simulator, NPL.export());
 BlocklySimulator:Property("SimulatorName", "BlocklySimulator");
 
 local BlocklyCacheMap = {};
-local OffsetX, OffsetY = 20, 16;
+local BlockOffsetX, BlockOffsetY = 20, 16;
+local InputValueOffsetX, InputValueOffsetY = 16, 12;
 
 local function GetBlocklyElement(virtualEventParams, window)
     local windowName, blocklyId = window:GetWindowName(), virtualEventParams.blocklyId;
@@ -60,7 +63,7 @@ end
 function BlocklySimulator:SetInputValue(blockly, params)
     local UnitSize = blockly:GetUnitSize();
     local winX, winY = blockly:GetWindowPos();
-    local x, y = params.leftUnitCount * UnitSize + OffsetX, params.topUnitCount * UnitSize + OffsetY;
+    local x, y = params.leftUnitCount * UnitSize + InputValueOffsetX, params.topUnitCount * UnitSize + InputValueOffsetY;
     local ui = blockly:GetXYUI(x, y);
     if (not ui) then return end
     ui:SetValue(params.value);
@@ -96,7 +99,7 @@ function BlocklySimulator:SetBlockPosTrigger(blockly, params)
     local winX, winY = blockly:GetWindowPos();
     local startScreenX, startScreenY = blockly:WindowPointToScreenPoint(winX + startX, winY + startY);
     local endScreenX, endScreenY = blockly:WindowPointToScreenPoint(winX + endX, winY + endY);
-    return self:SetDragTrigger(startScreenX + OffsetX, startScreenY + OffsetY, endScreenX + OffsetX, endScreenY + OffsetY);
+    return self:SetDragTrigger(startScreenX + BlockOffsetX, startScreenY + BlockOffsetY, endScreenX + BlockOffsetX, endScreenY + BlockOffsetY);
 end
 
 function BlocklySimulator:SetToolBoxCategoryTrigger(blockly, params)
@@ -113,14 +116,52 @@ function BlocklySimulator:SetToolBoxCategoryTrigger(blockly, params)
 end
 
 function BlocklySimulator:SetInputValueTrigger(blockly, params)
-    Macros.Text(string.format("点击字段, 自动填写字段值: %s", params.label));
     local UnitSize = blockly:GetUnitSize();
-    local winX, winY = blockly:GetWindowPos();
-    local x, y = params.leftUnitCount * UnitSize + blockly.offsetX, params.topUnitCount * UnitSize + blockly.offsetY;
-    x, y = blockly:WindowPointToScreenPoint(winX + x, winY + y);
-    return self:SetClickTrigger(x + OffsetX, y + OffsetY, nil, function() 
-        Macros.Text(nil);
-    end);
+    local ui = blockly:GetXYUI(params.leftUnitCount * UnitSize + InputValueOffsetX, params.topUnitCount * UnitSize + InputValueOffsetY);
+    if (true or ui:GetFieldEditType() == "input") then
+        local callback = {};
+        local text = params.label;
+        local index, size = 1, ParaMisc.GetUnicodeCharNum(text);
+        local function ExecTrigger()
+            local char = ParaMisc.UniSubString(text, index, index);
+            local buttons = Macros.TextToKeyName(char);
+            MacroPlayer.SetKeyPressTrigger(buttons or char, text, function()
+                if (ui) then
+                    local label = ParaMisc.UniSubString(text, 1, index);
+                    ui:SetLabel(label);
+                    ui:GetTopBlock():UpdateLayout();
+                end
+
+                index = index + 1;
+                if (index <= size) then
+                    return ExecTrigger();
+                end
+                if(callback.OnFinish) then 
+                    callback.OnFinish();
+                end
+            end);
+        end
+        
+        local UnitSize = blockly:GetUnitSize();
+        local winX, winY = blockly:GetWindowPos();
+        local x, y = params.leftUnitCount * UnitSize + blockly.offsetX, params.topUnitCount * UnitSize + blockly.offsetY;
+        x, y = blockly:WindowPointToScreenPoint(winX + x, winY + y);
+        MacroPlayer.SetClickTrigger(x + InputValueOffsetX, y + InputValueOffsetY, "left", function()
+            -- if (ui) then ui:OnFocusIn() end
+            ExecTrigger();
+            -- if (ui) then ui:OnFocusOut() end
+        end);
+        return callback;
+    else
+        Macros.Text(string.format("点击字段, 自动填写字段值: %s", params.label));
+        local UnitSize = blockly:GetUnitSize();
+        local winX, winY = blockly:GetWindowPos();
+        local x, y = params.leftUnitCount * UnitSize + blockly.offsetX, params.topUnitCount * UnitSize + blockly.offsetY;
+        x, y = blockly:WindowPointToScreenPoint(winX + x, winY + y);
+        return self:SetClickTrigger(x + InputValueOffsetX, y + InputValueOffsetY, nil, function() 
+            Macros.Text(nil);
+        end);
+    end
 end
 
 function BlocklySimulator:TriggerVirtualEvent(virtualEventType, virtualEventParams, window)
