@@ -142,7 +142,7 @@ function ColorPicker:OnMouseDown(event)
             self.g = math.min(self.g, 255);
         end
     end
-    if (120 <= y and y <= 140 and 0 <= x and x <= 255) then
+    if (120 <= y and y <= 140) then
         if (0 <= x and x <= 255) then
             self.b = x;
         elseif (-16 <= x and x <= 0) then

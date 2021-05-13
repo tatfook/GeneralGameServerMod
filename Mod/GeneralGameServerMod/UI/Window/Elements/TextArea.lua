@@ -471,6 +471,8 @@ function TextArea:FocusIn()
 end
 
 function TextArea:RenderCursor(painter)
+    if (self:IsReadOnly()) then return end
+    
     local x, y, w, h = self:GetContentGeometry();
     local line = self:GetLineByAt(self.cursorAt);
     local LineHeight = self:GetStyle():GetLineHeight(); 

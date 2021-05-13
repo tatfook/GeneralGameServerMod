@@ -6,6 +6,11 @@
     <div v-for="item, index in List">item = {{item}} index = {{index}}</div>
     <div v-if="#List == 0">EmptyList</div>
     <div v-if="#List ~= 0">NoEmptyList</div>
+
+    <div v-for="x in ObjectList">
+        <input v-bind:value="x.order" onblur=ClickUpdate></input>
+    </div>
+    <div onclick="ClickUpdate">test</div>
 </template>
 
 <script type="text/lua">
@@ -13,6 +18,15 @@ RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 
 Prefix = "List Item ";
 List = {};
+
+ObjectList = {{order =1}, {order = 2}};
+local index = 1;
+function ClickUpdate()
+    if (index  == 1) then ObjectList = {{order =3}, {order = 4}} end
+    if (index  == 2) then ObjectList = {{order =5}, {order = 6}} end
+    if (index  >= 3) then ObjectList = {{order =index}, {order = 8}} end
+    index = index + 1;
+end
 
 function Add()
     table.insert(List, Prefix .. tostring(#List + 1)); 

@@ -130,7 +130,10 @@ function Blockly:OnToolBoxXmlTextChange(toolboxXmlText)
                 for _, blockTypeNode in ipairs(categoryNode) do
                     if (blockTypeNode.attr and blockTypeNode.attr.type) then
                         local blocktype = blockTypeNode.attr.type;
-                        table.insert(blocktypes, #blocktypes + 1, blocktype);
+                        local hideInToolbox = blockTypeNode.attr.hideInToolbox == "true";
+                        if (not hideInToolbox) then
+                            table.insert(blocktypes, #blocktypes + 1, blocktype);
+                        end
                     end
                 end
                 if (#blocktypes == 0) then table.remove(category_list, #category_list) end

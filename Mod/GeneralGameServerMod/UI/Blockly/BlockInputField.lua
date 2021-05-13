@@ -409,7 +409,7 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
     local InputEditElement = InputElement:new():Init({
         name = "input",
         attr = {
-            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding: 2px %spx', 
+            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding-left: %spx', 
                 Shape:GetOutputTexture(),
                 self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),

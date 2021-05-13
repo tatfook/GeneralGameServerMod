@@ -48,13 +48,20 @@ function ToolBox:GetCategoryList()
 end
 
 function ToolBox:SetCategoryList(categorylist)
-    self.categoryList = categorylist;
+    self.categoryList = {};
     self.blocks, self.blockPosMap, self.categoryMap = {}, {}, {};
 
     local offsetX, offsetY = 25, 0;
-    for _, category in ipairs(categorylist) do
-        self.categoryMap[category.name] = category;
-        local blocktypes = category.blocktypes or {};
+    for _, categoryitem in ipairs(categorylist) do
+        local category = {name = categoryitem.name, text = categoryitem.text, color = categoryitem.color};
+        local blocktypes = categoryitem.blocktypes or {};
+        if (not categoryitem.blocktypes) then
+            for _, blockitem in ipairs(categoryitem) do
+                if (not blockitem.hideInToolbox) then
+                    table.insert(blocktypes, #blocktypes + 1, blockitem.blocktype);
+                end
+            end
+        end
         category.offsetY = offsetY;
         category.textWidth = _guihelper.GetTextWidth(category.text or category.name, categoryFont);
         for _, blocktype in ipairs(blocktypes) do
@@ -71,6 +78,10 @@ function ToolBox:SetCategoryList(categorylist)
                 table.insert(self.blocks, block);
             end
 
+        end
+        if (#blocktypes > 0) then
+            table.insert(self.categoryList, category);
+            self.categoryMap[category.name] = category;
         end
     end
     self:SetCurrentCategoryName(categorylist[1] and categorylist[1].name);

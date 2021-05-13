@@ -5,6 +5,7 @@ local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 local Blockly = nil;
 local BlocklyEditor = nil;
 local BlocklyPreview = nil;
+local BlocklyToolBox = nil;
 local BlockOption = {};
 LangOptions = {{"定制世界图块", "CustomWorldBlock"}, {"系统 NPL 图块", "SystemNplBlock"}, {"系统 Lua 图块", "SystemLuaBlock"}};
 CurrentLang = "CustomWorldBlock";
@@ -14,11 +15,13 @@ BlocklyCode = "";
 BlockType = "";
 BlockDefineCode = "";
 ToolBoxXmlText = "";
+ToolBoxBlockList = {};
+ToolBoxCategoryList = {};
 AllCategoryList, AllBlockList = {}, {};
-Category = {name = "", color = "#ffffff"};
 SearchCategoryOptions = {{"全部", ""}};
 SearchCategoryName = "";
 SearchBlockType = "";
+
 function SelectSearchCategory()
     OnChange();
 end
@@ -39,6 +42,91 @@ function ClickUpdateToolBoxXmlText()
     GameLogic.AddBBS("Blockly", "工具栏更新成功");
 end 
 
+local function GetCategory(categoryName)
+    local AllCategoryList = BlockManager.GetLanguageCategoryList();
+    for _, categoryItem in ipairs(AllCategoryList) do
+        if (categoryItem.name == categoryName) then
+            return categoryItem;
+        end
+    end
+end
+
+local function GetToolBoxBlockList()
+    local AllCategoryList = BlockManager.GetLanguageCategoryList();
+    local blocklist = {};
+    for _, category in ipairs(AllCategoryList) do
+        local index = 1;
+        for _, block in ipairs(category) do 
+            table.insert(blocklist, {blockType = block.blocktype, categoryName = category.name, hideInToolbox = block.hideInToolbox, order = index, index = index});
+            index = index + 1;
+        end
+    end
+    return blocklist;
+end
+
+function OnToolBoxBlockOrderChange(block)
+    local value = tonumber(block.order);
+    if (not value or value == block.index) then return end
+    local category = GetCategory(block.categoryName)
+    if (not category) then return end
+    local maxValue = #category;
+    value = math.max(1, math.min(value, maxValue));
+    if (value == block.index) then return end 
+    local blockItem = category[block.index];
+    table.remove(category, block.index);
+    table.insert(category, value, blockItem);
+    ToolBoxBlockList = GetToolBoxBlockList();
+    BlockManager.SaveCategoryAndBlock();
+end
+
+function SwitchToolBoxBlockVisible(block)
+    local category = GetCategory(block.categoryName)
+    if (not category) then return end
+    block.hideInToolbox = not block.hideInToolbox;
+    category[block.index].hideInToolbox = block.hideInToolbox;
+    BlockManager.SaveCategoryAndBlock();
+end
+
+function GetToolBoxCategoryList()
+    local AllCategoryList = BlockManager.GetLanguageCategoryList();
+    local categories = {};
+    for index, category in ipairs(AllCategoryList) do
+        table.insert(categories, {name = category.name, color = category.color, hideInToolbox = category.hideInToolbox, index = index, order = index});
+    end
+    return categories;
+end
+
+function SwitchToolBoxCategoryVisible(data)
+    local category = GetCategory(data.name);
+    if (not category) then return end
+    data.hideInToolbox = not data.hideInToolbox;
+    category.hideInToolbox = data.hideInToolbox;
+    OnToolBoxChange();
+    BlockManager.SaveCategoryAndBlock();
+end
+
+function OnToolBoxCategoryColorChange(data)
+    local category = GetCategory(data.name);
+    if (not category) then return end
+    category.color = data.color;
+    OnToolBoxChange();
+    BlockManager.SaveCategoryAndBlock();
+end
+
+function OnToolBoxCategoryOrderChange(data)
+    local AllCategoryList = BlockManager.GetLanguageCategoryList();
+    local value = tonumber(data.order);
+    if (not value or value == data.index) then return end
+    local maxValue = #AllCategoryList;
+    value = math.max(1, math.min(value, maxValue));
+    if (value == data.index) then return end 
+    local categoryItem = AllCategoryList[data.index];
+    table.remove(AllCategoryList, data.index);
+    table.insert(AllCategoryList, value, categoryItem);
+    OnToolBoxChange();
+    BlockManager.SaveCategoryAndBlock();
+end
+
 function ClickTabNavItemBtn(tabindex)
     TabIndex = tabindex;
     OnChange();
@@ -49,42 +137,33 @@ function GetTabNavItemStyle(tabindex)
 end
 
 function GetCategoryColorStyle(category)
-    return string.format([[width: 20px; height: 20px; background-color: %s; border-radius: 10px; padding: 0px 10px;]], category.color);
+    return string.format([[width: 20px; height: 20px; background-color: %s; border-radius: 10px; margin-top: 4px; margin-left: 8px;]], category.color);
 end
 
-function ClickEditCategoryBtn()
-    if (Category.name == "") then return end
-    local AllCategoryMap = BlockManager.GetLanguageCategoryMap();
-    AllCategoryMap[Category.name] = AllCategoryMap[Category.name] or {name = Category.name, color = Category.color};    
-    local isExist = false;
-    for _, category in ipairs(AllCategoryList) do 
-        if (category.name == Category.name) then 
-            category.color = Category.color or category.color; 
-            isExist = true;
-            break;
-        end 
-    end
-    if (not isExist) then table.insert(AllCategoryList, {name = Category.name, color = Category.color}) end 
+
+function OnToolBoxChange()
+    if (ContentType ~= "toolbox") then return end
+    ToolBoxCategoryList = GetToolBoxCategoryList();
+    ToolBoxBlockList = GetToolBoxBlockList();
+    BlocklyToolBox:OnAttrValueChange("language");
+end
+
+function OnBlockChange()
+    if (ContentType ~= "block") then return end
+    OnBlockListChange();
+    OnCategoryListChange();
     OnToolBoxXmlTextChange();
+    OnBlockDefineCodeChange();
 end
-
-function ClickDeleteCategoryBtn(categoryName)
-    local AllCategoryMap = BlockManager.GetLanguageCategoryMap();
-    AllCategoryMap[categoryName] = nil;
-    for i, category in ipairs(AllCategoryList) do 
-        if (category.name == categoryName) then
-            table.remove(AllCategoryList, i);
-        end
-    end
-    BlockManager.SaveCategoryAndBlock();
-    OnToolBoxXmlTextChange();
-end
-
 
 function SetContentType(contentType)
     ContentType = contentType;
     if (ContentType == "blockly" and Blockly) then
-        Blockly:OnAttrValueChange("type", "custom");
+        Blockly:OnAttrValueChange("language", "custom");
+    elseif (ContentType == "block") then 
+        OnBlockChange();
+    elseif (ContentType == "toolbox") then
+        OnToolBoxChange();
     end
 end
 
@@ -121,7 +200,7 @@ function ClickSaveBlockBtn()
 
     BlockManager.NewBlock(BlockOption);
     GameLogic.AddBBS("Blockly", "图块更改已保存");
-    OnToolBoxXmlTextChange();
+    OnChange();
 end
 
 function ClickDeleteBlockBtn(blocktype)
@@ -232,6 +311,7 @@ function OnToolBoxXmlTextChange()
     end
     if (TabIndex ~= "toolbox" or ContentType ~= "block") then return end
     ToolBoxXmlText = BlockManager.GetToolBoxXmlText();
+    ToolBoxBlockList = GetToolBoxBlockList();
 end
 
 function GenerateBlockDefineCode(option)
@@ -283,10 +363,8 @@ function OnBlockDefineCodeChange()
 end
 
 function OnChange()
-    OnBlockListChange();
-    OnCategoryListChange();
-    OnToolBoxXmlTextChange();
-    OnBlockDefineCodeChange();
+    OnBlockChange();
+    OnToolBoxChange();
 end
 
 function OnBlockListChange()
@@ -327,5 +405,6 @@ function OnReady()
     Blockly = GetRef("Blockly");
     BlocklyEditor = GetRef("BlocklyEditor");
     BlocklyPreview = GetRef("BlocklyPreview");
+    BlocklyToolBox = GetRef("BlocklyToolBox");
     OnBlocklyEditorChange();
 end

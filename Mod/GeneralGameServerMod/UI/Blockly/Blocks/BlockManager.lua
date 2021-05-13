@@ -124,6 +124,10 @@ function BlockManager.GetLanguageCategoryMap(path)
     return BlockManager.GetCategoryAndBlockMap(path).AllCategoryMap;
 end
 
+function BlockManager.GetLanguageCategoryList(path)
+    return BlockManager.GetCategoryAndBlockMap(path).AllCategoryList;
+end
+
 function BlockManager.GetLanguageBlockMap(path)
     return BlockManager.GetCategoryAndBlockMap(path).AllBlockMap;
 end
@@ -169,32 +173,52 @@ function BlockManager.GenerateToolBoxXmlText(path)
     local blockTypeMap, categoryMap = {}, {};
     for _, category in ipairs(AllCategoryList) do
         categoryMap[category.name] = category;
-        category.blocktypes = category.blocktypes or {};
-        local blocktypes = {};
-        for index, blocktype in ipairs(category.blocktypes) do
-            if (AllBlockMap[blocktype] and not AllBlockMap[blocktype].hideInToolbox) then
+        local index, size = 1, #category;
+        for i = 1, size do
+            local blockitem = category[i];
+            local blocktype = blockitem.blocktype;
+            local block = AllBlockMap[blocktype];
+            blockitem.hideInToolbox = blockitem.hideInToolbox and true or nil;
+            if (block and block.category == category.name) then
                 blockTypeMap[blocktype] = true;
-                table.insert(blocktypes, #blocktypes + 1, blocktype);
+                category[index] = blockitem;
+                index = index + 1;
             end
         end
-        category.blocktypes = blocktypes;
+        -- 清除不存在的图块
+        for i = index, size do category[i] = nil end
+        category.blocktypes = nil;
+        category.offsetY = nil;
+        category.textWidth = nil;
+        category.blockCount = 0;
     end
 
-    local isChange = false;
     for blocktype, block in pairs(AllBlockMap) do
+        local category = categoryMap[block.category];
+        if (not category) then
+            category = {name = block.category, blockCount = 0};
+            categoryMap[block.category] = category;
+            table.insert(AllCategoryList, category);
+        end
+        category.blockCount = category.blockCount + 1;
+        -- 分类不存在则添加分类
         if (not blockTypeMap[blocktype] and not block.hideInToolbox) then
-            -- 分类不存在则添加分类
-            if (not categoryMap[block.category]) then
-                categoryMap[block.category] = AllCategoryMap[block.category] or {name = block.category};
-                categoryMap[block.category].blocktypes = categoryMap[block.category].blocktypes or {};
-                table.insert(AllCategoryList, categoryMap[block.category]);
-            end
-            -- 添加块
-            local blocktypes = categoryMap[block.category].blocktypes;
-            table.insert(blocktypes, #blocktypes + 1, blocktype);
-            isChange = true;
+            table.insert(category, #category + 1, {blocktype = blocktype});
         end
     end
+
+    -- 删除无块分类
+    for categoryName, category in pairs(categoryMap) do
+        if (category.blockCount == 0) then
+            for index, item in ipairs(AllCategoryList) do
+                if (item.name == categoryName) then
+                    table.remove(AllCategoryList, index);
+                    break;
+                end
+            end
+        end
+    end
+
     local toolbox = {name = "toolbox"};
     for _, categoryItem in ipairs(AllCategoryList) do
         local category = {
@@ -202,12 +226,11 @@ function BlockManager.GenerateToolBoxXmlText(path)
             attr = {name = categoryItem.name, color = categoryItem.color, text = categoryItem.text},
         }
         table.insert(toolbox, #toolbox + 1, category);
-        for _, blocktype in ipairs(categoryItem.blocktypes) do 
-            table.insert(category, #category + 1, {name = "block", attr = {type = blocktype}});
+        for _, blockItem in ipairs(categoryItem) do 
+            table.insert(category, #category + 1, {name = "block", attr = {type = blockItem.blocktype, hideInToolbox = blockItem.hideInToolbox and "true" or nil}});
         end
     end
     local xmlText = Helper.Lua2XmlString(toolbox, true);
-
     return xmlText;
 end
 
@@ -239,6 +262,8 @@ function BlockManager.ParseToolBoxXmlText(xmlText, path)
             for _, blockTypeNode in ipairs(categoryNode) do
                 if (blockTypeNode.attr and blockTypeNode.attr.type) then
                     local blocktype = blockTypeNode.attr.type;
+                    local hideInToolbox = blockTypeNode.attr.hideInToolbox == "true";
+                    table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox});
                     if (AllBlockMap[blocktype] and not AllBlockMap[blocktype].hideInToolbox) then
                         table.insert(blocktypes, #blocktypes + 1, blocktype);
                     end
