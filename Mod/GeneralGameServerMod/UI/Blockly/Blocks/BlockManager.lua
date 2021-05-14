@@ -169,46 +169,42 @@ end
 
 function BlockManager.GenerateToolBoxXmlText(path)
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
-    local AllCategoryList, AllCategoryMap, AllBlockMap = CategoryAndBlockMap.AllCategoryList, CategoryAndBlockMap.AllCategoryMap, CategoryAndBlockMap.AllBlockMap;
-    local blockTypeMap, categoryMap = {}, {};
+    local AllCategoryList, AllBlockMap = CategoryAndBlockMap.AllCategoryList, CategoryAndBlockMap.AllBlockMap;
+    local BlockTypeMap, AllCategoryMap = {}, {};
     for _, category in ipairs(AllCategoryList) do
-        categoryMap[category.name] = category;
+        AllCategoryMap[category.name] = category;
         local index, size = 1, #category;
         for i = 1, size do
             local blockitem = category[i];
             local blocktype = blockitem.blocktype;
             local block = AllBlockMap[blocktype];
-            blockitem.hideInToolbox = blockitem.hideInToolbox and true or nil;
             if (block and block.category == category.name) then
-                blockTypeMap[blocktype] = true;
+                BlockTypeMap[blocktype] = true;
                 category[index] = blockitem;
                 index = index + 1;
             end
         end
         -- 清除不存在的图块
         for i = index, size do category[i] = nil end
-        category.blocktypes = nil;
-        category.offsetY = nil;
-        category.textWidth = nil;
         category.blockCount = 0;
     end
 
     for blocktype, block in pairs(AllBlockMap) do
-        local category = categoryMap[block.category];
+        local category = AllCategoryMap[block.category];
         if (not category) then
             category = {name = block.category, blockCount = 0};
-            categoryMap[block.category] = category;
+            AllCategoryMap[block.category] = category;
             table.insert(AllCategoryList, category);
         end
         category.blockCount = category.blockCount + 1;
         -- 分类不存在则添加分类
-        if (not blockTypeMap[blocktype] and not block.hideInToolbox) then
+        if (not BlockTypeMap[blocktype] and not block.hideInToolbox) then
             table.insert(category, #category + 1, {blocktype = blocktype});
         end
     end
 
     -- 删除无块分类
-    for categoryName, category in pairs(categoryMap) do
+    for categoryName, category in pairs(AllCategoryMap) do
         if (category.blockCount == 0) then
             for index, item in ipairs(AllCategoryList) do
                 if (item.name == categoryName) then
@@ -218,12 +214,13 @@ function BlockManager.GenerateToolBoxXmlText(path)
             end
         end
     end
+    CategoryAndBlockMap.AllCategoryMap = AllCategoryMap;
 
     local toolbox = {name = "toolbox"};
     for _, categoryItem in ipairs(AllCategoryList) do
         local category = {
             name = "category",
-            attr = {name = categoryItem.name, color = categoryItem.color, text = categoryItem.text},
+            attr = {name = categoryItem.name, color = categoryItem.color, text = categoryItem.text, hideInToolbox = categoryItem.hideInToolbox and "true" or nil},
         }
         table.insert(toolbox, #toolbox + 1, category);
         for _, blockItem in ipairs(categoryItem) do 
@@ -239,39 +236,34 @@ function BlockManager.ParseToolBoxXmlText(xmlText, path)
     local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
     if (not toolboxNode) then return end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
-    local AllCategoryMap, AllBlockMap = CategoryAndBlockMap.AllCategoryMap, CategoryAndBlockMap.AllBlockMap;
+    local AllCategoryMap, AllBlockMap = {}, CategoryAndBlockMap.AllBlockMap;
 
     local AllCategoryList = {};
     for _, categoryNode in ipairs(toolboxNode) do
         if (categoryNode.attr and categoryNode.attr.name) then
             local category_attr = categoryNode.attr;
-            local default_category = AllCategoryMap[category_attr.name] or {};
-            local category = {
-                name = category_attr.name,
-                text = category_attr.text or default_category.text,
-                color = category_attr.color or default_category.color,
-                blocktypes = {},
-            }
-            default_category.name = default_category.name or category.name;
-            default_category.text = default_category.text or category.text;
-            default_category.color = default_category.color or category.color;
-            AllCategoryMap[default_category.name] = default_category;
-            
-            table.insert(AllCategoryList, #AllCategoryList + 1, category);
-            local blocktypes = category.blocktypes;
+            local category = AllCategoryMap[category_attr.name] or {};
+            category.name = category.name or category_attr.name;
+            category.text = category.text or category_attr.text;
+            category.color = category.color or category_attr.color;
+            category.hideInToolbox = if_else(category.hideInToolbox == nil, category_attr.hideInToolbox == "true", category.hideInToolbox);
+            if (not AllCategoryMap[category.name]) then
+                table.insert(AllCategoryList, #AllCategoryList + 1, category);
+                AllCategoryMap[category.name] = category;
+            end            
             for _, blockTypeNode in ipairs(categoryNode) do
                 if (blockTypeNode.attr and blockTypeNode.attr.type) then
                     local blocktype = blockTypeNode.attr.type;
                     local hideInToolbox = blockTypeNode.attr.hideInToolbox == "true";
-                    table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox});
-                    if (AllBlockMap[blocktype] and not AllBlockMap[blocktype].hideInToolbox) then
-                        table.insert(blocktypes, #blocktypes + 1, blocktype);
+                    if (AllBlockMap[blocktype]) then
+                        table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox});
                     end
                 end
             end
         end
     end
     CategoryAndBlockMap.AllCategoryList = AllCategoryList;
+    CategoryAndBlockMap.AllCategoryMap = AllCategoryMap;
     BlockManager.SaveCategoryAndBlock(path);
     return AllCategoryList;
 end

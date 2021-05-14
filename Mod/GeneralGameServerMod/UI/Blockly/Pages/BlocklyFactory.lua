@@ -55,10 +55,8 @@ local function GetToolBoxBlockList()
     local AllCategoryList = BlockManager.GetLanguageCategoryList();
     local blocklist = {};
     for _, category in ipairs(AllCategoryList) do
-        local index = 1;
-        for _, block in ipairs(category) do 
+        for index, block in ipairs(category) do 
             table.insert(blocklist, {blockType = block.blocktype, categoryName = category.name, hideInToolbox = block.hideInToolbox, order = index, index = index});
-            index = index + 1;
         end
     end
     return blocklist;
@@ -87,7 +85,7 @@ function SwitchToolBoxBlockVisible(block)
     BlockManager.SaveCategoryAndBlock();
 end
 
-function GetToolBoxCategoryList()
+local function GetToolBoxCategoryList()
     local AllCategoryList = BlockManager.GetLanguageCategoryList();
     local categories = {};
     for index, category in ipairs(AllCategoryList) do

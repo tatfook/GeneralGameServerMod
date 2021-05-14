@@ -74,6 +74,7 @@
 [x] 对象 列表操作图块
 [x] 动态字段图块
 [ ] 代码自动转换旧块定义
+[ ] https://note.youdao.com/ynoteshare1/index.html?id=8e1d03931b89c03ebff09565a99ebc06&type=note
 
 ## 图片
 

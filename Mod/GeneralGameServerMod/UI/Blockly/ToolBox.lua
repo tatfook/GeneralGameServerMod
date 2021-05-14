@@ -55,7 +55,7 @@ function ToolBox:SetCategoryList(categorylist)
     for _, categoryitem in ipairs(categorylist) do
         local category = {name = categoryitem.name, text = categoryitem.text, color = categoryitem.color};
         local blocktypes = categoryitem.blocktypes or {};
-        if (not categoryitem.blocktypes) then
+        if (not categoryitem.blocktypes and not categoryitem.hideInToolbox) then
             for _, blockitem in ipairs(categoryitem) do
                 if (not blockitem.hideInToolbox) then
                     table.insert(blocktypes, #blocktypes + 1, blockitem.blocktype);

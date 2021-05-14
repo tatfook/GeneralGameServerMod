@@ -132,8 +132,14 @@ local function ExecCode(code, func, element, watch)
     end
 
     local OldDependItems = {};
-    local oldValSize = Table.len(oldVal);
-
+    local oldValLen = Table.len(oldVal);
+    local oldValCache = nil;
+    if (oldValLen > 0) then
+        oldValCache = {};
+        for i = 1, oldValLen do
+            oldValCache[i] = oldVal[i];
+        end
+    end
     -- CompileDebug.If(code == "UserDetail", code, DependItems);
 
     if (element and type(watch) == "function") then
@@ -157,7 +163,21 @@ local function ExecCode(code, func, element, watch)
                 -- end
 
                 -- if (type(newVal) ~= "table" and newVal == oldVal) then return end
-                if (newVal == oldVal and (type(newVal) ~= "table" or Table.len(newVal) == oldValSize)) then return end
+                if (newVal == oldVal) then
+                    if (type(newVal) ~= "table") then return end
+                    -- 如果为数组, 则每个元素值应相同
+                    if (Table.len(newVal) == oldValLen) then
+                        local isEqual = true;
+                        for i = 1, oldValLen do
+                            if (oldValCache[i] ~= newVal[i]) then
+                                isEqual = false;
+                                break;
+                            end
+                        end
+                        if (isEqual) then return end
+                    end
+                end
+                -- if (newVal == oldVal and (type(newVal) ~= "table" or Table.len(newVal) == oldValLen)) then return end
                 
                 -- 不同触发回调
                 watch(newVal, oldVal);

@@ -189,11 +189,11 @@ end
 function Block:OnSizeChange()
     -- 设置连接大小
     if (self.previousConnection) then
-        self.previousConnection:SetGeometry(self.leftUnitCount, self.topUnitCount - Const.ConnectionRegionHeightUnitCount, self.widthUnitCount, 2 * Const.ConnectionRegionHeightUnitCount);
+        self.previousConnection:SetGeometry(self.leftUnitCount, self.topUnitCount - Const.ConnectionRegionHeightUnitCount / 2, self.widthUnitCount, Const.ConnectionRegionHeightUnitCount);
     end
 
     if (self.nextConnection) then
-        self.nextConnection:SetGeometry(self.leftUnitCount, self.topUnitCount + self.heightUnitCount - Const.ConnectionRegionHeightUnitCount, self.widthUnitCount, 2 * Const.ConnectionRegionHeightUnitCount);
+        self.nextConnection:SetGeometry(self.leftUnitCount, self.topUnitCount + self.heightUnitCount - Const.ConnectionRegionHeightUnitCount / 2, self.widthUnitCount, Const.ConnectionRegionHeightUnitCount);
     end
 
     if (self.outputConnection) then
@@ -540,8 +540,27 @@ function Block:ConnectionBlock(block)
         return nextBlock and nextBlock:ConnectionBlock(block);
     end
 
+    -- 优先匹配上连接
+    if (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and 
+        not self.previousConnection:IsConnection() and not block.nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
+        self:GetBlockly():RemoveBlock(self);
+        self.previousConnection:Connection(block.nextConnection)
+        block:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount - block.heightUnitCount);
+        block:GetTopBlock():UpdateLayout();
+        BlockDebug("===================nextConnection match previousConnection====================");
+        return true;
+    end
+    
+    -- 下连接匹配
     if ((self.topUnitCount + self.heightUnitCount - Const.ConnectionRegionHeightUnitCount) < block.topUnitCount 
         and self.nextConnection and block.previousConnection and self.nextConnection:IsMatch(block.previousConnection)) then
+        -- 当比较靠上时, 优先内部连接匹配
+        if ((self.topUnitCount + self.heightUnitCount - Const.ConnectionHeightUnitCount * 2) > block.topUnitCount) then
+            for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
+                if (inputAndFieldContainer:ConnectionBlock(block)) then return true end
+            end
+        end
+
         self:GetBlockly():RemoveBlock(block);
         local nextConnectionConnection = self.nextConnection:Disconnection();
         self.nextConnection:Connection(block.previousConnection);
@@ -551,21 +570,14 @@ function Block:ConnectionBlock(block)
         block:GetTopBlock():UpdateLayout();
         BlockDebug("===================previousConnection match nextConnection====================");
         return true;
-    elseif (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and 
-        not self.previousConnection:IsConnection() and not block.nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
-        self:GetBlockly():RemoveBlock(self);
-        self.previousConnection:Connection(block.nextConnection)
-        block:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount - block.heightUnitCount);
-        block:GetTopBlock():UpdateLayout();
-        BlockDebug("===================nextConnection match previousConnection====================");
-        return true;
-    else
-        BlockDebug("===================outputConnection match inputConnection====================");
-        for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
-            if (inputAndFieldContainer:ConnectionBlock(block)) then return true end
-        end
     end
-    
+
+    BlockDebug("===================outputConnection match inputConnection====================");
+    -- 字段匹配
+    for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
+        if (inputAndFieldContainer:ConnectionBlock(block)) then return true end
+    end
+
     -- 下个块如果相交则继续判定下个块
     local nextBlock = self:GetNextBlock();
     if (nextBlock and nextBlock:IsIntersect(block, true)) then

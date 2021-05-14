@@ -1,49 +1,116 @@
 <template class="container">
-    <WindowTitleBar title="自定义图块工具栏"></WindowTitleBar>
-    <div class="dialog-body">
-        <!-- <textarea style="width: 100%; height: 100%;" v-model="text" placeholder="请输入图块工具栏Xml文本..."></textarea> -->
+    <div class="header-container">
+        <div style="display: flex;">
+            <div onclick="SetContentType('xmltext')" class="header-btn" v-bind:style="GetHeaderBtnStyle('xmltext')">定制 XML 文本</div>
+            <div onclick="SetContentType('category')" class="header-btn" v-bind:style="GetHeaderBtnStyle('category')">定制分类</div>
+            <div onclick="SetContentType('block')" class="header-btn" v-bind:style="GetHeaderBtnStyle('block')">定制图块</div>
+        </div>
+        <div onclick=CloseWindow class="close-btn btn"></div>
     </div>
-    <div>
-        <div onclick=clickConfirm class="btn confirm-btn">确定</div>
+  
+    <div v-if="ContentType == 'xmltext'" class="content-container">
+        <textarea style="width: 100%; height: 100%;" v-model="ToolBoxXmlText" placeholder="请输入图块工具栏Xml文本..."></textarea>
+    </div>
+
+    <div v-if="ContentType == 'category'" class="content-container" style="overflow-y: scroll;">
+        <div v-for="category in ToolBoxCategoryList" style="display: flex; align-items: center; height: 30px; margin-top: 8px;">
+            <div v-bind:style="GetCategoryColorStyle(category)"></div>
+            <div style="width: 100px; margin-left: 12px; line-height: 30px;">{{category.name}}</div>
+            <input style="width: 80px; margin-left: 12px;" v-model="category.color" placeholder="#ffffff"></input>
+            <input style="width: 60px; margin-left: 12px;" v-model="category.order" type="number" onblur="OnToolBoxCategoryOrderChange(category)"></input>
+            <div class="btn" style="width: 60px; height: 30px; margin-left: 12px;" onclick="SwitchToolBoxCategoryVisible(category)">{{category.hideInToolbox and "隐藏" or "显示"}}</div>
+        </div>
+    </div>
+
+    <div v-if="ContentType == 'block'" class="content-container" style="overflow-y: scroll;">
+        <div v-for="block in ToolBoxBlockList" style="  display: flex; align-items: center; margin-top: 8px;">
+            <div style="margin-left: 8px; width: 300px; text-wrap: none; text-overflow: ellipsis; line-height: 30px;">{{block.blockType}}</div>
+            <div style="width: 80px; line-height: 30px;">{{block.categoryName}}</div>
+            <input v-model="block.order" type="number" style="width: 60px;" onblur="OnToolBoxBlockOrderChange(block)"></input>
+            <div class="btn" style="width: 60px; height: 30px; margin-left: 12px;" onclick="SwitchToolBoxBlockVisible(block)">{{block.hideInToolbox and "隐藏" or "显示"}}</div>
+        </div>
+    </div>
+
+    <div class="footer-container">
+        <div onclick=ClickConfirm class="confirm-btn">确定</div>
     </div>
 </template>
 
-<script type="text/lua">
-RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+<script type="text/lua" src="%ui%/Blockly/Pages/CustomToolBox.lua">
 
-text = _G.text or "";
-function clickConfirm()
-    if (type(_G.OnConfirm) == "function") then 
-        _G.OnConfirm(text);
-    end 
-    CloseWindow();
-end
 </script>
 
 <style scoped=true>
 .container {
-    width: 800px;
-    height: 600px;
-    background: url(Texture/Aries/Creator/keepwork/Window/dakuang2_32bits.png#0 0 64 69:26 44 24 22);
+    width: 600px;
+    height: 500px;
+    background-color: #191C13;
 }
 
-.dialog-body {
-    height: 400px;
-    padding: 10px;
+.header-container {
+    position: absolute; 
+    left: 0px; 
+    right: 0px;
+    top: 0px; 
+    height: 40px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
 }
 
+.header-btn {
+    width: 120px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 5px;
+    color: #e6e6e6;
+}
+
+.header-btn:hover {
+    color: #ffffff;
+}
+
+.close-btn {
+    margin-top: 5px;
+    margin-right: 20px;
+    width: 22px; 
+    height: 22px; 
+    background-color: #e6e6e6;
+    background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);
+}
+
+.content-container {
+    position: absolute;
+    top: 42px;
+    left: 2px;
+    right: 2px;
+    bottom: 44px;
+    background-color: #c8c8c8;
+}
+
+.footer-container {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    height: 40px;
+    background-color: #c8c8c8;
+}
 .confirm-btn {
     display: inline-block; 
     text-align: center; 
-    margin-top: 5px;
-    margin-left: 5%; 
-    width: 90%; 
-    height:40px; 
-    line-height: 40px;
-    font-size: 20px; 
+    margin-top: 1px;
+    width: 100%; 
+    height:38px; 
+    line-height: 38px;
+    font-size: 18px; 
     color: #000000;
+    /* background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16); */
+}
+.confirm-btn:hover {
     background-color: #cccccc;
-    background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);
+    color: #ffffff;
 }
 </style>
 

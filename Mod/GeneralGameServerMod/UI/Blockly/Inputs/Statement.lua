@@ -23,7 +23,7 @@ function Statement:OnSizeChange()
     local leftUnitCount, topUnitCount = self:GetLeftTopUnitCount();
     local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
     local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
-    self.inputConnection:SetGeometry(leftUnitCount, topUnitCount, blockWidthUnitCount, Const.ConnectionRegionHeightUnitCount);
+    self.inputConnection:SetGeometry(leftUnitCount, topUnitCount - Const.ConnectionRegionHeightUnitCount / 2, blockWidthUnitCount, Const.ConnectionRegionHeightUnitCount);
 end
 
 function Statement:Init(block, opt)
@@ -63,6 +63,10 @@ function Statement:UpdateLeftTopUnitCount()
 end
 
 function Statement:ConnectionBlock(block)
+    local inputBlock = self:GetInputBlock();
+    local isConnection = inputBlock and inputBlock:ConnectionBlock(block);
+    if (isConnection) then return true end 
+
     if (block.previousConnection and not block.previousConnection:IsConnection() and self.inputConnection:IsMatch(block.previousConnection)) then
         block:GetBlockly():RemoveBlock(block);
         local inputConnectionConnection = self.inputConnection:Disconnection();
@@ -72,8 +76,6 @@ function Statement:ConnectionBlock(block)
         block:GetTopBlock():UpdateLayout();
         return true;
     end
-    local inputBlock = self:GetInputBlock();
-    return inputBlock and inputBlock:ConnectionBlock(block);
 end
 
 function Statement:GetMouseUI(x, y, event)
