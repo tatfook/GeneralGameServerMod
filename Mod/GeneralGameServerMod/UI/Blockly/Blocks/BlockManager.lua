@@ -91,7 +91,7 @@ function BlockManager.SetCurrentCategoryAndBlockPath(path)
 end
 
 function BlockManager.SetCurrentLanguage(lang)
-    BlockManager.SetCurrentCategoryAndBlockPath(LanguagePathMap[lang]);
+    BlockManager.SetCurrentCategoryAndBlockPath(LanguagePathMap[lang or ""]);
 end
 
 function BlockManager.NewBlock(block)

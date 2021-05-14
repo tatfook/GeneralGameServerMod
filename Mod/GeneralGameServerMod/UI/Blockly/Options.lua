@@ -15,14 +15,23 @@ local Options = NPL.export();
 
 local actor_options = {};
 local function GetActorNameOptions()
-    local actors = GameLogic.GetCodeGlobal().actors;
-    local actor_options = {};
     local size = #actor_options;
     local index = 1;
-    for key in pairs(actors) do
-        actor_options[index] = {key, key};
-        index = index + 1;
+    local entities = GameLogic.EntityManager.FindEntities({category="b", type="EntityCode"});
+    if(entities and #entities>0) then
+        for _, entity in ipairs(entities) do
+            local key = entity:GetFilename();
+            if (key and key ~= "") then
+                actor_options[index] = {key, key};
+                index = index + 1;
+            end
+        end
     end
+    -- local actors = GameLogic.GetCodeGlobal().actors;
+    -- for key in pairs(actors) do
+    --     actor_options[index] = {key, key};
+    --     index = index + 1;
+    -- end
     for i = index, size do
         actor_options[i] = nil;
     end
@@ -88,6 +97,14 @@ Options.focus_list = function()
     local actor_options = GetActorNameOptions();
     table.insert(actor_options, 1, {L"此角色", "myself"});
     table.insert(actor_options, 1, {L"主角", "player"});
+    return actor_options;
+end
+
+Options.isTouchingOptions = function() 
+    local actor_options = GetActorNameOptions();
+    table.insert(actor_options, 1, { L"某个方块id", "62" });
+    table.insert(actor_options, 1, { L"附近玩家", "@a" });
+    table.insert(actor_options, 1, { L"方块", "block" });
     return actor_options;
 end
 
@@ -272,15 +289,6 @@ Options.playSoundFileTypes = function()
         { L"火", "fire" },
         { L"弓箭", "bow" },
         { L"呼吸", "breath" },
-    }
-end
-
-Options.isTouchingOptions = function() 
-    return {
-        { L"方块", "block" },
-        { L"附近玩家", "@a" },
-        { L"某个方块id", "62" },
-        { L"某个角色名", "" },
     }
 end
 

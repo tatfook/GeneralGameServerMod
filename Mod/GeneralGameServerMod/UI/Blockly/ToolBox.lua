@@ -64,6 +64,7 @@ function ToolBox:SetCategoryList(categorylist)
         end
         category.offsetY = offsetY;
         category.textWidth = _guihelper.GetTextWidth(category.text or category.name, categoryFont);
+        category.blocktypes = blocktypes;
         for _, blocktype in ipairs(blocktypes) do
             local block = self:GetBlockly():GetBlockInstanceByType(blocktype);
             if (block and not block:IsHideInToolbox()) then

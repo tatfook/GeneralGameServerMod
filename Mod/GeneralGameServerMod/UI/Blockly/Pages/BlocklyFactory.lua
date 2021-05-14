@@ -2,6 +2,9 @@
 
 local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/BlockManager.lua");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+
+BlockManager.SetCurrentCategoryAndBlockPath();
+
 local Blockly = nil;
 local BlocklyEditor = nil;
 local BlocklyPreview = nil;
@@ -17,6 +20,8 @@ BlockDefineCode = "";
 ToolBoxXmlText = "";
 ToolBoxBlockList = {};
 ToolBoxCategoryList = {};
+CategoryOptions = {};
+CategoryName = "";
 AllCategoryList, AllBlockList = {}, {};
 SearchCategoryOptions = {{"全部", ""}};
 SearchCategoryName = "";
@@ -55,11 +60,18 @@ local function GetToolBoxBlockList()
     local AllCategoryList = BlockManager.GetLanguageCategoryList();
     local blocklist = {};
     for _, category in ipairs(AllCategoryList) do
-        for index, block in ipairs(category) do 
-            table.insert(blocklist, {blockType = block.blocktype, categoryName = category.name, hideInToolbox = block.hideInToolbox, order = index, index = index});
+        if (category.name == CategoryName) then
+            for index, block in ipairs(category) do 
+                table.insert(blocklist, {blockType = block.blocktype, categoryName = category.name, hideInToolbox = block.hideInToolbox, order = index, index = index});
+            end
+            break;
         end
     end
     return blocklist;
+end
+
+function OnSelectCategoryName()
+    ToolBoxBlockList = GetToolBoxBlockList();
 end
 
 function OnToolBoxBlockOrderChange(block)
@@ -73,7 +85,7 @@ function OnToolBoxBlockOrderChange(block)
     local blockItem = category[block.index];
     table.remove(category, block.index);
     table.insert(category, value, blockItem);
-    ToolBoxBlockList = GetToolBoxBlockList();
+    OnToolBoxChange();
     BlockManager.SaveCategoryAndBlock();
 end
 
@@ -82,15 +94,20 @@ function SwitchToolBoxBlockVisible(block)
     if (not category) then return end
     block.hideInToolbox = not block.hideInToolbox;
     category[block.index].hideInToolbox = block.hideInToolbox;
+    OnToolBoxChange();
     BlockManager.SaveCategoryAndBlock();
 end
 
 local function GetToolBoxCategoryList()
     local AllCategoryList = BlockManager.GetLanguageCategoryList();
     local categories = {};
+    local options = {};
     for index, category in ipairs(AllCategoryList) do
         table.insert(categories, {name = category.name, color = category.color, hideInToolbox = category.hideInToolbox, index = index, order = index});
+        table.insert(options, #options + 1, category.name);
     end
+    CategoryOptions = options;
+    CategoryName = options[1] or "";
     return categories;
 end
 
@@ -157,7 +174,7 @@ end
 function SetContentType(contentType)
     ContentType = contentType;
     if (ContentType == "blockly" and Blockly) then
-        Blockly:OnAttrValueChange("language", "custom");
+        Blockly:OnAttrValueChange("language");
     elseif (ContentType == "block") then 
         OnBlockChange();
     elseif (ContentType == "toolbox") then

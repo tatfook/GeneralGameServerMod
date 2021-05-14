@@ -16,18 +16,23 @@
         <div v-for="category in ToolBoxCategoryList" style="display: flex; align-items: center; height: 30px; margin-top: 8px;">
             <div v-bind:style="GetCategoryColorStyle(category)"></div>
             <div style="width: 100px; margin-left: 12px; line-height: 30px;">{{category.name}}</div>
-            <input style="width: 80px; margin-left: 12px;" v-model="category.color" placeholder="#ffffff"></input>
+            <input style="width: 80px; margin-left: 12px;" v-model="category.color" placeholder="#ffffff" onblur="OnToolBoxCategoryColorChange(category)"></input>
             <input style="width: 60px; margin-left: 12px;" v-model="category.order" type="number" onblur="OnToolBoxCategoryOrderChange(category)"></input>
             <div class="btn" style="width: 60px; height: 30px; margin-left: 12px;" onclick="SwitchToolBoxCategoryVisible(category)">{{category.hideInToolbox and "隐藏" or "显示"}}</div>
         </div>
     </div>
 
-    <div v-if="ContentType == 'block'" class="content-container" style="overflow-y: scroll;">
-        <div v-for="block in ToolBoxBlockList" style="  display: flex; align-items: center; margin-top: 8px;">
-            <div style="margin-left: 8px; width: 300px; text-wrap: none; text-overflow: ellipsis; line-height: 30px;">{{block.blockType}}</div>
-            <div style="width: 80px; line-height: 30px;">{{block.categoryName}}</div>
-            <input v-model="block.order" type="number" style="width: 60px;" onblur="OnToolBoxBlockOrderChange(block)"></input>
-            <div class="btn" style="width: 60px; height: 30px; margin-left: 12px;" onclick="SwitchToolBoxBlockVisible(block)">{{block.hideInToolbox and "隐藏" or "显示"}}</div>
+    <div v-if="ContentType == 'block'" class="content-container">
+        <div style="position: absolute; left: 0px; right: 0px; top: 0px; height: 40px; z-index: 2;">
+            <select style="width: 100%; height: 100%;" v-bind:options="CategoryOptions" v-model="CategoryName" onselect=OnSelectCategoryName></select>
+        </div>
+        <div style="position: absolute; top: 40px; left: 0px; right: 0px; bottom: 0px;overflow-y: scroll;">
+            <div v-for="block in ToolBoxBlockList" style="display: flex; align-items: center; margin-top: 8px;">
+                <div style="margin-left: 8px; width: 300px; text-wrap: none; text-overflow: ellipsis; line-height: 30px;">{{block.blockType}}</div>
+                <div style="width: 80px; line-height: 30px;">{{block.categoryName}}</div>
+                <input v-model="block.order" type="number" style="width: 60px;" onblur="OnToolBoxBlockOrderChange(block)"></input>
+                <div class="btn" style="width: 60px; height: 30px; margin-left: 12px;" onclick="SwitchToolBoxBlockVisible(block)">{{block.hideInToolbox and "隐藏" or "显示"}}</div>
+            </div>
         </div>
     </div>
 

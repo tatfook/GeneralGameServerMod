@@ -111,35 +111,32 @@ end
 function Blockly:OnToolBoxXmlTextChange(toolboxXmlText)
     local xmlNode = ParaXML.LuaXML_ParseString(toolboxXmlText);
     local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
-    local category_map = self.CategoryMap;
     if (toolboxNode) then
-        local category_list = {};
+        local categorylist, categorymap = {}, {};
         for _, categoryNode in ipairs(toolboxNode) do
             if (categoryNode.attr and categoryNode.attr.name) then
                 local category_attr = categoryNode.attr;
-                local default_category = category_map[category_attr.name];
-                local category = {
-                    name = category_attr.name,
-                    text = category_attr.text or (default_category and default_category.text),
-                    color = category_attr.color or (default_category and default_category.color),
-                    blocktypes = {},
-                }
-                category_map[category_attr.name] = category;
-                table.insert(category_list, #category_list + 1, category);
-                local blocktypes = category.blocktypes;
+                local default_category = self.CategoryMap[category_attr.name] or {};
+                local category = categorymap[category_attr.name] or {};
+                category.name = category.name or category_attr.name or default_category.name;
+                category.text = category.text or category_attr.text or default_category.text;
+                category.color = category.color or category_attr.color or default_category.color;
+                local hideInToolbox = if_else(category_attr.hideInToolbox ~= nil, category_attr.hideInToolbox == "true", default_category.hideInToolbox and true or false);
+                category.hideInToolbox = if_else(category.hideInToolbox ~= nil, category.hideInToolbox, hideInToolbox);
                 for _, blockTypeNode in ipairs(categoryNode) do
                     if (blockTypeNode.attr and blockTypeNode.attr.type) then
                         local blocktype = blockTypeNode.attr.type;
                         local hideInToolbox = blockTypeNode.attr.hideInToolbox == "true";
-                        if (not hideInToolbox) then
-                            table.insert(blocktypes, #blocktypes + 1, blocktype);
-                        end
+                        table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox});
                     end
                 end
-                if (#blocktypes == 0) then table.remove(category_list, #category_list) end
+                if (not categorymap[category.name]) then
+                    table.insert(categorylist, #categorylist + 1, category);
+                    categorymap[category.name] = category;
+                end    
             end
         end
-        self.CategoryList = category_list;
+        self.CategoryList = categorylist;
     end
     for _, category in ipairs(self.CategoryList) do
         self.CategoryColor[category.name] = category.color;
@@ -548,7 +545,7 @@ function Blockly:AdjustCenter(targetBlock)
         -- 以视图中最左一个方块为基准
         for _, block in ipairs(self.blocks) do
             local viewLeft, viewTop = block.left + offsetX, block.top + offsetY;
-            if (not left or (left + offsetX) < 0 or (viewLeft > 0  and viewTop > 0 and (viewLeft < left or (viewLeft == left and viewTop < top))))  then
+            if (not left or (left + offsetX) < 0 or (viewLeft > 0  and viewTop > 0 and (block.left < left or (block.left == left and block.top < top))))  then
                 left, top = block.left, block.top;
             end
         end

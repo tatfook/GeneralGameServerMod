@@ -6,17 +6,18 @@ local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Helper.lua");
 BlockManager.SetCurrentLanguage(_G.Language);
 
 ContentType = "xmltext"; -- block category
-ToolBoxXmlText = _G.XmlText or BlockManager.GenerateToolBoxXmlText();
+ToolBoxXmlText = (_G.XmlText and _G.XmlText ~= "") and _G.XmlText  or BlockManager.GenerateToolBoxXmlText();
 ToolBoxBlockList = {};
 ToolBoxCategoryList = {};
+CategoryOptions = {};
+CategoryName = "";
+local AllCategoryList, AllCategoryMap = {}, {};
 
-local AllCategoryList = {};
 local function GetToolBoxBlockList()
     local blocklist = {};
-    for _, category in ipairs(AllCategoryList) do
-        for index, block in ipairs(category) do 
-            table.insert(blocklist, {blockType = block.blocktype, categoryName = category.name, hideInToolbox = block.hideInToolbox, order = index, index = index});
-        end
+    local category = AllCategoryMap[CategoryName] or {};
+    for index, block in ipairs(category) do 
+        table.insert(blocklist, {blockType = block.blocktype, categoryName = category.name, hideInToolbox = block.hideInToolbox, order = index, index = index});
     end
     return blocklist;
 end
@@ -34,14 +35,13 @@ local function ParseToolBoxXmlText()
     local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
     local categorylist, categorymap = {}, {};
 
-    if (not toolboxNode) then return {} end
+    if (not toolboxNode) then return {}, {} end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
-    local AllCategoryMap, AllBlockMap = CategoryAndBlockMap.AllCategoryMap, CategoryAndBlockMap.AllBlockMap;
 
     for _, categoryNode in ipairs(toolboxNode) do
         if (categoryNode.attr and categoryNode.attr.name) then
             local category_attr = categoryNode.attr;
-            local default_category = AllCategoryMap[category_attr.name] or {};
+            local default_category = CategoryAndBlockMap.AllCategoryMap[category_attr.name] or {};
             local category = categorymap[category_attr.name] or {};
             category.name = category.name or category_attr.name or default_category.name;
             category.text = category.text or category_attr.text or default_category.text;
@@ -56,7 +56,7 @@ local function ParseToolBoxXmlText()
                 if (blockTypeNode.attr and blockTypeNode.attr.type) then
                     local blocktype = blockTypeNode.attr.type;
                     local hideInToolbox = blockTypeNode.attr.hideInToolbox == "true";
-                    if (AllBlockMap[blocktype]) then
+                    if (CategoryAndBlockMap.AllBlockMap[blocktype]) then
                         table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox});
                     end
                 end
@@ -64,7 +64,14 @@ local function ParseToolBoxXmlText()
         end
     end
 
-    return categorylist;
+    local categoryoptions = {};
+    for categoryName in pairs(categorymap) do
+        table.insert(categoryoptions, #categoryoptions + 1, categoryName);
+    end
+    CategoryOptions = categoryoptions;
+    CategoryName = categoryoptions[1] or "";
+
+    return categorylist, categorymap;
 end
 
 local function GenerateToolBoxXmlText()
@@ -88,27 +95,60 @@ function OnToolBoxCategoryOrderChange(category)
     category.order = math.max(1, math.min(#ToolBoxCategoryList, category.order));
     if (category.order == category.index) then return end
     local order, index = category.order, category.index;
-    ToolBoxCategoryList[order].order, ToolBoxCategoryList[order].index = index, index; 
-    ToolBoxCategoryList[index].order, ToolBoxCategoryList[index].index = order, order; 
-    ToolBoxCategoryList[order], ToolBoxCategoryList[index] = ToolBoxCategoryList[index], ToolBoxCategoryList[order];
-    -- AllCategoryList[order], AllCategoryList[index] = AllCategoryList[index], AllCategoryList[order];
+    table.remove(ToolBoxCategoryList, index);
+    table.insert(ToolBoxCategoryList, order, category);
+    for index, category in ipairs(ToolBoxCategoryList) do
+        category.order, category.index = index, index;
+    end
+    category = AllCategoryList[index];
+    table.remove(AllCategoryList, index);
+    table.insert(AllCategoryList, order, category);
+end
+
+function OnToolBoxCategoryColorChange(category)
+    AllCategoryMap[category.name].color = category.color;
 end
 
 function SwitchToolBoxCategoryVisible(category)
     category.hideInToolbox = not category.hideInToolbox;
+    AllCategoryMap[category.name].hideInToolbox = category.hideInToolbox;
 end
+
+function OnSelectCategoryName()
+    ToolBoxBlockList = GetToolBoxBlockList();
+end
+
 
 function OnToolBoxBlockOrderChange(block)
     block.order = tonumber(block.order) or block.index;
     block.order = math.max(1, math.min(#ToolBoxBlockList, block.order));
     if (block.order == block.index) then return end
     local order, index = block.order, block.index;
-    ToolBoxBlockList[order].order, ToolBoxBlockList[order].index = index, index; 
-    ToolBoxBlockList[index].order, ToolBoxBlockList[index].index = order, order; 
-    ToolBoxBlockList[order], ToolBoxBlockList[index] = ToolBoxBlockList[index], ToolBoxBlockList[order];
+    table.remove(ToolBoxBlockList, index);
+    table.insert(ToolBoxBlockList, order, block);
+    for index, block in ipairs(ToolBoxBlockList) do
+        block.order, block.index = index, index;
+    end
+    local category = AllCategoryMap[CategoryName];
+    block = category[index];
+    table.remove(category, index);
+    table.insert(category, order, block);
 end
 
 function SwitchToolBoxBlockVisible(block)
+    block.hideInToolbox = not block.hideInToolbox;
+    local category = AllCategoryMap[CategoryName];
+    category[block.index].hideInToolbox = block.hideInToolbox;
+end
+
+function ClickConfirm()
+    if (ContentType ~= "xmltext") then
+        ToolBoxXmlText = GenerateToolBoxXmlText();
+    end
+    if (type(_G.OnConfirm) == "function") then 
+        _G.OnConfirm(ToolBoxXmlText);
+    end 
+    CloseWindow();
 end
 
 function OnReady()
@@ -116,7 +156,7 @@ end
 
 function SetContentType(contentType)
     if (ContentType == "xmltext" and contentType ~= "xmltext") then
-        AllCategoryList = ParseToolBoxXmlText();
+        AllCategoryList, AllCategoryMap = ParseToolBoxXmlText();
         ToolBoxBlockList = GetToolBoxBlockList();
         ToolBoxCategoryList = GetToolBoxCategoryList();
     end
@@ -133,7 +173,4 @@ end
 
 function GetCategoryColorStyle(category)
     return string.format([[width: 20px; height: 20px; background-color: %s; border-radius: 10px; margin-top: 4px; margin-left: 8px;]], (not category.color or category.color == "") and "#ffffff" or category.color);
-end
-
-function ClickConfirm()
 end
