@@ -312,9 +312,8 @@ end
 local ArrowAreaSize = 20;
 
 function Select:RenderContent(painter)
-    self:RenderArrowIcon(painter);
-
     if (self:GetInputBoxElement():GetVisible()) then return end
+    self:RenderArrowIcon(painter);
 
     local text = self:GetAttrStringValue("placeholder");
     local x, y, w, h = self:GetContentGeometry();
@@ -361,4 +360,5 @@ function Select:RenderArrowIcon(painter)
     painter:SetFont(self:GetFont());
     painter:DrawLineList(self:GetListBoxElement():IsVisible() and Points.Up or Points.Down);
     painter:Translate(-(x + w - ArrowAreaSize), -(y + (h - ArrowSize) / 2));
+    painter:Flush();
 end
