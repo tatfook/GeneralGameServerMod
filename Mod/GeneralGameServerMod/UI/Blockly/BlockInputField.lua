@@ -69,7 +69,7 @@ function BlockInputField:Init(block, option)
     self:SetAllowNewSelectOption(option.isAllowNewSelectOption == true and true or false);
     if (self:IsSelectType()) then
         self:SetLabel(self:GetLabelByValue(self:GetValue()));
-        -- self:SetValue(self:GetValueByLablel(self:GetLabel()));
+        self:SetValue(self:GetValueByLablel(self:GetLabel()));
     end 
     
     if (option.name and option.name ~= "") then block.inputFieldMap[option.name] = self end

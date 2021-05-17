@@ -22,8 +22,10 @@ ContextMenu:Property("Blockly");
 local MenuItemWidth = 120;
 local MenuItemHeight = 30;
 local block_menus = {
-    { text = "复制", cmd = "copy"},
-    { text = "删除", cmd = "delete"},
+    { text = "复制单块", cmd = "copy"},
+    { text = "删除单块", cmd = "delete"},
+    { text = "复制整块", cmd = "copyAll"},
+    { text = "删除整块", cmd = "deleteAll"},
 }
 
 local blockly_menus = {
@@ -86,6 +88,10 @@ function ContextMenu:OnMouseDown(event)
         blockly:handlePaste();
     elseif (menuitem.cmd == "delete") then
         blockly:handleDelete();
+    elseif (menuitem.cmd == "copyAll") then
+        blockly:handleCopyAll();
+    elseif (menuitem.cmd == "deleteAll") then
+        blockly:handleDeleteAll();
     elseif (menuitem.cmd == "undo") then
         blockly:Undo();
     elseif (menuitem.cmd == "redo") then

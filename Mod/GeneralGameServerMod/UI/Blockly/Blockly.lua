@@ -419,7 +419,8 @@ function Blockly:RenderContent(painter)
         if ((self.mouseMoveX <= toolboxWidth and not self.isHideToolBox) or self.mousePosIndex == 4) then
             local width, height = 12, 12;
             painter:SetPen("#ff0000");
-            painter:DrawRectTexture(self.mouseMoveX - width / 2, self.mouseMoveY - height / 2, width, height, Shape:GetCloseTexture());
+            -- painter:DrawRectTexture(self.mouseMoveX - width / 2, self.mouseMoveY - height / 2, width, height, Shape:GetCloseTexture());
+            painter:DrawRectTexture(DraggingBlock.left + self.offsetX, DraggingBlock.top + self.offsetY, width, height, Shape:GetCloseTexture());
         end
     end
 
@@ -703,7 +704,7 @@ function Blockly:OnKeyDown(event)
 	elseif (event:IsKeySequence("Undo")) then self:Undo()
 	elseif (event:IsKeySequence("Redo")) then self:Redo()
 	-- elseif (event:IsKeySequence("Copy")) then self:handleCopy(event)
-	elseif (event:IsKeySequence("Paste")) then self:handlePaste();
+	elseif (event:IsKeySequence("Paste")) then self:handlePaste()
     elseif (event:IsKeySequence("Delete")) then self:handleDelete()
     else -- 处理普通输入
 	end
@@ -731,6 +732,33 @@ function Blockly:handlePaste()
 
     self:AddBlock(cloneBlock);
     self:SetCurrentBlock(cloneBlock);
+    self:OnChange();
+end
+
+-- 复制整块
+function Blockly:handleCopyAll()
+    local block = self:GetCurrentBlock();
+    if (not block) then return end
+    local cloneBlock = block:Clone(nil, true);
+    local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+    cloneBlock:SetLeftTopUnitCount(leftUnitCount + 4, topUnitCount + 4);
+    cloneBlock:UpdateLeftTopUnitCount();
+
+    self:AddBlock(cloneBlock);
+    self:SetCurrentBlock(cloneBlock);
+    self:OnChange();
+end
+
+-- 删除整块
+function Blockly:handleDeleteAll()
+    local block = self:GetCurrentBlock();
+    if (not block) then return end
+    if (block.previousConnection) then
+        block.previousConnection:Disconnection();
+    end
+    self:RemoveBlock(block);
+    self:OnDestroyBlock(block);
+    self:SetCurrentBlock(nil);
     self:OnChange();
 end
 

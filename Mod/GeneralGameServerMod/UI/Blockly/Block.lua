@@ -82,7 +82,7 @@ function Block:Init(blockly, opt)
     return self;
 end
 
-function Block:Clone(clone)
+function Block:Clone(clone, isAll)
     clone = clone or Block:new():Init(self:GetBlockly(), self:GetOption());
     clone:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount);
     for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
@@ -94,7 +94,7 @@ function Block:Clone(clone)
             end
             if (inputField:IsInput() and inputField.inputConnection:IsConnection()) then
                 local connectionBlock = inputField.inputConnection:GetConnectionBlock();
-                local cloneConnectionBlock = connectionBlock:Clone(connectionBlock:IsInputShadowBlock() and cloneInputField.inputConnection:GetConnectionBlock() or nil);
+                local cloneConnectionBlock = connectionBlock:Clone(connectionBlock:IsInputShadowBlock() and cloneInputField.inputConnection:GetConnectionBlock() or nil, true);
                 cloneInputField.inputConnection:Connection(cloneConnectionBlock.outputConnection or cloneConnectionBlock.previousConnection);
                 if (connectionBlock:GetProxyBlock() == self) then cloneConnectionBlock:SetProxyBlock(clone) end
             end
@@ -103,6 +103,14 @@ function Block:Clone(clone)
     clone:UpdateLayout();
     clone:SetDraggable(self:IsDraggable());
     clone:SetInputShadowBlock(self:IsInputShadowBlock());
+
+    if (isAll) then 
+        local nextBlock = self:GetNextBlock();
+        local nextCloneBlock = nextBlock and nextBlock:Clone(nil, true);
+        if (nextCloneBlock) then
+            clone.nextConnection:Connection(nextCloneBlock.previousConnection);
+        end
+    end
     return clone;
 end
 

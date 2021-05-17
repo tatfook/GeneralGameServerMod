@@ -15,6 +15,7 @@ local Options = NPL.export();
 
 local actor_options = {};
 local function GetActorNameOptions()
+    local actor_options = {};
     local size = #actor_options;
     local index = 1;
     local entities = GameLogic.EntityManager.FindEntities({category="b", type="EntityCode"});
@@ -37,6 +38,7 @@ local function GetActorNameOptions()
     end
     return actor_options;
 end
+Options.ActorNameOptions = GetActorNameOptions();
 
 local actor_bone_options = {};
 local function GetActorBoneOptions()
