@@ -409,6 +409,7 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
     local InputEditElement = InputElement:new():Init({
         name = "input",
         attr = {
+            id = "BlocklyFieldInputEditId",
             style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding-left: %spx', 
                 Shape:GetOutputTexture(),
                 self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
@@ -442,6 +443,7 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
     local SelectEditElement = SelectElement:new():Init({
         name = "select",
         attr = {
+            id = "BlocklyFieldSelectEditId",
             isAllowCreate = isAllowCreate,
             isShowArrowIcon = false, 
             style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding-top: 2px; padding-left: %spx', 
@@ -633,9 +635,11 @@ end
 
 function BlockInputField:SetFieldValue(value)
     local validator = self:GetValidator();
+    value = tostring(value);
     if (type(validator) == "function") then value = validator(value) end
     if (type(validator) == "string" and type(Validator[validator]) == "function") then value = (Validator[validator])(value) end
     self:SetValue(value);
+    self:SetLabel(value);
 end
 
 function BlockInputField:GetScale()

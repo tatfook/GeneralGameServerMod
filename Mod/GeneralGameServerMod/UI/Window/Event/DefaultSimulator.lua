@@ -24,7 +24,7 @@ function DefaultSimulator:ctor()
     self:SetDefaultSimulatorName(self:GetSimulatorName());
 end
 
-function DefaultSimulator:Finish(event, window)
+function DefaultSimulator:Simulate(event, window)
     local event_type = event:GetEventType();
     if (event_type == "onmouseup") then
         self:AddVirtualEvent("UIWindowClickEvent", Params:GetVirtualEventParams());

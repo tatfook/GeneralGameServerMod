@@ -336,7 +336,7 @@ function GenerateBlockDefineCode(option)
     for i, arg in ipairs(option.arg) do
         if (arg.type == "input_value" or arg.type == "input_value_list" or arg.type == "input_statement") then
             arg_var_define = arg_var_define .. string.format('%sargs["%s"] = block:GetValueAsString("%s");\n', indent, arg.name, arg.name);
-        else
+        elseif (arg.name) then
             arg_var_define = arg_var_define .. string.format('%sargs["%s"] = block:GetFieldValue("%s");\n', indent, arg.name, arg.name);
         end
     end 

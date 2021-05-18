@@ -123,6 +123,34 @@ local AllBlockList = {
         end,
     },
     {
+        type = "set_field_button",
+        message = "字段-按钮 %1 %2",
+        arg = {
+            {
+                name = "field_text",
+                type = "field_input",
+                text = "按钮内容",
+            },
+            {
+                name = "field_callback",
+                type = "field_textarea",
+                text = "",
+            },
+        },
+        category = "BlockField",
+        previousStatement = true,
+	    nextStatement = true,
+        ToCode = function(block)
+            local field_text = block:GetFieldValue("field_text");
+            local field_callback = block:GetFieldValue("field_callback");
+            return string.format([==[
+                field_count = field_count + 1;
+                message = message .. " %%" .. field_count;
+                arg[field_count] = {type = "field_button", text = "%s", callback = [[%s]]};
+                ]==], field_text, field_callback);
+        end,
+    },
+    {
         type = "set_field_variable",
         message = "字段-变量 %1 %2 %3",
         arg = {
@@ -200,6 +228,7 @@ local AllBlockList = {
                     {"列表", "field_dropdown"},
                     {"颜色", "field_color"},
                     {"变量", "field_variable"},
+                    {"数据", "field_value"},
                     -- {"代码", "field_code"},
                 }
             },

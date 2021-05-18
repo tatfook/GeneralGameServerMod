@@ -31,6 +31,7 @@ local block_menus = {
 local blockly_menus = {
     { text = "撤销", cmd = "undo"},
     { text = "重做", cmd = "redo"},
+    { text = "导出工作区XML", cmd = "export_workspace_xml_text"},
     { text = "导出工具栏XML", cmd = "export_toolbox_xml_text"},
     { text = "生成宏示教代码", cmd = "export_macro_code"},
 }
@@ -96,11 +97,22 @@ function ContextMenu:OnMouseDown(event)
         blockly:Undo();
     elseif (menuitem.cmd == "redo") then
         blockly:Redo();
+    elseif (menuitem.cmd == "export_workspace_xml_text") then
+        self:ExportWorkspaceXmlText();
     elseif (menuitem.cmd == "export_toolbox_xml_text") then
         self:ExportToolboxXmlText();
     elseif (menuitem.cmd == "export_macro_code") then
         self:ExportMacroCode();
     end 
+end
+
+function ContextMenu:ExportWorkspaceXmlText()
+    local xmlText = self:GetBlockly():SaveToXmlNodeText();
+    ParaMisc.CopyTextToClipboard(text);
+    GameLogic.AddBBS("Blockly", "导出 XML 已拷贝至剪切板");
+end
+
+function ContextMenu:ImportWorkspaceXmlText()
 end
 
 function ContextMenu:ExportMacroCode()
@@ -115,8 +127,16 @@ function ContextMenu:ExportMacroCode()
     local ViewRight, viewBottom = width - viewLeft, height - viewTop;
     local oldOffsetX, oldOffsetY, oldCategoryName = blockly.offsetX, blockly.offsetY, category_list[1] and category_list[1].name or "";
     -- local offsetX, offsetY = oldOffsetX, oldOffsetY;
+    local xmlText = blockly:SaveToXmlNodeText();
     toolbox:SwitchCategory(oldCategoryName);
     local function ExportBlockMacroCode(block)
+        local blocktype = block:GetType();
+        if (string.match(blocktype, "^NPL_Macro_")) then
+            block:Disconnection();
+            local code = block:GetCode();
+            params[#params + 1] = code;
+            return true;
+        end
         -- 调整工作区
         local left, top = oldOffsetX + block.left - ToolBoxWidth, oldOffsetY + block.top;
         if (left < viewLeft or left > ViewRight or top < viewTop or top > viewBottom) then
@@ -148,34 +168,45 @@ function ContextMenu:ExportMacroCode()
         end
     end
     for _, block in ipairs(blocks) do
-        local nextBlock = block;
-        while (nextBlock) do
-            ExportBlockMacroCode(nextBlock);
-            nextBlock = nextBlock:GetNextBlock();
+        while (block) do
+            local nextBlock = block:GetNextBlock();
+            ExportBlockMacroCode(block);
+            block = nextBlock;
         end
     end
     -- blockly.offsetX, blockly.offsetY = offsetX, offsetY;
     local text = "";
     local windowName = blockly:GetWindow():GetWindowName();
     local blocklyId = blockly:GetAttrStringValue("id");
+    local isExitMacroText = false;
     for _, param in ipairs(params) do
-        param.blocklyId = blocklyId;
-        local params_text = commonlib.serialize_compact({
-            window_name = windowName,
-            simulator_name = "BlocklySimulator",
-            virtual_event_params = param,
-        });
-        text = text .. string.format("UIWindowEventTrigger(%s)\n", params_text);
-        text = text .. string.format("UIWindowEvent(%s)\n", params_text);
+        if (type(param) == "table") then
+            param.blocklyId = blocklyId;
+            local params_text = commonlib.serialize_compact({
+                window_name = windowName,
+                simulator_name = "BlocklySimulator",
+                virtual_event_params = param,
+            });
+            text = text .. string.format("UIWindowEventTrigger(%s)\n", params_text);
+            text = text .. string.format("UIWindowEvent(%s)\n", params_text);
+            if (isExitMacroText) then
+                text = text .. "text()\n";  -- 插入一条空字幕用于清除;
+                isExitMacroText = false;
+            end
+        elseif (type(param) == "string") then
+            param = string.gsub(param, "[;\n]+$", "");
+            text = text .. param .. "\n";
+            isExitMacroText = true;
+        end
     end
     ParaMisc.CopyTextToClipboard(text);
+    blockly:LoadFromXmlNodeText(xmlText);
     GameLogic.AddBBS("Blockly", "示教代码已拷贝至剪切板");
-
 end
 
 function ContextMenu:ExportToolboxXmlText()
     local blockTypeMap = {};
-    self:GetBlockly():ForEach(function(ui)
+    self:GetBlockly():ForEachUI(function(ui)
         if (ui:IsBlock()) then
             blockTypeMap[ui:GetType()] = true;
         end

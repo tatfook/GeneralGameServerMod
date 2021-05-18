@@ -91,10 +91,11 @@ function ValueList:LoadFromXmlNode(xmlNode)
 end
 
 function ValueList:GetValueAsString()
+    local option = self:GetOption();
     local inputValues = self:GetInputValueList();
     local list = {};
     for i, inputValue in ipairs(inputValues) do
         list[i] = inputValue:GetValueAsString();
     end
-    return table.concat(list, ",");
+    return table.concat(list, option.separator or ",");
 end

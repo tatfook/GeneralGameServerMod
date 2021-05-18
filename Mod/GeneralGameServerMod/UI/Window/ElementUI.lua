@@ -13,6 +13,8 @@ NPL.load("(gl)script/ide/System/Windows/Mouse.lua");
 NPL.load("(gl)script/ide/System/Windows/MouseEvent.lua");
 local Mouse = commonlib.gettable("System.Windows.Mouse");
 local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
+local Simulator = NPL.load("./Event/Simulator.lua");
+
 local Animation = NPL.load("./Animation.lua", IsDevEnv);
 local ElementUI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -510,6 +512,13 @@ function ElementUI:WindowPointToScreenPoint(windowX, windowY)
     return math.floor(screen_x + windowX * scaleX + 0.5), math.floor(screen_y + windowY * scaleY + 0.5);
 end
 
+-- 相对坐标转屏幕坐标
+function ElementUI:RelativePointToScreenPoint(relX, relY)
+    local winX, winY = self:GetWindowPos();
+    winX, winY = winX + relX, winY + relY;
+    return self:WindowPointToScreenPoint(winX, winY);
+end
+
 -- 指定点是否在元素视区内
 function ElementUI:IsContainPoint(screenX, screenY)
     local windowX, windowY = self:ScreenPointToWindowPoint(screenX, screenY);
@@ -910,6 +919,13 @@ end
 function ElementUI:OnMouse()
 end
 function ElementUI:OnContextMenuCapture()
+end
+
+function ElementUI:IsCanSimulateEvent()
+    return Simulator:IsRecording() and self:IsSupportSimulator();
+end
+
+function ElementUI:SimulateEvent(event)
 end
 
 function ElementUI:IsSupportSimulator()

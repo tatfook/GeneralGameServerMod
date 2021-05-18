@@ -118,50 +118,62 @@ end
 function BlocklySimulator:SetInputValueTrigger(blockly, params)
     local UnitSize = blockly:GetUnitSize();
     local ui = blockly:GetXYUI(params.leftUnitCount * UnitSize + InputValueOffsetX, params.topUnitCount * UnitSize + InputValueOffsetY);
-    if (true or ui:GetFieldEditType() == "input") then
-        local callback = {};
-        local text = params.label;
+    if (not ui) then return end
+
+    local fieldEditType = ui:GetFieldEditType();
+    local label, value = params.label, params.value;
+    local isExistSelectOption = false;
+    if (fieldEditType == "select") then
+        local options = ui:GetOptions();
+        for _, option in ipairs(options) do
+            if (option[2] == value or option.value == value) then
+                isExistSelectOption = true;
+                break;
+            end
+        end
+    end
+
+    local callback = {};
+    local winX, winY = blockly:GetWindowPos();
+    local x, y = params.leftUnitCount * UnitSize + blockly.offsetX, params.topUnitCount * UnitSize + blockly.offsetY;
+    x, y = blockly:WindowPointToScreenPoint(winX + x, winY + y);
+    if (fieldEditType == "input" or (fieldEditType == "select" and not isExistSelectOption)) then
+        local text = params.value;
         local index, size = 1, ParaMisc.GetUnicodeCharNum(text);
         local function ExecTrigger()
             local char = ParaMisc.UniSubString(text, index, index);
             local buttons = Macros.TextToKeyName(char);
             MacroPlayer.SetKeyPressTrigger(buttons or char, text, function()
-                if (ui) then
-                    local label = ParaMisc.UniSubString(text, 1, index);
-                    ui:SetLabel(label);
-                    ui:GetTopBlock():UpdateLayout();
-                end
-
+                local label = ParaMisc.UniSubString(text, 1, index);
+                ui:SetLabel(label);
+                ui:GetTopBlock():UpdateLayout();
                 index = index + 1;
-                if (index <= size) then
-                    return ExecTrigger();
-                end
-                if(callback.OnFinish) then 
-                    callback.OnFinish();
-                end
+                if (index <= size) then return ExecTrigger() end
+                if(callback.OnFinish) then callback.OnFinish() end
             end);
         end
-        
-        local UnitSize = blockly:GetUnitSize();
-        local winX, winY = blockly:GetWindowPos();
-        local x, y = params.leftUnitCount * UnitSize + blockly.offsetX, params.topUnitCount * UnitSize + blockly.offsetY;
-        x, y = blockly:WindowPointToScreenPoint(winX + x, winY + y);
         MacroPlayer.SetClickTrigger(x + InputValueOffsetX, y + InputValueOffsetY, "left", function()
-            -- if (ui) then ui:OnFocusIn() end
             ExecTrigger();
-            -- if (ui) then ui:OnFocusOut() end
+        end);
+    elseif (fieldEditType == "select") then
+        self:SetClickTrigger(x + InputValueOffsetX, y + InputValueOffsetY, "left", function()
+            ui:OnFocusIn();
+            local select = blockly:GetEditorElement():GetElementById("BlocklyFieldSelectEditId");
+            local sx, sy = select:AutoScrollToValue(value);
+            self:SetClickTrigger(sx + 14, sy + 14, nil, function()
+                ui:OnFocusOut();
+                if(callback.OnFinish) then callback.OnFinish() end
+            end);
         end);
         return callback;
     else
         Macros.Text(string.format("点击字段, 自动填写字段值: %s", params.label));
-        local UnitSize = blockly:GetUnitSize();
-        local winX, winY = blockly:GetWindowPos();
-        local x, y = params.leftUnitCount * UnitSize + blockly.offsetX, params.topUnitCount * UnitSize + blockly.offsetY;
-        x, y = blockly:WindowPointToScreenPoint(winX + x, winY + y);
-        return self:SetClickTrigger(x + InputValueOffsetX, y + InputValueOffsetY, nil, function() 
+        self:SetClickTrigger(x + InputValueOffsetX, y + InputValueOffsetY, nil, function() 
             Macros.Text(nil);
+            if(callback.OnFinish) then callback.OnFinish() end
         end);
     end
+    return callback;
 end
 
 function BlocklySimulator:TriggerVirtualEvent(virtualEventType, virtualEventParams, window)

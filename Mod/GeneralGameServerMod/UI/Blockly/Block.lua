@@ -20,6 +20,7 @@ local InputFieldContainer = NPL.load("./InputFieldContainer.lua", IsDevEnv);
 local FieldSpace = NPL.load("./Fields/Space.lua", IsDevEnv);
 local FieldColor = NPL.load("./Fields/Color.lua", IsDevEnv);
 local FieldLabel = NPL.load("./Fields/Label.lua", IsDevEnv);
+local FieldValue = NPL.load("./Fields/Value.lua", IsDevEnv);
 local FieldButton = NPL.load("./Fields/Button.lua", IsDevEnv);
 local FieldInput = NPL.load("./Fields/Input.lua", IsDevEnv);
 local FieldTextarea = NPL.load("./Fields/Textarea.lua", IsDevEnv);
@@ -80,6 +81,17 @@ function Block:Init(blockly, opt)
 
     self:ParseMessageAndArg(opt);
     return self;
+end
+
+function Block:OnCreate()
+    local callback = self:GetOption().callback;
+    if (not callback or callback == "") then return end
+    local func, errmsg = loadstring(callback);
+    if (func) then
+        func(self);
+    else
+        print(errmsg);
+    end
 end
 
 function Block:Clone(clone, isAll)
@@ -158,6 +170,8 @@ function Block:ParseMessageAndArg(opt)
                     inputFieldContainer:AddInputField(FieldColor:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_button") then
                     inputFieldContainer:AddInputField(FieldButton:new():Init(self, inputField), true);
+                elseif (inputField.type == "field_value") then
+                    inputFieldContainer:AddInputField(FieldValue:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_textarea") then
                     inputFieldContainer:AddInputField(FieldTextarea:new():Init(self, inputField), true);
                 elseif (inputField.type == "field_json") then
@@ -403,6 +417,7 @@ function Block:OnMouseMove(event)
         if (block:IsToolBoxBlock()) then 
             clone = self:Clone();
             clone:SetToolBoxBlock(false);
+            clone:OnCreate();
             clone.isNewBlock = true;
             clone.startX, clone.startY, clone.lastMouseMoveX, clone.lastMouseMoveY, clone.isMouseDown = block.startX, block.startY, block.lastMouseMoveX, block.lastMouseMoveY, block.isMouseDown;
             local blockX, blockY = math.floor(block.leftUnitCount * block:GetUnitSize() * toolboxScale / scale + 0.5) - blockly.offsetX, math.floor(block.topUnitCount * block:GetUnitSize() * toolboxScale / scale + 0.5) - blockly.offsetY; 
@@ -558,7 +573,8 @@ function Block:ConnectionBlock(block)
         BlockDebug("===================nextConnection match previousConnection====================");
         return true;
     end
-    
+
+    local nextBlock = self:GetNextBlock();
     -- 下连接匹配
     if ((self.topUnitCount + self.heightUnitCount - Const.ConnectionRegionHeightUnitCount) < block.topUnitCount 
         and self.nextConnection and block.previousConnection and self.nextConnection:IsMatch(block.previousConnection)) then
@@ -567,6 +583,11 @@ function Block:ConnectionBlock(block)
             for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
                 if (inputAndFieldContainer:ConnectionBlock(block)) then return true end
             end
+        end
+
+        if (nextBlock and nextBlock.topUnitCount < block.topUnitCount and nextBlock:IsIntersect(block, true)) then
+            local isConnection = nextBlock:ConnectionBlock(block);
+            if (isConnection) then return true end
         end
 
         self:GetBlockly():RemoveBlock(block);
@@ -587,7 +608,6 @@ function Block:ConnectionBlock(block)
     end
 
     -- 下个块如果相交则继续判定下个块
-    local nextBlock = self:GetNextBlock();
     if (nextBlock and nextBlock:IsIntersect(block, true)) then
         return nextBlock:ConnectionBlock(block);
     end
@@ -616,6 +636,14 @@ function Block:SetFieldsValue(value)
     for i, opt in ipairs(self.inputFieldOptionList) do
         local field = self:GetInputField(opt.name);
         if (field) then field:SetFieldValue(values[i]) end 
+    end
+end
+
+-- 设置字段值
+function Block:SetFieldValue(name, value)
+    local inputAndField = self.inputFieldMap[name];
+    if (inputAndField) then
+        inputAndField:SetFieldValue(value);
     end
 end
 
@@ -665,7 +693,7 @@ local function DefaultToCode(block)
         for i, arg in ipairs(option.arg) do
             if (arg.type == "input_value" or arg.type == "input_value_list" or arg.type == "input_statement") then
                 args[arg.name] = block:GetValueAsString(arg.name);
-            else
+            elseif (arg.name) then
                 args[arg.name] = block:GetFieldValue(arg.name);
             end
         end 
@@ -675,12 +703,12 @@ local function DefaultToCode(block)
     code = string.gsub(code, "%$%{([%w_]+)%}", args);
     code = string.gsub(code, "[;\n]+$", "");
     code = string.gsub(code, "^\n+", "");
-    if (not option.output) then code = code .. ";\n" end
+    if (not option.output) then code = code .. "\n" end
     return code;
 end
 
 -- 获取块代码
-function Block:GetBlockCode()
+function Block:GetCode()
     local language = self:GetLanguage();
     local option = self:GetOption();
     local ToCode = DefaultToCode;
@@ -693,10 +721,7 @@ function Block:GetBlockCode()
         -- print("---------------------图块转换函数不存在---------------------")
     end
 
-    local code = ToCode and ToCode(self) or "";
-    local nextBlock = self:GetNextBlock();
-    if (nextBlock) then code = code .. nextBlock:GetBlockCode() end
-    return code;
+    return ToCode and ToCode(self) or "";
 end
 
 -- 获取xmlNode

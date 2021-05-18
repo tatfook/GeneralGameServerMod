@@ -18,7 +18,7 @@ local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 local Params = NPL.load("./Params.lua", IsDevEnv);
 local Simulator = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-Simulator:Property("SimulatorName", "Simulator");               -- 模拟器名称
+Simulator:Property("SimulatorName", "Simulator");                    -- 模拟器名称
 
 local windows = {};
 local simulators = {};
@@ -28,6 +28,7 @@ if (IsDevEnv) then
     _G.simulators = _G.simulators or {};
     simulators = _G.simulators;
 end
+local simulated = false;  -- 是否已模拟
 local window_id = 0;
 local default_simulator_name = "DefaultSimulatorName";
 local macro_cache_obj = {};
@@ -158,12 +159,23 @@ function Simulator:ctor()
     self:RegisterSimulator();
 end
 
+function Simulator:IsSimulated()
+    return simulated;
+end
+
+function Simulator:SetSimulated(bSimulated)
+    simulated = bSimulated;
+end
+
 function Simulator:Init(event, window)
+    self:SetSimulated(false);
     Params:Init(event, window);
+
     return self;
 end
 
-function Simulator:Finish(event, window)
+function Simulator:Simulate(event, window)
+    if (self:IsSimulated()) then return end 
 end
 
 function Simulator:Trigger(params, window)

@@ -7,9 +7,50 @@ Desc: 按钮
 local Select = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/Select.lua");
 -------------------------------------------------------
 ]]
-
+local Simulator = NPL.load("../Event/Simulator.lua");
 local Element = NPL.load("../Element.lua", IsDevEnv);
 local InputElement = NPL.load("./Input.lua");
+
+-- SelectSimulator
+local SelectSimulator = commonlib.inherit(Simulator, {});
+SelectSimulator:Property("SimulatorName", "SelectSimulator");
+
+function SelectSimulator:ctor()
+    self:RegisterSimulator();
+end
+
+function SelectSimulator:SimulateSelectOption(selectId, value)
+    if (not selectId) then return end
+
+    self:AddVirtualEvent("SelectOption", {value = value, selectId = selectId});
+end
+
+function SelectSimulator:HandlerSelectOption(params, window)
+    local selectId, value = params.selectId, params.value;
+    local select = window:GetElementById(selectId);
+    if (not select) then return end
+    select:SetFocus(nil);
+    select:OnFocusOut();
+    select:SetAttrValue("value", value);
+end
+
+function SelectSimulator:TriggerSelectOption(params, window)
+    local selectId, value = params.selectId, params.value;
+    local select = window:GetElementById(selectId);
+    if (not select) then return end
+
+    local sx, sy = select:AutoScrollToValue(value);
+    return self:SetClickTrigger(sx + 14, sy + 14);
+end
+function SelectSimulator:HandlerVirtualEvent(virtualEventType, virtualEventParams, window)
+    if (virtualEventType == "SelectOption") then return self:HandlerSelectOption(virtualEventParams, window) end
+end
+
+function SelectSimulator:TriggerVirtualEvent(virtualEventType, virtualEventParams, window)
+    if (virtualEventType == "SelectOption") then return self:TriggerSelectOption(virtualEventParams, window) end
+end
+
+SelectSimulator:InitSingleton();
 
 local Option = commonlib.inherit(Element, {});
 Option:Property("Name", "Option");
@@ -22,7 +63,7 @@ Option:Property("BaseStyle", {
         height = "28px",
         ["line-height"] = "28px",
         ["min-width"] = "100%",
-        padding = "0px 4px",
+        padding = "0px 10px 0px 4px",
     },
     HoverStyle = {
         ["background-color"] = "#cccccc",
@@ -78,7 +119,14 @@ end
 
 function Option:OnMouseDown(event)
     Option._super.OnMouseDown(self, event);
-    self:GetSelectElement():OnSelect(self);
+
+    local select = self:GetSelectElement();
+    select:OnSelect(self);
+
+    if (self:IsCanSimulateEvent()) then
+        SelectSimulator:SimulateSelectOption(select:GetAttrStringValue("id"), self:GetValue());
+    end
+    
     event:Accept();
     self:CaptureMouse();
 end
@@ -87,6 +135,10 @@ function Option:OnMouseUp(event)
     Option._super.OnMouseUp(self, event);
     event:Accept();
     self:ReleaseMouseCapture();
+end
+
+function Option:SimulateEvent()
+    SelectSimulator:SetSimulated(true);
 end
 
 -- SelectListBox
@@ -104,6 +156,10 @@ function ListBox:OnAfterUpdateLayout()
         end
     end
     self:OnRealContentSizeChange();
+end
+
+function ListBox:SimulateEvent()
+    SelectSimulator:SetSimulated(true);
 end
 
 -- Select
@@ -136,15 +192,17 @@ function Select:Init(xmlNode, window, parent)
     local ListBox = ListBox:new():Init({
         name = "ListBox",
         attr = {
-            style = "position: absolute; left: 0px; top: 105%;  min-width: 100%; max-height: 130px; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; padding: 4px 2px; border: 1px solid #cccccc;",
+            style = "position: absolute; left: 0px; top: 105%;  min-width: 100%; max-height: 142px; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; border: 1px solid #cccccc;",
         }
     }, window, self);
     local function InputValueFinish(value)
-        value = self:GetValueByLabel(value);
-        self:SetValue(value);
-        self:SetLabel(self:GetLabelByValue(value));
-        self:CallAttrFunction("onchange", nil, self:GetValue(), self:GetLabel());
-        self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
+        if (value ~= self:GetValue()) then
+            value = self:GetValueByLabel(value);
+            self:SetValue(value);
+            self:SetLabel(self:GetLabelByValue(value));
+            self:CallAttrFunction("onchange", nil, self:GetValue(), self:GetLabel());
+            self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
+        end
         self:OnFocusOut();
         self:SetFocus(nil);
     end
@@ -275,15 +333,55 @@ end
 
 function Select:OnSelect(option)
     if (self:GetSelectedOptionElement() == option) then return end
+    self:SetFocus(nil);
+    self:OnFocusOut();
+
     self:SetSelectedOptionElement(option);
     local value = option and option:GetValue();
     local label = option and option:GetLabel();
     self:SetValue(value);
     self:SetLabel(label);
-    self:SetFocus(nil);
-    self:OnFocusOut();
     self:CallAttrFunction("onchange", nil, value, label);
     self:CallAttrFunction("onselect", nil, value, label);
+end
+
+function Select:GetOptionIndex(value)
+    local ListBox = self:GetListBoxElement();
+    
+    value = value or self:GetValue();
+    for i, childElement in ipairs(ListBox.childrens) do
+        if (childElement:GetValue() == value) then
+            return i;
+        end
+    end
+    
+    return nil;
+end
+
+function Select:AutoScrollToValue(value)
+    local ListBox = self:GetListBoxElement();
+    local index = self:GetOptionIndex(value);
+    if (not index) then return end
+    local _, _, _, ListBoxHeight = ListBox:GetContentGeometry();
+    local OptionHeight = ListBox.childrens[1]:GetHeight();
+    local OptionTotalCount = #ListBox.childrens;
+    local viewOptionCount = math.floor(ListBoxHeight / OptionHeight);
+    local viewOptionHalfCount = math.ceil(viewOptionCount / 2);
+    -- 剩余选项过少, 直接滚动到底部
+    local offset = 0;
+    if (index <= viewOptionCount) then
+        offset = 0;
+    elseif ((OptionTotalCount - index) < (viewOptionCount - viewOptionHalfCount)) then
+        offset = (OptionTotalCount - viewOptionCount) * OptionHeight;
+    else
+        offset = (index - viewOptionHalfCount) * OptionHeight;
+    end
+
+    local scroll = ListBox:GetVerticalScrollBar();
+    if (scroll) then scroll:ScrollTo(offset) end
+
+    local relX, relY =  0, (index - 1) * OptionHeight - offset;
+    return ListBox:RelativePointToScreenPoint(relX, relY);
 end
 
 function Select:OnFocusIn(event)
@@ -298,6 +396,9 @@ function Select:OnFocusIn(event)
     end
     self:GetListBoxElement():SetVisible(true);
     self:GetListBoxElement():UpdateLayout();
+    if (self:GetAttrBoolValue("isAutoScroll", false)) then
+        self:AutoScrollToValue();
+    end
     Select._super.OnFocusIn(self, event);
 end
 

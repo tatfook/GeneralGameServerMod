@@ -11,7 +11,10 @@ ToolBoxBlockList = {};
 ToolBoxCategoryList = {};
 CategoryOptions = {};
 CategoryName = "";
-local AllCategoryList, AllCategoryMap = {}, {};
+local AllCategoryList, AllCategoryMap, AllBlockMap = {}, {}, {};
+-- local AllCategoryList = commonlib.deepcopy(BlockManager.GetLanguageCategoryList());
+-- local AllCategoryMap = commonlib.deepcopy(BlockManager.GetLanguageCategoryMap());
+-- local AllBlockMap = commonlib.deepcopy(BlockManager.GetLanguageBlockMap());
 
 local function GetToolBoxBlockList()
     local blocklist = {};
@@ -46,8 +49,8 @@ local function ParseToolBoxXmlText()
             category.name = category.name or category_attr.name or default_category.name;
             category.text = category.text or category_attr.text or default_category.text;
             category.color = category.color or category_attr.color or default_category.color;
-            local hideInToolbox = if_else(category_attr.hideInToolbox ~= nil, category_attr.hideInToolbox == "true", default_category.hideInToolbox and true or false);
-            category.hideInToolbox = if_else(category.hideInToolbox ~= nil, category.hideInToolbox, hideInToolbox);
+            -- local hideInToolbox = if_else(category_attr.hideInToolbox ~= nil, category_attr.hideInToolbox == "true", default_category.hideInToolbox and true or false);
+            category.hideInToolbox = category_attr.hideInToolbox == "true";
             if (not categorymap[category.name]) then
                 table.insert(categorylist, #categorylist + 1, category);
                 categorymap[category.name] = category;

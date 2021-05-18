@@ -121,8 +121,9 @@ function Blockly:OnToolBoxXmlTextChange(toolboxXmlText)
                 category.name = category.name or category_attr.name or default_category.name;
                 category.text = category.text or category_attr.text or default_category.text;
                 category.color = category.color or category_attr.color or default_category.color;
-                local hideInToolbox = if_else(category_attr.hideInToolbox ~= nil, category_attr.hideInToolbox == "true", default_category.hideInToolbox and true or false);
-                category.hideInToolbox = if_else(category.hideInToolbox ~= nil, category.hideInToolbox, hideInToolbox);
+                -- local hideInToolbox = if_else(category_attr.hideInToolbox ~= nil, category_attr.hideInToolbox == "true", default_category.hideInToolbox and true or false);
+                -- category.hideInToolbox = if_else(category.hideInToolbox ~= nil, category.hideInToolbox, hideInToolbox);
+                category.hideInToolbox = category_attr.hideInToolbox == "true";
                 for _, blockTypeNode in ipairs(categoryNode) do
                     if (blockTypeNode.attr and blockTypeNode.attr.type) then
                         local blocktype = blockTypeNode.attr.type;
@@ -257,7 +258,7 @@ function Blockly:ClearBlocks()
 end
 
 -- 遍历
-function Blockly:ForEach(callback)
+function Blockly:ForEachUI(callback)
     for _, block in ipairs(self.blocks) do
         if (type(callback) == "function") then callback(block) end
         block:ForEach(callback);
@@ -420,7 +421,7 @@ function Blockly:RenderContent(painter)
             local width, height = 12, 12;
             painter:SetPen("#ff0000");
             -- painter:DrawRectTexture(self.mouseMoveX - width / 2, self.mouseMoveY - height / 2, width, height, Shape:GetCloseTexture());
-            painter:DrawRectTexture(DraggingBlock.left + self.offsetX, DraggingBlock.top + self.offsetY, width, height, Shape:GetCloseTexture());
+            painter:DrawRectTexture(DraggingBlock.left + self.offsetX - width / 2, DraggingBlock.top + self.offsetY - height / 2, width, height, Shape:GetCloseTexture());
         end
     end
 
@@ -571,13 +572,14 @@ function Blockly:UpdateScale(offset)
     newScale = math.max(newScale, 0.5);
     if (oldScale == newScale) then return end
     self:SetScale(newScale);
-    for _, block in ipairs(self.blocks) do
-        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
-        leftUnitCount = math.floor(leftUnitCount * oldScale / newScale);
-        topUnitCount = math.floor(topUnitCount * oldScale / newScale);
-        block:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
-        block:UpdateLayout();
-    end
+    self:AdjustCenter();
+    -- for _, block in ipairs(self.blocks) do
+    --     local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+    --     leftUnitCount = math.floor(leftUnitCount * oldScale / newScale);
+    --     topUnitCount = math.floor(topUnitCount * oldScale / newScale);
+    --     block:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
+    --     block:UpdateLayout();
+    -- end
 end
 
 -- 鼠标移动事件
@@ -766,8 +768,15 @@ end
 function Blockly:GetCode()
     local code = "";
     for _, block in ipairs(self.blocks) do
-        code = code .. (block:GetBlockCode() or "") .. "\n";
+        local nextBlock = block;
+        local blockCode = "";
+        while (nextBlock) do
+            blockCode = blockCode .. nextBlock:GetCode();
+            nextBlock = nextBlock:GetNextBlock();
+        end
+        code = code .. blockCode .. "\n";
     end
+    
     local prettyCode = code;
     local ok, errinfo = pcall(function()
         prettyCode = LuaFmt.Pretty(code);

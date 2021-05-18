@@ -10,7 +10,7 @@
     <select v-bind:value="value" v-bind:options="options"></select> -->
 
     <div>
-        <select v-bind:options="opts" value="B" isAllowCreate=true isShowArrowIcon=false></select>
+        <select id="select" v-bind:options="opts" value="B" isAllowCreate=true isShowArrowIcon=false isAutoScroll=true></select>
     </div>
 </template>
 
@@ -19,7 +19,21 @@ RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
 
 options = {"广东省", "湖北省", "湖南省", "广东省", "湖北省", "湖南省", "广东省", "湖北省", "湖南省", "广东省", "湖北省", "湖南省"};
 
-opts = {{"广东省", "A"}, {"湖北省", "B"}}
+opts = {
+    {"A", "A"}, 
+    {"B", "B"},
+    {"C", "C"},
+    {"D", "D"},
+    {"E", "E"},
+    {"F", "F"},
+    {"G", "G"},
+    {"H", "H"},
+    {"I", "I"},
+    {"J", "J"},
+    {"K", "K"},
+    {"L", "L"},
+
+}
 GetGlobalScope():Set("value", "");
 local count = 1;
 

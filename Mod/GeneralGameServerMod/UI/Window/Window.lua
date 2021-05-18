@@ -18,11 +18,12 @@ local SizeEvent = commonlib.gettable("System.Windows.SizeEvent");
 local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
 
 local G = NPL.load("./G.lua", IsDevEnv);
+local StyleManager = NPL.load("./Style/StyleManager.lua", IsDevEnv);
+local Simulator = NPL.load("./Event/Simulator.lua", IsDevEnv);
+local Event = NPL.load("./Event/Event.lua", IsDevEnv);
+
 local Element = NPL.load("./Element.lua", IsDevEnv);
 local ElementManager = NPL.load("./ElementManager.lua", IsDevEnv);
-local StyleManager = NPL.load("./Style/StyleManager.lua", IsDevEnv);
-local Event = NPL.load("./Event/Event.lua", IsDevEnv);
-local Simulator = NPL.load("./Event/Simulator.lua", IsDevEnv);
 
 local Window = commonlib.inherit(Element, NPL.export());
 local WindowDebug = GGS.Debug.GetModuleDebug("WindowDebug").Enable();
@@ -315,7 +316,7 @@ function Window:HandleEvent(event)
     local event_type = event:GetEventType();
 
     -- 事件模拟器预处理
-    if (Simulator:IsRecording() and self:IsSupportSimulator()) then Simulator:GetDefaultSimulator():Init(event, self) end
+    if (self:IsCanSimulateEvent()) then Simulator:Init(event, self) end
 
     if (event_type == "ondraw") then self:HandleRender() 
     elseif (event_type == "onsize") then self:HandleGeometryChangeEvent() 
@@ -335,7 +336,7 @@ function Window:HandleEvent(event)
     end
 
     -- 事件模拟生成机制
-    if (Simulator:IsRecording() and self:IsSupportSimulator()) then Simulator:GetDefaultSimulator():Finish(event, self) end
+    if (self:IsCanSimulateEvent() and not Simulator:IsSimulated()) then Simulator:GetDefaultSimulator():Simulate(event, self) end
 end
 
 -- 获取窗口位置
@@ -438,6 +439,7 @@ function Window:HandleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
 
     -- local BeginTime = ParaGlobal.timeGetTime();
+    local isCanSimulateEvent = self:IsCanSimulateEvent();
     local eventType = event:GetType();
     local captureFuncName, bubbleFuncName = self:GetEventTypeFuncName(event);
 
@@ -447,6 +449,7 @@ function Window:HandleMouseEvent(event)
     if (captureElement) then
         captureElement:CallEventCallback(captureFuncName, event);
         captureElement:CallEventCallback(bubbleFuncName, event);
+        if (isCanSimulateEvent and not Simulator:IsSimulated()) then captureElement:SimulateEvent(event) end 
         return ;        
     end
 
@@ -479,6 +482,7 @@ function Window:HandleMouseEvent(event)
     for i = EventElementCount, 1, -1 do
         el = EventElementList[i];
         el:CallEventCallback(captureFuncName, event);
+        if (isCanSimulateEvent and not Simulator:IsSimulated()) then el:SimulateEvent(event) end 
         if (event:IsAccepted()) then break end
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "捕获事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
