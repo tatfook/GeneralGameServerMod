@@ -177,13 +177,13 @@ function ContextMenu:ExportMacroCode()
         end
     end
     for _, block in ipairs(blocks) do
-        if (not block.previousConnection and block.nextConnection) then
+        -- if (not block.previousConnection and block.nextConnection) then
             while (block) do
                 local nextBlock = block:GetNextBlock();
                 ExportBlockMacroCode(block);
                 block = nextBlock;
             end
-        end
+        -- end
     end
     -- blockly.offsetX, blockly.offsetY = offsetX, offsetY;
     local text = "";
@@ -193,8 +193,13 @@ function ContextMenu:ExportMacroCode()
     for _, param in ipairs(params) do
         if (param.isMacroBlock) then
             local code = param.macroCode;
-            code = string.gsub(code, "[;\n]+$", "");
-            text = text .. code .. "\n";
+            if (param.blockType == "NPL_Macro_Start") then
+                code = string.gsub(code, "[;\n]+$", "");
+                text = code .. "\n" .. text;
+            else 
+                code = string.gsub(code, "[;\n]+$", "");
+                text = text .. code .. "\n";
+            end
             if (param.blockType == "NPL_Macro_Text") then
                 isExitMacroText = true;
             end
