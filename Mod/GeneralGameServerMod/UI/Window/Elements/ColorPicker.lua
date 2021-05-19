@@ -19,7 +19,7 @@ ColorPicker:Property("Value", "");                                -- 按钮文�
 
 ColorPicker:Property("BaseStyle", {
     ["NormalStyle"] = {
-        ["width"] = 300,
+        ["width"] = 145,
         ["height"] = 200,
         ["padding"] = "10px 22px ",
         ["background-color"] = "#ffffff",

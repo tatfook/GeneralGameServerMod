@@ -475,7 +475,7 @@ function BlockInputField:GetFieldColorEditElement(parentElement)
     local ColorPickerEditElement = ColorPickerElement:new():Init({
         name = "ColorPicker",
         attr = {
-            style = 'position: absolute; left: -135px; top: 30px;', 
+            style = 'position: absolute; left: -60px; top: 30px;', 
             value = self:GetValue(),
         },
     }, parentElement:GetWindow(), parentElement);
