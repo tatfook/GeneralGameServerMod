@@ -5,8 +5,9 @@ local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Helper.lua");
 
 BlockManager.SetCurrentLanguage(_G.Language);
 
+local DefaultToolBoxXmlText = BlockManager.GenerateToolBoxXmlText();
 ContentType = "xmltext"; -- block category
-ToolBoxXmlText = (_G.XmlText and _G.XmlText ~= "") and _G.XmlText  or BlockManager.GenerateToolBoxXmlText();
+ToolBoxXmlText = (_G.XmlText and _G.XmlText ~= "") and _G.XmlText  or DefaultToolBoxXmlText;
 ToolBoxBlockList = {};
 ToolBoxCategoryList = {};
 CategoryOptions = {};
@@ -91,6 +92,10 @@ local function GenerateToolBoxXmlText()
     end
     local xmlText = Helper.Lua2XmlString(toolbox, true);
     return xmlText;
+end
+
+function ClickResetXmlText()
+    ToolBoxXmlText = DefaultToolBoxXmlText;
 end
 
 function OnToolBoxCategoryOrderChange(category)
