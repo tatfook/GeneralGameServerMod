@@ -33,6 +33,7 @@ BlockInputField:Property("Validator", nil);                      -- 验证器
 BlockInputField:Property("Value", "");                           -- 值
 BlockInputField:Property("DefaultValue", "");                    -- 默认值
 BlockInputField:Property("Label", "");                           -- 显示值
+BlockInputField:Property("DefaultLabel", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
 BlockInputField:Property("EditElement", nil);                    -- 编辑元素
 BlockInputField:Property("AllowNewSelectOption", false, "IsAllowNewSelectOption");  -- 是否允许新增选项
@@ -56,8 +57,9 @@ function BlockInputField:Init(block, option)
     self:SetType(option.type);
     self:SetValidator(option.validator);
     self:SetValue(self:GetOptionText());
-    self:SetLabel(tostring(self:GetValue()));
+    self:SetLabel(tostring(option.label or self:GetValue()));
     self:SetDefaultValue(self:GetValue());
+    self:SetDefaultLabel(self:GetLabel());
     -- 解析颜色值
 
     if (self:IsBlock()) then
@@ -68,8 +70,8 @@ function BlockInputField:Init(block, option)
     
     self:SetAllowNewSelectOption(option.isAllowNewSelectOption == true and true or false);
     if (self:IsSelectType()) then
-        self:SetLabel(self:GetLabelByValue(self:GetValue()));
-        self:SetValue(self:GetValueByLablel(self:GetLabel()));
+        self:SetLabel(self:GetLabelByValue(self:GetValue(), self:GetDefaultLabel()));
+        self:SetValue(self:GetValueByLablel(self:GetLabel(), self:GetDefaultValue()));
     end 
     
     if (option.name and option.name ~= "") then block.inputFieldMap[option.name] = self end
@@ -95,22 +97,22 @@ function BlockInputField:GetOptions(bRefresh)
     return {};
 end
 
-function BlockInputField:GetValueByLablel(label)
+function BlockInputField:GetValueByLablel(label, defaultValue)
     local options = self:GetOptions();
     for _, option in ipairs(options) do
         if (option[1] == label or option.label == label) then return option[2] or option.value end
     end
-    if (self:IsAllowNewSelectOption()) then return label end 
-    return options[1] and (options[1][2] or options[1].value) or label;
+    if (self:IsAllowNewSelectOption()) then return defaultValue or label end 
+    return options[1] and (options[1][2] or options[1].value) or defaultValue or label;
 end
 
-function BlockInputField:GetLabelByValue(value)
+function BlockInputField:GetLabelByValue(value, defaultLabel)
     local options = self:GetOptions();
     for _, option in ipairs(options) do
         if (option[2] == value or option.value == value) then return option[1] or option.label end
     end
-    if (self:IsAllowNewSelectOption()) then return value end 
-    return options[1] and (options[1][1] or options[1].label) or value;
+    if (self:IsAllowNewSelectOption()) then return defaultLabel or value end 
+    return options[1] and (options[1][1] or options[1].label) or defaultLabel or value;
 end
 
 -- 获取选项文本, 默认为字段值(value)
@@ -463,6 +465,7 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
     end);
 
     SelectEditElement:SetAttrValue("onselect", function(value, label)
+        if (self:GetValue() == value) then return end
         self:SetValue(value);
         self:SetLabel(label);
         self:FocusOut();
