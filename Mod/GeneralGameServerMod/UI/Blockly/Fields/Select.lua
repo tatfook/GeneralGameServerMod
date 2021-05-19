@@ -23,11 +23,17 @@ Select:Property("SelectType");
 function Select:Init(block, option)
     Select._super.Init(self, block, option);
 
-    local selectType = option.options == nil and self:GetName() or nil;
-    if (type(option.options) == "string" and not Options[option.options]) then selectType = option.options end
-
-    self:SetSelectType(selectType);
-    self:SetAllowNewSelectOption(selectType and true or false);
+    local options = option.options;
+    if (options == nil) then
+        self:SetSelectType(self:GetName());
+        self:SetAllowNewSelectOption(true);
+    elseif (type(options) == "string" and not Options[options]) then
+        self:SetSelectType(options);
+        self:SetAllowNewSelectOption(false);
+    elseif (type(options) == "table" and options.selectType) then
+        self:SetSelectType(options.selectType);
+        self:SetAllowNewSelectOption(options.isAllowCreate)
+    end
 
     return self;
 end
@@ -48,22 +54,32 @@ function Select:GetOptions(bRefresh)
     return select_options[selectType];
 end
 
-function Select:OnEndEdit()
+function Select:OnValueChanged(oldValue, newValue)
     local selectType = self:GetSelectType();
-    if (not self:IsAllowNewSelectOption() or not selectType) then return end
+    if (not selectType or not self:IsAllowNewSelectOption()) then return end
 
+    local UpdateBlockMap, ValueExistMap = {}, {};
+    local label = self:GetLabel();
     local options = self:GetOptions();
     local index, size = 1, #options;
-    local exist = {};
     self:GetBlockly():ForEachUI(function(blockInputField)
         if (not blockInputField:IsField() or not blockInputField:IsSelectType() or blockInputField:GetSelectType() ~= selectType) then return end
-        local varname = blockInputField:GetValue();
-        if (varname and varname ~= "" and not exist[varname]) then
-            options[index] = {varname, varname};
-            index = index + 1;
-            exist[varname] = true;
+        -- 更新字段值
+        if (not blockInputField:IsAllowNewSelectOption() and blockInputField:GetValue() == oldValue) then
+            blockInputField:SetValue(newValue);
+            blockInputField:SetLabel(label);
+            UpdateBlockMap[blockInputField:GetTopBlock()] = true;
         end
-    end);
+        -- 更新选项集
+        if (blockInputField:IsAllowNewSelectOption()) then
+            local value = blockInputField:GetValue();
+            if (value and value ~= "" and not ValueExistMap[value]) then
+                options[index] = {value, value};
+                index = index + 1;
+                ValueExistMap[value] = true;
+            end
+        end
+    end)
 
     for i = index, size do
         options[i] = nil;
@@ -72,4 +88,27 @@ function Select:OnEndEdit()
     table.sort(options, function(item1, item2)
         return item1[1] < item2[1];
     end);
+
+    for block in pairs(UpdateBlockMap) do
+        block:UpdateLayout();
+    end
+end
+
+function Select:OnUI(eventName, eventData)
+    if (eventName == "LoadXmlTextToWorkspace") then
+        if (not self:GetSelectType()) then return end
+        
+        local value = self:GetValue();
+        local options = self:GetOptions();
+        local isExist = false;
+        for _, option in ipairs(options) do 
+            if (option[2] == value) then
+                isExist = true;
+                break;
+            end
+        end
+        if (not isExist and value and value ~= "") then
+            table.insert(options, {value, value});
+        end
+    end
 end

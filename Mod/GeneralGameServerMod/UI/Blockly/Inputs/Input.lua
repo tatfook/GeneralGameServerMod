@@ -97,3 +97,12 @@ function Input:LoadFromXmlNode(xmlNode)
         self:SetInputShadowBlock(inputBlock);
     end
 end
+
+function Input:ForEach(callback)
+    Input._super.ForEach(self, callback);
+
+    local inputBlock = self:GetInputBlock();
+    if (inputBlock) then
+        inputBlock:ForEach(callback);
+    end
+end

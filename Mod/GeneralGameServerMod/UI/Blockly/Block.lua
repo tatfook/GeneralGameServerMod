@@ -611,12 +611,13 @@ end
 
 -- 遍历
 function Block:ForEach(callback)
+    Block._super.ForEach(self, callback);
     for _, inputAndFieldContainer in ipairs(self.inputFieldContainerList) do
         inputAndFieldContainer:ForEach(callback);
     end
+    
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then
-        if (type(callback) == "function") then callback(nextBlock) end
         nextBlock:ForEach(callback);
     end
 end

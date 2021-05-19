@@ -857,6 +857,8 @@ function Blockly:LoadFromXmlNodeText(text)
     if (not xmlNode) then return end
     local blocklyXmlNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//Blockly");
     self:LoadFromXmlNode(blocklyXmlNode);
+
+    self:EmitUI("LoadXmlTextToWorkspace");
 end
 
 function Blockly:SaveToXmlNodeText()
@@ -868,3 +870,9 @@ function Blockly:OnChange(event)
     self:CallAttrFunction("onchange", nil, event);
 end
 
+-- 发送事件到UI
+function Blockly:EmitUI(eventName, eventData)
+    self:ForEachUI(function(blockInputField)
+        blockInputField:OnUI(eventName, eventData);
+    end);
+end

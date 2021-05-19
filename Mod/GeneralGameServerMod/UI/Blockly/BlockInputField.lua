@@ -406,6 +406,9 @@ function BlockInputField:GetMinEditFieldWidthUnitCount()
     return Const.MinEditFieldWidthUnitCount;
 end
 
+function BlockInputField:OnValueChanged(oldValue, newValue)
+end
+
 function BlockInputField:GetFieldInputEditElement(parentElement)
     local UnitSize = self:GetUnitSize();
     local InputEditElement = InputElement:new():Init({
@@ -465,10 +468,12 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
     end);
 
     SelectEditElement:SetAttrValue("onselect", function(value, label)
-        if (self:GetValue() == value) then return end
+        local oldValue = self:GetValue();
+        if (oldValue == value) then return end
         self:SetValue(value);
         self:SetLabel(label);
         self:FocusOut();
+        self:OnValueChanged(oldValue, value);
     end);
 
     return SelectEditElement;
@@ -647,4 +652,11 @@ end
 
 function BlockInputField:GetScale()
     return self:GetBlock():GetBlockly():GetScale();
+end
+
+function BlockInputField:ForEach(callback)
+    if (type(callback) == "function") then callback(self) end
+end
+
+function BlockInputField:OnUI(eventName, eventData)
 end

@@ -160,13 +160,7 @@ end
 
 function InputFieldContainer:ForEach(callback)
     for _, inputField in ipairs(self.inputFields) do
-        if (type(callback) == "function") then callback(inputField) end
-
-        local nextBlock = inputField:GetNextBlock();
-        if (nextBlock) then
-            if (type(callback) == "function") then callback(nextBlock) end
-            nextBlock:ForEach(callback);
-        end
+        inputField:ForEach(callback);
     end
 end
 

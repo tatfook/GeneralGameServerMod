@@ -19,6 +19,7 @@ function Variable:Init(block, option)
 
     self:SetAllowNewSelectOption(true);
 
+    print(block:GetType());
     return self;
 end
 
