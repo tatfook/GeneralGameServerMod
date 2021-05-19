@@ -20,10 +20,6 @@ function Value:UpdateWidthHeightUnitCount()
     return 0, 0;
 end
 
-function Value:SaveToXmlNode()
-    return nil;
-end
-
 function Value:SetFieldValue(value)
     self:SetValue(value);
     self:SetLabel("");

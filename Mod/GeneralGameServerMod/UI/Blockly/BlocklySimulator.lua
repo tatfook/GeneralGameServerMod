@@ -55,11 +55,6 @@ function BlocklySimulator:SetBlockPos(blockly, params)
     end
 end
 
-function BlocklySimulator:SetToolBoxCategory(blockly, params)
-    local toolbox = blockly:GetToolBox();
-    toolbox:SwitchCategory(params.newCategoryName);    
-end
-
 function BlocklySimulator:SetInputValue(blockly, params)
     local UnitSize = blockly:GetUnitSize();
     local winX, winY = blockly:GetWindowPos();
@@ -75,12 +70,16 @@ function BlocklySimulator:HandlerVirtualEvent(virtualEventType, virtualEventPara
     local blockly = GetBlocklyElement(virtualEventParams, window);
     if (not blockly) then return end
     local action = virtualEventParams.action;
-    if (action == "SetBlocklyOffset") then 
+    local toolbox = blockly:GetToolBox();
+    if (action == "SetBlocklyEnv") then
+        blockly.offsetX, blockly.offsetY = virtualEventParams.offsetX, virtualEventParams.offsetY;
+        toolbox:SwitchCategory(virtualEventParams.categoryName);
+    elseif (action == "SetBlocklyOffset") then 
         blockly.offsetX, blockly.offsetY = virtualEventParams.newOffsetX, virtualEventParams.newOffsetY;
     elseif (action == "SetBlockPos") then
         self:SetBlockPos(blockly, virtualEventParams);
     elseif (action == "SetToolBoxCategory") then
-        self:SetToolBoxCategory(blockly, virtualEventParams);
+        toolbox:SwitchCategory(virtualEventParams.newCategoryName);    
     elseif (action == "SetInputValue") then
         self:SetInputValue(blockly, virtualEventParams);
     end
@@ -181,7 +180,8 @@ function BlocklySimulator:TriggerVirtualEvent(virtualEventType, virtualEventPara
     if (not blockly) then return end
 
     local action = virtualEventParams.action;
-    if (action == "SetBlocklyOffset") then 
+    if (action == "SetBlocklyEnv") then
+    elseif (action == "SetBlocklyOffset") then 
     elseif (action == "SetBlockPos") then
         return self:SetBlockPosTrigger(blockly, virtualEventParams);
     elseif (action == "SetToolBoxCategory") then

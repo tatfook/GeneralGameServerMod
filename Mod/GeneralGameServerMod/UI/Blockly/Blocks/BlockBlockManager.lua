@@ -563,6 +563,26 @@ local AllBlockList = {
             return string.format('code_description = [====[%s]====];\n', code_description);
         end,
     },
+
+    {
+        type = "set_code",
+        message = "图块自定义代码 %1",
+        arg = {
+            {
+                name = "code_description",
+                type = "field_textarea",
+                text = "",
+            },
+        },
+        category = "BlockCode",
+        previousStatement = true,
+	    nextStatement = true,
+        ToCode = function(block)
+            local code_description = block:GetFieldValue("code_description");
+            return string.format('code = [====[%s]====];\n', code_description);
+        end,
+    },
+
     {
         type = "string",
         message = '" %1 "',

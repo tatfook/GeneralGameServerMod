@@ -77,7 +77,7 @@ function clickConfirm()
     end
 
     local className, gradeLabel = "", "";
-    for i = 1, 12 do 
+    for i = 1, #ClassOptions do 
         if (ClassOptions[i][2] == grade) then
             gradeLabel = ClassOptions[i][1];
         end

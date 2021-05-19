@@ -129,13 +129,22 @@ function ContextMenu:ExportMacroCode()
     -- local offsetX, offsetY = oldOffsetX, oldOffsetY;
     local xmlText = blockly:SaveToXmlNodeText();
     toolbox:SwitchCategory(oldCategoryName);
+    params[#params + 1] = {action = "SetBlocklyEnv", offsetX = oldOffsetX, offsetY = oldOffsetY, categoryName = oldCategoryName};
     local function ExportBlockMacroCode(block)
         local blocktype = block:GetType();
+        local blockoption = block:GetOption();
         if (string.match(blocktype, "^NPL_Macro_")) then
-            block:Disconnection();
-            local code = block:GetCode();
-            params[#params + 1] = code;
-            return true;
+            local previousConnection = block.previousConnection and block.previousConnection:Disconnection();
+            local nextConnection = block.nextConnection and block.nextConnection:Disconnection();
+            if (previousConnection and nextConnection) then
+                previousConnection:Connection(nextConnection);
+                previousConnection:GetBlock():GetTopBlock():UpdateLayout();
+            end
+            local code = type(blockoption.ToMacroCode) == "function" and blockoption.ToMacroCode(block) or "";
+            if (code and code ~= "") then 
+                params[#params + 1] = {macroCode = code, blockType = blocktype, isMacroBlock = true}; 
+            end
+            return;
         end
         -- 调整工作区
         local left, top = oldOffsetX + block.left - ToolBoxWidth, oldOffsetY + block.top;
@@ -168,10 +177,12 @@ function ContextMenu:ExportMacroCode()
         end
     end
     for _, block in ipairs(blocks) do
-        while (block) do
-            local nextBlock = block:GetNextBlock();
-            ExportBlockMacroCode(block);
-            block = nextBlock;
+        if (not block.previousConnection and block.nextConnection) then
+            while (block) do
+                local nextBlock = block:GetNextBlock();
+                ExportBlockMacroCode(block);
+                block = nextBlock;
+            end
         end
     end
     -- blockly.offsetX, blockly.offsetY = offsetX, offsetY;
@@ -180,7 +191,14 @@ function ContextMenu:ExportMacroCode()
     local blocklyId = blockly:GetAttrStringValue("id");
     local isExitMacroText = false;
     for _, param in ipairs(params) do
-        if (type(param) == "table") then
+        if (param.isMacroBlock) then
+            local code = param.macroCode;
+            code = string.gsub(code, "[;\n]+$", "");
+            text = text .. code .. "\n";
+            if (param.blockType == "NPL_Macro_Text") then
+                isExitMacroText = true;
+            end
+        else 
             param.blocklyId = blocklyId;
             local params_text = commonlib.serialize_compact({
                 window_name = windowName,
@@ -193,10 +211,6 @@ function ContextMenu:ExportMacroCode()
                 text = text .. "text()\n";  -- 插入一条空字幕用于清除;
                 isExitMacroText = false;
             end
-        elseif (type(param) == "string") then
-            param = string.gsub(param, "[;\n]+$", "");
-            text = text .. param .. "\n";
-            isExitMacroText = true;
         end
     end
     ParaMisc.CopyTextToClipboard(text);

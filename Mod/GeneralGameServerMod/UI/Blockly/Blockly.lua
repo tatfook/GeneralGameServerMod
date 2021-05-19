@@ -15,6 +15,7 @@ local BlockSound = commonlib.gettable("MyCompany.Aries.Game.Sound.BlockSound");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local BlockManager = NPL.load("./Blocks/BlockManager.lua", IsDevEnv);
+local BlockCodeGlobal = NPL.load("./Blocks/BlockCodeGlobal.lua", IsDevEnv);
 local Options = NPL.load("./Options.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
@@ -45,6 +46,7 @@ Blockly:Property("ToolBox");                  -- 工具栏
 Blockly:Property("ShadowBlock");              -- 占位块
 Blockly:Property("Scale", 1);                 -- 缩放
 Blockly:Property("ReadOnly", false, "IsReadOnly");                 -- 缩放
+Blockly:Property("Global");
 
 function Blockly.PlayConnectionBlockSound()
     ConnectionBlockSound:play2d();
@@ -58,6 +60,7 @@ function Blockly:ctor()
     self:Reset();
     self.BlockMap, self.CategoryList, self.CategoryMap, self.CategoryColor = {}, {}, {}, {};
     self:SetToolBox(ToolBox:new():Init(self));
+    self:SetGlobal(BlockCodeGlobal:New());
 end
 
 function Blockly:Reset()
@@ -153,7 +156,36 @@ function Blockly:OnAttrValueChange(attrName, attrValue, oldAttrValue)
         self:SetLanguage(self:GetAttrStringValue("language"));
         self.CategoryList, self.CategoryMap = BlockManager.GetCategoryListAndMap(self:GetLanguage());
         self:OnToolBoxXmlTextChange(self:GetAttrStringValue("ToolBoxXmlText"));
+        self:LoadBlockMap();
     end
+end
+
+function Blockly:LoadBlockMap()
+    local BlockMap = BlockManager.GetBlockMap(self:GetLanguage());
+    self.BlockMap = {};
+
+    local G = self:GetGlobal();
+    for blockType, blockOption in pairs(BlockMap) do
+        local defaultOption = rawget(G, blockType);
+        if (defaultOption) then
+            for key, val in pairs(defaultOption) do
+                if (blockOption[key] == nil) then blockOption[key] = val end
+            end
+        end
+
+        G[blockType] = blockOption;
+        self.BlockMap[blockType] = blockOption;
+
+        if (blockOption.code and blockOption.code ~= "") then
+            local func, errmsg = loadstring(blockOption.code);
+            if (func) then
+                setfenv(func, G);
+                func();
+            else
+                print(errmsg);
+            end
+        end
+    end 
 end
 
 function Blockly:GetUnitSize()

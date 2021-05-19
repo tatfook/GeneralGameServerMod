@@ -55,7 +55,7 @@ function Select:OnEndEdit()
     local options = self:GetOptions();
     local index, size = 1, #options;
     local exist = {};
-    self:GetBlockly():ForEach(function(blockInputField)
+    self:GetBlockly():ForEachUI(function(blockInputField)
         if (not blockInputField:IsField() or not blockInputField:IsSelectType() or blockInputField:GetSelectType() ~= selectType) then return end
         local varname = blockInputField:GetValue();
         if (varname and varname ~= "" and not exist[varname]) then

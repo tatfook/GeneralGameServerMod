@@ -78,19 +78,15 @@ function Block:Init(blockly, opt)
     if (opt.output) then self.outputConnection = Connection:new():Init(self, "output_connection", opt.output) end
     if (opt.previousStatement) then self.previousConnection = Connection:new():Init(self, "previous_connection", opt.previousStatement) end
     if (opt.nextStatement) then self.nextConnection = Connection:new():Init(self, "next_connection", opt.nextStatement) end
-
+    
     self:ParseMessageAndArg(opt);
     return self;
 end
 
 function Block:OnCreate()
-    local callback = self:GetOption().callback;
-    if (not callback or callback == "") then return end
-    local func, errmsg = loadstring(callback);
-    if (func) then
-        func(self);
-    else
-        print(errmsg);
+    local OnCreate = self:GetOption().OnCreate;
+    if (type(OnCreate) == "function") then
+        OnCreate(self);
     end
 end
 
@@ -504,7 +500,7 @@ function Block:Disconnection()
     local previousConnection = self.previousConnection and self.previousConnection:Disconnection();
     local nextConnection = self.nextConnection and self.nextConnection:Disconnection();
 
-    if (previousConnection) then
+    if (previousConnection and nextConnection) then
         previousConnection:Connection(nextConnection);
         previousConnection:GetBlock():GetTopBlock():UpdateLayout();
     else 
