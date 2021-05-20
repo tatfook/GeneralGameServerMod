@@ -129,7 +129,7 @@ function ContextMenu:ExportMacroCode()
     -- local offsetX, offsetY = oldOffsetX, oldOffsetY;
     local xmlText = blockly:SaveToXmlNodeText();
     toolbox:SwitchCategory(oldCategoryName);
-    params[#params + 1] = {action = "SetBlocklyEnv", offsetX = oldOffsetX, offsetY = oldOffsetY, categoryName = oldCategoryName};
+    local isSetBlocklyEnv = false;
     local function ExportBlockMacroCode(block)
         local blocktype = block:GetType();
         local blockoption = block:GetOption();
@@ -145,6 +145,10 @@ function ContextMenu:ExportMacroCode()
                 params[#params + 1] = {macroCode = code, blockType = blocktype, isMacroBlock = true}; 
             end
             return;
+        end
+        if (not isSetBlocklyEnv) then
+            params[#params + 1] = {action = "SetBlocklyEnv", offsetX = oldOffsetX, offsetY = oldOffsetY, categoryName = oldCategoryName};
+            isSetBlocklyEnv = true;
         end
         -- 调整工作区
         local left, top = oldOffsetX + block.left - ToolBoxWidth, oldOffsetY + block.top;

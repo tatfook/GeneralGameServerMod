@@ -209,6 +209,7 @@ local AllBlockList = {
                     {"列表", "field_dropdown"},
                     {"颜色", "field_color"},
                     {"变量", "field_variable"},
+                    {"按钮", "field_button"},
                     {"数据", "field_value"},
                     -- {"代码", "field_code"},
                 }

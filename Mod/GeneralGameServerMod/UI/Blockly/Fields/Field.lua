@@ -93,10 +93,13 @@ end
 
 -- 获取xmlNode
 function Field:SaveToXmlNode()
+    local fieldName = self:GetName();
+    if (not fieldName or fieldName == "") then return nil end
+
     local xmlNode = {name = "Field", attr = {}};
     local attr = xmlNode.attr;
     
-    attr.name = self:GetName();
+    attr.name = fieldName;
     attr.label = self:GetLabel();
     attr.value = self:GetValue();
 
@@ -105,7 +108,6 @@ end
 
 function Field:LoadFromXmlNode(xmlNode)
     local attr = xmlNode.attr;
-
     self:SetLabel(attr.label);
     self:SetValue(attr.value);
 end

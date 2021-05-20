@@ -79,6 +79,9 @@ function Block:Init(blockly, opt)
     if (opt.previousStatement) then self.previousConnection = Connection:new():Init(self, "previous_connection", opt.previousStatement) end
     if (opt.nextStatement) then self.nextConnection = Connection:new():Init(self, "next_connection", opt.nextStatement) end
     
+    -- 调用初始化回调
+    if (type(opt.OnInit) == "function") then opt.OnInit(opt) end 
+
     self:ParseMessageAndArg(opt);
     return self;
 end
@@ -659,6 +662,11 @@ end
 function Block:GetFieldValue(name)
     local inputAndField = self.inputFieldMap[name];
     return inputAndField and inputAndField:GetFieldValue() or nil;
+end
+
+-- 获取字段
+function Block:GetField(name)
+    return self.inputFieldMap[name];
 end
 
 -- 获取字段
