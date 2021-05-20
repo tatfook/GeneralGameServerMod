@@ -284,7 +284,7 @@ function GenerateBlockOption()
 end
 
 function PreviewBlockOption(blockOption)
-    BlocklyPreview:DefineBlock(blockOption);
+    BlocklyPreview:DefineBlock(commonlib.deepcopy(blockOption));
     local block = BlocklyPreview:GetBlockInstanceByType(blockOption.type);
     BlocklyPreview:ClearBlocks();
     block:SetLeftTopUnitCount(10, 10);
@@ -333,8 +333,7 @@ function GenerateBlockDefineCode(option)
     local code_description = option.code_description or "";
     code_description = string.gsub(code_description, "\n+$", "");
     code_description = string.gsub(code_description, "^\n+", "");
-    -- local func_description = string.gsub(code_description, "%$(%w+)", "%%s");
-    local block_define_code = string.format([=====[
+    local block_define_code = string.format([==[
 {
     type = "%s",
     category = "%s",
@@ -343,9 +342,9 @@ function GenerateBlockDefineCode(option)
     previousStatement = %s, 
     nextStatement = %s,
     message = "%s",
-    code_description = '%s'
+    code_description = [[%s]],
     %s,
-}]=====], option.type, option.category, option.color, option.output, option.previousStatement, option.nextStatement, option.message, code_description, commonlib.dump(option.arg, "arg", false, 2));
+}]==], option.type, option.category, option.color, option.output, option.previousStatement, option.nextStatement, option.message, code_description, commonlib.dump(option.arg, "arg", false, 2));
 
     return block_define_code;
 end
