@@ -129,6 +129,12 @@ function Block:ParseMessageAndArg(opt)
     local index, inputFieldContainerIndex = 0, 1;
 
     local function GetMessageArg()
+        if (opt.message) then
+            if (index ~= 0) then return nil, nil end
+            index = -1;
+            return opt.message, opt.arg;
+        end
+
         local messageIndex, argIndex = "message" .. tostring(index), "arg" .. tostring(index);
         local message, arg = opt[messageIndex], opt[argIndex];
         if (index == 0) then message, arg = opt.message or message, opt.arg or arg end
@@ -730,7 +736,7 @@ function Block:GetCode()
         -- print("---------------------图块转换函数不存在---------------------")
     end
 
-    return ToCode and ToCode(self) or "";
+    return ToCode and ToCode(self, DefaultToCode) or "";
 end
 
 -- 获取xmlNode

@@ -330,28 +330,11 @@ function OnToolBoxXmlTextChange()
 end
 
 function GenerateBlockDefineCode(option)
-    local indent = "        ";
-    local arg_var_define = indent .. "local args = {};\n";
-
-    for i, arg in ipairs(option.arg) do
-        if (arg.type == "input_value" or arg.type == "input_value_list" or arg.type == "input_statement") then
-            arg_var_define = arg_var_define .. string.format('%sargs["%s"] = block:GetValueAsString("%s");\n', indent, arg.name, arg.name);
-        elseif (arg.name) then
-            arg_var_define = arg_var_define .. string.format('%sargs["%s"] = block:GetFieldValue("%s");\n', indent, arg.name, arg.name);
-        end
-    end 
-
     local code_description = option.code_description or "";
     code_description = string.gsub(code_description, "\n+$", "");
     code_description = string.gsub(code_description, "^\n+", "");
-    if (option.output) then
-        code_description = "[====[" .. code_description .. "]====]";
-    else
-        code_description = "[====[\n" .. code_description .. "\n]====]";
-    end
-    
-    local func_description = string.gsub(code_description, "%$(%w+)", "%%s");
-    local block_define_code = string.format([[
+    -- local func_description = string.gsub(code_description, "%$(%w+)", "%%s");
+    local block_define_code = string.format([=====[
 {
     type = "%s",
     category = "%s",
@@ -360,14 +343,9 @@ function GenerateBlockDefineCode(option)
     previousStatement = %s, 
     nextStatement = %s,
     message = "%s",
+    code_description = '%s'
     %s,
-    ToCode = function(block)
-%s
-        -- 更改下行为图块实际生成代码
-        return string.gsub(%s, "%%$([%%w_]+)", args); 
-    end
-}]], option.type, option.category, option.color, option.output, option.previousStatement, option.nextStatement, option.message, 
-    commonlib.dump(option.arg, "arg", false, 2), arg_var_define, code_description);
+}]=====], option.type, option.category, option.color, option.output, option.previousStatement, option.nextStatement, option.message, code_description, commonlib.dump(option.arg, "arg", false, 2));
 
     return block_define_code;
 end

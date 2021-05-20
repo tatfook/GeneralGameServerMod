@@ -47,13 +47,16 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
         local block = {
             color = category.color;
             category = cmd.category;
-            -- message = message,
-            -- arg = arg,
+            message = cmd.message,
+            arg = cmd.arg,
             previousStatement = cmd.previousStatement and true or false,
             nextStatement = cmd.nextStatement and true or false,
             output = cmd.output and true or false,
             type = cmd.type,
-            ToCode = function(block)
+            code = cmd.code,
+            code_description = cmd.code_description,
+            ToCode = cmd.ToCode or function(block, DefaultToCode)
+                if (cmd.code_description) then return DefaultToCode(block) end
                 if (not cmd.func_description) then return cmd.ToNPL(block) end
 
                 local args = {};
