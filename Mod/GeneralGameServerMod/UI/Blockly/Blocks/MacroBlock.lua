@@ -118,15 +118,32 @@ function NPL_Macro_Finished.ToCode()
     return "";
 end
 
-local NPL_Macro_RunCode = {};
-function NPL_Macro_RunCode.ToMacroCode()
-    return [[
-ButtonClickTrigger("CodeBlockWindow.run","left")
-ButtonClick("CodeBlockWindow.run","left")
-]];
+local NPL_Macro_UIClick = {};
+local NPL_Macro_UIClick_Action_Options = {
+    {"运行", "CodeBlockWindow.run"},
+    {"关闭", "CodeBlockWindow.saveAndClose"},
+}
+function NPL_Macro_UIClick.OnInit(option)
+    local arg = option.arg;
+    if (type(arg) ~= "table") then return end
+    for _, field in ipairs(arg) do
+        if (field.name == "Action") then
+            field.value = "CodeBlockWindow.run";
+            field.options = NPL_Macro_UIClick_Action_Options;
+            break;
+        end
+    end
 end
 
-function NPL_Macro_RunCode.ToCode()
+function NPL_Macro_UIClick.ToMacroCode(block)
+    local fieldAction = block:GetFieldValue("Action");
+    return string.format([[
+ButtonClickTrigger("%s","left")
+ButtonClick("%s","left")
+]], fieldAction, fieldAction);
+end
+
+function NPL_Macro_UIClick.ToCode()
     return "";
 end
 
@@ -148,5 +165,5 @@ MacroBlock.NPL_Macro_Start = NPL_Macro_Start;
 MacroBlock.NPL_Macro_Finished = NPL_Macro_Finished;
 MacroBlock.NPL_Macro_SetSceneView = NPL_Macro_SetSceneView;
 MacroBlock.NPL_Macro_SceneClick = NPL_Macro_SceneClick;
-MacroBlock.NPL_Macro_RunCode = NPL_Macro_RunCode;
+MacroBlock.NPL_Macro_UIClick = NPL_Macro_UIClick;
 MacroBlock.NPL_Macro_Text = NPL_Macro_Text;

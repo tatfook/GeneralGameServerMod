@@ -79,9 +79,6 @@ function Block:Init(blockly, opt)
     if (opt.previousStatement) then self.previousConnection = Connection:new():Init(self, "previous_connection", opt.previousStatement) end
     if (opt.nextStatement) then self.nextConnection = Connection:new():Init(self, "next_connection", opt.nextStatement) end
     
-    -- 调用初始化回调
-    if (type(opt.OnInit) == "function") then opt.OnInit(opt) end 
-
     self:ParseMessageAndArg(opt);
     return self;
 end

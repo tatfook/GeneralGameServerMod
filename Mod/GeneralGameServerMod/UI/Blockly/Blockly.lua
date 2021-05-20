@@ -155,9 +155,9 @@ function Blockly:OnAttrValueChange(attrName, attrValue, oldAttrValue)
         self:OnToolBoxXmlTextChange(self:GetAttrStringValue("ToolBoxXmlText"));
     elseif (attrName == "language") then
         self:SetLanguage(self:GetAttrStringValue("language"));
+        self:LoadBlockMap();
         self.CategoryList, self.CategoryMap = BlockManager.GetCategoryListAndMap(self:GetLanguage());
         self:OnToolBoxXmlTextChange(self:GetAttrStringValue("ToolBoxXmlText"));
-        self:LoadBlockMap();
     end
 end
 
@@ -186,6 +186,9 @@ function Blockly:LoadBlockMap()
                 print(errmsg);
             end
         end
+
+        -- 调用初始化回调
+        if (type(blockOption.OnInit) == "function") then blockOption.OnInit(blockOption) end 
     end 
 end
 
