@@ -2,9 +2,9 @@ local MacroBlock = NPL.export();
 
 local NPL_Macro_Start = {};
 function NPL_Macro_Start.OnCreate(block)
+    local code = "";
     local player = GameLogic.EntityManager.GetPlayer();
     if (not player) then return end
-    local code = "";
     local bx, by, bz = player:GetBlockPos();
     code = code .. string.format("SetMacroOrigin(%s, %s, %s)\n", bx, by, bz);
     local camobjDist, LiftupAngle, CameraRotY = ParaCamera.GetEyePos();
@@ -24,6 +24,33 @@ end
 function NPL_Macro_Start.ToCode()
     return "";
 end
+
+local NPL_Macro_Scene = {};
+function NPL_Macro_Scene.OnCreate(block)
+    local code = "";
+    local camobjDist, LiftupAngle, CameraRotY = ParaCamera.GetEyePos();
+    code = code .. string.format("CameraMove(%s, %s, %s)\n", camobjDist, LiftupAngle, CameraRotY);
+	local lookatX, lookatY, lookatZ = ParaCamera.GetLookAtPos();
+    code = code .. string.format("CameraLookat(%s, %s, %s)\n", lookatX, lookatY, lookatZ);
+    local player = GameLogic.EntityManager.GetPlayer();
+    if (not player) then return end
+    local bx, by, bz = player:GetBlockPos();
+    local facing = player:GetFacing();
+    code = code .. string.format("PlayerMoveTrigger(%s, %s, %s, %s)\n", bx, by, bz, facing);
+    code = code .. string.format("PlayerMove(%s, %s, %s, %s)\n", bx, by, bz, facing);
+    block:SetFieldValue("MacroCode", code);
+end
+
+function NPL_Macro_Scene.ToMacroCode(block)
+    return block:GetFieldValue("MacroCode");
+end
+
+function NPL_Macro_Scene.ToCode()
+    return "";
+end
+
+
+local NPL_Macro_SceneClick = {};
 
 local NPL_Macro_Finished = {};
 function NPL_Macro_Finished.ToMacroCode()
@@ -62,5 +89,7 @@ end
 
 MacroBlock.NPL_Macro_Start = NPL_Macro_Start;
 MacroBlock.NPL_Macro_Finished = NPL_Macro_Finished;
+MacroBlock.NPL_Macro_Scene = NPL_Macro_Scene;
+MacroBlock.NPL_Macro_SceneClick = NPL_Macro_SceneClick;
 MacroBlock.NPL_Macro_RunCode = NPL_Macro_RunCode;
 MacroBlock.NPL_Macro_Text = NPL_Macro_Text;

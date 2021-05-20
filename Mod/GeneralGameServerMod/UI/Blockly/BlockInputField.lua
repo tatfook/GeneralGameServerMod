@@ -88,7 +88,19 @@ function BlockInputField:GetOptions(bRefresh)
     local option = self:GetOption();
     local options = option.options;
     if (type(options) == "string") then options = Options[options] end
-    if (type(options) == "table") then return options end 
+    if (type(options) == "table") then 
+        if (not option.option_options) then
+            if (type(options[1]) == "string") then
+                option.option_options = {};
+                for i, v in ipairs(options) do
+                    option.option_options[i] = {v, v};
+                end
+            else
+                option.option_options = options;
+            end
+        end
+        return option.option_options; 
+    end 
     if (type(options) == "function") then 
         if (not bRefresh and self.option_options) then return self.option_options end
         self.option_options = options();
