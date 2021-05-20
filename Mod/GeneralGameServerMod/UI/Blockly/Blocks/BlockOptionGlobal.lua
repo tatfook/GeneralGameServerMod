@@ -1,7 +1,8 @@
 
 local MacroBlock = NPL.load("./MacroBlock.lua", IsDevEnv);
+local ListBlock = NPL.load("./ListBlock.lua", IsDevEnv);
 
-local BlockCodeGlobal = NPL.export();
+local BlockOptionGlobal = NPL.export();
 
 local function ExtendBlock(SrcMap, DstMap)
     for key, block in pairs(SrcMap) do
@@ -9,12 +10,11 @@ local function ExtendBlock(SrcMap, DstMap)
     end
 end
 
-function BlockCodeGlobal:New()
+function BlockOptionGlobal:New()
     local G = setmetatable({}, {__index = _G});
+
     ExtendBlock(MacroBlock, G);
+    ExtendBlock(ListBlock, G);
 
     return G;
 end
-
-
-

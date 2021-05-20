@@ -175,7 +175,7 @@ function Value:GetValueAsString()
             return string.format('"%s"', value);   -- 虚拟一个图块
         end
     end
-    return self:GetInputBlock():GetBlockCode();
+    return self:GetInputBlock():GetCode();
 end
 
 function Value:GetFieldValue() 
@@ -187,5 +187,5 @@ function Value:GetFieldValue()
         end
     end
     -- return self:GetInputBlock():GetFieldsValue();
-    return self:GetInputBlock():GetBlockCode();
+    return self:GetInputBlock():GetCode();
 end

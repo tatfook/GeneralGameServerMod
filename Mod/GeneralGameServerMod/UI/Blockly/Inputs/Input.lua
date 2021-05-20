@@ -44,7 +44,7 @@ end
 function Input:GetInputCode()
     if (not self:GetInputBlock()) then return self:GetValue() end
 
-    return self:GetInputBlock():GetBlockCode();
+    return self:GetInputBlock():GetCode();
 end
 
 function Input:GetNextBlock()

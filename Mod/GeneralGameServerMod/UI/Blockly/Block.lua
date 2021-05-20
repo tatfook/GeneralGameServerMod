@@ -704,6 +704,10 @@ local function DefaultToCode(block)
     return code;
 end
 
+function Block:GetToCodeCache()
+    return self:GetBlockly().__to_code_cache__;
+end
+
 -- 获取块代码
 function Block:GetCode()
     local language = self:GetLanguage();

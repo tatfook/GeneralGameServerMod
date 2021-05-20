@@ -15,7 +15,7 @@ local BlockSound = commonlib.gettable("MyCompany.Aries.Game.Sound.BlockSound");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local BlockManager = NPL.load("./Blocks/BlockManager.lua", IsDevEnv);
-local BlockCodeGlobal = NPL.load("./Blocks/BlockCodeGlobal.lua", IsDevEnv);
+local BlockOptionGlobal = NPL.load("./Blocks/BlockOptionGlobal.lua", IsDevEnv);
 local Options = NPL.load("./Options.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
 local Shape = NPL.load("./Shape.lua", IsDevEnv);
@@ -46,7 +46,7 @@ Blockly:Property("ToolBox");                  -- 工具栏
 Blockly:Property("ShadowBlock");              -- 占位块
 Blockly:Property("Scale", 1);                 -- 缩放
 Blockly:Property("ReadOnly", false, "IsReadOnly");                 -- 缩放
-Blockly:Property("Global");
+Blockly:Property("OptionGlobal");             -- 选项全局表
 
 function Blockly.PlayConnectionBlockSound()
     ConnectionBlockSound:play2d();
@@ -60,7 +60,8 @@ function Blockly:ctor()
     self:Reset();
     self.BlockMap, self.CategoryList, self.CategoryMap, self.CategoryColor = {}, {}, {}, {};
     self:SetToolBox(ToolBox:new():Init(self));
-    self:SetGlobal(BlockCodeGlobal:New());
+    self:SetOptionGlobal(BlockOptionGlobal:New());
+    self.__to_code_cache__ = {};
 end
 
 function Blockly:Reset()
@@ -164,7 +165,7 @@ function Blockly:LoadBlockMap()
     local BlockMap = BlockManager.GetBlockMap(self:GetLanguage());
     self.BlockMap = {};
 
-    local G = self:GetGlobal();
+    local G = self:GetOptionGlobal();
     for blockType, blockOption in pairs(BlockMap) do
         local defaultOption = rawget(G, blockType);
         if (defaultOption) then
@@ -798,6 +799,8 @@ end
 
 -- 获取代码
 function Blockly:GetCode()
+    self.__to_code_cache__ = {};
+
     local code = "";
     for _, block in ipairs(self.blocks) do
         local nextBlock = block;
