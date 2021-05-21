@@ -32,6 +32,7 @@ function SelectSimulator:HandlerSelectOption(params, window)
     select:SetFocus(nil);
     select:OnFocusOut();
     select:SetAttrValue("value", value);
+    select:CallAttrFunction("onselect", nil, select:GetValue(), select:GetLabel());
 end
 
 function SelectSimulator:TriggerSelectOption(params, window)
