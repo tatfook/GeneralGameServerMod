@@ -506,7 +506,7 @@ function Block:Disconnection()
     local previousConnection = self.previousConnection and self.previousConnection:Disconnection();
     local nextConnection = self.nextConnection and self.nextConnection:Disconnection();
 
-    if (previousConnection and nextConnection) then
+    if (previousConnection) then
         previousConnection:Connection(nextConnection);
         previousConnection:GetBlock():GetTopBlock():UpdateLayout();
     else 

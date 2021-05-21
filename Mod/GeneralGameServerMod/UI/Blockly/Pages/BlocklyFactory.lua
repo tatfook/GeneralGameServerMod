@@ -316,7 +316,8 @@ end
 function OnBlocklyChange()
     if (not Blockly) then return end
     local rawcode, prettycode = Blockly:GetCode();
-    BlocklyCode = string.gsub(prettycode, "\t", "    ");
+    -- BlocklyCode = string.gsub(prettycode, "\t", "    ");
+    BlocklyCode = rawcode;
 end
 
 

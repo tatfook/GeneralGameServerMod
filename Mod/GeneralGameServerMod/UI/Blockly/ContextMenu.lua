@@ -136,7 +136,7 @@ function ContextMenu:ExportMacroCode()
         if (string.match(blocktype, "^NPL_Macro_")) then
             local previousConnection = block.previousConnection and block.previousConnection:Disconnection();
             local nextConnection = block.nextConnection and block.nextConnection:Disconnection();
-            if (previousConnection and nextConnection) then
+            if (previousConnection) then
                 previousConnection:Connection(nextConnection);
                 previousConnection:GetBlock():GetTopBlock():UpdateLayout();
             end
