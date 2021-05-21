@@ -76,7 +76,14 @@ function Field:GetBlockly()
 end
 
 function Field:GetFieldValue()
-    return self:GetValue();
+    local value = self:GetValue();
+    if (self:IsNumberType()) then
+        return self:GetNumberValue();
+    elseif (self:IsCodeType()) then
+        return value ~= "" and value or "nil"; 
+    else 
+        return self:GetValue();
+    end
 end
 
 function Field:GetValueAsString()
@@ -84,7 +91,7 @@ function Field:GetValueAsString()
     if (self:IsNumberType()) then
         return string.format('%s', tonumber(value) or 0);
     elseif (self:IsCodeType()) then
-        return string.format('%s', value == "" and '""' or value);
+        return string.format('%s', value == "" and "nil" or value);
     else 
         return string.format('"%s"', value);   -- 虚拟一个图块
     end

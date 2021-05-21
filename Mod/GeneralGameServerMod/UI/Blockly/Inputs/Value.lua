@@ -170,7 +170,7 @@ function Value:GetValueAsString()
         if (self:IsNumberType()) then
             return string.format('%s', tonumber(value) or 0);
         elseif (self:IsCodeType()) then
-            return string.format('%s', value == "" and '""' or value);
+            return string.format('%s', value == "" and "nil" or value);
         else 
             return string.format('"%s"', value);   -- 虚拟一个图块
         end
@@ -179,9 +179,12 @@ function Value:GetValueAsString()
 end
 
 function Value:GetFieldValue() 
+    local value = self:GetValue();
     if (not self:GetInputBlock()) then 
         if (self:IsNumberType()) then
             return self:GetNumberValue();
+        elseif (self:IsCodeType()) then
+            return value ~= "" and value or "nil"; 
         else 
             return self:GetValue();
         end
