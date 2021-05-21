@@ -5,7 +5,7 @@ Date: 2021/3/1
 Desc: Lua
 use the lib:
 -------------------------------------------------------
-local NplToolbox = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Blocks/NplToolbox.lua");
+local NplToolbox = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/NplToolbox.lua");
 -------------------------------------------------------
 ]]
 

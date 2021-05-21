@@ -404,6 +404,12 @@ function Input:AdjustCursorAt(offset, action)
         end
     end
     InputDebug.Format("AdjustCursorAt After cursorAt = %s, offset = %s, cursorX = %s", self.cursorAt, offset, self.cursorX);
+    self:ResetCursor();
+end
+
+function Input:ResetCursor()
+    self.cursorShowHideTickCount = 0;
+    self:SetShowCursor(true);
 end
 
 function Input:RenderCursor(painter)
@@ -484,7 +490,7 @@ end
 
 function Input:FocusIn()
     Input._super.FocusIn(self);
-    self.cursorShowHideTickCount = 0;
+    self:ResetCursor();
 end
 
 function Input:OnClick(event)

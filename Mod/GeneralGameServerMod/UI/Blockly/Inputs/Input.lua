@@ -41,22 +41,17 @@ function Input:IsInput()
     return true;
 end
 
-function Input:GetInputCode()
-    if (not self:GetInputBlock()) then return self:GetValue() end
-
-    return self:GetInputBlock():GetCode();
-end
-
 function Input:GetNextBlock()
     return self:GetInputBlock();
 end
 
 function Input:GetFieldValue() 
-    return self:GetValueAsString();
+    if (not self:GetInputBlock()) then return self:GetValue() end
+    return self:GetInputBlock():GetCode();
 end
 
 function Input:GetValueAsString()
-    return self:GetInputCode();
+    return self:GetFieldValue();
 end
 
 -- 获取xmlNode

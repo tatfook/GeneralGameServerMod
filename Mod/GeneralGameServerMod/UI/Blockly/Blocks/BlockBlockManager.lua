@@ -481,17 +481,24 @@ local AllBlockList = {
                 type = "field_input",
                 text = "名称",
             },
+            {
+                name = "input_separator",
+                type = "field_dropdown",
+                text = ",",
+                options = {{"逗号", ","}, {"空格", " "}},
+            },
         },
         category = "BlockInput",
         previousStatement = true,
 	    nextStatement = true,
         ToCode = function(block)
             local input_name = block:GetFieldValue("input_name");
+            local input_separator = block:GetFieldValue("input_separator");
             return string.format([==[
                 field_count = field_count + 1;
                 message = message .. " %%" .. field_count;
-                arg[field_count] = {name = "%s", type = "input_value_list"};
-                ]==], input_name);
+                arg[field_count] = {name = "%s", type = "input_value_list", separator = "%s"};
+                ]==], input_name, input_separator);
         end,
     },
     {

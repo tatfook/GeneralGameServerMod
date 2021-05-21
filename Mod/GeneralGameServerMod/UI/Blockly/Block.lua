@@ -696,19 +696,19 @@ local function DefaultToCode(block)
     local blockType = block:GetType();
     local option = block:GetOption();
     if (not option) then return "" end
-    local args = {};
+    local args, argStrs = {}, {};
     if (option.arg) then
         for i, arg in ipairs(option.arg) do
-            if (arg.type == "input_value" or arg.type == "input_value_list" or arg.type == "input_statement") then
-                args[arg.name] = block:GetValueAsString(arg.name);
-            elseif (arg.name) then
+            if (arg.name) then
                 args[arg.name] = block:GetFieldValue(arg.name);
+                argStrs[arg.name] = block:GetValueAsString(arg.name);
             end
         end 
     end
-    local code_description = string.gsub(option.code_description or "", "\\n", "\n");
-    local code = string.gsub(code_description, "%$([%w_]+)", args);
-    code = string.gsub(code, "%$%{([%w_]+)%}", args);
+    local code = string.gsub(option.code_description or "", "\\n", "\n");
+    -- local code = string.gsub(code_description, "%$([%w_]+)", args);
+    code = string.gsub(code, "%$%{([%w_]+)%}", args);      -- ${name} 取字段值
+    code = string.gsub(code, "%$%(([%w_]+)%)", argStrs);   -- $(name) 取字段字符串值
     code = string.gsub(code, "[;\n]+$", "");
     code = string.gsub(code, "^\n+", "");
     if (not option.output) then code = code .. "\n" end

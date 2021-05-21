@@ -19,6 +19,7 @@ local BlockBlockManager = NPL.load("./BlockBlockManager.lua", IsDevEnv);
 local LanguagePathMap = {
     ["SystemLuaBlock"] = "Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemLuaBlock",
     ["SystemNplBlock"] = "Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemNplBlock",
+    ["SystemUIBlock"] = "Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemUIBlock",
 }
 
 local WorldCategoryAndBlockPath = "";
