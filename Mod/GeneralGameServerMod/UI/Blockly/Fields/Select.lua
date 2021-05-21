@@ -33,6 +33,9 @@ function Select:Init(block, option)
     elseif (type(options) == "table" and options.selectType) then
         self:SetSelectType(options.selectType);
         self:SetAllowNewSelectOption(options.isAllowCreate)
+    else
+        self:SetSelectType(option.selectType);
+        self:SetAllowNewSelectOption(option.isAllowCreate);
     end
 
     return self;

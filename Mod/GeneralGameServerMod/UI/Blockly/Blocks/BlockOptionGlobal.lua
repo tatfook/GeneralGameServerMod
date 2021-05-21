@@ -1,6 +1,7 @@
 
 local MacroBlock = NPL.load("./MacroBlock.lua", IsDevEnv);
 local ListBlock = NPL.load("./ListBlock.lua", IsDevEnv);
+local UIBlock = NPL.load("./UIBlock.lua", IsDevEnv);
 
 local BlockOptionGlobal = NPL.export();
 
@@ -15,6 +16,7 @@ function BlockOptionGlobal:New()
 
     ExtendBlock(MacroBlock, G);
     ExtendBlock(ListBlock, G);
+    ExtendBlock(UIBlock, G);
 
     return G;
 end

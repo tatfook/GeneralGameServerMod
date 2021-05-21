@@ -99,7 +99,7 @@ function BlockInputField:GetOptions(bRefresh)
     end 
     if (type(options) == "function") then 
         if (not bRefresh and self.option_options) then return self.option_options end
-        self.option_options = options();
+        self.option_options = options(self);
         return self.option_options;
     end
     return {};

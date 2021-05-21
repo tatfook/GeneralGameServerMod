@@ -197,7 +197,7 @@ function Select:Init(xmlNode, window, parent)
         }
     }, window, self);
     local function InputValueFinish(value)
-        if (value ~= self:GetValue()) then
+        if (value ~= self:GetValue() and value ~= self:GetLabel()) then
             value = self:GetValueByLabel(value);
             self:SetValue(value);
             self:SetLabel(self:GetLabelByValue(value));
