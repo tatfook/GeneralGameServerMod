@@ -709,7 +709,7 @@ local function DefaultToCode(block)
     -- local code = string.gsub(code_description, "%$([%w_]+)", args);
     code = string.gsub(code, "%$%{([%w_]+)%}", args);      -- ${name} 取字段值
     code = string.gsub(code, "%$%(([%w_]+)%)", argStrs);   -- $(name) 取字段字符串值
-    code = string.gsub(code, "[;\n]+$", "");
+    code = string.gsub(code, "[\n]+$", "");
     code = string.gsub(code, "^\n+", "");
     if (not option.output) then code = code .. "\n" end
     return code;
@@ -717,6 +717,15 @@ end
 
 function Block:GetToCodeCache()
     return self:GetBlockly().__to_code_cache__;
+end
+
+function Block:GetAllCode()
+    local block, code = self, "";
+    while (block) do
+        code = code .. block:GetCode();
+        block = block:GetNextBlock();
+    end
+    return code;
 end
 
 -- 获取块代码

@@ -47,7 +47,7 @@ end
 
 function Input:GetFieldValue() 
     if (not self:GetInputBlock()) then return self:GetValue() end
-    return self:GetInputBlock():GetCode();
+    return self:GetInputBlock():GetAllCode();
 end
 
 function Input:GetValueAsString()

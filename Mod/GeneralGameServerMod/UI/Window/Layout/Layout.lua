@@ -254,7 +254,6 @@ function Layout:UpdateRealContentWidthHeight()
 	end
 end
 
-
 function Layout:UpdateFlexLayoutRealContentWidthHeight()
 	return Flex.Update(self);
 end

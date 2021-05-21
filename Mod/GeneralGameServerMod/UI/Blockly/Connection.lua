@@ -25,7 +25,13 @@ end
 function Connection:Init(block, typ, check)
     self:SetBlock(block);
     self:SetType(typ);
-    if (type(check) == "string" and check ~= "") then check = commonlib.split(check, ' ') end 
+    if (type(check) == "string") then 
+        if (check == "") then
+            check = nil;
+        else
+            check = commonlib.split(check, ' '); 
+        end
+    end 
     if (type(check) == "boolean") then check = nil end
     self:SetCheck(check);
 
@@ -51,7 +57,8 @@ function Connection:IsMatch(connection)
     if (self_type == "output_connection" and conn_type ~= "input_connection") then return false end
     if (self_type == "input_connection" and conn_type ~= "output_connection") then return false end
     local self_check, conn_check = self:GetCheck(), connection:GetCheck();
-    if (self_check and conn_check) then
+    if (self_check or conn_check) then
+        if (not self_check or not conn_check) then return false end
         for _, self_type in ipairs(self_check) do
             for _, conn_type in ipairs(conn_check) do
                 if (self_type == conn_type) then 
