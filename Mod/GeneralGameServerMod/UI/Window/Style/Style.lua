@@ -417,6 +417,7 @@ function Style.GetStyleValue(name, value)
 		value = string_gsub(value, "url%((.*)%)", "%1");
 		value = string_gsub(value, "#", ";");
 		value = Style.FilterImage(value);
+		value = value ~= "" and value or nil;
 	elseif (time_fields[name]) then
 		value = string.match(value, "%d+");
 		value = value and tonumber(value);

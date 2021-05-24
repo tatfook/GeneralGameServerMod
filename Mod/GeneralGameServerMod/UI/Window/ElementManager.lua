@@ -18,6 +18,7 @@ local Html = NPL.load("./Elements/Html.lua", IsDevEnv);
 local Style = NPL.load("./Elements/Style.lua", IsDevEnv);
 local Script = NPL.load("./Elements/Script.lua", IsDevEnv);
 local Div = NPL.load("./Elements/Div.lua", IsDevEnv);
+local Image = NPL.load("./Elements/Image.lua", IsDevEnv);
 local Button = NPL.load("./Elements/Button.lua", IsDevEnv);
 local Label = NPL.load("./Elements/Label.lua", IsDevEnv);
 local Radio = NPL.load("./Elements/Radio.lua", IsDevEnv);
@@ -57,6 +58,7 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("Style", Style);
     ElementManager:RegisterByTagName("Script", Script);
     ElementManager:RegisterByTagName("Div", Div);
+    ElementManager:RegisterByTagName("Image", Image);
     ElementManager:RegisterByTagName("Button", Button);    
     ElementManager:RegisterByTagName("Label", Label);    
     ElementManager:RegisterByTagName("Radio", Radio);

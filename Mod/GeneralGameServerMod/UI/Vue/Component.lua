@@ -151,7 +151,7 @@ function Component:LoadXmlNode(xmlNode, isReload)
     local filename, template = self.filename, self.template;
     if (self:class() == Component) then
         filename = self:GetAttrStringValue("src") or (xmlNode.attr and xmlNode.attr.src);
-        template = self:GetAttrStringValue("template") or self.template or (xmlNode.attr and xmlNode.attr.template);
+        template = self:GetAttrStringValue("template") or (xmlNode.attr and xmlNode.attr.template);
     end
     
     -- 从字符串加载
@@ -355,9 +355,16 @@ function Component:Register(tagname, tagclass)
 end
 
 -- 定义组件
-function Component.Extend(opts)
+function Component.Extend(opts, bTemplate)
     -- 为字符串则默认为文件名
-    if (type(opts) == "string") then opts = {filename = opts} end;
+    if (type(opts) == "string") then 
+        if (bTemplate) then
+            opts = {template = opts} 
+        else
+            opts = {filename = opts} 
+        end
+    end
+    
     -- 只接受table
     if (type(opts) ~= "table") then return end
     -- 已经是组件直接返回

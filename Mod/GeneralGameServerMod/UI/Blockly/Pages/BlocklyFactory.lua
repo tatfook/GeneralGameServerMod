@@ -107,7 +107,6 @@ local function GetToolBoxCategoryList()
         table.insert(options, #options + 1, category.name);
     end
     CategoryOptions = options;
-    CategoryName = options[1] or "";
     return categories;
 end
 
@@ -316,8 +315,8 @@ end
 function OnBlocklyChange()
     if (not Blockly) then return end
     local rawcode, prettycode = Blockly:GetCode();
-    -- BlocklyCode = string.gsub(prettycode, "\t", "    ");
-    BlocklyCode = rawcode;
+    BlocklyCode = string.gsub(prettycode, "\t", "    ");
+    -- BlocklyCode = rawcode;
 end
 
 

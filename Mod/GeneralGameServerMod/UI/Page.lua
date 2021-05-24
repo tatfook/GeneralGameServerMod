@@ -20,7 +20,7 @@ local Page = NPL.export();
 local pages = {};
 local _3d_pages = {};
 local inited = false;
-
+local windows = {};
 -- 世界加载
 local function OnWorldLoaded()
 end
@@ -30,6 +30,22 @@ local function OnWorldUnloaded()
     for _, page in pairs(_3d_pages) do 
         page:CloseWindow();
     end
+end
+
+-- 注册组件
+function Page.RegisterComponent(tagname, tagclass)
+    Vue.Register(tagname, tagclass);
+end
+
+-- 注册窗口
+function Page.RegisterWindow(params)
+    windows[params.windowName] = params;
+end
+
+-- 获取窗口
+function Page.GetWindow(windowName)
+    local window = windows[windowName];
+    return window and window.page;
 end
 
 -- 初始化

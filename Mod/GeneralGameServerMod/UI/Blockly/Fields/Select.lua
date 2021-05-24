@@ -18,8 +18,6 @@ local Field = NPL.load("./Field.lua", IsDevEnv);
 local Select = commonlib.inherit(Field, NPL.export());
 local select_options = {};
 
-Select:Property("SelectType");
-
 function Select:Init(block, option)
     Select._super.Init(self, block, option);
 
@@ -38,6 +36,7 @@ function Select:Init(block, option)
         self:SetAllowNewSelectOption(option.isAllowCreate);
     end
 
+    -- self:OnValueChanged(nil, nil)
     return self;
 end
 
@@ -57,7 +56,7 @@ function Select:GetOptions(bRefresh)
     return select_options[selectType];
 end
 
-function Select:OnValueChanged(oldValue, newValue)
+function Select:OnValueChanged(newValue, oldValue)
     local selectType = self:GetSelectType();
     if (not selectType or not self:IsAllowNewSelectOption()) then return end
 
@@ -66,9 +65,9 @@ function Select:OnValueChanged(oldValue, newValue)
     local options = self:GetOptions();
     local index, size = 1, #options;
     self:GetBlockly():ForEachUI(function(blockInputField)
-        if (not blockInputField:IsField() or not blockInputField:IsSelectType() or blockInputField:GetSelectType() ~= selectType) then return end
+        if (blockInputField:GetSelectType() ~= selectType) then return end
         -- 更新字段值
-        if (not blockInputField:IsAllowNewSelectOption() and blockInputField:GetValue() == oldValue) then
+        if (oldValue and not blockInputField:IsAllowNewSelectOption() and blockInputField:GetValue() == oldValue) then
             blockInputField:SetValue(newValue);
             blockInputField:SetLabel(label);
             UpdateBlockMap[blockInputField:GetTopBlock()] = true;

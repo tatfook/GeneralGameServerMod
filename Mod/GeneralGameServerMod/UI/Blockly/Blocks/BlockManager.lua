@@ -25,7 +25,7 @@ local LanguagePathMap = {
 local WorldCategoryAndBlockPath = "";
 local CurrentCategoryAndBlockPath = "";
 local AllCategoryAndBlockMap = {};
-
+local AllBlockMap = {};
 local BlockManager = NPL.export();
 
 local inited = false;
@@ -57,6 +57,10 @@ function BlockManager.LoadCategoryAndBlock(filename)
 
     CategoryAndBlockMap.AllCategoryList = CategoryBlockMap.AllCategoryList or CategoryAndBlockMap.AllCategoryList;
     CategoryAndBlockMap.ToolBoxXmlText = CategoryBlockMap.ToolBoxXmlText or CategoryAndBlockMap.ToolBoxXmlText or BlockManager.GenerateToolBoxXmlText(filename);
+
+    for blockType, blockOption in pairs(LangBlockMap) do
+        AllBlockMap[blockType] = blockOption;
+    end
 
     return CategoryAndBlockMap;
 end
@@ -328,9 +332,9 @@ function BlockManager.GetBlockMap(lang)
         end
     end
     if (lang == "block") then return BlockBlockManager.GetBlockMap() end
-    if (LanguagePathMap[lang]) then return BlockManager.GetLanguageBlockMap(LanguagePathMap[lang]) end
-
-    return BlockManager.GetLanguageBlockMap(WorldCategoryAndBlockPath);
+    return AllBlockMap;
+    -- if (LanguagePathMap[lang]) then return BlockManager.GetLanguageBlockMap(LanguagePathMap[lang]) end
+    -- return BlockManager.GetLanguageBlockMap(WorldCategoryAndBlockPath);
 end
 
 function BlockManager.GetCategoryListAndMap(lang)

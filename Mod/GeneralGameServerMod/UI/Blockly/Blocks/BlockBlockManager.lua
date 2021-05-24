@@ -40,7 +40,7 @@ local AllBlockList = {
     },
     {
         type = "set_block_connection",
-        message = "图块-连接 %1 类型 %2",
+        message = "图块-连接 %1",
         arg = {
             {
                 name = "block_connection",
@@ -52,24 +52,18 @@ local AllBlockList = {
                     {"开始连接", "StartConnection"},
                 }
             },
-            {
-                name = "block_check",
-                type = "field_input",
-                text = ""
-            },
         },
         category = "BlockAttr",
         previousStatement = true,
 	    nextStatement = true,
         ToCode = function(block)
             local block_connection = block:GetFieldValue("block_connection");
-            local block_check = block:GetFieldValue("block_check");
             if (block_connection == "OutputConnection") then
-                return string.format('previousStatement = false;\nnextStatement = false;\noutput = "%s";\n', block_check);
+                return string.format('previousStatement = false;\nnextStatement = false;\noutput = true;\n');
             elseif (block_connection == "StartConnection") then
-                return string.format('previousStatement = false;\nnextStatement = "%s";\noutput = false;\n', block_check);
+                return string.format('previousStatement = false;\nnextStatement = true;\noutput = false;\n');
             else 
-                return string.format('previousStatement = "%s";\nnextStatement = "%s";\noutput = false;\n', block_check, block_check);
+                return string.format('previousStatement = true;\nnextStatement = true;\noutput = false;\n');
             end
         end,
     },
@@ -462,17 +456,12 @@ local AllBlockList = {
 
     {
         type = "set_input_statement",
-        message = "输入-语句 %1 类型 %2",
+        message = "输入-语句 %1",
         arg = {
             {
                 name = "input_name",
                 type = "field_input",
                 text = "名称",
-            },
-            {
-                name = "input_type",
-                type = "field_input",
-                text = "",
             },
         },
         category = "BlockInput",
@@ -480,12 +469,11 @@ local AllBlockList = {
 	    nextStatement = true,
         ToCode = function(block)
             local input_name = block:GetFieldValue("input_name");
-            local input_type = block:GetFieldValue("input_type");
             return string.format([[
                 field_count = field_count + 1;
                 message = message .. " %%" .. field_count;
-                arg[field_count] = {name = "%s", type = "input_statement", check = "%s"};
-                ]], input_name, input_type);
+                arg[field_count] = {name = "%s", type = "input_statement"};
+                ]], input_name);
         end,
     },
     {
@@ -526,7 +514,6 @@ local AllBlockList = {
                 type = "input_value",
                 text = "output",
                 shadowType = "field_dropdown",
-                check = "string",
                 options = {
                     {"值连接", "output"},
                     {"语句-上连接", "previousStatement"},

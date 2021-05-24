@@ -36,6 +36,7 @@ BlockInputField:Property("Label", "");                           -- 显示值
 BlockInputField:Property("DefaultLabel", "");                           -- 显示值
 BlockInputField:Property("Text", "");                            -- 文本值
 BlockInputField:Property("EditElement", nil);                    -- 编辑元素
+BlockInputField:Property("SelectType");
 BlockInputField:Property("AllowNewSelectOption", false, "IsAllowNewSelectOption");  -- 是否允许新增选项
 BlockInputField:Property("InputFieldContainer");                 -- 所属输入字段容器
 BlockInputField:Property("CanDelete", false, "IsCanDelete");     -- 是否可删除
@@ -55,6 +56,7 @@ function BlockInputField:Init(block, option)
     self:SetOption(option or {});
     self:SetName(option.name);
     self:SetType(option.type);
+    self:SetSelectType(option.selectType);
     self:SetValidator(option.validator);
     self:SetValue(self:GetOptionText());
     self:SetLabel(tostring(option.label or self:GetValue()));
@@ -481,7 +483,7 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
         self:SetValue(value);
         self:SetLabel(label);
         self:FocusOut();
-        self:OnValueChanged(oldValue, value);
+        self:OnValueChanged(value, oldValue);
     end);
 
     return SelectEditElement;

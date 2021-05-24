@@ -106,7 +106,7 @@ function Window:LoadXmlNodeByTemplate(template)
 end
 
 function Window:LoadXmlNode(params)
-    if (params.tpl) then return self:LoadXmlNodeByTemplate(params.tpl) end
+    if (params.tpl or params.template) then return self:LoadXmlNodeByTemplate(params.tpl or params.template) end
     if (params.url) then return self:LoadXmlNodeByUrl(params.url) end
 end
 
@@ -215,8 +215,8 @@ function Window:InitWindowPosition()
     local params = self:GetParams();
     local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
     -- print(screenX, screenY, screenWidth, screenHeight, params.width, params.height);
-    local windoX, windowY, windowWidth, windowHeight = 0, 0, params.width or screenWidth, params.height or screenHeight;
-    local offsetX, offsetY = params.x or 0, params.y or 0;
+    local windoX, windowY, windowWidth, windowHeight = 0, 0, tonumber(params.width) or params.width or screenWidth, tonumber(params.height) or params.height or screenHeight;
+    local offsetX, offsetY = tonumber(params.x) or params.x or 0, tonumber(params.y) or params.y or 0;
     if (type(windowWidth) == "string" and string.match(windowWidth, "^%d+%%$")) then windowWidth = math.floor(screenWidth * tonumber(string.match(windowWidth, "%d+")) / 100) end
     if (type(windowHeight) == "string" and string.match(windowHeight, "^%d+%%$")) then windowHeight = math.floor(screenHeight * tonumber(string.match(windowHeight, "%d+")) / 100) end
     if (type(offsetX) == "string" and string.match(offsetX, "^%d+%%$")) then offsetX = math.floor(screenWidth * tonumber(string.match(offsetX, "%d+")) / 100) end

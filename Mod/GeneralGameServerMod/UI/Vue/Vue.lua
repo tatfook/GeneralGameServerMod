@@ -108,6 +108,10 @@ function Vue.Register(tagname, tagclass)
     ElementManager:RegisterByTagName(tagname, Component.Extend(tagclass))
 end
 
+function Vue.RegisterByTemplate(tagname, template)
+    ElementManager:RegisterByTagName(tagname, Component.Extend(template, true))
+end
+
 function Vue.SetPathAlias(alias, path)
     Helper.SetPathAlias(alias, path);
 end
