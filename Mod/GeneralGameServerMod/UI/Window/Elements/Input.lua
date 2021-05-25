@@ -40,6 +40,7 @@ function Input:ctor()
     self:Reset();
 
     self:SetCanFocus(true);
+    self:SetEnableIME(true);
 end
 
 function Input:Init(xmlNode, window, parent)

@@ -21,6 +21,7 @@ local pages = {};
 local _3d_pages = {};
 local inited = false;
 local windows = {};
+
 -- 世界加载
 local function OnWorldLoaded()
 end
@@ -39,7 +40,30 @@ end
 
 -- 注册窗口
 function Page.RegisterWindow(params)
-    windows[params.windowName] = params;
+    local window = {params = params, G = params.G};
+    windows[params.windowName] = window;
+end
+
+-- 打开窗口
+function Page.ShowWindow(windowName, codeblock)
+    local window = windows[windowName];
+    if (not window) then return end
+    if (window.page) then window.page:CloseWindow() end 
+    window.page = Page.Show(window.G, window.params);
+
+    if (codeblock and not window.isRegisterCodeBlockStopEvent) then
+        window.isRegisterCodeBlockStopEvent = true;
+        codeblock:Connect("codeUnloaded", function()
+            Page.CloseWindow(windowName);
+        end);
+    end
+end
+
+-- 关闭窗口
+function Page.CloseWindow(windowName)
+    local window = windows[windowName];
+    if (not window or not window.page) then return end
+    window.page:CloseWindow();
 end
 
 -- 获取窗口
@@ -74,13 +98,14 @@ end
 -- 显示页面
 function Page.Show(G, params, isNew)
     params = params or {};
-    if (not params.url) then return end
+    local key = params.html or params.template or params.url;
+    if (not key) then return end
    
-    local page = pages[params.url] or Vue:new();
+    local page = pages[key] or Vue:new();
     if (isNew) then 
         page = Vue:new();
     else
-        pages[params.url] = page;
+        pages[key] = page;
         if (page:GetNativeWindow()) then 
             page:CloseWindow();
         end
@@ -97,9 +122,10 @@ function Page.Show3D(G, params)
     Page.StaticInit();
 
     params = params or {};
-    if (not params.url) then return end
-    local page = _3d_pages[params.url] or Vue:new();
-    _3d_pages[params.url] = page;
+    local key = params.html or params.template or params.url;
+    if (not key) then return end
+    local page = _3d_pages[key] or Vue:new();
+    _3d_pages[key] = page;
     
     if (page:GetNativeWindow()) then 
         page:CloseWindow();

@@ -29,8 +29,10 @@ end
 function Value:Init(block, opt)
     opt = opt or {};
     opt.color = opt.color or "#000000";
-    Value._super.Init(self, block, opt);
+    opt.isAllowNewSelectOption = true;
 
+    Value._super.Init(self, block, opt);
+   
     self.shadowConnection = Connection:new():Init(block);
     self.inputConnection:SetType("input_connection");
 
@@ -50,8 +52,6 @@ function Value:Init(block, opt)
             end);
         end
     end
-
-    self:SetAllowNewSelectOption(true);
 
     return self;
 end

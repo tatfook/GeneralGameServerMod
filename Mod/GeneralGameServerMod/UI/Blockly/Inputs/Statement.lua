@@ -15,7 +15,7 @@ local Input = NPL.load("./Input.lua");
 local Statement = commonlib.inherit(Input, NPL.export());
 
 local StatementWidthUnitCount = Const.StatementWidthUnitCount;
-
+local MinRenderHeightUnitCount = 14;
 function Statement:ctor()
 end
 
@@ -37,7 +37,7 @@ function Statement:Render(painter)
     local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
     local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
     Shape:SetBrush(self:GetBlock():GetBrush());
-    Shape:DrawInputStatement(painter, blockWidthUnitCount, self.heightUnitCount, self.leftUnitCount, self.topUnitCount);
+    Shape:DrawInputStatement(painter, blockWidthUnitCount, math.max(self.heightUnitCount, MinRenderHeightUnitCount), self.leftUnitCount, self.topUnitCount);
     local inputBlock = self:GetInputBlock();
     if (not inputBlock) then return end
     inputBlock:Render(painter)
@@ -51,6 +51,8 @@ function Statement:UpdateWidthHeightUnitCount()
         self.inputWidthUnitCount, self.inputHeightUnitCount = 0, 10;
     end
     local widthUnitCount, heightUnitCount = StatementWidthUnitCount + self.inputWidthUnitCount, Const.ConnectionHeightUnitCount + Const.BlockEdgeHeightUnitCount * 2 + self.inputHeightUnitCount;
+    local prevInputFieldContainer, nextInputFieldContainer = self:GetInputFieldContainer():GetPrevNextInputFieldContainer();
+    if (nextInputFieldContainer and not nextInputFieldContainer:IsInputStatementContainer()) then heightUnitCount = heightUnitCount - Const.BlockEdgeHeightUnitCount end
     return widthUnitCount, heightUnitCount, StatementWidthUnitCount, heightUnitCount;
 end
 

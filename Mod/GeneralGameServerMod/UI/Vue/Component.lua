@@ -70,8 +70,7 @@ end
 -- 初始化
 function Component:Init(xmlNode, window, parent)
     self:SetWindow(window);
-    self:SetParentComponent(parent);
-    self:SetTagName(xmlNode.name);
+    self:SetParentElement(parent);
     self:SetXmlNode(xmlNode);
     self:LoadComponent(false);
     return self;

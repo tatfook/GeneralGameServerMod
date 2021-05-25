@@ -105,8 +105,14 @@ function Window:LoadXmlNodeByTemplate(template)
     return commonlib.XPath.selectNode(ParaXML.LuaXML_ParseString(template), "//html");
 end
 
+function Window:LoadXmlNodeByHtml(html)
+    local nodes = ParaXML.LuaXML_ParseString(html);
+    return nodes and nodes[1];
+end
+
 function Window:LoadXmlNode(params)
-    if (params.tpl or params.template) then return self:LoadXmlNodeByTemplate(params.tpl or params.template) end
+    if (params.html) then return self:LoadXmlNodeByHtml(params.html) end
+    if (params.template) then return self:LoadXmlNodeByTemplate(params.template) end
     if (params.url) then return self:LoadXmlNodeByUrl(params.url) end
 end
 
@@ -168,7 +174,6 @@ function Window.Show(self, params)
     self:Attach();
     -- 更新布局
     self:UpdateLayout(true);
-
     return self;
 end
 

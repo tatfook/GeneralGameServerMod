@@ -26,6 +26,7 @@ ElementUI:Property("Render", false, "IsRender");            -- 是否渲染
 ElementUI:Property("ZIndex", "");                           -- zindex 序
 ElementUI:Property("CanFocus", false, "IsCanFocus");        -- 是否可以聚焦
 ElementUI:Property("Animation");                            -- 元素动画
+ElementUI:Property("EnableIME", false, "IsEnableIME");      -- 元素动画
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
 local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable(); 
@@ -836,6 +837,8 @@ function ElementUI:OnFocusOut()
 end
 
 function ElementUI:OnFocusIn()
+    if (self:IsTouchMode() and self:IsEnableIME()) then ParaUI.GetUIObject("root"):GetAttributeObject():SetField("EnableIME", true) end
+
     local onfocus = self:GetAttrFunctionValue("onfocus");
 	if (onfocus) then onfocus(self) end
 end

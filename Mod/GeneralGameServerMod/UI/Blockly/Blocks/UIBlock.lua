@@ -45,6 +45,20 @@ local function GetSelectors(cache)
     return cache.UI.selectors;
 end
 
+local function InitCode(cache)
+    local UI = GetUI(cache);
+    if (not UI.inited) then
+        UI.inited = true;
+        if (IsDevEnv) then
+            return 'local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", true)\n';
+        else
+            return 'local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua")\n';
+        end
+    end
+    return "";
+end
+
+
 local UI_Style_Item = {};
 local Style_Key_Options = {
     {"宽", "width"}, 
@@ -200,36 +214,25 @@ function UI_Component_Register.ToCode(block)
     text = text .. "\n<style scoped=true>\n" .. selectorText .. "</style>";
 
     local UI = GetUI(cache);
+    local code = InitCode(cache)
     local fieldName = block:GetFieldValue("name");
-    local code = string.format('Page.RegisterComponent("%s", {template = [====[\n%s\n]====]})', fieldName, text);
-
-    if (not UI.isLoadPage) then
-        UI.isLoadVue = true;
-        code = 'local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua")\n' .. code;
-    end
-
+    code = code .. string.format('Page.RegisterComponent("%s", {template = [====[\n%s\n]====]})', fieldName, text);
     return code;
 end
-
 
 local UI_Window_Register = {};
 function UI_Window_Register.ToCode(block)
     local fieldName = block:GetFieldValue("name");
     local fieldAlignment = block:GetFieldValue("alignment");
+    local fieldLeft = block:GetFieldValue("left");
+    local fieldTop = block:GetFieldValue("top");
     local fieldWidth = block:GetFieldValue("width");
     local fieldHeight = block:GetFieldValue("height");
     local fieldHtml = block:GetFieldValue("html");
 
     local cache = block:GetToCodeCache();
-    local UI = GetUI(cache);
-    local code = "";
-    
-    if (not UI.isLoadPage) then
-        UI.isLoadVue = true;
-        code = 'local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua")\n' .. code;
-    end
-
-    code = code .. string.format('Page.RegisterWindow({windowName = "%s", alignment = "%s", width = "%s", height = "%s", template = "<%s></%s>"})\n', fieldName, fieldAlignment, fieldWidth, fieldHeight, fieldHtml, fieldHtml);
+    local code = InitCode(cache);
+    code = code .. string.format('Page.RegisterWindow({windowName = "%s", alignment = "%s", x = "%s", y = "%s", width = "%s", height = "%s", html = "<%s></%s>"})\n', fieldName, fieldAlignment, fieldLeft, fieldTop, fieldWidth, fieldHeight, fieldHtml, fieldHtml);
     return code;
 end
 

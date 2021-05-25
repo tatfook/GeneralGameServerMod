@@ -78,6 +78,16 @@ function InputFieldContainer:IsEmpty()
     return #self.inputFields == 0;
 end
 
+function InputFieldContainer:GetPrevNextInputFieldContainer()
+    local block = self:GetBlock();
+    for i, inputFieldContainer in ipairs(block.inputFieldContainerList) do
+        if (inputFieldContainer == self) then
+            return block.inputFieldContainerList[i - 1], block.inputFieldContainerList[i + 1];
+        end
+    end
+    return nil, nil;
+end
+
 function InputFieldContainer:UpdateWidthHeightUnitCount()
     local maxWidthUnitCount, maxHeightUnitCount, widthUnitCount, heightUnitCount = 0, 0, 0, 0;
     for _, inputField in ipairs(self.inputFields) do
@@ -146,8 +156,11 @@ end
 
 function InputFieldContainer:Render(painter, offsetXUnitCount, offsetYUnitCount)
     if (not self:IsInputStatementContainer() and self:GetBlock():IsStatement()) then
+        -- Shape:SetBrush("#000000");
         Shape:SetBrush(self:GetBlock():GetBrush());
         Shape:DrawRect(painter, self.widthUnitCount, self.heightUnitCount, self.leftUnitCount, self.topUnitCount);
+    else
+        
     end
     local UnitSize = self:GetUnitSize();
     offsetXUnitCount, offsetYUnitCount = offsetXUnitCount or 0, offsetYUnitCount or 0;

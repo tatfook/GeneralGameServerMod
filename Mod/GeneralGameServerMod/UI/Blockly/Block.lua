@@ -270,10 +270,7 @@ function Block:Render(painter)
     -- 绘制输入字段
     local UnitSize = self:GetUnitSize();
     for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
-        local prev, next = self.inputFieldContainerList[i - 1], self.inputFieldContainerList[i + 1];
-        local isOffset = prev and prev:IsInputStatementContainer() and next and next:IsInputStatementContainer() and (not inputFieldContainer:IsInputStatementContainer());
-        if (isOffset) then inputFieldContainer:Render(painter, 0, -1)
-        else inputFieldContainer:Render(painter) end 
+        inputFieldContainer:Render(painter);
     end
 
     local nextBlock = self:GetNextBlock();
@@ -349,8 +346,11 @@ function Block:UpdateLeftTopUnitCount()
         offsetY = topUnitCount + Const.BlockEdgeHeightUnitCount;
     end
 
-    for _, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+    for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        -- local prev, next = self.inputFieldContainerList[i - 1], self.inputFieldContainerList[i + 1];
+        -- local isOffset = prev and prev:IsInputStatementContainer() and next and next:IsInputStatementContainer() and (not inputFieldContainer:IsInputStatementContainer());
         local inputFieldContainerTotalWidthUnitCount, inputFieldContainerTotalHeightUnitCount = inputFieldContainer:GetWidthHeightUnitCount();
+        -- offsetY = offsetY + (isOffset and -1 or 0);
         inputFieldContainer:SetLeftTopUnitCount(offsetX, offsetY);
         inputFieldContainer:UpdateLeftTopUnitCount();
         offsetY = offsetY + inputFieldContainerTotalHeightUnitCount;

@@ -63,6 +63,9 @@ end
 
 function TextArea:ctor()
     self:SetName("TextArea");
+
+    self:SetCanFocus(true);
+    self:SetEnableIME(true);
 end
 
 -- 初始化完成
