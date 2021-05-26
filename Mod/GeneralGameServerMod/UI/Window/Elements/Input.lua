@@ -180,8 +180,9 @@ function Input:handleHome(event, bselected)
         self.selectStartAt = 1;
         self.selectEndAt = self.cursorAt;
     else
-        self.cursorAt = 0;
-        self.cursorX = 0;
+        self:AdjustCursorAt(-self.cursorAt);
+        -- self.cursorAt = 0;
+        -- self.cursorX = 0;
     end
 end
 
@@ -190,8 +191,9 @@ function Input:handleEnd(event, bselected)
         self.selectStartAt = self.cursorAt;
         self.selectEndAt = self:GetText():length();
     else
-        self.cursorAt = self:GetText():length();
-        self.cursorX = self:GetText():GetWidth(self:GetFont());
+        self:AdjustCursorAt(self:GetText():length() + 1 - self.cursorAt);
+        -- self.cursorAt = self:GetText():length();
+        -- self.cursorX = self:GetText():GetWidth(self:GetFont());
     end
 end
 

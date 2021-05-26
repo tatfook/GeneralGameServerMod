@@ -21,7 +21,7 @@ local LanguagePathMap = {
     ["SystemNplBlock"] = "Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemNplBlock",
     ["SystemUIBlock"] = "Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemUIBlock",
 }
-
+local WorldCategoryAndBlockDirectory = "";
 local WorldCategoryAndBlockPath = "";
 local CurrentCategoryAndBlockPath = "";
 local AllCategoryAndBlockMap = {};
@@ -67,17 +67,30 @@ end
 
 function BlockManager.SaveCategoryAndBlock(filename)
     filename = filename or CurrentCategoryAndBlockPath;
+    local isNormalUserCustomSystemBlock = false;
     if (filename ~= WorldCategoryAndBlockPath and not IsDevEnv) then
-        -- GameLogic.AddBBS("Blockly", "非开发人员只能定制世界图块, 无法更改系统图块");
-        return ;
+        for language, path in pairs(LanguagePathMap) do
+            if (filename == path) then 
+                filename = WorldCategoryAndBlockDirectory .. language;
+                isNormalUserCustomSystemBlock = true;
+                break;
+            end
+        end
+        if (not isNormalUserCustomSystemBlock) then return end
+        GameLogic.AddBBS("Blockly", "非开发人员只能定制世界图块, 系统块定制保存至: " .. filename);
     end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(filename);
     CategoryAndBlockMap.ToolBoxXmlText = BlockManager.GenerateToolBoxXmlText(filename);
     
+    -- 重写全局 BlockMap
+    for blockType, blockOption in pairs(CategoryAndBlockMap.AllBlockMap) do AllBlockMap[blockType] = blockOption end
+
     local text = commonlib.serialize_compact(CategoryAndBlockMap);
     local io = ParaIO.open(filename, "w");
 	io:WriteString(text);
     io:close();
+    
+    if (not isNormalUserCustomSystemBlock) then GameLogic.AddBBS("Blockly", "图块更改已保存") end
 end
 
 function BlockManager.GetCategoryAndBlockMap(path)
@@ -142,6 +155,7 @@ local function OnWorldLoaded()
     local directory = CommonLib.ToCanonicalFilePath(ParaIO.GetCurDirectory(0) .. ParaWorld.GetWorldDirectory() .. "/blockly/");
     local filename = CommonLib.ToCanonicalFilePath(directory .. "/CustomBlock");
     if (filename == WorldCategoryAndBlockPath) then return end
+    WorldCategoryAndBlockDirectory = directory;
     WorldCategoryAndBlockPath = filename;
     CurrentCategoryAndBlockPath = WorldCategoryAndBlockPath;
     -- 确保目存在

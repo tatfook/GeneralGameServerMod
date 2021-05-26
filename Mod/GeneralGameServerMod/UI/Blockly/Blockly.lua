@@ -457,7 +457,9 @@ function Blockly:RenderContent(painter)
             local width, height = 12, 12;
             painter:SetPen("#ff0000");
             -- painter:DrawRectTexture(self.mouseMoveX - width / 2, self.mouseMoveY - height / 2, width, height, Shape:GetCloseTexture());
+            painter:Scale(scale, scale);
             painter:DrawRectTexture(DraggingBlock.left + self.offsetX - width / 2, DraggingBlock.top + self.offsetY - height / 2, width, height, Shape:GetCloseTexture());
+            painter:Scale(1 / scale, 1 / scale);
         end
     end
 
@@ -557,7 +559,11 @@ function Blockly:OnMouseDown(event)
     local mousePosIndex = self:GetMousePosIndex();
     if (mousePosIndex == 1) then         -- 重置
         self:UpdateScale();
-        self:AdjustCenter();
+        local targetBlock, left, top = nil, nil, nil;
+        for _, block in ipairs(self.blocks) do
+            if (not left or block.left < left or (block.left == left and block.top < top)) then targetBlock, left, top = block, block.left, block.top end
+        end
+        self:AdjustCenter(targetBlock);
     elseif (mousePosIndex == 2) then     -- 放大
        self:UpdateScale(0.1);
     elseif (mousePosIndex == 3) then     -- 缩小
@@ -606,6 +612,7 @@ function Blockly:UpdateScale(offset)
     local newScale = offset and (oldScale + offset) or 1;
     newScale = math.min(newScale, 4);
     newScale = math.max(newScale, 0.5);
+    
     if (oldScale == newScale) then return end
     self:SetScale(newScale);
     self:AdjustCenter();
@@ -836,6 +843,9 @@ function Blockly:SaveToXmlNode()
         table.insert(xmlNode, block:SaveToXmlNode());
     end
 
+    local toolboxXmlNode = self:GetToolBox():SaveToXmlNode();
+    if (toolboxXmlNode) then table.insert(xmlNode, toolboxXmlNode) end
+
     return xmlNode;
     -- return Helper.Lua2XmlString(xmlNode);
 end
@@ -847,9 +857,13 @@ function Blockly:LoadFromXmlNode(xmlNode)
 
     self.offsetX = tonumber(attr.offsetX) or 0;
     self.offsetY = tonumber(attr.offsetY) or 0;
-    for _, blockXmlNode in ipairs(xmlNode) do
-        local block = self:GetBlockInstanceByXmlNode(blockXmlNode);
-        table.insert(self.blocks, block);
+    for _, subXmlNode in ipairs(xmlNode) do
+        if (subXmlNode.name == "Block") then
+            local block = self:GetBlockInstanceByXmlNode(subXmlNode);
+            table.insert(self.blocks, block);
+        elseif (subXmlNode.name == "ToolBox") then
+            self:GetToolBox():LoadFromXmlNode(subXmlNode);
+        end
     end
 
     for _, block in ipairs(self.blocks) do
@@ -882,3 +896,4 @@ function Blockly:EmitUI(eventName, eventData)
         blockInputField:OnUI(eventName, eventData);
     end);
 end
+

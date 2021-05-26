@@ -78,7 +78,6 @@ function ToolBox:SetCategoryList(categorylist)
                 offsetY = offsetY + heightUnitCount;
                 table.insert(self.blocks, block);
             end
-
         end
         if (#blocktypes > 0) then
             table.insert(self.categoryList, category);
@@ -317,4 +316,26 @@ function ToolBox:GetBlockPos(block_type)
     local blockpos = self.blockPosMap[block_type];
     if (not blockpos) then return nil end
     return blockpos.block:GetLeftTopUnitCount();
+end
+
+function ToolBox:SaveToXmlNode()
+    local block = self.blocks[1];
+    if (not block) then return end
+    local blockpos = self.blockPosMap[block:GetType()];
+    local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+    local offset = blockpos.topUnitCount - topUnitCount;
+    return {name = "ToolBox", attr = {offset = offset, category = self:GetCurrentCategoryName()}};
+end
+
+function ToolBox:LoadFromXmlNode(xmlNode)
+    local offset = xmlNode.attr.offset;
+    local category = xmlNode.attr.category;
+    self:SetCurrentCategoryName(category);
+
+    for _, block in ipairs(self.blocks) do
+        local blocktype = block:GetType();
+        local blockpos = self.blockPosMap[blocktype];
+        block:SetLeftTopUnitCount(blockpos.leftUnitCount, blockpos.topUnitCount - offset);
+        block:UpdateLeftTopUnitCount();
+    end
 end

@@ -141,7 +141,12 @@ end
 
 function TextArea:handleDelete()
     if (self:IsReadOnly()) then return end
-    self:DeleteTextCmd(self.cursorAt + 1, 1);
+    
+    if (self:IsSelected()) then
+        self:DeleteSelected();
+    else
+        self:DeleteTextCmd(self.cursorAt + 1, 1);
+    end
 end
 
 function TextArea:handleUndo()

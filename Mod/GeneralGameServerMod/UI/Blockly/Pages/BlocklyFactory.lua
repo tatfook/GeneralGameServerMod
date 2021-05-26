@@ -213,7 +213,6 @@ function ClickSaveBlockBtn()
     end
 
     BlockManager.NewBlock(BlockOption);
-    GameLogic.AddBBS("Blockly", "图块更改已保存");
     OnChange();
 end
 

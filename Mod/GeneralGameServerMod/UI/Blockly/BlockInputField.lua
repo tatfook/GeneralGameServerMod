@@ -526,12 +526,16 @@ end
 
 function BlockInputField:UpdateEditAreaSize()
     if (not self:IsEdit()) then return end
+
     self:GetTopBlock():UpdateLayout();
     local blockly = self:GetBlock():GetBlockly();
     local editor = self:GetEditorElement();
     local offsetX, offsetY = 0, 0;
-    editor:SetStyleValue("left", self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX + offsetX);
-    editor:SetStyleValue("top", self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY + offsetY);
+    -- local scale = blockly:GetScale();
+    local left = self.left + (self.maxWidth - self.width) / 2 + blockly.offsetX + offsetX;
+    local top = self.top + (self.maxHeight - self.height) / 2 + blockly.offsetY + offsetY;
+    editor:SetStyleValue("left", left);
+    editor:SetStyleValue("top", top);
     editor:SetStyleValue("width", self.width);
     editor:SetStyleValue("height", self.height);
     editor:UpdateLayout();

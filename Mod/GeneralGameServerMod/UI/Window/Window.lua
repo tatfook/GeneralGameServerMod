@@ -10,9 +10,6 @@ local Window = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Window.lua"
 ]]
 -- Window
 NPL.load("(gl)script/ide/System/Core/PainterContext.lua");
-NPL.load("(gl)script/ide/System/Windows/Screen.lua");
-
-local Screen = commonlib.gettable("System.Windows.Screen");
 local PainterContext = commonlib.gettable("System.Core.PainterContext");
 local SizeEvent = commonlib.gettable("System.Windows.SizeEvent");
 local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
@@ -45,7 +42,6 @@ Window:Property("WindowName");                      -- 窗口名称
 Window:Property("WindowId");                        -- 窗口Id
 Window:Property("EnableSimulator");                 -- 宏名称
 Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口
-Window:Property("AutoScaleWindow", false, "IsAutoScaleWindow");  -- 是否自动缩放窗口
 
 local function GetSceneViewport()
     NPL.load("(gl)script/ide/System/Scene/Viewports/ViewportManager.lua");
@@ -123,8 +119,7 @@ end
 
 function Window:Init()
     if (not self:Is3DWindow()) then
-        Screen:Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
-        -- GetSceneViewport():Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+        GetSceneViewport():Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     end
 
     local params = self:GetParams();
@@ -138,6 +133,7 @@ function Window:Init()
     self:InitElement({
         name = "Window",
         attr = {
+            -- style="background-color:#ffffff;",
             draggable = if_else(params.draggable == false, false, true),   -- 窗口默认可以拖拽
         }, 
     }, self, nil);
@@ -180,8 +176,7 @@ end
 -- 窗口关闭
 function Window:CloseWindow()
     if (not self:GetNativeWindow()) then return end
-    Screen:Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
-    -- GetSceneViewport():Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+    GetSceneViewport():Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     if (self:IsSupportSimulator()) then Simulator:UnregisterWindow(self) end
 
     ParaUI.Destroy(self:GetNativeWindow().id);
@@ -346,12 +341,7 @@ end
 
 -- 获取窗口位置
 function Window:GetWindowPosition()
-    -- 自动缩放, 窗口大小变化  虚拟窗口大小不变
-    if (self:IsAutoScaleWindow()) then return 0, 0, self.windowWidth, self.windowHeight end
-    -- 非自动缩放, 窗口大小不变, 虚拟窗口大小变化
-    local scaleWindowWidth, scaleWindowHeight = math.floor(self.windowWidth / self.scaleX + 0.5), math.floor(self.windowHeight / self.scaleY + 0.5);
-    return 0, 0, scaleWindowWidth, scaleWindowHeight;
-    -- return self.windowX, self.windowY, self.windowWidth, self.windowHeight;
+    return self.windowX, self.windowY, self.windowWidth, self.windowHeight;
 end
 
 -- 设置窗口位置
@@ -442,7 +432,6 @@ end
 -- 鼠标事件处理函数
 function Window:HandleMouseEvent(event)
     if (not self:GetNativeWindow()) then return end
-
     -- local BeginTime = ParaGlobal.timeGetTime();
     local isCanSimulateEvent = self:IsCanSimulateEvent();
     local eventType = event:GetType();
@@ -474,16 +463,21 @@ function Window:HandleMouseEvent(event)
 
     -- 获取事件元素列表
     local el = hoverElement;
-    while (el and el:IsContainPoint(event.x, event.y)) do
+    -- while (el and el:IsContainPoint(event.x, event.y)) do -- 不再识别是否为在元素内, 否则无法为元素事件处理添加过滤处理
+    while (el) do
         table.insert(EventElementList, el);
         el = el:GetParentElement();
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "获取元素列表 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 不在任何元素内, 则丢给窗口处理
-    if (#EventElementList == 0) then EventElementList[1] = self end 
+    if (#EventElementList == 0) then EventElementList[1] = hoverElement or self end 
 
     -- 捕获事件
     local EventElementCount = #EventElementList;
+    for i = EventElementCount, 1, -1 do
+        EventElementList[i]:HandleMouseEventBefore(event);
+        if (event:IsAccepted()) then break end
+    end
     for i = EventElementCount, 1, -1 do
         el = EventElementList[i];
         el:CallEventCallback(captureFuncName, event);
@@ -497,6 +491,11 @@ function Window:HandleMouseEvent(event)
         el:CallEventCallback(bubbleFuncName, event);
         if (event:IsAccepted()) then break end
     end 
+    for i = 1, EventElementCount, 1 do
+        EventElementList[i]:HandleMouseEventAfter(event);
+        if (event:IsAccepted()) then break end
+    end
+
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "冒泡事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 清空列表
     for i = 1, EventElementCount, 1 do EventElementList[i] = nil end
@@ -570,32 +569,28 @@ function Window:OnScreenSizeChanged()
 	if (not nativeWnd) then return end 
     local rootScreenX, rootScreenY, rootScreenWidth, rootScreenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
 
-    -- 计算缩放比
-    local oldScaleX, oldScaleY = self.scaleX or 1, self.scaleY or 1;
     local minRootScreenWidth, minRootScreenHeight = self.minRootScreenWidth or self.screenWidth, self.minRootScreenHeight or self.screenHeight;
-    local scalingWidth, scalingHeight = 1, 1;
-    if(rootScreenWidth < minRootScreenWidth) then scalingWidth = rootScreenWidth / minRootScreenWidth end
-    if(rootScreenHeight < minRootScreenHeight) then scalingHeight = rootScreenHeight / minRootScreenHeight end
-    local scaling = math.min(scalingWidth, scalingHeight);
-    self.scaleX, self.scaleY = scaling, scaling;
-
-    -- 使用缩放比
-    local bNoScale = false;
-    bNoScale = bNoScale or (self.minRootScreenWidth and self.minRootScreenHeight and rootScreenWidth >= self.minRootScreenWidth and rootScreenHeight >= self.minRootScreenHeight);
-    bNoScale = bNoScale or ((not self.minRootScreenWidth or not self.minRootScreenHeight) and rootScreenWidth >= self.screenWidth and rootScreenHeight >= self.screenHeight);
-    if (self:IsAutoScaleWindow()) then
-        if (bNoScale) then
-            self.screenWidth, self.screenHeight = math.floor(self.screenWidth / oldScaleX + 0.5), math.floor(self.screenHeight * oldScaleY + 0.5);
-        else
-            self.screenWidth, self.screenHeight = math.floor(self.screenWidth * scaling + 0.5), math.floor(self.screenHeight * scaling + 0.5);   -- 缩小窗口
-        end
+    if(rootScreenWidth < minRootScreenWidth) then 
+        self.scaleX = rootScreenWidth / minRootScreenWidth;               -- 缩放宽度
+        self.screenX = math.floor(self.screenX * self.scaleX + 0.5);      -- 缩放起始点
+    elseif (self.scaleX < 1) then
+        self.screenX = math.floor(self.screenX / self.scaleX + 0.5);      -- 还原起始点
+        self.scaleX = 1;                                                  -- 还原宽度
     else
-        -- 大小未变, 位置则不变, 又不缩放 则直接返回
-        if (self.rootScreenWidth == rootScreenWidth and self.rootScreenHeight == rootScreenHeight) then return end
+        self.screenX = math.floor(self.screenX + (rootScreenWidth - self.rootScreenWidth * self.scaleX) / 2 + 0.5);   -- 还原起始点
+    end
+    
+    if(rootScreenHeight < minRootScreenHeight) then 
+        self.scaleY = rootScreenHeight / minRootScreenHeight;
+        self.screenY = math.floor(self.screenY * self.scaleY + 0.5);
+    elseif (self.scaleY < 1) then
+        self.screenY = math.floor(self.screenY / self.scaleY + 0.5);
+        self.scaleY = 1;
+    else 
+        self.screenY = math.floor(self.screenY + (rootScreenHeight - self.rootScreenHeight * self.scaleY) / 2 + 0.5);
     end
 
     -- 应用缩放比
-    self.screenX, self.screenY = math.floor(self.screenX * rootScreenWidth / self.rootScreenWidth + 0.5), math.floor(self.screenY * rootScreenHeight / self.rootScreenHeight + 0.5);
     nativeWnd:Reposition("_lt", self.screenX, self.screenY, self.screenWidth, self.screenHeight);
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = nativeWnd:GetAbsPosition();
     self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = rootScreenX, rootScreenY, rootScreenWidth, rootScreenHeight;

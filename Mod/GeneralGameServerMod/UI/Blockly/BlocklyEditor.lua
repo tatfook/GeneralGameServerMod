@@ -28,9 +28,48 @@ function BlocklyEditor:OnMouseUp(event)
     event:Accept();
 end
 
-function BlocklyEditor:RenderStaticElement(painter, root)
+-- 目前只有定位元素才具备这样实现
+function BlocklyEditor:Render(painter, root)
     local scale = self:GetBlockly():GetScale();
     painter:Scale(scale, scale);
-    BlocklyEditor._super.RenderStaticElement(self, painter, root);
+    BlocklyEditor._super.Render(self, painter, root);
     painter:Scale(1 / scale, 1 / scale);
+end
+
+function BlocklyEditor:SaveEvent(event)
+    local blockly = self:GetBlockly();
+    local relx, rely = blockly:ScreenPointToRelativePoint(event.x, event.y);
+    local scale = blockly:GetScale();
+    self.event_x, self.event_y = event.x, event.y;
+    event.x, event.y = blockly:RelativePointToScreenPoint(relx / scale, rely / scale);
+end
+
+function BlocklyEditor:RestoreEvent(event)
+    event.x, event.y = self.event_x, self.event_y;
+end
+
+-- 悬浮捕捉
+function BlocklyEditor:Hover(event, isUpdateLayout, zindex, isParentElementHover, isParentPositionElement, scrollElement)
+    self:SaveEvent(event);
+    local element, zindex = BlocklyEditor._super.Hover(self, event, isUpdateLayout, zindex, isParentElementHover, isParentPositionElement, scrollElement);
+    self:RestoreEvent(event);
+    return element, zindex;
+end
+
+-- 事件捕捉
+function BlocklyEditor:GetMouseHoverElement(event, zindex, isParentElementHover, isParentPositionElement, scrollElement)
+    self:SaveEvent(event);
+    local element, zindex = BlocklyEditor._super.GetMouseHoverElement(self, event, zindex, isParentElementHover, isParentPositionElement, scrollElement);
+    self:RestoreEvent(event);
+    return element, zindex;
+end
+
+-- 事件处理前
+function BlocklyEditor:HandleMouseEventBefore(event)
+    self:SaveEvent(event);
+end
+
+-- 事件处理后
+function BlocklyEditor:HandleMouseEventAfter(event)
+    self:RestoreEvent(event);
 end

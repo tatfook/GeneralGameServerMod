@@ -520,6 +520,11 @@ function ElementUI:RelativePointToScreenPoint(relX, relY)
     return self:WindowPointToScreenPoint(winX, winY);
 end
 
+-- 屏幕坐标转相对坐标
+function ElementUI:ScreenPointToRelativePoint(screenX, screenY)
+    return self:GetRelPoint(screenX, screenY);
+end
+
 -- 指定点是否在元素视区内
 function ElementUI:IsContainPoint(screenX, screenY)
     local windowX, windowY = self:ScreenPointToWindowPoint(screenX, screenY);
@@ -922,6 +927,10 @@ end
 function ElementUI:OnMouse()
 end
 function ElementUI:OnContextMenuCapture()
+end
+function ElementUI:HandleMouseEventBefore()
+end
+function ElementUI:HandleMouseEventAfter()
 end
 
 function ElementUI:IsCanSimulateEvent()
