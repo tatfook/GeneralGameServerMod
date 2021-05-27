@@ -65,7 +65,7 @@ function Input:SaveToXmlNode()
 
     local inputBlock = self:GetInputBlock();
 
-    if (not inputBlock and attr.label == "" and attr.value == "") then return nil end
+    if (not inputBlock and self:GetType() == "input_statement") then return nil end
     
     if (inputBlock) then table.insert(xmlNode, inputBlock:SaveToXmlNode()) end
 
@@ -77,7 +77,6 @@ function Input:LoadFromXmlNode(xmlNode)
 
     self:SetLabel(attr.label);
     self:SetValue(attr.value);
-
     local inputBlockXmlNode = xmlNode[1];
     if (not inputBlockXmlNode) then return end
     local inputBlock = self:GetBlock():GetBlockly():GetBlockInstanceByXmlNode(inputBlockXmlNode);

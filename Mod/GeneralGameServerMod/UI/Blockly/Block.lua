@@ -548,7 +548,11 @@ function Block:IsIntersect(block, isSingleBlock)
     BlockDebug.Format("centerX = %s, centerY = %s, halfWidthUnitCount = %s, halfHeightUnitCount = %s, blockCenterX = %s, blockCenterY = %s, blockHalfWidthUnitCount = %s, blockHalfHeightUnitCount = %s", 
         centerX, centerY, halfWidthUnitCount, halfHeightUnitCount, blockCenterX, blockCenterY, blockHalfWidthUnitCount, blockHalfHeightUnitCount);
 
-    return math.abs(centerX - blockCenterX) <= (halfWidthUnitCount + blockHalfWidthUnitCount) and math.abs(centerY - blockCenterY) <= (halfHeightUnitCount + blockHalfHeightUnitCount + Const.ConnectionRegionHeightUnitCount); -- 预留一个连接高度
+    local nextBlock = self:GetNextBlock();
+    local prevBlock = self:GetPrevBlock();
+    while (prevBlock and prevBlock.leftUnitCount == leftUnitCount) do prevBlock = prevBlock:GetPrevBlock() end
+    local OffsetHeight = (prevBlock or nextBlock) and 0 or Const.ConnectionRegionHeightUnitCount;
+    return math.abs(centerX - blockCenterX) <= (halfWidthUnitCount + blockHalfWidthUnitCount) and math.abs(centerY - blockCenterY) <= (halfHeightUnitCount + blockHalfHeightUnitCount + OffsetHeight); -- 预留一个连接高度
 end
 
 function Block:ConnectionBlock(block)
@@ -567,7 +571,9 @@ function Block:ConnectionBlock(block)
 
     -- 优先匹配上连接
     if (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and 
-        not self.previousConnection:IsConnection() and not block.nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
+        not block.nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
+        local previousConnection = self.previousConnection:Disconnection();
+        if (previousConnection) then previousConnection:Connection(block.previousConnection) end
         self:GetBlockly():RemoveBlock(self);
         self.previousConnection:Connection(block.nextConnection)
         block:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount - block.heightUnitCount);

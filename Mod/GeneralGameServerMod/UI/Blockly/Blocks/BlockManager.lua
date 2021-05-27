@@ -80,11 +80,11 @@ function BlockManager.SaveCategoryAndBlock(filename)
         GameLogic.AddBBS("Blockly", "非开发人员只能定制世界图块, 系统块定制保存至: " .. filename);
     end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(filename);
-    CategoryAndBlockMap.ToolBoxXmlText = BlockManager.GenerateToolBoxXmlText(filename);
-    
     -- 重写全局 BlockMap
     for blockType, blockOption in pairs(CategoryAndBlockMap.AllBlockMap) do AllBlockMap[blockType] = blockOption end
 
+    CategoryAndBlockMap.ToolBoxXmlText = BlockManager.GenerateToolBoxXmlText(filename);
+    
     local text = commonlib.serialize_compact(CategoryAndBlockMap);
     local io = ParaIO.open(filename, "w");
 	io:WriteString(text);
@@ -189,7 +189,7 @@ end
 
 function BlockManager.GenerateToolBoxXmlText(path)
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
-    local AllCategoryList, AllBlockMap = CategoryAndBlockMap.AllCategoryList, CategoryAndBlockMap.AllBlockMap;
+    local AllCategoryList = CategoryAndBlockMap.AllCategoryList; --  CategoryAndBlockMap.AllBlockMap;
     local BlockTypeMap, AllCategoryMap = {}, {};
     for _, category in ipairs(AllCategoryList) do
         AllCategoryMap[category.name] = category;
@@ -197,35 +197,35 @@ function BlockManager.GenerateToolBoxXmlText(path)
         for i = 1, size do
             local blockitem = category[i];
             local blocktype = blockitem.blocktype;
-            local block = AllBlockMap[blocktype];
-            if (block and block.category == category.name) then
+            local languageBlock = CategoryAndBlockMap.AllBlockMap[blocktype]
+            local systemBlock = AllBlockMap[blocktype];
+            if ((languageBlock and languageBlock.category == category.name) or (not languageBlock and systemBlock)) then
                 BlockTypeMap[blocktype] = true;
                 category[index] = blockitem;
                 index = index + 1;
             end
         end
+
         -- 清除不存在的图块
         for i = index, size do category[i] = nil end
-        category.blockCount = 0;
     end
 
-    for blocktype, block in pairs(AllBlockMap) do
+    for blocktype, block in pairs(CategoryAndBlockMap.AllBlockMap) do
         local category = AllCategoryMap[block.category];
         if (not category) then
-            category = {name = block.category, blockCount = 0};
+            category = {name = block.category};
             AllCategoryMap[block.category] = category;
             table.insert(AllCategoryList, category);
         end
-        category.blockCount = category.blockCount + 1;
         -- 分类不存在则添加分类
-        if (not BlockTypeMap[blocktype] and not block.hideInToolbox) then
+        if (not BlockTypeMap[blocktype]) then
             table.insert(category, #category + 1, {blocktype = blocktype});
         end
     end
 
     -- 删除无块分类
     for categoryName, category in pairs(AllCategoryMap) do
-        if (category.blockCount == 0) then
+        if (#category == 0) then
             for index, item in ipairs(AllCategoryList) do
                 if (item.name == categoryName) then
                     table.remove(AllCategoryList, index);
@@ -256,7 +256,7 @@ function BlockManager.ParseToolBoxXmlText(xmlText, path)
     local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
     if (not toolboxNode) then return end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
-    local AllCategoryMap, AllBlockMap = {}, CategoryAndBlockMap.AllBlockMap;
+    local AllCategoryMap = {};
 
     local AllCategoryList = {};
     for _, categoryNode in ipairs(toolboxNode) do
@@ -275,7 +275,7 @@ function BlockManager.ParseToolBoxXmlText(xmlText, path)
                 if (blockTypeNode.attr and blockTypeNode.attr.type) then
                     local blocktype = blockTypeNode.attr.type;
                     local hideInToolbox = blockTypeNode.attr.hideInToolbox == "true";
-                    if (AllBlockMap[blocktype]) then
+                    if (CategoryAndBlockMap.AllBlockMap[blocktype] or AllBlockMap[blocktype]) then
                         table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox});
                     end
                 end

@@ -882,7 +882,9 @@ function Blockly:LoadFromXmlNodeText(text)
 end
 
 function Blockly:SaveToXmlNodeText()
-    return Helper.Lua2XmlString(self:SaveToXmlNode(), true);
+    local text = Helper.Lua2XmlString(self:SaveToXmlNode(), true);
+    ParaMisc.CopyTextToClipboard(text);
+    return text;
 end
 
 -- 发生改变

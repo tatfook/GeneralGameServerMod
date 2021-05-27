@@ -231,7 +231,7 @@ local AllBlockList = {
     },
     {
         type = "set_field_dropdown_code_options",
-        message = "字段-列表 %1 %2 %3",
+        message = "字段-列表 %1 %2 %3 %4",
         arg = {
             {
                 name = "field_name",
@@ -248,6 +248,12 @@ local AllBlockList = {
                 type = "field_input",
                 text = [[{{"标签1", "值1"}, {"标签2", "值2"}, {"标签3", "值3"}}]]
             },
+            {
+                name = "field_allow_new_option",
+                type = "field_dropdown",
+                text = "false",
+                options = {{"禁止新增", "false"}, {"允许新增", "true"}},
+            }
         },
         category = "BlockField",
         previousStatement = true,
@@ -256,11 +262,12 @@ local AllBlockList = {
             local field_name = block:GetFieldValue("field_name");
             local field_value = block:GetFieldValue("field_value");
             local field_options = block:GetFieldValue("field_options");
+            local field_allow_new_option = block:GetFieldValue("field_allow_new_option");
             return string.format([==[
                 field_count = field_count + 1;
                 message = message .. " %%" .. field_count;
-                arg[field_count] = {name = "%s", type = "field_dropdown", text = "%s", options = %s};
-                ]==], field_name, field_value, field_options);
+                arg[field_count] = {name = "%s", type = "field_dropdown", text = "%s", options = %s, isAllowNewSelectOption = %s};
+                ]==], field_name, field_value, field_options, field_allow_new_option);
         end,
     },
     -- {

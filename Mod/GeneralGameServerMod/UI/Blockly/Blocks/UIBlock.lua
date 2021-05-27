@@ -136,7 +136,7 @@ local UI_Attr_Create = {};
 function UI_Attr_Create.ToCode(block)
     local attrs = GetAttrs(block:GetToCodeCache());
     local fieldAttrName = block:GetFieldValue("attrs");
-    styles[fieldStyleName] = "";
+    attrs[fieldAttrName] = "";
     return nil;
 end
 
@@ -152,7 +152,9 @@ end
 
 local UI_Attr_Get = {};
 function UI_Attr_Get.ToCode(block)
-    return nil;
+    local attrs = GetAttrs(block:GetToCodeCache());
+    local fieldAttrName = block:GetFieldValue("attrs");
+    return attrs[fieldAttrName];
 end
 
 local UI_Attr_Get_Style = {};
@@ -186,11 +188,10 @@ end
 local UI_Element_Text = {};
 function UI_Element_Text.ToCode(block)
     local cache = block:GetToCodeCache();
-    local fieldTag = block:GetFieldValue("tag");
     local fieldAttrName = block:GetFieldValue("attrs");
-    local fieldText = block:GetValueAsString("text");
+    local fieldText = block:GetFieldValue("text");
     local fieldAttr = GetAttr(cache, fieldAttrName) or fieldAttrName;
-    return string.format('<%s %s>%s</%s>\n', fieldTag, fieldAttr, fieldText, fieldTag);
+    return string.format('<div %s>%s</div>\n', fieldAttr, fieldText);
 end
 
 local UI_Component_Register = {};

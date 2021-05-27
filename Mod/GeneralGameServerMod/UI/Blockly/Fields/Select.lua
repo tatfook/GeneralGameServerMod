@@ -27,13 +27,11 @@ function Select:Init(block, option)
         self:SetAllowNewSelectOption(true);
     elseif (type(options) == "string" and not Options[options]) then
         self:SetSelectType(options);
-        self:SetAllowNewSelectOption(false);
     elseif (type(options) == "table" and options.selectType) then
         self:SetSelectType(options.selectType);
         self:SetAllowNewSelectOption(options.isAllowCreate)
     else
         self:SetSelectType(option.selectType);
-        self:SetAllowNewSelectOption(option.isAllowCreate);
     end
 
     -- self:OnValueChanged(nil, nil)
