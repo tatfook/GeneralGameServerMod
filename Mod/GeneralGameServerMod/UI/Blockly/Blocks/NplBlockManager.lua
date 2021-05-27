@@ -135,6 +135,7 @@ function NplBlockManager.GetMcmlCategoryListAndMap()
         <block type="UI_Style_Create"/>
         <block type="UI_Style_Insert"/>
         <block type="UI_Style_Get"/>
+        <block type="UI_Style_Layout"/>
         <block type="UI_Style_Position"/>
         <block type="UI_Style_Margin"/>
         <block type="UI_Style_Padding"/>

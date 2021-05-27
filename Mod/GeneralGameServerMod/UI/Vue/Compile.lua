@@ -410,10 +410,9 @@ function Compile:VOn(element)
         local realKey = string.match(key, "^v%-on:(%S+)");
         local realVal = val;
         if (not realKey or realKey == "") then realKey = string.match(key, "^on(%S+)") end
-        if (realKey and realKey ~= "" and type(val) == "string") then
-            -- 以括号结束则当做函数调用  
-            local isFuncCall = string.match(val, "%S+%(.*%)[;%s]*$");
-            if (not isFuncCall) then 
+        if (realKey and realKey ~= "" and type(val) == "string") then 
+            local isFuncExpr = string.match(val, "^%s*[%a%d%_]+%s*$");  -- 若为一个变量名则直接取其值
+            if (isFuncExpr) then 
                 -- 不是函数调用则获取函数
                 realVal = self:ExecCode(val);
                 if (type(realVal) ~= "function") then CompileDebug.Format("invalid function listen, realKey = %s, realVal = %s, key = %s, val = %s", realKey, realVal, key, val) end
