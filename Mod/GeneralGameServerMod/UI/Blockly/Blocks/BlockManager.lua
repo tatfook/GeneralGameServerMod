@@ -26,9 +26,8 @@ local WorldCategoryAndBlockPath = "";
 local CurrentCategoryAndBlockPath = "";
 local AllCategoryAndBlockMap = {};
 local AllBlockMap = {};
-local BlockManager = NPL.export();
-
 local inited = false;
+local BlockManager = NPL.export();
 
 function BlockManager.LoadCategoryAndBlock(filename)
     filename = filename or CurrentCategoryAndBlockPath;
@@ -251,13 +250,12 @@ function BlockManager.GenerateToolBoxXmlText(path)
     return xmlText;
 end
 
-function BlockManager.ParseToolBoxXmlText(xmlText, path)
+function BlockManager.GetCategoryListAndMapByXmlText(xmlText, path)
     local xmlNode = ParaXML.LuaXML_ParseString(xmlText);
     local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
     if (not toolboxNode) then return end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
     local AllCategoryMap = {};
-
     local AllCategoryList = {};
     for _, categoryNode in ipairs(toolboxNode) do
         if (categoryNode.attr and categoryNode.attr.name) then
@@ -282,10 +280,16 @@ function BlockManager.ParseToolBoxXmlText(xmlText, path)
             end
         end
     end
+    return AllCategoryList, AllCategoryMap;
+end
+
+function BlockManager.ParseToolBoxXmlText(xmlText, path)
+    local AllCategoryList, AllCategoryMap = BlockManager.GetCategoryListAndMapByXmlText(xmlText, path);
+    if (not AllCategoryList) then return end
     CategoryAndBlockMap.AllCategoryList = AllCategoryList;
     CategoryAndBlockMap.AllCategoryMap = AllCategoryMap;
     BlockManager.SaveCategoryAndBlock(path);
-    return AllCategoryList;
+    return AllCategoryList, AllCategoryMap;
 end
 
 function BlockManager.GetLanguageCategoryListAndMap(path)
@@ -338,13 +342,7 @@ function BlockManager.GetBlockOption(blockType, lang)
 end
 
 function BlockManager.GetBlockMap(lang)
-    if (lang == "npl") then 
-        if (NplBlockManager.IsUseSystemNplBlock()) then
-            return BlockManager.GetLanguageBlockMap(LanguagePathMap["SystemNplBlock"]);
-        else
-            return NplBlockManager.GetBlockMap(); 
-        end
-    end
+    if (lang == "npl") then return NplBlockManager.GetBlockMap(BlockManager) end
     if (lang == "block") then return BlockBlockManager.GetBlockMap() end
     return AllBlockMap;
     -- if (LanguagePathMap[lang]) then return BlockManager.GetLanguageBlockMap(LanguagePathMap[lang]) end
@@ -352,16 +350,9 @@ function BlockManager.GetBlockMap(lang)
 end
 
 function BlockManager.GetCategoryListAndMap(lang)
-    if (lang == "npl") then 
-        if (NplBlockManager.IsUseSystemNplBlock()) then
-            return BlockManager.GetLanguageCategoryListAndMap(LanguagePathMap["SystemNplBlock"]);
-        else
-            return NplBlockManager.GetCategoryListAndMap();
-        end
-    end
+    if (lang == "npl") then return NplBlockManager.GetCategoryListAndMap(BlockManager) end
     if (lang == "block") then return BlockBlockManager.GetCategoryListAndMap() end
     if (LanguagePathMap[lang]) then return BlockManager.GetLanguageCategoryListAndMap(LanguagePathMap[lang]) end
-
     return BlockManager.GetLanguageCategoryListAndMap(WorldCategoryAndBlockPath);
 end
 

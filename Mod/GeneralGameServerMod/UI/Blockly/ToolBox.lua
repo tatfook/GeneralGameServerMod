@@ -50,7 +50,6 @@ end
 function ToolBox:SetCategoryList(categorylist)
     self.categoryList = {};
     self.blocks, self.blockPosMap, self.categoryMap = {}, {}, {};
-
     local offsetX, offsetY = 25, 0;
     for _, categoryitem in ipairs(categorylist) do
         local category = {name = categoryitem.name, text = categoryitem.text, color = categoryitem.color};

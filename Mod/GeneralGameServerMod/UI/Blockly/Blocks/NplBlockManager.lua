@@ -14,6 +14,7 @@ local CodeHelpWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeHelpWin
 
 local NplBlockManager = NPL.export();
 
+local BlockManager = nil;
 local all_blocks_cache = {};
 local all_block_map_cache = {};
 local all_category_list_cache = {};
@@ -103,17 +104,74 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
     return AllBlocks, CategoryList, AllBlockMap, CategoryMap;
 end
 
-function NplBlockManager.IsUseSystemNplBlock()
+function NplBlockManager.IsNplLanguage()
     return CodeHelpWindow.GetLanguageConfigFile() == "npl" or CodeHelpWindow.GetLanguageConfigFile() == "";
 end
 
-function NplBlockManager.GetBlockMap()
+function NplBlockManager.IsMcmlLanguage()
+    return CodeHelpWindow.GetLanguageConfigFile() == "mcml" or CodeHelpWindow.GetLanguageConfigFile() == "html";
+end
+
+function NplBlockManager.GetMcmlBlockMap()
+    return BlockManager.GetLanguageBlockMap("SystemUIBlock");
+end
+
+function NplBlockManager.GetMcmlCategoryListAndMap()
+    return BlockManager.GetCategoryListAndMapByXmlText([[
+<toolbox>
+    <category name="元素" color="#2E9BEF">
+        <block type="UI_Element"/>
+        <block type="UI_Element_Text"/>
+        <block type="UI_Elements"/>
+    </category>
+    <category name="属性" color="#76CE62">
+        <block type="UI_Attr_Create"/>
+        <block type="UI_Attr_Insert"/>
+        <block type="UI_Attr_Get"/>
+        <block type="UI_Attr_Get_Style"/>
+        <block type="UI_Attr_Item"/>
+    </category>
+    <category name="样式" color="#764BCC">
+        <block type="UI_Style_Create"/>
+        <block type="UI_Style_Insert"/>
+        <block type="UI_Style_Get"/>
+        <block type="UI_Style_Position"/>
+        <block type="UI_Style_Margin"/>
+        <block type="UI_Style_Padding"/>
+        <block type="UI_Style_Width_Height"/>
+        <block type="UI_Style_Font_Size_Color"/>
+        <block type="UI_Style_BG_Color_Image"/>
+        <block type="UI_Style_Item"/>
+        <block type="UI_Style_Set_Selector"/>
+    </category>
+    <category name="窗口" color="#EC522E">
+        <block type="UI_Window_Show_Html"/>
+    </category>
+</toolbox>    
+    ]],"SystemUIBlock");
+end
+
+function NplBlockManager.GetNplBlockMap()
+    return BlockManager.GetLanguageBlockMap("SystemNplBlock");
+end
+
+function NplBlockManager.GetNplCategoryListAndMap()
+    return BlockManager.GetLanguageCategoryListAndMap("SystemNplBlock");
+end
+
+function NplBlockManager.GetBlockMap(blockManager)
+    BlockManager = blockManager;
+    if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplBlockMap() end
+    if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlBlockMap() end
+
     local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
     return AllBlockMap;
 end
+function NplBlockManager.GetCategoryListAndMap(blockManager)
+    BlockManager = blockManager;
+    if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplCategoryListAndMap() end
+    if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlCategoryListAndMap() end
 
-function NplBlockManager.GetCategoryListAndMap()
     local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
     return CategoryList, AllCategoryMap;
 end
-

@@ -9,4 +9,7 @@ local NplBlock = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/NplBlock.l
 -------------------------------------------------------
 ]]
 
-local UIBlock = NPL.export();
+local NplBlock = NPL.export();
+
+
+local NPL_Mcml_ShowWindow = NPL_Mcml_ShowWindow or {};

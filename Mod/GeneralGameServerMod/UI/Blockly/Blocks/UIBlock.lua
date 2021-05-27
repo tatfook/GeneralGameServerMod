@@ -237,6 +237,23 @@ function UI_Window_Register.ToCode(block)
     return code;
 end
 
+local UI_Window_Show_Html = {};
+function UI_Window_Show_Html.ToCode(block)
+    local fieldName = block:GetFieldValue("name");
+    local fieldAlignment = block:GetFieldValue("alignment");
+    local fieldLeft = block:GetFieldValue("left");
+    local fieldTop = block:GetFieldValue("top");
+    local fieldWidth = block:GetFieldValue("width");
+    local fieldHeight = block:GetFieldValue("height");
+    local fieldHtml = block:GetFieldValue("html");
+
+    local cache = block:GetToCodeCache();
+    local code = InitCode(cache);
+    code = code .. string.format('Page.RegisterWindow({windowName = "%s", alignment = "%s", x = "%s", y = "%s", width = "%s", height = "%s", html = [[%s]]})\n', fieldName, fieldAlignment, fieldLeft, fieldTop, fieldWidth, fieldHeight, fieldHtml);
+    code = code ..string.format('Page.ShowWindow("%s", codeblock)\n', fieldName);
+    return code;
+end
+
 UIBlock.UI_Elements = UI_Elements;
 UIBlock.UI_Element = UI_Element;
 UIBlock.UI_Element_Text = UI_Element_Text;
@@ -251,3 +268,4 @@ UIBlock.UI_Attr_Insert = UI_Attr_Insert;
 UIBlock.UI_Attr_Get = UI_Attr_Get;
 UIBlock.UI_Component_Register = UI_Component_Register;
 UIBlock.UI_Window_Register = UI_Window_Register;
+UIBlock.UI_Window_Show_Html = UI_Window_Show_Html;

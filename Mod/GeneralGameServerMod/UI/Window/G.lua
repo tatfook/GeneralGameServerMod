@@ -20,7 +20,6 @@ local G = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.expo
 G:Property("Window");  -- 所属窗口
 G:Property("G");       -- 真实G
 
-
 function G.New(window, g)
     g = setmetatable(g or {}, {__index = _G});
     
