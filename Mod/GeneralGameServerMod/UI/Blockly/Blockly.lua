@@ -810,9 +810,22 @@ end
 -- 获取代码
 function Blockly:GetCode()
     self.__to_code_cache__ = {};
-
+    local blocks, lastStartIndex = {}, 1;
+    for _, block in pairs(self.blocks) do
+        if (block:GetType() == "System_Main") then 
+            table.insert(blocks, 1, block);
+            lastStartIndex = lastStartIndex + 1;
+        elseif (not block.previousConnection and block.nextConnection) then
+            table.insert(blocks, lastStartIndex, block);
+            lastStartIndex = lastStartIndex + 1;
+        elseif (block.previousConnection and block.nextConnection) then
+            table.insert(blocks, block);
+        else
+            print("顶层输出块不产生代码");
+        end
+    end
     local code = "";
-    for _, block in ipairs(self.blocks) do
+    for _, block in ipairs(blocks) do
         local nextBlock = block;
         local blockCode = "";
         while (nextBlock) do

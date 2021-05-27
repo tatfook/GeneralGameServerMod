@@ -14,6 +14,19 @@ end
 function BlockOptionGlobal:New()
     local G = setmetatable({}, {__index = _G});
 
+    -- 内置启动块
+    G.System_Main = {
+        type = "System_Main",
+        category = "事件",
+        color = "#2E9BEF",
+        output = false,
+        previousStatement = false, 
+        nextStatement = true,
+        message = "程序入口",
+        code_description = [[]],
+        arg = {  },
+    }
+    
     ExtendBlock(MacroBlock, G);
     ExtendBlock(ListBlock, G);
     ExtendBlock(UIBlock, G);

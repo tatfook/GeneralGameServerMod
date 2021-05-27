@@ -286,6 +286,7 @@ end
 function BlockManager.ParseToolBoxXmlText(xmlText, path)
     local AllCategoryList, AllCategoryMap = BlockManager.GetCategoryListAndMapByXmlText(xmlText, path);
     if (not AllCategoryList) then return end
+    local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
     CategoryAndBlockMap.AllCategoryList = AllCategoryList;
     CategoryAndBlockMap.AllCategoryMap = AllCategoryMap;
     BlockManager.SaveCategoryAndBlock(path);
