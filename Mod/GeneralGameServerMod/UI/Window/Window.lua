@@ -163,7 +163,6 @@ function Window.Show(self, params)
     self:Set3DWindow(params.is3DUI and true or false);
     self:SetParams(params);
     self:SetNativeWindow(self:Is3DWindow() and self:Create3DNativeWindow() or self:CreateNativeWindow());
-    self:SetMinRootScreenWidthHeight(params.minScreenWidth, params.minScreenHeight);
     -- 初始化
     self:Init();
     -- 文档化
@@ -214,7 +213,6 @@ end
 function Window:InitWindowPosition()
     local params = self:GetParams();
     local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
-    -- print(screenX, screenY, screenWidth, screenHeight, params.width, params.height);
     local windoX, windowY, windowWidth, windowHeight = 0, 0, tonumber(params.width) or params.width or screenWidth, tonumber(params.height) or params.height or screenHeight;
     local offsetX, offsetY = tonumber(params.x) or params.x or 0, tonumber(params.y) or params.y or 0;
     if (type(windowWidth) == "string" and string.match(windowWidth, "^%d+%%$")) then windowWidth = math.floor(screenWidth * tonumber(string.match(windowWidth, "%d+")) / 100) end
@@ -255,14 +253,22 @@ function Window:InitWindowPosition()
     self.screenX, self.screenY, self.screenWidth, self.screenHeight = windowX, windowY, windowWidth, windowHeight;
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, windowWidth, windowHeight;
     self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = screenX, screenY, screenWidth, screenHeight;
-    -- self.minRootScreenWidth, self.minRootScreenHeight = params.minRootScreenWidth, params.minRootScreenHeight;  -- 1280, 750;
-    
+
+    self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.screenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.screenHeight;
+    if (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight) then
+        local scale = math.min(self.rootScreenWidth / self.minRootScreenWidth, self.rootScreenHeight / self.minRootScreenHeight);
+        self.scaleX, self.scaleY = scale, scale;
+        self.screenX = math.max(self.screenX, 0) * self.scaleX;
+        self.screenY = math.max(self.screenY, 0) * self.scaleY;
+    else 
+        self.scaleX, self.scaleY = 1, 1;
+    end
     -- WindowDebug(
     --     string.format("root window screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", screenX, screenY, screenWidth, screenHeight),
     --     string.format("screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", windowX, windowY, windowWidth, windowHeight),
     --     string.format("windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", 0, 0, windowWidth, windowHeight)
     -- );
-    return windowX, windowY, windowWidth, windowHeight;
+    return self.screenX, self.screenY, self.screenWidth, self.screenHeight;
 end
 
 -- 创建原生窗口
@@ -277,9 +283,10 @@ function Window:CreateNativeWindow()
     native_window:SetField("InputMethodEnabled", true);
 	native_window:GetAttributeObject():SetDynamicField("isWindow", true); -- 宏示教忽略
 
-    local zorder = self:GetParams().zorder;
-    if (zorder) then native_window.zorder = zorder end
-
+    local params = self:GetParams();
+    if (params.zorder) then native_window.zorder = params.zorder end
+    if (params.isTopLevel ~= nil) then native_window.isTopLevel = params.isTopLevel end
+    if (params.isPinned ~= nil) then native_window.isPinned = params.isPinned end 
     -- 加到有效窗口上
     native_window:AttachToRoot();
     
@@ -567,31 +574,6 @@ function Window:OnScreenSizeChanged()
     if (not self.rootScreenWidth or not self.rootScreenHeight) then return end
     local nativeWnd = self:GetNativeWindow();
 	if (not nativeWnd) then return end 
-    local rootScreenX, rootScreenY, rootScreenWidth, rootScreenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
-
-    local minRootScreenWidth, minRootScreenHeight = self.minRootScreenWidth or self.screenWidth, self.minRootScreenHeight or self.screenHeight;
-    if(rootScreenWidth < minRootScreenWidth) then 
-        self.scaleX = rootScreenWidth / minRootScreenWidth;               -- 缩放宽度
-        self.screenX = math.floor(self.screenX * self.scaleX + 0.5);      -- 缩放起始点
-    elseif (self.scaleX < 1) then
-        self.screenX = math.floor(self.screenX / self.scaleX + 0.5);      -- 还原起始点
-        self.scaleX = 1;                                                  -- 还原宽度
-    else
-        self.screenX = math.floor(self.screenX + (rootScreenWidth - self.rootScreenWidth * self.scaleX) / 2 + 0.5);   -- 还原起始点
-    end
-    
-    if(rootScreenHeight < minRootScreenHeight) then 
-        self.scaleY = rootScreenHeight / minRootScreenHeight;
-        self.screenY = math.floor(self.screenY * self.scaleY + 0.5);
-    elseif (self.scaleY < 1) then
-        self.screenY = math.floor(self.screenY / self.scaleY + 0.5);
-        self.scaleY = 1;
-    else 
-        self.screenY = math.floor(self.screenY + (rootScreenHeight - self.rootScreenHeight * self.scaleY) / 2 + 0.5);
-    end
-
-    -- 应用缩放比
-    nativeWnd:Reposition("_lt", self.screenX, self.screenY, self.screenWidth, self.screenHeight);
-    self.screenX, self.screenY, self.screenWidth, self.screenHeight = nativeWnd:GetAbsPosition();
-    self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = rootScreenX, rootScreenY, rootScreenWidth, rootScreenHeight;
+    local screenX, screenY, screenWidth, screenHeight = self:InitWindowPosition();
+    nativeWnd:Reposition("_lt", screenX, screenY, screenWidth, screenHeight);
 end

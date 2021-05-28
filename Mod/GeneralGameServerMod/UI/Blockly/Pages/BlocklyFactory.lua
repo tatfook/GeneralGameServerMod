@@ -226,10 +226,12 @@ function ClickDeleteBlockBtn(blocktype)
         end
     end
     BlockManager.DeleteBlock(blocktype);
-    BlockType = "";
-    BlocklyEditor:Reset();
-    OnBlocklyEditorChange();
     OnToolBoxXmlTextChange();
+    if (blocktype == BlockType) then
+        BlockType = "";
+        BlocklyEditor:Reset();
+        OnBlocklyEditorChange();
+    end
 end
 
 function ClickEditBlockBtn(blockType)

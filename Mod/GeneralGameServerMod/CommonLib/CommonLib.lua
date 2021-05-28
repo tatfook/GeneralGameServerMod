@@ -13,11 +13,17 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Common/HttpFiles.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Sound/SoundManager.lua");
 NPL.load("(gl)script/ide/AudioEngine/AudioEngine.lua");
 NPL.load("(gl)script/ide/OpenFileDialog.lua");
+
 local AudioEngine = commonlib.gettable("AudioEngine");
 local SoundManager = commonlib.gettable("MyCompany.Aries.Game.Sound.SoundManager");
 local HttpFiles = commonlib.gettable("MyCompany.Aries.Game.Common.HttpFiles");
 
+local List = NPL.load("./List.lua", IsDevEnv);
+
 local CommonLib = NPL.export();
+_G.CommonLib = CommonLib;
+
+CommonLib.List = List;
 
 function CommonLib.PlayVoiceText(text, speed, lang, callback)
     local function finish(...) 

@@ -688,6 +688,7 @@ end
 function Block:getFieldValue(name)
     return self:GetFieldValue(name);
 end
+
 -- 获取字符串字段
 function Block:getFieldAsString(name)
     return self:GetFieldValue(name);
@@ -712,7 +713,6 @@ local function DefaultToCode(block)
         end 
     end
     local code = string.gsub(option.code_description or "", "\\n", "\n");
-    -- local code = string.gsub(code_description, "%$([%w_]+)", args);
     code = string.gsub(code, "%$%{([%w_]+)%}", args);      -- ${name} 取字段值
     code = string.gsub(code, "%$%(([%w_]+)%)", argStrs);   -- $(name) 取字段字符串值
     code = string.gsub(code, "[\n]+$", "");

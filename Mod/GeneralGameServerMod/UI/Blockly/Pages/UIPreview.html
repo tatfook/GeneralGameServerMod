@@ -4,19 +4,11 @@
         <select v-bind:value="WindowSize" v-bind:options="WindowSizeOptions" onselect=OnWindowSizeChange></select>
     </div>
     <div style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px; background-color: #c8c8c8f0;">
-        <component v-bind:template="UITemplate"></component>
+        <component v-bind:template="TemplateCode"></component>
     </div>
 </template>
 
-<script type="text/lua">
-WindowSize = "500X400";
-WindowSizeOptions = {
-    "500X400",
-    "1200X900",
-}
-
-function OnWindowSizeChange()
-end
+<script type="text/lua" src="%ui%/Blockly/Pages/UIPreview.lua">
 </script>
 
 

@@ -128,7 +128,7 @@ function NplBlockManager.GetMcmlCategoryListAndMap()
         <block type="UI_Attr_Create"/>
         <block type="UI_Attr_Insert"/>
         <block type="UI_Attr_Get"/>
-        <block type="UI_Attr_Get_Style"/>
+        <block type="UI_Attr_Style"/>
         <block type="UI_Attr_Item"/>
     </category>
     <category name="样式" color="#764BCC">

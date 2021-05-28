@@ -102,6 +102,7 @@ function Blockly:Init(xmlNode, window, parent)
     self:SetShadowBlock(ShadowBlock:new():Init(self));
 
     self:SetLanguage(self:GetAttrStringValue("language"));
+    self:LoadBlockMap();
     self.CategoryList, self.CategoryMap = BlockManager.GetCategoryListAndMap(self:GetLanguage());
     self:OnToolBoxXmlTextChange(self:GetAttrStringValue("ToolBoxXmlText"));
     self:GetToolBox():SetCategoryList(self.CategoryList);
@@ -144,6 +145,13 @@ function Blockly:OnToolBoxXmlTextChange(toolboxXmlText)
         self.CategoryList = categorylist;
     end
     for _, category in ipairs(self.CategoryList) do
+        for _, block in ipairs(category) do
+            local option = self.BlockMap[block.blocktype];
+            if (option) then  
+                option.category = category.name; 
+                option.color = category.color;
+            end
+        end
         self.CategoryColor[category.name] = category.color;
         self.CategoryColor[category.text or category.name] = category.color;
     end
@@ -167,18 +175,19 @@ function Blockly:LoadBlockMap()
 
     local G = self:GetOptionGlobal();
     for blockType, blockOption in pairs(BlockMap) do
+        local option = commonlib.deepcopy(blockOption);
         local defaultOption = rawget(G, blockType);
         if (defaultOption) then
             for key, val in pairs(defaultOption) do
-                if (blockOption[key] == nil) then blockOption[key] = val end
+                if (option[key] == nil) then option[key] = val end
             end
         end
 
-        G[blockType] = blockOption;
-        self.BlockMap[blockType] = blockOption;
+        G[blockType] = option;
+        self.BlockMap[blockType] = option;
 
-        if (blockOption.code and blockOption.code ~= "") then
-            local func, errmsg = loadstring(blockOption.code);
+        if (option.code and option.code ~= "") then
+            local func, errmsg = loadstring(option.code);
             if (func) then
                 setfenv(func, G);
                 func();
@@ -188,7 +197,7 @@ function Blockly:LoadBlockMap()
         end
 
         -- 调用初始化回调
-        if (type(blockOption.OnInit) == "function") then blockOption.OnInit(blockOption) end 
+        if (type(option.OnInit) == "function") then option.OnInit(option) end 
     end 
 end
 
@@ -811,7 +820,7 @@ end
 function Blockly:GetCode()
     self.__to_code_cache__ = {};
     local blocks, lastStartIndex = {}, 1;
-    for _, block in pairs(self.blocks) do
+    for _, block in ipairs(self.blocks) do
         if (block:GetType() == "System_Main") then 
             table.insert(blocks, 1, block);
             lastStartIndex = lastStartIndex + 1;
@@ -860,7 +869,6 @@ function Blockly:SaveToXmlNode()
     if (toolboxXmlNode) then table.insert(xmlNode, toolboxXmlNode) end
 
     return xmlNode;
-    -- return Helper.Lua2XmlString(xmlNode);
 end
 
 function Blockly:LoadFromXmlNode(xmlNode)
@@ -896,7 +904,6 @@ end
 
 function Blockly:SaveToXmlNodeText()
     local text = Helper.Lua2XmlString(self:SaveToXmlNode(), true);
-    ParaMisc.CopyTextToClipboard(text);
     return text;
 end
 
