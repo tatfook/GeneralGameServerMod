@@ -231,7 +231,7 @@ function ToolBox:OnMouseWheel(event)
     if (#self.blocks == 0) then return end
     local scale = self:GetScale();
     local heightUnitCount = math.floor(self.heightUnitCount / scale);
-    if (delta > 0) then
+    if (delta < 0) then
         local block = self.blocks[#self.blocks];
         if ((block.topUnitCount + block.heightUnitCount) <= (heightUnitCount - offset)) then return end  
     else
@@ -242,7 +242,7 @@ function ToolBox:OnMouseWheel(event)
     local categoryName = nil;
     for _, block in ipairs(self.blocks) do
         local left, top = block:GetLeftTopUnitCount();
-        top = top - dist * delta;
+        top = top + dist * delta;
         if (not categoryName and top > 0) then categoryName = block:GetOption().category end 
         block:SetLeftTopUnitCount(left, top);
         block:UpdateLeftTopUnitCount();
