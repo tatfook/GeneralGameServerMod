@@ -557,6 +557,7 @@ end
 -- 捕获鼠标
 function ElementUI:CaptureMouse()
 	local lastCaptured = self:GetWindow():GetMouseCaptureElement();
+    if (lastCaptured == self) then return end
 	if(lastCaptured) then lastCaptured:ReleaseMouseCapture() end
     self:GetWindow():SetMouseCaptureElement(self);
 end

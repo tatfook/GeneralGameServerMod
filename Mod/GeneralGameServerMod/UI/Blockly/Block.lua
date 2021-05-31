@@ -399,10 +399,13 @@ function Block:GetMouseUI(x, y, event)
 end
 
 function Block:OnMouseDown(event)
-    self.startX, self.startY = self:GetBlockly():GetLogicViewPoint(event);
+    local blockly = self:GetBlockly();
+    self.startX, self.startY = blockly:GetLogicViewPoint(event);
     self.lastMouseMoveX, self.lastMouseMoveY = self.startX, self.startY;
     self.startLeftUnitCount, self.startTopUnitCount = self.leftUnitCount, self.topUnitCount;
     self.isMouseDown = true;
+    blockly:CaptureMouse(self);
+    blockly:SetCurrentBlock(self);
 end
 
 function Block:OnMouseMove(event)

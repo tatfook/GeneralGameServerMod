@@ -67,10 +67,13 @@ end
 function BlockManager.SaveCategoryAndBlock(filename)
     filename = filename or CurrentCategoryAndBlockPath;
     local isNormalUserCustomSystemBlock = false;
-    if (filename ~= WorldCategoryAndBlockPath and not IsDevEnv) then
+    if (filename ~= WorldCategoryAndBlockPath) then
+    -- if (filename ~= WorldCategoryAndBlockPath and not IsDevEnv) then
         for language, path in pairs(LanguagePathMap) do
             if (filename == path) then 
-                filename = WorldCategoryAndBlockDirectory .. language;
+                local default_directory = "temp/blockly/";
+                ParaIO.CreateDirectory(default_directory);
+                filename = default_directory .. language;
                 isNormalUserCustomSystemBlock = true;
                 break;
             end

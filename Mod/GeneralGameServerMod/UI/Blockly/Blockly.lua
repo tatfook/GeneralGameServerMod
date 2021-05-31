@@ -363,35 +363,37 @@ function Blockly:IsInnerViewPort(block)
     return math.abs(b_cx - cx) <= (hw + b_hw) and math.abs(b_cy - cy) <= (hh + b_hh);
 end
 
-function Blockly:GetMousePosIndex()
-    return self.mousePosIndex;
+local IconViewWidth, IconViewHeight = 82, 220;
+function Blockly:GetMousePosIndex(mouseMoveX, mouseMoveY)
+    local x, y, w, h = self:GetGeometry();
+    local mx, my = (mouseMoveX or self.mouseMoveX) - w + IconViewWidth, (mouseMoveY or self.mouseMoveY) - h + IconViewHeight;
+    if (10 <= mx and mx <= 42 and 0 <= my and my <= 32) then return 1 end
+    if (10 <= mx and mx <= 42 and 42 <= my and my <= 74) then return 2 end
+    if (10 <= mx and mx <= 42 and 84 <= my and my <= 116) then return 3 end
+    if (0 <= mx and mx <= 42 and 148 <= my and my <= 193) then return 4 end
+    return 0;
 end
 
 function Blockly:RenderIcons(painter)
     if (self.isHideIcons) then return end
     local x, y, w, h = self:GetGeometry();
-    local offsetX, offsetY = x + w - 82, y + h - 220;
+    local offsetX, offsetY = x + w - IconViewWidth, y + h - IconViewHeight;
+    local mousePosIndex = self:GetMousePosIndex();
+    
     painter:Translate(offsetX, offsetY);
-    local mx, my = self.mouseMoveX - offsetX + x, self.mouseMoveY - offsetY + y;
-    self.mousePosIndex = 0;
-    if (10 <= mx and mx <= 42 and 0 <= my and my <= 32) then 
-        painter:SetPen("#ffffffff");
-        self.mousePosIndex = 1;
+    if (mousePosIndex == 1) then painter:SetPen("#ffffffff")
     else painter:SetPen("#ffffff80") end
     painter:DrawRectTexture(10, 0, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;0 64 32 32");
-    if (10 <= mx and mx <= 42 and 42 <= my and my <= 74) then 
-        painter:SetPen("#ffffffff");
-        self.mousePosIndex = 2;
+    
+    if (mousePosIndex == 2) then painter:SetPen("#ffffffff")
     else painter:SetPen("#ffffff80") end
     painter:DrawRectTexture(10, 42, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;32 64 32 32");
-    if (10 <= mx and mx <= 42 and 84 <= my and my <= 116) then 
-        painter:SetPen("#ffffffff");
-        self.mousePosIndex = 3;
+
+    if (mousePosIndex == 3) then painter:SetPen("#ffffffff")
     else painter:SetPen("#ffffff80") end
     painter:DrawRectTexture(10, 84, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;64 64 32 32");
 
-    if (0 <= mx and mx <= 42 and 148 <= my and my <= 193) then 
-        self.mousePosIndex = 4;
+    if (mousePosIndex == 4) then 
         painter:SetPen("#ffffffff")
         painter:Translate(42, 157);
         painter:Rotate(45);
@@ -462,7 +464,7 @@ function Blockly:RenderContent(painter)
         painter:Scale(1 / scale, 1 / scale);
         painter:Restore();
 
-        if ((self.mouseMoveX <= toolboxWidth and not self.isHideToolBox) or self.mousePosIndex == 4) then
+        if ((self.mouseMoveX <= toolboxWidth and not self.isHideToolBox) or self:GetMousePosIndex() == 4) then
             local width, height = 12, 12;
             painter:SetPen("#ff0000");
             -- painter:DrawRectTexture(self.mouseMoveX - width / 2, self.mouseMoveY - height / 2, width, height, Shape:GetCloseTexture());
@@ -487,7 +489,9 @@ end
 -- 捕获鼠标
 function Blockly:CaptureMouse(ui)
     self:SetMouseCaptureUI(ui);
-    return Blockly._super.CaptureMouse(self);
+    if (self:GetWindow():GetMouseCaptureElement() ~= self) then
+        Blockly._super.CaptureMouse(self);
+    end
 end
 
 -- 释放鼠标
@@ -546,6 +550,7 @@ end
 -- 鼠标按下事件
 function Blockly:OnMouseDown(event)
     event:Accept();
+    self.mouseMoveX, self.mouseMoveY = Blockly._super.GetRelPoint(self, event.x, event.y);
     self:GetContextMenu():Hide();
     if (not event:IsLeftButton()) then return end
     -- local x, y = self:GetLogicAbsPoint(event);
@@ -661,6 +666,7 @@ end
 -- 鼠标抬起事件
 function Blockly:OnMouseUp(event)
     event:Accept();
+    self.mouseMoveX, self.mouseMoveY = Blockly._super.GetRelPoint(self, event.x, event.y);
     self.isDragging = false;
     self.isMouseDown = false;
     -- 优先处理捕获的UI 防止其 OnMouseUp 事件未触发
@@ -830,7 +836,7 @@ function Blockly:GetCode()
         elseif (block.previousConnection and block.nextConnection) then
             table.insert(blocks, block);
         else
-            print("顶层输出块不产生代码");
+            -- print("顶层输出块不产生代码");
         end
     end
     local code = "";
