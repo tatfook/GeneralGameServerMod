@@ -404,8 +404,6 @@ function Block:OnMouseDown(event)
     self.lastMouseMoveX, self.lastMouseMoveY = self.startX, self.startY;
     self.startLeftUnitCount, self.startTopUnitCount = self.leftUnitCount, self.topUnitCount;
     self.isMouseDown = true;
-    blockly:CaptureMouse(self);
-    blockly:SetCurrentBlock(self);
 end
 
 function Block:OnMouseMove(event)

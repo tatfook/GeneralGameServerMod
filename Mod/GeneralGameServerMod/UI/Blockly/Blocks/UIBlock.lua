@@ -157,8 +157,8 @@ function UI_Attr_Get.ToCode(block)
     return attrs[fieldAttrName];
 end
 
-local UI_Attr_Get_Style = {};
-function UI_Attr_Get_Style.ToCode(block)
+local UI_Attr_Style = {};
+function UI_Attr_Style.ToCode(block)
     local styles = GetStyles(block:GetToCodeCache());
     local fieldStyleName = block:GetFieldValue("style");
     styles[fieldStyleName] = styles[fieldStyleName] or "";
@@ -262,7 +262,7 @@ UIBlock.UI_Style_Create = UI_Style_Create;
 UIBlock.UI_Style_Insert = UI_Style_Insert;
 UIBlock.UI_Style_Get = UI_Style_Get;
 UIBlock.UI_Style_Set_Selector = UI_Style_Set_Selector;
-UIBlock.UI_Attr_Get_Style = UI_Attr_Get_Style;
+UIBlock.UI_Attr_Style = UI_Attr_Style;
 UIBlock.UI_Attr_Create = UI_Attr_Create;
 UIBlock.UI_Attr_Insert = UI_Attr_Insert;
 UIBlock.UI_Attr_Get = UI_Attr_Get;

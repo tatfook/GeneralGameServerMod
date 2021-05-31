@@ -311,8 +311,15 @@ end
 
 function BlockInputField:OnMouseDown(event)
     local block = self:GetBlock();
+    local blockly = block:GetBlockly();
+
     block = block:GetProxyBlock() or block;
     block:OnMouseDown(event);
+
+    if (self == block or block:IsToolBoxBlock()) then
+        blockly:CaptureMouse(block);
+        blockly:SetCurrentBlock(block);
+    end
 end
 
 function BlockInputField:OnMouseMove(event)

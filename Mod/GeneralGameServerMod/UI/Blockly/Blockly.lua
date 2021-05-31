@@ -743,7 +743,7 @@ end
 
 -- 是否在删除区域
 function Blockly:IsInnerDeleteArea(x, y)
-    if (self.mousePosIndex == 4) then return true end
+    if (self:GetMousePosIndex() == 4) then return true end
     if (self.isHideIcons) then return false end;
     local x, y = Blockly._super.GetRelPoint(self, x, y);                      -- 防止减去偏移量
     if (self:GetToolBox():IsContainPoint(x, y)) then return true end
