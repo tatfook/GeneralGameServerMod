@@ -67,7 +67,7 @@ function G:CloseWindow()
     self:GetWindow():CloseWindow();
 end
 
-function G:SetWindowSize(width, height, left, top)
+function G:SetWindowSize(left, top, width, height)
     local window = self:GetWindow();
     local x, y, w, h = window:GetNativeWindow():GetAbsPosition()
     local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();

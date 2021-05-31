@@ -355,7 +355,7 @@ end
 function Window:SetWindowPosition(x, y, w, h)
     local isChangeSize = self.windowWidth ~= w or self.windowHeight ~= h;
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = x, y, w, h;
-    -- if (isChangeSize) then self:UpdateLayout() end
+    if (isChangeSize) then self:UpdateLayout() end
 end
 
 -- 获取元素相对屏幕的坐标

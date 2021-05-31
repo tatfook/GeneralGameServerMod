@@ -8,7 +8,15 @@ local PreviewWindowWidth, PreviewWindowHeight = 500, 400;
 local PreviewWindowLeft, PreviewWindowTop = screenX + screenWidth - PreviewWindowWidth, screenY + 42;
 
 -- print(PreviewWindowLeft, PreviewWindowTop, PreviewWindowWidth, PreviewWindowHeight)
-local PreviewWindow = ShowWindow({}, {url = "%ui%/Blockly/Pages/UIPreview.html", alignment = "_lt", x = PreviewWindowLeft, y = PreviewWindowTop, width = PreviewWindowWidth, height = PreviewWindowHeight, zorder = 10});
+local PreviewWindow = nil;
+PreviewWindow = ShowWindow({
+    OnWindowSizeChange = function(width, height)
+        screenX, screenY, screenWidth, screenHeight = Window:GetScreenPosition();
+        PreviewWindowWidth, PreviewWindowHeight = width, height;
+        PreviewWindowLeft, PreviewWindowTop = screenX + screenWidth - PreviewWindowWidth, screenY + 42;
+        PreviewWindow:GetG().SetWindowSize(PreviewWindowLeft, PreviewWindowTop, PreviewWindowWidth, PreviewWindowHeight);
+    end,
+}, {url = "%ui%/Blockly/Pages/UIPreview.html", alignment = "_lt", x = PreviewWindowLeft, y = PreviewWindowTop, width = PreviewWindowWidth, height = PreviewWindowHeight, zorder = 10});
 
 local BlocklyHtml, BlocklyLua, BlocklyCss = nil, nil;
 local BlockHtmlCode, BlocklyLuaCode, BlocklyCssCode = "", "", "";
