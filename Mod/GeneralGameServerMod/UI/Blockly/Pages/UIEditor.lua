@@ -91,6 +91,10 @@ function OnUIEdit(filename)
     BlocklyHtml:LoadFromXmlNodeText(ui.HtmlXmlText or "");
     BlocklyLua:LoadFromXmlNodeText(ui.LuaXmlText or "");
     BlocklyCss:LoadFromXmlNodeText(ui.CssXmlText or "");
+    OnBlocklyHtmlChange();
+    OnBlocklyLuaChange();
+    OnBlocklyCssChange();
+    GenerateComponentDefineCode();
 end
 
 function OnUIDelete(filename)
