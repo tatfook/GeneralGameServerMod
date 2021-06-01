@@ -574,8 +574,12 @@ function Block:ConnectionBlock(block)
     if (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and 
         not block.nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
         local previousConnection = self.previousConnection:Disconnection();
-        if (previousConnection) then previousConnection:Connection(block.previousConnection) end
-        self:GetBlockly():RemoveBlock(self);
+        if (previousConnection) then 
+            previousConnection:Connection(block.previousConnection);
+            self:GetBlockly():RemoveBlock(block);
+        else
+            self:GetBlockly():RemoveBlock(self);
+        end
         self.previousConnection:Connection(block.nextConnection)
         block:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount - block.heightUnitCount);
         block:GetTopBlock():UpdateLayout();

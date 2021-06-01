@@ -71,7 +71,7 @@ local function UI_Element_Attr_Click_CallBack(field)
                     attr = attr .. text .. " ";
                 end
             end
-            local label = attr .. string.format('style="%s"', style);
+            local label = attr .. (style ~= "" and string.format('style="%s"', style) or "");
             local value = commonlib.serialize_compact({code=code, xmltext = xmltext});
             field:SetLabel(label);
             field:SetValue(value);
@@ -113,24 +113,28 @@ function UI_Element.OnInit(option)
     UI_Element_Attr_Click_Register(option, "attr");
 end
 
--- local UI_Elements = {};
--- function UI_Elements.ToCode(block)
---     local cache = block:GetToCodeCache();
---     local fieldTag = block:GetFieldValue("tag");
---     local fieldAttrName = block:GetFieldValue("attrs");
---     local fieldContent = block:GetValueAsString("content");
---     local fieldAttr = GetAttr(cache, fieldAttrName) or fieldAttrName;
---     return string.format('<%s %s>\n%s</%s>\n', fieldTag, fieldAttr, fieldContent, fieldTag);
--- end
+local UI_Elements = {};
+function UI_Elements.ToCode(block)
+    local fieldTag = block:GetFieldValue("tag");
+    local fieldContent = block:GetValueAsString("content");
+    local fieldAttr = block:GetFieldLabel("attr");
+    return string.format('<%s %s>\n%s</%s>\n', fieldTag, fieldAttr, fieldContent, fieldTag);
+end
+function UI_Elements.OnInit(option)
+    UI_Element_Attr_Click_Register(option, "attr");
+end
 
--- local UI_Element_Text = {};
--- function UI_Element_Text.ToCode(block)
---     local cache = block:GetToCodeCache();
---     local fieldAttrName = block:GetFieldValue("attrs");
---     local fieldText = block:GetFieldValue("text");
---     local fieldAttr = GetAttr(cache, fieldAttrName) or fieldAttrName;
---     return string.format('<div %s>%s</div>\n', fieldAttr, fieldText);
--- end
+local UI_Element_Text = {};
+function UI_Element_Text.ToCode(block)
+    local cache = block:GetToCodeCache();
+    local fieldText = block:GetFieldValue("text");
+    local fieldAttr = block:GetFieldLabel("attr");
+    return string.format('<div %s>%s</div>\n', fieldAttr, fieldText);
+end
+function UI_Element_Text.OnInit(option)
+    UI_Element_Attr_Click_Register(option, "attr");
+end
+
 
 -- local UI_Component_Register = {};
 -- function UI_Component_Register.ToCode(block)
