@@ -255,7 +255,7 @@ function Window:InitWindowPosition()
     self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = screenX, screenY, screenWidth, screenHeight;
 
     self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.screenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.screenHeight;
-    if (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight) then
+    if ((params.isAutoScale == nil or params.isAutoScale) and (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight)) then
         local scale = math.min(self.rootScreenWidth / self.minRootScreenWidth, self.rootScreenHeight / self.minRootScreenHeight);
         self.scaleX, self.scaleY = scale, scale;
         self.screenX = math.max(self.screenX, 0) * self.scaleX;

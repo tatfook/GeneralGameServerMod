@@ -81,6 +81,7 @@ local function NPL_Macro_SceneClick_Angle_Field_Click_Callback(field)
         width = "100%", 
         height = "100%", 
         zorder = 100,
+        draggable = false,
     });
    
 end

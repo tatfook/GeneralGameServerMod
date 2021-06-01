@@ -120,30 +120,9 @@ function NplBlockManager.GetMcmlCategoryListAndMap()
     return BlockManager.GetCategoryListAndMapByXmlText([[
 <toolbox>
     <category name="元素" color="#2E9BEF">
+        <block type="UI_Elements"/>
         <block type="UI_Element"/>
         <block type="UI_Element_Text"/>
-        <block type="UI_Elements"/>
-    </category>
-    <category name="属性" color="#76CE62">
-        <block type="UI_Attr_Create"/>
-        <block type="UI_Attr_Insert"/>
-        <block type="UI_Attr_Get"/>
-        <block type="UI_Attr_Style"/>
-        <block type="UI_Attr_Item"/>
-    </category>
-    <category name="样式" color="#764BCC">
-        <block type="UI_Style_Create"/>
-        <block type="UI_Style_Insert"/>
-        <block type="UI_Style_Get"/>
-        <block type="UI_Style_Layout"/>
-        <block type="UI_Style_Position"/>
-        <block type="UI_Style_Margin"/>
-        <block type="UI_Style_Padding"/>
-        <block type="UI_Style_Width_Height"/>
-        <block type="UI_Style_Font_Size_Color"/>
-        <block type="UI_Style_BG_Color_Image"/>
-        <block type="UI_Style_Item"/>
-        <block type="UI_Style_Set_Selector"/>
     </category>
     <category name="窗口" color="#EC522E">
         <block type="UI_Window_Show_Html"/>

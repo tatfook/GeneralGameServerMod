@@ -12,6 +12,24 @@ local UIBlock = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/UIBlock.lua
 
 local UIBlock = NPL.export();
 
+local function GetUI(cache)
+    cache.UI = cache.UI or {};
+    return cache.UI;
+end
+
+local function InitCode(cache)
+    local UI = GetUI(cache);
+    if (not UI.inited) then
+        UI.inited = true;
+        if (IsDevEnv) then
+            return 'local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", true)\n';
+        else
+            return 'local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua")\n';
+        end
+    end
+    return "";
+end
+
 local UI_Style_Item = {};
 local Style_Key_Options = {
     {"宽", "width"}, 
@@ -85,6 +103,7 @@ local function UI_Element_Attr_Click_CallBack(field)
         width = "100%", 
         height = "100%", 
         zorder = 100,
+        draggable = false,
     });
 end
 
@@ -179,22 +198,21 @@ end
 --     return code;
 -- end
 
--- local UI_Window_Show_Html = {};
--- function UI_Window_Show_Html.ToCode(block)
---     local fieldName = block:GetFieldValue("name");
---     local fieldAlignment = block:GetFieldValue("alignment");
---     local fieldLeft = block:GetFieldValue("left");
---     local fieldTop = block:GetFieldValue("top");
---     local fieldWidth = block:GetFieldValue("width");
---     local fieldHeight = block:GetFieldValue("height");
---     local fieldHtml = block:GetFieldValue("html");
+local UI_Window_Show_Html = {};
+function UI_Window_Show_Html.ToCode(block)
+    local fieldName = block:GetFieldValue("name");
+    local fieldAlignment = block:GetFieldValue("alignment");
+    local fieldLeft = block:GetFieldValue("left");
+    local fieldTop = block:GetFieldValue("top");
+    local fieldWidth = block:GetFieldValue("width");
+    local fieldHeight = block:GetFieldValue("height");
+    local fieldHtml = block:GetFieldValue("html");
 
---     local cache = block:GetToCodeCache();
---     local code = InitCode(cache);
---     code = code .. string.format('Page.RegisterWindow({windowName = "%s", alignment = "%s", x = "%s", y = "%s", width = "%s", height = "%s", html = [[%s]]})\n', fieldName, fieldAlignment, fieldLeft, fieldTop, fieldWidth, fieldHeight, fieldHtml);
---     code = code ..string.format('Page.ShowWindow("%s", codeblock)\n', fieldName);
---     return code;
--- end
+    local code = InitCode(block:GetToCodeCache());
+    code = code .. string.format('Page.RegisterWindow({windowName = "%s", alignment = "%s", x = "%s", y = "%s", width = "%s", height = "%s", html = [[%s]]})\n', fieldName, fieldAlignment, fieldLeft, fieldTop, fieldWidth, fieldHeight, fieldHtml);
+    code = code ..string.format('Page.ShowWindow("%s", codeblock)\n', fieldName);
+    return code;
+end
 
 UIBlock.UI_Elements = UI_Elements;
 UIBlock.UI_Element = UI_Element;
@@ -202,4 +220,4 @@ UIBlock.UI_Element_Text = UI_Element_Text;
 UIBlock.UI_Style_Item = UI_Style_Item;
 -- UIBlock.UI_Component_Register = UI_Component_Register;
 -- UIBlock.UI_Window_Register = UI_Window_Register;
--- UIBlock.UI_Window_Show_Html = UI_Window_Show_Html;
+UIBlock.UI_Window_Show_Html = UI_Window_Show_Html;
