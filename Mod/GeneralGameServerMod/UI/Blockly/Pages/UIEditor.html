@@ -3,7 +3,6 @@
         <div style="display: flex;">
             <div onclick="ContentType = 'BlocklyHtml'" class="header-btn" v-bind:style="(not ContentType or ContentType == 'BlocklyHtml') and 'border-bottom: 1px solid #ffffff' or ''">HTML</div>
             <div onclick="ContentType = 'BlocklyLua'" class="header-btn" v-bind:style="ContentType == 'BlocklyLua' and 'border-bottom: 1px solid #ffffff' or ''">LUA</div>
-            <div onclick="ContentType = 'BlocklyCss'" class="header-btn" v-bind:style="ContentType == 'BlocklyCss' and 'border-bottom: 1px solid #ffffff' or ''">CSS</div>
             <div onclick="ContentType = 'BlocklyCode'" class="header-btn" v-bind:style="ContentType == 'BlocklyCode' and 'border-bottom: 1px solid #ffffff' or ''">CODE</div>
             <div onclick="ContentType = 'UIManager'" class="header-btn" v-bind:style="ContentType == 'UIManager' and 'border-bottom: 1px solid #ffffff' or ''">{{CurrentUIFileName}}</div>
 			<div onclick=ClickSaveBtn class="btn" style="width: 60px; height: 30px; color: #cccccc; margin-left: 10px;">保存</div>
