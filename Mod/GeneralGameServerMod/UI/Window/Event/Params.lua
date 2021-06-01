@@ -35,12 +35,12 @@ end
 
 function Params:Init(event, window)
     local event_type = event:GetEventType();
+    if (event_type == "ondraw") then return end
+
     local last_event_type = self.event_type;
-    if (event_type == "ondraw" or event_type == "onmousemove") then return end
     self.event_type = event_type;
     self.window_name = window:GetWindowName();
     self.event_params[self.event_type] = nil;
-
     local cache_params = self.cache_params;
 
     if (event_type == "onmousedown") then 
@@ -76,7 +76,6 @@ function Params:Init(event, window)
         cache_params.mouse_window_x, cache_params.mouse_window_y = event:GetWindowXY();   -- 窗口坐标为虚拟的绝对坐标, 不启用窗口自动缩放, 该不会变化
         cache_params.mouse_wheel = event.mouse_wheel;
     end
-
 end
 
 function Params:GetVirtualEventParams()
