@@ -78,7 +78,7 @@ end
 
 function Component:LoadComponent(isReload)
     local xmlNode, window, parent = self:GetXmlNode(), self:GetWindow(), self:GetParentElement();
-    local htmlNode, scriptNode, styleNodes, xmlRoot = self:LoadXmlNode(xmlNode, isReload);
+    local htmlNode, scriptNodes, styleNodes, xmlRoot = self:LoadXmlNode(xmlNode, isReload);
     -- 清楚所有子元素
     self:ClearChildElement();
     -- 加载组件样式
@@ -90,7 +90,7 @@ function Component:LoadComponent(isReload)
     -- 初始化组件
     self:InitComponent(xmlNode);
     -- 解析script
-    self:InitByScriptNode(scriptNode);
+    self:InitByScriptNode(scriptNodes);
     -- 初始化子元素  需要重写创建子元素逻辑
     self:InitChildElement(htmlNode, window);
     -- 初始化插槽
@@ -145,7 +145,7 @@ end
 
 -- 加载文件
 function Component:LoadXmlNode(xmlNode, isReload)
-    if (self.xmlRoot and not isReload) then return self.htmlNode, self.scriptNode, self.styleNodes, self.xmlRoot end
+    if (self.xmlRoot and not isReload) then return self.htmlNode, self.scriptNodes, self.styleNodes, self.xmlRoot end
 
     local filename, template = self.filename, self.template;
     if (self:class() == Component) then
@@ -164,11 +164,11 @@ function Component:LoadXmlNode(xmlNode, isReload)
     end
 
     local htmlNode = xmlRoot and commonlib.XPath.selectNode(xmlRoot, "//template");
-    local scriptNode = xmlRoot and commonlib.XPath.selectNode(xmlRoot, "//script");
+    local scriptNodes = xmlRoot and commonlib.XPath.selectNodes(xmlRoot, "//script");
     local styleNodes = xmlRoot and commonlib.XPath.selectNodes(xmlRoot, "//style");
 
-    self.htmlNode, self.scriptNode, self.styleNodes, self.xmlRoot = htmlNode, scriptNode, styleNodes, xmlRoot;
-    return htmlNode, scriptNode, styleNodes, xmlRoot;
+    self.htmlNode, self.scriptNodes, self.styleNodes, self.xmlRoot = htmlNode, scriptNodes, styleNodes, xmlRoot;
+    return htmlNode, scriptNodes, styleNodes, xmlRoot;
 end
 
 -- 获取局部样式表
@@ -179,28 +179,21 @@ end
 -- 加载组件样式
 function Component:InitByStyleNode(styleNodes)
     if (not styleNodes) then return end
-
-    -- src 为非标准功能, 不推荐大范围使用
-    local function GetCssCodeByFilename(filename)
-        if (not filename) then return "" end
-        local csstext = Helper.ReadFile(filename);
-        return csstext or "";
-    end
-
     local styleText, scopedStyleText = "", "";
     for _, styleNode in ipairs(styleNodes) do
+        local filename = styleNode.attr and styleNode.attr.src;
         local text = styleNode[1] or "";
-        local attr = styleNode.attr;
-        if (attr and attr.scoped == "true") then
-            scopedStyleText = scopedStyleText .. text .. "\n" .. GetCssCodeByFilename(attr and attr.src);
+        local filetext = Helper.ReadFile(filename) or "";
+        text = text .. "\n" .. filetext;
+        if (styleNode.attr and styleNode.attr.scoped == "true") then
+            scopedStyleText = scopedStyleText .. text .. "\n";
         else 
-            styleText = styleText .. text .. "\n" .. GetCssCodeByFilename(attr and attr.src);
+            styleText = styleText .. text .. "\n";
         end
     end
     -- 强制使用css样式
     self:SetStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(styleText));
     if (scopedStyleText ~= "") then self:SetScopedStyleSheet(self:GetWindow():GetStyleManager():GetStyleSheetByString(scopedStyleText)) end
-
     -- ComponentDebug.If(self:GetTagName() == "GoodsTooltip", "==============",scopedStyleText, styleText);
 end
 
@@ -222,19 +215,24 @@ function Component:InitByXmlNode(elementXmlNode, componentXmlNode)
 end
 
 -- 解析脚本节点
-function Component:InitByScriptNode(scriptNode)
-    if (not scriptNode) then return end
-    local scriptFile = scriptNode.attr and scriptNode.attr.src;
-    local scriptText = scriptNode[1] or "";
-    scriptText = string.gsub(scriptText, "^%s*", "");
-    scriptText = "-- " .. Helper.FormatFilename(self.filename) .. "\n" .. scriptText;        -- 第一行作为文件名 方便日志输出
-    self:ExecCode(scriptText);
-
-    local fileScriptText = Helper.ReadFile(scriptFile);
-    if (not fileScriptText or fileScriptText == "") then return end
-    fileScriptText = string.gsub(fileScriptText, "^%s*", "");
-    fileScriptText = "-- " .. Helper.FormatFilename(scriptFile) .. "\n" .. fileScriptText;   -- 第一行作为文件名 方便日志输出
-    self:ExecCode(fileScriptText);
+function Component:InitByScriptNode(scriptNodes)
+    if (not scriptNodes) then return end
+    for _, scriptNode in ipairs(scriptNodes) do
+        local scriptFile = scriptNode.attr and scriptNode.attr.src;
+        local scriptText = scriptNode[1] or "";
+        scriptText = string.gsub(scriptText, "^%s*", "");
+        if (scriptText ~= "") then
+            scriptText = "-- " .. Helper.FormatFilename(self.filename) .. "\n" .. scriptText;        -- 第一行作为文件名 方便日志输出
+            self:ExecCode(scriptText);
+        end
+    
+        local fileScriptText = Helper.ReadFile(scriptFile) or "";
+        fileScriptText = string.gsub(fileScriptText, "^%s*", "");
+        if (fileScriptText ~= "") then
+            fileScriptText = "-- " .. Helper.FormatFilename(scriptFile) .. "\n" .. fileScriptText;   -- 第一行作为文件名 方便日志输出
+            self:ExecCode(fileScriptText);
+       end
+    end
 end
 
 -- 元素加载到DOM之前

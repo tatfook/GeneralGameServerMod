@@ -16,9 +16,6 @@
     <div v-show="ContentType == 'BlocklyLua'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px; background-color: #c8c8c8;">
         <Blockly ref="BlocklyLua" style="width: 100%; height: 100%;" language="SystemLuaBlock" onchange=OnBlocklyLuaChange v-bind:ToolBoxXmlText=BlocklyLuaToolBoxXmlText></Blockly>
     </div>
-    <div v-show="ContentType == 'BlocklyCss'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px; background-color: #c8c8c8;">
-        <Blockly ref="BlocklyCss" style="width: 100%; height: 100%;" language="SystemLuaBlock" onchange=OnBlocklyCssChange v-bind:ToolBoxXmlText=BlocklyCssToolBoxXmlText></Blockly>
-    </div>
     <div v-show="ContentType == 'BlocklyCode'" style="position: absolute; left: 2px; top: 40px; right: 2px; bottom: 2px; background-color: #c8c8c8; white-space: pre; font-size: 16px; padding: 16px; overflow-y: auto;">
         {{BlocklyCode}}
     </div>
@@ -33,10 +30,23 @@ RegisterComponent("UIManager", "%ui%/Blockly/Pages/UIManager.html");
 BlocklyHtmlToolBoxXmlText = [[
 <toolbox>
 	<category name="元素" color="#2E9BEF">
+		<block type="UI_Template"/>
 		<block type="UI_Elements"/>
 		<block type="UI_Element"/>
 		<block type="UI_Element_Text"/>
 	</category>
+	<category name="样式" color="#76CE62">
+        <block type="UI_Style"/>
+        <block type="UI_Style_Selector"/>
+		<block type="UI_Style_Layout"/>
+		<block type="UI_Style_Position"/>
+		<block type="UI_Style_Width_Height"/>
+		<block type="UI_Style_Margin"/>
+		<block type="UI_Style_Padding"/>
+		<block type="UI_Style_BG_Color_Image"/>
+		<block type="UI_Style_Font_Size_Color"/>
+		<block type="UI_Style_Item"/>
+    </category>
 </toolbox>
 ]]
 
@@ -79,22 +89,6 @@ BlocklyLuaToolBoxXmlText = [[
 		<block type="Lua_For_Object"/>
 		<block type="Lua_While"/>
 	</category>
-</toolbox>
-]]
-
-BlocklyCssToolBoxXmlText = [[
-<toolbox>
-    <category name="样式" color="#76CE62">
-        <block type="UI_Style_Selector"/>
-		<block type="UI_Style_Layout"/>
-		<block type="UI_Style_Position"/>
-		<block type="UI_Style_Width_Height"/>
-		<block type="UI_Style_Margin"/>
-		<block type="UI_Style_Padding"/>
-		<block type="UI_Style_BG_Color_Image"/>
-		<block type="UI_Style_Font_Size_Color"/>
-		<block type="UI_Style_Item"/>
-    </category>
 </toolbox>
 ]]
 </script>

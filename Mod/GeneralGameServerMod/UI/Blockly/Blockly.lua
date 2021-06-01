@@ -425,7 +425,10 @@ function Blockly:RenderContent(painter)
     local DraggingBlock = nil;
     local toolboxWidth = Const.ToolBoxWidth;
     painter:Translate(x, y);
-    if (not self.isHideToolBox) then self:GetToolBox():Render(painter) end 
+    if (not self.isHideToolBox) then 
+        self:GetToolBox():Render(painter);
+        painter:Flush();
+    end 
 
     Shape:SetUnitSize(UnitSize);
     painter:Save();

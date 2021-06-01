@@ -18,7 +18,7 @@ PreviewWindow = ShowWindow({
 }, {url = "%ui%/Blockly/Pages/UIPreview.html", alignment = "_lt", x = PreviewWindowLeft, y = PreviewWindowTop, width = PreviewWindowWidth, height = PreviewWindowHeight, zorder = 10});
 
 local BlocklyHtml, BlocklyLua, BlocklyCss = nil, nil;
-local BlockHtmlCode, BlocklyLuaCode, BlocklyCssCode = "", "", "";
+local BlockHtmlCode, BlocklyLuaCode = "", "";
 local DefaultUIFileName = "UI";
 FileNameList = UIManager.GetFileNameList();
 BlocklyCode = "";
@@ -26,18 +26,12 @@ CurrentUIFileName = "";
 
 local function GenerateComponentDefineCode()
     BlocklyCode = string.format([[
-<template style="width:100%%; height: 100%%;">
 %s
-</template>
 
 <script>
 %s
 </script>
-
-<style scoped=true>
-%s
-</style>
-    ]], BlockHtmlCode, BlocklyLuaCode, BlocklyCssCode);
+    ]], BlockHtmlCode, BlocklyLuaCode);
 
     local PreviewWindowG = PreviewWindow:GetG();
     if (type(PreviewWindowG.SetTemplateCode) == "function") then
@@ -57,16 +51,10 @@ function OnBlocklyLuaChange()
     GenerateComponentDefineCode();
 end
 
-function OnBlocklyCssChange()
-    local rawcode, prettycode = BlocklyCss:GetCode();
-    BlocklyCssCode = rawcode;
-    GenerateComponentDefineCode();
-end
 
 function OnReady()
     BlocklyHtml = GetRef("BlocklyHtml");
     BlocklyLua = GetRef("BlocklyLua");
-    BlocklyCss = GetRef("BlocklyCss");
 
     OnUIEdit(DefaultUIFileName);
 end
@@ -74,8 +62,7 @@ end
 function ClickSaveBtn()
     local HtmlXmlText = BlocklyHtml:SaveToXmlNodeText();
     local LuaXmlText = BlocklyLua:SaveToXmlNodeText();
-    local CssXmlText = BlocklyCss:SaveToXmlNodeText();
-    UIManager.SetUIByFileName(CurrentUIFileName, {HtmlXmlText = HtmlXmlText, LuaXmlText = LuaXmlText, CssXmlText = CssXmlText})
+    UIManager.SetUIByFileName(CurrentUIFileName, {HtmlXmlText = HtmlXmlText, LuaXmlText = LuaXmlText})
     local ok = UIManager.SaveUI(CurrentUIFileName);
     GameLogic.AddBBS("UIEditor", string.format("%s 保存成功", CurrentUIFileName));
 end
@@ -89,10 +76,8 @@ function OnUIEdit(filename)
     local ui = UIManager.GetUIByFileName(CurrentUIFileName) or {};
     BlocklyHtml:LoadFromXmlNodeText(ui.HtmlXmlText or "");
     BlocklyLua:LoadFromXmlNodeText(ui.LuaXmlText or "");
-    BlocklyCss:LoadFromXmlNodeText(ui.CssXmlText or "");
     OnBlocklyHtmlChange();
     OnBlocklyLuaChange();
-    OnBlocklyCssChange();
     GenerateComponentDefineCode();
 end
 

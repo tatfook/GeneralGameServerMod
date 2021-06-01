@@ -55,7 +55,7 @@ function Helper.ReadFile(filename)
 	filename = commonlib.Encoding.Utf8ToDefault(filename);
     filename = ToCanonicalFilePath(Helper.FormatFilename(filename));
     if (not filename or filename ==  "") then return end
-    if (FileCacheMap[filename]) then return FileCacheMap[filename] end
+    if (not IsDevEnv and FileCacheMap[filename]) then return FileCacheMap[filename] end
     
     -- GGS.INFO("读取文件: " .. filename);
     
