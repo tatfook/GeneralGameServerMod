@@ -118,7 +118,6 @@ function Page.Show(G, params, isNew)
 
     params.G = G;
     page:Show(params);
-
     return page;
 end
 

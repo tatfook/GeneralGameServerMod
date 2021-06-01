@@ -13,7 +13,6 @@ local DefaultSimulator = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/E
 NPL.load("(gl)script/apps/Aries/Creator/Game/Macros/Macros.lua");
 local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 
-local Params = NPL.load("./Params.lua");
 local Simulator = NPL.load("./Simulator.lua");
 
 local DefaultSimulator = commonlib.inherit(Simulator, NPL.export());
@@ -27,13 +26,13 @@ end
 function DefaultSimulator:Simulate(event, window)
     local event_type = event:GetEventType();
     if (event_type == "onmouseup") then
-        self:AddVirtualEvent("UIWindowClickEvent", Params:GetVirtualEventParams());
+        self:AddVirtualEvent("UIWindowClickEvent", self:GetVirtualEventParams());
     elseif (event_type == "onmousewheel") then
-        self:AddVirtualEvent("UIWindowWheelEvent", Params:GetVirtualEventParams());
+        self:AddVirtualEvent("UIWindowWheelEvent", self:GetVirtualEventParams());
     elseif (event_type == "onkeydown") then 
-        self:AddVirtualEvent("UIWindowKeyBoardEvent" ,Params:GetVirtualEventParams());
+        self:AddVirtualEvent("UIWindowKeyBoardEvent" ,self:GetVirtualEventParams());
     elseif (event_type == "oninputmethod") then 
-        self:AddVirtualEvent("UIWindowInputMethodEvent" ,Params:GetVirtualEventParams());
+        self:AddVirtualEvent("UIWindowInputMethodEvent", self:GetVirtualEventParams());
     end
 end
 

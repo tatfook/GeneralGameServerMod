@@ -15,7 +15,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Macros/MacroPlayer.lua");
 local MacroPlayer = commonlib.gettable("MyCompany.Aries.Game.Tasks.MacroPlayer");
 local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 
-local Params = NPL.load("./Params.lua", IsDevEnv);
+local Params = NPL.load("./Params.lua");
 local Simulator = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 Simulator:Property("SimulatorName", "Simulator");                    -- 模拟器名称
@@ -45,6 +45,10 @@ function Macros.UIWindowEventTrigger(params)
     local simulator = simulators[params.simulator_name];
     if (not window or not simulator) then return end
     return simulator:Trigger(params, window);
+end
+
+function Simulator:GetVirtualEventParams()
+    return Params:GetVirtualEventParams();
 end
 
 function Simulator:AddVirtualEvent(virtualEventType, virtualEventParams)
@@ -216,9 +220,6 @@ function Simulator:EndPlay()
 end
 
 Simulator:InitSingleton();
-
-Simulator.DefaultSimulator = NPL.load("./DefaultSimulator.lua", IsDevEnv);
-
 
 local function MacroBeginRecord()
     window_id  = 0;

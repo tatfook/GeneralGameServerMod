@@ -17,6 +17,7 @@ local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
 local G = NPL.load("./G.lua", IsDevEnv);
 local StyleManager = NPL.load("./Style/StyleManager.lua", IsDevEnv);
 local Simulator = NPL.load("./Event/Simulator.lua", IsDevEnv);
+local DefaultSimulator = NPL.load("./Event/DefaultSimulator.lua", IsDevEnv);
 local Event = NPL.load("./Event/Event.lua", IsDevEnv);
 
 local Element = NPL.load("./Element.lua", IsDevEnv);
@@ -123,7 +124,6 @@ function Window:Init()
     end
 
     local params = self:GetParams();
-    
     self:SetWindow(self);
     self:SetWindowName(params.windowName);
     if (self:IsSupportSimulator()) then Simulator:RegisterWindow(self) end

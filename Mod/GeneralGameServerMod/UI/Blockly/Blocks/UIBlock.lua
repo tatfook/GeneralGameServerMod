@@ -76,28 +76,29 @@ local function UI_Element_Attr_Click_CallBack(field)
     local oldLabel,oldValue = field:GetLabel(), field:GetValue();
     local obj = NPL.LoadTableFromString(oldValue);
     local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+    local function OnBlocklyChange(codetext, xmltext)
+        local codes = commonlib.split(codetext, "\n");
+        local attr, style = "", "";
+        for _, text in ipairs(codes) do
+            if (not (string.find(text, "=", 1, true))) then
+                style = style .. text .. " ";
+            else 
+                attr = attr .. text .. " ";
+            end
+        end
+        local label = attr .. (style ~= "" and string.format('style="%s"', style) or "");
+        local value = commonlib.serialize_compact({code=code, xmltext = xmltext});
+        field:SetLabel(label);
+        field:SetValue(value);
+        if (oldValue ~= value or oldLabel ~= label) then
+            field:GetTopBlock():UpdateLayout();
+            field:GetBlockly():OnChange();
+        end
+    end
     Page.Show({
         Left = left, Top = top,
         XmlText = obj and obj.xmltext,
-        OnFinish = function(codetext, xmltext)
-            local codes = commonlib.split(codetext, "\n");
-            local attr, style = "", "";
-            for _, text in ipairs(codes) do
-                if (not (string.find(text, "=", 1, true))) then
-                    style = style .. text .. " ";
-                else 
-                    attr = attr .. text .. " ";
-                end
-            end
-            local label = attr .. (style ~= "" and string.format('style="%s"', style) or "");
-            local value = commonlib.serialize_compact({code=code, xmltext = xmltext});
-            field:SetLabel(label);
-            field:SetValue(value);
-            if (oldValue ~= value or oldLabel ~= label) then
-                field:GetTopBlock():UpdateLayout();
-                field:GetBlockly():OnChange();
-            end
-        end,
+        OnBlocklyChange = OnBlocklyChange,
     }, {
         url = "%ui%/Blockly/Pages/FieldEditBlockly.html",  
         width = "100%", 
