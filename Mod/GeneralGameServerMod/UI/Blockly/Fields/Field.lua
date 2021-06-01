@@ -110,6 +110,16 @@ function Field:SaveToXmlNode()
     attr.label = self:GetLabel();
     attr.value = self:GetValue();
 
+    if (attr.value and commonlib.Encoding.HasXMLEscapeChar(attr.value)) then
+        table.insert(xmlNode, {name = "value", [1] = {name="![CDATA[", [1] = attr.value}});
+        attr.value = nil;
+    end
+
+    if (attr.label and commonlib.Encoding.HasXMLEscapeChar(attr.label)) then
+        table.insert(xmlNode, {name = "label", [1] = {name="![CDATA[", [1] = attr.label}});
+        attr.label = nil;
+    end
+
     return xmlNode;
 end
 
@@ -117,4 +127,13 @@ function Field:LoadFromXmlNode(xmlNode)
     local attr = xmlNode.attr;
     self:SetLabel(attr.label);
     self:SetValue(attr.value);
+
+    for _, subXmlNode in ipairs(xmlNode) do
+        if (subXmlNode.name == "value") then
+            self:SetValue(subXmlNode[1]);
+        end
+        if (subXmlNode.name == "label") then
+            self:SetLabel(subXmlNode[1]);
+        end
+    end
 end

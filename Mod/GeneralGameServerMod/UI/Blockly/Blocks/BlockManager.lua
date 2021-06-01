@@ -67,8 +67,7 @@ end
 function BlockManager.SaveCategoryAndBlock(filename)
     filename = filename or CurrentCategoryAndBlockPath;
     local isNormalUserCustomSystemBlock = false;
-    if (filename ~= WorldCategoryAndBlockPath) then
-    -- if (filename ~= WorldCategoryAndBlockPath and not IsDevEnv) then
+    if (filename ~= WorldCategoryAndBlockPath and not IsDevEnv) then
         for language, path in pairs(LanguagePathMap) do
             if (filename == path) then 
                 local default_directory = "temp/blockly/";

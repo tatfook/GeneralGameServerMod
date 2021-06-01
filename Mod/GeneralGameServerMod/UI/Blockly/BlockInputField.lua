@@ -548,6 +548,12 @@ function BlockInputField:UpdateEditAreaSize()
     editor:UpdateLayout();
 end
 
+function BlockInputField:GetScreenXY()
+    local blockly = self:GetBlock():GetBlockly();
+    local left, top = self.left + blockly.offsetX, self.top + blockly.offsetY;
+    return blockly:RelativePointToScreenPoint(left, top);
+end
+
 function BlockInputField:GetFieldEditType()
     return "none";
 end
@@ -680,4 +686,12 @@ function BlockInputField:ForEach(callback)
 end
 
 function BlockInputField:OnUI(eventName, eventData)
+end
+
+function BlockInputField:TextToXmlInnerNode(text)
+	if(text and commonlib.Encoding.HasXMLEscapeChar(text)) then
+		return {name="![CDATA[", [1] = text};
+	else
+		return text;
+	end
 end

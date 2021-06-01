@@ -674,6 +674,12 @@ function Block:GetFieldValue(name)
     return inputAndField and inputAndField:GetFieldValue() or nil;
 end
 
+-- 获取字段标签
+function Block:GetFieldLabel(name)
+    local inputAndField = self.inputFieldMap[name];
+    return inputAndField and inputAndField:GetLabel() or nil;
+end
+
 -- 获取字段
 function Block:GetField(name)
     return self.inputFieldMap[name];
@@ -741,7 +747,7 @@ function Block:GetCode()
     local option = self:GetOption();
     local ToCode = DefaultToCode;
 
-    if (type(option["To" .. language]) == "function") then
+    if (language and type(option["To" .. language]) == "function") then
         ToCode = option["To" .. language];
     elseif (type(option.ToCode) == "function") then
         ToCode = option.ToCode;

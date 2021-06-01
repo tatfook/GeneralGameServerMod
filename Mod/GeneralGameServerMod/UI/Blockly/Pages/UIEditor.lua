@@ -7,7 +7,6 @@ local screenX, screenY, screenWidth, screenHeight = Window:GetScreenPosition();
 local PreviewWindowWidth, PreviewWindowHeight = 500, 400;
 local PreviewWindowLeft, PreviewWindowTop = screenX + screenWidth - PreviewWindowWidth, screenY + 42;
 
--- print(PreviewWindowLeft, PreviewWindowTop, PreviewWindowWidth, PreviewWindowHeight)
 local PreviewWindow = nil;
 PreviewWindow = ShowWindow({
     OnWindowSizeChange = function(width, height)

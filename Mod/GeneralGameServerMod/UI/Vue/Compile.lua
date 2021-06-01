@@ -81,14 +81,16 @@ local function ClearDependItemUpdateQueue()
     -- print("======================结束更新依赖项==============================");
 end
 
-local ClearDependItemTimer = commonlib.Timer:new({callbackFunc = function() 
-    IsActivedDependItemUpdate = false;
-    ClearDependItemUpdateQueue();
-end});
+-- local ClearDependItemTimer = commonlib.Timer:new({callbackFunc = function() 
+--     IsActivedDependItemUpdate = false;
+--     ClearDependItemUpdateQueue();
+-- end});
 
+local ClearDependItemUpdateQueueCount = 0;
 NPL.this(function()
     IsActivedDependItemUpdate = false;
     ClearDependItemUpdateQueue();
+    -- print("清除依赖更新队列 结束: ", ClearDependItemUpdateQueueCount);
 end, {filename = "Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"});
 
 local function GenerateDependItem(obj, key)
@@ -113,6 +115,8 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     if (IsActivedDependItemUpdate) then return end
     -- 激活更新
     IsActivedDependItemUpdate = true;
+    ClearDependItemUpdateQueueCount = ClearDependItemUpdateQueueCount + 1;
+    -- print("清除依赖更新队列 开始: ", ClearDependItemUpdateQueueCount);
     -- ClearDependItemTimer:Change(20);
     NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
 end)
@@ -161,6 +165,8 @@ local function ExecCode(code, func, element, watch)
                 -- if (type(newVal) == "table") then
                 --     CompileDebug.Format('code = %s, isEqual = %s, #newval = %s, #oldval = %s', code, newVal == oldVal, #newVal, oldValSize);
                 -- end
+
+                -- print("ExecCode", code, oldVal, newVal)
 
                 -- if (type(newVal) ~= "table" and newVal == oldVal) then return end
                 if (newVal == oldVal) then

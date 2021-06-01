@@ -22,6 +22,11 @@ local _3d_pages = {};
 local inited = false;
 local windows = {};
 
+if (IsDevEnv) then
+    _G.pages = _G.pages or {};
+    pages = _G.pages;
+end
+
 -- 世界加载
 local function OnWorldLoaded()
 end

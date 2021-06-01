@@ -316,8 +316,12 @@ end
 function OnBlocklyChange()
     if (not Blockly) then return end
     local rawcode, prettycode = Blockly:GetCode();
-    BlocklyCode = string.gsub(prettycode, "\t", "    ");
-    -- BlocklyCode = rawcode;
+    local language = Blockly:GetLanguage();
+    if (language == "SystemNplBlock") then
+        BlocklyCode = string.gsub(prettycode, "\t", "    ");
+    else
+        BlocklyCode = rawcode;
+    end
 end
 
 

@@ -50,6 +50,7 @@ end
 
 -- 添加模型
 function AssetsWhiteList.AddAsset(filename)
+    if (not filename) then return end
     allAssets:add(filename);
 end
 
