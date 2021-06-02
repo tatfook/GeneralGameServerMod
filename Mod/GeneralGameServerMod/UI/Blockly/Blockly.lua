@@ -48,6 +48,10 @@ Blockly:Property("Scale", 1);                 -- 缩放
 Blockly:Property("ReadOnly", false, "IsReadOnly");                 -- 缩放
 Blockly:Property("OptionGlobal");             -- 选项全局表
 
+function Blockly.PlayCreateBlockSound()
+    ConnectionBlockSound:play2d();
+end
+
 function Blockly.PlayConnectionBlockSound()
     ConnectionBlockSound:play2d();
 end
