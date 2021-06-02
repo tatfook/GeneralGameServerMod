@@ -159,7 +159,7 @@ function Window.Show(self, params)
         self = Window:new();
     end
 
-    params = params or {};
+    params = params or self:GetParams() or {};
     self:Set3DWindow(params.is3DUI and true or false);
     self:SetParams(params);
     self:SetNativeWindow(self:Is3DWindow() and self:Create3DNativeWindow() or self:CreateNativeWindow());

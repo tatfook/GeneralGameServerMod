@@ -105,15 +105,13 @@ function Page.Show(G, params, isNew)
     params = params or {};
     local key = params.html or params.template or params.url;
     if (not key) then return end
-   
-    local page = pages[key] or Vue:new();
+    
+    if (not isNew and pages[key] and pages[key]:GetNativeWindow()) then pages[key]:CloseWindow() end
+    local page = (not IsDevEnv and pages[key]) and pages[key] or Vue:new();
     if (isNew) then 
         page = Vue:new();
     else
         pages[key] = page;
-        if (page:GetNativeWindow()) then 
-            page:CloseWindow();
-        end
     end
 
     params.G = G;
@@ -267,7 +265,7 @@ end
 local UIEditorPage = Vue:new();
 function Page.ShowUIEditorPage(G, params)
     params = params or {};
-    params.url = "%ui%/Editor/UI.html";
+    params.url = "%ui%/Blockly/Pages/UIEditor.html";
     params.draggable = false;
     params.G = G;
     params.width = params.width or "100%";

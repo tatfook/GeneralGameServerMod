@@ -15,7 +15,16 @@ PreviewWindow = ShowWindow({
         PreviewWindowLeft, PreviewWindowTop = screenX + screenWidth - PreviewWindowWidth, screenY + 42;
         PreviewWindow:GetG().SetWindowSize(PreviewWindowLeft, PreviewWindowTop, PreviewWindowWidth, PreviewWindowHeight);
     end,
-}, {url = "%ui%/Blockly/Pages/UIPreview.html", alignment = "_lt", x = PreviewWindowLeft, y = PreviewWindowTop, width = PreviewWindowWidth, height = PreviewWindowHeight, zorder = 10});
+}, {
+    url = "%ui%/Blockly/Pages/UIPreview.html", 
+    alignment = "_lt", 
+    x = PreviewWindowLeft, 
+    y = PreviewWindowTop, 
+    width = PreviewWindowWidth, 
+    height = PreviewWindowHeight, 
+    zorder = 10,
+    windowName = "UIPreview",
+});
 
 local BlocklyHtml, BlocklyLua, BlocklyCss = nil, nil;
 local BlockHtmlCode, BlocklyLuaCode = "", "";
@@ -33,6 +42,10 @@ local function GenerateComponentDefineCode()
 </script>
     ]], BlockHtmlCode, BlocklyLuaCode);
 
+    if (not PreviewWindow:GetNativeWindow()) then
+        PreviewWindow:Show();
+    end
+    
     local PreviewWindowG = PreviewWindow:GetG();
     if (type(PreviewWindowG.SetTemplateCode) == "function") then
         PreviewWindowG.SetTemplateCode(BlocklyCode);

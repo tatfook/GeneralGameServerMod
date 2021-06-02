@@ -116,7 +116,7 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     -- 激活更新
     IsActivedDependItemUpdate = true;
     ClearDependItemUpdateQueueCount = ClearDependItemUpdateQueueCount + 1;
-    -- print("清除依赖更新队列 开始: ", ClearDependItemUpdateQueueCount);
+    -- print("清除依赖更新队列 开始: ", ClearDependItemUpdateQueueCount, key);
     -- ClearDependItemTimer:Change(20);
     NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
 end)

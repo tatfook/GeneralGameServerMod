@@ -20,7 +20,7 @@ local ComponentDebug = GGS.Debug.GetModuleDebug("Component");
 Component:Property("Components");             -- 组件依赖组件集
 Component:Property("ParentComponent");        -- 父组件
 Component:Property("Scope");                  -- 组件Scope 
-Component:Property("Compiled", false, "IsCompiled");      -- 是否编译
+Component:Property("Compiled", false, "IsCompiled");              -- 是否编译
 
 -- 全局组件
 local GlobalComponentClassMap = {};
@@ -65,6 +65,7 @@ function Component:ctor()
     self:SetComponents({});             -- 依赖组件集
     self.refs = {};
     self.slotXmlNodes = {};
+    self.attrs = {};                    -- 组件属性
 end
 
 -- 初始化
@@ -202,10 +203,11 @@ function Component:InitByXmlNode(elementXmlNode, componentXmlNode)
     if (not elementXmlNode or not componentXmlNode) then return end
     local componentAttr = componentXmlNode.attr or {};
     local elementAttr = elementXmlNode.attr or {};
-    elementAttr.style, elementAttr.class = elementAttr.style or "", elementAttr.class or "";
+    self.attrs.style = self.attrs.style == nil and elementAttr.style or "";
+    self.attrs.class = self.attrs.class == nil and elementAttr.class or "";
     commonlib.mincopy(elementAttr, componentAttr);
-    elementAttr.style = (componentAttr.style or "") .. ";" .. (elementAttr.style or "");
-    elementAttr.class = (componentAttr.class or "") .. (elementAttr.class or "");
+    elementAttr.style = (componentAttr.style or "") .. ";" .. self.attrs.style;
+    elementAttr.class = (componentAttr.class or "") .. " " .. self.attrs.class;
     elementAttr.draggable = if_else(elementAttr.draggable == nil, componentAttr.draggable, elementAttr.draggable);
     elementXmlNode.attr = elementAttr;
 
