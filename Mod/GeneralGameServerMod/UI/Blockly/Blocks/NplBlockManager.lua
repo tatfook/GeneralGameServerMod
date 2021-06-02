@@ -72,7 +72,7 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
                         index = index + 1;
                     end
                 end
-                return string.format(func_description, table.unpack(args));
+                return string.format(func_description, unpack(args));
             end,
             hideInToolbox = cmd.hide_in_toolbox,
         } 
