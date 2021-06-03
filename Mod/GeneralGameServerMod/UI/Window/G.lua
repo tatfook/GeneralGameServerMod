@@ -17,11 +17,15 @@ local Date = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Date.lua", IsDevEn
 local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua", true);
 local G = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
+local SystemGolbal = _G;   -- 系统全局变量
+
 G:Property("Window");  -- 所属窗口
 G:Property("G");       -- 真实G
 
 function G.New(window, g)
-    g = setmetatable(g or {}, {__index = _G});
+    g = g or {};
+    
+    if (not getmetatable(g)) then setmetatable(g, {__index = SystemGolbal}) end
     
     local winParams = window:GetParams();
     local domain = winParams.domain or winParams.url or "";

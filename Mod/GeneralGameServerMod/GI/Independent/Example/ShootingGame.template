@@ -1,0 +1,47 @@
+local WeaponSystem = require("WeaponSystem")
+local GUI = require("GUI")
+
+-- 入口
+function main ()
+    -- 创建子弹
+    local bullets = CreateItemStack(50101, 999);
+    -- 创建枪
+    local gun = CreateItemStack(40300, 1);
+    -- 把枪和子弹放在人身上
+    SetItemStackToInventory(1, gun);
+    SetItemStackToInventory(2, bullets);
+
+    -- 设置枪里起始的子弹
+    WeaponSystem.get(1):setAmmoCount(30);
+    -- 显示枪里子弹数量
+    GUI.UI({
+        type = "Text",
+        align = "_ctb",
+        y = - 100,
+        text = function ()
+            return WeaponSystem.get(1):getAmmoCount()
+        end,
+        font_size = 50,
+        font_color = "255 255 255"
+    })
+
+    -- 设置到第一人称
+    SetCameraMode(1)
+
+    -- 显示提示
+    Tip("按R键重装子弹")
+    
+end
+
+-- 获取输入
+function handleInput(event)
+    return WeaponSystem.input(event);
+end
+
+WeaponSystem.onHit(function(weapon, result)
+    if not result.block_id then 
+        return 
+    end
+    -- 创建子弹击中方块效果
+    CreateBlockPieces(result.block_id, result.blockX, result.blockY, result.blockZ)
+end)

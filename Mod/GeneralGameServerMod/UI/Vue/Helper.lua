@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: 辅助类, 一些工具函数实现
 use the lib:
 -------------------------------------------------------
-local Helper = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Helper.lua");
+local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Helper.lua");
 -------------------------------------------------------
 ]]
 
@@ -16,6 +16,7 @@ local PathAliasMap = {
     ["ui"] = "Mod/GeneralGameServerMod/UI",
     ["tutorial"] = "Mod/GeneralGameServerMod/Tutorial",
     ["vue"] = "Mod/GeneralGameServerMod/UI/Vue",
+    ["gi"] = "Mod/GeneralGameServerMod/GI",
     ["world_directory"] = function() 
         return GameLogic.GetWorldDirectory();
     end

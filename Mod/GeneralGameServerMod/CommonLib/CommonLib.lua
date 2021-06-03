@@ -99,3 +99,13 @@ function CommonLib.OpenTextureFileDialog(filters, title, directory)
 
     return filename;
 end
+
+-- 获取文件内容
+function CommonLib.GetFileText(filename)
+    local file = ParaIO.open(filename , "r");
+	if(file:IsValid()) then
+		local text = file:GetText();
+		file:close();
+		return text;
+	end	
+end
