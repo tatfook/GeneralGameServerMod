@@ -5,8 +5,8 @@ Date: 2021-06-01
 Desc: FBX 方块
 use the lib:
 ------------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/GI/Game/Blocks/BlockFBX.lua");
-local BlockFBX = commonlib.gettable("MyCompany.Aries.Game.blocks.BlockFBX");
+NPL.load("Mod/GeneralGameServerMod/GI/Game/Blocks/BlockTrampoline.lua");
+local BlockTrampoline = commonlib.gettable("MyCompany.Aries.Game.blocks.BlockTrampoline");
 ------------------------------------------------------------
 ]]
 

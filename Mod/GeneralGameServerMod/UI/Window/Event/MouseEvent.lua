@@ -67,9 +67,9 @@ function MouseEvent:Init(event_type, window, params)
         self.buttons_state = 0;
         if(ParaUI.IsMousePressed(0)) then self.buttons_state = self.buttons_state + 1 end
         if(ParaUI.IsMousePressed(1)) then self.buttons_state = self.buttons_state + 2 end
-        self.down_move_buttons_state = self.buttons_state;
+        if (event_type == "onmousedown") then self.down_buttons_state = self.buttons_state end   -- 记录按下值 
     elseif (event_type == "onmouseup") then
-        self.buttons_state = self.down_move_buttons_state;
+        self.buttons_state = self.down_buttons_state;  -- 抬起使用与按下相同的按键状态
     end
 	
     if (type(params) == "table") then
