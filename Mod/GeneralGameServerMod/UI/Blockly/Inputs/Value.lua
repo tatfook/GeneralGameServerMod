@@ -81,6 +81,11 @@ function Value:Render(painter)
         painter:SetPen(self:GetColor());
         painter:SetFont(self:GetFont());
         painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetShowText());
+        if (self:IsTextType()) then
+            painter:SetPen("#cccccc");
+            painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize - 10, (self.height - self:GetSingleLineTextHeight()) / 2, '＂');
+            painter:DrawText(self.width - (Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize - 2, (self.height - self:GetSingleLineTextHeight()) / 2, '＂');
+        end
     end 
     painter:Translate(-offsetX, -offsetY);
 end

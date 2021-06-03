@@ -316,7 +316,7 @@ function BlockInputField:OnMouseDown(event)
     block = block:GetProxyBlock() or block;
     block:OnMouseDown(event);
 
-    if (self == block or block:IsToolBoxBlock()) then
+    if ((self == block or block:IsToolBoxBlock()) and blockly:IsTouchMode()) then
         blockly:CaptureMouse(block);
         blockly:SetCurrentBlock(block);
     end
