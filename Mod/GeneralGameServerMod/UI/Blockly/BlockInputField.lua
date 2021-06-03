@@ -161,9 +161,14 @@ function BlockInputField:IsNumberType(typ)
     return typ == "field_number" or typ == "math_number" or typ == "number";
 end
 
+function BlockInputField:IsInputType(typ)
+    typ = typ or self:GetInputFieldType();
+    return typ == "field_input" or typ == "field_text" or typ == "text";
+end
+
 function BlockInputField:IsTextType(typ)
     typ = typ or self:GetInputFieldType();
-    return typ == "field_input" or typ == "field_text" or typ == "text" or self:IsSelectType();
+    return self:IsInputType() or self:IsSelectType();
 end
 
 function BlockInputField:IsSelectType(typ)

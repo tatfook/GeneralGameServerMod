@@ -62,7 +62,6 @@ function Value:Render(painter)
     local offsetX, offsetY = self:GetOffset();
    
     if (self.shadowConnection:IsConnection()) then
-    -- if (self.shadowConnection:IsConnection() or self:IsEdit()) then
         painter:Translate(offsetX, offsetY);
         Shape:SetBrush("#ffffff");
         Shape:DrawInputValue(painter, self.widthUnitCount + 2, self.heightUnitCount + 2, -1, -1);
@@ -81,7 +80,8 @@ function Value:Render(painter)
         painter:SetPen(self:GetColor());
         painter:SetFont(self:GetFont());
         painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetShowText());
-        if (self:IsTextType()) then
+
+        if (self:IsInputType() and self:GetShowText() ~= "") then
             painter:SetPen("#cccccc");
             painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize - 10, (self.height - self:GetSingleLineTextHeight()) / 2, '＂');
             painter:DrawText(self.width - (Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize - 2, (self.height - self:GetSingleLineTextHeight()) / 2, '＂');
