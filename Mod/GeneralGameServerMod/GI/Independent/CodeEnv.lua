@@ -9,21 +9,19 @@ local CodeEnv = NPL.load("Mod/GeneralGameServerMod/GI/Independent/CodeEnv.lua");
 ------------------------------------------------------------
 ]]
 
--- 先加载相关脚本, 避免相关文件都需要Load 
-NPL.load("(gl)script/ide/headon_speech.lua");
-NPL.load("(gl)script/ide/math/vector.lua");
-NPL.load("(gl)script/ide/math/ShapeAABB.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Common/Direction.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Physics/PhysicsWorld.lua");
+local SceneContext = NPL.load("../Game/Input/SceneContext.lua", IsDevEnv);
 
-local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
+local SceneAPI = NPL.load("./API/SceneAPI.lua", IsDevEnv);
 local PlayerAPI = NPL.load("./API/PlayerAPI.lua", IsDevEnv);
 local SystemAPI = NPL.load("./API/SystemAPI.lua", IsDevEnv);
 local UIAPI = NPL.load("./API/UIAPI.lua", IsDevEnv);
 local EntityAPI = NPL.load("./API/EntityAPI.lua", IsDevEnv);
+local BlockAPI = NPL.load("./API/BlockAPI.lua", IsDevEnv);
+local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
 
 local CodeEnv = commonlib.inherit(nil, NPL.export());
+
+CodeEnv.SceneContext = SceneContext;
 
 function CodeEnv:ctor()
 	self._G = self;
@@ -31,6 +29,7 @@ function CodeEnv:ctor()
 	self.__modules__ = {};        -- 模块
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
+	self.__timer_callback__ = {};         -- 定时回调
 end
 
 
@@ -42,13 +41,16 @@ end
 
 function CodeEnv:Init(Independent)
     self.Independent = Independent;
-	self.dcall = Independent.call
+	self.dcall = Independent.Call
 
+	SceneAPI(self);
 	PlayerAPI(self);
 	SystemAPI(self);
 	UIAPI(self);
 	EntityAPI(self);
-	
+	BlockAPI(self);
+	UtilityAPI(self);
+
     return self;
 end
 

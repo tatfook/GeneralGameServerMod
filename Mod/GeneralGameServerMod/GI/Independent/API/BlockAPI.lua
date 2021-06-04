@@ -54,5 +54,7 @@ setmetatable(BlockAPI, {__call = function(_, CodeEnv)
 	CodeEnv.CreateBlockPieces = function (blockid, ...) return GameLogic.GetWorld():CreateBlockPieces(block_types.get(blockid), ...) end
 	CodeEnv.SetBlock = function(...) BlockEngine:SetBlock(...) end
 	CodeEnv.GetBlockFull = function (...) return BlockEngine:GetBlockFull(...) end
+    CodeEnv.ConvertToRealPosition = function (...) return BlockEngine:ConvertToRealPosition_float(...) end
+	CodeEnv.ConvertToBlockIndex = function (...) return BlockEngine:ConvertToBlockIndex(...) end
     CodeEnv.LoadTemplate = LoadTemplate;
 end});

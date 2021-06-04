@@ -8,8 +8,8 @@ use the lib:
 local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
 ------------------------------------------------------------
 ]]
-
-local CreatorAPISandbox = commonlib.gettable("MyCompany.Aries.Game.APISandbox.CreatorAPISandbox");
+NPL.load("(gl)script/ide/System/Core/SceneContextManager.lua");
+local SceneContextManager = commonlib.gettable("System.Core.SceneContextManager");
 
 
 local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Helper.lua", IsDevEnv);
@@ -17,9 +17,9 @@ local CodeEnv = NPL.load("./CodeEnv.lua", IsDevEnv);
 
 local Independent = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-
 Independent:Property("CodeEnv");                      -- 代码环境
 Independent:Property("Running", false, "IsRunning");  -- 是否在运行
+local LoopTickCount = 20;   -- 定时器频率
 
 function Independent:ctor()
 	self:SetCodeEnv(setmetatable({}, {__index = CodeEnv:new():Init(self)}));
@@ -64,13 +64,18 @@ function Independent:Start()
 	local CodeEnv = self:GetCodeEnv();
 
 	if (type(rawget(CodeEnv, "main")) ~= "function") then
-		return GGS.INFO("Independent:Start script entry not found.")
+		GGS.INFO("Independent:Start script entry not found.");
+		self:Stop();
+		return ;
 	end
-	if (not self:Call(CodeEnv.main)) then return end
 
-	if (type(rawget(CodeEnv, "loop")) == "function") then
-		self.timer:Change(16, 16);
+	if (not self:Call(CodeEnv.main)) then 
+		self:Stop();
+		return ;
 	end
+
+	CodeEnv.SceneContext:activate();
+	self.timer:Change(LoopTickCount, LoopTickCount);
 
 	self:SetRunning(true);
 end
@@ -78,16 +83,20 @@ end
 function Independent:Tick()
 	local CodeEnv = self:GetCodeEnv();
 
-	if (type(rawget(CodeEnv, "loop")) ~= "function") then return end
-
-	if (not self:Call(CodeEnv.loop)) then
-		self:Stop();
+	for _, callback in pairs(CodeEnv.__timer_callback__) do
+		if (not self:Call(callback)) then
+			self:Stop();
+		end
 	end
+
+	if (type(rawget(CodeEnv, "loop")) ~= "function") then return end
+	if (not self:Call(CodeEnv.loop)) then self:Stop() end
 end
 
 function Independent:Stop()
-	local CodeEnv = self:GetCodeEnv();
+	GameLogic.ActivateDefaultContext();
 
+	local CodeEnv = self:GetCodeEnv();
 	if (self.timer) then
 		self.timer:Change();
 		self.timer = nil;

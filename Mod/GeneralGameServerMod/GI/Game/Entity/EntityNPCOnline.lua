@@ -1,6 +1,6 @@
 
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityNPC.lua");
-local EntityNPC = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityNPC")
+
+local EntityNPC = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityNPC");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");

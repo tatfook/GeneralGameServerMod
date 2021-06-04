@@ -8,9 +8,13 @@ use the lib:
 local API = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/API.lua");
 ------------------------------------------------------------
 ]]
+local UIAPI = NPL.export()
 
-local UIAPI = NPL.export();
-
-setmetatable(API, {__call = function(_, CodeEnv)
-    -- TODO extend CodeEnv
-end});
+setmetatable(
+    API,
+    {
+        __call = function(_, CodeEnv)
+            -- TODO extend CodeEnv
+        end
+    }
+)

@@ -51,14 +51,17 @@ function QuadTreeNode:Split(isSplitWidth, isSplitHeight)
     local centerY = top + math.floor(height / 2);
 
     self.childNodes = {};
-    if (isSplitWidth) then
-        table.insert(self.childNodes, QuadTreeNode:new():Init(left, top, centerX, centerY));   -- 左上角
-        table.insert(self.childNodes, QuadTreeNode:new():Init(centerX, top, right, centerY));  -- 右上角
-    end
-
-    if (isSplitHeight) then
+    if (isSplitWidth and isSplitHeight) then
+        table.insert(self.childNodes, QuadTreeNode:new():Init(left, top, centerX, centerY));       -- 左上角
+        table.insert(self.childNodes, QuadTreeNode:new():Init(centerX, top, right, centerY));      -- 右上角
         table.insert(self.childNodes, QuadTreeNode:new():Init(left, centerY, centerX, bottom));    -- 左下角
         table.insert(self.childNodes, QuadTreeNode:new():Init(centerX, centerY, right, bottom));   -- 右下角
+    elseif (isSplitWidth and not isSplitHeight) then
+        table.insert(self.childNodes, QuadTreeNode:new():Init(left, top, centerX, bottom));   -- 左区
+        table.insert(self.childNodes, QuadTreeNode:new():Init(centerX, top, right, bottom));  -- 右区
+    elseif (not isSplitWidth and isSplitHeight) then
+        table.insert(self.childNodes, QuadTreeNode:new():Init(left, top, right, centerY));     -- 上区
+        table.insert(self.childNodes, QuadTreeNode:new():Init(left, centerY, right, bottom));  -- 下区
     end
 end
 
@@ -188,14 +191,12 @@ function QuadTree:RemoveObject(object)
 end
 
 function QuadTree:GetObjects(left, top, right, bottom)
-    if (not left or not top or not right or not bottom) then
-        return self.objects;
-    end
+   
     
+    local objects = {};
     local function GetObjects(node, left, top, right, bottom)
         left, top, right, bottom, isValidArea = node:GetSubArea(left, top, right, bottom);
         -- echo({"--------------------isValidArea", left, top, right, bottom, isValidArea, node.left, node.top, node.right, node.bottom, node:GetObjects()});
-        local objects = {};
         -- 交集区域无效 直接返回
         if (not isValidArea) then return objects end;
 
@@ -217,9 +218,20 @@ function QuadTree:GetObjects(left, top, right, bottom)
         end
         return objects;
     end
+    
+    if (not left or not top or not right or not bottom) then
+        for _, obj in pairs(self.objects) do
+            local nodeObjects = obj.node:GetObjects();
+            for key, val in pairs(nodeObjects) do
+                objects[key] = val;
+            end
+        end
+    else
+        -- 递归获取对象
+        GetObjects(self.root, left, top, right, bottom);
+    end
 
     local list = {}
-    local objects = GetObjects(self.root, left, top, right, bottom);
     for key, object in pairs(objects) do
         local o = self.objects[key];
         local l, t, r, b = o.left, o.top, o.right, o.bottom;

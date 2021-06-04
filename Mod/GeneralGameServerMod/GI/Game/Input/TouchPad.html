@@ -1,0 +1,12 @@
+<pe:mcml>
+    <script type="text/npl" refresh="false" src="TouchPad.lua">
+        local UIManager = commonlib.gettable("Mod.Truck.Game.UI.UIManager");
+        ui = UIManager.bind("TouchPad", Page);
+
+        function onTouchScene(...)
+            return ui:onTouchScene(...)
+        end
+
+    </script>
+    <pe:container name="touch_scene" style="position:relative;background:;" alignment="_fi" width="100%" height="100%" ontouch="onTouchScene" />
+</pe:mcml>

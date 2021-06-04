@@ -1,5 +1,4 @@
 local Particle = require("Particle")
-local GUI = require("GUI")
 
 local gravity = vector3d:new(0, -0.1, 0)
 
@@ -57,7 +56,7 @@ end
 
 
 function clear()
-    EnableAutoCamera(true)
+    -- EnableAutoCamera(true)
 end
 
 function handleInput(e)
