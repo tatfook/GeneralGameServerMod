@@ -191,8 +191,6 @@ function QuadTree:RemoveObject(object)
 end
 
 function QuadTree:GetObjects(left, top, right, bottom)
-   
-    
     local objects = {};
     local function GetObjects(node, left, top, right, bottom)
         left, top, right, bottom, isValidArea = node:GetSubArea(left, top, right, bottom);
@@ -209,12 +207,8 @@ function QuadTree:GetObjects(left, top, right, bottom)
 
         -- 已分割查找子区域
         local childNodes = node:GetChildNodes();
-        for i = 1, #childNodes do
-            local childNode = childNodes[i];
-            local subobjects = GetObjects(childNode, left, top, right, bottom);
-            for key, val in pairs(subobjects) do
-                objects[key] = val;
-            end
+        for _, childNode in ipairs(childNodes) do
+            GetObjects(childNode, left, top, right, bottom);
         end
         return objects;
     end
