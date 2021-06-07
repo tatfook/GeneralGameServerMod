@@ -1,7 +1,7 @@
 
 <template class="container">
     <div style="position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px;">
-        <Blockly ref="blockly" v-bind:language="BlocklyType or 'npl'" style="width: 100%; height: 100%;" onchange=OnBlocklyChange v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
+        <Blockly ref="blockly" v-bind:language="Language or 'SystemNplBlock'" style="width: 100%; height: 100%;" onchange=OnBlocklyChange v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
     </div>
 </template>
 

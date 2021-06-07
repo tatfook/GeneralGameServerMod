@@ -9,11 +9,14 @@ local CodeEnv = NPL.load("Mod/GeneralGameServerMod/GI/Independent/CodeEnv.lua");
 ------------------------------------------------------------
 ]]
 
+local Event = NPL.load("../Game/Input/Event.lua", IsDevEnv);
+local TickEvent = NPL.load("../Game/Input/TickEvent.lua", IsDevEnv);
 local SceneContext = NPL.load("../Game/Input/SceneContext.lua", IsDevEnv);
 
 local SceneAPI = NPL.load("./API/SceneAPI.lua", IsDevEnv);
 local PlayerAPI = NPL.load("./API/PlayerAPI.lua", IsDevEnv);
 local SystemAPI = NPL.load("./API/SystemAPI.lua", IsDevEnv);
+local EventAPI = NPL.load("./API/EventAPI.lua", IsDevEnv);
 local UIAPI = NPL.load("./API/UIAPI.lua", IsDevEnv);
 local EntityAPI = NPL.load("./API/EntityAPI.lua", IsDevEnv);
 local BlockAPI = NPL.load("./API/BlockAPI.lua", IsDevEnv);
@@ -22,6 +25,8 @@ local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
 local CodeEnv = commonlib.inherit(nil, NPL.export());
 
 CodeEnv.SceneContext = SceneContext;
+CodeEnv.Event = Event;
+CodeEnv.TickEvent = TickEvent;
 
 function CodeEnv:ctor()
 	self._G = self;
@@ -30,6 +35,7 @@ function CodeEnv:ctor()
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
 	self.__timer_callback__ = {};         -- 定时回调
+	self.__event_callback__ = {};
 end
 
 
@@ -46,6 +52,7 @@ function CodeEnv:Init(Independent)
 	SceneAPI(self);
 	PlayerAPI(self);
 	SystemAPI(self);
+	EventAPI(self);
 	UIAPI(self);
 	EntityAPI(self);
 	BlockAPI(self);

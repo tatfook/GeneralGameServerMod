@@ -17,41 +17,6 @@ local ShapeAABB = commonlib.gettable("mathlib.ShapeAABB");
 
 local SystemAPI = NPL.export();
 
--- local function SetTimeout(CodeEnv, timeout, callback)
---     local timer;
---     timer = commonlib.Timer:new({callbackFunc = function ()
---         CodeEnv.__timers__[tostring(timer)] = nil;
---         CodeEnv.Independent.Call(callback);
---     end})
---     CodeEnv.__timers__[tostring(timer)] = timer; 
---     timer:Change(timeout);
--- end
-
--- local function Timer(interval,callback)
---     local wrapper;
---     local timer;
---     timer = commonlib.Timer:new({callbackFunc = function ()
---         wrapper();
---     end})
---     environment.__timer[tostring(timer)] = timer; 
---     timer:Change(interval,interval);
---     local t = {stop = function ()
---         timer:Change();
---     end}
---     wrapper = function () Independent.call(callback, t) end;
---     return t;
--- end)
-
-local function RegisterTimerCallBack(CodeEnv, callback)
-    if (type(callback) ~= "function") then return end 
-    CodeEnv.__timer_callback__[tostring(callback)] = callback;
-end
-
-local function RemoveTimerCallBack(CodeEnv, callback)
-    if (type(callback) ~= "function") then return end 
-    CodeEnv.__timer_callback__[tostring(callback)] = nil;
-end
-
 setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.print = print;
     CodeEnv.ipairs = ipairs;
@@ -112,6 +77,4 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
 
     CodeEnv.GetTime = ParaGlobal.timeGetTime;
     CodeEnv.ToolBase = commonlib.gettable("System.Core.ToolBase");
-    CodeEnv.RegisterTimerCallBack = function(...) return RegisterTimerCallBack(CodeEnv, ...) end
-    CodeEnv.RemoveTimerCallBack = function(...) return RemoveTimerCallBack(CodeEnv, ...) end
 end});

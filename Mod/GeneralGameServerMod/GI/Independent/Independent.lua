@@ -6,12 +6,9 @@ Desc:
 use the lib:
 ------------------------------------------------------------
 local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
+Independent:LoadFile("%gi%/Independent/Example/Empty.lua");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/System/Core/SceneContextManager.lua");
-local SceneContextManager = commonlib.gettable("System.Core.SceneContextManager");
-
-
 local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Helper.lua", IsDevEnv);
 local CodeEnv = NPL.load("./CodeEnv.lua", IsDevEnv);
 
@@ -90,7 +87,7 @@ function Independent:Tick()
 	end
 
 	if (type(rawget(CodeEnv, "loop")) ~= "function") then return end
-	if (not self:Call(CodeEnv.loop)) then self:Stop() end
+	if (not self:Call(CodeEnv.loop, CodeEnv.TickEvent:Init())) then self:Stop() end
 end
 
 function Independent:Stop()

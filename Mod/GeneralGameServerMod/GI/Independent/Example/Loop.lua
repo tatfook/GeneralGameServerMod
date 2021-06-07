@@ -6,7 +6,7 @@ function main()
     print("main exec"); 
 end
 
-function loop()
+function loop(event)
     LoopCount = LoopCount + 1;
     
     if (LoopCount > 1000) then

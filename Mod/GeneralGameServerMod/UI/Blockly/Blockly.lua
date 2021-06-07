@@ -829,6 +829,22 @@ function Blockly:handleDeleteAll()
     self:OnChange();
 end
 
+function Blockly:GetPrettyCode(code)
+    local prettyCode = code;
+    local language = self:GetLanguage();
+    if (language == "SystemNplBlock") then
+        local ok, errinfo = pcall(function()
+            prettyCode = LuaFmt.Pretty(code);
+            prettyCode = string.gsub(prettyCode, "\t", "    ");
+        end);
+        if (not ok) then 
+            print("=============code error==========", errinfo);
+            prettyCode = code;
+        end
+    end
+    return prettyCode;
+end
+
 -- 获取代码
 function Blockly:GetCode()
     self.__to_code_cache__ = {};
@@ -856,14 +872,8 @@ function Blockly:GetCode()
         end
         code = code .. blockCode .. "\n";
     end
-    
-    local prettyCode = code;
-    local ok, errinfo = pcall(function()
-        prettyCode = LuaFmt.Pretty(code);
-    end);
-    if (not ok) then print("=============code error==========", errinfo) end
 
-    return code, ok and prettyCode or code;
+    return code, self:GetPrettyCode(code);
 end
 
 -- 转换成xml
