@@ -8,7 +8,7 @@ use the lib:
 local API = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/API.lua");
 ------------------------------------------------------------
 ]]
-local UIAPI = NPL.export()
+local API = NPL.export()
 
 setmetatable(
     API,
