@@ -61,6 +61,7 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
 
     CodeEnv.require = function(name)
         if (CodeEnv.__modules__[name]) then return CodeEnv.__modules__[name] end
+        CodeEnv.__modules__[name] = {}; -- 解决循环依赖
         -- 为单词则默认为系统库文件
         if (string.match(name, "^[%a%d]+$")) then 
             Independent:LoadFile(string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name));

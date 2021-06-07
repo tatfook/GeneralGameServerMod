@@ -8,6 +8,11 @@ use the lib:
 local API = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/API.lua");
 ------------------------------------------------------------
 ]]
+
+NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/SelectionManager.lua");
+local SelectionManager = commonlib.gettable("MyCompany.Aries.Game.SelectionManager");
+local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController");
+
 local EventAPI = NPL.export()
 
 
@@ -35,24 +40,32 @@ local EventAPI = NPL.export()
 --     wrapper = function () Independent.call(callback, t) end;
 --     return t;
 -- end)
+local function MousePick()
+    local result = SelectionManager:MousePickBlock();
+	CameraController.OnMousePick(result, SelectionManager:GetPickingDist());
 
-local function RegisterTimerCallBack(CodeEnv, callback)
-    if (type(callback) ~= "function") then return end 
-    CodeEnv.__timer_callback__[tostring(callback)] = callback;
-end
-
-local function RemoveTimerCallBack(CodeEnv, callback)
-    if (type(callback) ~= "function") then return end 
-    CodeEnv.__timer_callback__[tostring(callback)] = nil;
+    if(result.length and result.length<SelectionManager:GetPickingDist()) then
+        -- self:HighlightPickBlock(result);
+		-- self:HighlightPickEntity(result);
+		return result;
+	else
+        return nil;
+	end
 end
 
 local EventType = {
-    TIMER = "timer",
+    MAIN = "main",
+    LOOP = "loop",
+    CLEAR = "clear",
+
+    -- TIMER = "timer",
+
     MOUSE = "mouse",
     MOUSE_DOWN = "mouse_down",
     MOUSE_MOVE = "mouse_move",
     MOUSE_UP = "mouse_up",
     MOUSE_WHEEL = "mouse_wheel",
+
     KEY = "key",
     KEY_DOWN = "key_down",
     KEY_UP = "key_up",
@@ -105,10 +118,13 @@ end
 setmetatable(EventAPI, {
     __call = function(_, CodeEnv)
         CodeEnv.EventType = EventType;
-        CodeEnv.RegisterTimerCallBack = function(...) return RegisterTimerCallBack(CodeEnv, ...) end
-        CodeEnv.RemoveTimerCallBack = function(...) return RemoveTimerCallBack(CodeEnv, ...) end
+        CodeEnv.RegisterTimerCallBack = function(...) return RegisterEventCallBack(CodeEnv, EventType.LOOP, ...) end
+        CodeEnv.RemoveTimerCallBack = function(...) return RemoveEventCallBack(CodeEnv, EventType.LOOP, ...) end
         CodeEnv.RegisterEventCallBack = function(...) return RegisterEventCallBack(CodeEnv, ...) end
         CodeEnv.RemoveEventCallBack = function(...) return RemoveEventCallBack(CodeEnv, ...) end
+
+        CodeEnv.MousePick = MousePick;
+        CodeEnv.GetPickingDist = function() return SelectionManager:GetPickingDist() end
 
         local SceneContext = CodeEnv.SceneContext;
         SceneContext:SetMouseEventCallBack(function(...) EventCallBack(CodeEnv, EventType.MOUSE, ...) end);

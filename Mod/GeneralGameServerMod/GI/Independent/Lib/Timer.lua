@@ -61,3 +61,19 @@ end
 function Timer.Interval(interval, callback)
     return Timer:new():Start(nil, interval, callback);
 end
+
+function SetTimeout(timeout, callback)
+    return Timer.Timeout(timeout, callback);
+end
+
+function ClearTimeout(timer)
+    timer:Stop();
+end
+
+function SetInterval(interval, callback)
+    return Timer.Interval(interval, callback);
+end
+
+function ClearInterval(timer)
+    timer:Stop();
+end

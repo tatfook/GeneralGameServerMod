@@ -15,7 +15,7 @@ local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local PlayerAPI = NPL.export();
 
 setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
-    function CodeEnv.GetPlayerEntityId()
-        return EntityManager.GetPlayer().entityId;
-    end
+    CodeEnv.GetPlayerEntityId = function() return EntityManager.GetPlayer().entityId end
+    CodeEnv.IsInWater = function() return GameLogic.GetPlayerController():IsInWater() end
+	CodeEnv.IsInAir = function() return GameLogic.GetPlayerController():IsInAir() end
 end});

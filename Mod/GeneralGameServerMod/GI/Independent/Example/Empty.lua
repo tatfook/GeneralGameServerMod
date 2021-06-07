@@ -1,13 +1,6 @@
 
 
-function main()
-    print("main exec"); 
-end
 
--- function loop()
---     print("loop exec");
--- end
+print("hello world");
 
-function clear()
-    print("clear exec");
-end
+print(SetTimeout)

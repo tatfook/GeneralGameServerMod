@@ -34,8 +34,7 @@ function CodeEnv:ctor()
 	self.__modules__ = {};        -- 模块
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
-	self.__timer_callback__ = {};         -- 定时回调
-	self.__event_callback__ = {};
+	self.__event_callback__ = {}; -- 事件回调
 end
 
 

@@ -16,14 +16,35 @@ local Independent = commonlib.inherit(commonlib.gettable("System.Core.ToolBase")
 
 Independent:Property("CodeEnv");                      -- 代码环境
 Independent:Property("Running", false, "IsRunning");  -- 是否在运行
-local LoopTickCount = 20;   -- 定时器频率
+Independent:Property("LoopTimer");                    -- 循环定时器
+local LoopTickCount = 20;                             -- 定时器频率
 
 function Independent:ctor()
-	self:SetCodeEnv(setmetatable({}, {__index = CodeEnv:new():Init(self)}));
 
-	self.timer = commonlib.Timer:new({callbackFunc = function()
+end
+
+-- 初始化函数 
+function Independent:Init()
+	-- 先清除
+	self:Stop();
+	-- 设置环境
+	self:SetCodeEnv(setmetatable({}, {__index = CodeEnv:new():Init(self)}));
+	-- 重置定时器
+	self:SetLoopTimer(commonlib.Timer:new({callbackFunc = function()
 		Independent:Tick();
-	end});
+	end}));
+	-- 加载内置模块
+	self:LoadInnerModule();
+
+	return self;
+end
+
+function Independent:LoadInnerModule()
+	local func = loadstring([[
+Timer = require("Timer");
+	]]);
+	setfenv(func, self:GetCodeEnv());
+	self:Call(func); 
 end
 
 function Independent:LoadFile(filename)
@@ -55,54 +76,73 @@ function Independent:Call(func, ...)
 	end, ...);
 end
 
+function Independent:CallEventCallBack(eventType)
+	local CodeEnv = self:GetCodeEnv();
+	local __event_callback__ = CodeEnv.__event_callback__[eventType];
+	if (not __event_callback__) then return end
+	for _, callback in pairs(__event_callback__) do
+		if (not self:Call(callback)) then
+			self:Stop();
+		end
+	end
+end
+
 function Independent:Start()
 	if (self:IsRunning()) then return end
-
+	
+	print("====================Independent:Start=====================");
+	-- 激活上下文环境
 	local CodeEnv = self:GetCodeEnv();
-
-	if (type(rawget(CodeEnv, "main")) ~= "function") then
-		GGS.INFO("Independent:Start script entry not found.");
-		self:Stop();
-		return ;
-	end
-
-	if (not self:Call(CodeEnv.main)) then 
-		self:Stop();
-		return ;
-	end
-
 	CodeEnv.SceneContext:activate();
-	self.timer:Change(LoopTickCount, LoopTickCount);
 
+	-- 触发 MAIN 事件回调
+	self:CallEventCallBack(CodeEnv.EventType.MAIN);
+
+	-- 调用 快捷方式 MAIN
+	if (type(rawget(CodeEnv, "main")) == "function") then
+		if (not self:Call(CodeEnv.main)) then 
+			self:Stop();
+			return ;
+		end
+	end
+
+	-- 开始定时器
+	self:GetLoopTimer():Change(LoopTickCount, LoopTickCount);
+	
+	-- 设置运行标识
 	self:SetRunning(true);
 end
 
 function Independent:Tick()
 	local CodeEnv = self:GetCodeEnv();
+	
+	-- 触发定时回调
+	self:CallEventCallBack(CodeEnv.EventType.LOOP);
 
-	for _, callback in pairs(CodeEnv.__timer_callback__) do
-		if (not self:Call(callback)) then
-			self:Stop();
-		end
-	end
-
+	-- 触发 LOOP 快捷回调
 	if (type(rawget(CodeEnv, "loop")) ~= "function") then return end
 	if (not self:Call(CodeEnv.loop, CodeEnv.TickEvent:Init())) then self:Stop() end
 end
 
 function Independent:Stop()
-	GameLogic.ActivateDefaultContext();
-
 	local CodeEnv = self:GetCodeEnv();
-	if (self.timer) then
-		self.timer:Change();
-		self.timer = nil;
-	end
+	if (not CodeEnv) then return end
+	
+	print("====================Independent:Stop=====================");
+
+	self:CallEventCallBack(CodeEnv.EventType.CLEAR);
 
 	if (type(rawget(CodeEnv, "clear")) == "function") then 
 		self:Call(CodeEnv.clear);
 	end
 
+	GameLogic.ActivateDefaultContext();
+
+	if (self:GetLoopTimer()) then
+		self:GetLoopTimer():Change();
+		self:SetLoopTimer(nil);
+	end
+	
 	CodeEnv:Clear();
 
 	self:SetRunning(false);
@@ -110,4 +150,4 @@ function Independent:Stop()
 	-- collectgarbage("collect");
 end
 
-Independent:InitSingleton();
+Independent:InitSingleton():Init();
