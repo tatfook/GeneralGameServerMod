@@ -113,7 +113,6 @@ setmetatable(
             CodeEnv.SetEntityBlockPos = SetEntityBlockPos
             CodeEnv.EnableEntityPicked = EntityManager.EnableEntityPicked
 
-            CodeEnv.GetPlayer = EntityManager.GetPlayer
             CodeEnv.CreateNPC = function(...)
                 return CreateNPC(CodeEnv, ...)
             end

@@ -34,6 +34,7 @@ setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
     CodeEnv.GetUserId = GetUserId;
     CodeEnv.GetUserName = GetUserName;
     CodeEnv.GetNickName = GetNickName;
+    CodeEnv.GetPlayer = EntityManager.GetPlayer
     
     CodeEnv.GetPlayerEntityId = function() return EntityManager.GetPlayer().entityId end
     CodeEnv.IsInWater = function() return GameLogic.GetPlayerController():IsInWater() end

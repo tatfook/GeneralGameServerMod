@@ -35,15 +35,12 @@ function GIGeneralGameClient:GetClientDataHandlerClass()
     return GIClientDataHandler;
 end
 
-local Nid = 0;
 -- 加载世界 
 function GIGeneralGameClient:LoadWorld(opts)
-    Nid = Nid + 1;
-
     opts = opts or {};
     opts.worldId = opts.worldId or GameLogic.options:GetProjectId() or "GGS";
-    opts.worldName = opts.worldName or string.format("WorldName_%s", Nid);
-    opts.worldKey = opts.worldKey or string.format("WorldKey_%s", Nid);
+    opts.worldName = opts.worldName or string.format("WorldName_GI", Nid);
+    opts.worldKey = opts.worldKey or string.format("GI_WorldKey_%s", opts.worldId);
     return GIGeneralGameClient._super.LoadWorld(self, opts);
 end
 
