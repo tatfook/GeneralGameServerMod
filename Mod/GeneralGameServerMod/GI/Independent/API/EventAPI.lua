@@ -9,56 +9,17 @@ local API = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/API.lua");
 ------------------------------------------------------------
 ]]
 
-NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/SelectionManager.lua");
 local SelectionManager = commonlib.gettable("MyCompany.Aries.Game.SelectionManager");
 local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController");
 
-local EventAPI = NPL.export()
+local EventAPI = NPL.export();
 
-
--- local function SetTimeout(CodeEnv, timeout, callback)
---     local timer;
---     timer = commonlib.Timer:new({callbackFunc = function ()
---         CodeEnv.__timers__[tostring(timer)] = nil;
---         CodeEnv.Independent.Call(callback);
---     end})
---     CodeEnv.__timers__[tostring(timer)] = timer; 
---     timer:Change(timeout);
--- end
-
--- local function Timer(interval,callback)
---     local wrapper;
---     local timer;
---     timer = commonlib.Timer:new({callbackFunc = function ()
---         wrapper();
---     end})
---     environment.__timer[tostring(timer)] = timer; 
---     timer:Change(interval,interval);
---     local t = {stop = function ()
---         timer:Change();
---     end}
---     wrapper = function () Independent.call(callback, t) end;
---     return t;
--- end)
-local function MousePick()
-    local result = SelectionManager:MousePickBlock();
-	CameraController.OnMousePick(result, SelectionManager:GetPickingDist());
-
-    if(result.length and result.length<SelectionManager:GetPickingDist()) then
-        -- self:HighlightPickBlock(result);
-		-- self:HighlightPickEntity(result);
-		return result;
-	else
-        return nil;
-	end
-end
+local __code_env__ = nil;
 
 local EventType = {
     MAIN = "main",
     LOOP = "loop",
     CLEAR = "clear",
-
-    -- TIMER = "timer",
 
     MOUSE = "mouse",
     MOUSE_DOWN = "mouse_down",
@@ -107,33 +68,59 @@ end
 -- local function KeyReleaseEventCallBack(event)
 -- end
 
-local function EventCallBack(CodeEnv, eventType, event)
+local function TriggerEventCallBack(CodeEnv, eventType, ...)
     local Independent = CodeEnv.Independent;
     local callbackMap = CodeEnv.__event_callback__[eventType] or {};
     for _, callback in pairs(callbackMap) do 
-        Independent:Call(callback, event);
+        Independent:Call(callback, ...);
     end
+end
+
+local function IsKeyDown(...)
+    return ParaUI.IsKeyPressed(...)
+end 
+
+local function GetUserEventName(eventName)
+    return string.format("USER_EVENT_%s", eventName);
+end
+local function On(eventName, callback)
+    RegisterEventCallBack(__code_env__, GetUserEventName(eventName), callback);
+end
+
+local function Off(eventName, callback)
+    RemoveEventCallBack(__code_env__, GetUserEventName(eventName), callback);
+end
+
+local function Emit(eventName, ...)
+    TriggerEventCallBack(__code_env__, GetUserEventName(eventName), ...);
 end
 
 setmetatable(EventAPI, {
     __call = function(_, CodeEnv)
+        __code_env__ = CodeEnv;
+
         CodeEnv.EventType = EventType;
         CodeEnv.RegisterTimerCallBack = function(...) return RegisterEventCallBack(CodeEnv, EventType.LOOP, ...) end
         CodeEnv.RemoveTimerCallBack = function(...) return RemoveEventCallBack(CodeEnv, EventType.LOOP, ...) end
         CodeEnv.RegisterEventCallBack = function(...) return RegisterEventCallBack(CodeEnv, ...) end
         CodeEnv.RemoveEventCallBack = function(...) return RemoveEventCallBack(CodeEnv, ...) end
+        CodeEnv.TriggerEventCallBack = function(...) return TriggerEventCallBack(CodeEnv, ...) end 
+        
+        -- 用户事件机制
+        CodeEnv.On = On;
+        CodeEnv.Off = Off;
+        CodeEnv.Emit = Emit;
 
-        CodeEnv.MousePick = MousePick;
-        CodeEnv.GetPickingDist = function() return SelectionManager:GetPickingDist() end
+        CodeEnv.IsKeyDown = IsKeyDown;
 
         local SceneContext = CodeEnv.SceneContext;
-        SceneContext:SetMouseEventCallBack(function(...) EventCallBack(CodeEnv, EventType.MOUSE, ...) end);
-        SceneContext:SetMousePressEventCallBack(function(...) EventCallBack(CodeEnv, EventType.MOUSE_DOWN, ...) end);
-        SceneContext:SetMouseMoveEventCallBack(function(...) EventCallBack(CodeEnv, EventType.MOUSE_MOVE, ...) end);
-        SceneContext:SetMouseReleaseEventCallBack(function(...) EventCallBack(CodeEnv, EventType.MOUSE_UP, ...) end);
-        SceneContext:SetMouseWheelEventCallBack(function(...) EventCallBack(CodeEnv, EventType.MOUSE_WHEEL, ...) end);
-        SceneContext:SetKeyEventCallBack(function(...) EventCallBack(CodeEnv, EventType.KEY, ...) end);
-        SceneContext:SetKeyPressEventCallBack(function(...) EventCallBack(CodeEnv, EventType.KEY_DOWN, ...) end);
-        SceneContext:SetKeyReleaseEventCallBack(function(...) EventCallBack(CodeEnv, EventType.KEY_UP, ...) end);
+        SceneContext:SetMouseEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) end);
+        SceneContext:SetMousePressEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE_DOWN, ...) end);
+        SceneContext:SetMouseMoveEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE_MOVE, ...) end);
+        SceneContext:SetMouseReleaseEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE_UP, ...) end);
+        SceneContext:SetMouseWheelEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE_WHEEL, ...) end);
+        SceneContext:SetKeyEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.KEY, ...) end);
+        SceneContext:SetKeyPressEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.KEY_DOWN, ...) end);
+        SceneContext:SetKeyReleaseEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.KEY_UP, ...) end);
     end
 });

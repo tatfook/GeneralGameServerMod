@@ -39,6 +39,8 @@ GeneralGameClient:Property("World", nil);                  -- 当前世界
 GeneralGameClient:Property("MainPlayerEntityScale", nil);  -- 玩家实体大小
 GeneralGameClient:Property("MainPlayerEntityAsset", nil);  -- 玩家实体模型
 GeneralGameClient:Property("MainPlayerEntitySkin", nil);   -- 玩家实体模型皮肤
+GeneralGameClient:Property("ConnectionCallBack", nil);     -- 连接成功回调
+GeneralGameClient:Property("DisconnectionCallBack", nil);  -- 断开连接成功回调
 
 -- 类共享变量 强制同步块列表
 GeneralGameClient.syncForceBlockList = commonlib.UnorderedArraySet:new();
@@ -50,12 +52,13 @@ GeneralGameClient.options = {
 
     -- config
     defaultWorldId = 10373,
-    serverIp = "ggs.keepwork.com";
+    serverIp = IsDevEnv and "127.0.0.1" or "ggs.keepwork.com";
     serverPort = "9000";
 }
 
 function GeneralGameClient:ctor() 
     self.inited = false;
+    self.userinfo = {};
     self.netCmdList = commonlib.UnorderedArraySet:new();  -- 网络命令列表, 禁止命令重复运行 
 end
 
@@ -199,7 +202,7 @@ function GeneralGameClient:ReplaceWorld(opts)
 end
 
 -- 加载世界
-function GeneralGameClient:LoadWorld(opts, loadworld)
+function GeneralGameClient:LoadWorld(opts)
     -- 初始化
     self:Init();
     
@@ -230,8 +233,8 @@ function GeneralGameClient:LoadWorld(opts, loadworld)
         self:GetWorld():OnExit(); 
     end
 
-    -- 标识替换, 其它方式loadworld不替换
-    self.IsReplaceWorld = true;
+    -- 是否加载世界
+    self.IsWorldLoaded = true;
 
     -- 以只读方式重新进入
     if (isReloadWorld) then
@@ -245,8 +248,8 @@ end
 -- 世界加载
 function GeneralGameClient:OnWorldLoaded() 
     -- 是否需要替换世界
-    if (not self.IsReplaceWorld) then return end
-    self.IsReplaceWorld = false;
+    if (not self.IsWorldLoaded) then return end
+    self.IsWorldLoaded = false;
 
     -- 更新当前世界ID
     local GeneralGameWorldClass = self:GetGeneralGameWorldClass() or GeneralGameWorld;
@@ -272,6 +275,7 @@ function GeneralGameClient:OnWorldUnloaded()
         self:GetWorld():OnExit();
     end
     self:SetWorld(nil);
+    self.IsWorldLoaded = false;
 end
 
 -- 用户是否登录
@@ -282,6 +286,13 @@ end
 -- 获取世界网络处理程序
 function GeneralGameClient:GetWorldNetHandler() 
     return self:GetWorld() and self:GetWorld():GetNetHandler();
+end
+
+--获取客户单数据处理程序
+function GeneralGameClient:GetClientDataHandler()
+    local world = self:GetWorld();
+    local netHandler = world and world:GetNetHandler();
+    return netHandler and netHandler:GetDataHandler();
 end
 
 -- 执行网络命令
@@ -383,7 +394,7 @@ end
 
 -- 获取当前认证用户信息
 function GeneralGameClient:GetUserInfo()
-    -- return {};
+    return self.userinfo;
 end
 
 -- 获取当前系统世界信息

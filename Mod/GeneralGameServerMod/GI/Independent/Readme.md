@@ -41,6 +41,12 @@ RegisterEventCallBack(eventType, callback);                   -- 注册事件回
 RemoveEventCallBack(eventType, callback);                     -- 移除事件回调函数
 SetTimeout(timeout, callback);                                -- timeout ms 后执行回调 ClearTimeout(SetTimeout())  由Timer模块实现, 更多用法使用 Timer = require("Timer") 相关函数
 SetInterval(interval, callback);                              -- 间隔 interval ms 执行回调  ClearInterval(SetInterval())
+
+-- 用户自定义事件机制
+On(eventName, callback);                                      -- 监听事件
+Off(eventName, callback);                                     -- 移除事件
+Emit(eventName, callback);                                    -- 触发事件
+
 -- RegisterTimerCallBack(eventType, callback); -- 注册定时回调函数 EventType.MOUSE, EventType.MOUSE_DOWN, ...
 -- RemoveTimerCallBack(eventType, callback);   -- 移除定时回调函数
 ```

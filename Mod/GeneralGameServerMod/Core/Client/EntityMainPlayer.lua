@@ -6,7 +6,7 @@ Desc: the main player entity on the client side.
 use the lib:
 ------------------------------------------------------------
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityMainPlayer.lua");
-local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
+local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityPlayerMPClient.lua");
@@ -20,6 +20,8 @@ local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.G
 
 local maxMotionUpdateTickCount = 33;
 
+EntityMainPlayer:Property("SyncEntityInfo", true, "IsSyncEntityInfo");                 -- 是否同步实体信息
+EntityMainPlayer:Property("EnableAssetsWhiteList", true, "IsEnableAssetsWhiteList");   -- 是否启用样式白名单
 EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
 EntityMainPlayer:Property("World");
 
@@ -55,8 +57,19 @@ function EntityMainPlayer:IsCanClick()
     return false;
 end
 
+-- 点击回调
+function EntityMainPlayer:OnClick(x,y,z, mouse_button,entity,side)
+    -- 返回真 取消默认事件处理程序
+    return true;
+end
+
 -- 是否可以飞行
 function EntityMainPlayer:IsCanFlying()
+    return false;
+end
+
+-- 是否使用默认用户名显示
+function EntityMainPlayer:IsShowHeadOnDisplay()
     return false;
 end
 
@@ -89,17 +102,19 @@ end
 
 -- Send updated motion and position information to the server
 function EntityMainPlayer:SendMotionUpdates()
-    if(not self:GetInnerObject() or not self:IsNearbyChunkLoaded()) then return end
+    if(not self:GetInnerObject() or not self:IsNearbyChunkLoaded() or not self:IsSyncEntityInfo()) then return end
     -- 设置当前动画ID
 	self:SetAnimId(self:GetInnerObject():GetField("AnimID", 0));
     self.motionUpdateTickCount = self.motionUpdateTickCount + 1;  -- tick 自增
     -- 获取模型验证模型的有效性
-    local curMainAsset = self.dataWatcher:GetField(self.dataMainAsset);
-    if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then 
-        GGS.INFO.Format("无效模型: %s", curMainAsset);
-        self.dataWatcher:SetField(self.dataMainAsset, AssetsWhiteList.GetRandomFilename());
+    if (self:IsEnableAssetsWhiteList()) then
+        local curMainAsset = self.dataWatcher:GetField(self.dataMainAsset);
+        if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then 
+            GGS.INFO.Format("无效模型: %s", curMainAsset);
+            self.dataWatcher:SetField(self.dataMainAsset, AssetsWhiteList.GetRandomFilename());
+        end
     end
-
+    
     local lastMoved, lastXYZ, curAnimId = self.lastMoved, self.lastXYZ, self:GetAnimId();
     local maxMoveDelayFrameCount = 30;
     local hasPlayerInfoChange = self:IsUpdatePlayerInfo();

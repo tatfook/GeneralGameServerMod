@@ -42,6 +42,7 @@ end
 function Independent:LoadInnerModule()
 	local func = loadstring([[
 Timer = require("Timer");
+Scene = require("Scene");
 	]]);
 	setfenv(func, self:GetCodeEnv());
 	self:Call(func); 

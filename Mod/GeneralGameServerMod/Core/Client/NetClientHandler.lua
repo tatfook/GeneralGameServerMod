@@ -190,6 +190,10 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 设置玩家信息
     entityPlayer:SetPlayerInfo(playerInfo);
     
+    -- 回调通知
+    local callback = self:GetClient():GetConnectionCallBack();
+    if (type(callback) == "function") then callback() end
+
     return;
 end
 
@@ -475,7 +479,12 @@ function NetClientHandler:handleDisconnection(text)
     if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
 
     -- 第一次重连提醒
-    if (not self.isReconnection) then BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器断开连接, 稍后尝试重新连接...", max_duration=6000, color = "177 177 177", scaling=1.1, bold=true, shadow=true,}) end
+    if (not self.isReconnection) then 
+        BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器断开连接, 稍后尝试重新连接...", max_duration=6000, color = "177 177 177", scaling=1.1, bold=true, shadow=true,});
+        -- 回调通知
+        local callback = self:GetClient():GetDisconnectionCallBack();
+        if (type(callback) == "function") then callback() end 
+    end
 
     -- 打印重连接时间间隔
     PlayerLoginLogoutDebug(string.format("exec reconnect after %d second", self.reconnectionDelay));

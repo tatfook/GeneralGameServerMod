@@ -21,6 +21,7 @@ local UIAPI = NPL.load("./API/UIAPI.lua", IsDevEnv);
 local EntityAPI = NPL.load("./API/EntityAPI.lua", IsDevEnv);
 local BlockAPI = NPL.load("./API/BlockAPI.lua", IsDevEnv);
 local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
+local GGSAPI = NPL.load("./API/GGSAPI.lua", IsDevEnv);
 
 local CodeEnv = commonlib.inherit(nil, NPL.export());
 
@@ -36,7 +37,6 @@ function CodeEnv:ctor()
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
 end
-
 
 function CodeEnv:InstallAPI(api)
 	for key, val in pairs(api) do   -- pairs 不会遍历元表
@@ -56,6 +56,7 @@ function CodeEnv:Init(Independent)
 	EntityAPI(self);
 	BlockAPI(self);
 	UtilityAPI(self);
+	GGSAPI(self);
 
     return self;
 end

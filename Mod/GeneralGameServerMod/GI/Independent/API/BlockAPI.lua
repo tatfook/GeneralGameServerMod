@@ -9,11 +9,7 @@ local BlockAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/BlockAPI.
 ------------------------------------------------------------
 ]]
 
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/blocks/block_types.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Common/Files.lua");
+
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");

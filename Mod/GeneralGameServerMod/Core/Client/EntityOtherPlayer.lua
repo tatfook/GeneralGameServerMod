@@ -22,6 +22,7 @@ local EntityOtherPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.
 EntityOtherPlayerDebug = GGS.Debug.GetModuleDebug("EntityOtherPlayerDebug").Enable();
 
 EntityOtherPlayer:Property("World");
+EntityOtherPlayer:Property("EnableAssetsWhiteList", true, "IsEnableAssetsWhiteList");   -- 是否启用样式白名单
 
 function EntityOtherPlayer:ctor()
     self.playerInfo = {};
@@ -62,6 +63,11 @@ end
 function EntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
 -- 返回真 取消默认事件处理程序
     return true;
+end
+
+-- 是否使用默认用户名显示
+function EntityOtherPlayer:IsShowHeadOnDisplay()
+    return false;
 end
 
 -- 是否可以被其它实体推动
@@ -146,7 +152,7 @@ function EntityOtherPlayer:UpdateEntityActionState()
     
     local curMainAsset = dataWatcher:GetField(self.dataMainAsset);
     if(curMainAsset~=self:GetMainAssetPath()) then
-        if(not AssetsWhiteList.IsInWhiteList(curMainAsset)) then curMainAsset = AssetsWhiteList.GetDefaultFilename() end
+        if(self:IsEnableAssetsWhiteList() and not AssetsWhiteList.IsInWhiteList(curMainAsset)) then curMainAsset = AssetsWhiteList.GetDefaultFilename() end
         self:SetMainAssetPath(curMainAsset);
         dataWatcher:SetField(self.dataMainAsset, curMainAsset);
 	end
