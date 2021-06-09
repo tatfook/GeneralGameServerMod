@@ -14,16 +14,22 @@ local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
 local PlayerAPI = NPL.export();
 
+local __code_env__ = nil;
+
 local function GetUserInfo()
     return KeepWorkItemManager.GetProfile();
 end
 
 local function GetUserId()
-    return GetUserInfo().id;
+    return GetUserInfo().id or 0;
 end
 
 local function GetUserName()
-    return GetUserInfo().username;
+    local username = GetUserInfo().username;
+    if (not username or username == "") then
+        username = string.format("User_%s", __code_env__.GetTime());  -- 可能重名
+    end
+    return username;
 end
 
 local function GetNickName()
@@ -31,6 +37,8 @@ local function GetNickName()
 end
 
 setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
+    __code_env__ = CodeEnv;
+
     CodeEnv.GetUserId = GetUserId;
     CodeEnv.GetUserName = GetUserName;
     CodeEnv.GetNickName = GetNickName;

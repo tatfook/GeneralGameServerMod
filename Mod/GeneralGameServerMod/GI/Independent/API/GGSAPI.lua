@@ -34,11 +34,25 @@ end
 setfenv(__G_Disconnect__, __G__);
 
 
+local function GGS_GetPlayerManager()
+    local world = GIGeneralGameClient:GetWorld();
+    return world and world:GetPlayerManager();
+end
+
+local function GGS_GetMainPlayer()
+    local playerManager = GGS_GetPlayerManager();
+    return playerManager and playerManager:GetMainPlayer();
+end
+
+local function GGS_GetPlayer(username)
+    local playerManager = GGS_GetPlayerManager();
+    if (not playerManager) then return end
+    if (not username) then return playerManager:GetMainPlayer()() end
+    return playerManager:GetPlayerByUserName(username);
+end
+
 local function GGS_Connect(callback)
     local username = __code_env__.GetUserName();
-    if (not username or username == "") then
-        username = string.format("User_%s", __code_env__.GetTime());
-    end
     __code_env__.RegisterEventCallBack("GGS_CONNECT", callback);
     __G_Connect__({username = username});
 end
@@ -83,7 +97,8 @@ setmetatable(GGSAPI, {
         CodeEnv.GGS_Send = GGS_Send;
         CodeEnv.GGS_Recv = GGS_Recv;
         CodeEnv.GGS_Disconnect = GGS_Disconnect;
-
+        CodeEnv.GGS_GetPlayer = GGS_GetPlayer;
+        
         CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function() __G_Disconnect__() end);
     end
 })

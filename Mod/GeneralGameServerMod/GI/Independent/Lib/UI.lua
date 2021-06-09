@@ -11,6 +11,12 @@ local UI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/UI.lua");
 
 local UI = inherit(nil, module("UI"));
 
+function UI.ShowWindow(G, params)
+    G = G or {};
+
+    return ShowWindow(G, params);
+end
+
 function UI.ShowEditWindow(text, callback)
     ShowWindow({
         text = text or "",

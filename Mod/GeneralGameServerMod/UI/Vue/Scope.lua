@@ -154,6 +154,8 @@ function Scope:__ctor__()
     self.__data__ = {};                                 -- 数据表
     self.__length__ = 0;                                -- 列表长度
     self.__scope__ = true;                              -- 是否为Scope
+    self.__metatable__ = self;                          -- 原表
+    self.__parent_metatable__ = nil;                    -- 父原表
     self.__index_callback__ = nil;                      -- 读取回调
     self.__newindex_callback__ = nil;                   -- 写入回调   
     self.__enable_index_callback__ = true;              -- 使能index回调
@@ -207,6 +209,11 @@ function Scope:__call_global_index_callback__(scope, key)
 end
 
 -- 读取回调
+function Scope:__call_self_index_callback__(scope, key)
+    if (type(self.__index_callback__) == "function") then self.__index_callback__(scope, key) end
+end
+
+-- 读取回调
 function Scope:__call_index_callback__(scope, key)
     if (not self.__enable_index_callback__) then return end
 
@@ -215,9 +222,16 @@ function Scope:__call_index_callback__(scope, key)
     -- 值为scope触发本身读索引
     if (self:__is_scope__(val)) then return val:__call_index_callback__(val, nil) end
 
+    -- 触发scope链的读回调
+    local metatable = self;
+    while (metatable) do
+        metatable:__call_self_index_callback__(scope, key);
+        metatable = rawget(metatable.__metatable__, "__parent_metatable__");
+    end
+    -- self:__call_self_index_callback__(scope, key);
+
     -- 触发普通值的读索引
     self:__call_global_index_callback__(scope, key);
-    if (type(self.__index_callback__) == "function") then self.__index_callback__(scope, key) end
 end
 
 -- 设置读取回调
@@ -266,6 +280,10 @@ function Scope:__call_global_newindex_callback__(scope, key, newval, oldval)
     if (type(__global_newindex_callback__) == "function") then __global_newindex_callback__(scope, key, newval, oldval) end
 end
 
+function Scope:__call_self_newindex_callback__(scope, key, newval, oldval)
+    if (type(self.__newindex_callback__) == "function") then self.__newindex_callback__(scope, key, newval, oldval) end
+end
+
 -- 写入回调   
 function Scope:__call_newindex_callback__(scope, key, newval, oldval)
     if (not self.__enable_newindex_callback__) then return end
@@ -283,9 +301,16 @@ function Scope:__call_newindex_callback__(scope, key, newval, oldval)
     -- 旧值为scope触发本身写索引
     if (key and self:__is_scope__(oldval)) then return oldval:__call_newindex_callback__(oldval, nil, newval, oldval) end
     
-    -- 触发普通值的写索引
+    -- 触发scope链的写索引回调
+    local metatable = self;
+    while (metatable) do
+        metatable:__call_self_newindex_callback__(scope, key);
+        metatable = rawget(metatable.__metatable__, "__parent_metatable__");
+    end
+    -- self:__call_self_newindex_callback__(scope, key, newval, oldval);
+
+    -- 触发全局写索引回调
     self:__call_global_newindex_callback__(scope, key, newval, oldval);
-    if (type(self.__newindex_callback__) == "function") then self.__newindex_callback__(scope, key, newval, oldval) end
 end
 
 -- 设置写入回调   
@@ -304,13 +329,19 @@ function Scope:__set__(scope, key, val)
 
     -- 更新值
     local oldval = self.__data__[key];
-    self.__data__[key] = __get_val__(val);
+    local newval = __get_val__(val);
+    self.__data__[key] = newval;
 
     -- 相同直接退出
-    if (oldval == val) then return end
+    if (oldval == newval) then return end
+    
+    if (self:__is_scope__(newval) and newval.__metatable__ ~= self.__metatable__) then 
+        rawset(newval.__metatable__, "__parent_metatable__", self.__metatable__);
+        newval:__call_index_callback__(newval, nil);
+    end
 
     -- 触发更新回调
-    self:__call_newindex_callback__(scope, key, val, oldval);
+    self:__call_newindex_callback__(scope, key, newval, oldval);
 end
 
 -- 获取真实数据
@@ -321,17 +352,17 @@ end
 -- 设置真实数据
 function Scope:__set_data__(data)
     if (type(data) ~= "table") then return end
-    self.__data__ = data;
+    self.__metatable__.__data__ = data;
 end
 
 -- 设置数据
 function Scope:Set(key, val)
-    self:__set__(self.__scope__, key, val);
+    self.__metatable__:__set__(self.__scope__, key, val);
 end
 
 -- 获取数据
 function Scope:Get(key)
-    return self:__get__(self.__scope__, key);
+    return self.__metatable__:__get__(self.__scope__, key);
 end
 
 -- 监控
@@ -343,7 +374,7 @@ end
 
 -- 通知监控
 function Scope:Notify(key)
-    self:__call_newindex_callback__(self.__scope__, key);
+    self.__metatable__:__call_newindex_callback__(self.__scope__, key);
 end
 
 -- 转化为普通对象

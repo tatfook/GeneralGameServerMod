@@ -89,6 +89,10 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
         return self:GetWorld():Logout();
     end
 
+    -- 退出回调
+    local callback = self:GetClient():GetDisconnectionCallBack();
+    if (type(callback) == "function") then callback(username) end
+
     local player = self:GetPlayerManager():GetPlayerByUserName(username);
 
     -- 玩家不存在 直接忽视 
@@ -96,6 +100,8 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
 
     -- 移除玩家
     self:GetPlayerManager():RemovePlayer(player);
+
+    
 
     return;
 end
@@ -509,6 +515,10 @@ function NetClientHandler:Cleanup()
     self:Offline();
 
     PlayerLoginLogoutDebug.Format("main player logout, username = %s", self:GetUserName());
+
+    -- 退出
+    local callback = self:GetClient():GetDisconnectionCallBack();
+    if (type(callback) == "function") then callback() end 
 end
 
 -- 玩家离线状态

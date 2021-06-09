@@ -128,6 +128,9 @@ GetFOV
 SetFOV 
 GetScreenSize 
 GetPickingDist
+GetHomePosition
+GetFacingFromCamera
+GetDirection2DFromCamera
 HighlightPickBlock
 HighlightPickEntity 
 ClearBlockPickDisplay
@@ -153,4 +156,5 @@ ShowWindow
 
 -- Utiltiy API
 Tip
+MessageBox
 ```

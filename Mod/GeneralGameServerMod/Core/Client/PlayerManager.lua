@@ -53,11 +53,7 @@ function PlayerManager:RemovePlayer(entityPlayer)
 end
 
 function PlayerManager:GetPlayerByUserName(username)
-    for key, player in pairs(self.players) do 
-        if (key == username) then
-            return player;
-        end
-    end
+    return self.players[username or ""];
 end
 
 function PlayerManager:GetPlayerByEntityId(entityId)

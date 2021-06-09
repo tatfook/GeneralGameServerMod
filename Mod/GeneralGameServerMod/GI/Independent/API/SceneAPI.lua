@@ -11,6 +11,7 @@ local SceneAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/SceneAPI.
 local SelectionManager = commonlib.gettable("MyCompany.Aries.Game.SelectionManager");
 local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController");
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
+local Direction = commonlib.gettable("MyCompany.Aries.Game.Common.Direction");
 
 local SceneAPI = NPL.export()
 
@@ -160,6 +161,9 @@ setmetatable(
             CodeEnv.SetFOV = SetFOV
             CodeEnv.GetScreenSize = GetScreenSize
             CodeEnv.GetPickingDist = function() return SelectionManager:GetPickingDist() end
+	        CodeEnv.GetHomePosition = GameLogic.GetHomePosition
+            CodeEnv.GetFacingFromCamera = Direction.GetFacingFromCamera
+            CodeEnv.GetDirection2DFromCamera = Direction.GetDirection2DFromCamera
 
             -- mouse pick
             CodeEnv.HighlightPickBlock = HighlightPickBlock

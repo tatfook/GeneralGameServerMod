@@ -24,6 +24,8 @@ ElementManager:RegisterByTagName("Slot", Slot);
 
 local Vue = commonlib.inherit(Window, NPL.export());
 
+Vue.Scope = Scope;
+
 function Vue:ctor()
     self.pages = {};
 end
@@ -83,13 +85,11 @@ function Vue:ExtendG(G)
         return page;
     end
 
-    G.GetGlobalScope = function()
-        if (not rawget(G, "GlobalScope")) then
-            G.GlobalScope = Scope:__new__();
-            G.GlobalScope:__set_metatable_index__(G);
-        end
-        return G.GlobalScope;
-    end
+    local GlobalScope = rawget(G, "GlobalScope");
+    if (not Scope:__is_scope__(GlobalScope)) then GlobalScope = Scope:__new__(GlobalScope) end
+    GlobalScope:__set_metatable_index__(G);
+    rawset(G, "GlobalScope", GlobalScope);
+    G.GetGlobalScope = function() return G.GlobalScope end
 
     G.table = Table;  -- 替换全局table以便支持scope特性
     G.pairs = Table.pairs;

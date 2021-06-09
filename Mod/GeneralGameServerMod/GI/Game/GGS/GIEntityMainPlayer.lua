@@ -16,7 +16,13 @@ function GIEntityMainPlayer:ctor()
     self:SetEnableAssetsWhiteList(false);
 end
 
+-- 是否使用默认用户名显示
+function GIEntityMainPlayer:IsShowHeadOnDisplay()
+    return true;
+end
+
 -- 设置玩家信息
--- function GIEntityMainPlayer:SetPlayerInfo(playerInfo)
--- end
+function GIEntityMainPlayer:SetPlayerInfo(playerInfo)
+    self:UpdateDisplayName(playerInfo.username or "");
+end
 

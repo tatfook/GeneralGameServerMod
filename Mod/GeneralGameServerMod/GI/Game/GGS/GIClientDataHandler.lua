@@ -16,7 +16,6 @@ local GIClientDataHandler = commonlib.inherit(commonlib.gettable("Mod.GeneralGam
 GIClientDataHandler:Property("RecvDataCallBack"); -- 接收数据回调
 
 function GIClientDataHandler:RecvData(data)
-    print("-----------------------------")
     local callback = self:GetRecvDataCallBack();
     if (type(callback) == "function") then callback(data) end
 end

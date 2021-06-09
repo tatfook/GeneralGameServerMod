@@ -77,3 +77,8 @@ end
 function ClearInterval(timer)
     timer:Stop();
 end
+
+-- -- 兼容
+-- function Delay(delay, callback)
+--     return SetTimeout(delay, callback);
+-- end

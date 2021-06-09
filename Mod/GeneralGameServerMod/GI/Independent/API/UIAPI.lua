@@ -9,13 +9,15 @@ local UIAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/UIAPI.lua");
 ------------------------------------------------------------
 ]]
 
+local Scope = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Scope.lua");
 local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua");
-local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
 local UIAPI = NPL.export();
 
 setmetatable(UIAPI, {__call = function(_, CodeEnv)
     local windows = CodeEnv.__windows__;
+
+    CodeEnv.NewScope = function(val) return Scope:__new__(val) end 
 
     CodeEnv.ShowWindow = function(G, params)
         -- 预处理参数

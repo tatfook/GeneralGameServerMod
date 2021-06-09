@@ -371,5 +371,7 @@ end
 
 -- 发送数据包
 function BlockManager:AddToSendQueue(packet)
-	return self:GetWorld():GetNetHandler():AddToSendQueue(packet);
+	local world = self:GetWorld();
+	local netHandler = world and world:GetNetHandler();
+	return netHandler and netHandler:AddToSendQueue(packet);
 end
