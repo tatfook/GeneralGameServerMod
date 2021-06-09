@@ -8,9 +8,9 @@ use the lib:
 local SystemAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/SystemAPI.lua");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)script/Truck/Utility/UTF8String.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 
+
+local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local vector3d = commonlib.gettable("mathlib.vector3d");
 local ShapeAABB = commonlib.gettable("mathlib.ShapeAABB");
@@ -52,6 +52,7 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.unserialize = commonlib.LoadTableFromString;
     CodeEnv.inherit = commonlib.inherit;
 
+	CodeEnv.cmd = function(...) CommandManager:RunCommand(...) end
 
     local Independent = CodeEnv.Independent;
 

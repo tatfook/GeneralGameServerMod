@@ -44,6 +44,9 @@ setmetatable(
             CodeEnv.Tip = Tip
             CodeEnv.CreateParticle = CreateParticle
             CodeEnv.GetParticleSystem = GetParticleSystem
+	        CodeEnv.MessageBox = _guihelper.MessageBox
+
+
         end
     }
 )

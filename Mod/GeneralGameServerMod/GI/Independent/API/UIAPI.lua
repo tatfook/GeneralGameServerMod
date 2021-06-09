@@ -20,7 +20,6 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
     CodeEnv.ShowWindow = function(G, params)
         -- 预处理参数
         params = params or {};
-        params.G = G;
         local key = params.html or params.template or params.url;
         if (not key) then return end
         
@@ -28,6 +27,12 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         if (windows[key] and windows[key]:GetNativeWindow()) then windows[key]:CloseWindow() end
         local window = (not IsDevEnv and windows[key]) and windows[key] or Vue:new();
         windows[key] = window;
+
+        -- 指定默认参数
+        params.G = G;
+        params.draggable = if_else(params.draggable == nil, false, params.draggable);  -- 默认不支持拖拽
+        params.width = params.width or (IsDevEnv and "80%" or "100%");
+        params.height = params.height or (IsDevEnv and "80%" or "100%");
 
         -- 显示窗口
         window:Show(params);

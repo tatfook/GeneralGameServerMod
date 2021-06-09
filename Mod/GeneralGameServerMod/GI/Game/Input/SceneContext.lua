@@ -24,12 +24,11 @@ function SceneContext:ctor()
 	self:EnableAutoCamera(true);
 end
 
-function SceneContext:handleMouseEvent(event)
-    SceneContext._super.handleMouseEvent(self, event);
-
-    local callback = self:GetMouseEventCallBack();
-    if (type(callback) == "function") then callback(event) end
-end
+-- function SceneContext:handleMouseEvent(event)
+--     SceneContext._super.handleMouseEvent(self, event);
+--     local callback = self:GetMouseEventCallBack();
+--     if (type(callback) == "function") then callback(event) end
+-- end
 
 function SceneContext:mousePressEvent(event)
     SceneContext._super.mousePressEvent(self, event);
@@ -59,12 +58,11 @@ function SceneContext:mouseWheelEvent(event)
     if (type(callback) == "function") then callback(event) end
 end
 
-function SceneContext:handleKeyEvent(event)
-    SceneContext._super.handleKeyEvent(self, event);
-
-    local callback = self:GetKeyEventCallBack();
-    if (type(callback) == "function") then callback(event) end
-end
+-- function SceneContext:handleKeyEvent(event)
+--     SceneContext._super.handleKeyEvent(self, event);
+--     -- local callback = self:GetKeyEventCallBack();
+--     -- if (type(callback) == "function") then callback(event) end
+-- end
 
 function SceneContext:keyPressEvent(event)
     SceneContext._super.keyPressEvent(self, event);

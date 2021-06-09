@@ -8,26 +8,27 @@ use the lib:
 local EntityAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/EntityAPI.lua");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua")
-local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager")
+local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
--- local EntityNPCOnline NPL.load("../../Game/Entity/EntityNPCOnline.lua");
+local EntityNPC = NPL.load("../../Game/Entity/EntityNPC.lua", IsDevEnv);
 
 local EntityAPI = NPL.export()
 
-local function CreateNPC(CodeEnv, ...)
-    local npc = EntityNPCOnline:Create(...)
+local __code_env__ = nil;
+
+local function CreateNPC(...)
+    local npc = EntityNPC:Create(...)
     npc:Attach()
-    table.insert(CodeEnv.__entities__, npc)
+    table.insert(__code_env__.__entities__, npc)
     return npc
 end
 
-local function CreateEntity(CodeEnv, bx, by, bz, path, canBeCollied)
-    NPL.load("scrtip/Truck/Game/Entity/EntityCustom.lua")
-    local EntityCustom = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityCustom")
-    local entity = EntityCustom:Create({bx = bx, by = by, bz = bz, mModel = path or "", mEnablePhysics = canBeCollied})
-    table.insert(CodeEnv.__entities__, entity)
-    return entity
+local function CreateEntity(bx, by, bz, path, canBeCollied)
+    -- NPL.load("scrtip/Truck/Game/Entity/EntityCustom.lua")
+    -- local EntityCustom = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityCustom")
+    -- local entity = EntityCustom:Create({bx = bx, by = by, bz = bz, mModel = path or "", mEnablePhysics = canBeCollied})
+    -- table.insert(__code_env__.__entities__, entity)
+    -- return entity
 end
 
 local function getEntity(id)
@@ -106,19 +107,17 @@ setmetatable(
     EntityAPI,
     {
         __call = function(_, CodeEnv)
+            __code_env__ = CodeEnv
+
             CodeEnv.GetAllEntities = EntityManager.GetAllEntities
             CodeEnv.GetEntityById = EntityManager.GetEntityById
             CodeEnv.GetEntitiesInBlock = EntityManager.GetEntitiesInBlock
             CodeEnv.GetEntityBlockPos = GetEntityBlockPos
             CodeEnv.SetEntityBlockPos = SetEntityBlockPos
             CodeEnv.EnableEntityPicked = EntityManager.EnableEntityPicked
+            CodeEnv.CreateNPC = CreateNPC
 
-            CodeEnv.CreateNPC = function(...)
-                return CreateNPC(CodeEnv, ...)
-            end
-            CodeEnv.CreateEntity = function(bx, by, bz, path, canBeCollied)
-                return CreateEntity(CodeEnv, bx, by, bz, path, canBeCollied)
-            end
+            -- CodeEnv.CreateEntity = CreateEntity;
         end
     }
 )

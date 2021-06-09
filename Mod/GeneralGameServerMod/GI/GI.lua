@@ -13,6 +13,7 @@ NPL.load("(gl)script/ide/headon_speech.lua");
 NPL.load("(gl)script/ide/math/vector.lua");
 NPL.load("(gl)script/ide/math/ShapeAABB.lua");
 NPL.load("(gl)script/ide/math/bit.lua");
+NPL.load("(gl)script/Truck/Utility/UTF8String.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/Direction.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Physics/PhysicsWorld.lua");
@@ -24,6 +25,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/blocks/block_types.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/Files.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Commands/CommandManager.lua");
 
 -- 加载粒子系统
 -- NPL.load("./Game/ParticleSystem/ParticleHeader");

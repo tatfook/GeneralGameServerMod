@@ -45,8 +45,9 @@ function CodeEnv:InstallAPI(api)
 end
 
 function CodeEnv:Init(Independent)
+	self.IsDevEnv = IsDevEnv;
     self.Independent = Independent;
-	self.dcall = Independent.Call
+	self.dcall = function(...) Independent:Call(...) end
 
 	SceneAPI(self);
 	PlayerAPI(self);
@@ -65,5 +66,10 @@ function CodeEnv:Clear()
 	-- 关闭相关窗口
 	for _, window in pairs(self.__windows__) do
 		window:CloseWindow();
+	end
+
+	-- 移除 Entity
+	for _, entity in pairs(self.__entities__) do
+		entity:SetDead();
 	end
 end

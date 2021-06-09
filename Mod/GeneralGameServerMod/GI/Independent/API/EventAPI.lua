@@ -30,6 +30,8 @@ local EventType = {
     KEY = "key",
     KEY_DOWN = "key_down",
     KEY_UP = "key_up",
+
+    MOUSE_KEY = "mouse_key", -- 鼠标和按键
 }
 
 local function RegisterEventCallBack(CodeEnv, eventType, callback)
@@ -95,6 +97,18 @@ local function Emit(eventName, ...)
     TriggerEventCallBack(__code_env__, GetUserEventName(eventName), ...);
 end
 
+local function DefaultKeyPressCallBack(event)
+    if (event:accept()) then return end 
+
+    if (event.shift_pressed and event.keyname == "DIK_F5") then
+        __code_env__.Independent:Stop();
+    end
+end
+
+local function DefaultKeyReleaseCallBack(event)
+    if (event:accept()) then return end 
+end
+
 setmetatable(EventAPI, {
     __call = function(_, CodeEnv)
         __code_env__ = CodeEnv;
@@ -114,13 +128,45 @@ setmetatable(EventAPI, {
         CodeEnv.IsKeyDown = IsKeyDown;
 
         local SceneContext = CodeEnv.SceneContext;
-        SceneContext:SetMouseEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) end);
-        SceneContext:SetMousePressEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE_DOWN, ...) end);
-        SceneContext:SetMouseMoveEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE_MOVE, ...) end);
-        SceneContext:SetMouseReleaseEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE_UP, ...) end);
-        SceneContext:SetMouseWheelEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.MOUSE_WHEEL, ...) end);
-        SceneContext:SetKeyEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.KEY, ...) end);
-        SceneContext:SetKeyPressEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.KEY_DOWN, ...) end);
-        SceneContext:SetKeyReleaseEventCallBack(function(...) TriggerEventCallBack(CodeEnv, EventType.KEY_UP, ...) end);
+        -- SceneContext:SetMouseEventCallBack(function(...) 
+        --     TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
+        --     TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+        -- end);
+        SceneContext:SetMousePressEventCallBack(function(...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_DOWN, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+        end);
+        SceneContext:SetMouseMoveEventCallBack(function(...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_MOVE, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+        end);
+        SceneContext:SetMouseReleaseEventCallBack(function(...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_UP, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+        end);
+        SceneContext:SetMouseWheelEventCallBack(function(...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_WHEEL, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+        end);
+        -- SceneContext:SetKeyEventCallBack(function(...) 
+        --     TriggerEventCallBack(CodeEnv, EventType.KEY, ...) 
+        --     TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+        -- end);
+        SceneContext:SetKeyPressEventCallBack(function(...) 
+            TriggerEventCallBack(CodeEnv, EventType.KEY_DOWN, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.KEY, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            DefaultKeyPressCallBack(...);
+        end);
+        SceneContext:SetKeyReleaseEventCallBack(function(...) 
+            TriggerEventCallBack(CodeEnv, EventType.KEY_UP, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.KEY, ...) 
+            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            DefaultKeyReleaseCallBack(...);
+        end);
     end
 });

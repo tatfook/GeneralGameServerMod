@@ -182,7 +182,7 @@ function Window:CloseWindow()
     self:SetNativeWindow(nil);
     self:SetVisible(false);
     local G = self:GetG();
-    if (G and type(G.OnClose) == "function") then G.OnClose() end
+    if (G and type(G.OnClose) == "function") then G.OnClose(G) end
 end
 
 function Window:Init3DWindowPosition()
