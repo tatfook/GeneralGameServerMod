@@ -366,7 +366,8 @@ function loadMap()
     local count = 1
     for i = board.x1, board.x2 do
         for j = board.y2, board.y1 do
-            SetBlock(i, j, board.z1, temp[count].id, temp[count].data)
+            -- SetBlock(i, j, board.z1, temp[count].id, temp[count].data)
+            SetBlock(i, j, board.z1, 62);
             count = count + 1
         end
     end
