@@ -114,6 +114,16 @@ GetPlayerEntityId
 IsInWater
 IsInAir
 SetPlayerVisible
+GetPlayerInventory
+GetHandToolIndex
+SetHandToolIndex 
+CreateItemStack 
+SetItemStackInHand
+GetItemStackInHand
+SetItemStackToScene
+GetItemStackFromInventory 
+SetItemStackToInventory 
+RemoveItemFromInventory 
 
 -- Scene API
 SwitchOrthoView

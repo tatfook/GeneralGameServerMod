@@ -18,6 +18,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Common/Direction.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Physics/PhysicsWorld.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityMovable.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityItem.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityNPC.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/SelectionManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/World/CameraController.lua");

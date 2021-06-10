@@ -51,6 +51,14 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.serialize = commonlib.serialize
     CodeEnv.unserialize = commonlib.LoadTableFromString;
     CodeEnv.inherit = commonlib.inherit;
+    CodeEnv.getfield = function(key) return commonlib.getfield(key, CodeEnv) end 
+    CodeEnv.setfield = function(key, val) return commonlib.setfield(key, val, CodeEnv) end 
+    CodeEnv.gettable = function(key) return commonlib.gettable(key, CodeEnv) end 
+    CodeEnv.settable = function(key, val) return commonlib.settable(key, val, CodeEnv) end 
+    CodeEnv.deepcopy = commonlib.deepcopy
+    CodeEnv.copy = commonlib.copy
+    CodeEnv.partialcopy = commonlib.partialcopy
+    CodeEnv.mincopy = commonlib.mincopy
 
 	CodeEnv.cmd = function(...) CommandManager:RunCommand(...) end
 
