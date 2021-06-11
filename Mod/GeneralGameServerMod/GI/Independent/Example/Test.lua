@@ -1,6 +1,7 @@
 
 
 local Log = require("Log");
-
+print("---------1")
 Log:Info("hello world")
-info("--------")
+sleep(2000);
+log("--------")

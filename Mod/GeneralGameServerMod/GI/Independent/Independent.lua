@@ -19,8 +19,16 @@ Independent:Property("Running", false, "IsRunning");  -- 是否在运行
 Independent:Property("LoopTimer");                    -- 循环定时器
 local LoopTickCount = 20;                             -- 定时器频率
 
-function Independent:ctor()
+local function null_function() end 
 
+function Independent:ctor()
+	-- 创建执行协同程序
+	self.__co__ = coroutine.create(function(callback, arg1, arg2, arg3, arg4) 
+		while(type(callback) == "function") do
+			callback(arg1, arg2, arg3, arg4); 
+			callback, arg1, arg2, arg3, arg4 = coroutine.yield();
+		end
+	end);
 end
 
 -- 初始化函数 
@@ -71,12 +79,21 @@ function Independent.Load(files)
 	end
 end
 
-function Independent:Call(func, ...)
+-- 手机版不支持 table.pack 函数 暂时限定最多传4个参数
+function Independent:Call(func, arg1, arg2, arg3, arg4)
 	if (type(func) ~= "function") then return false end
-
-	return xpcall(func, function (err) 
-		GGS.INFO("Independent:Call:Error", err);
-	end, ...);
+	local co = coroutine.running();
+	local ok, err = nil, nil;
+	if (co == self.__co__) then 
+		ok, err = pcall(func, arg1, arg2, arg3, arg4);
+	else
+		ok, err = self:Resume(func, arg1, arg2, arg3, arg4);
+	end
+	if (not ok) then print("Independent:Call:Error", err) end
+	return ok;
+	-- return xpcall(func, function (err) 
+	-- 	GGS.INFO("Independent:Call:Error", err);
+	-- end, ...);
 end
 
 function Independent:CallEventCallBack(eventType)
@@ -90,10 +107,36 @@ function Independent:CallEventCallBack(eventType)
 	end
 end
 
+function Independent:Sleep(sleep)
+	self.__sleep__ = ParaGlobal.timeGetTime() + sleep;
+	self:Yield();
+end
+
+function Independent:Awake()
+	if (not self.__sleep__) then return true end
+
+	local curtime = ParaGlobal.timeGetTime();
+	if (curtime < self.__sleep__) then return false end
+	
+	self:Resume(null_function);
+
+	self.__sleep__ = nil;
+	
+	return true;
+end
+
+function Independent:Yield(...)
+	self:Call(coroutine.yield(...));
+end
+
+function Independent:Resume(...)
+	return coroutine.resume(self.__co__, ...);
+end
+
 function Independent:Start()
 	if (self:IsRunning()) then return end
 	
-	print("====================Independent:Start=====================");
+	-- print("====================Independent:Start=====================");
 	-- 激活上下文环境
 	local CodeEnv = self:GetCodeEnv();
 	CodeEnv.SceneContext:activate();
@@ -118,7 +161,11 @@ end
 
 function Independent:Tick()
 	local CodeEnv = self:GetCodeEnv();
-	
+	if (not CodeEnv) then return end
+
+	-- 如果在sleep中则直接跳过
+	if (not self:Awake()) then return end
+
 	-- 触发定时回调
 	self:CallEventCallBack(CodeEnv.EventType.LOOP);
 
@@ -129,9 +176,15 @@ end
 
 function Independent:Stop()
 	local CodeEnv = self:GetCodeEnv();
-	if (not CodeEnv) then return end
-	
-	print("====================Independent:Stop=====================");
+	if (not CodeEnv or not self:IsRunning()) then return end
+	-- print("====================Independent:Stop=====================");
+
+	self:SetRunning(false);
+
+	if (self:GetLoopTimer()) then
+		self:GetLoopTimer():Change();
+		self:SetLoopTimer(nil);
+	end
 
 	self:CallEventCallBack(CodeEnv.EventType.CLEAR);
 
@@ -140,16 +193,12 @@ function Independent:Stop()
 	end
 
 	GameLogic.ActivateDefaultContext();
-
-	if (self:GetLoopTimer()) then
-		self:GetLoopTimer():Change();
-		self:SetLoopTimer(nil);
-	end
 	
 	CodeEnv:Clear();
 
-	self:SetRunning(false);
+	self:SetCodeEnv(nil);
 
+	self:Resume();  -- 使用空值退出协同程序
 	-- collectgarbage("collect");
 end
 

@@ -54,7 +54,8 @@ end
 function CodeEnv:Init(Independent)
     self.Independent = Independent;
 	self.dcall = function(...) Independent:Call(...) end
-
+	self.sleep = function(ms) Independent:Sleep(ms) end
+	
 	SceneAPI(self);
 	PlayerAPI(self);
 	SystemAPI(self);

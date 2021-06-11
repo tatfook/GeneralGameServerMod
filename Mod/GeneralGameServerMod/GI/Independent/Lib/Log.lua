@@ -51,14 +51,15 @@ local function __log__(module, level, depth, ...)
 
     filepos = string.sub(filepos, 1, 256);
 
-    Print(string.format("\n[%s %s][%s][%s][%s BEGIN]", dateStr, timeStr, module, filepos, level));
+    -- Print(string.format("\n[%s %s][%s][%s][%s BEGIN]", dateStr, timeStr, module, filepos, level));
+    Print(string.format("[%s %s][%s][%s][%s]", dateStr, timeStr, module, filepos, level));
 
     for i = 1, select('#', ...) do      -->获取参数总数
         local arg = select(i, ...);     -->函数会返回多个值
         Print(arg);                 -->打印参数
     end  
 
-    Print(string.format("[%s %s][%s][%s][%s END]", dateStr, timeStr, module, filepos, level));
+    -- Print(string.format("[%s %s][%s][%s][%s END]", dateStr, timeStr, module, filepos, level));
 end
 
 function Log:SetLevel(level)
