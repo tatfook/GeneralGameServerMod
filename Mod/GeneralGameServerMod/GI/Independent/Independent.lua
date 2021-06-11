@@ -65,7 +65,7 @@ function Independent:LoadFile(filename)
 	if errormsg then
 		return GGS.INFO("Independent:LoadFile LoadString Failed", Helper.FormatFilename(filename), errormsg);
 	end
-	
+
 	-- 设置代码环境
 	setfenv(code_func, self:GetCodeEnv());
 	
@@ -135,8 +135,8 @@ end
 
 function Independent:Start()
 	if (self:IsRunning()) then return end
-	
-	-- print("====================Independent:Start=====================");
+	print("====================Independent:Start=====================");
+
 	-- 激活上下文环境
 	local CodeEnv = self:GetCodeEnv();
 	CodeEnv.SceneContext:activate();
@@ -177,7 +177,7 @@ end
 function Independent:Stop()
 	local CodeEnv = self:GetCodeEnv();
 	if (not CodeEnv or not self:IsRunning()) then return end
-	-- print("====================Independent:Stop=====================");
+	print("====================Independent:Stop=====================");
 
 	self:SetRunning(false);
 
