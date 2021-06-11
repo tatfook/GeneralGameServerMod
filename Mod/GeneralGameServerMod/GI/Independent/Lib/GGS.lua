@@ -8,6 +8,7 @@ use the lib:
 local GGS = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/GGS.lua");
 ------------------------------------------------------------
 ]]
+local State = require("State");
 
 local GGS = inherit(ToolBase, module("GGS"));
 

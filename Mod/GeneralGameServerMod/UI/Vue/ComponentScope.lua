@@ -54,7 +54,7 @@ end
 
 function ComponentScope:Watch(varname, callback)
     local scope = self:GetScope();
-    scope:__get_scope_metatable__().Watch(scope, varname, callback);
+    scope:Watch(varname, callback);
 end
 
 function ComponentScope:SetArguments(...)

@@ -45,8 +45,7 @@ setmetatable(
             CodeEnv.CreateParticle = CreateParticle
             CodeEnv.GetParticleSystem = GetParticleSystem
 	        CodeEnv.MessageBox = _guihelper.MessageBox
-
-
+            CodeEnv.GetLogTimeString = commonlib.log.GetLogTimeString
         end
     }
 )

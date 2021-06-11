@@ -1,12 +1,12 @@
 --[[
-Title: Scope
-Author(s): wxa
-Date: 2020/6/30
-Desc: 插槽组件
+Title: Timer
+Author(s):  wxa
+Date: 2021-06-01
+Desc: 
 use the lib:
--------------------------------------------------------
-local Scope = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Scope.lua");
--------------------------------------------------------
+------------------------------------------------------------
+local Scope = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/Scope.lua");
+------------------------------------------------------------
 ]]
 
 local __global_index_callback__ = nil;
@@ -19,6 +19,11 @@ local __is_support_pairs_meta_method__ = false;
 local __is_support_ipairs_meta_method__ = false;
 pairs(setmetatable({}, {__pairs = function() __is_support_pairs_meta_method__ = true end}));
 ipairs(setmetatable({}, {__ipairs = function() __is_support_ipairs_meta_method__ = true end}));
+
+
+local __global_newindex_list__ = {};                       -- 通知列表
+local __is_activated__ = false;                            -- 是否已激活通知文件
+local __activate_filename__ = "__is_actived_notify__";     -- 激活通知文件
 
 
 local function Inherit(baseClass, inheritClass)
@@ -59,6 +64,7 @@ local function Inherit(baseClass, inheritClass)
 end
 
 local Scope = Inherit(nil, NPL.export());
+
 -- 基础函数
 Scope.__inherit__ = Inherit;
 -- 是否支持__len
@@ -92,6 +98,7 @@ function Scope:__new__(obj)
     if (self:__is_scope__(obj)) then return obj end
 
     local metatable = self:___new___();
+
     -- 获取值
     metatable.__index = function(scope, key)
         return metatable:__get__(scope, key);
@@ -140,6 +147,7 @@ function Scope:__new__(obj)
     end
     metatable.__enable_index_callback__ = true;
     metatable.__enable_newindex_callback__ = true;
+
     -- 新建触发一次读取
     metatable:__call_index_callback__(scope, nil);
 
@@ -153,21 +161,15 @@ function Scope:__ctor__()
     self.__id__ = scopeId ;
     self.__data__ = {};                                 -- 数据表
     self.__length__ = 0;                                -- 列表长度
-    self.__scope__ = true;                              -- 是否为Scope
-    self.__metatable__ = self;                          -- 原表
+    self.__scope__ = self;                              -- 是否为Scope
+    self.__metatable__ = self;                          -- scope 原表
     self.__parent_metatable__ = nil;                    -- 父原表
+    self.__key__ = nil;                                 -- 在父scope中key
     self.__index_callback__ = nil;                      -- 读取回调
     self.__newindex_callback__ = nil;                   -- 写入回调   
     self.__enable_index_callback__ = true;              -- 使能index回调
     self.__enable_newindex_callback__ = true;           -- 使能newindex回调
     self.__watch__ = {};
-    -- print("--------------------------scope:__ctor__-------------------------------");
-    -- 内置可读写属性
-    self.__inner_can_set_attrs__ = {
-        __newindex_callback__ = true,
-        __index_callback__ = true,
-        __metatable_index__ = true,
-    }
 end
 
 -- 初始化
@@ -181,26 +183,30 @@ function Scope:__is_scope__(scope)
 end
 
 -- 获取scope元表
-function Scope:__get_scope_metatable__()
+function Scope:__get_metatable__()
     return self.__metatable__;
 end
 
--- 是否可以设置
-function Scope:__is_inner_attr__(key)
-    return (self.__data__[key] == nil and self.__metatable__[key] ~= nil) or self.__inner_can_set_attrs__[key];
+-- 获取 Keys
+function Scope:__get_keys__(key)
+    local keys = {};
+    local metatable = self.__metatable__;
+
+    if (key ~= nil) then table.insert(keys, 1, key) end
+    while (metatable and metatable.__key__) do
+        table.insert(keys, 1, metatable.__key__);
+        metatable = metatable.__parent_metatable__;
+    end
+
+    return keys;
 end
 
 function Scope:__set_metatable_index__(__metatable_index__)
-    self.__metatable_index__ = __metatable_index__;
+    self.__metatable__.__metatable_index__ = __metatable_index__;
 end
 
 function Scope:__get_metatable_index__()
-    return self.__metatable_index__;
-end
-
--- 是否是scope更新
-function Scope:__is_list_index__(key)
-    return type(key) == "number" and key >= 1 and key <= (#self.__data__ + 1);
+    return self.__metatable__.__metatable_index__;
 end
 
 -- 全局读取回调
@@ -208,17 +214,23 @@ function Scope:__call_global_index_callback__(scope, key)
     if (type(__global_index_callback__) == "function") then __global_index_callback__(scope, key) end
 end
 
+-- 设置读取回调
+function Scope:__set_index_callback__(__index__)
+    self.__metatable__.__index_callback__ = __index__;
+end
+
 -- 读取回调
 function Scope:__call_self_index_callback__(scope, key)
-    if (type(self.__index_callback__) == "function") then self.__index_callback__(scope, key) end
+    if (type(self.__metatable__.__index_callback__) == "function") then self.__metatable__.__index_callback__(scope, key) end
 end
 
 -- 读取回调
 function Scope:__call_index_callback__(scope, key)
-    if (not self.__enable_index_callback__) then return end
+    if (not self.__metatable__.__enable_index_callback__) then return end
 
-    local val = key and self.__data__[key];
+    -- print("__call_index_callback__", scope, key);
 
+    local val = key and self.__metatable__.__data__[key];
     -- 值为scope触发本身读索引
     if (self:__is_scope__(val)) then return val:__call_index_callback__(val, nil) end
 
@@ -226,53 +238,32 @@ function Scope:__call_index_callback__(scope, key)
     local metatable = self;
     while (metatable) do
         metatable:__call_self_index_callback__(scope, key);
-        metatable = rawget(metatable.__metatable__, "__parent_metatable__");
+        metatable = metatable.__parent_metatable__;
     end
-    -- self:__call_self_index_callback__(scope, key);
 
     -- 触发普通值的读索引
     self:__call_global_index_callback__(scope, key);
 end
 
--- 设置读取回调
-function Scope:__set_index_callback__(__index__)
-    self.__index_callback__ = __index__;
-end
-
--- 设置数字属性
-function Scope:__set_by_index__(scope, index, value)
-    -- print(__is_support_len_meta_method__, scope, index, value);
-    if (__is_support_len_meta_method__) then
-        self.__data__[index] = __get_val__(value);
-    else
-        rawset(scope, index, __get_val__(value));
-    end
-
-    self:__call_newindex_callback__(scope, nil, scope, scope);
-end
-
--- 获取数字属性
-function Scope:__get_by_index__(scope, index)
-    self:__call_index_callback__(scope, nil);  -- 针对列表触发列表整体更新
-    return if_else(__is_support_len_meta_method__, self.__data__[index], rawget(scope, index));
-end
-
 -- 获取键值
 function Scope:__get__(scope, key)
-    if (type(key) == "number") then return self:__get_by_index__(scope, key) end
+    if (key == "__metatable__") then return self.__metatable__ end
+    if (self.__metatable__[key] ~= nil) then return self.__metatable__[key] end
 
-    -- 内置属性直接返回
-    if (self:__is_inner_attr__(key)) then return self[key] end
+    if (type(key) == "number") then 
+        self:__call_index_callback__(scope, nil);  -- 针对列表触发列表整体更新
+        return if_else(__is_support_len_meta_method__, self.__metatable__.__data__[key], rawget(scope, key));
+    end
 
     -- 触发回调
     self:__call_index_callback__(scope, key);
 
     -- 返回数据值
-    if (self.__data__[key]) then return self.__data__[key] end
+    if (self.__metatable__.__data__[key]) then return self.__metatable__.__data__[key] end
 
     -- 返回用户自定的读取
-    if (type(self.__metatable_index__) == "table") then return self.__metatable_index__[key] end
-    if (type(self.__metatable_index__) == "function") then return self.__metatable_index__(scope, key) end
+    if (type(self.__metatable__.__metatable_index__) == "table") then return self.__metatable__.__metatable_index__[key] end
+    if (type(self.__metatable__.__metatable_index__) == "function") then return self.__metatable__.__metatable_index__(scope, key) end
 end
 
 -- 写入回调   
@@ -281,33 +272,33 @@ function Scope:__call_global_newindex_callback__(scope, key, newval, oldval)
 end
 
 function Scope:__call_self_newindex_callback__(scope, key, newval, oldval)
-    if (type(self.__newindex_callback__) == "function") then self.__newindex_callback__(scope, key, newval, oldval) end
+    if (type(self.__metatable__.__newindex_callback__) == "function") then self.__metatable__.__newindex_callback__(scope, key, newval, oldval) end
 end
 
 -- 写入回调   
 function Scope:__call_newindex_callback__(scope, key, newval, oldval)
-    if (not self.__enable_newindex_callback__) then return end
+    if (not self.__metatable__.__enable_newindex_callback__) then return end
 
     -- print("__call_newindex_callback__", scope, key);
 
-    -- 触发监控回调
-    local watch = key and self.__watch__[key];
-    if (watch) then
-        for _, func in pairs(watch) do
-            func(newval, oldval);
+    -- 触发监控回调 会触发依赖死循环应通过事件触发
+    if (key ~= nil) then 
+        __global_newindex_list__[#__global_newindex_list__ + 1] = {scope = scope, key};
+        if (not __is_activated__) then
+            __is_activated__ = true;
+            NPL.activate(__activate_filename__);
         end
-    end
+    end 
 
     -- 旧值为scope触发本身写索引
     if (key and self:__is_scope__(oldval)) then return oldval:__call_newindex_callback__(oldval, nil, newval, oldval) end
     
     -- 触发scope链的写索引回调
-    local metatable = self;
+    local metatable = self.__metatable__;
     while (metatable) do
         metatable:__call_self_newindex_callback__(scope, key);
-        metatable = rawget(metatable.__metatable__, "__parent_metatable__");
+        metatable = metatable.__parent_metatable__;
     end
-    -- self:__call_self_newindex_callback__(scope, key, newval, oldval);
 
     -- 触发全局写索引回调
     self:__call_global_newindex_callback__(scope, key, newval, oldval);
@@ -315,38 +306,48 @@ end
 
 -- 设置写入回调   
 function Scope:__set_newindex_callback__(__newindex__)
-    self.__newindex_callback__ = __newindex__;
+    self.__metatable__.__newindex_callback__ = __newindex__;
 end
 
 -- 设置键值
 function Scope:__set__(scope, key, val)
-    if (type(key) == "number") then return self:__set_by_index__(scope, key, val) end
-    
-    if (self:__is_inner_attr__(key)) then
-        if (self.__inner_can_set_attrs__[key]) then self[key] = val end
-        return;
-    end
+    -- print("----__set__----", scope, key, val);
 
-    -- 更新值
-    local oldval = self.__data__[key];
+    if (self.__metatable__[key] ~= nil) then return print("built in properties cannot be set") end
+
+    local oldval = nil;
     local newval = __get_val__(val);
-    self.__data__[key] = newval;
+    local isListIndex = type(key) == "number";
+
+    -- 获取旧值更新新值
+    if (not isListIndex or __is_support_len_meta_method__) then
+        oldval = self.__metatable__.__data__[key];
+        self.__metatable__.__data__[key] = newval;
+    else
+        oldval = rawget(scope, key);
+        rawset(scope, key, newval);
+    end
 
     -- 相同直接退出
     if (oldval == newval) then return end
     
+    -- 新值为scope 不为当前scope(scope.key = scope) 则更改其父scope
     if (self:__is_scope__(newval) and newval.__metatable__ ~= self.__metatable__) then 
-        rawset(newval.__metatable__, "__parent_metatable__", self.__metatable__);
-        newval:__call_index_callback__(newval, nil);
+        newval.__metatable__.__parent_metatable__ = self.__metatable__;
+        newval.__metatable__.__key__ = key;
     end
 
     -- 触发更新回调
-    self:__call_newindex_callback__(scope, key, newval, oldval);
+    if (isListIndex) then
+        self:__call_newindex_callback__(scope, nil, scope, scope);      -- 为数字则更新整个列表对象
+    else
+        self:__call_newindex_callback__(scope, key, newval, oldval);    -- 否则更新指定值
+    end
 end
 
 -- 获取真实数据
 function Scope:__get_data__()
-    return self.__data__;
+    return self.__metatable__.__data__;
 end
 
 -- 设置真实数据
@@ -367,8 +368,9 @@ end
 
 -- 监控
 function Scope:Watch(key, func)
-    local watch = self.__watch__[key] or {};
-    self.__watch__[key] = watch;
+    if (type(func) ~= "function") then return end
+    local watch = self.__metatable__.__watch__[key] or {};
+    self.__metatable__.__watch__[key] = watch;
     watch[func] = func;
 end
 
@@ -379,12 +381,37 @@ end
 
 -- 转化为普通对象
 function Scope:ToPlainObject()
-    local __data__ = self.__data__;
+    local __data__ = self.__metatable__.__data__;
     if (not __is_support_len_meta_method__) then
-        for index, val in ipairs(self.__scope__) do
+        for index, val in ipairs(self.__metatable__.__scope__) do
             __data__[index] = val;
         end
     end
-
     return __data__;
+end
+
+local __list__ = {};
+NPL.this(function()
+    -- print("清除依赖更新队列 结束: ", ClearDependItemUpdateQueueCount);
+    -- print("--------------------trigger  notify----------------------");
+    __is_activated__ = false;
+    local size = #__global_newindex_list__;
+    for i = 1, size do
+        __list__[i] = __global_newindex_list__[i];
+        __global_newindex_list__[i] = nil;
+    end
+    for i = 1, size do
+        local item = __list__[i];
+        item.scope:Notify(item.key);
+    end
+end, {filename = __activate_filename__});
+
+-- 测试
+function Scope.Test()
+    print("----------begin test------------")
+
+    local scope = Scope:__new__();
+
+    scope.key = 1;
+    print("----------end test------------")
 end

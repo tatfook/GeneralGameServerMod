@@ -41,8 +41,10 @@ end
 
 function Independent:LoadInnerModule()
 	local func = loadstring([[
-Timer = require("Timer");
-Scene = require("Scene");
+local Log = require("Log");
+local State = require("State");
+local Timer = require("Timer");
+local Scene = require("Scene");
 	]]);
 	setfenv(func, self:GetCodeEnv());
 	self:Call(func); 
@@ -51,9 +53,9 @@ end
 function Independent:LoadFile(filename)
 	local text = Helper.ReadFile(filename);
 	if (not text or text == "") then return end
-	local code_func, errormsg = loadstring(text, filename);
+	local code_func, errormsg = loadstring(text, "loadstring:" .. Helper.FormatFilename(filename));
 	if errormsg then
-		return GGS.INFO("Independent:LoadFile LoadString Failed", filename, errormsg);
+		return GGS.INFO("Independent:LoadFile LoadString Failed", Helper.FormatFilename(filename), errormsg);
 	end
 	
 	-- 设置代码环境

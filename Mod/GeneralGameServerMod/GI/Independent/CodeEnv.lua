@@ -9,6 +9,8 @@ local CodeEnv = NPL.load("Mod/GeneralGameServerMod/GI/Independent/CodeEnv.lua");
 ------------------------------------------------------------
 ]]
 
+local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
+
 local Event = NPL.load("../Game/Input/Event.lua", IsDevEnv);
 local TickEvent = NPL.load("../Game/Input/TickEvent.lua", IsDevEnv);
 local SceneContext = NPL.load("../Game/Input/SceneContext.lua", IsDevEnv);
@@ -24,6 +26,11 @@ local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
 local GGSAPI = NPL.load("./API/GGSAPI.lua", IsDevEnv);
 
 local CodeEnv = commonlib.inherit(nil, NPL.export());
+
+CodeEnv.IsDevEnv = IsDevEnv;
+CodeEnv.Vue = Vue;
+CodeEnv.Debug = GGS.Debug;
+CodeEnv.DebugStack = DebugStack;
 
 CodeEnv.SceneContext = SceneContext;
 CodeEnv.Event = Event;
@@ -45,7 +52,6 @@ function CodeEnv:InstallAPI(api)
 end
 
 function CodeEnv:Init(Independent)
-	self.IsDevEnv = IsDevEnv;
     self.Independent = Independent;
 	self.dcall = function(...) Independent:Call(...) end
 

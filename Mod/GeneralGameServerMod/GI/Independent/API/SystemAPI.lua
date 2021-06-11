@@ -30,12 +30,15 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.error = error;
     CodeEnv.rawset = rawset;
     CodeEnv.rawget = rawget;
+    CodeEnv.select = select;
     CodeEnv.pcall = pcall;
     CodeEnv.xpcall = xpcall;
     CodeEnv.setmetatable = setmetatable;
     CodeEnv.getmetatable = getmetatable;
     CodeEnv.format = string.format;
-    
+    CodeEnv.upper = string.upper;
+    CodeEnv.lower = string.lower;
+
     -- lua class
     CodeEnv.coroutine = coroutine;
     CodeEnv.string = string;
@@ -80,8 +83,8 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
         return CodeEnv.__modules__[name];
     end
 
-    CodeEnv.module = function(name)
-        CodeEnv.__modules__[name] = CodeEnv.__modules__[name] or {};
+    CodeEnv.module = function(name, module)
+        CodeEnv.__modules__[name] = CodeEnv.__modules__[name] or module or {};
 		return CodeEnv.__modules__[name];
     end
 

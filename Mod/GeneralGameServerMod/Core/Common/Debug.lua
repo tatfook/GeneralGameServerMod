@@ -11,6 +11,7 @@ local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua");
 
 local Debug = NPL.export()
 
+local __default_depth__ = 4;
 -- 模块使能映射
 local ModuleLogEnableMap = {
     FATAL = true,
@@ -86,13 +87,10 @@ local function ToString(val, key)
 
     return text;
 end
-Debug.ToString = ToString;
 
 local function LocationInfo(level)
-	if not level then level = 1 end
 	local res = "";
-	level = level+1;
-	local info = debug.getinfo(level, "nSl")
+	local info = debug.getinfo(level or 1, "nSl")
 	
 	if not info then return res end
 	
@@ -114,14 +112,19 @@ local function LocationInfo(level)
 	return res;
 end
 
+Debug.ToString = ToString;
+Debug.Print = Print;
+Debug.LocationInfo = LocationInfo;
+
 local function DebugCall(module, ...)
     CheckLogFile();
 
     module = FormatModuleName(module);
+    local debug = ModelDebug[module];
 
     if (ModuleLogEnableMap[module] == false or (not IsDevEnv and not ModuleLogEnableMap[module])) then return end
     local dateStr, timeStr = commonlib.log.GetLogTimeString();
-    local filepos = LocationInfo(3);
+    local filepos = LocationInfo(debug and debug.__depth__ or __default_depth__);
     filepos = string.sub(filepos, 1, 256);
     Print(string.format("\n[%s %s][%s][%s][DEBUG BEGIN]", dateStr, timeStr, module, filepos));
 
@@ -179,7 +182,9 @@ function Debug.GetModuleDebug(module)
     
     if (ModelDebug[module]) then return ModelDebug[module] end
 
-    local obj = {};
+    local obj = {
+        __depth__ = __default_depth__,  -- 调用深度
+    };
     local counts = {};   -- 数量控制
 
     -- 设置指定日志输出次数
@@ -208,7 +213,7 @@ function Debug.GetModuleDebug(module)
         counts[key] = counts[key] or 1;
         counts[key] = counts[key] - 1;
 
-        DebugCall(...);
+        DebugCall(module,...);
     end
 
     function obj.Format(...)

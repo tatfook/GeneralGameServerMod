@@ -219,20 +219,23 @@ end
 -- 解析脚本节点
 function Component:InitByScriptNode(scriptNodes)
     if (not scriptNodes) then return end
+    local filename = nil;
     for _, scriptNode in ipairs(scriptNodes) do
         local scriptFile = scriptNode.attr and scriptNode.attr.src;
         local scriptText = scriptNode[1] or "";
+        filename = Helper.FormatFilename(self.filename);
         scriptText = string.gsub(scriptText, "^%s*", "");
         if (scriptText ~= "") then
-            scriptText = "-- " .. Helper.FormatFilename(self.filename) .. "\n" .. scriptText;        -- 第一行作为文件名 方便日志输出
-            self:ExecCode(scriptText);
+            scriptText = "-- " .. filename .. "\n" .. scriptText;        -- 第一行作为文件名 方便日志输出
+            self:ExecCode(scriptText, filename);
         end
     
         local fileScriptText = Helper.ReadFile(scriptFile) or "";
+        filename = Helper.FormatFilename(scriptFile);
         fileScriptText = string.gsub(fileScriptText, "^%s*", "");
         if (fileScriptText ~= "") then
-            fileScriptText = "-- " .. Helper.FormatFilename(scriptFile) .. "\n" .. fileScriptText;   -- 第一行作为文件名 方便日志输出
-            self:ExecCode(fileScriptText);
+            fileScriptText = "-- " .. filename .. "\n" .. fileScriptText;   -- 第一行作为文件名 方便日志输出
+            self:ExecCode(fileScriptText, filename);
        end
     end
 end
@@ -294,9 +297,9 @@ function Component:GetRef(ref)
 end
 
 -- 执行代码
-function Component:ExecCode(code) 
+function Component:ExecCode(code, filename) 
     if (type(code) ~= "string" or code == "") then return end
-    local func, errmsg = loadstring(code);
+    local func, errmsg = loadstring(code, "loadstring:" .. (filename or ""));
     if (not func) then return ComponentDebug("===============================Exec Code Error=================================", errmsg, code) end
 
     setfenv(func, self:GetScope());

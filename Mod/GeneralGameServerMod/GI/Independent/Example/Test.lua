@@ -1,2 +1,6 @@
 
-CreateBlockPieces(62, 19191,5,19198);
+
+local Log = require("Log");
+
+Log:Info("hello world")
+info("--------")
