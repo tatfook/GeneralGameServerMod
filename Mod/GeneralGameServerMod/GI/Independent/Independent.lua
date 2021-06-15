@@ -21,29 +21,53 @@ local LoopTickCount = 20;                             -- 定时器频率
 
 local function null_function() end 
 
+function Independent:Pack(args, ...)
+	args = type(args) == "table" and args or {};
+    args.n = select("#", ...);
+	for i = 1, 20 do args[i] = nil end
+    for i = 1, args.n do
+        args[i] = select(i, ...);
+    end
+    return args;
+end
+
+function Independent:Select(index, args)
+	index = index or 1;
+    return args[index], args[index + 1], args[index + 2], args[index + 3], args[index + 4], args[index + 5], args[index + 6], args[index + 7], args[index + 8], args[index + 9];
+end
+
 function Independent:ctor()
-	-- 创建执行协同程序
-	self.__co__ = coroutine.create(function(callback, arg1, arg2, arg3, arg4) 
-		while(type(callback) == "function") do
-			callback(arg1, arg2, arg3, arg4); 
-			callback, arg1, arg2, arg3, arg4 = coroutine.yield();
-		end
-	end);
 end
 
 -- 初始化函数 
 function Independent:Init()
 	-- 先清除
 	self:Stop();
+
 	-- 设置环境
 	self:SetCodeEnv(setmetatable({}, {__index = CodeEnv:new():Init(self)}));
+
 	-- 重置定时器
 	self:SetLoopTimer(commonlib.Timer:new({callbackFunc = function()
 		Independent:Tick();
 	end}));
-	-- 加载内置模块
-	self:LoadInnerModule();
 
+	-- 创建执行协同程序
+	local __args__ = {};
+	self.__co__ = coroutine.create(function(...)
+		self:Pack(__args__, ...);
+		local callback = self:Select(1, __args__);
+		while(type(callback) == "function") do
+			self:XPCall(callback, self:Select(2, __args__));
+			self:Pack(__args__, coroutine.yield());
+			callback = self:Select(1, __args__);
+		end
+	end);
+
+	-- 加载内置模块
+	self.__files__ = {};
+	self:LoadInnerModule();
+	
 	return self;
 end
 
@@ -59,6 +83,10 @@ local Scene = require("Scene");
 end
 
 function Independent:LoadFile(filename)
+	for i = 1, #self.__files__ do
+		if (self.__files__[i] == filename) then return end
+	end
+
 	local text = Helper.ReadFile(filename);
 	if (not text or text == "") then return end
 	local code_func, errormsg = loadstring(text, "loadstring:" .. Helper.FormatFilename(filename));
@@ -66,34 +94,40 @@ function Independent:LoadFile(filename)
 		return GGS.INFO("Independent:LoadFile LoadString Failed", Helper.FormatFilename(filename), errormsg);
 	end
 
+	-- print("LoadFile:", filename)
 	-- 设置代码环境
 	setfenv(code_func, self:GetCodeEnv());
 	
 	-- 执行代码
 	self:Call(code_func);
+
+	self.__files__[#self.__files__ + 1] = filename;
 end
 
-function Independent.Load(files)
+function Independent:Load(files)
 	for _, filename in ipairs(files) do
 		self:LoadFile(filename);
 	end
 end
 
--- 手机版不支持 table.pack 函数 暂时限定最多传4个参数
-function Independent:Call(func, arg1, arg2, arg3, arg4)
-	if (type(func) ~= "function") then return false end
-	local co = coroutine.running();
-	local ok, err = nil, nil;
-	if (co == self.__co__) then 
-		ok, err = pcall(func, arg1, arg2, arg3, arg4);
+function Independent:XPCall(callback, ...)
+	return xpcall(callback, function (err) 
+		GGS.INFO("Independent:Call:Error", err);
+		DebugStack();
+		self:Stop();
+	end, ...);
+end
+
+function Independent:Call(...)
+	local callback = select(1, ...);
+	if (type(callback) ~= "function") then return false end
+	local ok = nil;
+	if (self:IsCodeEnv()) then 
+		ok = self:XPCall(callback, select(2));
 	else
-		ok, err = self:Resume(func, arg1, arg2, arg3, arg4);
+		ok = self:Resume(...);
 	end
-	if (not ok) then print("Independent:Call:Error", err) end
-	return ok;
-	-- return xpcall(func, function (err) 
-	-- 	GGS.INFO("Independent:Call:Error", err);
-	-- end, ...);
+	if (not ok) then self:Stop() end
 end
 
 function Independent:CallEventCallBack(eventType)
@@ -101,28 +135,30 @@ function Independent:CallEventCallBack(eventType)
 	local __event_callback__ = CodeEnv.__event_callback__[eventType];
 	if (not __event_callback__) then return end
 	for _, callback in pairs(__event_callback__) do
-		if (not self:Call(callback)) then
-			self:Stop();
-		end
+		self:Call(callback);
 	end
 end
 
-function Independent:Sleep(sleep)
-	self.__sleep__ = ParaGlobal.timeGetTime() + sleep;
-	self:Yield();
+function Independent:IsCodeEnv()
+	local co = coroutine.running();
+	return self.__co__ == co;
 end
 
-function Independent:Awake()
-	if (not self.__sleep__) then return true end
+function Independent:Sleep(sleep)
+	if (not self:IsCodeEnv()) then return end 
 
-	local curtime = ParaGlobal.timeGetTime();
-	if (curtime < self.__sleep__) then return false end
-	
-	self:Resume(null_function);
+	local CodeEnv = self:GetCodeEnv();
+	local SleepLoopCallBack = nil;
+	local sleepTo = ParaGlobal.timeGetTime() + sleep;
+	local isSleeping = true;
+	local function SleepLoopCallBack()
+		local curtime = ParaGlobal.timeGetTime();
+		isSleeping = curtime < sleepTo;
+	end
 
-	self.__sleep__ = nil;
-	
-	return true;
+	CodeEnv.RegisterEventCallBack(CodeEnv.EventType.LOOP, SleepLoopCallBack);
+	while (isSleeping) do self:Yield() end
+	CodeEnv.RemoveEventCallBack(CodeEnv.EventType.LOOP, SleepLoopCallBack);
 end
 
 function Independent:Yield(...)
@@ -131,6 +167,14 @@ end
 
 function Independent:Resume(...)
 	return coroutine.resume(self.__co__, ...);
+end
+
+function Independent:Restart()
+	local __files__ = self.__files__;
+	self:Stop();
+	self:Init();
+	self:Load(__files__);
+	self:Start();
 end
 
 function Independent:Start()
@@ -145,12 +189,7 @@ function Independent:Start()
 	self:CallEventCallBack(CodeEnv.EventType.MAIN);
 
 	-- 调用 快捷方式 MAIN
-	if (type(rawget(CodeEnv, "main")) == "function") then
-		if (not self:Call(CodeEnv.main)) then 
-			self:Stop();
-			return ;
-		end
-	end
+	self:Call(rawget(CodeEnv, "main"));
 
 	-- 开始定时器
 	self:GetLoopTimer():Change(LoopTickCount, LoopTickCount);
@@ -163,15 +202,11 @@ function Independent:Tick()
 	local CodeEnv = self:GetCodeEnv();
 	if (not CodeEnv) then return end
 
-	-- 如果在sleep中则直接跳过
-	if (not self:Awake()) then return end
-
 	-- 触发定时回调
 	self:CallEventCallBack(CodeEnv.EventType.LOOP);
 
 	-- 触发 LOOP 快捷回调
-	if (type(rawget(CodeEnv, "loop")) ~= "function") then return end
-	if (not self:Call(CodeEnv.loop, CodeEnv.TickEvent:Init())) then self:Stop() end
+	self:Call(rawget(CodeEnv, "loop"));
 end
 
 function Independent:Stop()

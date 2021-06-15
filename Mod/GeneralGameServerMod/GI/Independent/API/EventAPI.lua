@@ -34,16 +34,16 @@ local EventType = {
     MOUSE_KEY = "mouse_key", -- 鼠标和按键
 }
 
-local function RegisterEventCallBack(CodeEnv, eventType, callback)
+local function RegisterEventCallBack(eventType, callback)
     if (type(callback) ~= "function" or type(eventType) ~= "string") then return end 
-    CodeEnv.__event_callback__[eventType] = CodeEnv.__event_callback__[eventType] or {};
-    CodeEnv.__event_callback__[eventType][tostring(callback)] = callback;
+    __code_env__.__event_callback__[eventType] = __code_env__.__event_callback__[eventType] or {};
+    __code_env__.__event_callback__[eventType][tostring(callback)] = callback;
 end
 
-local function RemoveEventCallBack(CodeEnv, callback)
+local function RemoveEventCallBack(eventType, callback)
     if (type(callback) ~= "function" or type(eventType) ~= "string") then return end 
-    CodeEnv.__event_callback__[eventType] = CodeEnv.__event_callback__[eventType] or {};
-    CodeEnv.__event_callback__[eventType][tostring(callback)] = nil;
+    __code_env__.__event_callback__[eventType] = __code_env__.__event_callback__[eventType] or {};
+    __code_env__.__event_callback__[eventType][tostring(callback)] = nil;
 end
 
 -- local function MouseEventCallBack(event)
@@ -70,9 +70,9 @@ end
 -- local function KeyReleaseEventCallBack(event)
 -- end
 
-local function TriggerEventCallBack(CodeEnv, eventType, ...)
-    local Independent = CodeEnv.Independent;
-    local callbackMap = CodeEnv.__event_callback__[eventType] or {};
+local function TriggerEventCallBack(eventType, ...)
+    local Independent = __code_env__.Independent;
+    local callbackMap = __code_env__.__event_callback__[eventType] or {};
     for _, callback in pairs(callbackMap) do 
         Independent:Call(callback, ...);
     end
@@ -100,8 +100,10 @@ end
 local function DefaultKeyPressCallBack(event)
     if (event:accept()) then return end 
 
-    if (event.shift_pressed and event.keyname == "DIK_F5") then
+    if (event.ctrl_pressed and event.keyname == "DIK_Q") then
         __code_env__.Independent:Stop();
+    elseif (event.ctrl_pressed and event.keyname == "DIK_R") then
+        __code_env__.Independent:Restart();
     end
 end
 
@@ -114,11 +116,11 @@ setmetatable(EventAPI, {
         __code_env__ = CodeEnv;
 
         CodeEnv.EventType = EventType;
-        CodeEnv.RegisterTimerCallBack = function(...) return RegisterEventCallBack(CodeEnv, EventType.LOOP, ...) end
-        CodeEnv.RemoveTimerCallBack = function(...) return RemoveEventCallBack(CodeEnv, EventType.LOOP, ...) end
-        CodeEnv.RegisterEventCallBack = function(...) return RegisterEventCallBack(CodeEnv, ...) end
-        CodeEnv.RemoveEventCallBack = function(...) return RemoveEventCallBack(CodeEnv, ...) end
-        CodeEnv.TriggerEventCallBack = function(...) return TriggerEventCallBack(CodeEnv, ...) end 
+        CodeEnv.RegisterTimerCallBack = function(callback) RegisterEventCallBack(EventType.LOOP, callback) end
+        CodeEnv.RemoveTimerCallBack = function(callback) RemoveEventCallBack(EventType.LOOP, callback) end 
+        CodeEnv.RegisterEventCallBack = RegisterEventCallBack;
+        CodeEnv.RemoveEventCallBack = RemoveEventCallBack;
+        CodeEnv.TriggerEventCallBack = TriggerEventCallBack;
         
         -- 用户事件机制
         CodeEnv.On = On;
@@ -129,43 +131,43 @@ setmetatable(EventAPI, {
 
         local SceneContext = CodeEnv.SceneContext;
         -- SceneContext:SetMouseEventCallBack(function(...) 
-        --     TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
-        --     TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+        --     TriggerEventCallBack(EventType.MOUSE, ...) 
+        --     TriggerEventCallBack(EventType.MOUSE_KEY, ...) 
         -- end);
         SceneContext:SetMousePressEventCallBack(function(...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_DOWN, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            TriggerEventCallBack(EventType.MOUSE_DOWN, ...) 
+            TriggerEventCallBack(EventType.MOUSE, ...) 
+            TriggerEventCallBack(EventType.MOUSE_KEY, ...) 
         end);
         SceneContext:SetMouseMoveEventCallBack(function(...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_MOVE, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            TriggerEventCallBack(EventType.MOUSE_MOVE, ...) 
+            TriggerEventCallBack(EventType.MOUSE, ...) 
+            TriggerEventCallBack(EventType.MOUSE_KEY, ...) 
         end);
         SceneContext:SetMouseReleaseEventCallBack(function(...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_UP, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            TriggerEventCallBack(EventType.MOUSE_UP, ...) 
+            TriggerEventCallBack(EventType.MOUSE, ...) 
+            TriggerEventCallBack(EventType.MOUSE_KEY, ...) 
         end);
         SceneContext:SetMouseWheelEventCallBack(function(...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_WHEEL, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            TriggerEventCallBack(EventType.MOUSE_WHEEL, ...) 
+            TriggerEventCallBack(EventType.MOUSE, ...) 
+            TriggerEventCallBack(EventType.MOUSE_KEY, ...) 
         end);
         -- SceneContext:SetKeyEventCallBack(function(...) 
-        --     TriggerEventCallBack(CodeEnv, EventType.KEY, ...) 
-        --     TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+        --     TriggerEventCallBack(EventType.KEY, ...) 
+        --     TriggerEventCallBack(EventType.MOUSE_KEY, ...) 
         -- end);
         SceneContext:SetKeyPressEventCallBack(function(...) 
-            TriggerEventCallBack(CodeEnv, EventType.KEY_DOWN, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.KEY, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            TriggerEventCallBack(EventType.KEY_DOWN, ...) 
+            TriggerEventCallBack(EventType.KEY, ...) 
+            TriggerEventCallBack(EventType.MOUSE_KEY, ...) 
             DefaultKeyPressCallBack(...);
         end);
         SceneContext:SetKeyReleaseEventCallBack(function(...) 
-            TriggerEventCallBack(CodeEnv, EventType.KEY_UP, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.KEY, ...) 
-            TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            TriggerEventCallBack(EventType.KEY_UP, ...) 
+            TriggerEventCallBack(EventType.KEY, ...) 
+            TriggerEventCallBack(EventType.MOUSE_KEY, ...) 
             DefaultKeyReleaseCallBack(...);
         end);
     end

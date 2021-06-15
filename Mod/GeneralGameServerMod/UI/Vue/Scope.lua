@@ -248,6 +248,8 @@ end
 -- 获取键值
 function Scope:__get__(scope, key)
     if (key == "__metatable__") then return self.__metatable__ end
+    if (key == "__scope__") then return self.__metatable__.__scope__ end 
+    
     if (self.__metatable__[key] ~= nil) then return self.__metatable__[key] end
 
     if (type(key) == "number") then 
@@ -283,7 +285,7 @@ function Scope:__call_newindex_callback__(scope, key, newval, oldval)
 
     -- 触发监控回调 会触发依赖死循环应通过事件触发
     if (key ~= nil) then 
-        __global_newindex_list__[#__global_newindex_list__ + 1] = {scope = scope, key};
+        __global_newindex_list__[#__global_newindex_list__ + 1] = {scope = scope, key = key, newval = newval, oldval = oldval};
         if (not __is_activated__) then
             __is_activated__ = true;
             NPL.activate(__activate_filename__);
@@ -296,7 +298,7 @@ function Scope:__call_newindex_callback__(scope, key, newval, oldval)
     -- 触发scope链的写索引回调
     local metatable = self.__metatable__;
     while (metatable) do
-        metatable:__call_self_newindex_callback__(scope, key);
+        metatable:__call_self_newindex_callback__(scope, key, newval, oldval);
         metatable = metatable.__parent_metatable__;
     end
 
@@ -375,8 +377,12 @@ function Scope:Watch(key, func)
 end
 
 -- 通知监控
-function Scope:Notify(key)
-    self.__metatable__:__call_newindex_callback__(self.__scope__, key);
+function Scope:Notify(key, newval, oldval)
+    local watch = self.__metatable__.__watch__[key];
+    if (not watch) then return end
+    for _, func in pairs(watch) do
+        watch(if_else(newval == nil, self.__scope__[key], newval), oldval);
+    end
 end
 
 -- 转化为普通对象
@@ -402,7 +408,7 @@ NPL.this(function()
     end
     for i = 1, size do
         local item = __list__[i];
-        item.scope:Notify(item.key);
+        item.scope:Notify(item.key, item.newval, item.oldval);
     end
 end, {filename = __activate_filename__});
 

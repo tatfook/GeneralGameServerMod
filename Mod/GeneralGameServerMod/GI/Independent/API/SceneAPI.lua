@@ -12,6 +12,7 @@ local SelectionManager = commonlib.gettable("MyCompany.Aries.Game.SelectionManag
 local CameraController = commonlib.gettable("MyCompany.Aries.Game.CameraController");
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local Direction = commonlib.gettable("MyCompany.Aries.Game.Common.Direction");
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 
 local SceneAPI = NPL.export()
 
@@ -131,6 +132,10 @@ local function CameraZoomInOut(cam_dist)
     attr:SetField("CameraObjectDistance", cam_dist);
 end	
 
+local function SetCameraLookAtBlockPos(bx, by, bz)
+    local x, y, z = BlockEngine:ConvertToRealPosition_float(bx, by, bz);
+    ParaCamera.SetLookAtPos(x, y, z);
+end
 local function GetFOV()
     return CameraController.GetFov();
 end
@@ -156,6 +161,7 @@ setmetatable(
             CodeEnv.GetCameraMode = GetCameraMode
             CodeEnv.GetCameraRotation = GetCameraRotation
             CodeEnv.SetCameraRotation = SetCameraRotation
+            CodeEnv.SetCameraLookAtBlockPos = SetCameraLookAtBlockPos
             CodeEnv.CameraZoomInOut = CameraZoomInOut
             CodeEnv.GetFOV = GetFOV
             CodeEnv.SetFOV = SetFOV

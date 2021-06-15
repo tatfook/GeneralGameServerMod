@@ -19,11 +19,14 @@ local SoundManager = commonlib.gettable("MyCompany.Aries.Game.Sound.SoundManager
 local HttpFiles = commonlib.gettable("MyCompany.Aries.Game.Common.HttpFiles");
 
 local List = NPL.load("./List.lua", IsDevEnv);
+local Table = NPL.load("./Table.lua", IsDevEnv);
 
 local CommonLib = NPL.export();
+
 _G.CommonLib = CommonLib;
 
 CommonLib.List = List;
+CommonLib.Table = Table;
 
 function CommonLib.PlayVoiceText(text, speed, lang, callback)
     local function finish(...) 

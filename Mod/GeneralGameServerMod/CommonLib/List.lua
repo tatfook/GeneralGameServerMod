@@ -5,7 +5,7 @@ Date: 2020-06-12
 Desc: 列表相关操作
 use the lib:
 ------------------------------------------------------------
-local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+local List = NPL.load("Mod/GeneralGameServerMod/CommonLib/List.lua");
 ------------------------------------------------------------
 ]]
 

@@ -60,12 +60,20 @@ end
 __state__:__set_index_callback__(StateIndexCallBack);
 __state__:__set_newindex_callback__(StateNewIndexCallBack);
 
+function State:GetScope()
+    return __state__;
+end
+
+function State:IsScope(scope)
+    return __state__:__is_scope__(scope);
+end
+
 function State:Set(key, val)
     set(key, val);
 end
 
 function State:Get(key)
-    get(key);
+    return get(key);
 end
 
 function State:Watch(key, callback)

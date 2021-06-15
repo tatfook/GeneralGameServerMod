@@ -10,6 +10,7 @@ local CodeEnv = NPL.load("Mod/GeneralGameServerMod/GI/Independent/CodeEnv.lua");
 ]]
 
 local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua", IsDevEnv);
 
 local Event = NPL.load("../Game/Input/Event.lua", IsDevEnv);
 local TickEvent = NPL.load("../Game/Input/TickEvent.lua", IsDevEnv);
@@ -35,9 +36,12 @@ CodeEnv.DebugStack = DebugStack;
 CodeEnv.SceneContext = SceneContext;
 CodeEnv.Event = Event;
 CodeEnv.TickEvent = TickEvent;
+CodeEnv.Unpack = CommonLib.Table.Unpack;
+CodeEnv.Pack = CommonLib.Table.Pack;
 
 function CodeEnv:ctor()
 	self._G = self;
+	self.__env__ = self;          -- 快捷方式
 
 	self.__modules__ = {};        -- 模块
 	self.__windows__ = {};        -- 窗口
