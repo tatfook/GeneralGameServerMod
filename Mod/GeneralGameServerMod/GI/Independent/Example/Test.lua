@@ -1,8 +1,12 @@
 
 
-print("--------------212-")
-EnableAutoCamera(false)
-SetCameraLookAtBlockPos(19180,4,19199)
+
+RegisterEventCallBack(EventType.KEY_DOWN, function(event)
+	local keyname = event.keyname;
+	print(keyname);
+	if (keyname == "DIK_A" or keyname == "DIK_LEFT") then
+	end
+end)
 
 -- print(GetPlayer():GetBlockPos())
 -- local Log = require("Log");

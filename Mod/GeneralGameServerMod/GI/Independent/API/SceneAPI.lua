@@ -15,6 +15,7 @@ local Direction = commonlib.gettable("MyCompany.Aries.Game.Common.Direction");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 
 local SceneAPI = NPL.export()
+local __code_env__ = nil;
 
 local last_select_entity = nil;
 local last_select_block = {};
@@ -150,10 +151,35 @@ local function GetScreenSize()
     return width_screen, height_screen;
 end
 
+-- 最大值为20
+local function SetCameraObjectDistance(distance)
+    ParaCamera.GetAttributeObject():SetField("CameraObjectDistance", distance);
+    -- GameLogic.options:SetCameraObjectDistance(dist);
+end
+local function GetCameraObjectDistance()
+	return ParaCamera.GetAttributeObject():GetField("CameraObjectDistance", 8);
+    -- return GameLogic.options:GetCameraObjectDistance();
+end
+-- 相机角度 X 轴旋转 90 垂直地平面
+local function SetCameraLiftupAngle(angle)   
+    angle = angle * math.pi / 180;
+    ParaCamera.GetAttributeObject():SetField("CameraLiftupAngle", angle);
+end
+-- Y 轴旋转 -90 x, z 常规笛卡尔坐标系
+local function SetCameraFacing(facing)
+	facing = facing * math.pi / 180;
+    ParaCamera.GetAttributeObject():SetField("CameraRotY", facing);
+end
+local function GetCameraFacing()
+    local facing = ParaCamera.GetAttributeObject():GetField("CameraRotY");
+    return facing / math.pi * 180;
+end
+
 setmetatable(
     SceneAPI,
     {
         __call = function(_, CodeEnv)
+            __code_env__ = CodeEnv;
             CodeEnv.SwitchOrthoView = ParaCamera.SwitchOrthoView
             CodeEnv.SwitchPerspectiveView = ParaCamera.SwitchPerspectiveView
             CodeEnv.EnableAutoCamera = function(...) return CodeEnv.SceneContext:EnableAutoCamera(...) end
@@ -170,6 +196,11 @@ setmetatable(
 	        CodeEnv.GetHomePosition = GameLogic.GetHomePosition
             CodeEnv.GetFacingFromCamera = Direction.GetFacingFromCamera
             CodeEnv.GetDirection2DFromCamera = Direction.GetDirection2DFromCamera
+            CodeEnv.SetCameraObjectDistance = SetCameraObjectDistance
+            CodeEnv.GetCameraObjectDistance = GetCameraObjectDistance
+            CodeEnv.SetCameraLiftupAngle = SetCameraLiftupAngle
+            CodeEnv.SetCameraFacing = SetCameraFacing
+            CodeEnv.GetCameraFacing = GetCameraFacing
 
             -- mouse pick
             CodeEnv.HighlightPickBlock = HighlightPickBlock
@@ -182,3 +213,5 @@ setmetatable(
         end
     }
 )
+
+
