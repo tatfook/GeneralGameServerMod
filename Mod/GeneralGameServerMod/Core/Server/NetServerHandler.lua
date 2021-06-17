@@ -32,9 +32,13 @@ NetServerHandler:Property("DataHandler");                              -- 数据
 
 local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
+local DataHandler = nil;
+
 local function GetDataHandler(netHandler)
-    local DataHandler = NPL.load(Config.DataHandler.filename) or ServerDataHandler;
-    return DataHandler:new():Init(netHandler);
+    if (DataHandler) then return DataHandler end 
+    local DataHandlerClass = NPL.load(Config.DataHandler.filename) or ServerDataHandler;
+    DataHandler = DataHandlerClass:new():Init(netHandler);
+    return DataHandler;
 end
 
 function NetServerHandler:ctor() 

@@ -19,6 +19,6 @@ end
 function OnWindowSizeChange(value)
     local width, height = string.match(value, "(%d+)[Xx](%d+)");
     if (type(_G.OnWindowSizeChange) == "function") then
-        _G.OnWindowSizeChange(tonumber(width), tonumber(height));
+        _G.OnWindowSizeChange(tonumber(width) + 4, tonumber(height) + 42);
     end
 end

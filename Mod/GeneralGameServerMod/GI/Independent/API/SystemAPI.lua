@@ -17,11 +17,52 @@ local ShapeAABB = commonlib.gettable("mathlib.ShapeAABB");
 
 local SystemAPI = NPL.export();
 
+local Table = {concat = table.concat};
+local function IsScope(t)
+    return type(t) == "table" and t.__scope__;
+end
+function Table.insert(t, i, v)
+    if (IsScope(t)) then
+        t:Insert(i, v);
+    else
+        if (v == nil) then i, v = #t + 1, i end
+        table.insert(t, i, v);
+    end
+end
+function Table.remove(t, i)
+    if (IsScope(t)) then
+        t:Remove(i);
+    else
+        table.remove(t, i);
+    end
+end
+function Table.sort(t, comp)
+    if (IsScope(t)) then
+        t:Sort(comp);
+    else
+        table.sort(t, comp);
+    end
+end
+local function Pairs(t)
+    if (IsScope(t)) then
+        return t:Pairs();
+    else
+        return pairs(t);
+    end
+end
+local function IPairs(t)
+    if (IsScope(t)) then
+        return t:IPairs();
+    else
+        return ipairs(t);
+    end
+end
+
 setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.print = print;
-    CodeEnv.ipairs = ipairs;
     CodeEnv.next = next;
-    CodeEnv.pairs = pairs;
+    CodeEnv.pairs = Pairs;
+    CodeEnv.ipairs = IPairs;
     CodeEnv.pcall = pcall;
     CodeEnv.tonumber = tonumber;
     CodeEnv.tostring = tostring;
@@ -42,7 +83,7 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     -- lua class
     CodeEnv.coroutine = coroutine;
     CodeEnv.string = string;
-    CodeEnv.table = table;
+    CodeEnv.table = Table;
     CodeEnv.math = math;
     CodeEnv.os = os;
     

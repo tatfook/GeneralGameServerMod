@@ -11,13 +11,26 @@ local AppServerDataHandler = NPL.load("Mod/GeneralGameServerMod/App/Server/AppSe
 
 -- 数据处理基类
 local ServerDataHandler = NPL.load("Mod/GeneralGameServerMod/Core/Server/ServerDataHandler.lua");
-
+local GIServerDataHandler = NPL.load("Mod/GeneralGameServerMod/GI/Game/GGS/GIServerDataHandler.lua");
 -- 数据处理导出类
 local AppServerDataHandler = commonlib.inherit(ServerDataHandler, NPL.export());
+
+function AppServerDataHandler:Init(netHandler)
+    GIServerDataHandler:SetNetHandler(netHandler);
+
+	self:SetNetHandler(netHandler);
+
+	return self;
+end
 
 -- 收到数据处理函数
 function AppServerDataHandler:RecvData(data)
 	-- GGS.DEBUG("AppServerConnection", data);
+
+	local handler = type(data) == "table" and data.__handler__;
+	if (handler == GIServerDataHandler:GetHandlerName()) then
+		return GIServerDataHandler:RecvData(data);
+	end
 
 	self:SendDataToAllPlayer(data);
 

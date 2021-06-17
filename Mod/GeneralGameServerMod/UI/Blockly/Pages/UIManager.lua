@@ -44,7 +44,7 @@ local function LoadUIFiles(directory)
 end
 
 local function OnWorldLoaded()
-    local directory = CommonLib.ToCanonicalFilePath(ParaIO.GetCurDirectory(0) .. ParaWorld.GetWorldDirectory() .. "/blockly/ui/");
+    local directory = CommonLib.ToCanonicalFilePath(CommonLib.GetWorldDirectory() .. "/blockly/ui/");
     if (directory == WorldUIDirectory) then return end
     --保存目录    
     WorldUIDirectory = directory;
@@ -56,15 +56,14 @@ local function OnWorldUnloaded()
 end
 
 function UIManager.StaticInit()
-    if (inited) then return BlockManager end
+    if (inited) then return UIManager end
     inited = true;
-
     GameLogic:Connect("WorldLoaded", nil, OnWorldLoaded, "UniqueConnection");
     GameLogic:Connect("WorldUnloaded", nil, OnWorldUnloaded, "UniqueConnection");
     
     OnWorldLoaded();
 
-    return BlockManager;
+    return UIManager;
 end
 
 function UIManager.GetUIByFileName(filename)

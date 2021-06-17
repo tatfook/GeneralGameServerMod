@@ -219,11 +219,20 @@ function Element:GetNextSiblingElement()
 end
 
 -- 获取元素位置
-function Element:GetChildElementPos(childElement)
-    for i, child in ipairs(self.childrens) do 
-        if (child == childElement) then return i end 
+function Element:GetChildElementIndex(childElement)    
+    local index = 0;
+    for _, child in ipairs(self.childrens) do 
+        if (child:IsExist()) then index = index + 1 end
+        if (child == childElement) then return index end 
     end
     return 0;
+end
+
+-- 获取元素位置
+function Element:GetIndexInParentElement()
+    local parentElement = self:GetParentElement();
+    if (not parentElement) then return 0 end
+    return parentElement:GetChildElementIndex(self);
 end
 
 -- 添加子元素
@@ -268,7 +277,7 @@ end
 
 -- 替换子元素
 function Element:ReplaceChildElement(oldElement, newElement)
-    local pos = self:GetChildElementPos(oldElement);
+    local pos = self:GetChildElementIndex(oldElement);
     if (pos == 0) then return end
     oldElement:Detach();
     oldElement:SetParentElement(nil);

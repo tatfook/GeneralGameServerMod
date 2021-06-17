@@ -333,8 +333,8 @@ function GeneralGameClient:ConnectControlServer()
     self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
-            _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
-            return GGS.INFO("无法连接控制器服务器");
+            -- _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");
+            return GGS.INFO("GGS Connect Failed: 无法连接控制器服务器");
         end
 
         self:SelectServerAndWorld();

@@ -137,6 +137,9 @@ local function SetCameraLookAtBlockPos(bx, by, bz)
     local x, y, z = BlockEngine:ConvertToRealPosition_float(bx, by, bz);
     ParaCamera.SetLookAtPos(x, y, z);
 end
+local function SetCameraLookAtPos(x, y, z)
+    ParaCamera.SetLookAtPos(x, y, z);
+end
 local function GetFOV()
     return CameraController.GetFov();
 end
@@ -188,6 +191,7 @@ setmetatable(
             CodeEnv.GetCameraRotation = GetCameraRotation
             CodeEnv.SetCameraRotation = SetCameraRotation
             CodeEnv.SetCameraLookAtBlockPos = SetCameraLookAtBlockPos
+            CodeEnv.SetCameraLookAtPos = SetCameraLookAtPos
             CodeEnv.CameraZoomInOut = CameraZoomInOut
             CodeEnv.GetFOV = GetFOV
             CodeEnv.SetFOV = SetFOV

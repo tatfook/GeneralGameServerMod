@@ -57,11 +57,23 @@ function GGS:GetState()
     return GGS_State;
 end
 
+function GGS:Get(key, default_value)
+    return GGS_State:Get(key, default_value)
+end
+
+function GGS:Set(key, value)
+    return GGS_State:Set(key, value)
+end
+
 function GGS:Connect(callback)
     GGS_Connect(function()
         isConnecting = true;
-        GGS_Send({action = "join", username = username});
-
+        GGS_Send({
+            action = "join", 
+            username = username,
+            state = GGS_State:ToPlainObject(),
+        });
+        players[username] = {username = username, join_time = GetTime()};
         callback = callback or self:GetConnectCallBack();
         if (type(callback) == "function") then callback() end
     end);
@@ -72,7 +84,13 @@ function GGS:IsConnecting()
 end
 
 function GGS:Send(data)
+    if (not isConnecting) then return end 
     return GGS_Send(data);
+end
+
+function GGS:SendTo(username, data)
+    if (not isConnecting) then return end 
+    return GGS_SendTo(username, data);
 end
 
 function GGS:Disconnect()
@@ -83,6 +101,9 @@ function GGS:OnRecv(callback)
     self:SetRecvCallBack(callback);
 end
 
+function GGS:OnDisconnect(callback)
+end
+
 function GGS:GetAllPlayer()
     return players;
 end
@@ -91,8 +112,10 @@ function GGS:GetPlayer(username)
     return players[username or ""];
 end
 
+
 local function SyncState(data)
-    echo(data, true);
+    if (not isConnecting) then return end
+    -- echo(data, true);
     local IsAutoSyncState = GGS:IsAutoSyncState();
     GGS:SetAutoSyncState(false);
     local size = data.size;
@@ -115,13 +138,21 @@ local function PlayerJoin(msg)
     Tip(string.format("玩家[%s]加入", username));
     players[username] = {
         username = username,
+        join_time = GetTime(),
     }
+    local state = msg.state or {};
+    local IsAutoSyncState = GGS:IsAutoSyncState();
+
+    GGS:SetAutoSyncState(false);
+    for key, val in pairs(state) do
+        GGS_State:Set(key, val);
+    end
+    GGS:SetAutoSyncState(IsAutoSyncState);
 end
 
 local function PlayerExit(username)
     Tip(string.format("玩家[%s]退出", username));
-
-    players[username] = username;
+    players[username] = nil;
 end
 
 local function MainPlayerExit()

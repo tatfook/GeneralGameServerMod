@@ -15,7 +15,22 @@ local GIClientDataHandler = commonlib.inherit(commonlib.gettable("Mod.GeneralGam
 
 GIClientDataHandler:Property("RecvDataCallBack"); -- 接收数据回调
 
+local DATA = {
+    __handler__ = "__GI__",
+    __to__ = nil,
+}
+
+function GIClientDataHandler:Send(data)
+    self:SendTo(nil, data);
+end
+
+function GIClientDataHandler:SendTo(to, data)
+    DATA.data = data;
+    DATA.__to__ = to;
+    return self:SendData(DATA);
+end
+
 function GIClientDataHandler:RecvData(data)
     local callback = self:GetRecvDataCallBack();
-    if (type(callback) == "function") then callback(data) end
+    if (type(callback) == "function") then callback(data.data) end
 end

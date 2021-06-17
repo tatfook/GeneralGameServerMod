@@ -39,11 +39,15 @@ function ClickEdit(filename)
 end
 
 function OnReady()
-    filenames = GetAttrValue("FileNameList", {});
 end
 
-function OnAttrValueChange()
-    CurrentFileName = GetAttrValue("CurrentFileName", {});
+function OnAttrValueChange(attrName)
+    if (attrName == "CurrentUIFileName") then
+        filename = GetAttrValue("CurrentUIFileName", "");
+    end
+    if (attrName == "FileNameList") then
+        filenames = GetAttrValue("FileNameList", {});
+    end
 end
 
 </script>

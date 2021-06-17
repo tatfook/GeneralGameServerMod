@@ -101,8 +101,6 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     -- 移除玩家
     self:GetPlayerManager():RemovePlayer(player);
 
-    
-
     return;
 end
 

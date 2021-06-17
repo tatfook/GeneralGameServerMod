@@ -56,6 +56,7 @@ local function __log__(module, level, depth, ...)
 
     for i = 1, select('#', ...) do      -->获取参数总数
         local arg = select(i, ...);     -->函数会返回多个值
+        if (type(arg) == "table" and arg.__scope__ and arg.__get_data__) then arg = arg:__get_data__() end 
         Print(arg);                 -->打印参数
     end  
 

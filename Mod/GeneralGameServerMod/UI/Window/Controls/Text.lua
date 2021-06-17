@@ -12,7 +12,7 @@ local Element = NPL.load("../Element.lua", IsDevEnv);
 
 local Text = commonlib.inherit(Element, NPL.export());
 
-local TextDebug = GGS.Debug.GetModuleDebug("TextDebug").Enable();  -- Enable() Disable;
+local TextDebug = GGS.Debug.GetModuleDebug("TextDebug").Disable();  -- Enable() Disable;
 
 Text:Property("Value");  -- 文本值
 Text:Property("Name", "Text");
@@ -170,7 +170,6 @@ function Text:OnRender(painter)
 
 	painter:SetFont(self:GetFont());
 	painter:SetPen(self:GetColor("#000000"));
-
 	for i = 1, #self.texts do
 		local obj = self.texts[i];
 		local x, y, text = left + obj.x, top + obj.y + linePadding, obj.text;

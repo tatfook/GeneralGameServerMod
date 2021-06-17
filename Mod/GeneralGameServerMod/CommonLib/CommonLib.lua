@@ -112,3 +112,13 @@ function CommonLib.GetFileText(filename)
 		return text;
 	end	
 end
+
+
+-- 获取世界路径
+function CommonLib.GetWorldDirectory()
+    local install_directory = ParaIO.GetCurDirectory(0);
+    local world_directory = ParaWorld.GetWorldDirectory();
+    local index = string.find(world_directory, install_directory, 1, true);
+    if (index == 1) then return world_directory end
+    return CommonLib.ToCanonicalFilePath(install_directory .. "/" .. world_directory);
+end

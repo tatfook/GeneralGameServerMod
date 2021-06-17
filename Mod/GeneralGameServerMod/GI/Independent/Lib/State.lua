@@ -19,8 +19,8 @@ function set(key, val)
     __state__:Set(key, val);
 end
 
-function get(key)
-    return __state__:Get(key);
+function get(key, default_value)
+    return __state__:Get(key, default_value);
 end
 
 function watch(key, callback)
@@ -72,8 +72,8 @@ function State:Set(key, val)
     set(key, val);
 end
 
-function State:Get(key)
-    return get(key);
+function State:Get(key, default_value)
+    return get(key, default_value);
 end
 
 function State:Watch(key, callback)

@@ -25,6 +25,7 @@ local function GetTailSelector(comboSelector)
     if (not comboSelector) then return end
 
     comboSelector = string.gsub(comboSelector, "%s*$", "");
+    
     -- 后代选择器 div p
     local selector = string.match(comboSelector, "%s* ([^%s%+%~%>]-)$");
     if (selector) then return selector, " ", string.gsub(comboSelector, "%s* [^%s%+%~%>]-$", "") end
@@ -40,14 +41,19 @@ local function GetTailSelector(comboSelector)
     -- 相邻兄弟选择器 div+p
     selector = string.match(comboSelector, "%s*%+%s*([^%s%+%~%>]-)$");
     if (selector) then return selector, "+", string.gsub(comboSelector, "%s*%+%s*[^%s%+%~%>]-$", "") end
-
+   
+    -- 伪类选择器
+    selector, nth = string.match(comboSelector, "(%S+):nth%-child%((%d+)%)$");
+    if (selector and nth) then return selector, "nth-child", tonumber(nth) end 
+    
     return nil;
 end
 
 -- 是否是有效的元素选择器
 local function IsValidElementSelector(selector, element)
     local elementSelector = element:GetSelector();
-    if (not selector or not elementSelector[selector]) then return false end
+    if (not selector) then return false end
+    if (not elementSelector[selector]) then return false end
     if ((string.match(selector, ":hover%s*$")) and not element:IsHover()) then return false end
     return true;
 end
@@ -63,6 +69,10 @@ end
 local function IsElementSelector(comboSelector, element)
     local selector, selectorType, newComboSelector = GetTailSelector(comboSelector, element);
     if (not IsValidElementSelector(selector, element)) then return false end
+    if (selectorType == "nth-child") then
+        if (newComboSelector == element:GetIndexInParentElement()) then return true end 
+        return false;
+    end
     local newSelector, newSelectorType = GetTailSelector(newComboSelector);
     newSelector = StringTrim(newSelector or newComboSelector);
     -- 后代选择器 div p

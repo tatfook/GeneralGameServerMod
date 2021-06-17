@@ -5,7 +5,7 @@ Date: 2021-06-01
 Desc: 
 use the lib:
 ------------------------------------------------------------
-local Scope = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/Scope.lua");
+local Scope = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Scope.lua");
 ------------------------------------------------------------
 ]]
 
@@ -25,6 +25,12 @@ local __global_newindex_list__ = {};                       -- 通知列表
 local __is_activated__ = false;                            -- 是否已激活通知文件
 local __activate_filename__ = "__is_actived_notify__";     -- 激活通知文件
 
+local table_concat = table.concat;
+local table_insert = table.insert;
+local table_remove = table.remove;
+local table_sort = table.sort;
+local __pairs__ = pairs;
+local __ipairs__ = ipairs;
 
 local function Inherit(baseClass, inheritClass)
     if (type(baseClass) ~= "table") then baseClass = nil end
@@ -358,14 +364,61 @@ function Scope:__set_data__(data)
     self.__metatable__.__data__ = data;
 end
 
+-- 获取列表
+function Scope:__get_list__()
+    return __is_support_len_meta_method__ and self.__metatable__.__data__ or self.__metatable__.__scope__;
+end
+
 -- 设置数据
 function Scope:Set(key, val)
     self.__metatable__:__set__(self.__scope__, key, val);
 end
 
 -- 获取数据
-function Scope:Get(key)
+function Scope:Get(key, default_value)
+    local value = self.__metatable__:__get__(self.__scope__, key);
+    if (value ~= nil or default_value == nil) then return value end 
+    self:Set(key, default_value);
     return self.__metatable__:__get__(self.__scope__, key);
+end
+
+-- 获取列表长度 
+function Scope:Length()
+    return __is_support_len_meta_method__ and #(self.__metatable__) or #(self.__scope__);
+end
+
+-- 列表插入
+function Scope:Insert(index, value)
+    local __list__ = self:__get_list__();
+    if (value == nil) then index, value = #__list__ + 1, index end
+    table_insert(__list__, index, __get_val__(value));
+    self:__call_newindex_callback__(self.__scope__, nil, self.__scope__, self.__scope__);
+end
+
+-- 列表移除
+function Scope:Remove(index)
+    local __list__ = self:__get_list__();
+    table_remove(__list__, index);
+    self:__call_newindex_callback__(self.__scope__, nil, self.__scope__, self.__scope__);
+end
+
+-- 排序
+function Scope:Sort(comp)
+    local __list__ = self:__get_list__();
+    table_sort(__list__, comp);
+    self:__call_newindex_callback__(self.__scope__, nil, self.__scope__, self.__scope__);
+end
+
+-- Pairs
+function Scope:Pairs()
+    local __list__ = self:__get_list__();
+    return __pairs__(__list__);
+end
+
+-- IPairs
+function Scope:IPairs()
+    local __list__ = self:__get_list__();
+    return __ipairs__(__list__);
 end
 
 -- 监控
@@ -419,5 +472,14 @@ function Scope.Test()
     local scope = Scope:__new__();
 
     scope.key = 1;
+    scope[1] = 2;
     print("----------end test------------")
+
+    for key, val in scope:Pairs() do
+        print("-----", key, val);
+    end
+
+    for key, val in scope:IPairs() do
+        print("-----", key, val);
+    end
 end

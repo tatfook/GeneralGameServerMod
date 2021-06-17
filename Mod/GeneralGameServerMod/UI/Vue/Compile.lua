@@ -344,7 +344,7 @@ function Compile:VFor(element)
 
     local lastCount, clones, scopes = 0, {}, {};
     local parentElement = element:GetParentElement();
-    local pos = parentElement:GetChildElementPos(element);
+    local pos = parentElement:GetChildElementIndex(element);
     local forComponent = self:GetComponent();
     local forScope = self:GetScope();
     element:SetVisible(false);
@@ -404,7 +404,6 @@ function Compile:VFor(element)
             parentElement:UpdateLayout(true);
         end
     end, true);
-
     return true;
 end
 

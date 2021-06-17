@@ -89,6 +89,7 @@ function OnUIEdit(filename)
     local ui = UIManager.GetUIByFileName(CurrentUIFileName) or {};
     BlocklyHtml:LoadFromXmlNodeText(ui.HtmlXmlText or "");
     BlocklyLua:LoadFromXmlNodeText(ui.LuaXmlText or "");
+    ContentType = 'BlocklyHtml'
     OnBlocklyHtmlChange();
     OnBlocklyLuaChange();
     GenerateComponentDefineCode();

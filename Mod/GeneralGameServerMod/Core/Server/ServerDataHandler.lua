@@ -36,6 +36,21 @@ function ServerDataHandler:SendData(data)
     self:GetConnection():SendData(data);
 end
 
+-- 获取玩家管理器
+function ServerDataHandler:GetPlayerManager()
+    return self:GetNetHandler():GetPlayerManager();
+end
+
+-- 获取玩家
+function ServerDataHandler:GetPlayer(username)
+    return self:GetPlayerManager():GetPlayer(username);
+end
+
+-- 发送数据给指定玩家
+function ServerDataHandler:SendDataToPlayer(data, player)
+    self:GetNetHandler():GetPlayerManager():SendPacketToPlayer(self:GetDataPacket(data), player);
+end
+
 -- 发送数据给所有玩家
 function ServerDataHandler:SendDataToAllPlayer(data, bIncludeSelf)
     self:GetNetHandler():GetPlayerManager():SendPacketToAllPlayers(self:GetDataPacket(data), if_else(bIncludeSelf, nil, self:GetPlayer()), nil, false);

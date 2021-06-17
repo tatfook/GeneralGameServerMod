@@ -21,12 +21,12 @@ local function __G_Connect__(opts)
 end
 setfenv(__G_Connect__, __G__);
 
-local function __G_Send__(data)
+local function __G_SendTo__(to, data)
     local dataHandler = GIGeneralGameClient:GetClientDataHandler();
     if (not dataHandler) then return end
-    dataHandler:SendData(data);
+    dataHandler:SendTo(to, data);
 end
-setfenv(__G_Send__, __G__);
+setfenv(__G_SendTo__, __G__);
 
 local function __G_Disconnect__()
     GIGeneralGameClient:OnWorldUnloaded();
@@ -58,7 +58,11 @@ local function GGS_Connect(callback)
 end
 
 local function GGS_Send(data)
-    __G_Send__(data);
+    __G_SendTo__(nil, data);
+end
+
+local function GGS_SendTo(to, data)
+    __G_SendTo__(to, data);
 end
 
 local function GGS_Recv(callback)
@@ -95,6 +99,7 @@ setmetatable(GGSAPI, {
 
         CodeEnv.GGS_Connect = GGS_Connect;
         CodeEnv.GGS_Send = GGS_Send;
+        CodeEnv.GGS_SendTo = GGS_SendTo;
         CodeEnv.GGS_Recv = GGS_Recv;
         CodeEnv.GGS_Disconnect = GGS_Disconnect;
         CodeEnv.GGS_GetPlayer = GGS_GetPlayer;
