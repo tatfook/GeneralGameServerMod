@@ -180,7 +180,6 @@ function GGS:SyncState(keys, value)
 end
 
 function GGS:RecvSyncState(msg)
-    log(msg);
     if (msg.action ~= GGS_EVENT_TYPE.SYNC_STATE) then return end
     self:SyncState(msg, msg.value);
     TriggerEventCallBack(GGS_EVENT_TYPE.SYNC_STATE, msg, 1, 2,3);

@@ -42,7 +42,6 @@ GGS:Connect(function()
 end);
 
 GGS:OnSyncState(function(keys)     -- 收到其他用户状态同步
-    log(keys)
     if (not keys or not IsInnerGGSRanksScope(keys)) then return end 
     GGSRank:RefreshRanksUI(); 
 end);

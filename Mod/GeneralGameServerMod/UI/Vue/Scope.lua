@@ -434,7 +434,7 @@ function Scope:Notify(key, newval, oldval)
     local watch = self.__metatable__.__watch__[key];
     if (not watch) then return end
     for _, func in pairs(watch) do
-        watch(if_else(newval == nil, self.__scope__[key], newval), oldval);
+        func(if_else(newval == nil, self.__scope__[key], newval), oldval);
     end
 end
 
