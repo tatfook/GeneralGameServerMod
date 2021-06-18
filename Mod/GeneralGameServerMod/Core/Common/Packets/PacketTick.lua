@@ -18,4 +18,12 @@ function PacketTick:ctor()
 end
 
 function PacketTick:Init()
+	return self;
+end
+
+-- Passes this Packet on to the NetHandler for processing.
+function PacketTick:ProcessPacket(net_handler)
+	if(net_handler.handleTick) then
+		net_handler:handleTick(self);
+	end
 end

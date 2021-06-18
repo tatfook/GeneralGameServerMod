@@ -21,7 +21,8 @@ local EntityOtherPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.
 
 EntityOtherPlayerDebug = GGS.Debug.GetModuleDebug("EntityOtherPlayerDebug").Enable();
 
-EntityOtherPlayer:Property("World");
+EntityOtherPlayer:Property("World");                                                    -- 所属世界
+EntityOtherPlayer:Property("SyncEntityInfo", true, "IsSyncEntityInfo");                 -- 是否同步实体信息
 EntityOtherPlayer:Property("EnableAssetsWhiteList", true, "IsEnableAssetsWhiteList");   -- 是否启用样式白名单
 
 function EntityOtherPlayer:ctor()
@@ -35,6 +36,8 @@ function EntityOtherPlayer:init(world, username, entityId)
 
     self:SetWorld(world);
     self:SetSkipPicking(not self:IsCanClick());
+    self:SetSyncEntityInfo(self:GetWorld():GetClient():IsSyncEntityInfo());
+    self:SetEnableAssetsWhiteList(self:GetWorld():GetClient():IsEnableAssetsWhiteList());
 
     return self;
 end

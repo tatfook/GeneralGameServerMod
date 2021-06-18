@@ -1,0 +1,74 @@
+<template class="container">
+    <div class="title">{{title}}</div>
+    <div class="fields-title">
+        <div v-for="field in FieldList" class="field field-title" v-bind:style="field.style">{{field.title}}</div>
+    </div>
+    <div v-bind:style="string.format('width: 100%%; height: %spx; overflow-y: auto; margin-top: 10px;', ContentHeight)">
+        <div v-for="item in data" class="fields fields-content">
+            <div v-for="field in FieldList" class="field" v-bind:style="field.style">{{item[field.key]}}</div>
+        </div>
+    </div>
+</template>
+
+<script type="text/lua">
+
+title = title or "排行榜"
+data = ranks or {{name = "张三", score = 1}, {name = "李四", score = 2}, {name = "王五", score = 3}, {name = "赵六", score = 4}}
+fields = fields or {{title = "玩家", key = "name"}, {title = "分数", key = "score"}}
+
+FieldList = {};
+for key, field in pairs(fields) do 
+    table.insert(FieldList, field);
+    field.style = field.style or string.format("width: %spx; height: %spx;", field.width, field.height);
+end
+table.sort(FieldList, function(field1, field2)
+    return field1.no < field2.no;
+end);
+
+
+
+</script>
+
+<style scoped=true>
+.container {
+    width: 100%;
+    height: 100%;
+    background: url(@/assets/commonmask.png);
+}
+.title {
+    height: 40px;
+    line-height: 40px;
+    font-size: 26px;
+    text-align: center;
+    color: #ff0000;
+}
+.fields-title {
+    display: flex;
+    color: #ffffff;
+}
+.field-title {
+    font-size: 20px;
+    border-bottom: 1px solid #ffffff;
+    margin-left: 2px;
+}
+.field {
+    width: 100px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.fields {
+    display: flex;
+    color: #ffffff;
+}
+.fields-content:nth-child(1) {
+    color: #ff0000;
+}
+.fields-content:nth-child(2) {
+    color: #ffff00;
+}
+.fields-content:nth-child(3) {
+    color: #00ffff;
+}
+</style>

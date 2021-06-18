@@ -32,6 +32,7 @@ local ClientDataHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 local NetClientHandler = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler"));
 
 NetClientHandler:Property("UserName");       -- 用户名
+NetClientHandler:Property("EntityId");       -- 实体ID
 NetClientHandler:Property("Player");         -- 主玩家
 NetClientHandler:Property("World");          -- 世界
 NetClientHandler:Property("Client");         -- 客户端
@@ -79,20 +80,19 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     local entityId = packetPlayerLogout.entityId;  -- 为空则退出当前玩家
     local reason = packetPlayerLogout.reason;
 
-    -- 只能仿照客户端做  不能使用EntiryPlayerMP 内部会触发后端数据维护
-    GameLogic:event(System.Core.Event:new():init("ps_client_logout"));
-
-    PlayerLoginLogoutDebug.Format("player logout, username: %s, entityId: %s, reason: %s", username, entityId, reason);
+    PlayerLoginLogoutDebug.Format("player logout, username: %s, entityId: %s, curEntityId: %s, reason: %s", username, entityId, self:GetEntityId(), reason);
 
     -- 主玩家退出
-    if (self:GetPlayer().entityId == entityId) then
-        return self:GetWorld():Logout();
-    end
-
+    if (self:GetEntityId() == entityId) then return self:GetWorld():Logout() end
+    if (self:GetUserName() == username) then return end  -- 忽略重连影响
+    
     -- 退出回调
     local callback = self:GetClient():GetDisconnectionCallBack();
     if (type(callback) == "function") then callback(username) end
 
+    if (not self:GetClient():IsSyncEntityInfo()) then return end
+    
+    -- 其它玩家退出
     local player = self:GetPlayerManager():GetPlayerByUserName(username);
 
     -- 玩家不存在 直接忽视 
@@ -129,10 +129,13 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     options.username = packetPlayerLogin.username;
     options.areaSize = packetPlayerLogin.areaSize or 0; 
 
-    self:SetUserName(options.username);
+    self:SetUserName(username);
+    self:SetEntityId(entityId);
 
-    -- 只能仿照客户端做  不能使用EntityPlayerMP 内部会触发后端数据维护
-    GameLogic:event(System.Core.Event:new():init("ps_client_login"));
+    -- 回调通知
+    local callback = self:GetClient():GetConnectionCallBack();
+    if (type(callback) == "function") then callback() end
+    if (not self:GetClient():IsSyncEntityInfo()) then return end
 
     -- 获取旧当前玩家
     local oldEntityPlayer = EntityManager.GetPlayer();
@@ -193,10 +196,6 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
 
     -- 设置玩家信息
     entityPlayer:SetPlayerInfo(playerInfo);
-    
-    -- 回调通知
-    local callback = self:GetClient():GetConnectionCallBack();
-    if (type(callback) == "function") then callback() end
 
     return;
 end
@@ -227,7 +226,11 @@ end
 
 -- 用户实体信息
 function NetClientHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
+    -- 不同步实体信息则不处理
+    if (not self:GetClient():IsSyncEntityInfo()) then return end
+    
     if (not packetPlayerEntityInfo) then return end
+    
     local entityId, username = packetPlayerEntityInfo.entityId, packetPlayerEntityInfo.username;
     local x, y, z, facing, pitch, tick = packetPlayerEntityInfo.x, packetPlayerEntityInfo.y, packetPlayerEntityInfo.z, packetPlayerEntityInfo.facing, packetPlayerEntityInfo.pitch, packetPlayerEntityInfo.tick or 5;
     local bx, by, bz = packetPlayerEntityInfo.bx, packetPlayerEntityInfo.by, packetPlayerEntityInfo.bz;
@@ -255,6 +258,8 @@ end
 
 -- 处理世界玩家列表
 function NetClientHandler:handlePlayerEntityInfoList(packetPlayerEntityInfoList)
+    if (not self:GetClient():IsSyncEntityInfo()) then return end 
+    
     local playerEntityInfoList = packetPlayerEntityInfoList.playerEntityInfoList;
     local action = packetPlayerEntityInfoList.action;
     local usernames = {};
@@ -293,6 +298,8 @@ end
 
 -- 处理玩家信息更新
 function NetClientHandler:handlePlayerInfo(packetPlayerInfo)
+    if (not self:GetClient():IsSyncEntityInfo()) then return end 
+
     local entityId = packetPlayerInfo.entityId;
     local entityPlayer = self:GetPlayerManager():GetPlayerByEntityId(entityId);
     if (not entityPlayer or not entityPlayer.SetPlayerInfo) then return end
@@ -410,6 +417,10 @@ end
 
 -- 保持连接活跃
 function NetClientHandler:SendTick()
+    if (not self:GetClient():IsSyncEntityInfo()) then
+        return self:AddToSendQueue(Packets.PacketTick:new():Init());
+    end
+
     local player = self:GetPlayer();
     if (not player or not player:isa(EntityMainPlayer)) then return end
     self:AddToSendQueue(self:GetPlayer():GetPacketPlayerEntityInfo());
@@ -418,7 +429,8 @@ end
 -- 登录
 function NetClientHandler:Login()
     GGS.INFO("======================login ggs===================");
-    local options = self:GetClient():GetOptions();
+    local client = self:GetClient();
+    local options = client:GetOptions();
     self:AddToSendQueue(Packets.PacketPlayerLogin:new():Init({
         username = options.username,
         password = options.password,
@@ -427,10 +439,11 @@ function NetClientHandler:Login()
         worldType = options.worldType,
         worldKey = options.worldKey,
         options = {
-            isSyncBlock = options.isSyncBlock,
-            isSyncForceBlock = options.isSyncForceBlock,
-            isSyncCmd = options.isSyncCmd,
-            areaSize = options.areaSize,
+            isSyncBlock = client:IsSyncBlock(),
+            isSyncForceBlock = client:IsSyncForceBlock(),
+            isSyncCmd = client:IsSyncCmd(),
+            areaSize = client:GetAreaSize(),
+            isSyncEntityInfo = client:IsSyncEntityInfo(),
         }
     }));
 end

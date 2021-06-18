@@ -20,10 +20,10 @@ local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.G
 
 local maxMotionUpdateTickCount = 33;
 
+EntityMainPlayer:Property("World");
 EntityMainPlayer:Property("SyncEntityInfo", true, "IsSyncEntityInfo");                 -- 是否同步实体信息
 EntityMainPlayer:Property("EnableAssetsWhiteList", true, "IsEnableAssetsWhiteList");   -- 是否启用样式白名单
-EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");
-EntityMainPlayer:Property("World");
+EntityMainPlayer:Property("UpdatePlayerInfo", false, "IsUpdatePlayerInfo");            -- 是否更新用户信息
 
 -- 构造函数
 function EntityMainPlayer:ctor()
@@ -43,7 +43,8 @@ function EntityMainPlayer:init(world, netHandler, entityId)
     
     self:SetSkipPicking(not self:IsCanClick());
     self:SetWorld(world);
-
+    self:SetSyncEntityInfo(self:GetWorld():GetClient():IsSyncEntityInfo());
+    self:SetEnableAssetsWhiteList(self:GetWorld():GetClient():IsEnableAssetsWhiteList());
     return self;
 end
 

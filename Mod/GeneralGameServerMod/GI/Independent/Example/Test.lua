@@ -8,6 +8,12 @@ RegisterEventCallBack(EventType.KEY_DOWN, function(event)
 	end
 end)
 
+function test(arg)
+	log(arg);
+end
+
+RegisterEventCallBack("ABC", test);
+TriggerEventCallBack("ABC", 32)
 -- print(GetPlayer():GetBlockPos())
 -- local Log = require("Log");
 -- print("---------1")

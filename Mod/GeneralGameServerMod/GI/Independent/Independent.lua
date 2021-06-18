@@ -95,6 +95,8 @@ function Independent:LoadFile(filename)
 	end
 
 	-- print("LoadFile:", filename)
+	-- if (filename == "%gi%/Independent/Example/Rank.lua") then print(text) end
+
 	-- 设置代码环境
 	setfenv(code_func, self:GetCodeEnv());
 	

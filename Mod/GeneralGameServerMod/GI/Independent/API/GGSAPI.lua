@@ -53,7 +53,7 @@ end
 
 local function GGS_Connect(callback)
     local username = __code_env__.GetUserName();
-    __code_env__.RegisterEventCallBack("GGS_CONNECT", callback);
+    __code_env__.RegisterEventCallBack("__GGS_CONNECT__", callback);
     __G_Connect__({username = username});
 end
 
@@ -66,27 +66,27 @@ local function GGS_SendTo(to, data)
 end
 
 local function GGS_Recv(callback)
-    __code_env__.RegisterEventCallBack("GGS_DATA", callback);
+    __code_env__.RegisterEventCallBack("__GGS_DATA__", callback);
 end
 
 local function GGS_Disconnect(callback)
     if (type(callback) == "function") then
-        __code_env__.RegisterEventCallBack("GGS_DISCONNECT", callback);
+        __code_env__.RegisterEventCallBack("__GGS_DISCONNECT__", callback);
     else 
         __G_Disconnect__();
     end
 end
 
 local function RecvDataCallBack(...)
-    __code_env__.TriggerEventCallBack("GGS_DATA", ...);
+    __code_env__.TriggerEventCallBack("__GGS_DATA__", ...);
 end
 
 local function ConnectionCallBack(...)
-    __code_env__.TriggerEventCallBack("GGS_CONNECT", ...);
+    __code_env__.TriggerEventCallBack("__GGS_CONNECT__", ...);
 end
 
 local function DisconnectionCallBack(...)
-    __code_env__.TriggerEventCallBack("GGS_DISCONNECT", ...);
+    __code_env__.TriggerEventCallBack("__GGS_DISCONNECT__", ...);
 end
 
 GIGeneralGameClient:GetClientDataHandlerClass():SetRecvDataCallBack(RecvDataCallBack);

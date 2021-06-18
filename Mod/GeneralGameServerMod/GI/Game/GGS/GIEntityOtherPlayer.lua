@@ -15,7 +15,6 @@ local GIEntityOtherPlayer = commonlib.inherit(commonlib.gettable("Mod.GeneralGam
 function GIEntityOtherPlayer:ctor()
     -- 非主玩家是否检测碰撞
     self:SetCheckCollision(false);
-    self:SetEnableAssetsWhiteList(false);
 end
 
 -- 是否使用默认用户名显示
@@ -27,6 +26,4 @@ end
 function GIEntityOtherPlayer:SetPlayerInfo(playerInfo)
     self:UpdateDisplayName(playerInfo.username or "");
 end
-
-
 

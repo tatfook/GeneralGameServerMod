@@ -27,7 +27,7 @@ function ServerDataHandler:GetDataPacket(data)
 end
 
 -- 获取当前玩家
-function ServerDataHandler:GetPlayer()
+function ServerDataHandler:GetCurrentPlayer()
     return self:GetNetHandler():GetPlayer();
 end
 
@@ -43,6 +43,7 @@ end
 
 -- 获取玩家
 function ServerDataHandler:GetPlayer(username)
+    if (username == nil) then return self:GetCurrentPlayer() end
     return self:GetPlayerManager():GetPlayer(username);
 end
 
@@ -53,7 +54,7 @@ end
 
 -- 发送数据给所有玩家
 function ServerDataHandler:SendDataToAllPlayer(data, bIncludeSelf)
-    self:GetNetHandler():GetPlayerManager():SendPacketToAllPlayers(self:GetDataPacket(data), if_else(bIncludeSelf, nil, self:GetPlayer()), nil, false);
+    self:GetNetHandler():GetPlayerManager():SendPacketToAllPlayers(self:GetDataPacket(data), if_else(bIncludeSelf, nil, self:GetCurrentPlayer()), nil, false);
 end
 
 -- 重载此函数 处理收到网络数据

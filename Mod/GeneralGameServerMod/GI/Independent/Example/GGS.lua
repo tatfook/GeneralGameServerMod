@@ -24,7 +24,9 @@ local function ShowUI()
     <div>{{__GGS_STATE__.level}}</div>
     <div onclick=OnClick>按钮</div>
 </template>
-        ]]
+        ]],
+        width = 300,
+        height = 300,
     });
 end
 
@@ -36,6 +38,6 @@ end);
 
 -- 接收数据
 GGS:SetRecvCallBack(function(data)
-    echo(data);
+    log(data);
 end);
 

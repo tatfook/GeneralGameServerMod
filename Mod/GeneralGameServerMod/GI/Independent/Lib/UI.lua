@@ -24,6 +24,6 @@ function UI.ShowEditWindow(text, callback)
             dcall(callback, G.value);
         end
     }, {
-        url = "%gi%/Independent/Lib/UI/EditWindow.html",
+        url = "%gi%/Independent/UI/EditWindow.html",
     });
 end

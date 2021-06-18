@@ -13,7 +13,6 @@ local GIEntityMainPlayer = commonlib.inherit(commonlib.gettable("Mod.GeneralGame
 
 -- 构造函数
 function GIEntityMainPlayer:ctor()
-    self:SetEnableAssetsWhiteList(false);
 end
 
 -- 是否使用默认用户名显示

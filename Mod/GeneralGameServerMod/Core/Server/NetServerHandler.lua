@@ -32,13 +32,9 @@ NetServerHandler:Property("DataHandler");                              -- 数据
 
 local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
-local DataHandler = nil;
-
 local function GetDataHandler(netHandler)
-    if (DataHandler) then return DataHandler end 
-    local DataHandlerClass = NPL.load(Config.DataHandler.filename) or ServerDataHandler;
-    DataHandler = DataHandlerClass:new():Init(netHandler);
-    return DataHandler;
+    local ServerDataHandlerClass = NPL.load(Config.DataHandler.filename) or ServerDataHandler;
+    return ServerDataHandlerClass:new():Init(netHandler);
 end
 
 function NetServerHandler:ctor() 
@@ -88,6 +84,13 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     packetPlayerLogin.username = self:GetPlayer().username;
     packetPlayerLogin.worldKey = self:GetWorld():GetWorldKey();
     packetPlayerLogin.areaSize = self:GetPlayer():GetAreaSize();
+
+    -- 不同实体信息
+    if (not self:GetPlayer():IsSyncEntityInfo()) then
+        self:GetPlayerManager():AddPlayer(self:GetPlayer());
+        self:GetWorkerServer():SendWorldInfo(self:GetWorld():GetWorldInfo());
+    end
+
     self:SendPacketToPlayer(packetPlayerLogin);
 end
 
@@ -95,7 +98,8 @@ end
 function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     -- 用户不存在
     if (not self:GetPlayer()) then return self:handlePlayerRelogin() end
-
+    if (not self:GetPlayer():IsSyncEntityInfo()) then return end
+    
     -- 设置当前玩家实体信息
     local isNew = self:GetPlayer():SetPlayerEntityInfo(packetPlayerEntityInfo);
     local packet = (isNew or self:GetPlayer():IsEnableArea()) and self:GetPlayer():GetPlayerEntityInfo() or packetPlayerEntityInfo;
@@ -162,6 +166,10 @@ function NetServerHandler:OnAfterProcessPacket(packet)
     self:GetPlayer():UpdateTick();
     -- 清空玩家数据队列
     self:GetPlayer():AddPacketToSendQueue(nil, true);
+end
+
+-- 处理Tick
+function NetServerHandler:handleTick(packet)
 end
 
 -- 转发聊天消息

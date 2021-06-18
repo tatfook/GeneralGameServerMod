@@ -91,6 +91,11 @@ function Player:IsSyncCmd()
     return self.options.isSyncCmd;
 end
 
+-- 是否同步实体信息
+function Player:IsSyncEntityInfo()
+    return self.options.isSyncEntityInfo;
+end
+
 -- 是否使能区域化
 function Player:IsEnableArea()
     -- 世界使能区域化, 则玩家必定区域化

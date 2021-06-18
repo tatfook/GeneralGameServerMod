@@ -31,6 +31,7 @@ World:Property("PlayerManager");       -- 玩家管理器
 World:Property("BlockManager");        -- 玩家管理器
 World:Property("Track");               -- 世界轨迹
 World:Property("DB");                  -- 数据库
+World:Property("EnableAutoDelete", true, "IsEnableAutoDelete");          -- 是否启用自动删除 可用于常驻世界
 
 -- 一个世界对象, 应该包含世界的所有数据
 function World:ctor()
@@ -135,6 +136,12 @@ function World:Tick()
     self:GetPlayerManager():Tick();
 end
 
+-- 世界是否可以删除
+function World:IsCanDelete()
+    if (not self:IsEnableAutoDelete()) then return false end
+    return self:GetClientCount() == 0;
+end
+
 -- 获取世界信息
 function World:GetWorldInfo(worldKey)
     return {
@@ -175,3 +182,4 @@ function World:GetDebugPlayerInfo()
 
     return players;
 end
+

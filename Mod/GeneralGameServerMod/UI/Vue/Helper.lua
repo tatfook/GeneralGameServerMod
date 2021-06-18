@@ -73,7 +73,6 @@ function Helper.ReadFile(filename)
     return text;
 end
 
-
 local BeginTime = 0;
 function Helper.BeginTime()
     BeginTime = ParaGlobal.timeGetTime();

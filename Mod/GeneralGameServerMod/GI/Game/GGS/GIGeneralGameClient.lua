@@ -14,6 +14,19 @@ local GIEntityOtherPlayer = NPL.load("./GIEntityOtherPlayer.lua", IsDevEnv);
 local GIClientDataHandler = NPL.load("./GIClientDataHandler.lua", IsDevEnv);
 local GIGeneralGameClient = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"), NPL.export());
 
+function GIGeneralGameClient:ctor()
+    self:SetEnableAssetsWhiteList(false);         -- 禁用模型白名单
+    self:SetSyncEntityInfo(false);                -- 不同步实体信息
+end
+
+function GIGeneralGameClient:IsSyncBlock()
+    return false;
+end
+
+function GIGeneralGameClient:IsSyncCmd()
+    return false;
+end
+
 -- 获取世界类
 function GIGeneralGameClient:GetGeneralGameWorldClass()
     return GIGeneralGameClient._super.GetGeneralGameWorldClass(self);  -- 使用默认类
@@ -41,6 +54,7 @@ function GIGeneralGameClient:LoadWorld(opts)
     opts.worldId = opts.worldId or GameLogic.options:GetProjectId() or "GGS";
     opts.worldName = opts.worldName or string.format("WorldName_GI", Nid);
     opts.worldKey = opts.worldKey or string.format("GI_WorldKey_%s", opts.worldId);
+    opts.isSyncBlock = if_else(opts.isSyncBlock == nil, false, opts.isSyncBlock); 
     return GIGeneralGameClient._super.LoadWorld(self, opts);
 end
 
