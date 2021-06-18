@@ -15,18 +15,25 @@ local GGSAPI = NPL.export()
 local __G__ = _G;
 local __code_env__ = nil;
 
+local DATA = {
+    __handler__ = "__GI__",
+    __to__ = nil,
+    __data__ = nil;
+    __action__ = nil;
+}
 
 local function __G_Connect__(opts)
     GIGeneralGameClient:LoadWorld(opts);
 end
 setfenv(__G_Connect__, __G__);
 
-local function __G_SendTo__(to, data)
+local function __G_Send__(to, action, data)
     local dataHandler = GIGeneralGameClient:GetClientDataHandler();
     if (not dataHandler) then return end
-    dataHandler:SendTo(to, data);
+    DATA.__to__, DATA.__action__, DATA.__data__ = to, action, data;
+    dataHandler:SendData(DATA);
 end
-setfenv(__G_SendTo__, __G__);
+setfenv(__G_Send__, __G__);
 
 local function __G_Disconnect__()
     GIGeneralGameClient:OnWorldUnloaded();
@@ -58,11 +65,23 @@ local function GGS_Connect(callback)
 end
 
 local function GGS_Send(data)
-    __G_SendTo__(nil, data);
+    __G_Send__(nil, nil, data);
 end
 
 local function GGS_SendTo(to, data)
-    __G_SendTo__(to, data);
+    __G_Send__(to, nil, data);
+end
+
+local function GGS_SendUserData(data)
+    __G_Send__(nil, "SetUserData", data);
+end
+
+local function GGS_RecvUserData(callback)
+    __code_env__.RegisterEventCallBack("__GGS_USER_DATA__", callback);
+end
+
+local function GGS_PullAllUserData()
+    __G_Send__(nil, "PullWorldData");
 end
 
 local function GGS_Recv(callback)
@@ -77,8 +96,27 @@ local function GGS_Disconnect(callback)
     end
 end
 
-local function RecvDataCallBack(...)
-    __code_env__.TriggerEventCallBack("__GGS_DATA__", ...);
+local function SetUserData(username, data)
+    __all_user_data__[username] = __all_user_data__[username] or {};
+    commonlib.partialcopy(__all_user_data__[username], data);
+end
+
+local function RecvDataCallBack(data)
+    local __action__, __username__, __data__ = data.__action__, data.__username__, data.__data__;
+
+    if (__action__ == "PullWorldData") then
+        for username, userdata in pairs(__data__) do
+            userdata.__username__ = key;
+            __code_env__.TriggerEventCallBack("__GGS_USER_DATA__", userdata);
+        end
+    elseif (action == "SetUserData") then
+        __data__.__username__ = __username__;
+        __code_env__.TriggerEventCallBack("__GGS_USER_DATA__", __data__);
+        return ;
+    end
+
+    __data__.__username__ = __username__;
+    __code_env__.TriggerEventCallBack("__GGS_DATA__", __data__);
 end
 
 local function ConnectionCallBack(...)
@@ -102,7 +140,11 @@ setmetatable(GGSAPI, {
         CodeEnv.GGS_SendTo = GGS_SendTo;
         CodeEnv.GGS_Recv = GGS_Recv;
         CodeEnv.GGS_Disconnect = GGS_Disconnect;
-        CodeEnv.GGS_GetPlayer = GGS_GetPlayer;
+        CodeEnv.GGS_SetUserData = GGS_SetUserData;
+
+        CodeEnv.GGS_SendUserData = GGS_SendUserData;
+        CodeEnv.GGS_RecvUserData = GGS_RecvUserData;
+        CodeEnv.GGS_PullAllUserData = GGS_PullAllUserData;
         
         CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function() __G_Disconnect__() end);
     end

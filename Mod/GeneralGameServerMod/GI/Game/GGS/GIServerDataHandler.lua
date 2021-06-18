@@ -13,6 +13,23 @@ local ServerDataHandler = NPL.load("Mod/GeneralGameServerMod/Core/Server/ServerD
 local GIServerDataHandler = commonlib.inherit(ServerDataHandler, NPL.export());
 
 local __data__ = {};
+local ONE_DAY = 24 * 3600 * 1000;
+
+local __world_keys__ = {};
+local function DeleteExpiredData()
+    local index = 0;
+    local curtime = ParaGlobal.timeGetTime();
+    for worldKey, worldData in pairs(__data__) do
+        if (worldData.__expire_time__ < curtime) then
+            index = index + 1;
+            __world_keys__[index] = worldKey;
+        end
+    end
+    -- 删除过期的世界数据
+    for i = 1, index do
+        __data__[__world_keys__[i]] = nil;
+    end
+end
 
 function GIServerDataHandler:GetWorld()
     return self:GetNetHandler():GetWorld();
@@ -26,7 +43,7 @@ function GIServerDataHandler:GetWorldData()
     local workKey = self:GetWorld():GetWorldKey();
     __data__[workKey] = __data__[workKey] or {};
     local worldData = __data__[workKey];
-    worldData.__expire_time__ = Pa
+    worldData.__expire_time__ = ParaGlobal.timeGetTime() + ONE_DAY;
     return __data__[workKey];
 end
 
@@ -39,18 +56,29 @@ function GIServerDataHandler:GetUserData()
     return users_data[username];
 end
 
+function GIServerDataHandler:GetAllUserData()
+    return self:GetWorldData().__users_data__;
+end
+
 function GIServerDataHandler:SetUserData(data)
     local userdata = self:GetUserData();
-    commonlib.partialcopy(userdata, data.data);
+    commonlib.partialcopy(userdata, data.__data__);
 end
 
 function GIServerDataHandler:RecvData(data)
+    data.__username__ = self:GetUserName();
+    
+    DeleteExpiredData();
+
     -- GGS.INFO(data);
     -- print(self:GetCurrentPlayer())
     -- local action = data.__action__;
-    -- if (action == "SetUserData") then
-    --     return self:SetUserData(data);
-    -- end
+    if (action == "SetUserData") then
+        self:SetUserData(data);
+    elseif (action == "PullAllUserData") then
+        data.__data__ = self:GetAllUserData();
+        return self:SendDataToPlayer(data, self:GetCurrentPlayer());
+    end
 
     if (data.__to__) then return self:SendDataToPlayer(data, data.__to__) end
 
