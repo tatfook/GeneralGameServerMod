@@ -125,7 +125,7 @@ function Independent:Call(...)
 	if (type(callback) ~= "function") then return false end
 	local ok = nil;
 	if (self:IsCodeEnv()) then 
-		ok = self:XPCall(callback, select(2));
+		ok = self:XPCall(callback, select(2, ...));
 	else
 		ok = self:Resume(...);
 	end

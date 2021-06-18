@@ -12,8 +12,10 @@ function test(arg)
 	log(arg);
 end
 
-RegisterEventCallBack("ABC", test);
-TriggerEventCallBack("ABC", 32)
+RegisterEventCallBack("ABC", function(ev)
+	log(ev)
+end);
+TriggerEventCallBack("ABC", 32, 3232)
 -- print(GetPlayer():GetBlockPos())
 -- local Log = require("Log");
 -- print("---------1")
