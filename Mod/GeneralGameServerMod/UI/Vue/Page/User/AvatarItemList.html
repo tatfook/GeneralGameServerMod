@@ -82,7 +82,7 @@
 	end
 
 	function ShowTryIcon(item)
-		return (item.gsid and not KeepWorkItemManager.HasGSItem(item.gsid)) or (not KeepWorkItemManager.IsVip());
+		return (item.gsid and not KeepWorkItemManager.HasGSItem(item.gsid));
 	end
 
 	function ItemStyle(item)
