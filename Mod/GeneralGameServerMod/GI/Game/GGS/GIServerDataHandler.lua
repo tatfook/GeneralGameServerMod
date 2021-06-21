@@ -47,17 +47,17 @@ function GIServerDataHandler:GetWorldData()
     return __data__[workKey];
 end
 
-function GIServerDataHandler:GetUserData()
-    local worldData = self:GetWorldData();
-    local username = self:GetUserName();
-    worldData.__users_data__ = worldData.__users_data__ or {};
-    local users_data = worldData.__users_data__;
-    users_data[username] = users_data[username] or {};
-    return users_data[username];
+function GIServerDataHandler:GetAllUserData()
+    local world_data = self:GetWorldData();
+    world_data.__all_user_data__ = world_data.__all_user_data__ or {};
+    return world_data.__all_user_data__;
 end
 
-function GIServerDataHandler:GetAllUserData()
-    return self:GetWorldData().__users_data__;
+function GIServerDataHandler:GetUserData()
+    local username = self:GetUserName();
+    local __all_user_data__ = self:GetAllUserData();
+    __all_user_data__[username] = __all_user_data__[username] or {};
+    return __all_user_data__[username];
 end
 
 function GIServerDataHandler:SetUserData(data)
@@ -65,20 +65,31 @@ function GIServerDataHandler:SetUserData(data)
     commonlib.partialcopy(userdata, data.__data__);
 end
 
-function GIServerDataHandler:RecvData(data)
-    data.__username__ = self:GetUserName();
-    
-    DeleteExpiredData();
+function GIServerDataHandler:HandleData(data)
+    DeleteExpiredData();    -- 过期数据监测
+    local action = data.__action__;
 
+    if (action == "__push_user_data__") then
+        data.__username__ = self:GetUserName();
+        self:SetUserData(data);
+        self:SendDataToAllPlayer(data);
+        return true;
+    elseif (action == "__pull_all_user_data__") then
+        data.__action__ = "__push_all_user_data__";
+        data.__data__ = self:GetAllUserData();
+        self:SendDataToPlayer(data, self:GetCurrentPlayer());
+        return true;
+    end
+
+    return false;
+end
+
+function GIServerDataHandler:RecvData(data)
     -- GGS.INFO(data);
     -- print(self:GetCurrentPlayer())
     -- local action = data.__action__;
-    if (action == "SetUserData") then
-        self:SetUserData(data);
-    elseif (action == "PullAllUserData") then
-        data.__data__ = self:GetAllUserData();
-        return self:SendDataToPlayer(data, self:GetCurrentPlayer());
-    end
+
+    if (self:HandleData(data)) then return end 
 
     if (data.__to__) then return self:SendDataToPlayer(data, data.__to__) end
 

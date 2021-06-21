@@ -13,17 +13,18 @@ local State = require("State");
 local GGS = inherit(ToolBase, module("GGS"));
 
 GGS:Property("AutoSyncState", true, "IsAutoSyncState");
+GGS:Property("Connected", false, "IsConnected");
 
 local __username__ = GetUserName();
 local __players__ = {};
 
-local GGS_STATE_KEY = "__GGS_STATE__";  -- 
-local isConnecting = false;
+local GGS_STATE_KEY = "__GGS_STATE__";  
 
 local GGS_EVENT_TYPE = {
     CONNECT = "GGS_CONNECT",
     DISCONNECT = "GGS_DISCONNECT",
     RECV = "GGS_RECV",
+    USER_DATA = "GGS_USER_DATA",
 
     PLAYER_JOIN = "GGS_PLAYER_JOIN",
     PLAYER_EXIT = "GGS_PLAYER_EXIT",
@@ -65,7 +66,7 @@ RegisterTimerCallBack(function()
 end);
 
 local function AutoSyncState(data)
-    if (not isConnecting) then return end
+    if (not GGS:IsConnected()) then return end
     -- log("收到状态同步: ", data)
     local IsAutoSyncState = GGS:IsAutoSyncState();
     GGS:SetAutoSyncState(false);
@@ -115,7 +116,7 @@ local function MainPlayerJoin()
 end
 
 local function MainPlayerExit()
-    isConnecting = false;
+    GGS:SetConnected(false);
     -- GetPlayer():UpdateDisplayName();   -- 清除用户名
 end
 
@@ -127,6 +128,10 @@ GGS_Recv(function(msg)
     if (action == GGS_EVENT_TYPE.SYNC_STATE) then GGS:RecvSyncState(msg) end
 
     TriggerEventCallBack(GGS_EVENT_TYPE.RECV, msg);
+end)
+
+GGS_RecvUserData(function(data)
+    TriggerEventCallBack(GGS_EVENT_TYPE.USER_DATA, data);
 end)
 
 GGS_Disconnect(function(username)
@@ -141,6 +146,9 @@ GGS_Disconnect(function(username)
     TriggerEventCallBack(GGS_EVENT_TYPE.DISCONNECT, username);
 end);
 
+function GGS:Init()
+    GGS:SetConnected(false);
+end
 
 function GGS:GetState()
     return GGS_State;
@@ -186,10 +194,10 @@ function GGS:RecvSyncState(msg)
 end
 
 function GGS:Connect(callback)
-    if (isConnecting) then return type(callback) == "function" and callback() end
+    if (GGS:IsConnected()) then return type(callback) == "function" and callback() end
 
     GGS_Connect(function()
-        isConnecting = true;
+        GGS:SetConnected(true);
         GGS_Send({
             action = GGS_EVENT_TYPE.JOIN, 
             username = __username__,
@@ -199,20 +207,23 @@ function GGS:Connect(callback)
         if (type(callback) == "function") then callback() end
         TriggerEventCallBack(GGS_EVENT_TYPE.CONNECT);
     end);
-end
 
-function GGS:IsConnecting()
-    return isConnecting;
+    -- 阻塞当前执行流程
+    while(not GGS:IsConnected()) do sleep() end
 end
 
 function GGS:Send(data)
-    if (not isConnecting) then return end 
+    if (not GGS:IsConnected()) then return end 
     return GGS_Send(data);
 end
 
 function GGS:SendTo(username, data)
-    if (not isConnecting) then return end 
+    if (not GGS:IsConnected()) then return end 
     return GGS_SendTo(username, data);
+end
+
+function GGS:SetUserData(data)
+    GGS_SendUserData(data);
 end
 
 function GGS:Disconnect()
@@ -224,6 +235,9 @@ function GGS:OnConnect(callback)
 end
 function GGS:OnRecv(callback)
     RegisterEventCallBack(GGS_EVENT_TYPE.RECV, callback);
+end
+function GGS:OnUserData(callback)
+    RegisterEventCallBack(GGS_EVENT_TYPE.USER_DATA, callback);
 end
 function GGS:OnDisconnect(callback)
     RegisterEventCallBack(GGS_EVENT_TYPE.DISCONNECT, callback);
@@ -237,4 +251,4 @@ function GGS:GetPlayer(username)
     return __players__[username or ""];
 end
 
-GGS:InitSingleton();
+GGS:InitSingleton():Init();

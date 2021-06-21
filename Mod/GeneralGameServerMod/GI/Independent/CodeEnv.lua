@@ -47,6 +47,7 @@ function CodeEnv:ctor()
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
+	self.__filenames__ = {};      -- 防止文件代码重复执行
 end
 
 function CodeEnv:InstallAPI(api)
@@ -57,8 +58,8 @@ end
 
 function CodeEnv:Init(Independent)
     self.Independent = Independent;
+
 	self.dcall = function(...) Independent:Call(...) end
-	self.sleep = function(ms) Independent:Sleep(ms) end
 	
 	SceneAPI(self);
 	PlayerAPI(self);

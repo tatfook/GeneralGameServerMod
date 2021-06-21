@@ -81,7 +81,7 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.lower = string.lower;
 
     -- lua class
-    CodeEnv.coroutine = coroutine;
+    -- CodeEnv.coroutine = coroutine;
     CodeEnv.string = string;
     CodeEnv.table = Table;
     CodeEnv.math = math;

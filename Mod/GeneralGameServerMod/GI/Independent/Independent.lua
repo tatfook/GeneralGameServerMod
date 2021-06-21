@@ -18,8 +18,8 @@ Independent:Property("CodeEnv");                      -- 代码环境
 Independent:Property("Running", false, "IsRunning");  -- 是否在运行
 Independent:Property("LoopTimer");                    -- 循环定时器
 local LoopTickCount = 20;                             -- 定时器频率
-
-local function null_function() end 
+local coroutine_yield = coroutine.yield;
+local coroutine_resume = coroutine.resume;
 
 function Independent:Pack(args, ...)
 	args = type(args) == "table" and args or {};
@@ -59,7 +59,7 @@ function Independent:Init()
 		local callback = self:Select(1, __args__);
 		while(type(callback) == "function") do
 			self:XPCall(callback, self:Select(2, __args__));
-			self:Pack(__args__, coroutine.yield());
+			self:Pack(__args__, coroutine_yield());
 			callback = self:Select(1, __args__);
 		end
 	end);
@@ -73,6 +73,7 @@ end
 
 function Independent:LoadInnerModule()
 	local func = loadstring([[
+local System = require("System");
 local Log = require("Log");
 local State = require("State");
 local Timer = require("Timer");
@@ -82,20 +83,32 @@ local Scene = require("Scene");
 	self:Call(func); 
 end
 
-function Independent:LoadFile(filename)
+function Independent:IsLoaded(filename)
 	for i = 1, #self.__files__ do
-		if (self.__files__[i] == filename) then return end
+		if (self.__files__[i] == filename) then return true end
 	end
+	return false;
+end
+
+function Independent:LoadFile(filename)
+	if (self:IsLoaded(filename)) then return end
 
 	local text = Helper.ReadFile(filename);
 	if (not text or text == "") then return end
+
+	-- 生成防止重复执行代码, 未知原因会重复执行
+	local inner_text = string.format([[
+		local __filename__ = "%s";
+		if (__filenames__[__filename__]) then return end
+		__filenames__[__filename__] = true;
+	]], filename);
+	
+	text = inner_text .. "\n" .. text;
+	-- 生成函数
 	local code_func, errormsg = loadstring(text, "loadstring:" .. Helper.FormatFilename(filename));
 	if errormsg then
 		return GGS.INFO("Independent:LoadFile LoadString Failed", Helper.FormatFilename(filename), errormsg);
 	end
-
-	-- print("LoadFile:", filename)
-	-- if (filename == "%gi%/Independent/Example/Rank.lua") then print(text) end
 
 	-- 设置代码环境
 	setfenv(code_func, self:GetCodeEnv());
@@ -146,29 +159,12 @@ function Independent:IsCodeEnv()
 	return self.__co__ == co;
 end
 
-function Independent:Sleep(sleep)
-	if (not self:IsCodeEnv()) then return end 
-
-	local CodeEnv = self:GetCodeEnv();
-	local SleepLoopCallBack = nil;
-	local sleepTo = ParaGlobal.timeGetTime() + sleep;
-	local isSleeping = true;
-	local function SleepLoopCallBack()
-		local curtime = ParaGlobal.timeGetTime();
-		isSleeping = curtime < sleepTo;
-	end
-
-	CodeEnv.RegisterEventCallBack(CodeEnv.EventType.LOOP, SleepLoopCallBack);
-	while (isSleeping) do self:Yield() end
-	CodeEnv.RemoveEventCallBack(CodeEnv.EventType.LOOP, SleepLoopCallBack);
-end
-
 function Independent:Yield(...)
-	self:Call(coroutine.yield(...));
+	self:Call(coroutine_yield(...));
 end
 
 function Independent:Resume(...)
-	return coroutine.resume(self.__co__, ...);
+	return coroutine_resume(self.__co__, ...);
 end
 
 function Independent:Restart()

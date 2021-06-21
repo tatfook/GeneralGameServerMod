@@ -18,6 +18,8 @@ local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keep
 local PlayerAPI = NPL.export();
 
 local __code_env__ = nil;
+local __username__ = nil;
+local __nickname__ = nil;
 
 local function GetUserInfo()
     return KeepWorkItemManager.GetProfile();
@@ -28,15 +30,26 @@ local function GetUserId()
 end
 
 local function GetUserName()
-    local username = GetUserInfo().username;
-    if (not username or username == "") then
-        username = string.format("User_%s", __code_env__.GetTime());  -- 可能重名
+    if (__username__) then return __username__ end
+
+    __username__ = GetUserInfo().username;
+    if (not __username__ or __username__ == "") then
+        __username__ = string.format("User_%s", __code_env__.GetTime());  -- 可能重名
     end
-    return username;
+    
+    return __username__;
+end
+
+local function SetUserName(username)
+    __username__ = username;
 end
 
 local function GetNickName()
-    return GetUserInfo().nickname;
+    return __nickname__ or GetUserInfo().nickname;
+end
+
+local function SetNickName(nickname)
+    __nickname__ = nickname;
 end
 
 local function GetPlayer()
@@ -109,7 +122,9 @@ setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
 
     CodeEnv.GetUserId = GetUserId;
     CodeEnv.GetUserName = GetUserName;
+    CodeEnv.SetUserName = SetUserName;
     CodeEnv.GetNickName = GetNickName;
+    CodeEnv.SetNickName = SetNickName;
     CodeEnv.GetPlayer = GetPlayer;
     
     CodeEnv.GetPlayerEntityId = function() return EntityManager.GetPlayer().entityId end
