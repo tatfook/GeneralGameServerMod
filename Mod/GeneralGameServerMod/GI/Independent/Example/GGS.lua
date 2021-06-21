@@ -1,16 +1,8 @@
-local GGS = require("GGS");
-local State = require("State");
-local UI = require("UI");
+local GGSState = require("GGSState");
 
-local __GGS_STATE__ = GGS:GetState();
+local __GGS_STATE__ = GGSState:GetState();
 
--- 关闭自动同步状态数据
-GGS:SetAutoSyncState(false);
--- 初始化状态数据 
-__GGS_STATE__.level = 1;
--- 初始化完毕开启状态同步
-GGS:SetAutoSyncState(true);
-
+__GGS_STATE__.level = __GGS_STATE__.level or 1;
 
 local function ShowUI()
     UI.ShowWindow({
