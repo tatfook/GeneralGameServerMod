@@ -151,12 +151,16 @@ function NetServerHandler:handlePlayerLogout(text)
     if (not self:GetPlayer()) then return end
     
     PlayerLoginLogoutDebug.Format("玩家链接断开: UserName = %s", self:GetPlayer():GetUserName());
-   
+    -- 通知数据处理器
+    self:GetDataHandler():OnDisconnect();
+
     -- 下线走离线流程 登出直接踢出服务器
     self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家主动下线");
   
     -- 更新世界信息
     self:GetWorkerServer():SendWorldInfo(self:GetWorld():GetWorldInfo());
+
+    
 end
 
 -- 监听包处理后

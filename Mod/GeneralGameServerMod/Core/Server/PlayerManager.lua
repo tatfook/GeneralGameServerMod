@@ -420,7 +420,7 @@ end
 -- 获取指定玩家
 function PlayerManager:GetPlayer(id)
     -- 通过用户名查找玩家
-    if (type == "string") then return self.players[id] end
+    if (type(id) == "string") then return self.players[id] end
     
     -- 玩家验证
     if (self:IsPlayer(id)) then 

@@ -16,16 +16,14 @@ GGSState:Property("AutoSyncState", true, "IsAutoSyncState");
 
 local __username__ = GetUserName();
 local __states__ = NewScope();
-local __all_user_state__ = __states__:Get("__all_user_state__", {});
-local __share_state__ = __states__:Get("__share_state__", {});   -- 共享数据
-local __state__ = __all_user_state__:Get(__username__, {});      -- 用户独立数据 
+local __state__ = __states__:Get(__username__, {});            -- 用户独立数据 
 
 GGS.EVENT_TYPE.REQUEST_SYNC_STATE = "GGS_REQUEST_SYNC_STATE";
 GGS.EVENT_TYPE.RESPONSE_SYNC_STATE = "GGS_RESPONSE_SYNC_STATE";
 GGS.EVENT_TYPE.AUTO_SYNC_STATE = "GGS_AUTO_SYNC_STATE";
 
 local __sync_key_val_list__ = {};
-__state__:__set_newindex_callback__(function(scope, key, newval, oldval)
+__states__:__set_newindex_callback__(function(scope, key, newval, oldval)
     if (not GGS:IsConnected() or not GGSState:IsAutoSyncState()) then return end 
 
     local keys = scope:__get_keys__(key);
@@ -64,7 +62,7 @@ local function AutoSyncState(msg)
         local state = __states__;
         for j = 1, size - 1 do
             local key = keys[j];
-            if (not state:IsScope(state:Get(key))) then state:Set(key, NewScope()) end
+            if (not state:__is_scope__(state:Get(key))) then state:Set(key, NewScope()) end
             state = state:Get(key);
         end
         state:Set(keys[size], value);
@@ -82,7 +80,7 @@ local function RequestSyncState(msg)
     GGS:SendTo(username, {
         action = GGS.EVENT_TYPE.RESPONSE_SYNC_STATE,
         username = __username__,
-        state = __state__:ToPlainObject();
+        state = __state__:ToPlainObject(),
     });
 end
 
@@ -94,13 +92,16 @@ local function ResponseSyncState(msg)
     GGSState:SetAutoSyncState(true);
 end
 
-
 function GGSState:Init()
     return self;
 end
 
-function GGSState:GetState()
+function GGSState:GetUserState()
     return __state__;
+end
+
+function GGSState:GetAllUserState()
+    return __states__;
 end
 
 function GGSState:Get(key, default_value)
@@ -113,14 +114,15 @@ end
 
 GGSState:InitSingleton():Init();
 
--- 连接
+-- 连接回调
 GGS:OnConnect(function()
+    -- 发送状态
     GGS:Send({
         action = GGS.EVENT_TYPE.REQUEST_SYNC_STATE, 
         username = __username__,
         state = __state__:ToPlainObject(),
     });
-end);
+end)
 
 -- 收到数据
 GGS:OnRecv(function(msg)
@@ -132,12 +134,8 @@ end);
 
 -- 断开
 GGS:OnDisconnect(function(username)
-    if (username == __username__) then
-        MainPlayerLogout();
-    else
-        PlayerLogout(username);
-    end
 end)
 
--- 默认连接
+-- 连接
 GGS:Connect(); 
+

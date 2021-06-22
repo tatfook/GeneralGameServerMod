@@ -35,3 +35,8 @@ function AppServerDataHandler:RecvData(data)
 
 	self:SendDataToAllPlayer(data);
 end
+
+-- 掉线处理
+function AppServerDataHandler:OnDisconnect()
+	self:GetGIServerDataHandler():OnDisconnect();
+end

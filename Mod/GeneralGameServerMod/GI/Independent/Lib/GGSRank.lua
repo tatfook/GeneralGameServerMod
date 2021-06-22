@@ -39,6 +39,7 @@ end
     title = "昵称",                   -- 标题名
     no = 1,                           -- 列号 字段顺序
     width = 100,                      -- 字段宽度
+    require = true,                   -- 是否是必填字段
 }
 --]] 
 
@@ -148,19 +149,32 @@ function GGSRank:RefreshRank(userdata)
     end
 
     if (not rank) then
-        table.insert(ranks, {});        
+        table.insert(ranks, {__username__ = userdata.__username__});        
         rank = ranks[#ranks];
     end
 
     for _, field in pairs(fields) do
-        rank[field.key] = userdata[field.key];
+        if (field.key == "__username__") then 
+            -- 忽略内置字段
+        elseif (userdata[field.key] == nil) then
+            -- 如果字段值不存在则移除
+            for i, item in ipairs(ranks) do
+                if (item.__username__ == userdata.__username__) then
+                    table.remove(ranks, i);
+                    return ;
+                end
+            end
+        else
+            -- 填充字段值
+            rank[field.key] = userdata[field.key];
+        end
     end
-    rank.__username__ = userdata.__username__;
+
     GGSRank:Sort();
 end
 
 function GGSRank:RefreshRanks()
-    local allUserData = GGS_GetAllUserData();
+    local allUserData = GGS:GetAllUserData();
     for _, userdata in pairs(allUserData) do 
         self:RefreshRank(userdata);
     end
