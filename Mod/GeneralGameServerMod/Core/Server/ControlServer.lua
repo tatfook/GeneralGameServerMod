@@ -112,7 +112,7 @@ function ControlServer:UpdateServerInfo()
     end
     server.defaultThreadName = defaultThreadName; -- 默认线程名 取数量最小的线程
     
-    GGS.DEBUG(server);
+    GGS.INFO(server);
     GGS.INFO(servers);
 end
 

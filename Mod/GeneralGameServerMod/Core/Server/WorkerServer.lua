@@ -60,7 +60,7 @@ function WorkerServer:Init()
             if (success) then
                 GGS.INFO.Format("成功连接控制服务, controlServerIp = %s controlServerPort = %s", self.controlServerIp, self.controlServerPort);
                 -- 推送服务器信息到控制器
-                self.SendServerInfoTimer:Change(0, 1000 * 60 * 2);                                     -- 每2分钟上报一次 
+                self.SendServerInfoTimer:Change(0, IsDevEnv and 1000 * 10 or 1000 * 60 * 2);           -- 每2分钟上报一次 
             else
                 GGS.INFO.Format("无法连接控制服务, 2 分钟后重连...");
                 commonlib.Timer:new({callbackFunc = ConnectControlServer}):Change(2 * 60 * 1000);      -- 两分钟后重连
