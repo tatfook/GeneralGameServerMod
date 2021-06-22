@@ -75,7 +75,7 @@ end
 function WorkerServer:SendServerInfo()
     if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "SendServerInfo"}) end
 
-    GGS.INFO("WorkerServer upload server info");
+    GGS.INFO.If(IsDevEnv, "WorkerServer upload server info");
     self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
         action = "ServerInfo",
         data = {

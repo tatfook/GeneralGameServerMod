@@ -112,13 +112,13 @@ function ControlServer:UpdateServerInfo()
     end
     server.defaultThreadName = defaultThreadName; -- 默认线程名 取数量最小的线程
     
-    GGS.INFO(server);
-    GGS.INFO(servers);
+    GGS.INFO.If(IsDevEnv, server);
+    GGS.INFO.If(IsDevEnv, servers);
 end
 
 -- 处理服务器信息上报
 function ControlServer:handleServerInfo(serverInfo)
-    GGS.INFO("ControlServer:handleServerInfo", serverInfo);
+    GGS.INFO.If(IsDevEnv, "ControlServer:handleServerInfo", serverInfo);
 
     local server = self:GetServer(true);
 
