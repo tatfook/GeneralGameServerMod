@@ -58,7 +58,7 @@ function WorkerServer:Init()
     local function ConnectControlServer()
         self.connection:Connect(5, function(success)
             if (success) then
-                GGS.INFO.Format("成功连接控制服务");
+                GGS.INFO.Format("成功连接控制服务, controlServerIp = %s controlServerPort = %s", self.controlServerIp, self.controlServerPort);
                 -- 推送服务器信息到控制器
                 self.SendServerInfoTimer:Change(0, 1000 * 60 * 2);                                     -- 每2分钟上报一次 
             else
@@ -75,6 +75,7 @@ end
 function WorkerServer:SendServerInfo()
     if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "SendServerInfo"}) end
 
+    GGS.INFO("WorkerServer upload server info");
     self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
         action = "ServerInfo",
         data = {

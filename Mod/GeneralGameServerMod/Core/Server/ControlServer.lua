@@ -113,11 +113,13 @@ function ControlServer:UpdateServerInfo()
     server.defaultThreadName = defaultThreadName; -- 默认线程名 取数量最小的线程
     
     GGS.DEBUG(server);
-    GGS.DEBUG(servers);
+    GGS.INFO(servers);
 end
 
 -- 处理服务器信息上报
 function ControlServer:handleServerInfo(serverInfo)
+    GGS.INFO("ControlServer:handleServerInfo", serverInfo);
+
     local server = self:GetServer(true);
 
     server.isControlServer = if_else(serverInfo.isControlServer == nil, false, serverInfo.isControlServer);
