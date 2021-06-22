@@ -35,6 +35,9 @@ function WorkerServer:ctor()
 
     self.controlServerIp = controlServerCfg.innerIp;
     self.controlServerPort = controlServerCfg.innerPort;
+
+    self.isControlServer = Config.Server.isControlServer;
+    self.isWorkerServer = Config.Server.isWorkerServer;
 end
 
 -- 初始化函数
@@ -75,7 +78,8 @@ function WorkerServer:SendServerInfo()
     self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
         action = "ServerInfo",
         data = {
-            isWorkerServer = true,                                       -- 是否是工作线程
+            isWorkerServer = self.isWorkerServer,                        -- 是否是工作线程
+            isControlServer = self.isControlServer,                      -- 是否是工作线程
             innerIp = self.innerIp,                                      -- 内网IP 
             innerPort = self.innerPort,                                  -- 内网Port
             outerIp = self.outerIp,                                      -- 外网IP

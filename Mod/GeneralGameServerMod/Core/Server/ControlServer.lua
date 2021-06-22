@@ -59,6 +59,8 @@ function ControlServer:GetStatisticsInfo()
 
     end
 
+    GGS.INFO(servers);
+
     return {
         totalClientCount = totalClientCount,              -- 存在线客户端数
         totalWorldCount = totalWorldCount,                -- 存在的世界数
@@ -110,15 +112,16 @@ function ControlServer:UpdateServerInfo()
     end
     server.defaultThreadName = defaultThreadName; -- 默认线程名 取数量最小的线程
     
-    -- GGS.DEBUG(server);
+    GGS.DEBUG(server);
+    GGS.DEBUG(servers);
 end
 
 -- 处理服务器信息上报
 function ControlServer:handleServerInfo(serverInfo)
     local server = self:GetServer(true);
 
-    server.isControlServer = serverInfo.isWorkerServer == nil and false or serverInfo.isWorkerServer;
-    server.isWorkerServer = serverInfo.isWorkerServer == nil and true or serverInfo.isWorkerServer;
+    server.isControlServer = if_else(serverInfo.isControlServer == nil, false, serverInfo.isControlServer);
+    server.isWorkerServer = if_else(serverInfo.isWorkerServer == nil, true, serverInfo.isWorkerServer);
     server.maxClientCount = serverInfo.maxClientCount or Config.Server.maxClientCount;
     server.threadCount = serverInfo.threadCount or Config.Server.threadCount;
     server.threadMaxClientCount = serverInfo.threadMaxClientCount or Config.Server.threadMaxClientCount;

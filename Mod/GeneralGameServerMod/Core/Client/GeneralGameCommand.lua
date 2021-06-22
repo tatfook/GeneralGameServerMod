@@ -167,7 +167,7 @@ function GeneralGameCommand:handleFileSyncCommond(cmd_text)
 	local FileSync = NPL.load("Mod/GeneralGameServerMod/FileSync/FileSync.lua");
 	local options, cmd_text = ParseOptions(cmd_text);	
 	local filepath, cmd_text = CmdParser.ParseString(cmd_text);
-	local ip = IsDevEnv and "127.0.0.1" or (options.ip or "ggs.keepwork.com");
+	local ip = options.ip or (IsDevEnv and "127.0.0.1" or "ggs.keepwork.com");
 	local port = options.port or 9000;
 	FileSync:SetIpPort(ip, port);
 	if (not filepath or filepath == "") then

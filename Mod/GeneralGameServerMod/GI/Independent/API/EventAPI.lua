@@ -129,6 +129,11 @@ setmetatable(EventAPI, {
 
         CodeEnv.IsKeyDown = IsKeyDown;
 
+        -- 事件注册快捷方式
+        CodeEnv.OnMouseKey = function(callback) RegisterEventCallBack(EventType.MOUSE_KEY, callback) end
+        CodeEnv.OnMouse = function(callback) RegisterEventCallBack(EventType.MOUSE, callback) end
+        CodeEnv.OnKey = function(callback) RegisterEventCallBack(EventType.KEY, callback) end
+
         local SceneContext = CodeEnv.SceneContext;
         -- SceneContext:SetMouseEventCallBack(function(...) 
         --     TriggerEventCallBack(EventType.MOUSE, ...) 
