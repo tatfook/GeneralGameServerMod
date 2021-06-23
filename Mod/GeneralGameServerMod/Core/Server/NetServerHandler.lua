@@ -233,9 +233,10 @@ function NetServerHandler:handleGeneral_Debug(packetGeneral)
         packetGeneral.data.debug = self:GetWorkerServer():GetServerList();
         self:SendPacketToPlayer(packetGeneral);
     elseif (cmd == "StatisticsInfo") then
-        self:GetWorkerServer():UpdateStatisticsInfo();
-        packetGeneral.data.debug = self:GetWorkerServer():GetStatisticsInfo();
-        self:SendPacketToPlayer(packetGeneral);
+        self:GetWorkerServer():UpdateStatisticsInfo(function()
+            packetGeneral.data.debug = self:GetWorkerServer():GetStatisticsInfo();
+            self:SendPacketToPlayer(packetGeneral);
+        end);
     elseif (cmd == "ping") then
         packetGeneral.data.debug = self:GetPlayer():IsValid();
         self:SendPacketToPlayer(packetGeneral);

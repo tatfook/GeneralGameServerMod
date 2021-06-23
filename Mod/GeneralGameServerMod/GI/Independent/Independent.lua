@@ -236,3 +236,4 @@ function Independent:Stop()
 end
 
 Independent:InitSingleton():Init();
+

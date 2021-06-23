@@ -458,7 +458,7 @@ function NetClientHandler:Connect()
 
     -- 获取连接
     self.connection = Connection:new():Init({ip = options.ip, port = options.port, threadName = options.threadName, netHandler = self});
-    self.connection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
+    self.connection:SetRemoteNeuronFile("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
 
     GGS.DEBUG.Format(self.connection:GetRemoteAddress());
     -- 连接成功

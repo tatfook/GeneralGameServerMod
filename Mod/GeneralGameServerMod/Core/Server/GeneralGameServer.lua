@@ -43,19 +43,17 @@ function GeneralGameServer:LoadNetworkSettings()
 	-- npl message queue size is set to really large
 	__rts__:SetMsgQueueSize(500);
 
-	-- 暴露接口文件
+	-- 暴露接口文件	
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua", 402);
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 403);  
-	-- NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ThreadHelper.lua", 404);
+	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua", 404);
 	for i, publicFile in ipairs(Config.PublicFiles) do NPL.AddPublicFile(publicFile, 500 + i) end
 end
 
 -- 启动服务
 function GeneralGameServer:Start() 
 	if (self.isStart) then return end;
-	-- 初始化
-	-- ThreadHelper:Init();
 
     -- 设置系统属性
     self:LoadNetworkSettings();

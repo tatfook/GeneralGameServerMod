@@ -20,7 +20,7 @@ local FileSyncDebug = GGS.Debug.GetModuleDebug("FileSyncDebug");
 function NetClientHandler:ctor()
     self:SetSynchronousSend(true);
     self:SetThreadName("FileSync");
-    self:SetDefaultNeuronFile("Mod/GeneralGameServerMod/FileSync/NetServerHandler.lua");
+    self:SetRemoteNeuronFile("Mod/GeneralGameServerMod/FileSync/NetServerHandler.lua");
     self:SetNetHandler(self);
 end
 

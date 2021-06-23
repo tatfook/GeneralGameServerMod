@@ -60,6 +60,10 @@ function CodeEnv:Init(Independent)
     self.Independent = Independent;
 
 	self.dcall = function(...) Independent:Call(...) end
+	-- 内部函数, 不可随意调用
+	self.__running__ = coroutine.running;
+	self.__resume__ = coroutine.resume;
+	self.__co__ = Independent.__co__;
 	
 	SceneAPI(self);
 	PlayerAPI(self);

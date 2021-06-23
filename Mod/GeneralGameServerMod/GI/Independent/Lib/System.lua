@@ -16,9 +16,11 @@ function sleep(sleep)
 	local SleepLoopCallBack = nil;
 	local sleepTo = GetTime() + (sleep or 0);
 	local isSleeping = true;
+	local co = __running__();
 	local function SleepLoopCallBack()
 		local curtime = GetTime();
 		isSleeping = curtime < sleepTo;
+		if (co ~= __co__) then __resume__(co) end
 	end
 	RegisterEventCallBack(EventType.LOOP, SleepLoopCallBack);
 	while (isSleeping) do Independent:Yield() end

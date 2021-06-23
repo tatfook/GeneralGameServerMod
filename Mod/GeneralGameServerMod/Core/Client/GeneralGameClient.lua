@@ -331,8 +331,7 @@ function GeneralGameClient:ConnectControlServer()
 
     GGS.DEBUG(string.format("control server ServerIp: %s, ServerPort: %s", serverIp, serverPort));
 
-    self.controlServerConnection = Connection:new():Init({ip = serverIp, port = serverPort, netHandler = self});
-    self.controlServerConnection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
+    self.controlServerConnection = Connection:new():Init({ip = serverIp, port = serverPort, netHandler = self, remoteNeuronFile = "Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"});
     self.controlServerConnection:Connect(5, function(success)
         if (not success) then
             -- _guihelper.MessageBox(L"无法链接到这个服务器,可能该服务器未开启或已关闭.详情请联系该服务器管理员.");

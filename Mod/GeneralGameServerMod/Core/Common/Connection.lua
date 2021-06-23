@@ -17,8 +17,9 @@ local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 local ConnectionBase = NPL.load("Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");
 local Connection = commonlib.inherit(ConnectionBase, commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"));
 
-Connection:Property("DefaultNeuronFile", "Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-ConnectionBase:Property("NetHandler");
+Connection:Property("RemoteNeuronFile", "Mod/GeneralGameServerMod/Core/Common/Connection.lua");   -- 对端处理文件
+Connection:Property("LocalNeuronFile", "Mod/GeneralGameServerMod/Core/Common/Connection.lua");    -- 本地处理文件
+Connection:Property("NetHandler");
 
 local NetDebug = GGS.NetDebug;
 
@@ -32,6 +33,8 @@ function Connection:Init(opts)
 end
 
 function Connection:OnConnection()
+	Connection._super.OnConnection(self);
+	
 	local netHandler = self:GetNetHandler();
 	if(netHandler and netHandler.handleConnection) then
 		netHandler:handleConnection();
@@ -94,19 +97,6 @@ function Connection:OnReceive(msg)
 	if (netHandler and netHandler.OnAfterProcessPacket) then
 		netHandler:OnAfterProcessPacket(packet or msg, msg);
 	end
-end
-
--- 版本兼容, 升级几个小版本后可以移除
-function Connection:OnActivate(msg)
-	if (not GGS.IsServer or self ~= Connection) then return Connection._super.OnActivate(self, msg) end
-
-	local nid = msg and (msg.nid or msg.tid);
-	local connection = self:GetConnectionByNid(nid);
-	if(connection) then return connection:OnReceive(msg) end
-
-	NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
-	local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
-	NetServerHandler:new():Init({nid = nid}):OnConnection();
 end
 
 NPL.this(function() 

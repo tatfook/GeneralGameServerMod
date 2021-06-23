@@ -35,6 +35,9 @@ function SceneContext:mousePressEvent(event)
 
     local callback = self:GetMousePressEventCallBack();
     if (type(callback) == "function") then callback(event) end
+
+    -- 通知代码方块
+    GameLogic.GetCodeGlobal():BroadcastKeyPressedEvent("mouse_buttons", event);
 end
 
 function SceneContext:mouseMoveEvent(event)
@@ -49,6 +52,11 @@ function SceneContext:mouseReleaseEvent(event)
 
     local callback = self:GetMouseReleaseEventCallBack();
     if (type(callback) == "function") then callback(event) end
+
+    -- 通知代码方块
+    if (event:button() == "left" and event:GetDragDist() < 10) then
+        GameLogic.GetCodeGlobal():BroadcastBlockClickEvent("BroadcastBlockClickEvent", event);
+    end
 end
 
 function SceneContext:mouseWheelEvent(event)
@@ -56,6 +64,9 @@ function SceneContext:mouseWheelEvent(event)
 
     local callback = self:GetMouseWheelEventCallBack();
     if (type(callback) == "function") then callback(event) end
+
+    -- 通知代码方块
+    GameLogic.GetCodeGlobal():BroadcastKeyPressedEvent("mouse_wheel", mouse_wheel);
 end
 
 -- function SceneContext:handleKeyEvent(event)
@@ -69,6 +80,9 @@ function SceneContext:keyPressEvent(event)
 
     local callback = self:GetKeyPressEventCallBack();
     if (type(callback) == "function") then callback(event) end
+
+    -- 通知代码方块
+    GameLogic.GetCodeGlobal():BroadcastKeyPressedEvent(event.keyname);
 end
 
 function SceneContext:keyReleaseEvent(event)

@@ -22,7 +22,7 @@ local WorkerServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"
 WorkerServer:Property("ServerList", {});                    -- 服务器列表
 WorkerServer:Property("ServerInfo", {});                    -- 服务器信息
 WorkerServer:Property("StatisticsInfo", {});                -- 统计信息
-
+WorkerServer:Property("MainThread", false, "IsMainThread"); -- 是否是主线程
 -- 构造函数
 function WorkerServer:ctor()
     local workerServerCfg = Config.WorkerServer;
@@ -38,6 +38,8 @@ function WorkerServer:ctor()
 
     self.isControlServer = Config.Server.isControlServer;
     self.isWorkerServer = Config.Server.isWorkerServer;
+
+    self:SetMainThread(__rts__:GetName() == "main");
 end
 
 -- 初始化函数
@@ -53,8 +55,7 @@ function WorkerServer:Init()
     end});
 
     -- 连接控制器
-    self.connection = Connection:new():Init({ip = self.controlServerIp, port = self.controlServerPort, netHandler = self});
-    self.connection:SetDefaultNeuronFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
+    self.connection = Connection:new():Init({ip = self.controlServerIp, port = self.controlServerPort, netHandler = self, remoteNeuronFile = "Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"});
     local function ConnectControlServer()
         self.connection:Connect(5, function(success)
             if (success) then
@@ -75,7 +76,7 @@ end
 function WorkerServer:SendServerInfo()
     if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "SendServerInfo"}) end
 
-    GGS.INFO.If(IsDevEnv, "WorkerServer upload server info");
+    -- GGS.INFO.If(IsDevEnv, "WorkerServer upload server info");
     self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({
         action = "ServerInfo",
         data = {
@@ -101,9 +102,11 @@ function WorkerServer:SendWorldInfo(world)
 end
 
 -- 更新统计信息
-function WorkerServer:UpdateStatisticsInfo()
-    if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "UpdateStatisticsInfo"}) end
+local UpdateStatisticsInfoCallBack = nil
+function WorkerServer:UpdateStatisticsInfo(callback)
+    UpdateStatisticsInfoCallBack = callback;
 
+    if (__rts__:GetName() ~= "main") then return self:SendMsgToMainThread({action = "UpdateStatisticsInfo"}) end
     self.connection:AddPacketToSendQueue(Packets.PacketGeneral:new():Init({action = "StatisticsInfo"}));
 end
 
@@ -111,8 +114,10 @@ end
 function WorkerServer:handleGeneral(packetGeneral)
     local action = packetGeneral.action;
     local data = packetGeneral.data;
+    -- GGS.INFO(__rts__:GetName(), action, data);
     if (action == "ServerList") then 
         self:SetServerList(data);
+        self:SendMsgToWorkerThread({action="SetServerList", data = data});
     elseif (action == "ServerInfo") then
         self:SetServerInfo(data);
         self:SendMsgToWorkerThread({action="SetServerInfo", data = data});
@@ -162,7 +167,10 @@ local function activate()
     elseif (action == "SetServerList") then
         return WorkerServer:SetServerList(data)
     elseif (action == "SetStatisticsInfo") then
-        return WorkerServer:SetStatisticsInfo(data);
+        WorkerServer:SetStatisticsInfo(data);
+        if (type(UpdateStatisticsInfoCallBack) == "function") then
+            UpdateStatisticsInfoCallBack();
+        end
     end
 end
 

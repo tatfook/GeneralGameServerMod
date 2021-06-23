@@ -10,13 +10,9 @@ end);
 -- 显示UI
 GGSRank:ShowUI();
 
-local TickCount = 0
-function loop()
-    TickCount = TickCount + 1;
-    if (TickCount < 30) then return end
-    TickCount = 0;
+SetInterval(1000, function()
     -- 更新字段值
     GGSRank:SetFieldValue("score", GGSRank:GetFieldValue("score") + 1);
-end
+end)
 
 

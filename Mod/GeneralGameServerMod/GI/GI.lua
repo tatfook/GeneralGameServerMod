@@ -31,10 +31,17 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Commands/CommandManager.lua");
 -- 加载粒子系统
 -- NPL.load("./Game/ParticleSystem/ParticleHeader");
 
-local Listener = NPL.load("./Utility/Listener.lua", IsDevEnv);
+-- local Listener = NPL.load("./Utility/Listener.lua", IsDevEnv);
 
-local GI = NPL.export();
+local Independent = NPL.load("./Independent/Independent.lua", IsDevEnv);
 
-_G.GI = GI;
+local GI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-GI.Listener = Listener;
+-- GI:Property("SandboxAPI");
+
+function GI:GetSandboxAPI() 
+    Independent:Start();
+    return Independent:GetCodeEnv();
+end
+
+GI:InitSingleton();

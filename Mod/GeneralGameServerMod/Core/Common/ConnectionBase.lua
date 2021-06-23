@@ -19,7 +19,8 @@ local NextConnectionId = 0;
 ConnectionBase:Property("ConnectionId", 0);
 ConnectionBase:Property("Nid", "");
 ConnectionBase:Property("ThreadName", "gl");
-ConnectionBase:Property("DefaultNeuronFile", "Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");
+ConnectionBase:Property("RemoteNeuronFile", "Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");   -- 对端处理文件
+ConnectionBase:Property("LocalNeuronFile", "Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");    -- 本地处理文件
 ConnectionBase:Property("ConnectionClosed", false, "IsConnectionClosed");
 ConnectionBase:Property("SynchronousSend", false, "IsSynchronousSend");   -- 是否采用同步发送数据包模式
 ConnectionBase:Property("SynchronousSendTimeout", 3);                     -- 同步发送超时时间
@@ -38,7 +39,8 @@ end
 function ConnectionBase:Init(opts)
     if (type(opts) ~= "table") then return self end
     if (opts.threadName) then self:SetThreadName(opts.threadName) end
-    if (opts.defaultNeuronFile) then self:SetDefaultNeuronFile(opts.defaultNeuronFile) end
+    if (opts.remoteNeuronFile) then self:SetRemoteNeuronFile(opts.remoteNeuronFile) end
+    if (opts.localNeuronFile) then self:SetLocalNeuronFile(opts.localNeuronFile) end
     
     if (opts.nid) then 
         self:SetNid(opts.nid);
@@ -53,10 +55,9 @@ function ConnectionBase:Init(opts)
 end
 
 function ConnectionBase:GetRemoteAddress(neuronfile)
-	return string.format("(%s)%s:%s", self:GetThreadName() or "gl", self:GetNid() or "", neuronfile or self:GetDefaultNeuronFile());
+	return string.format("(%s)%s:%s", self:GetThreadName() or "gl", self:GetNid() or "", neuronfile or self:GetRemoteNeuronFile());
 end
 
-local ping_msg = {url = "ping",};
 -- this function is only called for a client to establish a connection with remote server.
 -- on the server side, accepted connections never need to call this function. 
 -- @param timeout: the number of seconds to timeout. if 0, it will just ping once. 
@@ -65,9 +66,10 @@ function ConnectionBase:Connect(timeout, callback_func)
 	if(self.is_connecting) then return end
 	self.is_connecting = true;
 	local address = self:GetRemoteAddress();
+	local data = {thread_name = __rts__:GetName(), neuron_file = self:GetLocalNeuronFile()};
 	if(not callback_func) then
 		-- if no call back function is provided, this function will be synchronous. 
-		if( NPL.activate_with_timeout(timeout or 1, address, ping_msg) ~=0 ) then
+		if( NPL.activate_with_timeout(timeout or 1, address, data) ~=0 ) then
 			self.is_connecting = nil;
 			LOG.std("", "warn", "Connection", "failed to connect to server %s", self:GetNid());
 		else
@@ -83,7 +85,7 @@ function ConnectionBase:Connect(timeout, callback_func)
 		
 		local mytimer = commonlib.Timer:new({callbackFunc = function(timer)
 			try_count = try_count + 1;
-			if(NPL.activate(address, ping_msg) ~=0) then
+			if(NPL.activate(address, data) ~=0) then
 				if(intervals[try_count]) then
 					timer:Change(intervals[try_count], nil);
 				else
@@ -149,7 +151,7 @@ end
 
 -- 新链接
 function ConnectionBase:OnConnection()
-	NPL.activate("(main)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", {action = "ConnectionEstablished", threadName = __rts__:GetName(), ConnectionNid = nid});
+	NPL.activate("(main)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", {action = "ConnectionEstablished", threadName = __rts__:GetName(), ConnectionNid = self:GetNid()});
 end
 
 -- 获取连接
@@ -178,7 +180,7 @@ function ConnectionBase:OnActivate(msg)
 	local connection = AllConnections[nid];
     if(connection) then return connection:OnReceive(msg) end
 	-- 新建连接
-	connection = self:new():Init({nid=nid});
+	connection = self:new():Init({nid=nid, threadName = msg.thread_name, remoteNeuronFile = msg.neuron_file});
 	connection:OnConnection();
 	connection:handleMsg(msg);
 end
@@ -192,7 +194,7 @@ NPL.this(function()
 	local threadName = __rts__:GetName();
 
 	if (nid) then return ConnectionBase:OnActivate(msg) end
-
+	
 	if (action == "ConnectionEstablished") then
 		ConnectionThread[msg.ConnectionNid] = msg.threadName; 
 	elseif (action == "ConnectionDisconnected") then

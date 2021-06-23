@@ -59,7 +59,7 @@ function ControlServer:GetStatisticsInfo()
 
     end
 
-    GGS.INFO(servers);
+    -- GGS.INFO(servers);
 
     return {
         totalClientCount = totalClientCount,              -- 存在线客户端数
@@ -112,13 +112,13 @@ function ControlServer:UpdateServerInfo()
     end
     server.defaultThreadName = defaultThreadName; -- 默认线程名 取数量最小的线程
     
-    GGS.INFO.If(IsDevEnv, server);
-    GGS.INFO.If(IsDevEnv, servers);
+    -- GGS.INFO.If(IsDevEnv, server);
+    -- GGS.INFO.If(IsDevEnv, servers);
 end
 
 -- 处理服务器信息上报
 function ControlServer:handleServerInfo(serverInfo)
-    GGS.INFO.If(IsDevEnv, "ControlServer:handleServerInfo", serverInfo);
+    -- GGS.INFO.If(IsDevEnv, "ControlServer:handleServerInfo", serverInfo);
 
     local server = self:GetServer(true);
 
