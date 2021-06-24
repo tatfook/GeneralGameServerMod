@@ -189,7 +189,7 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
                 end
             end
             -- 选出压力最小的工作主机 
-            workerServer = (svr.isWorkerServer and (not workerServer or workerServer.totalClientCount > svr.totalClientCount)) and svr or workerServer;
+            workerServer = (svr.isWorkerServer and not svr.isControlServer and (not workerServer or workerServer.totalClientCount > svr.totalClientCount)) and svr or workerServer;
             -- 选出压力最小的控制主机
             controlServer = (svr.isControlServer and (not controlServer or controlServer.totalClientCount > svr.totalClientCount)) and svr or controlServer;
         end
