@@ -12,9 +12,10 @@ local CodeEnv = NPL.load("Mod/GeneralGameServerMod/GI/Independent/CodeEnv.lua");
 local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua", IsDevEnv);
 
-local Event = NPL.load("../Game/Input/Event.lua", IsDevEnv);
-local TickEvent = NPL.load("../Game/Input/TickEvent.lua", IsDevEnv);
-local SceneContext = NPL.load("../Game/Input/SceneContext.lua", IsDevEnv);
+local EventEmitter = NPL.load("../Game/Event/EventEmitter.lua", IsDevEnv);
+local Event = NPL.load("../Game/Event/Event.lua", IsDevEnv);
+local TickEvent = NPL.load("../Game/Event/TickEvent.lua", IsDevEnv);
+local SceneContext = NPL.load("../Game/Event/SceneContext.lua", IsDevEnv);
 
 local SceneAPI = NPL.load("./API/SceneAPI.lua", IsDevEnv);
 local PlayerAPI = NPL.load("./API/PlayerAPI.lua", IsDevEnv);
@@ -33,6 +34,7 @@ CodeEnv.Vue = Vue;
 CodeEnv.Debug = GGS.Debug;
 CodeEnv.DebugStack = DebugStack;
 
+CodeEnv.EventEmitter = EventEmitter;
 CodeEnv.SceneContext = SceneContext;
 CodeEnv.Event = Event;
 CodeEnv.TickEvent = TickEvent;
@@ -43,11 +45,11 @@ function CodeEnv:ctor()
 	self._G = self;
 	self.__env__ = self;          -- 快捷方式
 
+	self.__filenames__ = {};      -- 防止文件代码重复执行
 	self.__modules__ = {};        -- 模块
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
-	self.__filenames__ = {};      -- 防止文件代码重复执行
 end
 
 function CodeEnv:InstallAPI(api)
@@ -56,14 +58,21 @@ function CodeEnv:InstallAPI(api)
 	end
 end
 
-function CodeEnv:Init(Independent)
-    self.Independent = Independent;
-
-	self.dcall = function(...) Independent:Call(...) end
+function CodeEnv:InstallIndependentAPI(Independent)
 	-- 内部函数, 不可随意调用
-	self.__running__ = coroutine.running;
-	self.__resume__ = coroutine.resume;
+	self.__coroutine_running__ = coroutine.running;
+	self.__coroutine_resume__ = coroutine.resume;
 	self.__co__ = Independent.__co__;
+	self.__yield__ = function(...) Independent:Yield(...) end
+	self.__clear__ = function() self:Clear() end 
+	self.__restart__ = function() Independent:Restart() end
+	self.__stop__ = function() Independent:Stop() end
+	self.__call__ = function(...) return Independent:Call(...) end
+	self.__loadfile__ = function(...) return Independent:LoadFile(...) end
+end
+
+function CodeEnv:Init(Independent)
+	self:InstallIndependentAPI(Independent);
 	
 	SceneAPI(self);
 	PlayerAPI(self);
@@ -88,4 +97,6 @@ function CodeEnv:Clear()
 	for _, entity in pairs(self.__entities__) do
 		entity:SetDead();
 	end
+
+	self.__event_callback__ = {}; -- 事件回调
 end

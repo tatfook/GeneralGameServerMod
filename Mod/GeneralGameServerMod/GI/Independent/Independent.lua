@@ -6,7 +6,7 @@ Desc:
 use the lib:
 ------------------------------------------------------------
 local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
-Independent:LoadFile("%gi%/Independent/Example/Empty.lua");
+Independent:Start("%gi%/Independent/Example/Empty.lua");
 ------------------------------------------------------------
 ]]
 local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Helper.lua", IsDevEnv);
@@ -14,10 +14,14 @@ local CodeEnv = NPL.load("./CodeEnv.lua", IsDevEnv);
 
 local Independent = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-Independent:Property("CodeEnv");                      -- 代码环境
-Independent:Property("Running", false, "IsRunning");  -- 是否在运行
-Independent:Property("LoopTimer");                    -- 循环定时器
-local LoopTickCount = 20;                             -- 定时器频率
+Independent:Property("CodeEnv");                              -- 代码环境
+Independent:Property("Running", false, "IsRunning");          -- 是否在运行
+Independent:Property("LoopTimer");                            -- 循环定时器
+Independent:Property("LoopTickCount", 20);                    -- 主循环频率
+Independent:Property("ErrorExit", true, "IsErrorExit");       -- 出错退出
+Independent:Property("ShareMouseKeyBoard", false, "IsShareMouseKeyBoard");            -- 是否共享鼠标键盘事件
+Independent:Property("MainFileName");                         -- 入口文件
+
 local coroutine_yield = coroutine.yield;
 local coroutine_resume = coroutine.resume;
 
@@ -44,12 +48,10 @@ function Independent:Init()
 	-- 先清除
 	self:Stop();
 
-	-- 设置环境
-	self:SetCodeEnv(setmetatable({}, {__index = CodeEnv:new():Init(self)}));
-
+	
 	-- 重置定时器
 	self:SetLoopTimer(commonlib.Timer:new({callbackFunc = function()
-		Independent:Tick();
+		self:Tick();
 	end}));
 
 	-- 创建执行协同程序
@@ -66,9 +68,18 @@ function Independent:Init()
 
 	-- 加载内置模块
 	self.__files__ = {};
-	self:LoadInnerModule();
-	
+
+	-- 设置环境
+	self:SetCodeEnv(CodeEnv:new():Init(self));
+
 	return self;
+end
+
+-- 重置环境
+function Independent:Reset()
+	self:Stop();
+	self:Init();
+	self:Start(self:GetMainFileName());
 end
 
 function Independent:LoadInnerModule()
@@ -91,8 +102,8 @@ function Independent:IsLoaded(filename)
 end
 
 function Independent:LoadFile(filename)
-	if (self:IsLoaded(filename)) then return end
-
+	if (not filename or not self:IsRunning() or self:IsLoaded(filename)) then return end
+	
 	local text = Helper.ReadFile(filename);
 	if (not text or text == "") then return end
 
@@ -129,7 +140,6 @@ function Independent:XPCall(callback, ...)
 	return xpcall(callback, function (err) 
 		GGS.INFO("Independent:Call:Error", err);
 		DebugStack();
-		self:Stop();
 	end, ...);
 end
 
@@ -142,7 +152,8 @@ function Independent:Call(...)
 	else
 		ok = self:Resume(...);
 	end
-	if (not ok) then self:Stop() end
+	-- 出错是否停止沙盒
+	if (not ok and self:IsErrorExit()) then self:Stop() end
 end
 
 function Independent:CallEventCallBack(eventType)
@@ -168,20 +179,29 @@ function Independent:Resume(...)
 end
 
 function Independent:Restart()
-	local __files__ = self.__files__;
-	self:Stop();
-	self:Init();
-	self:Load(__files__);
-	self:Start();
+	self:Reset();
 end
 
-function Independent:Start()
+function Independent:Start(filename)
 	if (self:IsRunning()) then return end
 	print("====================Independent:Start=====================");
+	-- 设置运行标识
+	self:SetRunning(true);
+	self:SetMainFileName(filename);
+
+	-- 先加载内部模块
+	self:LoadInnerModule();
+
+	-- 再加载入口文件
+	self:LoadFile(self:GetMainFileName());
 
 	-- 激活上下文环境
 	local CodeEnv = self:GetCodeEnv();
-	CodeEnv.SceneContext:activate();
+
+	-- 如果独占鼠标键盘则接管Context
+	if (not self:IsShareMouseKeyBoard()) then
+		CodeEnv.SceneContext:activate();
+	end
 
 	-- 触发 MAIN 事件回调
 	self:CallEventCallBack(CodeEnv.EventType.MAIN);
@@ -190,10 +210,12 @@ function Independent:Start()
 	self:Call(rawget(CodeEnv, "main"));
 
 	-- 开始定时器
-	self:GetLoopTimer():Change(LoopTickCount, LoopTickCount);
+	local loopTickCount = self:GetLoopTickCount();
+	self:GetLoopTimer():Change(loopTickCount, loopTickCount);
 	
-	-- 设置运行标识
-	self:SetRunning(true);
+	-- 监听世界加载完成事件
+	GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+	GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
 end
 
 function Independent:Tick()
@@ -225,14 +247,24 @@ function Independent:Stop()
 		self:Call(CodeEnv.clear);
 	end
 
-	GameLogic.ActivateDefaultContext();
-	
+	CodeEnv.SceneContext:Inactivate();
+
 	CodeEnv:Clear();
 
 	self:SetCodeEnv(nil);
 
 	self:Resume();  -- 使用空值退出协同程序
 	-- collectgarbage("collect");
+
+	GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+    GameLogic:Disconnect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
+end
+
+function Independent:OnWorldLoaded()
+end
+
+function Independent:OnWorldUnloaded()
+	self:Reset();
 end
 
 Independent:InitSingleton():Init();

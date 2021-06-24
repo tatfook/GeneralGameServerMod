@@ -21,7 +21,7 @@ function UI.ShowEditWindow(text, callback)
     ShowWindow({
         text = text or "",
         OnClose = function(G)
-            dcall(callback, G.value);
+            __call__(callback, G.value);
         end
     }, {
         url = "%gi%/Independent/UI/EditWindow.html",

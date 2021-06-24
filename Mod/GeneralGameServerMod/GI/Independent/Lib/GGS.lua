@@ -74,12 +74,8 @@ function GGS:Connect(callback)
     -- 标记正在连接
     self:SetConnecting(true);
     
-    -- info("GGS: start connect");
-    
     -- 进行协议连接
     GGS_Connect(function()
-        -- info("GGS: request connect");
-
         -- 发送逻辑连接消息
         GGS_Send(nil, nil, "__request_connect__");
     end);

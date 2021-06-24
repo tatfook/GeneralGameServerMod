@@ -2,16 +2,16 @@
 
 
 
-local GGS = require("GGS");
+-- local GGS = require("GGS");
 
-GGS:Connect(function()
-	print("===========================s")
-	GGS:SetUserData({nickname = "xiaoyao", score = 10});
-end)
+-- GGS:Connect(function()
+-- 	print("===========================s")
+-- 	GGS:SetUserData({nickname = "xiaoyao", score = 10});
+-- end)
 
-GGS:OnUserData(function(userdata)
-	log(userdata)
-end)
+-- GGS:OnUserData(function(userdata)
+-- 	log(userdata)
+-- end)
 
 -- RegisterEventCallBack(EventType.KEY_DOWN, function(event)
 -- 	local keyname = event.keyname;
@@ -37,6 +37,7 @@ end)
 -- SetInterval(1000, function()
 --     print("timer");
 -- end)
+-- print("============sleep begin=============")
 -- sleep(4000);
--- log("--------2121")
+-- print("============sleep end=============")
 

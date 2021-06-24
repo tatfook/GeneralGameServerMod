@@ -105,21 +105,16 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.mincopy = commonlib.mincopy
 
 	CodeEnv.cmd = function(...) CommandManager:RunCommand(...) end
-
-    local Independent = CodeEnv.Independent;
-
-    CodeEnv.exit = function()
-        Independent:Stop();
-    end
+    CodeEnv.exit = CodeEnv.__stop__;
 
     CodeEnv.require = function(name)
         if (CodeEnv.__modules__[name]) then return CodeEnv.__modules__[name] end
         CodeEnv.__modules__[name] = {}; -- 解决循环依赖
         -- 为单词则默认为系统库文件
         if (string.match(name, "^[%a%d]+$")) then 
-            Independent:LoadFile(string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name));
+            CodeEnv.__loadfile__(string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name));
         else -- 加载指令路径文件
-            Independent:LoadFile(name);
+            CodeEnv.__loadfile__(name);
         end
         return CodeEnv.__modules__[name];
     end

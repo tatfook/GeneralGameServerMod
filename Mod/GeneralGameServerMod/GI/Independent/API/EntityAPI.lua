@@ -14,21 +14,12 @@ local EntityNPC = NPL.load("../../Game/Entity/EntityNPC.lua", IsDevEnv);
 
 local EntityAPI = NPL.export()
 
-local __code_env__ = nil;
 
-local function CreateNPC(...)
+local function CreateNPC(CodeEnv, ...)
     local npc = EntityNPC:Create(...)
     npc:Attach()
-    table.insert(__code_env__.__entities__, npc)
+    table.insert(CodeEnv.__entities__, npc)
     return npc
-end
-
-local function CreateEntity(bx, by, bz, path, canBeCollied)
-    -- NPL.load("scrtip/Truck/Game/Entity/EntityCustom.lua")
-    -- local EntityCustom = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityCustom")
-    -- local entity = EntityCustom:Create({bx = bx, by = by, bz = bz, mModel = path or "", mEnablePhysics = canBeCollied})
-    -- table.insert(__code_env__.__entities__, entity)
-    -- return entity
 end
 
 local function getEntity(id)
@@ -107,17 +98,13 @@ setmetatable(
     EntityAPI,
     {
         __call = function(_, CodeEnv)
-            __code_env__ = CodeEnv
-
             CodeEnv.GetAllEntities = EntityManager.GetAllEntities
             CodeEnv.GetEntityById = EntityManager.GetEntityById
             CodeEnv.GetEntitiesInBlock = EntityManager.GetEntitiesInBlock
             CodeEnv.GetEntityBlockPos = GetEntityBlockPos
             CodeEnv.SetEntityBlockPos = SetEntityBlockPos
             CodeEnv.EnableEntityPicked = EntityManager.EnableEntityPicked
-            CodeEnv.CreateNPC = CreateNPC
-
-            -- CodeEnv.CreateEntity = CreateEntity;
+            CodeEnv.CreateNPC = function(...) return CreateNPC(CodeEnv, ...) end
         end
     }
 )

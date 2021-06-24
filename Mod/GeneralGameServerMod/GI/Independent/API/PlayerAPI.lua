@@ -17,7 +17,6 @@ local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keep
 
 local PlayerAPI = NPL.export();
 
-local __code_env__ = nil;
 local __username__ = nil;
 local __nickname__ = nil;
 
@@ -34,7 +33,7 @@ local function GetUserName()
 
     __username__ = GetUserInfo().username;
     if (not __username__ or __username__ == "") then
-        __username__ = string.format("User_%s", __code_env__.GetTime());  -- 可能重名
+        __username__ = string.format("User_%s", ParaGlobal.timeGetTime());  -- 可能重名
     end
     
     return __username__;
@@ -118,8 +117,6 @@ local function RemoveItemFromInventory(index, count)
 end
 
 setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
-    __code_env__ = CodeEnv;
-
     CodeEnv.GetUserId = GetUserId;
     CodeEnv.GetUserName = GetUserName;
     CodeEnv.SetUserName = SetUserName;

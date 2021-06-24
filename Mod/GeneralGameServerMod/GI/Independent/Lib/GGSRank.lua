@@ -188,6 +188,8 @@ GGS:OnUserData(function(userdata)
 end);
 
 -- 依赖 GGS 故直接连接
+print("=====================Connect Begin================")
 GGS:Connect(function()
     GGS:SetUserData(__rank__);            -- 连接成功直接同步当前用户状态
+    print("=====================Connect Success================")
 end);

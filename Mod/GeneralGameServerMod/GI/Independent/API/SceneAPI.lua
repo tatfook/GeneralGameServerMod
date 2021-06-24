@@ -15,7 +15,6 @@ local Direction = commonlib.gettable("MyCompany.Aries.Game.Common.Direction");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 
 local SceneAPI = NPL.export()
-local __code_env__ = nil;
 
 local last_select_entity = nil;
 local last_select_block = {};
@@ -182,7 +181,6 @@ setmetatable(
     SceneAPI,
     {
         __call = function(_, CodeEnv)
-            __code_env__ = CodeEnv;
             CodeEnv.SwitchOrthoView = ParaCamera.SwitchOrthoView
             CodeEnv.SwitchPerspectiveView = ParaCamera.SwitchPerspectiveView
             CodeEnv.EnableAutoCamera = function(...) return CodeEnv.SceneContext:EnableAutoCamera(...) end

@@ -33,15 +33,19 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Commands/CommandManager.lua");
 
 -- local Listener = NPL.load("./Utility/Listener.lua", IsDevEnv);
 
-local Independent = NPL.load("./Independent/Independent.lua", IsDevEnv);
+local Independent = NPL.load("./Independent/Independent.lua");
+local SandBox = NPL.load("./Independent/SandBox.lua");
 
 local GI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
--- GI:Property("SandboxAPI");
 
 function GI:GetSandboxAPI() 
-    Independent:Start();
-    return Independent:GetCodeEnv();
+    if (IsDevEnv) then
+        local SandBox = NPL.load("./Independent/SandBox.lua", true);
+        return SandBox:GetAPI();
+    end
+    
+    return SandBox:GetAPI();
 end
 
 GI:InitSingleton();
