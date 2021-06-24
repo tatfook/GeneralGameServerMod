@@ -284,5 +284,5 @@ function ControlServer:handleDisconnection()
 end
 
 NPL.this(function() 
-	ControlServer:OnActivate(msg);
+    ControlServer:OnActivate(msg);
 end);
