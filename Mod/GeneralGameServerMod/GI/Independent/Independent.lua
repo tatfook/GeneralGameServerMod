@@ -45,9 +45,8 @@ end
 
 -- 初始化函数 
 function Independent:Init()
-	-- 先清除
-	self:Stop();
-
+	-- 已经开始执行了则不能初始化
+	if (self:GetCodeEnv() or self:IsRunning()) then return end
 	
 	-- 重置定时器
 	self:SetLoopTimer(commonlib.Timer:new({callbackFunc = function()
@@ -183,8 +182,12 @@ function Independent:Restart()
 end
 
 function Independent:Start(filename)
+
 	if (self:IsRunning()) then return end
 	print("====================Independent:Start=====================");
+	-- 确保已初始化
+	self:Init();
+
 	-- 设置运行标识
 	self:SetRunning(true);
 	self:SetMainFileName(filename);
@@ -212,10 +215,6 @@ function Independent:Start(filename)
 	-- 开始定时器
 	local loopTickCount = self:GetLoopTickCount();
 	self:GetLoopTimer():Change(loopTickCount, loopTickCount);
-	
-	-- 监听世界加载完成事件
-	GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
-	GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
 end
 
 function Independent:Tick()
@@ -254,18 +253,9 @@ function Independent:Stop()
 	self:SetCodeEnv(nil);
 
 	self:Resume();  -- 使用空值退出协同程序
+	self.__co__ = nil;
 	-- collectgarbage("collect");
-
-	GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
-    GameLogic:Disconnect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
 end
 
-function Independent:OnWorldLoaded()
-end
-
-function Independent:OnWorldUnloaded()
-	self:Reset();
-end
-
-Independent:InitSingleton():Init();
+Independent:InitSingleton();
 

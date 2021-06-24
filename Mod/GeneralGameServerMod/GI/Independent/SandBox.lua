@@ -24,4 +24,4 @@ function SandBox:GetAPI()
     return self:GetCodeEnv();
 end
 
-SandBox:InitSingleton():Init();
+SandBox:InitSingleton();

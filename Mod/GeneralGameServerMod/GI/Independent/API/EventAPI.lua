@@ -71,8 +71,6 @@ local function Emit(__code_env__, eventName, ...)
 end
 
 local function DefaultKeyPressCallBack(__code_env__, event)
-    if (event:accept()) then return end 
-
     if (event.ctrl_pressed and event.keyname == "DIK_Q") then
         __code_env__.__stop__();
     elseif (event.ctrl_pressed and event.keyname == "DIK_R") then
@@ -81,7 +79,6 @@ local function DefaultKeyPressCallBack(__code_env__, event)
 end
 
 local function DefaultKeyReleaseCallBack(__code_env__, event)
-    if (event:accept()) then return end 
 end
 
 setmetatable(EventAPI, {
@@ -144,13 +141,36 @@ setmetatable(EventAPI, {
             TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
             DefaultKeyReleaseCallBack(CodeEnv, ...);
         end
+        
+        -- 世界加载
+        local function OnWorldLoaded() 
 
+        end
+
+        -- 世界卸载 默认停止
+        local function OnWorldUnloaded()
+            CodeEnv.__stop__();
+        end
+
+        -- 主动触发事件
+        CodeEnv.TriggerMousePressEvent = MousePressEventCallBack;
+        CodeEnv.TriggerMouseMoveEvent = MouseMoveEventCallBack;
+        CodeEnv.TriggerMouseReleaseEvent = MouseReleaseEventCallBack;
+        CodeEnv.TriggerMouseWheelEvent = MouseWheelEventCallBack;
+        CodeEnv.TriggerKeyPressEvent = KeyPressEventCallBack;
+        CodeEnv.TriggerKeyReleaseEvent = KeyReleaseEventCallBack;
+
+
+        -- 注册上下回调
         SceneContext:RegisterEventCallBack(SceneContext.EventType.MOUSE_PRESS_EVENT, MousePressEventCallBack, CodeEnv);
         SceneContext:RegisterEventCallBack(SceneContext.EventType.MOUSE_MOVE_EVENT, MouseMoveEventCallBack, CodeEnv);
         SceneContext:RegisterEventCallBack(SceneContext.EventType.MOUSE_RELEASE_EVENT, MouseReleaseEventCallBack, CodeEnv);
         SceneContext:RegisterEventCallBack(SceneContext.EventType.MOUSE_WHEEL_EVENT, MouseWheelEventCallBack, CodeEnv);
         SceneContext:RegisterEventCallBack(SceneContext.EventType.KEY_PRESS_EVENT, KeyPressEventCallBack, CodeEnv);
         SceneContext:RegisterEventCallBack(SceneContext.EventType.KEY_RELEASE_EVENT, KeyReleaseEventCallBack, CodeEnv);
+
+        SceneContext:RegisterEventCallBack(SceneContext.EventType.WORLD_LOADED, OnWorldLoaded, CodeEnv);
+        SceneContext:RegisterEventCallBack(SceneContext.EventType.WORLD_UNLOADED, OnWorldUnloaded, CodeEnv);
 
         CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function()
             SceneContext:RemoveEventCallBack(SceneContext.EventType.MOUSE_PRESS_EVENT, MousePressEventCallBack, CodeEnv);
@@ -159,6 +179,9 @@ setmetatable(EventAPI, {
             SceneContext:RemoveEventCallBack(SceneContext.EventType.MOUSE_WHEEL_EVENT, MouseWheelEventCallBack, CodeEnv);
             SceneContext:RemoveEventCallBack(SceneContext.EventType.KEY_PRESS_EVENT, KeyPressEventCallBack, CodeEnv);
             SceneContext:RemoveEventCallBack(SceneContext.EventType.KEY_RELEASE_EVENT, KeyReleaseEventCallBack, CodeEnv);
+
+            SceneContext:RemoveEventCallBack(SceneContext.EventType.WORLD_LOADED, OnWorldLoaded, CodeEnv);
+            SceneContext:RemoveEventCallBack(SceneContext.EventType.WORLD_UNLOADED, OnWorldUnloaded, CodeEnv);
         end);
     end
 });

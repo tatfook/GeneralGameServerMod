@@ -28,24 +28,49 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/Files.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Commands/CommandManager.lua");
 
--- 加载粒子系统
--- NPL.load("./Game/ParticleSystem/ParticleHeader");
-
--- local Listener = NPL.load("./Utility/Listener.lua", IsDevEnv);
-
+local SceneContext = NPL.load("./Game/Event/SceneContext.lua");
 local Independent = NPL.load("./Independent/Independent.lua");
 local SandBox = NPL.load("./Independent/SandBox.lua");
 
 local GI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
+GI:Property("Context", SceneContext);
+GI:Property("Independent", Independent);
+GI:Property("SandBox", SandBox);
+
+function GI:Init()
+    -- 监听世界加载完成事件
+    GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+    GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
+
+    -- GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+    -- GameLogic:Disconnect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
+end
+
+function GI:OnWorldLoaded()
+    self:GetContext():OnWorldLoaded();
+end
+
+function GI:OnWorldUnloaded()
+    self:GetContext():OnWorldUnloaded();
+end
+
+-- 共享模式处理键盘鼠标事件
+function GI:HandleMouseKeyBoardEvent(event)
+    self:GetContext():HandleMouseKeyBoardEvent(event);
+end
 
 function GI:GetSandboxAPI() 
     if (IsDevEnv) then
+        self:GetSandBox():Stop();
         local SandBox = NPL.load("./Independent/SandBox.lua", true);
-        return SandBox:GetAPI();
+        local SandBoxAPI = SandBox:GetAPI();
+        self:SetSandBox(SandBox);
+        self:SetContext(SandBoxAPI.SceneContext);
+        return SandBoxAPI;
     end
     
     return SandBox:GetAPI();
 end
 
-GI:InitSingleton();
+GI:InitSingleton():Init();

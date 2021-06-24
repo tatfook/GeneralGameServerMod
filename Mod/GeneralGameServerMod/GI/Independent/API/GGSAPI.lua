@@ -84,8 +84,6 @@ setfenv(__G_Disconnect__, __G__);
 -- end
 
 
-
-
 local function GGS_Connect(__code_env__, callback)
     local username = __code_env__.GetUserName();
     __code_env__.RegisterEventCallBack(EventType.__GGS_CONNECT__, callback);

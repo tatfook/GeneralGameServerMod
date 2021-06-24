@@ -21,6 +21,9 @@ local EventType = {
     MOUSE_WHEEL_EVENT = "MOUSE_WHEEL_EVENT",
     KEY_PRESS_EVENT = "KEY_PRESS_EVENT",
     KEY_RELEASE_EVENT = "KEY_RELEASE_EVENT",
+    
+    WORLD_LOADED = "WORLD_LOADED",
+    WORLD_UNLOADED = "WORLD_UNLOADED",
 }
 
 SceneContext.EventType = EventType;
@@ -56,11 +59,30 @@ function SceneContext:Inactivate()
     GameLogic.ActivateDefaultContext();
 end
 
--- function SceneContext:handleMouseEvent(event)
---     SceneContext._super.handleMouseEvent(self, event);
---     local callback = self:GetMouseEventCallBack();
---     if (type(callback) == "function") then callback(event) end
--- end
+function SceneContext:HandleMouseKeyBoardEvent(event)
+    local eventType = event:GetType();
+    if (eventType == "mousePressEvent") then
+        self:TriggerEventCallBack(EventType.MOUSE_PRESS_EVENT, event);
+    elseif (eventType == "mouseMoveEvent") then
+        self:TriggerEventCallBack(EventType.MOUSE_MOVE_EVENT, event);
+    elseif (eventType == "mouseReleaseEvent") then
+        self:TriggerEventCallBack(EventType.MOUSE_RELEASE_EVENT, event);
+    elseif (eventType == "mouseWheelEvent") then
+        self:TriggerEventCallBack(EventType.MOUSE_WHEEL_EVENT, event);
+    elseif (eventType == "keyPressEvent") then
+        self:TriggerEventCallBack(EventType.KEY_PRESS_EVENT, event);
+    elseif (eventType == "keyReleaseEvent") then
+       self:TriggerEventCallBack(EventType.KEY_RELEASE_EVENT, event);
+    end
+end
+
+function SceneContext:OnWorldLoaded()
+    self:TriggerEventCallBack(EventType.WORLD_LOADED);
+end
+
+function SceneContext:OnWorldUnloaded()
+    self:TriggerEventCallBack(EventType.WORLD_UNLOADED);
+end
 
 function SceneContext:mousePressEvent(event)
     SceneContext._super.mousePressEvent(self, event);
@@ -96,12 +118,6 @@ function SceneContext:mouseWheelEvent(event)
     -- 通知代码方块
     GameLogic.GetCodeGlobal():BroadcastKeyPressedEvent("mouse_wheel", mouse_wheel);
 end
-
--- function SceneContext:handleKeyEvent(event)
---     SceneContext._super.handleKeyEvent(self, event);
---     -- local callback = self:GetKeyEventCallBack();
---     -- if (type(callback) == "function") then callback(event) end
--- end
 
 function SceneContext:keyPressEvent(event)
     SceneContext._super.keyPressEvent(self, event);
