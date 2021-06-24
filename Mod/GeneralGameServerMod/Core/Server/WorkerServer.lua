@@ -128,7 +128,7 @@ function WorkerServer:handleGeneral(packetGeneral)
 end
 
 -- 连接丢失
-function WorkerServer:handleErrorMessage(text, connection)
+function WorkerServer:handleDisconnection(text, connection)
     GGS.INFO.Format("断开与控制服务器的连接");
 end
 
