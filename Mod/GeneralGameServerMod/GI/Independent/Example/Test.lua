@@ -37,7 +37,23 @@
 -- SetInterval(1000, function()
 --     print("timer");
 -- end)
--- print("============sleep begin=============")
--- sleep(4000);
--- print("============sleep end=============")
 
+-- print("============sleep begin=============")
+
+-- sleep(1000);
+
+-- run(function()
+--     print("============run1 sleep begin=============")
+--     sleep(2000);
+--     print("============run1 sleep end=============")
+-- end)
+
+-- run(function()
+--     print("============run2 sleep begin=============")
+--     sleep(4000);
+--     print("============run2 sleep end=============")
+-- end)
+
+-- sleep(3000);
+
+-- print("============sleep end=============")

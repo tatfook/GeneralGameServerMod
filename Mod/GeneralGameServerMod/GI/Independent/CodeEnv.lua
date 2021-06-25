@@ -58,10 +58,18 @@ function CodeEnv:InstallAPI(api)
 	end
 end
 
-function CodeEnv:InstallIndependentAPI(Independent)
-	-- 内部函数, 不可随意调用
+function CodeEnv:InstallLuaAPI()
+	self.__select__ = select;
+	self.__coroutine_create__ = coroutine.create;
+	self.__coroutine_wrap__ = coroutine.wrap;
 	self.__coroutine_running__ = coroutine.running;
 	self.__coroutine_resume__ = coroutine.resume;
+	self.__coroutine_yield__ = coroutine.yield;
+	self.__coroutine_status__ = coroutine.status;
+end
+
+function CodeEnv:InstallIndependentAPI(Independent)
+	-- 内部函数, 不可随意调用
 	self.__co__ = Independent.__co__;
 	self.__yield__ = function(...) Independent:Yield(...) end
 	self.__clear__ = function() self:Clear() end 
@@ -70,11 +78,17 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	self.__stop__ = function() Independent:Stop() end
 	self.__call__ = function(...) return Independent:Call(...) end
 	self.__loadfile__ = function(...) return Independent:LoadFile(...) end
+	self.__is_running__ = function() return Independent:IsRunning() end 
+end
 
+function CodeEnv:InstallCodeBlockAPI()
+	self.__get_code_globals__ = function() return GameLogic.GetCodeGlobal() end 
 end
 
 function CodeEnv:Init(Independent)
+	self:InstallLuaAPI();
 	self:InstallIndependentAPI(Independent);
+	self:InstallCodeBlockAPI();
 	
 	SceneAPI(self);
 	PlayerAPI(self);
