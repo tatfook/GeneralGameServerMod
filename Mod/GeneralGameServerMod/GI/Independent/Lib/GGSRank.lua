@@ -87,13 +87,13 @@ end
 
 function GGSRank:Sort()
     local ranks = self:GetRanks();
-    local sort = self:GetSort();
-    if (type(sort) == "function") then
-        return table.sort(ranks, sort);
+    local compare = self:GetSort();
+    if (type(compare) == "function") then
+        return sort(ranks, compare);
     end
 
     if (type(sort) == "string") then
-        return table.sort(ranks, function(item2, item1)
+        return sort(ranks, function(item2, item1)
             return item1[sort] > item2[sort];
         end)
     end

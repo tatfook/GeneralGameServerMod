@@ -9,7 +9,6 @@ local SystemAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/SystemAP
 ------------------------------------------------------------
 ]]
 
-
 local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local vector3d = commonlib.gettable("mathlib.vector3d");
@@ -18,6 +17,18 @@ local ShapeAABB = commonlib.gettable("mathlib.ShapeAABB");
 local SystemAPI = NPL.export();
 
 local Table = {concat = table.concat};
+-- 自定排序
+local function sort(list, comp)
+	comp = comp or function(n1, n2) return n1 > n2 end
+
+	for i = 1, #list do
+        for j = i + 1, #list do 
+            if (comp(list[i], list[j])) then
+                list[i], list[j] = list[j], list[i];
+            end
+        end
+    end
+end
 local function IsScope(t)
     return type(t) == "table" and t.__scope__;
 end
@@ -38,9 +49,9 @@ function Table.remove(t, i)
 end
 function Table.sort(t, comp)
     if (IsScope(t)) then
-        t:Sort(comp);
+        t:Sort(comp, sort);
     else
-        table.sort(t, comp);
+        sort(t, comp);
     end
 end
 local function Pairs(t)
@@ -84,6 +95,7 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     -- CodeEnv.coroutine = coroutine;
     CodeEnv.string = string;
     CodeEnv.table = Table;
+    CodeEnv.sort = sort;
     CodeEnv.math = math;
     CodeEnv.os = os;
     

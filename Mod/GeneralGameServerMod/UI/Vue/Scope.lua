@@ -403,9 +403,10 @@ function Scope:Remove(index)
 end
 
 -- 排序
-function Scope:Sort(comp)
+function Scope:Sort(comp, sort)
     local __list__ = self:__get_list__();
-    table_sort(__list__, comp);
+    sort = sort or table_sort;
+    sort(__list__, comp);
     self:__call_newindex_callback__(self.__scope__, nil, self.__scope__, self.__scope__);
 end
 

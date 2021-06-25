@@ -39,3 +39,7 @@ end
 function SetUserData(key, val)
     GetGGSStateModule():GetUserState()[key] = val;
 end
+
+function GetAllUserData()
+    return GetGGSStateModule():GetAllUserState();
+end

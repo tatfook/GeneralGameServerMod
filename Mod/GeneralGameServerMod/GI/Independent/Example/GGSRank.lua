@@ -5,7 +5,7 @@ GGSRank:DefineField({key = "nickname", title = "昵称", no = 1, width = 200, de
 GGSRank:DefineField({key = "score", title = "得分", no = 2, defaule_value = 0});
 -- 设置排序方式
 GGSRank:SetSort(function(item1, item2) 
-    return item1.score and item2.score and item1.score > item2.score 
+    return item1.score and item2.score and item1.score < item2.score 
 end);
 -- 显示UI
 GGSRank:ShowUI();
