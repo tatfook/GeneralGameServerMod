@@ -88,6 +88,7 @@ local Log = require("Log");
 local State = require("State");
 local Timer = require("Timer");
 local Scene = require("Scene");
+local API = require("API");
 	]]);
 	setfenv(func, self:GetCodeEnv());
 	self:Call(func); 

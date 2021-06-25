@@ -16,7 +16,8 @@ GGS:Property("Connecting", false, "IsConnecting");  -- 是否正在连接
 local __username__ = GetUserName();
 local __all_user_data__ = {};
 local __share_data__ = {};
-local __event_emitter__ = EventEmitter:new();
+local __msg_event_emitter__ = EventEmitter:new();
+local __share_data_event_emitter__ = EventEmitter:new();
 
 GGS.EVENT_TYPE = {
     CONNECT = "GGS_CONNECT",
@@ -46,7 +47,14 @@ local function PushUserData(data)
 end
 
 local function SetShareData(data)
-    partialcopy(__share_data__, data);
+    if (type(data) ~= "table") then return end 
+    for key, val in pairs(data) do
+        local old_val = __share_data__[key];
+        __share_data__[key] = val;
+        -- 触发数据项更新
+        __share_data_event_emitter__:TriggerEventCallBack(key, val, old_val);
+    end
+    -- 触发整体事件更新
     TriggerEventCallBack(GGS.EVENT_TYPE.SHARE_DATA, __share_data__);
 end
 
@@ -109,16 +117,16 @@ function GGS:GetUserData(username)
 end
 
 function GGS:Emit(msgType, msgData)
-    __event_emitter__:TriggerEventCallBack(msgType, msgData); -- 触发自身事件回调
+    __msg_event_emitter__:TriggerEventCallBack(msgType, msgData); -- 触发自身事件回调
     GGS_Send({msgType = msgType, msgData = msgData}, nil, "__message__");
 end
 
 function GGS:On(msgType, callback)
-    __event_emitter__:RegisterEventCallBack(msgType, callback);
+    __msg_event_emitter__:RegisterEventCallBack(msgType, callback);
 end
 
 function GGS:Off(msgType, callback)
-    __event_emitter__:RemoveEventCallBack(msgType, callback);
+    __msg_event_emitter__:RemoveEventCallBack(msgType, callback);
 end
 
 function GGS:GetShareData()
@@ -149,6 +157,9 @@ end
 function GGS:OnShareData(callback)
     RegisterEventCallBack(GGS.EVENT_TYPE.SHARE_DATA, callback);
 end
+function GGS:OnShareDataItem(key, callback)
+    __share_data_event_emitter__:RegisterEventCallBack(key, callback);
+end
 function GGS:OnDisconnect(callback)
     RegisterEventCallBack(GGS.EVENT_TYPE.DISCONNECT, callback);
 end
@@ -169,7 +180,7 @@ GGS_Recv(function(msg)
     elseif (__action__ == "__push_all_user_data__") then 
         SetAllUserData(__data__);
     elseif (__action__ == "__message__") then
-        __event_emitter__:TriggerEventCallBack(__data__.msgType, __data__.msgData);
+        __msg_event_emitter__:TriggerEventCallBack(__data__.msgType, __data__.msgData);
     else
         TriggerEventCallBack(GGS.EVENT_TYPE.RECV, __data__);
     end
@@ -185,5 +196,6 @@ GGS_Disconnect(function(username)
 end)
 
 GGS:InitSingleton():Init():Connect(function()
-    -- print("=======================GGS Connect Success======================")
+    -- print("=======================GGS Connect Success======================", GetUserName())
 end);
+
