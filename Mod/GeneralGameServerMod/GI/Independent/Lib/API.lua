@@ -24,7 +24,7 @@ function GetSharedData(key, default_val)
     return GetGGSModule():GetShareData()[key] or default_val;
 end
 
-function OnSharedData(key, callback)
+function OnSharedDataChanged(key, callback)
     return GetGGSModule():OnShareDataItem(key, callback);
 end
 
