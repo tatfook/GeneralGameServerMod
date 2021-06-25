@@ -33,173 +33,112 @@ local status_strings = {
     ['503'] = "HTTP/1.1 503 Service Unavailable\r\n",
 }
 
+Response:Property("StatusCode", 200);
+Response:Property("Charset", "utf-8");
+Response:Property("ContentType", MimeType.html);
+Response:Property("Content", "");
+Response:Property("Finished", false, "IsFinished");
+Response:Property("Headers");
+Response:Property("Cookies");
+Response:Property("Request");
 
 function Response:ctor()
-	return obj
 end
 
-function Response:Init(req)
-	self.template = template
+function Response:Init(request)
+	self:SetFinished(false);
+	self:SetRequest(request);
+	self:SetHeaders({});
+	self:SetCookies({});
 
-	self._is_send = false
-	self.request = req
-	self.charset = 'utf-8'
-	self.status = '200'
-	self.content_type = MimeType.html
-	self.headers = {
-		--['status'] = '200',
-		['Content-Type'] = MimeType.html
-	}
-
-	return self
+	return self;
 end
 
-function response:set_status(status)
-	if status then 	self.status = tostring(status) end
+-- 获取连接ID
+function Response:GetNid()
+	return self:GetRequest():GetNid();
 end
 
-function response:set_content_type_by_ext(ext) 
-	self:set_content_type(ext and MimeType[ext])
+-- 重定向
+function response:Redirect(url)
+	self:SetStatusCode(302);
+	self:SetHeader('Location', url);
+	self:Send();
 end
 
-function response:set_content_type(mime_type)
-	self.content_type = mime_type
-	if not self.content_type then
-		self:set_header('Content-Type', nil)
+-- 发送内容
+function Response:Send(content, status_code)
+	if (self:IsFinished()) then return end 
+
+	status_code = tostring(status_code or self:GetStatusCode() or 200);
+	content = content == nil and self:GetContent() or content;
+
+	if(type(content) == 'table') then
+		self:SetContentType(MimeType.json)
+		content = Util:ToJson(content)
 	else
-		--self:set_header('Content-Type', mime_type .. ' charset=' .. self.charset)
-		self:set_header('Content-Type', mime_type)
-	end
-end
-
-
-function response:set_charset(charset)
-	self.charset = charset
-	self:set_header('Content-Type', self.content_type .. ' charset=' .. self.charset)
-end
-
-
-function response:set_content(data)
-	self.data = data
-	self:set_header('Content-Length', #data)
-end
-
-
-function response:set_header(key, val)
-	self.headers[key] = val
-end
-
-
-function response:on_before()
-
-end
-
-
-function response:on_after()
-
-end
-
-
-function response:append_cookie(cookie)
-	if(not self.cookies) then
-		self.cookies = {}
-	end
-	self.cookies[#(self.cookies) + 1] = cookie
-end
-
-function response:is_send()
-	return self._is_send
-end
-
-function response:_send()
-	if self._is_send then
-		return 
+		content = tostring(content or "")
 	end
 
-	local out = {}
-    out[#out+1] = status_strings[self.status]
-
-    for name, value in pairs(self.headers) do
-        out[#out+1] = format("%s: %s\r\n", name, value)
+	local out = {};
+	local header_format = "%s: %s\r\n";
+	-- status code
+    out[#out + 1] = status_strings[status_code];
+	-- content-type
+	out[#out + 1] = string.format(header_format, "Content-Type", (self:GetContentType() or MimeType.html) .. " charset=" .. (self:GetCharset() or "utf-8"));
+	-- content-length
+	out[#out + 1] = string.format(header_format, "Content-Length", #content);
+    -- other header
+	for name, value in pairs(self:GetHeaders()) do
+        out[#out+1] = string.format(header_format, name, value);
     end
-
-	--if(self.cookies) then
-		--local i = 1
-		--for i = 1, #(self.cookies) do
-			--local cookie = self.cookies[i]
-			--out[#out + 1] = cookie:toString()
-		--end
-	--end
-
+	-- cookies header
+	for _, cookie in ipairs(self:GetCookies()) do
+		out[#out + 1] = cookie:toString();
+	end
+	-- content wrap line
     out[#out+1] = "\r\n"
-    out[#out+1] = self.data
+	-- content
+    out[#out+1] = content;
 
-	self._is_send = true
+	self:SetFinished(true);
 
     NPL.activate(format("%s:http", self.request.nid), table.concat(out))
 end
 
-
--- ������ͼ
-function response:render(view, context)
-	local data = template.compile(view)(context)
-	--self:set_content("<div>hello world</div>")
-	self:set_content(data)
-
-	self:_send()
+-- 设置响应头
+function Response:SetHeader(key, val)
+	self:GetHeaders()[key] = val;
 end
 
-function response:is_send() 
-	return self._is_send
+-- 设置内容类型通过扩展名
+function Response:SetContentTypeByExt(ext) 
+	self:SetContentType(MimeType[ext]);
 end
 
--- ��������
-function response:send(data, status_code)
-	data = data or ""
-	
-	if(type(data) == 'table') then
-		self:set_content_type(MimeType.json)
-		data = commonlib.Json.Encode(data)
-	else
-		data = tostring(data)
-	end
-
-	self:set_status(status_code)
-	self:set_content(data)
-
-	self:_send()
+-- 添加Cookie
+function Response:AppendCookie(cookie)
+	local cookies = self:GetCookies();
+	cookies[#(cookies) + 1] = cookie;
 end
 
--- �����ļ�
-function response:send_file(path, ext)
-	if not path or path == "" then
-		return
-	end
+-- 发送文件
+function Response:SendFile(path, ext)
+	if (not path or path == "") then return self:Send() end
 
-	path = string.match(path, '([^?]*)')
-	path = string.gsub(path, '//', '/')
-	ext = ext or path:match('^.+%.([a-zA-Z0-9]+)$')
+	path = string.match(path, '([^?]*)');
+	path = string.gsub(path, '//', '/');
+	ext = ext or path:match('^.+%.([a-zA-Z0-9]+)$');
 
-	local file = io.open(path, "rb")
+	local file = io.open(path, "rb");
+	if (not file) then return self:Send("文件不存在:" .. path, 404)	end
 
-	if not file then 
-		self:send("�ļ�·������:" .. path, 404)
-		return 
-	end
+	local content = file:read("*a");
+	file:close();
 
-	local content = file:read("*a")
-	file:close()
-
-	--nws.log(content)
-	self:set_content_type(MimeType[ext])
-	self:send(content)
+	self:SetContentTypeByExt(ext);
+	self:Send(content)
 end
 
--- �ض���
-function response:redirect(url)
-	self:set_status(302)
-	self:set_header('Location', url)
-	self:send()
-end
 
-return response
+

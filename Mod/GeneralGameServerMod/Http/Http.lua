@@ -11,6 +11,9 @@ NPL.load("Mod/GeneralGameServerMod/Http/Http.lua");
 
 local Util = NPL.load("./Util.lua", IsDevEnv);
 local MimeType = NPL.load("./MimeType.lua", IsDevEnv);
+local Request = NPL.load("./Request.lua", IsDevEnv);
+local Response = NPL.load("./Response.lua", IsDevEnv);
+local Context = NPL.load("./Context.lua", IsDevEnv);
 
 local Http = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -26,12 +29,23 @@ function Http:Init(options)
     NPL.AddPublicFile(self:GetNeuronFile(), -10);
 end
 
+-- 启动服务器
 function Http:Start()
     NPL.StartNetServer(self:GetIp(), tostring(self:GetPort()));
 end
 
-function Http:OnActivate(msg)
+-- 请求处理函数
+function Http:Serve()
+end
 
+function Http:OnActivate(msg)
+    if (type(msg) ~= "table") then return end
+
+    local request = Request:new():Init(msg);
+    local response = Response:new():Init(request);
+    local context = Context:new():Init(request, response);
+
+	self:Handle(context);
 end
 
 -- 单列模式

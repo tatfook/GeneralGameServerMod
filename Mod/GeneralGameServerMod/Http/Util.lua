@@ -127,6 +127,12 @@ function Util:GetUrl(params, callback)
 	return data
 end
 
+function Util:IsExistFile(filename)
+	local file = io.open(filename, "rb");
+	if (file) then file:close() end
+	return file ~= nil;
+end
+
 -- 获取当前日期
 function Util:GetDate()
 	return os.date("%Y-%m-%d")
@@ -140,6 +146,13 @@ function Util:GetDateTime()
 	return os.date("%Y-%m-%d %H:%M:%S")
 end
 
+-- 是否是静态资源
+function Util:IsFilePath(url)
+	local path = url:match("([^?]+)")
+	local ext = path:match('^.+%.([a-zA-Z0-9]+)$')
+	if (not ext) then return false end
+	return true
+end
 
 -- ========================================== 解析POST数据=================================================
 local function get_boundary(content_type)
