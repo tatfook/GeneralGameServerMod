@@ -114,16 +114,6 @@ end
 
 GGSState:InitSingleton():Init();
 
--- 连接回调
-GGS:OnConnect(function()
-    -- 发送状态
-    GGS:Send({
-        action = GGS.EVENT_TYPE.REQUEST_SYNC_STATE, 
-        username = __username__,
-        state = __state__:ToPlainObject(),
-    });
-end)
-
 -- 收到数据
 GGS:OnRecv(function(msg)
     local action = msg.action;
@@ -137,5 +127,12 @@ GGS:OnDisconnect(function(username)
 end)
 
 -- 连接
-GGS:Connect(); 
+GGS:Connect(function()
+    -- 发送状态
+    GGS:Send({
+        action = GGS.EVENT_TYPE.REQUEST_SYNC_STATE, 
+        username = __username__,
+        state = __state__:ToPlainObject(),
+    });
+end); 
 

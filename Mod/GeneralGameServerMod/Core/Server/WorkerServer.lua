@@ -129,7 +129,10 @@ end
 
 -- 连接丢失
 function WorkerServer:handleDisconnection(text, connection)
-    GGS.INFO.Format("断开与控制服务器的连接");
+    GGS.INFO.Format("与控制服务器的断开连接, 尝试重连...");
+    self.connection:Connect(nil, function()
+        GGS.INFO.Format("成功重新接入控制服务器");
+    end)
 end
 
 -- 工作线程转主线程发送信息

@@ -80,7 +80,7 @@ function ConnectionBase:Connect(timeout, callback_func)
 		end
 	else
 		-- if call back function is provided, we will do asynchronous connect. 
-		local intervals = {100, 300,500, 1000, 1000, 1000, 1000}; -- intervals to try
+		local intervals = {300, 500, 100, 1000, 1000, 1000, 1000}; -- intervals to try
 		local try_count = 0;
 		
 		local mytimer = commonlib.Timer:new({callbackFunc = function(timer)
