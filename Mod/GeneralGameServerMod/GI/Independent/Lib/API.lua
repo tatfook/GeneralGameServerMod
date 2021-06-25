@@ -20,8 +20,8 @@ function SetSharedData(key, val)
     GetGGSModule():SetShareData({[key] = val})
 end
 
-function GetSharedData(key, defaule_val)
-    return GetGGSModule():GetShareData()[key] or defaule_val;
+function GetSharedData(key, default_val)
+    return GetGGSModule():GetShareData()[key] or default_val;
 end
 
 function OnSharedData(key, callback)
@@ -32,8 +32,8 @@ function GetGGSStateModule()
     return require("GGSState");
 end
 
-function GetUserData(key, defaule_val)
-    return GetGGSStateModule():GetUserState()[key] or defaule_val;
+function GetUserData(key, default_val)
+    return GetGGSStateModule():GetUserState()[key] or default_val;
 end
 
 function SetUserData(key, val)
