@@ -14,10 +14,10 @@ local Http = NPL.load("Mod/GeneralGameServerMod/Http/Http.lua");
 
 local App = commonlib.inherit(Http, NPL.export());
 
-App:Get("/", function(ctx)
-    ctx:Send("hello world")
-end)
+function App:GetServers()
+    return SERVERS;
+end
 
-App:Get("/json", function(ctx)
-    ctx:Send({key = "value"})
+App:Get("/", function(ctx)
+    ctx:Send(App:GetServers());
 end)

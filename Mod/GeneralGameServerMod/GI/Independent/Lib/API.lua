@@ -43,3 +43,19 @@ end
 function GetAllUserData()
     return GetGGSStateModule():GetAllUserState();
 end
+
+function RegisterNetworkEvent(msgname, callback)
+    GetGGSModule():On(msgname, callback);
+end
+
+function TriggerNetworkEvent(msgname, msgdata)
+    GetGGSModule:Emit(msgname, msgdata);
+end
+
+function GetGGSPlayerModule()
+    return require("GGSPlayer");
+end
+
+function GetGGSRankModule()
+    return require("GGSRank");
+end

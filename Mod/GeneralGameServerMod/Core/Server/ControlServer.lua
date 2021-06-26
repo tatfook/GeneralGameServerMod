@@ -22,6 +22,8 @@ local ControlServer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServe
 local servers = {};  -- 服务器信息集
 local ServerAliveDuration = 60 * 5;  -- 5min
 
+_G.SERVERS = servers; -- 导出全局变量中
+
 function ControlServer:ctor()
     self:SetNetHandler(self);
 end
@@ -286,3 +288,69 @@ end
 NPL.this(function() 
     ControlServer:OnActivate(msg);
 end);
+
+
+--[[
+`GET http://ggs.keepwork.com:9000/`
+-- 服务集
+{
+    -- NID 为连接ID
+    [NID] = {
+        -- 单服务对象
+        isControlServer: true,               -- 是否是控制节点
+        defaultThreadName: "WorkerThread1",  -- 默认分配线程
+        outerPort: 9000,                     -- 外网端口
+        lastTick:1624676230,                 -- 上次心跳时间戳
+        totalWorldCount:0,                   -- 世界数
+        threadMaxClientCount:200,            -- 单线程支持的最大用户数
+        totalClientCount:0,                  -- 用户数
+        worldServers:{                       -- 世界所在线程集
+            worldkey1: {                     -- 世界key
+                threadName:"WorkerThread3",  -- 所仔线程
+                worldKey:"worldkey1"         -- 世界key
+            },
+            worldkey2: {
+                threadName:"WorkerThread1",
+                worldKey:"worldkey2"
+            },
+            worldkey3:{
+                threadName: "WorkerThread2",
+                worldKey:"worldkey3"
+            }
+        },
+        innerIp:"127.0.0.1",                 -- 内网IP
+        threadCount:3,                       -- 线程数
+        threads:{                            -- 线程集
+            main:{                           -- 线程名  主线程
+                clientCount:0,               -- 线程用户数
+                threadName:"main"            -- 线程名
+            },
+            WorkerThread1:{
+                clientCount:0,
+                threadName:"WorkerThread1"
+            },
+            WorkerThread3:{
+                clientCount:0,
+                threadName:"WorkerThread3"
+            },
+            WorkerThread2:{
+                clientCount:0,
+                threadName:"WorkerThread2"
+            }
+        },
+        maxClientCount:100,                 -- 支持最大用户数据
+        innerPort:9000,                     -- 内网端口
+        worlds:{                            -- 世界集
+            127.0.0.1_9000_WorkerThread1_0_WorldName_GI_: {       -- 世界KEY
+                clientCount:1,              -- 世界用户数
+                worldName:"WorldName_GI",   -- 世界名
+                worldId:"0",                -- 世界ID
+                maxClientCount:10,          -- 世界支持的最大用户数
+                worldKey:"127.0.0.1_9000_WorkerThread1_0_WorldName_GI_", 世界KEY
+                threadName:"WorkerThread1"  -- 世界所在线程
+        },                          
+        outerIp:"127.0.0.1",                -- 外网IP
+        isWorkerServer:true                 -- 是否是工作线程
+    }
+}
+--]]

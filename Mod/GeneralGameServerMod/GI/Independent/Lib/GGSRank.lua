@@ -29,6 +29,10 @@ function GGSRank:Init()
 
     self:SetMaxLineCount(10);
 
+    -- 默认字段
+    self:DefineField({key = "nickname", title = "昵称", no = 1, width = 200, defaule_value = GetNickName() or GetUserName()});
+    self:DefineField({key = "score", title = "得分", no = 2, defaule_value = 0});
+    
     return self;
 end
 

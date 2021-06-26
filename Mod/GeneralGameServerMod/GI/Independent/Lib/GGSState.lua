@@ -96,8 +96,8 @@ function GGSState:Init()
     return self;
 end
 
-function GGSState:GetUserState()
-    return __state__;
+function GGSState:GetUserState(username)
+    return (not username or username == __username__) and __state__ or __states__:Get(username, {});
 end
 
 function GGSState:GetAllUserState()

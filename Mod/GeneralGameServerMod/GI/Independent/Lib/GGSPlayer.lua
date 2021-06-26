@@ -48,10 +48,12 @@ end
 local function MainPlayerLogin()
     __players__[__username__] = {username = __username__, loginAt = GetTime()};
     TriggerEventCallBack(GGS.EVENT_TYPE.MAIN_PLAYER_LOGIN, __players__[__username__]);
+    TriggerEventCallBack(GGS.EVENT_TYPE.PLAYER_LOGIN, __players__[__username__]);
 end
 
 local function MainPlayerLogout()
     TriggerEventCallBack(GGS.EVENT_TYPE.MAIN_PLAYER_LOGOUT, __players__[__username__]);
+    TriggerEventCallBack(GGS.EVENT_TYPE.PLAYER_LOGOUT, __players__[__username__]);
 end
 
 function GGSPlayer:Init()
@@ -66,7 +68,7 @@ function GGSPlayer:GetPlayer(username)
     return __players__[username or ""];
 end
 
-function GGSPlayer:OnMainPlayerLogin()
+function GGSPlayer:OnMainPlayerLogin(callback)
     RegisterEventCallBack(GGS.EVENT_TYPE.MAIN_PLAYER_LOGIN, callback);
 end
 
@@ -74,11 +76,11 @@ function GGSPlayer:OnMainPlayerLogout(callback)
     RegisterEventCallBack(GGS.EVENT_TYPE.MAIN_PLAYER_LOGOUT, callback);
 end
 
-function GGSPlayer:OnPlayerLogin()
+function GGSPlayer:OnPlayerLogin(callback)
     RegisterEventCallBack(GGS.EVENT_TYPE.PLAYER_LOGIN, callback);
 end
 
-function GGSPlayer:OnPlayerLogout()
+function GGSPlayer:OnPlayerLogout(callback)
     RegisterEventCallBack(GGS.EVENT_TYPE.PLAYER_LOGOUT, callback);
 end
 
