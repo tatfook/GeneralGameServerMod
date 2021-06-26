@@ -49,7 +49,11 @@ function RegisterNetworkEvent(msgname, callback)
 end
 
 function TriggerNetworkEvent(msgname, msgdata)
-    GetGGSModule:Emit(msgname, msgdata);
+    GetGGSModule():Emit(msgname, msgdata);
+end
+
+function RegisterGGSConnectEvent(callback)
+    GetGGSModule():Connect(callback);
 end
 
 function GetGGSPlayerModule()

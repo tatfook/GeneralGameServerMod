@@ -12,7 +12,7 @@ local GGS = require("GGS");
 local GGSRank = inherit(ToolBase, module("GGSRank"));
 
 -- 比较方式 使用排序
-GGSRank:Property("Sort", nil);   
+GGSRank:Property("Sort", "score");   
 GGSRank:Property("FieldWidth", 100);
 GGSRank:Property("FieldHeight", 30);
 
@@ -96,9 +96,10 @@ function GGSRank:Sort()
         return sort(ranks, compare);
     end
 
-    if (type(sort) == "string") then
-        return sort(ranks, function(item2, item1)
-            return item1[sort] > item2[sort];
+    if (type(compare) == "string") then
+        return sort(ranks, function(item1, item2)
+            -- 默认升序
+            return item1[compare] and item2[compare] and item1[compare] < item2[compare];
         end)
     end
 end

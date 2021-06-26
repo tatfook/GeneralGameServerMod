@@ -32,6 +32,8 @@ function SandBox:GetCodeBlockAPI()
     self.CodeBlockAPI = {
         API = API,
         
+        call = API.__call__,
+        
         -- 注册网络消息
         registerNetworkEvent = function(name, callback)
             if (name == "ggs_user_joined") then
@@ -57,7 +59,9 @@ function SandBox:GetCodeBlockAPI()
 
         -- 显示排行榜
         showRanking = function()
-            API.GetGGSRankModule():ShowUI();
+            API.__call__(function()
+                API.GetGGSRankModule():ShowUI();
+            end);
         end,
 
         -- 设置排行榜字段值

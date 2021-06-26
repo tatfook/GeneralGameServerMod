@@ -174,7 +174,7 @@ GGS_Recv(function(msg)
         SetShareData(__data__.__share_data__);
         TriggerEventCallBack(GGS.EVENT_TYPE.CONNECT);
     elseif (__action__ == "__push_share_data__") then 
-        SetShareData(__username__, __data__);
+        SetShareData(__data__);
     elseif (__action__ == "__push_user_data__") then 
         SetUserData(__username__, __data__);
     elseif (__action__ == "__push_all_user_data__") then 
