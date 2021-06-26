@@ -19,7 +19,7 @@ local method_list = {
 	head = "head",
 	patch = "patch",
 	options = "options",
-	any = "any",
+	all = "all",
 }
 
 local Route = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
@@ -27,7 +27,7 @@ Route:Property("RegPath");
 Route:Property("Path");
 Route:Property("Paths");
 Route:Property("Args");
-Route:Property("Controller");
+Route:Property("CallBack");
 
 function Route:ctor()
     self.parent_route = nil;
@@ -41,28 +41,28 @@ end
 
 function Route:Handle(ctx, action)
 	local funcname =  self:GetActionMethod(action or ctx:GetMethod());
-    local controller = self:GetController();
+    local callback = self:GetCallBack();
 
-    if (not controller or not funcname) then return end 
+    if (not callback or not funcname) then return end 
 
-    if (type(controller) == "function") then
-        return controller(ctx);
-    elseif type(controller) == "table" then
-        local func = controller[funcname];
-        if (type(func) == "function") then return func(controller, ctx) end
-        funcname = self:GetActionMethod("any");
-        func = controller[funcname];
-        if (type(func) == "function") then return func(controller, ctx) end
+    if (type(callback) == "function") then
+        return callback(ctx);
+    elseif type(callback) == "table" then
+        local func = callback[funcname];
+        if (type(func) == "function") then return func(callback, ctx) end
+        funcname = self:GetActionMethod("all");
+        func = callback[funcname];
+        if (type(func) == "function") then return func(callback, ctx) end
     else
         --error("controller type error")
     end
 end
 
 function Route:ParseActionHandleString(action_headle_str)
-    for handle_str in string.gmatch(action_headle_str or "any", '([^,]+)') do
+    for handle_str in string.gmatch(action_headle_str or "all", '([^,]+)') do
 		method, funcname = string.match(handle_str, "(.*):(.*)")
 		if not method or method == "" then
-			method = method_list[string.lower(handle_str)] or "any"
+			method = method_list[string.lower(handle_str)] or "all"
 			funcname = handle_str
 		end
 
@@ -116,7 +116,7 @@ function Route:GetRouteByPath(path)
     end
 
     route:SetPath(path);
-    route:SetRegExp(isregpath and regpath or nil);
+    route:SetRegPath(isregpath and regpath or nil);
     route:SetPaths(paths);
     route:SetArgs(argslist);
 
@@ -127,26 +127,25 @@ Router:Property("UrlPrefix", "");
 
 function Router:ctor()
     self.root_route = Route:new();
-    self.regexp_routes = {}
-    self.normal_routes = {}
+    self.regexp_routes = {};
+    self.normal_routes = {};
 end
-
 
 -- path: url路劲
 -- controller: table|function
--- action_headle_str: string 处理方式
-function Router:Router(path, controller, action_headle_str)
+-- description: string 处理方式
+function Router:Router(path, callback, description)
     local route = self.root_route:GetRouteByPath(path);
     local regpath = route:GetRegPath();
 
     if (regpath) then 
         self.regexp_routes[regpath] = route;
     else
-        self.normal_handler[path] = route;
+        self.normal_routes[path] = route;
     end
 
-    route:SetController(controller);
-    route:ParseActionHandleString(action_headle_str)
+    route:SetCallBack(callback);
+    route:ParseActionHandleString(description)
 
 	return self
 end
@@ -155,7 +154,7 @@ function Router:GetNormalRoute(path)
     return self.normal_routes[path];
 end
 
-function Route:GetRegExpRoute(path)
+function Router:GetRegExpRoute(path)
     for _, route in pairs(self.regexp_routes) do
         if (string.match(path, route:GetRegPath())) then
             return route;
@@ -165,9 +164,8 @@ end
 
 function Router:Handle(ctx)
 	local path = ctx:GetPath();
-    local params = self:GetParams();
+    local params = ctx:GetParams();
     local route = nil;
-
 	
 	-- 普通完整匹配
 	route = self:GetNormalRoute(path);
@@ -190,58 +188,9 @@ function Router:Handle(ctx)
         route:Handle(ctx, action);
     end
 
-	if self.auto_match_url_prefix and #self.auto_match_url_prefix > 0 and (string.find(path, self.auto_match_url_prefix) == 1) then
-		url_params = {}
-		temp = string.gsub(path, self.auto_match_url_prefix, "")
-		for word in string.gmatch(temp, '([^/]+)') do
-			url_params[#url_params+1] = word
-		end
-		-- 控制器自动匹配
-		controller = self:get_controller(url_params[1]) 
-		table.remove(url_params, 1)
-		
-		--log(url_params)
-		--log(controller)
-		if url_params[1] == nil or tonumber(url_params[1]) then
-			funcname = method
-		else
-			funcname = url_params[1]
-			table.remove(url_params,1)
-		end
-
-		if type(controller) == "table" and controller[funcname] then
-			ctx.request.url_params = url_params
-			return (controller[funcname])(controller, ctx)
-		end
-	end
-
 	ctx:Send(nil, 204);
     return;
 end
 
-function router:get_controller(ctrl_name)
-	if not ctrl_name or ctrl_name == "" then
-		return nil
-	end
-
-	local ctrl = nil
-	for _, path in ipairs(self.controller_paths) do
-		if ctrl then
-			return ctrl
-		end
-
-		xpcall(function()
-			ctrl = nws.import(path .. ctrl_name)
-		end, function(e)
-			log(e)
-		end)
-	end
-	
-	-- TODO 添加配置选项 是否开启自动构建控制
-	if not ctrl then
-		ctrl = controller:new(ctrl_name)
-	end
-	
-	return ctrl
-end
-
+-- 单列模式
+Router:InitSingleton();

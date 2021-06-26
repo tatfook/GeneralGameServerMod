@@ -133,6 +133,25 @@ function Util:IsExistFile(filename)
 	return file ~= nil;
 end
 
+function Util:GetFileList(directory, recursive)
+	local list = {};
+	local function GetFileList(directory, recursive)
+		for filename in lfs.dir(directory) do
+			if (filename ~= "." and filename ~= "..") then
+				local filepath = directory .. "/" .. filename;
+				local fileattr = lfs.attributes(filepath);
+				if (fileattr.mode == "directory") then
+					if (recursive) then GetFileList(filepath, recursive) end
+				else
+					table.insert(list, #list + 1, filepath);
+				end
+			end
+		end
+	end
+	GetFileList(directory, nil, recursive);
+	return list;
+end
+
 -- 获取当前日期
 function Util:GetDate()
 	return os.date("%Y-%m-%d")

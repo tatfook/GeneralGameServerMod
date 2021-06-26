@@ -36,3 +36,7 @@ end
 function Context:Send(...)
     return self:GetResponse():Send(...);
 end
+
+function Context:IsFinished()
+    return self:GetResponse():IsFinished();
+end

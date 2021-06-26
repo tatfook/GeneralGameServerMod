@@ -60,7 +60,7 @@ function Response:GetNid()
 end
 
 -- 重定向
-function response:Redirect(url)
+function Response:Redirect(url)
 	self:SetStatusCode(302);
 	self:SetHeader('Location', url);
 	self:Send();
@@ -103,7 +103,7 @@ function Response:Send(content, status_code)
 
 	self:SetFinished(true);
 
-    NPL.activate(format("%s:http", self.request.nid), table.concat(out))
+    NPL.activate(format("%s:http", self:GetRequest():GetNid()), table.concat(out))
 end
 
 -- 设置响应头

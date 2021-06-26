@@ -76,6 +76,7 @@ function Config:StaticInit()
     self.DataHandler = {
         filename = "Mod/GeneralGameServerMod/Core/Server/ServerDataHandler.lua",
     }
+    self.Http = {};
     self.WorldServers = {};
     self.PublicFiles = {};
     self.IsDevEnv = IsDevEnv;
@@ -157,6 +158,11 @@ function Config:LoadConfig(filename)
     -- 玩家配置
     local DataHandler = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/DataHandler");
     CopyXmlAttr(self.DataHandler, DataHandler and DataHandler.attr);
+
+    -- HTTP
+    local Http = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Http");
+    CopyXmlAttr(self.Http, Http and Http.attr);
+    if (self.Http.filename) then NPL.load(self.Http.filename) end
 
     -- Debug
     local Debug = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Debug");

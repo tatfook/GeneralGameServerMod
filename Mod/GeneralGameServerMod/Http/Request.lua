@@ -20,18 +20,21 @@ Request:Property("Path");
 Request:Property("Method");
 Request:Property("ContentType");
 
+local function string_lower(str)
+	return type(str) == "string" and string.lower(str) or nil;
+end
 function Request:ctor()
 end
 
 function Request:Init(msg)
     local headers = {};
-    for key, value in pairs(msg) do headers[string.lower(key)] = value end 
+    for key, value in pairs(msg) do headers[string_lower(key)] = value end 
 
     self:SetHeaders(headers);
     self:SetNid(headers.tid or headers.nid);
     self:SetPath(string.gsub(headers.url, '?.*$', ''));
-    self:SetMethod(string.lower(headers.method));
-    self:SetContentType(string.lower(headers["content-type"]));
+    self:SetMethod(string_lower(headers.method));
+    self:SetContentType(string_lower(headers["content-type"]));
     
     -- 解析参数
     self:ParseParams();
@@ -48,16 +51,14 @@ function Request:GetBody()
 end
 
 function Request:GetPeerName()
-	self.ip = self.ip or NPL.GetIP(self.nid)
-	return self.ip
+	return NPL.GetIP(self:GetNid());
 end
 
 function Request:ParseParams()
-	local url = self:GetParams();
-	local urlArgs = string.match(url, "?(.+)$")
+	local urlArgStr = string.match(self:GetUrl(), "?(.+)$")
 
-	if (urlArgs) then
-		self:SetParams(Util:ParseUrlArgs(args_str));
+	if (urlArgStr) then
+		self:SetParams(Util:ParseUrlArgs(urlArgStr));
 	else
 		self:SetParams(self:ParsePostData());
 	end
@@ -65,12 +66,12 @@ end
 
 function Request:ParsePostData()
 	local params = {};
-	local body = self.headers.body;
-	local input_type = self.headers["content-type"];
+	local body = self:GetBody();
+	local contentType = self:GetContentType();
 
-	if (not input_type or not body or body == "") then return params end
+	if (not contentType or not body or body == "") then return params end
 
-	local input_type_lower = string.lower(input_type)
+	local input_type_lower = string_lower(contentType)
 	if (string.find(input_type_lower, "x-www-form-urlencoded")) then
 		params = Util:ParseUrlArgs(body)
 	elseif (string.find(input_type_lower, "multipart/form-data")) then
