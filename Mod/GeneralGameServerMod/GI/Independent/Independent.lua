@@ -107,18 +107,20 @@ function Independent:LoadFile(filename)
 	local text = Helper.ReadFile(filename);
 	if (not text or text == "") then return end
 
+	local filepath = Helper.FormatFilename(filename);
 	-- 生成防止重复执行代码, 未知原因会重复执行
 	local inner_text = string.format([[
 		local __filename__ = "%s";
-		if (__filenames__[__filename__]) then return end
-		__filenames__[__filename__] = true;
-	]], filename);
+		if (___modules___[__filename__]) then return end
+		___modules___[__filename__] = {__filename__ = __filename__, __loaded__ = false};
+	]], filepath);
 	
-	text = inner_text .. "\n" .. text;
+	text = inner_text .. "\n" .. text .. "\n___modules___[__filename__].__loaded__ = true";
 	-- 生成函数
-	local code_func, errormsg = loadstring(text, "loadstring:" .. Helper.FormatFilename(filename));
+	local code_func, errormsg = loadstring(text, "loadstring:" .. filepath);
 	if errormsg then
-		return GGS.INFO("Independent:LoadFile LoadString Failed", Helper.FormatFilename(filename), errormsg);
+		GGS.INFO("Independent:LoadFile LoadString Failed", filepath, errormsg);
+		return;
 	end
 
 	-- 设置代码环境
@@ -128,6 +130,8 @@ function Independent:LoadFile(filename)
 	self:Call(code_func);
 
 	self.__files__[#self.__files__ + 1] = filename;
+
+	return filepath;
 end
 
 function Independent:Load(files)

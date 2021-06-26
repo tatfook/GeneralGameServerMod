@@ -119,15 +119,28 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
 	CodeEnv.cmd = function(...) CommandManager:RunCommand(...) end
     CodeEnv.exit = CodeEnv.__stop__;
 
+    -- 会切换协程需做等待处理
     CodeEnv.require = function(name)
         if (CodeEnv.__modules__[name]) then return CodeEnv.__modules__[name] end
         CodeEnv.__modules__[name] = {}; -- 解决循环依赖
+        local filename = nil;
         -- 为单词则默认为系统库文件
         if (string.match(name, "^[%a%d]+$")) then 
-            CodeEnv.__loadfile__(string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name));
+            filename = CodeEnv.__loadfile__(string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name));
         else -- 加载指令路径文件
-            CodeEnv.__loadfile__(name);
+            filename = CodeEnv.__loadfile__(name);
         end
+        -- 设置模块内部信息
+        CodeEnv.__modules__[name].__filename__ = filename;
+        CodeEnv.__modules__[name].__loaded__ = false;
+        -- filename 存在表明模块正在加载
+        if (filename) then
+            -- 模块未加载完成则一直等待
+            while(not CodeEnv.___modules___[filename] or not CodeEnv.___modules___[filename].__loaded__) do
+                CodeEnv.sleep();
+            end
+        end
+        CodeEnv.__modules__[name].__loaded__ = true;
         return CodeEnv.__modules__[name];
     end
 

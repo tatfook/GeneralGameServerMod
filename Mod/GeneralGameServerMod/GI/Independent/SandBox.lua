@@ -59,9 +59,7 @@ function SandBox:GetCodeBlockAPI()
 
         -- 显示排行榜
         showRanking = function()
-            API.__call__(function()
-                API.GetGGSRankModule():ShowUI();
-            end);
+            API.GetGGSRankModule():ShowUI();
         end,
 
         -- 设置排行榜字段值

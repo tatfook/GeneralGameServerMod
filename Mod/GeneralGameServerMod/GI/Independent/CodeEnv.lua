@@ -45,7 +45,7 @@ function CodeEnv:ctor()
 	self._G = self;
 	self.__env__ = self;          -- 快捷方式
 
-	self.__filenames__ = {};      -- 防止文件代码重复执行
+	self.___modules___ = {};      -- 防止文件代码重复执行
 	self.__modules__ = {};        -- 模块
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
