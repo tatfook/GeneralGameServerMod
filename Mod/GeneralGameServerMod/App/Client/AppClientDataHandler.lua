@@ -11,10 +11,11 @@ local AppClientDataHandler = NPL.load("Mod/GeneralGameServerMod/App/Client/AppCl
 
 
 NPL.load("Mod/GeneralGameServerMod/Core/Client/ClientDataHandler.lua");
-
 local AppClientDataHandler = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.ClientDataHandler"), NPL.export());
 
 function AppClientDataHandler:RecvData(data)
     -- GGS.INFO("AppClientDataHandler", data);
+    AppClientDataHandler._super.RecvData(self, data);
+    
     GameLogic.GetFilters():apply_filters("ggs_net_data", nil, data, self);
 end

@@ -9,6 +9,9 @@ local GGSAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/GGSAPI.lua"
 ------------------------------------------------------------
 ]]
 
+NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
+local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
+
 local GIGeneralGameClient = NPL.load("../../Game/GGS/GIGeneralGameClient.lua", IsDevEnv);
 local EventEmitter = NPL.load("../../Game/Event/EventEmitter.lua");
 
@@ -45,24 +48,28 @@ GIGeneralGameClient:GetClientDataHandlerClass():SetRecvDataCallBack(RecvDataCall
 GIGeneralGameClient:SetConnectionCallBack(ConnectionCallBack);
 GIGeneralGameClient:SetDisconnectionCallBack(DisconnectionCallBack);
 
-local function __G_Connect__(opts)
+AppGeneralGameClient:GetClientDataHandlerClass():SetRecvDataCallBack(RecvDataCallBack);
+AppGeneralGameClient:SetConnectionCallBack(ConnectionCallBack);
+AppGeneralGameClient:SetDisconnectionCallBack(DisconnectionCallBack);
+
+local function __G_Connect__(__client__, opts)
     -- 所有独立沙盒公用GGS连接
-    if (GIGeneralGameClient:IsLogin()) then return ConnectionCallBack() end
+    if (__client__:IsLogin()) then return ConnectionCallBack() end
     -- 未连接进行连接
-    GIGeneralGameClient:LoadWorld(opts);
+    __client__:LoadWorld(opts);
 end
 setfenv(__G_Connect__, __G__);
 
-local function __G_Send__(data, to, action, username)
-    local dataHandler = GIGeneralGameClient:GetClientDataHandler();
+local function __G_Send__(__client__, data, to, action, username)
+    local dataHandler = __client__:GetClientDataHandler();
     if (not dataHandler) then return end
     DATA.__to__, DATA.__action__, DATA.__data__, DATA.__username__ = to, action, data, username;
     dataHandler:SendData(DATA);
 end
 setfenv(__G_Send__, __G__);
 
-local function __G_Disconnect__()
-    GIGeneralGameClient:OnWorldUnloaded();
+local function __G_Disconnect__(__client__)
+    __client__:OnWorldUnloaded();
 end
 setfenv(__G_Disconnect__, __G__);
 
@@ -87,11 +94,11 @@ setfenv(__G_Disconnect__, __G__);
 local function GGS_Connect(__code_env__, callback)
     local username = __code_env__.GetUserName();
     __code_env__.RegisterEventCallBack(EventType.__GGS_CONNECT__, callback);
-    __G_Connect__({username = username});
+    __G_Connect__(__code_env__.__ggs_client__, {username = username});
 end
 
 local function GGS_Send(__code_env__,  data, to, action)
-    __G_Send__(data, to, action, __code_env__.GetUserName());
+    __G_Send__(__code_env__.__ggs_client__, data, to, action, __code_env__.GetUserName());
 end
 
 local function GGS_Recv(__code_env__, callback)
@@ -102,7 +109,7 @@ local function GGS_Disconnect(__code_env__, callback)
     if (type(callback) == "function") then
         __code_env__.RegisterEventCallBack(EventType.__GGS_DISCONNECT__, callback);
     else 
-        __G_Disconnect__();
+        __G_Disconnect__(__code_env__.__ggs_client__);
     end
 end
 
@@ -120,6 +127,8 @@ setmetatable(GGSAPI, {
             CodeEnv.TriggerEventCallBack(EventType.__GGS_DISCONNECT__, ...);
         end
 
+        CodeEnv.__ggs_client__ = AppGeneralGameClient;  -- 默认共享外部链接
+        CodeEnv.GGS_Independent = function() CodeEnv.__ggs_client__ = GIGeneralGameClient end
         CodeEnv.GGS_Connect = function(...) return GGS_Connect(CodeEnv, ...) end
         CodeEnv.GGS_Send = function(...) return GGS_Send(CodeEnv, ...) end
         CodeEnv.GGS_Recv = function(...) return GGS_Recv(CodeEnv, ...) end
@@ -130,7 +139,7 @@ setmetatable(GGSAPI, {
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_DISCONNECT__, GGS_DisconnectionCallBack, CodeEnv);
 
         CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function() 
-            __G_Disconnect__(); 
+            GGS_Disconnect(CodeEnv);
             __event_emitter__:RegisterEventCallBack(EventType.__GGS_DATA__, GGS_RecvDataCallBack, CodeEnv);
             __event_emitter__:RegisterEventCallBack(EventType.__GGS_CONNECT__, GGS_ConnectionCallBack, CodeEnv);
             __event_emitter__:RegisterEventCallBack(EventType.__GGS_DISCONNECT__, GGS_DisconnectionCallBack, CodeEnv);

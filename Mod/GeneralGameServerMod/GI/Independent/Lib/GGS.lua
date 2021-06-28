@@ -196,6 +196,6 @@ GGS_Disconnect(function(username)
 end)
 
 GGS:InitSingleton():Init():Connect(function()
-    -- print("=======================GGS Connect Success======================", GetUserName())
+    print("=======================GGS Connect Success======================", GetUserName())
 end);
 
