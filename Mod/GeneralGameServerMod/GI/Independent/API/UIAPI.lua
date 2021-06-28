@@ -20,9 +20,12 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
 
     CodeEnv.ShowWindow = function(G, params)
         -- 预处理参数
+        G = G or {};
         params = params or {};
         local key = params.html or params.template or params.url;
         if (not key) then return end
+        
+        setmetatable(G, {__index = CodeEnv});
         
         -- 获取窗口
         if (windows[key] and windows[key]:GetNativeWindow()) then windows[key]:CloseWindow() end

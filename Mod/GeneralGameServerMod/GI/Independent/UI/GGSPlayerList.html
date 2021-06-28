@@ -1,0 +1,54 @@
+<template class="container">
+    <div class="title">玩家列表</div>
+    <div class="player-list">
+        <div v-for="player in players" class="player">
+            <div style="width: 180px;">{{player.nickname or player.username}}</div>
+            <div style="width: 120px;">{{player.school or ""}}</div>
+            <div onclick="ClickTP(player.username)" style="width: 40px;">传送</div>
+        </div>
+    </div>
+</template>
+
+<script type="text/lua">
+
+function ClickTP(username)
+    local player = GGS_GetPlayer(username);
+    if (not player) then return end 
+
+    local x, y, y = player:GetBlockPos()
+    cmd(string.format("/goto %s %s %s", x, y, z));
+end
+
+</script>
+
+<style scoped=true>
+.container {
+    width: 100%;
+    height: 100%;
+    background-color: #262C0CA0;
+    color: #ffffff;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    height: 40px;
+}
+
+.player-list {
+    position: absolute;
+    top: 40px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    overflow-y: auto;
+
+}
+.player {
+    display: flex;
+    padding: 8px 5px;
+    font-size: 20px;
+}
+</style>

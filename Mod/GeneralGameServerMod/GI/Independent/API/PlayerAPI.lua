@@ -51,8 +51,13 @@ local function SetNickName(nickname)
     __nickname__ = nickname;
 end
 
-local function GetPlayer()
-    return EntityManager.GetPlayer();
+local function GetSchoolName()
+    local school = GetUserInfo().school;
+    return school and school.name;
+end
+
+local function GetPlayer(name)
+    return EntityManager.GetPlayer(name);
 end
 
 local function GetPlayerInventory()
@@ -122,6 +127,7 @@ setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
     CodeEnv.SetUserName = SetUserName;
     CodeEnv.GetNickName = GetNickName;
     CodeEnv.SetNickName = SetNickName;
+    CodeEnv.GetSchoolName = GetSchoolName;
     CodeEnv.GetPlayer = GetPlayer;
     
     CodeEnv.GetPlayerEntityId = function() return EntityManager.GetPlayer().entityId end

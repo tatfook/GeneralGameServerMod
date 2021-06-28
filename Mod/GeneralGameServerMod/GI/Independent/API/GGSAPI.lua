@@ -36,11 +36,11 @@ local function RecvDataCallBack(...)
     __event_emitter__:TriggerEventCallBack(EventType.__GGS_DATA__, ...);
 end
 
-local function ConnectionCallBack(__code_env__, ...)
+local function ConnectionCallBack(...)
     __event_emitter__:TriggerEventCallBack(EventType.__GGS_CONNECT__, ...);
 end
 
-local function DisconnectionCallBack(__code_env__, ...)
+local function DisconnectionCallBack(...)
     __event_emitter__:TriggerEventCallBack(EventType.__GGS_DISCONNECT__, ...);
 end
 
@@ -73,23 +73,22 @@ local function __G_Disconnect__(__client__)
 end
 setfenv(__G_Disconnect__, __G__);
 
--- local function GGS_GetPlayerManager()
---     local world = GIGeneralGameClient:GetWorld();
---     return world and world:GetPlayerManager();
--- end
+local function GGS_GetPlayerManager(__code_env__)
+    local world = __code_env__.__ggs_client__:GetWorld();
+    return world and world:GetPlayerManager();
+end
 
--- local function GGS_GetMainPlayer()
---     local playerManager = GGS_GetPlayerManager();
---     return playerManager and playerManager:GetMainPlayer();
--- end
+local function GGS_GetMainPlayer(__code_env__)
+    local playerManager = GGS_GetPlayerManager(__code_env__);
+    return playerManager and playerManager:GetMainPlayer();
+end
 
--- local function GGS_GetPlayer(username)
---     local playerManager = GGS_GetPlayerManager();
---     if (not playerManager) then return end
---     if (not username) then return playerManager:GetMainPlayer()() end
---     return playerManager:GetPlayerByUserName(username);
--- end
-
+local function GGS_GetPlayer(__code_env__, username)
+    local playerManager = GGS_GetPlayerManager(__code_env__);
+    if (not playerManager) then return end
+    if (not username or username == __code_env__.GetUserName()) then return playerManager:GetMainPlayer() end
+    return playerManager:GetPlayerByUserName(username);
+end
 
 local function GGS_Connect(__code_env__, callback)
     local username = __code_env__.GetUserName();
@@ -97,7 +96,7 @@ local function GGS_Connect(__code_env__, callback)
     __G_Connect__(__code_env__.__ggs_client__, {username = username});
 end
 
-local function GGS_Send(__code_env__,  data, to, action)
+local function GGS_Send(__code_env__, data, to, action)
     __G_Send__(__code_env__.__ggs_client__, data, to, action, __code_env__.GetUserName());
 end
 
@@ -133,6 +132,7 @@ setmetatable(GGSAPI, {
         CodeEnv.GGS_Send = function(...) return GGS_Send(CodeEnv, ...) end
         CodeEnv.GGS_Recv = function(...) return GGS_Recv(CodeEnv, ...) end
         CodeEnv.GGS_Disconnect = function(...) return GGS_Disconnect(CodeEnv, ...) end
+        CodeEnv.GGS_GetPlayer = function(...) return GGS_GetPlayer(CodeEnv, ...) end
         
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_DATA__, GGS_RecvDataCallBack, CodeEnv);
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_CONNECT__, GGS_ConnectionCallBack, CodeEnv);

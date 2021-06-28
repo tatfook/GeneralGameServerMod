@@ -30,6 +30,8 @@ function pack(...)
 end
 
 function select(index)
+	if (index == "#") then return __arguments__.n end 
+
 	index = index or 1;
     return __arguments__[index], __arguments__[index + 1], __arguments__[index + 2], __arguments__[index + 3], __arguments__[index + 4], __arguments__[index + 5], __arguments__[index + 6], __arguments__[index + 7], __arguments__[index + 8], __arguments__[index + 9];
 end
@@ -74,6 +76,7 @@ function sleep(sleep)
 			end
 		end   
 	end
+	
 	-- 注册主线程定时回调, 由主线唤醒当前协程的挂起
 	RegisterEventCallBack(EventType.LOOP, SleepLoopCallBack);
 

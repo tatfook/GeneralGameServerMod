@@ -22,6 +22,8 @@ Independent:Property("ErrorExit", true, "IsErrorExit");       -- 出错退出
 Independent:Property("ShareMouseKeyBoard", false, "IsShareMouseKeyBoard");            -- 是否共享鼠标键盘事件
 Independent:Property("MainFileName");                         -- 入口文件
 
+local coroutine_running = coroutine.running;
+local coroutine_status = coroutine.status;
 local coroutine_yield = coroutine.yield;
 local coroutine_resume = coroutine.resume;
 
@@ -152,12 +154,17 @@ function Independent:Call(...)
 	if (type(callback) ~= "function") then return false end
 	local ok = nil;
 	if (self:IsCodeEnv()) then 
-		ok = self:XPCall(callback, select(2, ...));
+		ok, err = self:XPCall(callback, select(2, ...));
 	else
-		ok = self:Resume(...);
+		ok, err = self:Resume(...);
 	end
 	-- 出错是否停止沙盒
-	if (not ok and self:IsErrorExit()) then self:Stop() end
+	if (not ok) then 
+		print("Error:", err, self.__co__ == coroutine_running(), self.__co__ and coroutine.status(self.__co__));
+		if (self:IsErrorExit()) then
+			self:Stop() 
+		end
+	end
 end
 
 function Independent:CallEventCallBack(eventType)
@@ -170,8 +177,8 @@ function Independent:CallEventCallBack(eventType)
 end
 
 function Independent:IsCodeEnv()
-	local co = coroutine.running();
-	return self.__co__ == co;
+	local status = self.__co__ and coroutine_status(self.__co__);
+	return status == "running" or status == "normal";
 end
 
 function Independent:Yield(...)
@@ -187,7 +194,6 @@ function Independent:Restart()
 end
 
 function Independent:Start(filename)
-
 	if (self:IsRunning()) then return end
 	print("====================Independent:Start=====================");
 	-- 确保已初始化

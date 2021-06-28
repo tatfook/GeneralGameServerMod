@@ -74,12 +74,18 @@ function GGS:Init()
 end
 
 function GGS:Connect(callback)
+    -- 注册连接事件
+    self:OnConnect(callback);
+    -- 已经连接直接执行返回
     if (self:IsConnected()) then return type(callback) == "function" and callback() end
-
+    
+    -- 连接中则等待
     if (self:IsConnecting()) then
         -- 阻塞当前执行流程
         while(not GGS:IsConnected()) do sleep() end
-        return type(callback) == "function" and callback();
+        return;   
+        -- 由事件触发回调
+        -- return type(callback) == "function" and callback();
     end
 
     -- 标记正在连接
@@ -93,17 +99,20 @@ function GGS:Connect(callback)
 
     -- 阻塞当前执行流程
     while(not GGS:IsConnected()) do sleep() end
-    return type(callback) == "function" and callback();
+    -- 由事件触发回调
+    -- if (type(callback) == "function") then callback() end 
 end
 
-function GGS:Send(data)
-    if (not GGS:IsConnected()) then return end 
-    return GGS_Send(data);
+function GGS:Send(data, username)
+    if (not self:IsConnected()) then 
+        while (self:IsConnecting()) do sleep() end
+        if (not self:IsConnected()) then return end 
+    end 
+    return GGS_Send(data, username);
 end
 
 function GGS:SendTo(username, data)
-    if (not GGS:IsConnected()) then return end 
-    return GGS_Send(data, username);
+    return self:Send(data, username);
 end
 
 function GGS:SetUserData(data)
@@ -168,10 +177,13 @@ GGS_Recv(function(msg)
     local __action__, __username__, __data__ = msg.__action__, msg.__username__, msg.__data__;
 
     if (__action__ == "__response_connect__") then 
-        GGS:SetConnected(true);
-        GGS:SetConnecting(false);
         SetAllUserData(__data__.__all_user_data__);
         SetShareData(__data__.__share_data__);
+        
+        GGS:SetConnected(true);
+        GGS:SetConnecting(false);
+
+        print("=======================GGS Connect Success======================", GetUserName())
         TriggerEventCallBack(GGS.EVENT_TYPE.CONNECT);
     elseif (__action__ == "__push_share_data__") then 
         SetShareData(__data__);
@@ -196,6 +208,5 @@ GGS_Disconnect(function(username)
 end)
 
 GGS:InitSingleton():Init():Connect(function()
-    print("=======================GGS Connect Success======================", GetUserName())
 end);
 

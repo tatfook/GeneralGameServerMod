@@ -12,6 +12,8 @@ local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua");
 local Debug = NPL.export()
 
 local __default_depth__ = 4;
+local __select__ = select;
+
 -- 模块使能映射
 local ModuleLogEnableMap = {
     FATAL = true,
@@ -128,8 +130,8 @@ local function DebugCall(module, ...)
     filepos = string.sub(filepos, 1, 256);
     Print(string.format("\n[%s %s][%s][%s][DEBUG BEGIN]", dateStr, timeStr, module, filepos));
 
-    for i = 1, select('#', ...) do      -->获取参数总数
-        local arg = select(i, ...);     -->函数会返回多个值
+    for i = 1, __select__('#', ...) do      -->获取参数总数
+        local arg = __select__(i, ...);     -->函数会返回多个值
         if (not GGS.IsDevEnv and GGS.IsServer) then
             Print(arg);                 -- 服务器可以换成压缩的日志格式输出
         else
