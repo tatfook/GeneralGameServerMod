@@ -121,7 +121,14 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
 
     -- 会切换协程需做等待处理
     CodeEnv.require = function(name)
-        if (CodeEnv.__modules__[name]) then return CodeEnv.__modules__[name] end
+        if (CodeEnv.__modules__[name]) then 
+            while(not CodeEnv.__modules__[name].__loaded__) do
+                CodeEnv.sleep();
+            end
+            
+            return CodeEnv.__modules__[name];
+        end
+        
         CodeEnv.__modules__[name] = {}; -- 解决循环依赖
         local filename = nil;
         -- 为单词则默认为系统库文件

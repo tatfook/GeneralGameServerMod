@@ -146,12 +146,12 @@ setmetatable(EventAPI, {
         
         -- 世界加载
         local function OnWorldLoaded() 
-
+            -- CodeEnv.__start__();
         end
 
         -- 世界卸载 默认停止
         local function OnWorldUnloaded()
-            CodeEnv.__stop__();
+            -- CodeEnv.__stop__();
         end
 
         -- 主动触发事件
@@ -171,8 +171,8 @@ setmetatable(EventAPI, {
         SceneContext:RegisterEventCallBack(SceneContext.EventType.KEY_PRESS_EVENT, KeyPressEventCallBack, CodeEnv);
         SceneContext:RegisterEventCallBack(SceneContext.EventType.KEY_RELEASE_EVENT, KeyReleaseEventCallBack, CodeEnv);
 
-        SceneContext:RegisterEventCallBack(SceneContext.EventType.WORLD_LOADED, OnWorldLoaded, CodeEnv);
-        SceneContext:RegisterEventCallBack(SceneContext.EventType.WORLD_UNLOADED, OnWorldUnloaded, CodeEnv);
+        -- SceneContext:RegisterEventCallBack(SceneContext.EventType.WORLD_LOADED, OnWorldLoaded, CodeEnv);
+        -- SceneContext:RegisterEventCallBack(SceneContext.EventType.WORLD_UNLOADED, OnWorldUnloaded, CodeEnv);
 
         CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function()
             SceneContext:RemoveEventCallBack(SceneContext.EventType.MOUSE_PRESS_EVENT, MousePressEventCallBack, CodeEnv);
@@ -182,8 +182,8 @@ setmetatable(EventAPI, {
             SceneContext:RemoveEventCallBack(SceneContext.EventType.KEY_PRESS_EVENT, KeyPressEventCallBack, CodeEnv);
             SceneContext:RemoveEventCallBack(SceneContext.EventType.KEY_RELEASE_EVENT, KeyReleaseEventCallBack, CodeEnv);
 
-            SceneContext:RemoveEventCallBack(SceneContext.EventType.WORLD_LOADED, OnWorldLoaded, CodeEnv);
-            SceneContext:RemoveEventCallBack(SceneContext.EventType.WORLD_UNLOADED, OnWorldUnloaded, CodeEnv);
+            -- SceneContext:RemoveEventCallBack(SceneContext.EventType.WORLD_LOADED, OnWorldLoaded, CodeEnv);
+            -- SceneContext:RemoveEventCallBack(SceneContext.EventType.WORLD_UNLOADED, OnWorldUnloaded, CodeEnv);
         end);
     end
 });
