@@ -90,6 +90,11 @@ local function GGS_GetPlayer(__code_env__, username)
     return playerManager:GetPlayerByUserName(username);
 end
 
+local function GGS_GetAllPlayer(__code_env__)
+    local playerManager = GGS_GetPlayerManager(__code_env__);
+    return playerManager and playerManager:GetPlayers();
+end
+
 local function GGS_Connect(__code_env__, callback)
     local username = __code_env__.GetUserName();
     __code_env__.RegisterEventCallBack(EventType.__GGS_CONNECT__, callback);
@@ -133,6 +138,7 @@ setmetatable(GGSAPI, {
         CodeEnv.GGS_Recv = function(...) return GGS_Recv(CodeEnv, ...) end
         CodeEnv.GGS_Disconnect = function(...) return GGS_Disconnect(CodeEnv, ...) end
         CodeEnv.GGS_GetPlayer = function(...) return GGS_GetPlayer(CodeEnv, ...) end
+        CodeEnv.GGS_GetAllPlayer = function(...) return GGS_GetAllPlayer(CodeEnv, ...) end
         
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_DATA__, GGS_RecvDataCallBack, CodeEnv);
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_CONNECT__, GGS_ConnectionCallBack, CodeEnv);

@@ -90,6 +90,18 @@ function SandBox:GetCodeBlockAPI()
         -- 设置用户数据
         setUserData = function(key, value)
             return API.GetGGSStateModule():GetUserState(username):Set(key, value);
+        end,
+
+        -- 显示用户列表
+        showUserList = function(bShow)
+            if (bShow == true) then return API.GetGGSPlayerModule():ShowPlayerListUI() end 
+            if (bShow == false) then return API.GetGGSPlayerModule():ClosePlayerListUI() end
+            API.GetGGSPlayerModule():TriggerPlayerListUI();
+        end,
+
+        -- 遍历玩家
+        eachPlayer = function()
+            return pairs(API.GetGGSModule().GetAllPlayer());
         end
     }
 

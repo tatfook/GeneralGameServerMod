@@ -67,6 +67,20 @@ local function PullAllUserData()
     GGS_Send(nil, nil, "__pull_all_user_data__");  -- __push_all_user_data__
 end
 
+function GGS:GetPlayer(username)
+    return GGS_GetPlayer(username);
+end
+
+function GGS:GetAllPlayer()
+    local players = GGS_GetAllPlayer() or {};
+    local all_players = {};
+    for username, player in pairs(players) do
+        all_players[username] = player;
+    end
+    all_players[__username__] = GGS_GetPlayer();
+    return all_players;
+end
+
 function GGS:Init()
     GGS:SetConnected(false);
 

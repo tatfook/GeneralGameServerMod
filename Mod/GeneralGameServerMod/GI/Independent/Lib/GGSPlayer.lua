@@ -157,10 +157,18 @@ function GGSPlayer:ShowPlayerListUI(G, params)
     return self.__player_list_ui__; 
 end
 
-function GGSPlayer:ClosePlayerListUI(G, params)
+function GGSPlayer:ClosePlayerListUI()
     if (not self.__player_list_ui__) then return end
     self.__player_list_ui__:CloseWindow();
     self.__player_list_ui__ = nil;
+end
+
+function GGSPlayer:TriggerPlayerListUI(...)
+    if (self.__player_list_ui__) then
+        self:ClosePlayerListUI(...);
+    else
+        self:ShowPlayerListUI(...);
+    end
 end
 
 GGSPlayer:InitSingleton():Init();
