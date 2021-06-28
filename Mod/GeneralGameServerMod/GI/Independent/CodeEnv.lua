@@ -113,6 +113,4 @@ function CodeEnv:Clear()
 	for _, entity in pairs(self.__entities__) do
 		entity:SetDead();
 	end
-
-	self.__event_callback__ = {}; -- 事件回调
 end

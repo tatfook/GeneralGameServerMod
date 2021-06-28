@@ -179,7 +179,7 @@ function Independent:Yield(...)
 end
 
 function Independent:Resume(...)
-	return coroutine_resume(self.__co__, ...);
+	return self.__co__ and coroutine_resume(self.__co__, ...);
 end
 
 function Independent:Restart()
@@ -260,6 +260,14 @@ function Independent:Stop()
 	self:Resume();  -- 使用空值退出协同程序
 	self.__co__ = nil;
 	-- collectgarbage("collect");
+end
+
+
+function Independent:OnWorldLoaded()
+end
+
+function Independent:OnWorldUnloaded()
+    self:Stop();
 end
 
 Independent:InitSingleton();

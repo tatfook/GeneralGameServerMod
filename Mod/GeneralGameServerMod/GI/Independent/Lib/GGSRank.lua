@@ -196,3 +196,5 @@ end);
 GGS:Connect(function()
     GGS:SetUserData(__rank__);            -- 连接成功直接同步当前用户状态
 end);
+
+print("==========================================dsfad")

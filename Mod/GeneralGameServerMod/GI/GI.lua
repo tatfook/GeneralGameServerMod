@@ -48,15 +48,15 @@ function GI:Init()
 end
 
 function GI:OnWorldLoaded()
-    -- Independent:Start();
-    SandBox:Start();
+    -- Independent:OnWorldLoaded();
+    -- SandBox:OnWorldLoaded();
     self:GetContext():OnWorldLoaded();
 end
 
 function GI:OnWorldUnloaded()
     self:GetContext():OnWorldUnloaded();
-    SandBox:Stop();
-    -- Independent:Stop();
+    -- SandBox:OnWorldUnloaded();
+    -- Independent:OnWorldUnloaded();
 end
 
 -- 共享模式处理键盘鼠标事件

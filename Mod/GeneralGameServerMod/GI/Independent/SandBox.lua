@@ -96,4 +96,10 @@ function SandBox:GetCodeBlockAPI()
     return self.CodeBlockAPI;
 end
 
+
+function SandBox:Stop()
+    self.CodeBlockAPI = nil;
+    SandBox._super.Stop(self);
+end
+
 SandBox:InitSingleton();
