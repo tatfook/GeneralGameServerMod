@@ -96,7 +96,7 @@ function Cors:Handle(ctx, next)
         if (credentials) then ctx:Set('Access-Control-Allow-Credentials', 'true') end 
         if (self:GetMaxAge()) then ctx:Set("Access-Control-Max-Age", self:GetMaxAge()) end
         if (self:GetAllowMethods()) then ctx:Set("Access-Control-Allow-Methods", self:GetAllowMethods()) end
-        local allowHeaders = self:GetAllowHeaders() or ctx:Get("Access-Control-Request-Headers");
+        local allowHeaders = self:GetAllowHeaders() or ctx:Get("access-control-request-headers");
         ctx:Set("Access-Control-Allow-Headers", allowHeaders);
         ctx:SetStatusCode(204);
     end

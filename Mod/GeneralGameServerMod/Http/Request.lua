@@ -29,7 +29,8 @@ end
 function Request:Init(msg)
     local headers = {};
     for key, value in pairs(msg) do headers[string_lower(key)] = value end 
-	echo(headers, true)
+	-- echo(headers, true)
+	self.__msg__ = msg;
     self:SetHeaders(headers);
     self:SetNid(headers.tid or headers.nid);
     self:SetPath(string.gsub(headers.url, '?.*$', ''));
@@ -55,7 +56,7 @@ function Request:GetPeerName()
 end
 
 function Request:GetHeader(field)
-	return self:GetHeaders()[field];
+	return self:GetHeaders()[field] or self.__msg__[field];
 end
 
 function Request:ParseParams()

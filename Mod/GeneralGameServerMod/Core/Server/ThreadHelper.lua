@@ -10,33 +10,19 @@ local ThreadHelper = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Th
 -------------------------------------------------------
 ]]
 
-local GGS = NPL.load("../Common/GGS.lua");
-
-NPL.load("(gl)script/ide/System/System.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
-
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 
 local ThreadHelper = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-function ThreadHelper:Init()
-    -- 配置初始化
-    Config:StaticInit();
+ThreadHelper:Property("WorkerThreadName", "WorkerThread");
+ThreadHelper:Property("WorkerThreadCount", 0);
+
+function ThreadHelper:ctor()
 end
 
-
--- 初始化成单列模式
-ThreadHelper:InitSingleton():Init();
-
--- 激活函数
-local function activate()
-    local nid = msg and (msg.nid or msg.tid);
-    local action = msg and msg.action;
-    if (not nid) then return end
-    echo(msg);
-    
+function ThreadHelper:StartWorkerThread(workerThreadCount)
+    workerThreadCount = workerThreadCount or 1;
+    NPL.CreateRuntimeState(threadName, 0):Start(); 
 end
 
-print(string.format("========================Thread(%s) Load======================", __rts__:GetName()));
-
-NPL.this(activate);
+--单列模式
+ThreadHelper:InitSingleton();
