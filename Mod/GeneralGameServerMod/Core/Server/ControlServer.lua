@@ -19,10 +19,10 @@ local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Wo
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 local ControlServer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
 
-local servers = {};  -- 服务器信息集
-local ServerAliveDuration = 60 * 5;  -- 5min
+local servers = {};                         -- 服务器信息集
+local ServerAliveDuration = 60 * 5;         -- 5min
 
-_G.SERVERS = servers; -- 导出全局变量中
+_G.SERVERS = servers;                       -- 导出全局变量中
 
 function ControlServer:ctor()
     self:SetNetHandler(self);
@@ -353,4 +353,12 @@ end);
         isWorkerServer:true                 -- 是否是工作线程
     }
 }
+
+-- UI
+服务器列表
+外网IP, 外网端口, 内网IP, 内网端口, 线程数, 用户数, 支持最大用户数, 是否启动,   操作(重启, 停止)
+单服务器-线程列表
+线程名, 世界数, 支持最大世界数, 用户数, 支持最大用户数
+单服务器-世界列表
+世界KEY, 所属线程名, 用户数, 最大用户数
 --]]

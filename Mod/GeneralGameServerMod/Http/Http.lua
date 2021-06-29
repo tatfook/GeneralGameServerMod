@@ -27,7 +27,7 @@ Http:Property("Ip", "0.0.0.0");
 
 function Http:ctor()
     self.middlewares = {};
-    self.statics = {};
+    self.virtual_directory = {};
 end
 
 function Http:Init()
@@ -61,8 +61,9 @@ function Http:Router(path, callback, description)
     Router:Router(path, callback, description);
 end
 
-function Http:Static(path, directory)
-    self.statics[path] = directory;
+-- 添加虚拟目录 静态文件目录
+function Http:AddVirtualDirectory(path, directory)
+    self.virtual_directory[path] = directory;
 end
 
 function Http:HandleStaticFile(ctx)
@@ -70,7 +71,7 @@ function Http:HandleStaticFile(ctx)
     local path = ctx:GetPath();
     local filepath = nil;
 
-    for static_path, dir in pairs(self.statics) do
+    for static_path, dir in pairs(self.virtual_directory) do
         if (string.find(path, static_path, 1, true)) then
             filepath = dir .. string.sub(path, string.len(static_path) + 1);
         end
