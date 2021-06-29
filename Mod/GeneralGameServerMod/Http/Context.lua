@@ -33,10 +33,29 @@ function Context:GetParams()
     return self:GetRequest():GetParams();
 end
 
+function Context:Get(field)
+    return self:GetRequest():GetHeader(field);
+end
+
+function Context:Set(field, value)
+    return self:GetResponse():SetHeader(field, value);
+end
+
+function Context:SetStatusCode(code)
+    return self:GetResponse():SetStatusCode(code);
+end
+
 function Context:Send(...)
     return self:GetResponse():Send(...);
+end
+
+function Context:SendFile(...)
+    return self:GetResponse():SendFile(...);
 end
 
 function Context:IsFinished()
     return self:GetResponse():IsFinished();
 end
+
+
+

@@ -177,8 +177,11 @@ function Independent:CallEventCallBack(eventType)
 end
 
 function Independent:IsCodeEnv()
+	local co, isMainThread = coroutine_running();
 	local status = self.__co__ and coroutine_status(self.__co__);
-	return status == "running" or status == "normal";
+	-- 不是主线程, 默认协程处于活跃状态则以当前环境执行
+	return not isMainThread and (co == self.__co__ or status == "running" or status == "normal");
+	-- return co == self.__co__ or status == "running" or status == "normal";
 end
 
 function Independent:Yield(...)

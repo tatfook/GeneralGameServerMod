@@ -103,6 +103,7 @@ function Response:Send(content, status_code)
 
 	self:SetFinished(true);
 
+	-- echo(out, true);
     NPL.activate(format("%s:http", self:GetRequest():GetNid()), table.concat(out))
 end
 
@@ -122,22 +123,25 @@ function Response:AppendCookie(cookie)
 	cookies[#(cookies) + 1] = cookie;
 end
 
--- 发送文件
-function Response:SendFile(path, ext)
-	if (not path or path == "") then return self:Send() end
+-- 发送文件 TODO: 支持中文路径
+function Response:SendFile(filepath, ext)
+	if (not filepath or filepath == "") then return self:Send() end
 
-	path = string.match(path, '([^?]*)');
-	path = string.gsub(path, '//', '/');
-	ext = ext or path:match('^.+%.([a-zA-Z0-9]+)$');
+	filepath = string.match(filepath, '([^?]*)');
+	filepath = string.gsub(filepath, '//', '/');
+	ext = ext or string.match(filepath, '^.+%.([a-zA-Z0-9]+)$');
 
-	local file = io.open(path, "rb");
-	if (not file) then return self:Send("文件不存在:" .. path, 404)	end
-
-	local content = file:read("*a");
-	file:close();
+	local text = nil;
+	local file = ParaIO.open(filepath, "r");
+    if(file:IsValid()) then
+        text = file:GetText();
+        file:close();
+    else
+        echo(string.format("ERROR: read file failed: %s ", filepath));
+    end
 
 	self:SetContentTypeByExt(ext);
-	self:Send(content)
+	self:Send(text);
 end
 
 

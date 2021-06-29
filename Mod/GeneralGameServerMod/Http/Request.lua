@@ -29,7 +29,7 @@ end
 function Request:Init(msg)
     local headers = {};
     for key, value in pairs(msg) do headers[string_lower(key)] = value end 
-
+	echo(headers, true)
     self:SetHeaders(headers);
     self:SetNid(headers.tid or headers.nid);
     self:SetPath(string.gsub(headers.url, '?.*$', ''));
@@ -52,6 +52,10 @@ end
 
 function Request:GetPeerName()
 	return NPL.GetIP(self:GetNid());
+end
+
+function Request:GetHeader(field)
+	return self:GetHeaders()[field];
 end
 
 function Request:ParseParams()
