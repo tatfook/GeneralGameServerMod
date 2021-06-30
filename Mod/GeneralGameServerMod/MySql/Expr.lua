@@ -14,7 +14,49 @@ local Expr = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.e
 Expr:Property("Column");
 Expr:Property("TableName");
 
+local OP = {
+    ["eq"] = "Eq",
+    ["neq"] = "Neq",
+    ["op"] = "Op",
+    ["lt"] = "Lt",
+    ["lte"] = "Lte",
+    ["gt"] = "Gt",
+    ["gte"] = "Gte",
+    ["isnull"] = "IsNull",
+    ["isnotnull"] = "IsNotNull",
+    ["prod"] = "Prod",
+    ["diff"] = "Diff",
+    ["sum"] = "Sum",
+    ["quot"] = "Quot",
+    ["in"] = "In",
+    ["exists"] = "Exists",
+}
 
+Expr.OP = OP;
+local function Concat(delimiter, ...)
+    local n = select("#", ...);
+    local args, arg = "", "";
+
+    delimiter = delimiter or " ";
+
+    for i = 1, n do
+        arg = __select__(i, ...);
+        args = args .. (args == "" and "" or delimiter) .. arg;
+    end
+
+    return args;
+end
+
+local function ConcatArray(delimiter, list)
+    local values = ""
+    for _, value in ipairs(list) do
+        values = values .. (values == "" and "" or delimiter) .. value;
+    end
+    return values;
+end
+
+Expr.Concat = Concat;
+Expr.ConcatArray = ConcatArray;
 
 function Expr:ctor()
     self.__sql__ = "";
@@ -37,40 +79,49 @@ function Expr:GetValue(value)
     return self:GetColumn():ToValue(value);
 end
 
+function Expr:GetValues(values)
+    for i, value in ipairs(values) do
+        values[i] = self:GetValue(value);
+    end
+    return values;
+end
+
 function Expr:Op(op, value)
-    return string.format("%s %s %s ", self:GetColumnName(), op, value);
+    if (OP[op]) then return (self[OP[op]])(self, value) end 
+
+    return string.format("%s %s %s", self:GetColumnName(), op, value);
 end
 
 function Expr:Neq(value)
-    return string.format("%s <> %s ", self:GetColumnName(), self:GetValue(value));
+    return string.format("%s <> %s", self:GetColumnName(), self:GetValue(value));
 end
 
 function Expr:Eq(value)
-    return string.format("%s = %s ", self:GetColumnName(), self:GetValue(value));
+    return string.format("%s = %s", self:GetColumnName(), self:GetValue(value));
 end
 
 function Expr:Lt(value)
-    return string.format("%s < %s ", self:GetColumnName(), self:GetValue(value));
+    return string.format("%s < %s", self:GetColumnName(), self:GetValue(value));
 end
 
 function Expr:Lte(value)
-    return string.format("%s <= %s ", self:GetColumnName(), self:GetValue(value));
+    return string.format("%s <= %s", self:GetColumnName(), self:GetValue(value));
 end
 
 function Expr:Gt(value)
-    return string.format("%s > %s ", self:GetColumnName(), self:GetValue(value));
+    return string.format("%s > %s", self:GetColumnName(), self:GetValue(value));
 end
 
 function Expr:Gte(value)
-    return string.format("%s >= %s ", self:GetColumnName(), self:GetValue(value));
+    return string.format("%s >= %s", self:GetColumnName(), self:GetValue(value));
 end
 
 function Expr:IsNull()
-    return string.format("%s IS NULL ", self:GetColumnName());
+    return string.format("%s IS NULL", self:GetColumnName());
 end
 
 function Expr:IsNotNull()
-    return string.format("%s IS NOT NULL ", self:GetColumnName());
+    return string.format("%s IS NOT NULL", self:GetColumnName());
 end
 
 function Expr:Prod(value)
@@ -90,27 +141,30 @@ function Expr:Quot(value)
 end
 
 function Expr:Exists(query)
-    return string.format("%s exists (%s) ", self:GetColumnName(), query);
+    return string.format("%s exists (%s)", self:GetColumnName(), query);
 end
 
-local OP = {
-    ["eq"] = "Eq",
-    ["neq"] = "Neq",
-    ["op"] = "Op",
-    ["lt"] = "Lt",
-    ["lte"] = "Lte",
-    ["gt"] = "Gt",
-    ["gte"] = "Gte",
-    ["isnull"] = "IsNull",
-    ["isnotnull"] = "IsNotNull",
-    ["prod"] = "Prod",
-    ["diff"] = "Diff",
-    ["sum"] = "Sum",
-    ["quot"] = "Quot",
-    ["exists"] = "Exists",
-}
+function Expr:Or(values)
+    values = self:GetValues(values);
+    for i, value in ipairs(values) do
+        values[i] = self:Eq(value);
+    end
+    return string.format("(%s)", ConcatArray("or ", values));
+end
 
-Expr.OP = OP;
+function Expr:And(values)
+    values = self:GetValues(values);
+    for i, value in ipairs(values) do
+        values[i] = self:Eq(value);
+    end
+    return string.format("(%s)", ConcatArray("and ", values));
+end
+
+function Expr:In(values)
+    return string.format("%s in (%s)", self:GetColumnName(), ConcatArray(", ", self:GetValues(values)));
+end
+
+
 
     -- // Example - $qb->expr()->all($qb2->getDql())
     -- public function all($subquery); // Returns Expr\Func instance

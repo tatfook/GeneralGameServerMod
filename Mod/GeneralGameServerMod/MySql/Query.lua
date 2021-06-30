@@ -18,19 +18,7 @@ Query:Property("DataBase");
 local __select__ = select;
 local OP = Expr.OP;
 
-local function Concat(delimiter, ...)
-    local n = select("#", ...);
-    local args, arg = "", "";
-
-    delimiter = delimiter or " ";
-
-    for i = 1, n do
-        arg = __select__(i, ...);
-        args = args .. (args == "" and "" or delimiter) .. arg;
-    end
-
-    return args;
-end
+local Concat = Expr.Concat;
 
 function Query:ctor()
     self.__sql__ = "";
@@ -39,6 +27,7 @@ function Query:ctor()
     self.__update__ = "";
     self.__delete__ = "";
     self.__where__ = "";
+    self.__set__ = "";     -- update 专用
     self.__tables__ = {};
     self.__columns__ = {};
 end
@@ -125,8 +114,11 @@ end
 function Query:From(...)
     if (not self.__action__) then return self end 
     self.__from__ = self:PraseTableName("__from__", ...);
-
     return self;
+end
+
+function Query:Set(...)
+    self.__set__  = self.__set__ .. (self.__set__ == "" and "" or ", ") .. Concat(", ", ...); 
 end
 
 function Query:Where(...)

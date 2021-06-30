@@ -15,6 +15,7 @@ local Table = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.
 
 Table:Property("DataBase");
 Table:Property("TableName");
+Table:Property("PageSize", 50);
 
 function Table:ctor()
     self.__columns__ = {};
@@ -48,8 +49,14 @@ function Table:GetColumn(name)
     return self.__columns__[name];
 end
 
+function Table:IsExistColumn(colname)
+    return self.__columns__[colname] ~= nil;
+end
+
 function Table:GetExpr(colname)
-    return self.__exprs__[colname];
+    local expr = self.__exprs__[colname];
+    if (expr) then expr:SetTableName(nil) end
+    return expr;
 end
 
 function Table:Insert(data)
@@ -65,7 +72,7 @@ function Table:Insert(data)
 
     if (columns == "") then return false end
 
-    local sql = string.format("insert into `%s` (%s) values(%s)", self:GetTableName(), columns, values);
+    local sql = string.format("INSERT INTO `%s` (%s) VALUES(%s)", self:GetTableName(), columns, values);
     local result = self:Execute(sql);
 
     return result == 1;
@@ -84,19 +91,94 @@ function Table:BatchInsert(list)
         end
         values = values .. (values == "" and "" or ",") .. "(" .. value .. ")";
     end
-    local sql = string.format("insert into `%s` (%s) values %s", self:GetTableName(), columns, values);
+    local sql = string.format("INSERT INTO `%s` (%s) VALUES %s", self:GetTableName(), columns, values);
     local result = self:Execute(sql);
     return result == #list;
 end
 
 function Table:Update(data, where)
-
+    local where = self:BuildWhere(where);
+    local sql = string.format("UPDATE `%s`", self:GetTableName());
+    local set_sql = "";
+    local function add_expr(expr) set_sql = expr == nil and set_sql or (set_sql .. (set_sql == "" and "" or ", ") .. expr) end
+    for key, value in pairs(data) do
+        local expr = self:GetExpr(key);
+        if (expr and type(value) ~= "table") then
+            add_expr(expr:Eq(value));
+        end
+    end
+    if (set_sql == "") then return 0 end
+    sql = sql .. " SET " .. set_sql;
+    if (where) then sql = sql .. " WHERE " .. where end
+    return self:Execute(sql);
 end
 
 function Table:Delete(where)
+    local where = self:BuildWhere(where);
+    local sql = string.format("DELETE FROM `%s`", self:GetTableName());
+    if (where) then sql = sql .. " WHERE " .. where end
+    return self:Execute(sql);
 end
 
-function Table:Find(where)
+function Table:Find(where, count)
+    local where = self:BuildWhere(where);
+    local sql = string.format("SELECT * FROM `%s`", self:GetTableName());
+    if (where) then sql = sql .. " WHERE " .. where end
+    count = count or self:GetPageSize();
+    sql = sql .. " LIMIT " .. count;
+    local cursor = self:Execute(sql);
+    local list = {};
+    local row = cursor:fetch({}, "a");
+    while (row) do
+        for key, value in pairs(row) do
+            local column = self:GetColumn(key);
+            row[key] = column and column:FromValue(value) or value;
+        end
+        table.insert(list, row);
+        row = cursor:fetch({}, "a");
+    end
+    cursor:close();
+    return list;
 end
+
+function Table:FindOne(where)
+    return self:Find(where, 1)[1];
+end
+
+function Table:BuildWhere(where)
+    local sql = "";
+    local function add_and_expr(expr) sql = expr == nil and sql or (sql .. (sql == "" and "" or "and ") .. expr) end
+    local function add_or_expr(expr) sql = expr == nil and sql or (sql .. (sql == "" and "" or "or ") .. expr) end
+
+    if (type(where) ~= "table") then return nil end
+
+    for key, value in pairs(where) do
+        local expr = self:GetExpr(key);
+
+        if (expr) then
+            if (type(value) == "table") then
+                if (#value > 0) then
+                    add_and_expr(expr:In(value));
+                else
+                    for op, val in pairs(value) do
+                        add_and_expr(expr:Op(op, val));
+                    end
+                end
+            else
+                add_and_expr(expr:Eq(value))
+            end
+        elseif (type(value) == "table" and (key == "or" or key == "and")) then
+            for _, val in ipairs(value) do
+                if (key == "and") then
+                    add_and_expr(self:BuildWhere(val));
+                else
+                    add_or_expr(self:BuildWhere(val));
+                end
+            end
+        end
+    end
+    return string.format("(%s)", sql);
+end
+
 
 -- Table:NewQuery():Select():From():Where():OrWhere():AndWhere();

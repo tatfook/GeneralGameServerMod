@@ -70,14 +70,17 @@ function MySql.Test()
 
 --     __ggs_db__:LoadTable("user");
 
---     local UserTable = __ggs_db__:GetTable("user");
+    local UserTable = __ggs_db__:GetTable("user");
 --     -- UserTable:Insert({username = "wxa'test", password = "123456"});
 --     UserTable:BatchInsert({{username = "wxa'test", password = "123456"}, {username = "wxatest1", password = "123456"}});
 
     -- 查询
     local query = __ggs_db__:NewQuery();
-    echo(query:Select():From("user"):Execute(), true);
+    -- echo(query:Select():From("user"):Execute(), true);
     -- echo(query:Select("username as name", "password"):From("user u"):Where(query:Expr("u", "username", "eq", "wxatest")):Execute(), true);
+
+    -- echo(UserTable:FindOne({username = "wxatest"}))
+    echo(UserTable:Find({username = {"wxatest", "wxatest1"}}), true)
 end
 
 
