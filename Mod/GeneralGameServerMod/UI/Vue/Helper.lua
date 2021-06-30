@@ -63,11 +63,11 @@ function Helper.ReadFile(filename)
     local text = nil;
 	local file = ParaIO.open(filename, "r");
     if(file:IsValid()) then
-        text = file:GetText();
-        file:close();
+        text = file:GetText(0, -1);
     else
         echo(string.format("ERROR: read file failed: %s ", filename));
     end
+    file:close();
 
     FileCacheMap[filename] = text;
     return text;

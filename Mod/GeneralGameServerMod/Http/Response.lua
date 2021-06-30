@@ -19,6 +19,7 @@ local status_strings = {
     ['201'] ="HTTP/1.1 201 Created\r\n",
     ['202'] ="HTTP/1.1 202 Accepted\r\n",
     ['204'] = "HTTP/1.1 204 No Content\r\n",
+    ['206'] = "HTTP/1.1 206 Partial Content\r\n",
     ['300'] = "HTTP/1.1 300 Multiple Choices\r\n",
     ['301'] = "HTTP/1.1 301 Moved Permanently\r\n",
     ['302'] = "HTTP/1.1 302 Moved Temporarily\r\n",
@@ -36,7 +37,9 @@ local status_strings = {
 Response:Property("StatusCode", 200);
 Response:Property("Charset", "utf-8");
 Response:Property("ContentType", MimeType.html);
+Response:Property("ContentEncoding");
 Response:Property("Content", "");
+Response:Property("ContentLength");
 Response:Property("Finished", false, "IsFinished");
 Response:Property("Headers");
 Response:Property("Cookies");
@@ -77,7 +80,7 @@ function Response:Send(content, status_code)
 		self:SetContentType(MimeType.json)
 		content = Util:ToJson(content)
 	else
-		content = tostring(content or "")
+		content = content or "";
 	end
 
 	local out = {};
@@ -85,9 +88,10 @@ function Response:Send(content, status_code)
 	-- status code
     out[#out + 1] = status_strings[status_code];
 	-- content-type
-	out[#out + 1] = string.format(header_format, "Content-Type", (self:GetContentType() or MimeType.html) .. " charset=" .. (self:GetCharset() or "utf-8"));
+	out[#out + 1] = string.format(header_format, "Content-Type", self:GetContentType() or MimeType.html);-- Content-Encoding
+	-- out[#out + 1] = string.format(header_format, "Content-Encoding", self:GetContentType() or MimeType.html);-- 
 	-- content-length
-	out[#out + 1] = string.format(header_format, "Content-Length", #content);
+	out[#out + 1] = string.format(header_format, "Content-Length", self:GetContentLength() or #content);
     -- other header
 	for name, value in pairs(self:GetHeaders()) do
         out[#out+1] = string.format(header_format, name, value);
@@ -99,12 +103,11 @@ function Response:Send(content, status_code)
 	-- content wrap line
     out[#out+1] = "\r\n"
 	-- content
-    out[#out+1] = content;
+    -- out[#out+1] = content;
+    NPL.activate(format("%s:http", self:GetRequest():GetNid()), table.concat(out));
+    NPL.activate(format("%s:http", self:GetRequest():GetNid()), content);
 
 	self:SetFinished(true);
-
-	-- echo(out, true);
-    NPL.activate(format("%s:http", self:GetRequest():GetNid()), table.concat(out))
 end
 
 -- 设置响应头
@@ -123,7 +126,17 @@ function Response:AppendCookie(cookie)
 	cookies[#(cookies) + 1] = cookie;
 end
 
+function Response:Err_404()
+	self:Send("Not Found", 404);
+end
+
+function Response:Err_301()
+	self:SetHeader("Location", self:GetRequest():GetPath());
+	self:Send("redirect", 301);
+end
+
 -- 发送文件 TODO: 支持中文路径
+local fileinfo = {};
 function Response:SendFile(filepath, ext)
 	if (not filepath or filepath == "") then return self:Send() end
 
@@ -131,18 +144,35 @@ function Response:SendFile(filepath, ext)
 	filepath = string.gsub(filepath, '//', '/');
 	ext = ext or string.match(filepath, '^.+%.([a-zA-Z0-9]+)$');
 
-	local text = nil;
-	local file = ParaIO.open(filepath, "r");
-    if(file:IsValid()) then
-        text = file:GetText();
-        file:close();
-    else
-        echo(string.format("ERROR: read file failed: %s ", filepath));
-    end
+	if (not ParaIO.GetFileInfo(filepath, fileinfo)) then return self:Err_404() end
+	if (fileinfo.mode == "directory") then return self:Err_301() end
 
+	self:SetHeader("Last-Modified", os.date("!%a, %d %b %Y %H:%M:%S GMT", fileinfo.modification));
+	-- no cache
+	self:SetHeader("Expires", "Wed, 11 Jan 1984 05:00:00 GMT");
+	self:SetHeader("Cache-Control", "no-cache, must-revalidate, max-age=0");
+	self:SetHeader("Pragma", "no-cache");
+
+	local file = ParaIO.open(filepath, "rb");
+    if(not file:IsValid()) then
+        file:close();
+		return self:Err_404();
+    end
+	local text = file:GetText(0, -1);
+	file:close();
+	
+	self:SetContentLength(fileinfo.size);
 	self:SetContentTypeByExt(ext);
 	self:Send(text);
 end
 
-
-
+local PlainTextTypes = {
+	["application/javascript"] = true,
+	["application/json"] = true,
+	["text/css"] = true,
+	["text/html; charset=utf-8"] = true,
+};
+	
+function Response:IsContentTypePlainText(contentType)
+	return contentType and (PlainTextTypes[contentType] or string.match(contentType, "^text"));
+end

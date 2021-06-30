@@ -17,7 +17,6 @@ GameLogic.RunCommand("/ggs connect -dev -u=xiaoyao 0");
 GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
-
 --  全局变量初始化
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 -- local FileSync = NPL.load("Mod/GeneralGameServerMod/FileSync/FileSync.lua");
@@ -59,13 +58,6 @@ function GeneralGameServerMod:init()
 		NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameCommand.lua");
 		local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand");
 		GeneralGameCommand:init();
-
-		-- tutorial
-		-- NPL.load("Mod/GeneralGameServerMod/Tutorial/TutorialSandbox.lua");
-
-		-- blockly
-		-- local sandbox = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Sandbox/Sandbox.lua");
-		-- sandbox:Init();
 	end
 end
 
@@ -112,7 +104,6 @@ local function activate()
 	-- 只初始化一次
 	GeneralGameServerMod:init();
 end
-
 if (GGS.IsServer) then
 	NPL.this(activate);
 end
