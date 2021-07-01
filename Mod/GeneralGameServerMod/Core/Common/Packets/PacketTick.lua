@@ -11,8 +11,13 @@ local packet = Packets.PacketTick:new():Init();
 -------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/Packet.lua");
-local PacketTick = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTick"));
+local Packet = NPL.load("./Packet.lua");
+local PacketTick = commonlib.inherit(Packet, NPL.export());
+
+local PacketId = 107;
+function PacketTick:GetPacketId()
+    return PacketId;
+end
 
 function PacketTick:ctor()
 end

@@ -12,9 +12,13 @@ local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.P
 ]]
 
 -- 文件加载
+print("player manager")
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Player.lua");
+print("player manager")
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
+print("player manager")
 NPL.load("Mod/GeneralGameServerMod/Core/Server/QuadTree.lua");
+print("player manager")
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");

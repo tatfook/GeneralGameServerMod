@@ -10,10 +10,15 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/World.lua");
 local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 -------------------------------------------------------
 ]]
+print("world")
 NPL.load("(gl)script/sqlite/sqlite3.lua");
+print("world")
 NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
+print("world")
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
+print("world")
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Track.lua");
+print("world")
 -- NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
 -- local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");

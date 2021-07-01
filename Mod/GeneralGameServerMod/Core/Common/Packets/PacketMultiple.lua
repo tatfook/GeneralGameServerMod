@@ -11,9 +11,13 @@ local packet = Packets.PacketMultiple:new():Init();
 -------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/Packet.lua");
-local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
-local PacketMultiple = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketMultiple"));
+local Packet = NPL.load("./Packet.lua");
+local PacketMultiple = commonlib.inherit(Packet, NPL.export());
+
+local PacketId = 109;
+function PacketMultiple:GetPacketId()
+    return PacketId;
+end
 
 function PacketMultiple:ctor()
 end
@@ -41,7 +45,7 @@ function PacketMultiple:ReadPacket(msg)
 	local packets = self.packets;
 	if (packets) then
 		for i=1, #packets do
-			local packet = PacketTypes:GetNewPacket(packets[i].id);
+			local packet = self:GetPacket(packets[i].id);
 			if (packet) then packet:ReadPacket(packets[i]); end
 			packets[i] = packet;
 		end

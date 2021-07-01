@@ -19,7 +19,6 @@ GeneralGameServerMod:init();
 ]]
 --  全局变量初始化
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
--- local FileSync = NPL.load("Mod/GeneralGameServerMod/FileSync/FileSync.lua");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
 local inited = false;
 
@@ -42,13 +41,12 @@ function GeneralGameServerMod:init()
 	if (inited) then return end;
 	inited = true;
 	
-	GGS.INFO.Format("===============================================GGS[%s] init===========================================", servermode and "server" or "client");
+	GGS.INFO.Format("===============================================GGS[%s] init===========================================", GGS.IsServer and "server" or "client");
 
 	-- 启动插件
 	if (GGS.IsServer) then
 		-- server
-		NPL.load("Mod/GeneralGameServerMod/Core/Server/GeneralGameServer.lua");
-		local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.GeneralGameServer");
+		local GeneralGameServer = NPL.load("Mod/GeneralGameServerMod/Core/Server/GeneralGameServer.lua");
 		GeneralGameServer:Start();
 	else
 		-- 加载公共函数库

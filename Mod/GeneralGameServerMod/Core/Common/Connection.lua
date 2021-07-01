@@ -9,22 +9,17 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/System/System.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketTypes.lua");
-local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
-local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
-local ConnectionBase = NPL.load("Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");
-local Connection = commonlib.inherit(ConnectionBase, commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"));
+local GGS = NPL.load("./GGS.lua");
+local Packets = NPL.load("./Packets.lua");
+local ConnectionBase = NPL.load("./ConnectionBase.lua");
+
+local Connection = commonlib.inherit(ConnectionBase, NPL.export());
 
 Connection:Property("RemoteNeuronFile", "Mod/GeneralGameServerMod/Core/Common/Connection.lua");   -- 对端处理文件
 Connection:Property("LocalNeuronFile", "Mod/GeneralGameServerMod/Core/Common/Connection.lua");    -- 本地处理文件
 Connection:Property("NetHandler");
 
 local NetDebug = GGS.NetDebug;
-
--- 初始化网络包
-PacketTypes:StaticInit();
 
 function Connection:Init(opts)
 	Connection._super.Init(self, opts);
@@ -64,7 +59,7 @@ end
 -- 接受数据包
 function Connection:OnReceive(msg)
 	-- 读取数据包
-	local packet = msg.id and PacketTypes:GetNewPacket(msg.id) or nil;
+	local packet = msg.id and Packets:GetPacket(msg.id) or nil;
 	if (packet) then packet:ReadPacket(msg) end
 
 	NetDebug(string.format("---------------------recv packet: %s--------------------", packet and packet:GetPacketId() or msg.id), msg);

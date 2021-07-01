@@ -9,27 +9,23 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
 local ControlServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer");
 -------------------------------------------------------
 ]]
+print("====================dsd=============")
 
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Connections.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
-local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
-local ControlServer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer"));
+local Config = NPL.load("./Config.lua");
+local Packets = NPL.load("../Common/Packets.lua");
+local Connection = NPL.load("../Common/Connection.lua");
+
+local ControlServer = commonlib.inherit(Connection, NPL.export());
 
 local servers = {};                         -- 服务器信息集
 local ServerAliveDuration = 60 * 5;         -- 5min
 
-_G.SERVERS = servers;                       -- 导出全局变量中
+if (__rts__:GetName() == "main") then
+    _G.SERVERS = servers;                       -- 导出全局变量中
+end
 
 function ControlServer:ctor()
     self:SetNetHandler(self);
-end
-
-function ControlServer:GetWorldManager()
-    return WorldManager;
 end
 
 -- 获取统计信息

@@ -14,8 +14,8 @@ local Http = NPL.load("Mod/GeneralGameServerMod/Http/Http.lua");
 
 local App = commonlib.inherit(Http, NPL.export());
 
--- App:AddVirtualDirectory("/statics", "/mnt/d/workspace/npl/GeneralGameServerMod/Mod/GeneralGameServerMod/App/Http/Statics");
 App:AddVirtualDirectory("/statics", "Mod/GeneralGameServerMod/App/Http/Statics");
+
 -- 启用跨域
 App:UseCors();
 
@@ -35,6 +35,5 @@ end);
 App:Get("/test", function(ctx)
     print(os.execute("ls"));
 end)
-
 -- System.os.run()
 -- curl -I -m 10 -o /dev/null -s -w %{http_code} http://127.0.0.1:9000/heartbeat

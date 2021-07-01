@@ -9,35 +9,53 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/Packet.lua");
 local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet");
 -------------------------------------------------------
 ]]
+local PacketIdToClassMap = {}
 
-NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Packets/Packet.lua");
+local Packet = commonlib.inherit(nil, NPL.export());
 
-local PacketTypes = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketTypes");
-local Packet = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"));
+local PacketId = 0;
+function Packet:GetPacketId()
+    return PacketId;
+end
 
 -- 构造函数
 function Packet:ctor()
+    self.__id__ =  self:GetPacketId();
 end
 
--- 获取包ID
-function Packet:GetPacketId()
-    return PacketTypes:GetPacketId(self:class());
+function Packet:Init(msg)
+	commonlib.partialcopy(self, msg);
+	return self;
 end
+
+
 
 -- 读包
 function Packet:ReadPacket(msg)
-    Packet._super.ReadPacket(self, msg);
+	commonlib.partialcopy(self, msg);
     return self;
 end
 
 -- 写包
 function Packet:WritePacket()
-    local msg = Packet._super.WritePacket(self);
-    msg.id = self:GetPacketId();   -- 增加包Id字段
-    return msg;
+    return self;
 end
 
--- 获取包ID
--- function Packet:GetPacketIdByMsg(msg)
---     return msg.__id__ or msg.id;
--- end
+-- 处理包
+function Packet:ProcessPacket(net_handler)
+end
+
+
+-- 注册包
+function Packet:RegisterPacket()
+    PacketIdToClassMap[self:GetPacketId()] = self;
+end
+
+function Packet:GetPacketClass(packetId)
+    return PacketIdToClassMap[packetId];
+end
+
+function Packet:GetPacket(packetId)
+    local PacketClass = self:GetPacketClass(packetId);
+    if (PacketClass) then return PacketClass:new() end 
+end

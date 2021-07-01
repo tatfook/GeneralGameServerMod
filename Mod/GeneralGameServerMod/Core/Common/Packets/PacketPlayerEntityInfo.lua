@@ -10,12 +10,16 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets
 local packet = Packets.PacketPlayerEntityInfo:new():Init();
 -------------------------------------------------------
 ]]
-
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/Packet.lua");
-
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
-local PacketPlayerEntityInfo = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerEntityInfo"));
+
+local Packet = NPL.load("./Packet.lua");
+local PacketPlayerEntityInfo = commonlib.inherit(Packet, NPL.export());
+
+local PacketId = 102;
+function PacketPlayerEntityInfo:GetPacketId()
+    return PacketId;
+end
 
 function PacketPlayerEntityInfo:ctor()
 end
@@ -70,7 +74,7 @@ end
 
 -- virtual: read packet from network msg data
 function PacketPlayerEntityInfo:ReadPacket(msg)
-    self._super.ReadPacket(self, msg);
+    PacketPlayerEntityInfo._super.ReadPacket(self, msg);
     if (self.data) then
         self.metadata = DataWatcher.ReadWatchebleObjects(self.data);
         self.data = nil;

@@ -11,10 +11,14 @@ local packet = Packets.PacketPlayerEntityInfoList:new():Init();
 -------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/Packet.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketPlayerEntityInfo.lua");
-local PacketPlayerEntityInfo = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerEntityInfo");
-local PacketPlayerEntityInfoList = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerEntityInfoList"));
+local Packet = NPL.load("./Packet.lua");
+local PacketPlayerEntityInfo = NPL.load("./PacketPlayerEntityInfo.lua");
+local PacketPlayerEntityInfoList = commonlib.inherit(Packet, NPL.export());
+
+local PacketId = 103;
+function PacketPlayerEntityInfoList:GetPacketId()
+    return PacketId;
+end
 
 function PacketPlayerEntityInfoList:ctor()
 	self.action = "SyncPlayerPosition"; --SyncPlayerPosition 同步玩家位置,  SyncPlayerList 同步在线用户列表

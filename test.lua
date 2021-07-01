@@ -1,13 +1,9 @@
 
 
 
-local obj = {}
-local tmp = {};
-setmetatable(obj, {
-    __eq = function(mytable, newtable)
-        print("----------------");
-        return true;
-    end
-})
+local obj = {a = 1}
+setmetatable(obj, {__index = {key = 1}})
 
-print(obj == tmp)
+for key, value in pairs(obj) do
+    print(key, value);
+end

@@ -9,13 +9,8 @@ NPL.load("Mod/GeneralGameServerMod/Http/Util.lua");
 ------------------------------------------------------------
 ]]
 
-NPL.load("(gl)script/ide/System/os/GetUrl.lua")
-NPL.load("(gl)script/ide/Encoding.lua")
-NPL.load('script/ide/Json.lua')
-NPL.load("(gl)script/ide/System/Encoding/jwt.lua")
-
-local Encoding = commonlib.gettable("commonlib.Encoding");
-local jwt = commonlib.gettable("System.Encoding.jwt")
+NPL.load("(gl)script/ide/System/os/GetUrl.lua");
+NPL.load("(gl)script/ide/Json.lua");
 
 local Util = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 

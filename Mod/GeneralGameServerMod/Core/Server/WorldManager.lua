@@ -12,7 +12,9 @@ WorldManager.GetSingleton();
 ]]
 
 -- 文件加载
+print("worldManager")
 NPL.load("(gl)script/ide/timer.lua");
+print("worldManager")
 NPL.load("Mod/GeneralGameServerMod/Core/Server/World.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");

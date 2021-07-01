@@ -10,12 +10,10 @@ local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Serve
 -------------------------------------------------------
 ]]
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
-NPL.load("(gl)script/ide/System/System.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
+local Config = NPL.export();
 local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
 local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");

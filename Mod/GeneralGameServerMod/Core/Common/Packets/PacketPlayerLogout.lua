@@ -11,8 +11,13 @@ local packet = Packets.PacketPlayerLogout:new():Init();
 -------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/Packet.lua");
-local PacketPlayerLogout = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerLogout"));
+local Packet = NPL.load("./Packet.lua");
+local PacketPlayerLogout = commonlib.inherit(Packet, NPL.export());
+
+local PacketId = 101;
+function PacketPlayerLogout:GetPacketId()
+    return PacketId;
+end
 
 function PacketPlayerLogout:ctor()
 end

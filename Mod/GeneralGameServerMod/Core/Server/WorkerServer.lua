@@ -10,19 +10,17 @@ local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Wo
 -------------------------------------------------------
 ]]
 
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
-local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
-local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
-local WorkerServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer"));
+local Config = NPL.load("./Config.lua");
+local Packets = NPL.load("../Common/Packets.lua");
+local Connection = NPL.load("../Common/Connection.lua");
+
+local WorkerServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 WorkerServer:Property("ServerList", {});                    -- 服务器列表
 WorkerServer:Property("ServerInfo", {});                    -- 服务器信息
 WorkerServer:Property("StatisticsInfo", {});                -- 统计信息
 WorkerServer:Property("MainThread", false, "IsMainThread"); -- 是否是主线程
+
 -- 构造函数
 function WorkerServer:ctor()
     local workerServerCfg = Config.WorkerServer;
@@ -57,6 +55,7 @@ function WorkerServer:Init()
     -- 连接控制器
     self.connection = Connection:new():Init({ip = self.controlServerIp, port = self.controlServerPort, netHandler = self, remoteNeuronFile = "Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"});
     local function ConnectControlServer()
+        print("==============ConnectControlServer================")
         self.connection:Connect(5, function(success)
             if (success) then
                 GGS.INFO.Format("成功连接控制服务, controlServerIp = %s controlServerPort = %s", self.controlServerIp, self.controlServerPort);

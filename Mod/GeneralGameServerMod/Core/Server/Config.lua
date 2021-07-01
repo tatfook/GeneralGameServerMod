@@ -10,10 +10,9 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
 local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
 -------------------------------------------------------
 ]]
-local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
+local GGS = NPL.load("../Common/GGS.lua");
 
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
-
+local Config = NPL.export();
 Config.ConfigFile = ParaEngine.GetAppCommandLineByParam("ConfigFile", "config.xml");
 
 local inited = false;
@@ -162,7 +161,7 @@ function Config:LoadConfig(filename)
     -- HTTP
     local Http = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Http");
     CopyXmlAttr(self.Http, Http and Http.attr);
-    if (self.Http.filename) then NPL.load(self.Http.filename) end
+    -- if (self.Http.filename) then NPL.load(self.Http.filename) end
 
     -- Debug
     local Debug = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Debug");

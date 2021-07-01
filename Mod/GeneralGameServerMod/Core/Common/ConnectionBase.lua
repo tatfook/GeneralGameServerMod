@@ -9,7 +9,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua");
 local ConnectionBase = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.ConnectionBase");
 -------------------------------------------------------
 ]]
-
+NPL.load("(gl)script/ide/event_mapping.lua");
 local ConnectionBase = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local ConnectionThread = {};  -- 链接所在线程
@@ -82,12 +82,15 @@ function ConnectionBase:Connect(timeout, callback_func)
 		-- if call back function is provided, we will do asynchronous connect. 
 		local intervals = {300, 500, 100, 1000, 1000, 1000, 1000}; -- intervals to try
 		local try_count = 0;
+		local mytimer = nil;
 		
-		local mytimer = commonlib.Timer:new({callbackFunc = function(timer)
+		mytimer = commonlib.Timer:new({callbackFunc = function(timer)
 			try_count = try_count + 1;
+			print("=========================1")
 			if(NPL.activate(address, data) ~=0) then
+				print("=========================2", intervals[try_count], mytimer)
 				if(intervals[try_count]) then
-					timer:Change(intervals[try_count], nil);
+					mytimer:Change(intervals[try_count], nil);
 				else
 					-- timed out. 
 					self.is_connecting = nil;
@@ -95,12 +98,14 @@ function ConnectionBase:Connect(timeout, callback_func)
 					self:CloseConnection("ConnectionNotEstablished");
 				end	
 			else
+				print("=========================3")
 				-- connected 
 				self.is_connecting = nil;
 				self:SetConnectionClosed(false);
 				callback_func(true)
 			end
 		end})
+
 		mytimer:Change(10, nil);
 		return 0;
 	end
@@ -166,11 +171,15 @@ NPL.RegisterEvent(0, "_n_Connections_network", ";ConnectionBase_.OnNetworkEvent(
 
 -- c++ callback function. 
 function ConnectionBase.OnNetworkEvent()
+	print("=======================")
+	echo(msg)
+	echo(NPLReturnCode)
     local nid = msg.nid or msg.tid;
 	local threadName = ConnectionThread[nid] or "main";
 	if(msg.code == NPLReturnCode.NPL_ConnectionDisconnected) then
 		NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", threadName), {action = "ConnectionDisconnected", ConnectionNid = nid});
-	else
+	elseif (msg.code == NPLReturnCode.NPL_ConnectionEstablished) then
+		NPL.activate(string.format("%s:Mod/GeneralGameServerMod/Core/Common/Connection.lua", nid), {});
 	end
 end
 

@@ -11,16 +11,11 @@ local GeneralGameServer = commonlib.gettable("GeneralGameServerMod.Core.Server.G
 GeneralGameServer.Start();
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/System/System.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
-local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
-local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local GeneralGameServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.GeneralGameServer");
 
--- local ThreadHelper = NPL.load("./ThreadHelper.lua");
+NPL.load("./WorkerServer.lua");
+
+local Config = NPL.load("./Config.lua");
+local GeneralGameServer = NPL.export();
 
 function GeneralGameServer:ctor() 
     self.isStart = false;
@@ -72,18 +67,13 @@ function GeneralGameServer:Start()
     NPL.StartNetServer(listenIp, tostring(listenPort));
 
     GGS.INFO.Format(string.format("服务器启动: listenIp: %s, listenPort: %s", listenIp, listenPort));
-	
+
 	local threadCount = Config.Server.threadCount;
 	for i = 1, threadCount do 
 		local threadName = GGS.GetWorkerThreadName(i);
 		NPL.CreateRuntimeState(threadName, 0):Start(); 
-		-- NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Server/ThreadHelper.lua", threadName), {action = "Init"});
 	end
 
 	self.isStart = true;
-end
-
-function GeneralGameServer:Tick() 
-	WorldManager:Tick();
 end
 

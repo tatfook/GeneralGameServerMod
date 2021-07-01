@@ -10,9 +10,13 @@ local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets
 local packet = Packets.PacketPlayerLogin:new():Init();
 -------------------------------------------------------
 ]]
+local Packet = NPL.load("./Packet.lua");
+local PacketPlayerLogin = commonlib.inherit(Packet, NPL.export());
 
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/Packet.lua");
-local PacketPlayerLogin = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.Packet"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketPlayerLogin"));
+local PacketId = 100;
+function PacketPlayerLogin:GetPacketId()
+    return PacketId;
+end
 
 function PacketPlayerLogin:ctor()
 end
