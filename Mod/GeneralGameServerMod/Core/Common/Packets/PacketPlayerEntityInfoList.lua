@@ -15,9 +15,8 @@ local Packet = NPL.load("./Packet.lua");
 local PacketPlayerEntityInfo = NPL.load("./PacketPlayerEntityInfo.lua");
 local PacketPlayerEntityInfoList = commonlib.inherit(Packet, NPL.export());
 
-local PacketId = 103;
 function PacketPlayerEntityInfoList:GetPacketId()
-    return PacketId;
+    return 103;
 end
 
 function PacketPlayerEntityInfoList:ctor()

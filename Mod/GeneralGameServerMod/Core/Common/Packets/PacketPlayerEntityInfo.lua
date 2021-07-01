@@ -16,9 +16,8 @@ local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher"
 local Packet = NPL.load("./Packet.lua");
 local PacketPlayerEntityInfo = commonlib.inherit(Packet, NPL.export());
 
-local PacketId = 102;
 function PacketPlayerEntityInfo:GetPacketId()
-    return PacketId;
+    return 102;
 end
 
 function PacketPlayerEntityInfo:ctor()

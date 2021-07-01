@@ -82,15 +82,11 @@ function ConnectionBase:Connect(timeout, callback_func)
 		-- if call back function is provided, we will do asynchronous connect. 
 		local intervals = {300, 500, 100, 1000, 1000, 1000, 1000}; -- intervals to try
 		local try_count = 0;
-		local mytimer = nil;
-		
-		mytimer = commonlib.Timer:new({callbackFunc = function(timer)
+		local mytimer = commonlib.Timer:new({callbackFunc = function(timer)
 			try_count = try_count + 1;
-			print("=========================1")
 			if(NPL.activate(address, data) ~=0) then
-				print("=========================2", intervals[try_count], mytimer)
 				if(intervals[try_count]) then
-					mytimer:Change(intervals[try_count], nil);
+					timer:Change(intervals[try_count], nil);
 				else
 					-- timed out. 
 					self.is_connecting = nil;
@@ -98,7 +94,6 @@ function ConnectionBase:Connect(timeout, callback_func)
 					self:CloseConnection("ConnectionNotEstablished");
 				end	
 			else
-				print("=========================3")
 				-- connected 
 				self.is_connecting = nil;
 				self:SetConnectionClosed(false);
@@ -171,15 +166,11 @@ NPL.RegisterEvent(0, "_n_Connections_network", ";ConnectionBase_.OnNetworkEvent(
 
 -- c++ callback function. 
 function ConnectionBase.OnNetworkEvent()
-	print("=======================")
-	echo(msg)
-	echo(NPLReturnCode)
     local nid = msg.nid or msg.tid;
 	local threadName = ConnectionThread[nid] or "main";
 	if(msg.code == NPLReturnCode.NPL_ConnectionDisconnected) then
 		NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", threadName), {action = "ConnectionDisconnected", ConnectionNid = nid});
 	elseif (msg.code == NPLReturnCode.NPL_ConnectionEstablished) then
-		NPL.activate(string.format("%s:Mod/GeneralGameServerMod/Core/Common/Connection.lua", nid), {});
 	end
 end
 

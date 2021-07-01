@@ -14,9 +14,8 @@ local packet = Packets.PacketGeneral:new():Init();
 local Packet = NPL.load("./Packet.lua");
 local PacketGeneral = commonlib.inherit(Packet, NPL.export());
 
-local PacketId = 110;
 function PacketGeneral:GetPacketId()
-    return PacketId;
+    return 110;
 end
 
 function PacketGeneral:ctor()

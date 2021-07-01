@@ -28,7 +28,7 @@ for key, packet in pairs(Packets) do
 end
 
 function Packets:GetPacket(packetId)
-    return Packet:GetPacket(packetId);
+    return self.Packet:GetPacket(packetId);
 end
 
 

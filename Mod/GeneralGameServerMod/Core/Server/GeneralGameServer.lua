@@ -15,7 +15,7 @@ GeneralGameServer.Start();
 NPL.load("./WorkerServer.lua");
 
 local Config = NPL.load("./Config.lua");
-local GeneralGameServer = NPL.export();
+local GeneralGameServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 function GeneralGameServer:ctor() 
     self.isStart = false;
@@ -74,6 +74,13 @@ function GeneralGameServer:Start()
 		NPL.CreateRuntimeState(threadName, 0):Start(); 
 	end
 
+	-- 主循环
+	commonlib.Timer:new({callbackFunc = function() GeneralGameServer:Tick() end}):Change(1000, 1000);
+	
 	self.isStart = true;
 end
 
+function GeneralGameServer:Tick()
+end
+
+GeneralGameServer:InitSingleton();

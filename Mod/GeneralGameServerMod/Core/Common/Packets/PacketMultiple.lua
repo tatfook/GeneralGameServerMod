@@ -14,9 +14,8 @@ local packet = Packets.PacketMultiple:new():Init();
 local Packet = NPL.load("./Packet.lua");
 local PacketMultiple = commonlib.inherit(Packet, NPL.export());
 
-local PacketId = 109;
 function PacketMultiple:GetPacketId()
-    return PacketId;
+    return 109;
 end
 
 function PacketMultiple:ctor()

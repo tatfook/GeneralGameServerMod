@@ -13,9 +13,8 @@ local packet = Packets.PacketPlayerLogin:new():Init();
 local Packet = NPL.load("./Packet.lua");
 local PacketPlayerLogin = commonlib.inherit(Packet, NPL.export());
 
-local PacketId = 100;
 function PacketPlayerLogin:GetPacketId()
-    return PacketId;
+    return 100;
 end
 
 function PacketPlayerLogin:ctor()

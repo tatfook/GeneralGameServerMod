@@ -14,9 +14,8 @@ local packet = Packets.PacketWorldServer:new():Init();
 local Packet = NPL.load("./Packet.lua");
 local PacketWorldServer = commonlib.inherit(Packet, NPL.export());
 
-local PacketId = 106;
 function PacketWorldServer:GetPacketId()
-    return PacketId;
+    return 106;
 end
 
 function PacketWorldServer:ctor()

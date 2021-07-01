@@ -9,8 +9,6 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua");
 local ControlServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.ControlServer");
 -------------------------------------------------------
 ]]
-print("====================dsd=============")
-
 local Config = NPL.load("./Config.lua");
 local Packets = NPL.load("../Common/Packets.lua");
 local Connection = NPL.load("../Common/Connection.lua");
@@ -20,9 +18,7 @@ local ControlServer = commonlib.inherit(Connection, NPL.export());
 local servers = {};                         -- 服务器信息集
 local ServerAliveDuration = 60 * 5;         -- 5min
 
-if (__rts__:GetName() == "main") then
-    _G.SERVERS = servers;                       -- 导出全局变量中
-end
+_G.SERVERS = servers;                       -- 导出全局变量中
 
 function ControlServer:ctor()
     self:SetNetHandler(self);

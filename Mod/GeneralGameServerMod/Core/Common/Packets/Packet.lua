@@ -13,22 +13,18 @@ local PacketIdToClassMap = {}
 
 local Packet = commonlib.inherit(nil, NPL.export());
 
-local PacketId = 0;
 function Packet:GetPacketId()
-    return PacketId;
+    return 0;
 end
 
 -- 构造函数
 function Packet:ctor()
-    self.__id__ =  self:GetPacketId();
 end
 
 function Packet:Init(msg)
 	commonlib.partialcopy(self, msg);
 	return self;
 end
-
-
 
 -- 读包
 function Packet:ReadPacket(msg)
@@ -38,6 +34,7 @@ end
 
 -- 写包
 function Packet:WritePacket()
+    self.id = self:GetPacketId();
     return self;
 end
 

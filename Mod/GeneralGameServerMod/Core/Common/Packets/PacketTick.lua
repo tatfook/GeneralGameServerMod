@@ -14,9 +14,8 @@ local packet = Packets.PacketTick:new():Init();
 local Packet = NPL.load("./Packet.lua");
 local PacketTick = commonlib.inherit(Packet, NPL.export());
 
-local PacketId = 107;
 function PacketTick:GetPacketId()
-    return PacketId;
+    return 107;
 end
 
 function PacketTick:ctor()
