@@ -5,8 +5,7 @@ Date: 2015/12/17
 Desc: 
 use the lib:
 ------------------------------------------------------------
-NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/TutorialContext.lua");
-local TutorialContext = commonlib.gettable("MyCompany.Aries.Game.SceneContext.TutorialContext");
+local TutorialContext = NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/TutorialContext.lua");
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/EditContext.lua");
