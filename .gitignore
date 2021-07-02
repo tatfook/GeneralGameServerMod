@@ -1,6 +1,7 @@
 .vscode
 GameServer/
 npl_packages/
+log/
 log.txt
 *.log
 .vs

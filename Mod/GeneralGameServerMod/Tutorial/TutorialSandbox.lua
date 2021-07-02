@@ -115,7 +115,7 @@ function TutorialSandbox:Reset(bForceReset, bActiveTutorialContext)
     self.OnWorldLoadedCallBack = nil;
     self.OnWorldUnloadedCallBack = nil;
     
-    if (not bActiveTutorialContext or bActiveTutorialContext) then self:ActiveTutorialContext() end
+    if (bActiveTutorialContext == nil or bActiveTutorialContext) then self:ActiveTutorialContext() end
 end
 
 -- 恢复默认环境
