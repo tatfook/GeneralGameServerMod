@@ -20,24 +20,23 @@ local PlayerAPI = NPL.export();
 local __username__ = nil;
 local __nickname__ = nil;
 
+local function GetProfile()
+    return KeepWorkItemManager.GetProfile();
+end
 
 -- 获取系统用户信息
 function GetSystemUser()
     return System.User;
 end
 
-local function GetUserInfo()
-    return KeepWorkItemManager.GetProfile();
-end
-
 local function GetUserId()
-    return GetUserInfo().id or 0;
+    return GetProfile().id or 0;
 end
 
 local function GetUserName()
     if (__username__) then return __username__ end
 
-    __username__ = GetUserInfo().username;
+    __username__ = GetProfile().username;
     if (not __username__ or __username__ == "") then
         __username__ = string.format("User_%s", ParaGlobal.timeGetTime());  -- 可能重名
     end
@@ -50,7 +49,7 @@ local function SetUserName(username)
 end
 
 local function GetNickName()
-    return __nickname__ or GetUserInfo().nickname;
+    return __nickname__ or GetProfile().nickname or GetUserName();
 end
 
 local function SetNickName(nickname)
@@ -58,10 +57,17 @@ local function SetNickName(nickname)
 end
 
 local function GetSchoolName()
-    local school = GetUserInfo().school;
+    local school = GetProfile().school;
     return school and school.name;
 end
 
+local function GetUserInfo()
+    return {
+        id = GetUserId(),
+        username = GetUserName(),
+        nickname = GetNickName(),
+    }
+end
 
 local function GetPlayer(name)
     return EntityManager.GetPlayer(name);

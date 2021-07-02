@@ -94,6 +94,21 @@ local function GetEntityDirection(id)
     return {cos, 0, -sin}
 end
 
+local function FindEntities(...)
+    return EntityManager.FindEntities(...);
+end
+
+local function GetAllEntityCode()
+    local entities = FindEntities({category="b", }) or {};
+    local list = {};
+    for _, entity in ipairs(entities) do
+        if (entity.class_name == "EntityCode") then
+            table.insert(list, entity);
+        end
+    end
+    return list;
+end
+
 setmetatable(
     EntityAPI,
     {
@@ -104,6 +119,9 @@ setmetatable(
             CodeEnv.GetEntityBlockPos = GetEntityBlockPos
             CodeEnv.SetEntityBlockPos = SetEntityBlockPos
             CodeEnv.EnableEntityPicked = EntityManager.EnableEntityPicked
+            CodeEnv.FindEntities = FindEntities
+            CodeEnv.GetAllEntityCode = GetAllEntityCode
+        
             CodeEnv.CreateNPC = function(...) return CreateNPC(CodeEnv, ...) end
         end
     }

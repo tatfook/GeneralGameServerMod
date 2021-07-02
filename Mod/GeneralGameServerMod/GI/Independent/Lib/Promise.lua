@@ -3,8 +3,6 @@ Author: wxa
 Date: 2020-10-26
 Desc: Promise 
 -----------------------------------------------
------------------------------------------------
-
 local promise = Promise:new():Init(function(resolve, reject)
 
 end);
