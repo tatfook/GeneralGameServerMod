@@ -63,3 +63,21 @@ end
 function GetGGSRankModule()
     return require("GGSRank");
 end
+
+-- 获取KeepWorkAPI
+local __keepwork_api__ = nil;
+function GetKeepworkAPI()
+    if (__keepwork_api__) then return __keepwork_api__ end 
+
+    __keepwork_api__ = require("Http"):new():Init({
+        baseURL = "https://api.keepwork.com/core/v0/",
+        headers = {
+            ["content-type"] = "application/json", 
+        },
+        transformRequest = function(request)
+            request.headers["Authorization"] = string.format("Bearer %s", GetSystemUser().keepworktoken);
+        end
+    });
+
+    return __keepwork_api__;
+end

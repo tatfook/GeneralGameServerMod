@@ -57,3 +57,6 @@
 -- sleep(3000);
 
 -- print("============sleep end=============")
+
+
+log(GetSystemUser())

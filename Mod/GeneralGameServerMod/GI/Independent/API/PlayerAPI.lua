@@ -20,6 +20,12 @@ local PlayerAPI = NPL.export();
 local __username__ = nil;
 local __nickname__ = nil;
 
+
+-- 获取系统用户信息
+function GetSystemUser()
+    return System.User;
+end
+
 local function GetUserInfo()
     return KeepWorkItemManager.GetProfile();
 end
@@ -55,6 +61,7 @@ local function GetSchoolName()
     local school = GetUserInfo().school;
     return school and school.name;
 end
+
 
 local function GetPlayer(name)
     return EntityManager.GetPlayer(name);
@@ -121,7 +128,18 @@ local function RemoveItemFromInventory(index, count)
     inventory:RemoveItem(index, count);
 end
 
+local function SetPlayerSpeedScale(speed)
+    GetPlayer():SetSpeedScale(speed);
+end
+
+local function SetPlayerVisible(visible)
+    GetPlayer():SetVisible(visible);
+end
+
 setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
+    CodeEnv.GetUserInfo = GetUserInfo;
+    CodeEnv.GetSystemUser = GetSystemUser;
+
     CodeEnv.GetUserId = GetUserId;
     CodeEnv.GetUserName = GetUserName;
     CodeEnv.SetUserName = SetUserName;
@@ -133,7 +151,8 @@ setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
     CodeEnv.GetPlayerEntityId = function() return EntityManager.GetPlayer().entityId end
     CodeEnv.IsInWater = function() return GameLogic.GetPlayerController():IsInWater() end
 	CodeEnv.IsInAir = function() return GameLogic.GetPlayerController():IsInAir() end
-    CodeEnv.SetPlayerVisible = function (visible) EntityManager.GetPlayer():SetVisible(visible) end
+    CodeEnv.SetPlayerVisible = SetPlayerVisible;
+    CodeEnv.SetPlayerSpeedScale = SetPlayerSpeedScale;
 
     CodeEnv.GetPlayerInventory = GetPlayerInventory;
     CodeEnv.GetHandToolIndex = GetHandToolIndex;
