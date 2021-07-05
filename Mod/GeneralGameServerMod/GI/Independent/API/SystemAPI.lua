@@ -157,5 +157,6 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     end
 
     CodeEnv.GetTime = ParaGlobal.timeGetTime;
+    CodeEnv.GetTimeStamp = ParaGlobal.timeGetTime;
     CodeEnv.ToolBase = commonlib.gettable("System.Core.ToolBase");
 end});

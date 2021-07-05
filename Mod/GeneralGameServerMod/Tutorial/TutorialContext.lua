@@ -5,8 +5,7 @@ Date: 2015/12/17
 Desc: 
 use the lib:
 ------------------------------------------------------------
-NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/TutorialContext.lua");
-local TutorialContext = commonlib.gettable("MyCompany.Aries.Game.SceneContext.TutorialContext");
+local TutorialContext = NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/TutorialContext.lua");
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/SceneContext/EditContext.lua");
@@ -124,7 +123,10 @@ function TutorialContext:handleMouseEvent(event)
 		local handBlockId = self:GetTutorialSandbox():GetBlockInRightHand();
 		local data = {event_type = event_type, blockX = result.blockX or 0, blockY = result.blockY or 0, blockZ = result.blockZ or 0, blockId = result.block_id or 0, handBlockId = handBlockId or 0, mouseKeyState = GetMouseKeyState(event), mouseButton = event.mouse_button, shift_pressed = shift_pressed, ctrl_pressed = ctrl_pressed, alt_pressed = alt_pressed};
 		if(not self:GetTutorialSandbox():IsCanClick(data)) then 
-			return event:accept();
+			if(event_type ~= "mousePressEvent") then
+				event:accept();
+			end
+			return
 		end
 	end
 	-- 默认处理

@@ -177,6 +177,21 @@ local function GetCameraFacing()
     return facing / math.pi * 180;
 end
 
+-- 设置相机
+local function SetCamera(dist, pitch, facing)
+    SetCameraObjectDistance(dist);
+    SetCameraLiftupAngle(pitch);
+    SetCameraFacing(facing);
+end
+
+-- 获取相机
+local function GetCamera()
+    local att = ParaCamera.GetAttributeObject();
+    local dist = att:GetField("CameraObjectDistance");
+    local pitch = att:GetField("CameraLiftupAngle") * 180 / math.pi;
+    local facing = att:GetField("CameraRotY") * 180 / math.pi;
+    return dist, pitch, facing;
+end
 setmetatable(
     SceneAPI,
     {
@@ -203,6 +218,8 @@ setmetatable(
             CodeEnv.SetCameraLiftupAngle = SetCameraLiftupAngle
             CodeEnv.SetCameraFacing = SetCameraFacing
             CodeEnv.GetCameraFacing = GetCameraFacing
+            CodeEnv.GetCamera = GetCamera
+            CodeEnv.SetCamera = SetCamera
 
             -- mouse pick
             CodeEnv.HighlightPickBlock = HighlightPickBlock

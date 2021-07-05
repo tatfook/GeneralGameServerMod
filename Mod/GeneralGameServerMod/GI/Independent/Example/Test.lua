@@ -57,3 +57,17 @@
 -- sleep(3000);
 
 -- print("============sleep end=============")
+
+
+-- local EntityCodeList = GI.API.GetAllEntityCode();
+
+-- for _, entity in ipairs(EntityCodeList) do
+--     local text = entity:GetNPLCode();
+--     if (text) then
+--         text = string.gsub(text, [[TutorialSandbox:Reset%([^%)]*%);?]], "");
+--         text = string.gsub(text, [[local TutorialSandbox = NPL.load%([^%)]*%);]], [[local TutorialSandbox = GI.API;]])
+--         text = string.gsub(text, "TutorialSandbox:", "TutorialSandbox%.");
+--         entity:SetNPLCode(text);
+--     end
+-- end
+
