@@ -18,6 +18,7 @@ GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
 --  全局变量初始化
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 local GeneralGameServerMod = commonlib.inherit(commonlib.gettable("Mod.ModBase"), commonlib.gettable("Mod.GeneralGameServerMod"));
 local inited = false;
@@ -45,13 +46,12 @@ function GeneralGameServerMod:init()
 
 	-- 启动插件
 	if (GGS.IsServer) then
+		-- sandbox
+		NPL.load("Mod/GeneralGameServerMod/Server/SandBox/SandBox.lua");
 		-- server
 		local GeneralGameServer = NPL.load("Mod/GeneralGameServerMod/Core/Server/GeneralGameServer.lua");
 		GeneralGameServer:Start();
 	else
-		-- 加载公共函数库
-		NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-
 		-- client
 		NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameCommand.lua");
 		local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand");

@@ -26,6 +26,7 @@ local EntityAPI = NPL.load("./API/EntityAPI.lua", IsDevEnv);
 local BlockAPI = NPL.load("./API/BlockAPI.lua", IsDevEnv);
 local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
 local GGSAPI = NPL.load("./API/GGSAPI.lua", IsDevEnv);
+local NetAPI = NPL.load("./API/NetAPI.lua", IsDevEnv);
 
 local CodeEnv = commonlib.inherit(nil, NPL.export());
 
@@ -99,7 +100,8 @@ function CodeEnv:Init(Independent)
 	BlockAPI(self);
 	UtilityAPI(self);
 	GGSAPI(self);
-
+	NetAPI(self);
+	
     return self;
 end
 

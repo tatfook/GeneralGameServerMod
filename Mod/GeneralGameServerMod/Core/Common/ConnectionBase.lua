@@ -10,6 +10,8 @@ local ConnectionBase = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/event_mapping.lua");
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+
 local ConnectionBase = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local ConnectionThread = {};  -- 链接所在线程
@@ -159,21 +161,6 @@ function ConnectionBase:GetConnectionByNid(nid)
 	return AllConnections[nid];
 end
 
--- 网络事件
-commonlib.setfield("ConnectionBase_", ConnectionBase);
-NPL.RegisterEvent(0, "_n_Connections_network", ";ConnectionBase_.OnNetworkEvent();");
--- NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", 400);
-
--- c++ callback function. 
-function ConnectionBase.OnNetworkEvent()
-    local nid = msg.nid or msg.tid;
-	local threadName = ConnectionThread[nid] or "main";
-	if(msg.code == NPLReturnCode.NPL_ConnectionDisconnected) then
-		NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", threadName), {action = "ConnectionDisconnected", ConnectionNid = nid});
-	elseif (msg.code == NPLReturnCode.NPL_ConnectionEstablished) then
-	end
-end
-
 function ConnectionBase:OnActivate(msg)
 	local nid = msg and (msg.nid or msg.tid);
 	if (not nid) then return self:handleMsg(msg) end
@@ -203,4 +190,15 @@ NPL.this(function()
 	else 
 		ConnectionBase:handleMsg(msg);
 	end
+end);
+
+
+CommonLib.OnNetworkEvent(function(msg)
+	local nid = msg.nid or msg.tid;
+	local threadName = ConnectionThread[nid] or "main";
+	if(msg.code == NPLReturnCode.NPL_ConnectionDisconnected) then
+		NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/Core/Common/ConnectionBase.lua", threadName), {action = "ConnectionDisconnected", ConnectionNid = nid});
+	elseif (msg.code == NPLReturnCode.NPL_ConnectionEstablished) then
+	end
+
 end);

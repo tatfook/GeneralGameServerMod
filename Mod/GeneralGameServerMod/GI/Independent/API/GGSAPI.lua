@@ -146,9 +146,9 @@ setmetatable(GGSAPI, {
 
         CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function() 
             GGS_Disconnect(CodeEnv);
-            __event_emitter__:RegisterEventCallBack(EventType.__GGS_DATA__, GGS_RecvDataCallBack, CodeEnv);
-            __event_emitter__:RegisterEventCallBack(EventType.__GGS_CONNECT__, GGS_ConnectionCallBack, CodeEnv);
-            __event_emitter__:RegisterEventCallBack(EventType.__GGS_DISCONNECT__, GGS_DisconnectionCallBack, CodeEnv);
+            __event_emitter__:RemoveEventCallBack(EventType.__GGS_DATA__, GGS_RecvDataCallBack, CodeEnv);
+            __event_emitter__:RemoveEventCallBack(EventType.__GGS_CONNECT__, GGS_ConnectionCallBack, CodeEnv);
+            __event_emitter__:RemoveEventCallBack(EventType.__GGS_DISCONNECT__, GGS_DisconnectionCallBack, CodeEnv);
         end);
     end
 })

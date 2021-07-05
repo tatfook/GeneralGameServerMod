@@ -18,8 +18,11 @@ local AudioEngine = commonlib.gettable("AudioEngine");
 local SoundManager = commonlib.gettable("MyCompany.Aries.Game.Sound.SoundManager");
 local HttpFiles = commonlib.gettable("MyCompany.Aries.Game.Common.HttpFiles");
 
-local List = NPL.load("./List.lua", IsDevEnv);
-local Table = NPL.load("./Table.lua", IsDevEnv);
+local List = NPL.load("./List.lua");
+local Table = NPL.load("./Table.lua");
+local EventEmitter = NPL.load("./EventEmitter.lua");
+
+local __event_emitter__ = EventEmitter:new();
 
 local CommonLib = NPL.export();
 
@@ -27,6 +30,7 @@ _G.CommonLib = CommonLib;
 
 CommonLib.List = List;
 CommonLib.Table = Table;
+CommonLib.EventEmitter = EventEmitter;
 
 function CommonLib.PlayVoiceText(text, speed, lang, callback)
     local function finish(...) 
@@ -79,9 +83,9 @@ function CommonLib.ToCanonicalFilePath(filename, platform)
 end
 
 local TextureFilters = {
-    {L"全部文件(*.png,*.jpg)",  "*.png;*.jpg"},
-    {L"png(*.png)",  "*.png"},
-    {L"jpg(*.jpg)",  "*.jpg"},
+    {"全部文件(*.png,*.jpg)",  "*.png;*.jpg"},
+    {"png(*.png)",  "*.png"},
+    {"jpg(*.jpg)",  "*.jpg"},
 };
 function CommonLib.OpenTextureFileDialog(filters, title, directory)
     local install_directory = ParaIO.GetCurDirectory(0);
@@ -121,4 +125,25 @@ function CommonLib.GetWorldDirectory()
     local index = string.find(world_directory, install_directory, 1, true);
     if (index == 1) then return world_directory end
     return CommonLib.ToCanonicalFilePath(install_directory .. "/" .. world_directory);
+end
+
+-- 添加接口文件
+local PublicFileNo = 500;
+local PublicFiles = {};
+function CommonLib.AddPublicFile(filename, id)
+    if (PublicFiles[filename]) then return end
+    PublicFiles[filename] = filename;
+    if (not id) then id, PublicFileNo = PublicFileNo, PublicFileNo + 1 end
+    -- print("AddPublicFile:", filename, id)
+    NPL.AddPublicFile(filename, id);
+end
+
+-- 网络事件
+commonlib.setfield("__CommonLib__", CommonLib);
+NPL.RegisterEvent(0, "_n_Connections_network", ";__CommonLib__.__OnNetworkEvent__();");
+function CommonLib.OnNetworkEvent(callback)
+    __event_emitter__:RegisterEventCallBack("__OnNetworkEvent__", callback);
+end
+function CommonLib.__OnNetworkEvent__()
+    __event_emitter__:TriggerEventCallBack("__OnNetworkEvent__", msg);
 end

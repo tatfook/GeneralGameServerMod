@@ -5,7 +5,7 @@ Date: 2021-06-23
 Desc: Http
 use the lib:
 ------------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/Http/Http.lua");
+NPL.load("Mod/GeneralGameServerMod/Server/Http/Http.lua");
 ------------------------------------------------------------
 ]]
 
@@ -20,7 +20,7 @@ local Cors = NPL.load("./Middleware/Cors.lua", IsDevEnv);
 
 local Http = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-Http:Property("NeuronFile", "Mod/GeneralGameServerMod/Http/Http.lua");
+Http:Property("NeuronFile", "Mod/GeneralGameServerMod/Server/Http/Http.lua");
 Http:Property("StaticDirectory");  -- 静态文件目录
 Http:Property("Port", 8888);
 Http:Property("Ip", "0.0.0.0");

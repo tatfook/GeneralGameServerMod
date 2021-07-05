@@ -159,9 +159,11 @@ function Config:LoadConfig(filename)
     CopyXmlAttr(self.DataHandler, DataHandler and DataHandler.attr);
 
     -- HTTP
-    local Http = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Http");
-    CopyXmlAttr(self.Http, Http and Http.attr);
-    -- if (self.Http.filename) then NPL.load(self.Http.filename) end
+    if (__rts__:GetName() == "main") then
+        local Http = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Http");
+        CopyXmlAttr(self.Http, Http and Http.attr);
+        if (self.Http.filename) then NPL.load(self.Http.filename) end
+    end
 
     -- Debug
     local Debug = commonlib.XPath.selectNode(xmlRoot, pathPrefix .. "/Debug");
@@ -218,7 +220,7 @@ function Config:LoadConfig(filename)
         end
     end
 
-    GGS.INFO.If(__rts__:GetName() == "main", self);
+    -- GGS.INFO.If(__rts__:GetName() == "main", self);
 end
 
 -- 加载配置

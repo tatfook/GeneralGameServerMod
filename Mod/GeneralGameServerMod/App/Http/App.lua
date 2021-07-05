@@ -35,5 +35,7 @@ end);
 App:Get("/test", function(ctx)
     print(os.execute("ls"));
 end)
+
+-- print("================================start http server================================", __rts__:GetName())
 -- System.os.run()
 -- curl -I -m 10 -o /dev/null -s -w %{http_code} http://127.0.0.1:9000/heartbeat
