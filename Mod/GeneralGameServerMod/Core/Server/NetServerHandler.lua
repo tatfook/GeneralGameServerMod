@@ -9,16 +9,17 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
 local NetServerHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler");
 -------------------------------------------------------
 ]]
-local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorldManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua");
-local Config = NPL.export();
-local WorkerServer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorkerServer");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
-local WorldManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager");
-local NetServerHandler = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.NetServerHandler"));
-local ServerDataHandler = NPL.load("Mod/GeneralGameServerMod/Core/Server/ServerDataHandler.lua");
+local GGS = NPL.load("../Common/GGS.lua");
+local Packets = NPL.load("../Common/Packets.lua");
+local Connection = NPL.load("../Common/Connection.lua");
+local Config = NPL.load("./Config.lua");
+local WorldManager = NPL.load("./WorldManager.lua");
+local WorkerServer = NPL.load("./WorkerServer.lua");
+local ServerDataHandler = NPL.load("./ServerDataHandler.lua");
+
+local NetServerHandler = commonlib.inherit(Connection, NPL.export());
 
 NetServerHandler:Property("Authenticated", false, "IsAuthenticated");  -- 是否认证
 NetServerHandler:Property("Player");                                   -- 当前玩家

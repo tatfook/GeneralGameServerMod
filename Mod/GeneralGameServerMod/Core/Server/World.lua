@@ -10,22 +10,12 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/World.lua");
 local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
 -------------------------------------------------------
 ]]
-print("world")
 NPL.load("(gl)script/sqlite/sqlite3.lua");
-print("world")
-NPL.load("Mod/GeneralGameServerMod/Core/Server/PlayerManager.lua");
-print("world")
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
-print("world")
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Track.lua");
-print("world")
--- NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
--- local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
-local Packets = commonlib.gettable("MyCompany.Aries.Game.Network.Packets");
-local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.PlayerManager");
-local Track = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Track");
-local World = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World"));
+local Packets = NPL.load("../Common/Packets.lua");
+local Config = NPL.load("./Config.lua");
+local Track = NPL.load("./Track.lua");
+local PlayerManager = NPL.load("./PlayerManager.lua");
+local World = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 World:Property("WorldKey");            -- 世界key
 World:Property("WorldId");             -- 世界id

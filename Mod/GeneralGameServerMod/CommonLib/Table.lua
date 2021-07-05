@@ -32,3 +32,15 @@ function Table.Unpack(obj)
     elseif (obj.n == 9) then return obj[1], obj[2], obj[3], obj[4], obj[5], obj[6], obj[7], obj[8], obj[9]
     else end
 end
+
+function Table.Sort(list, comp)
+    comp = comp or function(n1, n2) return n1 > n2 end
+
+	for i = 1, #list do
+        for j = i + 1, #list do 
+            if (comp(list[i], list[j])) then
+                list[i], list[j] = list[j], list[i];
+            end
+        end
+    end
+end

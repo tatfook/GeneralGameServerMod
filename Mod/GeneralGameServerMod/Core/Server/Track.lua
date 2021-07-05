@@ -10,7 +10,7 @@ local Track = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Track");
 -------------------------------------------------------
 ]]
 
-local Track = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Track"));
+local Track = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 Track:Property("World");
 

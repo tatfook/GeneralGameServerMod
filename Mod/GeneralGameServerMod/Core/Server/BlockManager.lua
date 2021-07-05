@@ -9,9 +9,10 @@ NPL.load("Mod/GeneralGameServerMod/Core/Server/BlockManager.lua");
 local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager");
 ------------------------------------------------------------
 ]]
-NPL.load("Mod/GeneralGameServerMod/Core/Common/Packets/PacketBlock.lua");
-local PacketBlock = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets.PacketBlock");
-local BlockManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.BlockManager"));
+local Packets = NPL.load("../Common/Packets.lua");
+
+local PacketBlock = Packets.PacketBlock;
+local BlockManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 BlockManager:Property("World");   -- 方块管理器所属世界
 BlockManager:Property("DB");      -- DB

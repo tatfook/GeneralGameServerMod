@@ -11,7 +11,7 @@ local Sqlite = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Sqlite")
 ]]
 
 NPL.load("(gl)script/sqlite/sqlite3.lua");
-local Sqlite = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Sqlite"));
+local Sqlite = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local db = sqlite3.open("test.db");
 

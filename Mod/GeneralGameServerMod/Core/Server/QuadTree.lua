@@ -10,7 +10,7 @@ local QuadTree = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTr
 -------------------------------------------------------
 ]]
 
-local QuadTree = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.QuadTree"));
+local QuadTree = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 local QuadTreeNode = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
 
 local QuadTreeNodeNid = 0;

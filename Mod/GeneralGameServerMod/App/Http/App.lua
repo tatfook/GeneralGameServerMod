@@ -10,7 +10,7 @@ NPL.load("Mod/GeneralGameServerMod/Http/App.lua");
 ------------------------------------------------------------
 ]]
 
-local Http = NPL.load("Mod/GeneralGameServerMod/Http/Http.lua");
+local Http = NPL.load("Mod/GeneralGameServerMod/Server/Http/Http.lua");
 
 local App = commonlib.inherit(Http, NPL.export());
 

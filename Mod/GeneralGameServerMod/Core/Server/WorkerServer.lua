@@ -55,7 +55,6 @@ function WorkerServer:Init()
     -- 连接控制器
     self.connection = Connection:new():Init({ip = self.controlServerIp, port = self.controlServerPort, netHandler = self, remoteNeuronFile = "Mod/GeneralGameServerMod/Core/Server/ControlServer.lua"});
     local function ConnectControlServer()
-        print("==============ConnectControlServer================")
         self.connection:Connect(5, function(success)
             if (success) then
                 GGS.INFO.Format("成功连接控制服务, controlServerIp = %s controlServerPort = %s", self.controlServerIp, self.controlServerPort);

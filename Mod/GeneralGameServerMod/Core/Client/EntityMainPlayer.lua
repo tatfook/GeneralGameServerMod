@@ -15,7 +15,7 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
 local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
+local Packets = NPL.load("../Common/Packets.lua");
 local EntityMainPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityPlayerMPClient"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer"));
 
 local maxMotionUpdateTickCount = 33;

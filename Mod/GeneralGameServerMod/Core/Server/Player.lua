@@ -10,10 +10,13 @@ local Player = commonlib.gettable("GeneralGameServerMod.Core.Server.Player");
 Player:new():Init()
 -------------------------------------------------------
 ]]
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
-local Player = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Player"));
+NPL.load("(gl)script/apps/Aries/Creator/Game/Common/DataWatcher.lua");
+local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher");
+
+local Packets = NPL.load("../Common/Packets.lua");
+local Config = NPL.load("./Config.lua");
+
+local Player = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 Player:Property("Valid", false, "IsValid");
 
@@ -23,6 +26,7 @@ local OneSecond = 1000; -- ms
 function Player:ctor() 
     self.entityInfo = {};                    -- 实体信息 UI信息
     self.playerInfo = {};                    -- 玩家信息 数据信息
+    self.dataWatcher = DataWatcher:new();
     self.loginTick = os.time();
     self.lastTick = os.time();
     self.aliveTime = 0;

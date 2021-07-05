@@ -10,6 +10,7 @@ local GeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clie
 GeneralGameClient:LoadWorld({ip = "127.0.0.1", port = "9000", worldId = "12348"});
 ------------------------------------------------------------
 ]]
+
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/Entity.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/ParaWorld/ParaWorldMain.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Common/Connection.lua");
@@ -29,8 +30,9 @@ local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Clien
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
 local ClientDataHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.ClientDataHandler");
 local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
-local Connection = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Connection");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
+local Connection = NPL.load("../Common/Connection.lua");
+local Packets = NPL.load("../Common/Packets.lua");
+
 local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameClient"));
 
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");

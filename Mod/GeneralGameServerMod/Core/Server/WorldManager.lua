@@ -12,13 +12,11 @@ WorldManager.GetSingleton();
 ]]
 
 -- 文件加载
-NPL.load("Mod/GeneralGameServerMod/Core/Server/World.lua");
-NPL.load("Mod/GeneralGameServerMod/Core/Server/Config.lua");
-local Config = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.Config");
-local World = commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.World");
+local Config = NPL.load("./Config.lua");
+local World = NPL.load("./World.lua");
 
 -- 对象定义
-local WorldManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Server.WorldManager"));
+local WorldManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 -- 世界管理对象
 function WorldManager:ctor()

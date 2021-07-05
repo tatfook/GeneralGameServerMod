@@ -11,7 +11,7 @@ local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.Bl
 ]]
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
+local Packets = NPL.load("../Common/Packets.lua");
 local BlockManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager"));
 
 BlockManager:Property("World");                                   -- 方块管理器所属世界

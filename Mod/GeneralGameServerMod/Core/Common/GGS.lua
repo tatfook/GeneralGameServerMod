@@ -8,8 +8,10 @@ use the lib:
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/ide/commonlib.lua");
-NPL.load("(gl)script/ide/System/Core/ToolBase.lua");
+NPL.load("(gl)script/ide/System/System.lua");
+
+-- NPL.load("(gl)script/ide/commonlib.lua");
+-- NPL.load("(gl)script/ide/System/Core/ToolBase.lua");
 
 local Debug = NPL.load("./Debug.lua");
 

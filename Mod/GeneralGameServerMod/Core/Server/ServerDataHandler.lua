@@ -8,7 +8,7 @@ use the lib:
 local ServerDataHandler = NPL.load("Mod/GeneralGameServerMod/Core/Server/ServerDataHandler.lua");
 -------------------------------------------------------
 ]]
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
+local Packets = NPL.load("../Common/Packets.lua");
 local ServerDataHandler = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 ServerDataHandler:Property("NetHandler");
@@ -66,3 +66,5 @@ end
 function ServerDataHandler:OnDisconnect()
 end
 
+NPL.this(function()
+end)
