@@ -8,18 +8,20 @@ use the lib:
 local Net = NPL.load("Mod/GeneralGameServerMod/Server/Net/Net.lua");
 ------------------------------------------------------------
 ]]
-local Connection = NPL.load("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
+
+local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
+
 local SandBox = NPL.load("../SandBox/SandBox.lua");
 
-local Net = commonlib.inherit(Connection, NPL.export());
+local Net = commonlib.inherit(VirtualConnection, NPL.export());
 
-function Net:OnReceive(msg)
+function Net:HandleMsg(msg)
 	if (type(msg) ~= "table" or not msg.__cmd__) then return end
 	-- SandBox:Handle("__net__", msg);
 end
 
 NPL.this(function()
-	echo(msg)
+	echo(msg);
     Net:OnActivate(msg);
 end);
 

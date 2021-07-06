@@ -58,8 +58,8 @@ function SandBox:GetCodeBlockAPI()
         end,
 
         -- 显示排行榜
-        showRanking = function()
-            API.GetGGSRankModule():ShowUI();
+        showRanking = function(...)
+            return API.GetGGSRankModule():ShowUI(...);
         end,
 
         -- 设置排行榜字段值
@@ -93,10 +93,10 @@ function SandBox:GetCodeBlockAPI()
         end,
 
         -- 显示用户列表
-        showUserList = function(bShow)
-            if (bShow == true) then return API.GetGGSPlayerModule():ShowPlayerListUI() end 
-            if (bShow == false) then return API.GetGGSPlayerModule():ClosePlayerListUI() end
-            API.GetGGSPlayerModule():TriggerPlayerListUI();
+        showUserList = function(bShow, ...)
+            if (bShow == true) then return API.GetGGSPlayerModule():ShowPlayerListUI(...) end 
+            if (bShow == false) then return API.GetGGSPlayerModule():ClosePlayerListUI(...) end
+            API.GetGGSPlayerModule():TriggerPlayerListUI(...);
         end,
 
         -- 遍历玩家

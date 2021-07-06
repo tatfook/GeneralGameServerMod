@@ -9,9 +9,8 @@ local CodeEnv = NPL.load("Mod/GeneralGameServerMod/GI/Independent/CodeEnv.lua");
 ------------------------------------------------------------
 ]]
 
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
-local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua", IsDevEnv);
-
 local EventEmitter = NPL.load("../Game/Event/EventEmitter.lua", IsDevEnv);
 local Event = NPL.load("../Game/Event/Event.lua", IsDevEnv);
 local TickEvent = NPL.load("../Game/Event/TickEvent.lua", IsDevEnv);

@@ -4,7 +4,15 @@ NetConnect(function()
     print("========connect success=========");
 
     NetSend({"hello world"})
+
+    -- NetClose();
 end)
+
+NetOnDisconnected(function()
+    print("=================disconnection=============")
+end)
+
+
 
 -- SetInterval(1000, function()
 --     print("========")

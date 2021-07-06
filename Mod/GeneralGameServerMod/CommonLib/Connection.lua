@@ -2,206 +2,152 @@
 Title: Connection
 Author(s): wxa
 Date: 2020/6/12
-Desc: base connection
+Desc: connection
 use the lib:
 -------------------------------------------------------
 local Connection = NPL.load("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
 -------------------------------------------------------
 ]]
 
-NPL.load("(gl)script/ide/commonlib.lua");
-NPL.load("(gl)script/ide/event_mapping.lua");
+NPL.load("(gl)script/ide/System/System.lua");
 
-local CommonLib = NPL.load("./CommonLib.lua");
+local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+
 local Connection = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-local ConnectionThread = {};  -- 链接所在线程
-local AllConnections = {};    -- 线程所有链接
-local NextConnectionId = 0;
+local __neuron_file__ = "Mod/GeneralGameServerMod/CommonLib/Connection.lua";
+local __nid_thread_map__ = {};                      -- 连接线程映射表
+local __all_connections__ = {};                     -- 所有连接
+local __main_thread_name__ = "main";                -- 主线程名
+-- local __event_emitter__ = EventEmitter:new();       -- 事件触发器
 
-Connection:Property("ConnectionId", 0);
-Connection:Property("Nid", "");
-Connection:Property("ThreadName", "gl");
-Connection:Property("RemoteNeuronFile", "Mod/GeneralGameServerMod/CommonLib/Connection.lua");   -- 对端处理文件
-Connection:Property("LocalNeuronFile", "Mod/GeneralGameServerMod/CommonLib/Connection.lua");    -- 本地处理文件
-Connection:Property("ConnectionClosed", false, "IsConnectionClosed");                           -- 是否已关闭
-Connection:Property("SynchronousSend", false, "IsSynchronousSend");                             -- 是否采用同步发送数据包模式
-Connection:Property("SynchronousSendTimeout", 3);                                               -- 同步发送超时时间
+Connection:Property("Nid");                                     -- 连接标识符
 
+-- 公开接口文件
+CommonLib.AddPublicFile(__neuron_file__);
 
 function Connection:ctor()
-    NextConnectionId = NextConnectionId + 1;
-	self:SetConnectionId(NextConnectionId);
-	self:SetConnectionClosed(true);
+	self.__timer__ = commonlib.Timer:new();
+	self.__event_emitter__ = EventEmitter:new();       -- 事件触发器
 end
 
--- get ip address. return nil or ip address
-function Connection:GetIPAddress()
-	return NPL.GetIP(self:GetNid());
-end
-
-function Connection:Init(opts)
-    if (type(opts) ~= "table") then return self end
-    if (opts.threadName) then self:SetThreadName(opts.threadName) end
-    if (opts.remoteNeuronFile) then self:SetRemoteNeuronFile(opts.remoteNeuronFile) end
-    if (opts.localNeuronFile) then self:SetLocalNeuronFile(opts.localNeuronFile) end
-    
-    if (opts.nid) then 
-        self:SetNid(opts.nid);
-    elseif (opts.ip and opts.port) then
-		self:SetIpAndPort(opts.ip, opts.port);
-	end
-
-    return self;
-end
-
-function Connection:SetIpAndPort(ip, port)
-	ip = tostring(ip or "127.0.0.1");
-	port = tostring(port or "9000");
-	local nid = string.format("%s_%s", ip, port);
-	NPL.AddNPLRuntimeAddress({host = ip, port = port, nid = nid});
+-- 初始化
+function Connection:Init(nid)
+	__all_connections__[nid] = self;
 	self:SetNid(nid);
-end
 
-function Connection:GetRemoteAddress(neuronfile)
-	return string.format("(%s)%s:%s", self:GetThreadName() or "gl", self:GetNid() or "", neuronfile or self:GetRemoteNeuronFile());
-end
+	-- 通知主线程
+	NPL.activate(string.format("(%s)%s", __main_thread_name__, __neuron_file__), {__cmd__ = "__connected__", __thread_name__ = __rts__:GetName(), __nid__ = self:GetNid()});
 
-function Connection:Connect(callback)
-	if (self.__connecting__ or not self:IsConnectionClosed()) then return end 
-	self.__connecting__ = true;
-
-	local address = self:GetRemoteAddress();
-	local data = {thread_name = __rts__:GetName(), neuron_file = self:GetLocalNeuronFile(), action = "__connect__"};
-	local timeout, max_timeout = 10, 1000 * 60 *2;
-
-	commonlib.Timer:new({callbackFunc = function(timer)
-		if(NPL.activate(address, data) == 0) then
-			-- 连接成功放入链接池
-			AllConnections[self:GetNid()] = self;
-			-- 取消连接中标志
-			self.__connecting__ = false;
-			-- 标记连接成功
-			self:SetConnectionClosed(false);
-			-- 回调函数
-			callback(true);
-			-- 连接成功回调
-			self:OnConnected();
-			return ;
-		end
-		timeout = math.min(timeout + timeout, max_timeout);
-		timer:Change(timeout, nil);
-	end}):Change(timeout, nil);
-end
-
-function Connection:Disconnect()
-	AllConnections[self:GetNid()] = nil;
-    self:SetConnectionClosed(true);
-	self:OnDisconnected();
-end
-
--- 关闭连接
-function Connection:Close(reason)
-	NPL.reject({["nid"] = self:GetNid(), ["reason"] = reason});
-	self:Disconnect();
-	self:OnClose();
-end
-
--- send message immediately to c++ queue
--- @param msg: the raw message table {id=packet_id, .. }. 
--- @param neuronfile: should be nil. By default, it is this file. 
-function Connection:Send(msg, neuronfile)
-	if (self:IsConnectionClosed()) then return end
-	
-    msg, neuronfile = self:OnSend(msg, neuronfile);
-
-	local address = self:GetRemoteAddress(neuronfile);
-	local ret = 0;
-	if (self:IsSynchronousSend()) then
-		ret = NPL.activate_with_timeout(self:GetSynchronousSendTimeout(), address, msg);
-	else
-		ret = NPL.activate(address, msg);
-	end
-
-	if(ret ~= 0) then
-		LOG.std(nil, "warn", "Connection", "unable to send to %s.", self:GetNid());
-		self:CloseConnection("发包失败");
-	end
-end
-
--- 发送消息
-function Connection:OnSend(msg, neuronfile)
-	return msg, neuronfile;
-end
-
--- 接受消息
-function Connection:OnReceive(msg)
+	return self;
 end
 
 -- 链接关闭
 function Connection:OnClose()
 end
 
--- 新链接
-function Connection:OnConnected()
+-- 关闭连接
+function Connection:Close(reason)
+	-- 断开链接
+	NPL.reject({["nid"] = self:GetNid(), ["reason"] = reason});
+	-- 置空链接
+	__all_connections__[self:GetNid()] = nil;
+	-- 置空链接标识符
+	self:SetNid(nil);
+	-- 触发回调
+	self:OnClose();
+end
+
+function Connection:GetRemoteAddress(threadname, neuronfile)
+	return string.format("(%s)%s:%s", threadname or __main_thread_name__, self:GetNid(), neuronfile or __neuron_file__);
+end
+
+function Connection:Send(msg, threadname, neuronfile, callback)
+	if (not self:GetNid()) then return end
+	local address = self:GetRemoteAddress(threadname, neuronfile);
+	local result = NPL.activate(address, msg);
+	if (result ~= 0) then
+		local timeout = 100;
+		local function OnTimer()
+			if (not self:GetNid()) then return end
+			timeout = timeout + timeout;
+			address = self:GetRemoteAddress(threadname, neuronfile);
+			result = NPL.activate(address, msg);
+			if (result ~= 0) then 
+				self.__timer__:Change(timeout);
+			else 
+				self.__timer__.callbackFunc = nil;
+				if (type(callback) == "function") then callback() end
+			end
+		end
+		self.__timer__.callbackFunc = OnTimer;
+		self.__timer__:Change(timeout);
+	else
+		if (type(callback) == "function") then callback() end
+	end
+end
+
+-- 接受消息
+function Connection:OnReceive(callback)
+	self.__event_emitter__:RegisterEventCallBack("__msg__", callback);
+end
+
+function Connection:HandleReceive(msg)
+	self.__event_emitter__:TriggerEventCallBack("__msg__", msg);
 end
 
 -- 连接断开
-function Connection:OnDisconnected()
+function Connection:OnDisconnected(...)
+	self.__event_emitter__:RegisterEventCallBack("__disconnected__", ...)
+end
+
+function Connection:OffDisconnected(...)
+	self.__event_emitter__:RemoveEventCallBack("__disconnected__", ...)
+end
+
+-- 处理链接断开
+function Connection:HandleDisconnected(msg)
+	self.__event_emitter__:TriggerEventCallBack("__disconnected__", msg);
 end
 
 -- 获取连接
 function Connection:GetConnectionByNid(nid)
-	return AllConnections[nid];
+	__all_connections__[nid] = __all_connections__[nid] or Connection:new():Init(nid);
+	return __all_connections__[nid];
+end
+
+-- 处理消息
+function Connection:OnMsg(msg)
+	self:GetConnectionByNid(msg.nid or msg.tid):HandleReceive(msg);
 end
 
 function Connection:OnActivate(msg)
-	-- 链接ID不存在
-    local nid = msg and (msg.nid or msg.tid);
-	if (not nid) then return end
-    -- 获取连接
-	local connection = AllConnections[nid];
-    -- 链接已存在 直接处理消息
-	if(connection) then return connection:OnReceive(msg) end
-
-	-- 新建连接
-	connection = self:new():Init({nid=nid, threadName = msg.thread_name, remoteNeuronFile = msg.neuron_file});
-	-- 放入链接池
-	AllConnections[connection:GetNid()] = connection;
-	-- 通知主线程
-	NPL.activate("(main)Mod/GeneralGameServerMod/CommonLib/Connection.lua", {action = "ConnectionEstablished", threadName = __rts__:GetName(), ConnectionNid = self:GetNid()});
-	connection:OnConnected();
-end
-
-function Connection:handleMsg(msg)
-end
-
-NPL.this(function() 
 	local nid = msg and (msg.nid or msg.tid);
-	local action = msg and msg.action;
-	local threadName = __rts__:GetName();
-	if (nid) then return Connection:OnActivate(msg) end
-	
-	if (action == "ConnectionEstablished") then
-		ConnectionThread[msg.ConnectionNid] = msg.threadName; 
-	elseif (action == "ConnectionDisconnected") then
-		local connection = AllConnections[msg.ConnectionNid];
-		if (connection) then connection:Close() end
+	if (nid) then return self:OnMsg(msg) end
+
+	local __cmd__ = msg and msg.__cmd__;
+	if (__cmd__ == "__connected__") then
+		__nid_thread_map__[msg.__nid__] = msg.__thread_name__; 
+	elseif (__cmd__ == "__disconnected__") then
+		self:GetConnectionByNid(msg.__nid__):HandleDisconnected(msg);
 	else 
-		Connection:handleMsg(msg);
 	end
+end
+
+-- 激活函数
+NPL.this(function() 
+	Connection:OnActivate(msg);
 end);
 
--- c++ callback function. 
+-- 注册主线程网络消息回调
 CommonLib.OnNetworkEvent(function(msg) 
-	local nid = msg.nid or msg.tid;
-	local threadName = ConnectionThread[nid] or "main";
-	local connection = AllConnections[nid];
+	local nid = msg and (msg.nid or msg.tid);
+	if (not nid) then return end 
+
 	if(msg.code == NPLReturnCode.NPL_ConnectionDisconnected) then
-		-- 链接断开
-        NPL.activate(string.format("(%s)Mod/GeneralGameServerMod/CommonLib/Connection.lua", threadName), {action = "ConnectionDisconnected", ConnectionNid = nid});
+		NPL.activate(string.format("(%s)%s",  __nid_thread_map__[nid] or __main_thread_name__, __neuron_file__), {__cmd__ = "__disconnected__", __nid__ = nid});
 	elseif (msg.code == NPLReturnCode.NPL_ConnectionEstablished) then
-        -- 链接建立
-		-- if (connection) then connection:OnConnected() end
+        -- 链接建立 客户端才会触发此事件
 	end
 end);

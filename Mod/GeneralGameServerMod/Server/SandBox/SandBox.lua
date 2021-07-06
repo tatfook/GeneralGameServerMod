@@ -15,8 +15,9 @@ local API = NPL.load("./API/API.lua");
 
 local SandBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-
 -- 开放接口
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/Server/Net/Net.lua");
 
 function SandBox:ctor()
@@ -30,6 +31,8 @@ function SandBox:ctor()
 		__loadstring__ = function(text) return self:LoadString(text) end,
 		__cmd__ = function(cmd, callback) return self:RegisterCmdHandler(cmd, callback) end,
     };
+
+	self.__env__._G = self.__env__;  -- 设置全局G
 
 	API(self.__env__);
 

@@ -138,6 +138,19 @@ function CommonLib.AddPublicFile(filename, id)
     NPL.AddPublicFile(filename, id);
 end
 
+-- 添加地址
+local __nids__ = {};
+function CommonLib.AddNPLRuntimeAddress(ip, port)
+    ip = tostring(ip or "127.0.0.1");
+	port = tostring(port or "9000");
+	local nid = string.format("%s_%s", ip, port);
+    if (not __nids__[nid]) then  
+        NPL.AddNPLRuntimeAddress({host = ip, port = port, nid = nid});
+        __nids__[nid] = nid;
+    end 
+    return nid;
+end
+
 -- 网络事件
 commonlib.setfield("__CommonLib__", CommonLib);
 NPL.RegisterEvent(0, "_n_Connections_network", ";__CommonLib__.__OnNetworkEvent__();");
