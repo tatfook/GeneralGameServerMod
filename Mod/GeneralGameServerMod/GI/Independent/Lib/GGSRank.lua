@@ -126,6 +126,8 @@ function GGSRank:ShowUI(G, params)
     G.GlobalScope = __scope__;
     params.url = params.url or "%gi%/Independent/UI/GGSRank.html";
     params.alignment = params.alignment or "_rt";
+    params.isClickThrough = true;
+    params.zorder = params.zorder or -100;
 
     local width, height = self:GetWidthHeight();
     params.width = params.width or width;

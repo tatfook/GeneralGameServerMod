@@ -140,6 +140,8 @@ setmetatable(GGSAPI, {
         CodeEnv.GGS_GetPlayer = function(...) return GGS_GetPlayer(CodeEnv, ...) end
         CodeEnv.GGS_GetAllPlayer = function(...) return GGS_GetAllPlayer(CodeEnv, ...) end
         
+        if (IsDevEnv) then CodeEnv.GGS_Independent() end
+        
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_DATA__, GGS_RecvDataCallBack, CodeEnv);
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_CONNECT__, GGS_ConnectionCallBack, CodeEnv);
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_DISCONNECT__, GGS_DisconnectionCallBack, CodeEnv);

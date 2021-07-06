@@ -150,6 +150,8 @@ function GGSPlayer:ShowPlayerListUI(G, params)
     params.alignment = params.alignment or "_rt";
     params.width = params.width or 350;
     params.height = params.height or 500;
+    -- params.isClickThrough = true;
+    params.zorder = params.zorder or -100;
 
     self.__player_list_ui__ = ShowWindow(G, params);
     self:RefreshPlayerListUI();
