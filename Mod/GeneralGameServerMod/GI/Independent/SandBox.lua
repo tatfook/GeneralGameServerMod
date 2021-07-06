@@ -96,7 +96,7 @@ function SandBox:GetCodeBlockAPI()
         showUserList = function(bShow, ...)
             if (bShow == true) then return API.GetGGSPlayerModule():ShowPlayerListUI(...) end 
             if (bShow == false) then return API.GetGGSPlayerModule():ClosePlayerListUI(...) end
-            API.GetGGSPlayerModule():TriggerPlayerListUI(...);
+            return API.GetGGSPlayerModule():TriggerPlayerListUI(...);
         end,
 
         -- 遍历玩家
