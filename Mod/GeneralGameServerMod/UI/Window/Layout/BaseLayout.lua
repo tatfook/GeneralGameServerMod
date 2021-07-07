@@ -101,11 +101,6 @@ function BaseLayout:GetWindowPosition()
 	return self:GetWindow():GetWindowPosition();
 end
 
--- 获取屏幕(应用程序窗口)位置 x, y, w, h    (w, h 为宽高, 非坐标)
-function BaseLayout:GetScreenPosition()
-	return ParaUI.GetUIObject("root"):GetAbsPosition();
-end
-
 -- 获取页面元素的样式
 function BaseLayout:GetStyle()
 	return self:GetElement():GetStyle();

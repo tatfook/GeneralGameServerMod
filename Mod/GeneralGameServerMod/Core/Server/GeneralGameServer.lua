@@ -12,10 +12,18 @@ GeneralGameServer.Start();
 -------------------------------------------------------
 ]]
 
-NPL.load("./WorkerServer.lua");
+local ThreadHelper = NPL.load("./ThreadHelper.lua");
+local WorkerServer = NPL.load("./WorkerServer.lua");
 
 local Config = NPL.load("./Config.lua");
 local GeneralGameServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+
+local __server_info__ = {};
+local __is_server_info_change__ = false;
+
+ThreadHelper:OnChange(function()
+	__is_server_info_change__ = true;
+end);
 
 function GeneralGameServer:ctor() 
     self.isStart = false;
@@ -58,13 +66,19 @@ function GeneralGameServer:Start()
 	-- 启动服务
 	local listenIp = Config.Server.listenIp;
 	local listenPort = Config.Server.listenPort;
+
 	if (Config.Server.isControlServer) then
 		listenIp = listenIp or Config.ControlServer.innerIp or Config.ControlServer.outerIp;
 		listenPort = listenPort or Config.ControlServer.innerPort or Config.ControlServer.outerPort;
+		__server_info__.innerIp, __server_info__.innerPort = Config.ControlServer.innerIp, Config.ControlServer.innerPort;
+		__server_info__.outerIp, __server_info__.outerPort = Config.ControlServer.outerIp, Config.ControlServer.outerPort;
 	else
 		listenIp = listenIp or Config.WorkerServer.innerIp or Config.WorkerServer.outerIp;
 		listenPort = listenPort or Config.WorkerServer.innerPort or Config.WorkerServer.outerPort;
+		__server_info__.innerIp, __server_info__.innerPort = Config.WorkerServer.innerIp, Config.ControlServer.innerPort;
+		__server_info__.outerIp, __server_info__.outerPort = Config.WorkerServer.outerIp, Config.ControlServer.outerPort;
 	end
+	__server_info__.__all_thread_info__ = ThreadHelper:GetAllThreadInfo();
 
     NPL.StartNetServer(listenIp, tostring(listenPort));
 
@@ -73,16 +87,31 @@ function GeneralGameServer:Start()
 	local threadCount = Config.Server.threadCount;
 	for i = 1, threadCount do 
 		local threadName = GGS.GetWorkerThreadName(i);
-		NPL.CreateRuntimeState(threadName, 0):Start(); 
+		ThreadHelper:StartWorkerThread(threadName);
+		-- NPL.CreateRuntimeState(threadName, 0):Start(); 
 	end
 
 	-- 主循环
-	commonlib.Timer:new({callbackFunc = function() GeneralGameServer:Tick() end}):Change(1000, 1000);
+	commonlib.Timer:new({callbackFunc = function() GeneralGameServer:Tick() end}):Change(1000, 1000 * 10);
 	
 	self.isStart = true;
 end
 
+function GeneralGameServer:PushServerInfo()
+	if (not __is_server_info_change__) then return end 
+	__is_server_info_change__ = false;
+
+	System.os.GetUrl({
+		method = "POST",
+		url = IsDevEnv and "http://api-rls.kp-para.cn/ggs-manager/node/state" or "https://api.keepwork.com/ggs-manager/node/state", 
+		json = true, 
+		form = __server_info__,
+	}, function(err, msg, data)
+	end);
+end
+
 function GeneralGameServer:Tick()
+	self:PushServerInfo();
 end
 
 GeneralGameServer:InitSingleton();

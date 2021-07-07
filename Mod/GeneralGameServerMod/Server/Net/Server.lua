@@ -32,13 +32,15 @@ end
 
 -- 启动服务
 function Server:Start(ip, port) 
-	if (self.__is_start__) then return end
+	if (self.__is_start__) then return end 
 
     -- 设置系统属性
     self:LoadNetworkSettings();
 
 	-- 启动服务
-    NPL.StartNetServer(ip or "0.0.0.0", tostring(port or "9000"));
+	if (NPL.GetAttributeObject():GetField("IsServerStarted", false)) then
+		NPL.StartNetServer(ip or "0.0.0.0", tostring(port or "9000"));
+	end
 
 	-- 主循环
 	commonlib.Timer:new({callbackFunc = function() GeneralGameServer:Tick() end}):Change(1000, 1000);

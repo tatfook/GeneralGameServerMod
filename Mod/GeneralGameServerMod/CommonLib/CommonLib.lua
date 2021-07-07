@@ -160,3 +160,19 @@ end
 function CommonLib.__OnNetworkEvent__()
     __event_emitter__:TriggerEventCallBack("__OnNetworkEvent__", msg);
 end
+-- NPL_OK = 0, 
+-- NPL_Error, 
+-- NPL_ConnectionNotEstablished,
+-- NPL_QueueIsFull,
+-- NPL_StreamError,
+-- NPL_RuntimeState_NotExist,
+-- NPL_FailedToLoadFile,
+-- NPL_RuntimeState_NotReady,
+-- NPL_FileAccessDenied,
+-- NPL_ConnectionEstablished,
+-- NPL_UnableToResolveName,
+-- NPL_ConnectionTimeout,
+-- NPL_ConnectionDisconnected,
+-- NPL_ConnectionAborted,
+-- NPL_Command,
+-- NPL_WrongProtocol

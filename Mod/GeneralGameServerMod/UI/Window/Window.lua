@@ -60,9 +60,11 @@ function Window:ctor()
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, 0, 0; 
     -- 缩放
     self.scaleX, self.scaleY = 1, 1;
-    -- self.scaleX, self.scaleY = 0.8, 0.8;
+
     -- 最小根屏幕宽高
-    -- self.minRootScreenWidth, self.minRootScreenHeight = 1280, 750;
+    self.minRootScreenWidth, self.minRootScreenHeight = nil, nil;
+    self.defaultMinRootScreenWidth, self.defaultMinRootScreenHeight = 1280, 720;
+
 
     self:SetName("Window");
     self:SetTagName("Window");
@@ -210,9 +212,16 @@ function Window:Create3DNativeWindow()
     return native_window;
 end
 
+-- 获取父原生窗口
+function Window:GetParentNativeWindow()
+    return self:GetParams().parent or ParaUI.GetUIObject("root");
+end
+
+-- 初始化窗口位置
 function Window:InitWindowPosition()
     local params = self:GetParams();
-    local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
+    -- local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
+    local screenX, screenY, screenWidth, screenHeight = self:GetParentNativeWindow():GetAbsPosition();
     local windoX, windowY, windowWidth, windowHeight = 0, 0, tonumber(params.width) or params.width or screenWidth, tonumber(params.height) or params.height or screenHeight;
     local offsetX, offsetY = tonumber(params.x) or params.x or 0, tonumber(params.y) or params.y or 0;
     if (type(windowWidth) == "string" and string.match(windowWidth, "^%d+%%$")) then windowWidth = math.floor(screenWidth * tonumber(string.match(windowWidth, "%d+")) / 100) end
@@ -220,9 +229,9 @@ function Window:InitWindowPosition()
     if (type(offsetX) == "string" and string.match(offsetX, "^%d+%%$")) then offsetX = math.floor(screenWidth * tonumber(string.match(offsetX, "%d+")) / 100) end
     if (type(offsetY) == "string" and string.match(offsetY, "^%d+%%$")) then offsetY = math.floor(screenHeight * tonumber(string.match(offsetY, "%d+")) / 100) end
     
-    if (params.alignment == "_ctb") then -- *	- "_ctb": align to center bottom of the screen
+    if (params.alignment == "_ctb") then                 -- *	- "_ctb": align to center bottom of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
-    elseif (params.alignment == "_ctt") then -- *	- "_ctt": align to center top of the screen
+    elseif (params.alignment == "_ctt") then             -- *	- "_ctt": align to center top of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY;
     elseif (params.alignment == "_ctl") then -- *	- "_ctl": align to center left of the screen
         windowX, windowY = offsetX, offsetY + math.floor((screenHeight - windowHeight) / 2);
@@ -254,7 +263,7 @@ function Window:InitWindowPosition()
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, windowWidth, windowHeight;
     self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = screenX, screenY, screenWidth, screenHeight;
 
-    self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.screenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.screenHeight;
+    self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.defaultMinRootScreenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.defaultMinRootScreenHeight;
     if ((params.isAutoScale == nil or params.isAutoScale) and (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight)) then
         local scale = math.min(self.rootScreenWidth / self.minRootScreenWidth, self.rootScreenHeight / self.minRootScreenHeight);
         self.scaleX, self.scaleY = scale, scale;
@@ -290,8 +299,11 @@ function Window:CreateNativeWindow()
     if (params.isClickThrough ~= nil) then native_window:GetAttributeObject():SetField("ClickThrough", params.isClickThrough) end
 
     -- 加到有效窗口上
-    native_window:AttachToRoot();
-    
+    if(params.parent) then
+        params.parent:AddChild(native_window);
+    else 
+        native_window:AttachToRoot();
+    end
 	local event_list = { "ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmousewheel", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
 	if (self:IsTouchMode()) then
         event_list = {"ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove",  "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};

@@ -17,6 +17,7 @@ local Connection = NPL.load("../Common/Connection.lua");
 local Config = NPL.load("./Config.lua");
 local WorldManager = NPL.load("./WorldManager.lua");
 local WorkerServer = NPL.load("./WorkerServer.lua");
+local ThreadHelper = NPL.load("./ThreadHelper.lua");
 local ServerDataHandler = NPL.load("./ServerDataHandler.lua");
 
 local NetServerHandler = commonlib.inherit(Connection, NPL.export());
@@ -34,6 +35,12 @@ local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 local function GetDataHandler(netHandler)
     local ServerDataHandlerClass = NPL.load(Config.DataHandler.filename) or ServerDataHandler;
     return ServerDataHandlerClass:new():Init(netHandler);
+end
+
+function NetServerHandler:SendWorldInfo()
+    local worldinfo = self:GetWorld():GetWorldInfo();
+    self:GetWorkerServer():SendWorldInfo(worldinfo);
+    ThreadHelper:SetThreadInfo({worlds = {[worldinfo.worldKey] = worldinfo}});
 end
 
 function NetServerHandler:ctor() 
@@ -87,7 +94,7 @@ function NetServerHandler:handlePlayerLogin(packetPlayerLogin)
     -- 不同实体信息
     if (not self:GetPlayer():IsSyncEntityInfo()) then
         self:GetPlayerManager():AddPlayer(self:GetPlayer());
-        self:GetWorkerServer():SendWorldInfo(self:GetWorld():GetWorldInfo());
+        self:SendWorldInfo();
     end
 
     self:SendPacketToPlayer(packetPlayerLogin);
@@ -122,7 +129,7 @@ function NetServerHandler:handlePlayerEntityInfo(packetPlayerEntityInfo)
     end
 
     -- 更新世界信息
-    self:GetWorkerServer():SendWorldInfo(self:GetWorld():GetWorldInfo());
+    self:SendWorldInfo();
 end
 
 -- 同步玩家信息列表
@@ -157,9 +164,7 @@ function NetServerHandler:handlePlayerLogout(text)
     self:GetPlayerManager():Offline(self:GetPlayer(), "连接断开, 玩家主动下线");
   
     -- 更新世界信息
-    self:GetWorkerServer():SendWorldInfo(self:GetWorld():GetWorldInfo());
-
-    
+    self:SendWorldInfo();
 end
 
 -- 监听包处理后

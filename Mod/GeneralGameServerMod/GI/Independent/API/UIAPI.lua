@@ -8,6 +8,8 @@ use the lib:
 local UIAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/UIAPI.lua");
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/apps/Aries/Creator/Game/Common/SceneViewport.lua");
+local SceneViewport = commonlib.gettable("MyCompany.Aries.Game.Common.SceneViewport")
 
 local UIAPI = NPL.export();
 
@@ -37,6 +39,7 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         params.draggable = if_else(params.draggable == nil, false, params.draggable);  -- 默认不支持拖拽
         params.width = params.width or (IsDevEnv and "80%" or "100%");
         params.height = params.height or (IsDevEnv and "80%" or "100%");
+        params.parent = SceneViewport.GetUIObject();
 
         -- 显示窗口
         window:Show(params);

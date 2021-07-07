@@ -19,7 +19,6 @@ local WorkerServer = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"
 WorkerServer:Property("ServerList", {});                    -- 服务器列表
 WorkerServer:Property("ServerInfo", {});                    -- 服务器信息
 WorkerServer:Property("StatisticsInfo", {});                -- 统计信息
-WorkerServer:Property("MainThread", false, "IsMainThread"); -- 是否是主线程
 
 -- 构造函数
 function WorkerServer:ctor()
@@ -36,8 +35,6 @@ function WorkerServer:ctor()
 
     self.isControlServer = Config.Server.isControlServer;
     self.isWorkerServer = Config.Server.isWorkerServer;
-
-    self:SetMainThread(__rts__:GetName() == "main");
 end
 
 -- 初始化函数
