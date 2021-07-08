@@ -65,6 +65,8 @@ function Window:ctor()
     self.minRootScreenWidth, self.minRootScreenHeight = nil, nil;
     self.defaultMinRootScreenWidth, self.defaultMinRootScreenHeight = 1280, 720;
 
+    -- 最大屏幕宽高
+    self.fixedRootScreenWidth, self.fixedRootScreenHeight = nil, nil;
 
     self:SetName("Window");
     self:SetTagName("Window");
@@ -229,6 +231,11 @@ function Window:InitWindowPosition()
     if (type(offsetX) == "string" and string.match(offsetX, "^%d+%%$")) then offsetX = math.floor(screenWidth * tonumber(string.match(offsetX, "%d+")) / 100) end
     if (type(offsetY) == "string" and string.match(offsetY, "^%d+%%$")) then offsetY = math.floor(screenHeight * tonumber(string.match(offsetY, "%d+")) / 100) end
     
+    local nativeScreenX, nativeScreenY, nativeScreenWidth, nativeScreenHeight = screenX, screenY, screenWidth, screenHeight;
+    self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.defaultMinRootScreenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.defaultMinRootScreenHeight;
+    self.fixedRootScreenWidth, self.fixedRootScreenHeight = self.fixedRootScreenWidth or params.fixedRootScreenWidth, self.fixedRootScreenHeight or params.fixedRootScreenHeight;
+    if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then screenX, screenY, screenWidth, screenHeight = 0, 0, self.fixedRootScreenWidth, self.fixedRootScreenHeight end
+
     if (params.alignment == "_ctb") then                 -- *	- "_ctb": align to center bottom of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
     elseif (params.alignment == "_ctt") then             -- *	- "_ctt": align to center top of the screen
@@ -263,8 +270,13 @@ function Window:InitWindowPosition()
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, windowWidth, windowHeight;
     self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = screenX, screenY, screenWidth, screenHeight;
 
-    self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.defaultMinRootScreenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.defaultMinRootScreenHeight;
-    if ((params.isAutoScale == nil or params.isAutoScale) and (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight)) then
+    if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then
+        local scale = math.min(nativeScreenWidth / self.fixedRootScreenWidth, nativeScreenHeight / self.fixedRootScreenHeight);
+        local offsetX, offsetY = (nativeScreenWidth - self.fixedRootScreenWidth * scale) / 2, (nativeScreenHeight - self.fixedRootScreenHeight * scale) / 2;
+        self.screenX = math.max(nativeScreenX + offsetX, 0) * self.scaleX;
+        self.screenY = math.max(nativeScreenY + offsetY, 0) * self.scaleY;
+        self.scaleX, self.scaleY = scale, scale;
+    elseif ((params.isAutoScale == nil or params.isAutoScale) and (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight)) then
         local scale = math.min(self.rootScreenWidth / self.minRootScreenWidth, self.rootScreenHeight / self.minRootScreenHeight);
         self.scaleX, self.scaleY = scale, scale;
         self.screenX = math.max(self.screenX, 0) * self.scaleX;
@@ -272,6 +284,7 @@ function Window:InitWindowPosition()
     else 
         self.scaleX, self.scaleY = 1, 1;
     end
+
     -- WindowDebug(
     --     string.format("root window screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", screenX, screenY, screenWidth, screenHeight),
     --     string.format("screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", windowX, windowY, windowWidth, windowHeight),
