@@ -9,6 +9,11 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/BlockManager.lua");
 local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager");
 ------------------------------------------------------------
 ]]
+-- 加载初始化EntityPacket包
+NPL.load("(gl)script/apps/Aries/Creator/Game/Network/Packets/Packet_Types.lua");
+local Packet_Types = commonlib.gettable("MyCompany.Aries.Game.Network.Packets.Packet_Types");
+Packet_Types:StaticInit();
+
 local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local Packets = NPL.load("../Common/Packets.lua");

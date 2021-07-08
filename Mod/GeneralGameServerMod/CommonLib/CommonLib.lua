@@ -176,3 +176,19 @@ end
 -- NPL_ConnectionAborted,
 -- NPL_Command,
 -- NPL_WrongProtocol
+
+function CommonLib.IsServerStarted()
+    return NPL.GetAttributeObject():GetField("IsServerStarted", false);
+end
+
+function CommonLib.GetServerPort()
+    return NPL.GetAttributeObject():GetField("HostIP");
+end
+
+function CommonLib.GetServerIp()
+    return NPL.GetAttributeObject():GetField("HostPort");
+end
+
+function CommonLib.GetServerIpAndPort()
+    return CommonLib.GetServerIp(), CommonLib.GetServerPort(); 
+end

@@ -17,13 +17,9 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/BlockManager.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/PlayerManager.lua");
 local PlayerManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.PlayerManager");
 local BlockManager = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.BlockManager");
-local block_types = commonlib.gettable("MyCompany.Aries.Game.block_types");
-local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
-local Packets = commonlib.gettable("Mod.GeneralGameServerMod.Core.Common.Packets");
 local NetClientHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.NetClientHandler");
 local GeneralGameWorld = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.World.World"), commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld"));
 
-local SceneContext = commonlib.gettable("MyCompany.Aries.Game.SceneContext");
 local rshift = mathlib.bit.rshift;
 local lshift = mathlib.bit.lshift;
 local band = mathlib.bit.band;
@@ -91,14 +87,6 @@ function GeneralGameWorld:OnFrameMove()
 	self:GetBlockManager():SyncBlock();
 	
 	self.tickBlockInfoUpdateCount = 0;
-end
-
--- 处理鼠标事件
-function GeneralGameWorld:handleMouseEvent(event)
-	-- local scene = GameLogic.GetSceneContext();
-	-- local result = scene:CheckMousePick();
-	-- GGS.INFO(commonlib.serialize(result, true));
-	-- -- GGS.INFO(commonlib.serialize(event, true));
 end
 
 -- 维持用户在线

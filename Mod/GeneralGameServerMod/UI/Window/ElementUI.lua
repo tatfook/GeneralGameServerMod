@@ -280,6 +280,7 @@ function ElementUI:RenderBackground(painter)
         painter:DrawCircle(x + w - borderRadius, -y - borderRadius, 0, borderRadius, "z", true, nil, 0, math.pi / 2);
         painter:DrawCircle(x + borderRadius, -y -h + borderRadius, 0, borderRadius, "z", true, nil, math.pi, math.pi * 3 / 2);
         painter:DrawCircle(x + w - borderRadius, -y -h + borderRadius, 0, borderRadius, "z", true, nil, math.pi * 3 / 2, math.pi * 2);
+        painter:Flush();
     end
 end
 

@@ -3,7 +3,7 @@ Title: VirtualConnection
 Author(s): wxa
 Date: 2020/6/12
 Desc: virtual connection
-use the lib:
+复用 Connection 方便不同文件之间通信只使用一条连接 
 -------------------------------------------------------
 local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
 -------------------------------------------------------

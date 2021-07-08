@@ -89,7 +89,7 @@ function GeneralGameClient:Init()
     Entity:SetEntityId(GGS.MaxEntityId);
 
     -- 禁用服务器 指定为客户端
-    NPL.StartNetServer("127.0.0.1", "0");
+    -- NPL.StartNetServer("127.0.0.1", "0");
 
     -- 监听世界加载完成事件
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");

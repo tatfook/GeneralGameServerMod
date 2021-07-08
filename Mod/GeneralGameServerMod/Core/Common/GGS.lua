@@ -20,9 +20,12 @@ local GGS = NPL.export();
 local GeneralGameClients = {};
 local IsDevEnv = ParaEngine.GetAppCommandLineByParam("IsDevEnv","false") == "true";
 local IsServer = ParaEngine.GetAppCommandLineByParam("servermode","false") == "true";
-local Env = ParaEngine.GetAppCommandLineByParam("env", "online");  -- online release stage local
+local Env = string.lower(ParaEngine.GetAppCommandLineByParam("env", "online"));  -- online release stage local
+local HttpEnv = string.lower(ParaEngine.GetAppCommandLineByParam("http_env", "ONLINE"));
 
 _G.IsDevEnv = IsDevEnv or Env == "local";
+_G.IsRlsEnv = Env == "release";
+
 _G.IsServer = IsServer;
 _G.IsClient = not IsServer;
 _G.Env = Env;

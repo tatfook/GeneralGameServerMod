@@ -22,9 +22,9 @@ local DataWatcher = commonlib.gettable("MyCompany.Aries.Game.Common.DataWatcher"
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local Desktop = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop");
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
-local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 local Connection = NPL.load("../Common/Connection.lua");
 local Packets = NPL.load("../Common/Packets.lua");
+local GeneralGameWorld = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameWorld");
 local EntityMainPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityMainPlayer");
 local EntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer");
 local ClientDataHandler = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.ClientDataHandler");
@@ -466,7 +466,7 @@ function NetClientHandler:Connect()
         self.isConnecting = false;
         self.isReconnection = false;
         self.reconnectionDelay = 3;
-        PlayerLoginLogoutDebug("与服务器成功建立链接");
+        PlayerLoginLogoutDebug("与服务器成功建立链接", options);
         return 
     end
 

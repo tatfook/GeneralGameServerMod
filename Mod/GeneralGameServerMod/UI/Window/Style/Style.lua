@@ -281,7 +281,6 @@ local number_fields = {
 	["rotate"] = true,
 	["translateX"] = true,
 	["translateY"] = true,
-
 };
 
 local color_fields = {
@@ -397,7 +396,7 @@ function Style.GetStyleValue(name, value)
 	elseif (number_fields[name]) then
 		value = tonumber(string.match(value, "[%+%-]?%d+"));
 	elseif(color_fields[name]) then
-		value = StyleColor.ConvertTo16(value);
+		value = StyleColor.ConvertTo16(string.lower(value));
 	elseif(transform_fields[name]) then
 		if(name == "transform") then
 			value = Style.GetTransformStyleValue(value);

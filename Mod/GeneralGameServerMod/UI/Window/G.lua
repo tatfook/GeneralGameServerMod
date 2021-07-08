@@ -89,6 +89,10 @@ function G:GetEvent()
     return self:GetWindow():GetEvent()
 end
 
+function G:StopPropagation()
+    self:GetEvent():Accept();
+end
+
 function G:SetTimeout(func, timeoutMS)
     local timer = commonlib.TimerManager.SetTimeout(func, timeoutMS);
     self.timers[timer] = timer;
