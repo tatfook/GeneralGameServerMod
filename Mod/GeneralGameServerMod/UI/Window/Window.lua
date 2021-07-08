@@ -67,7 +67,8 @@ function Window:ctor()
 
     -- 最大屏幕宽高
     self.fixedRootScreenWidth, self.fixedRootScreenHeight = nil, nil;
-
+    -- self.fixedScaleX, self.fixedScaleY = 1, 1;
+    
     self:SetName("Window");
     self:SetTagName("Window");
     self:SetStyleManager(StyleManager:new());
@@ -224,6 +225,11 @@ function Window:InitWindowPosition()
     local params = self:GetParams();
     -- local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
     local screenX, screenY, screenWidth, screenHeight = self:GetParentNativeWindow():GetAbsPosition();
+    local nativeScreenX, nativeScreenY, nativeScreenWidth, nativeScreenHeight = screenX, screenY, screenWidth, screenHeight;
+    self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.defaultMinRootScreenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.defaultMinRootScreenHeight;
+    self.fixedRootScreenWidth, self.fixedRootScreenHeight = self.fixedRootScreenWidth or params.fixedRootScreenWidth, self.fixedRootScreenHeight or params.fixedRootScreenHeight;
+    if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then screenX, screenY, screenWidth, screenHeight = 0, 0, self.fixedRootScreenWidth, self.fixedRootScreenHeight end
+
     local windoX, windowY, windowWidth, windowHeight = 0, 0, tonumber(params.width) or params.width or screenWidth, tonumber(params.height) or params.height or screenHeight;
     local offsetX, offsetY = tonumber(params.x) or params.x or 0, tonumber(params.y) or params.y or 0;
     if (type(windowWidth) == "string" and string.match(windowWidth, "^%d+%%$")) then windowWidth = math.floor(screenWidth * tonumber(string.match(windowWidth, "%d+")) / 100) end
@@ -231,11 +237,7 @@ function Window:InitWindowPosition()
     if (type(offsetX) == "string" and string.match(offsetX, "^%d+%%$")) then offsetX = math.floor(screenWidth * tonumber(string.match(offsetX, "%d+")) / 100) end
     if (type(offsetY) == "string" and string.match(offsetY, "^%d+%%$")) then offsetY = math.floor(screenHeight * tonumber(string.match(offsetY, "%d+")) / 100) end
     
-    local nativeScreenX, nativeScreenY, nativeScreenWidth, nativeScreenHeight = screenX, screenY, screenWidth, screenHeight;
-    self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.defaultMinRootScreenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.defaultMinRootScreenHeight;
-    self.fixedRootScreenWidth, self.fixedRootScreenHeight = self.fixedRootScreenWidth or params.fixedRootScreenWidth, self.fixedRootScreenHeight or params.fixedRootScreenHeight;
-    if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then screenX, screenY, screenWidth, screenHeight = 0, 0, self.fixedRootScreenWidth, self.fixedRootScreenHeight end
-
+    
     if (params.alignment == "_ctb") then                 -- *	- "_ctb": align to center bottom of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
     elseif (params.alignment == "_ctt") then             -- *	- "_ctt": align to center top of the screen
@@ -273,9 +275,9 @@ function Window:InitWindowPosition()
     if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then
         local scale = math.min(nativeScreenWidth / self.fixedRootScreenWidth, nativeScreenHeight / self.fixedRootScreenHeight);
         local offsetX, offsetY = (nativeScreenWidth - self.fixedRootScreenWidth * scale) / 2, (nativeScreenHeight - self.fixedRootScreenHeight * scale) / 2;
-        self.screenX = math.max(nativeScreenX + offsetX, 0) * self.scaleX;
-        self.screenY = math.max(nativeScreenY + offsetY, 0) * self.scaleY;
         self.scaleX, self.scaleY = scale, scale;
+        self.screenX = math.max(nativeScreenX + offsetX, 0);
+        self.screenY = math.max(nativeScreenY + offsetY, 0);
     elseif ((params.isAutoScale == nil or params.isAutoScale) and (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight)) then
         local scale = math.min(self.rootScreenWidth / self.minRootScreenWidth, self.rootScreenHeight / self.minRootScreenHeight);
         self.scaleX, self.scaleY = scale, scale;
@@ -298,7 +300,7 @@ function Window:CreateNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
     -- 创建窗口
     local windoX, windowY, windowWidth, windowHeight = self:InitWindowPosition();
-    local native_window = ParaUI.CreateUIObject("container", self:GetWindowId(), "_lt", windoX, windowY, windowWidth, windowHeight);
+    local native_window = ParaUI.CreateUIObject("container", self:GetWindowId(), "_lt", windoX, windowY, windowWidth * math.max(1, self.scaleX), windowHeight * math.max(1, self.scaleY));
     -- WindowDebug.Format("CreateNativeWindow windoX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", windoX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
@@ -463,6 +465,11 @@ function Window:HandleMouseEvent(event)
     local isCanSimulateEvent = self:IsCanSimulateEvent();
     local eventType = event:GetType();
     local captureFuncName, bubbleFuncName = self:GetEventTypeFuncName(event);
+
+    if (eventType == "mousePressEvent") then
+        print(self:ScreenPointToWindowPoint(event.x, event.y));
+        print(event.x, event.y)
+    end
 
     -- 优先捕获鼠标元素
     local captureElement = self:GetMouseCapture();
