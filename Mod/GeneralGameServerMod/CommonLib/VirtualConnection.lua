@@ -43,10 +43,10 @@ end
 
 function VirtualConnection:GetVirtualConnection(msg)
     local key = self:GetKey(msg);
-    if (__all_virtual_connection__[key]) then return __all_virtual_connection__[key] end
+    if (__all_virtual_connection__[key]) then return __all_virtual_connection__[key], false end
     local virtual_connection = self:New(msg);
     __all_virtual_connection__[key] = virtual_connection;
-    return virtual_connection;
+    return virtual_connection, true;
 end
 
 function VirtualConnection:SetNid(nid)
@@ -110,7 +110,7 @@ function VirtualConnection:Connect(callback)
 
     -- 发送消息
     self:SendMsg({
-        __cmd__ = "__connect__",
+        __cmd__ = "__request_connect__",
         __remote_thread_name__ = self:GetLocalThreadName(),
         __remote_neuron_file__ = self:GetLocalNeuronFile(),
     }, function()
@@ -152,35 +152,37 @@ function VirtualConnection:OffMsg(...)
     self.__event_emitter__:RemoveEventCallBack("__msg__", ...);
 end
 
-function VirtualConnection:HandleMsg(...)
-    self.__event_emitter__:TriggerEventCallBack("__msg__", ...);
+function VirtualConnection:HandleMsg(msg)
+    self.__event_emitter__:TriggerEventCallBack("__msg__", msg.__data__);
 end
 
 function VirtualConnection:CloseConnection()
     self:GetConnection():Close();
 end
 
-function VirtualConnection:Request(action, data, callback)
-    -- local request_action = "__request_" .. action .."__";
-    -- self:SendMsg({
-    --     __cmd__ = "__rpc__",
-    -- })
-end
-
-function VirtualConnection:Response(action, callback)
-end
-
 function VirtualConnection:OnActivate(msg)
-    msg.__nid__ = msg and (msg.nid or msg.tid);
-    local virtual_connection = self:GetVirtualConnection(msg);
-    local __cmd__ = msg and msg.__cmd__;
-    local __data__ = msg and msg.__data__;
+    local __nid__ = msg and (msg.nid or msg.tid);
+    if (type(msg) ~= "table" or not __nid__) then return end
 
-    if (__cmd__ == "__connect__") then
+    msg.__nid__ = __nid__;
+    local virtual_connection = self:GetVirtualConnection(msg);
+
+    if (not virtual_connection:IsConnected()) then
+        virtual_connection:SetNid(msg.__nid__);
         virtual_connection:SetConnected(true);
         virtual_connection:HandleConnected();
+        virtual_connection:SendMsg({
+            __cmd__ = "__response_connect__",
+            __remote_thread_name__ = self:GetLocalThreadName(),
+            __remote_neuron_file__ = self:GetLocalNeuronFile(),
+        });
+    end
+
+    local __cmd__ = msg.__cmd__;
+    if (__cmd__ == "__request_connect__") then
+    elseif (__cmd__ == "__response_connect__") then
     else
-        virtual_connection:HandleMsg(__data__);
+        virtual_connection:HandleMsg(msg);
     end
 end
 

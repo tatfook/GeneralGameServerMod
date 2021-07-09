@@ -11,7 +11,7 @@ local Net = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/Net.lua");
 
 local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua", IsDevEnv);
+local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
 
 local __event_emitter__ = EventEmitter:new();
 local EventType = {

@@ -198,3 +198,22 @@ end
 function CommonLib.GetServerIpAndPort()
     return CommonLib.GetServerIp(), CommonLib.GetServerPort(); 
 end
+
+function CommonLib:StartNetServer(ip, port)
+    if (CommonLib.IsServerStarted()) then return end
+    
+    local att = NPL.GetAttributeObject();
+	att:SetField("TCPKeepAlive", true);
+	att:SetField("KeepAlive", true);
+	att:SetField("IdleTimeout", false);
+	att:SetField("IdleTimeoutPeriod", 1200000);
+	NPL.SetUseCompression(true, true);
+	att:SetField("CompressionLevel", -1);
+	att:SetField("CompressionThreshold", 1024*16);
+	att:SetField("UDPIdleTimeoutPeriod", 1200000);
+	att:SetField("UDPCompressionLevel", -1);
+	att:SetField("UDPCompressionThreshold", 1024*16);
+	__rts__:SetMsgQueueSize(500);
+
+    NPL.StartNetServer(ip or "0.0.0.0", tostring(port or "9000"));
+end
