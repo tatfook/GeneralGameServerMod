@@ -89,6 +89,14 @@ function GeneralGameWorld:OnFrameMove()
 	self.tickBlockInfoUpdateCount = 0;
 end
 
+-- 处理鼠标事件
+function GeneralGameWorld:handleMouseEvent(event)
+	-- local scene = GameLogic.GetSceneContext();
+	-- local result = scene:CheckMousePick();
+	-- GGS.INFO(commonlib.serialize(result, true));
+	-- -- GGS.INFO(commonlib.serialize(event, true));
+end
+
 -- 维持用户在线
 function GeneralGameWorld:Tick() 
 	if (self.netHandler) then
