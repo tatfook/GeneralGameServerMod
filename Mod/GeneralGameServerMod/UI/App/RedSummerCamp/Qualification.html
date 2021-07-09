@@ -1,0 +1,81 @@
+<template class="container">
+    <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100px;">
+        <div style="width:171px;height:58px;background:url(Texture/Aries/Creator/keepwork/RedSummerCamp/courses/courses_32bits.png#7 248 171 58);">
+            <div onclick=CloseWindow style="width: 45px; height: 38px; margin-left:30px;margin-top:10px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/works/works_32bits.png#0 65 45 38);"></div>
+        </div>
+        <div onclick=ShowVip style="position: absolute; top: 10px; right: 40px; width: 80px; height: 75px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/works/works_32bits.png#298 110 80 75);"></div>
+    </div>
+
+    <div style="width: 1280px; height: 720px; display: flex; justify-content: center; align-items: center;">
+        <div class="content">
+            <div class="title center">
+                教育部门认证
+            </div>
+            <div style="display: flex; margin-top: 40px; margin-left: 60px;">
+                <div>----</div>
+
+                <div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+</template>
+
+<script type="text/lua">
+
+function ShowVip()
+    local VipToolNew = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/VipToolTip/VipToolNew.lua")
+    VipToolNew.Show("red_summer_camp_main")
+end 
+
+
+</script>
+
+<style scoped=true>
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    background-color: #dcdcdc;
+    background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/works/works_32bits.png#380 247 128 257:1 123 126 123);
+}
+.content {
+    margin-top: 80px;
+    width: 1242px;
+    height: 626px;
+    color: #212122;
+    background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/shentongbei_32bits.png#0 0 512 625:150 145 100 150);
+}
+
+.title {
+    margin-top: 30px;
+    padding-left: 20px;
+    font-size: 40px;
+    color: #212122;
+    font-weight: bold;
+    width: 100%;
+}
+
+.image {
+    width: 102px;
+    height: 102px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+}
+
+</style>
+
+<!-- 
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+local page = Page.Show({}, {url = "%ui%/App/RedSummerCamp/ShenTongBei.html", width = "100%", height = "100%", fixedRootScreenWidth = 1280, fixedRootScreenHeight = 720,});
+ -->
+
+ 

@@ -315,3 +315,21 @@ function Page.ShowShenTongBeiPage(G, params)
     ShenTongBeiPage:Show(params);
     return ShenTongBeiPage;
 end
+
+
+local BigImagePage = Vue:new();
+function Page.ShowBigImagePage(G, params)
+    -- local page = Page.ShowVueTestPage({
+    --     url = "Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/all_zz.png",
+    --     w = 1024,
+    --     h = 6416,
+    -- }, {url = "%ui%/Page/Common/BigImage.html", width = "80%", height = "80%"});
+    params = params or {};
+    params.url = "%ui%/Page/Common/BigImage.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
+    BigImagePage:Show(params);
+    return BigImagePage;
+end

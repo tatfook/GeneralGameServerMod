@@ -397,6 +397,7 @@ function Window:HandleRender()
     painter:Scale(self.scaleX, self.scaleY);
     self:Render(painter);
     painter:Scale(1 / self.scaleX, 1 / self.scaleY);
+    painter:Flush();
 end
 
 -- 获取方法名通过事件名
