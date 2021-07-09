@@ -174,12 +174,13 @@ function VirtualConnection:OnActivate(msg)
     msg.__nid__ = msg and (msg.nid or msg.tid);
     local virtual_connection = self:GetVirtualConnection(msg);
     local __cmd__ = msg and msg.__cmd__;
+    local __data__ = msg and msg.__data__;
 
     if (__cmd__ == "__connect__") then
         virtual_connection:SetConnected(true);
         virtual_connection:HandleConnected();
     else
-        virtual_connection:HandleMsg(msg);
+        virtual_connection:HandleMsg(__data__);
     end
 end
 
