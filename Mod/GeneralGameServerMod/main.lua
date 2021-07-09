@@ -77,11 +77,11 @@ function GeneralGameServerMod:handleKeyEvent(event)
 end
 
 function GeneralGameServerMod:handleMouseEvent(event)
-	local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand");
-	local generalGameClient = GeneralGameCommand:GetGeneralGameClient();
-	if (generalGameClient and generalGameClient.handleMouseEvent) then
-		generalGameClient:handleMouseEvent(event);
-	end
+	-- local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand");
+	-- local generalGameClient = GeneralGameCommand:GetGeneralGameClient();
+	-- if (generalGameClient and generalGameClient.handleMouseEvent) then
+	-- 	generalGameClient:handleMouseEvent(event);
+	-- end
 end
 
 -- 注册客户端类
