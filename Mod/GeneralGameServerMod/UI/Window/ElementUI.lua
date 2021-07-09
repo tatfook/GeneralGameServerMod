@@ -265,12 +265,17 @@ function ElementUI:RenderBackground(painter)
     local background, backgroundColor = self:GetBackground(), self:GetBackgroundColor();
     local x, y, w, h = self:GetGeometry();
     local painterBackgroundColor = backgroundColor or (background and "#ffffffff" or "#ffffff00");
-    local borderRadius = self:GetStyle()["border-radius"];
+    local borderRadius = self:GetStyle()["border-radius"] or 0;
     painter:SetPen(painterBackgroundColor);
-    if (background or not borderRadius) then
-        -- if (backgroundColor) then painter:DrawRect(x, y, w, h) end
+    if (background) then
         painter:DrawRectTexture(x, y, w, h, background);
-    else 
+        if (borderRadius > 0) then
+            painter:DrawRectTexture(x, y, borderRadius, borderRadius, "Texture/Aries/Creator/keepwork/ggs/ui/hollow_circle_256x256_32bits.png#0 0 128 128"); -- 左上
+            painter:DrawRectTexture(x + w - borderRadius, y, borderRadius, borderRadius, "Texture/Aries/Creator/keepwork/ggs/ui/hollow_circle_256x256_32bits.png#128 0 128 128"); -- 右上
+            painter:DrawRectTexture(x, y + h - borderRadius, borderRadius, borderRadius, "Texture/Aries/Creator/keepwork/ggs/ui/hollow_circle_256x256_32bits.png#0 128 128 128"); -- 左下
+            painter:DrawRectTexture(x + w - borderRadius, y + h - borderRadius, borderRadius, borderRadius, "Texture/Aries/Creator/keepwork/ggs/ui/hollow_circle_256x256_32bits.png#128 128 128 128"); -- 右下
+        end
+    elseif (borderRadius > 0) then 
         painter:DrawRect(x + borderRadius, y + borderRadius, w - 2 * borderRadius, h - 2 * borderRadius);
         painter:DrawRect(x + borderRadius, y, w - 2 * borderRadius, borderRadius);                          -- 上
         painter:DrawRect(x + w - borderRadius, y + borderRadius, borderRadius, h - 2 * borderRadius);       -- 右
@@ -281,6 +286,8 @@ function ElementUI:RenderBackground(painter)
         painter:DrawCircle(x + borderRadius, -y -h + borderRadius, 0, borderRadius, "z", true, nil, math.pi, math.pi * 3 / 2);
         painter:DrawCircle(x + w - borderRadius, -y -h + borderRadius, 0, borderRadius, "z", true, nil, math.pi * 3 / 2, math.pi * 2);
         painter:Flush();
+    else 
+        painter:DrawRect(x, y, w, h);
     end
 end
 

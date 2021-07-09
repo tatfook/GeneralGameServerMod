@@ -200,8 +200,8 @@ end
 -- 创建原生窗口
 function Window:Create3DNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
-    local windoX, windowY, windowWidth, windowHeight = self:Init3DWindowPosition();
-    local native_window = ParaUI.CreateUIObject("button", self:GetWindowId(), "_lt", windoX, windowY, windowWidth, windowHeight);
+    local windowX, windowY, windowWidth, windowHeight = self:Init3DWindowPosition();
+    local native_window = ParaUI.CreateUIObject("button", self:GetWindowId(), "_lt", windowX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);              
     native_window.enabled = false;
     native_window.visible = false;
@@ -230,7 +230,7 @@ function Window:InitWindowPosition()
     self.fixedRootScreenWidth, self.fixedRootScreenHeight = self.fixedRootScreenWidth or params.fixedRootScreenWidth, self.fixedRootScreenHeight or params.fixedRootScreenHeight;
     if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then screenX, screenY, screenWidth, screenHeight = 0, 0, self.fixedRootScreenWidth, self.fixedRootScreenHeight end
 
-    local windoX, windowY, windowWidth, windowHeight = 0, 0, tonumber(params.width) or params.width or screenWidth, tonumber(params.height) or params.height or screenHeight;
+    local windowX, windowY, windowWidth, windowHeight = 0, 0, tonumber(params.width) or params.width or screenWidth, tonumber(params.height) or params.height or screenHeight;
     local offsetX, offsetY = tonumber(params.x) or params.x or 0, tonumber(params.y) or params.y or 0;
     if (type(windowWidth) == "string" and string.match(windowWidth, "^%d+%%$")) then windowWidth = math.floor(screenWidth * tonumber(string.match(windowWidth, "%d+")) / 100) end
     if (type(windowHeight) == "string" and string.match(windowHeight, "^%d+%%$")) then windowHeight = math.floor(screenHeight * tonumber(string.match(windowHeight, "%d+")) / 100) end
@@ -276,8 +276,8 @@ function Window:InitWindowPosition()
         local scale = math.min(nativeScreenWidth / self.fixedRootScreenWidth, nativeScreenHeight / self.fixedRootScreenHeight);
         local offsetX, offsetY = (nativeScreenWidth - self.fixedRootScreenWidth * scale) / 2, (nativeScreenHeight - self.fixedRootScreenHeight * scale) / 2;
         self.scaleX, self.scaleY = scale, scale;
-        self.screenX = math.max(nativeScreenX + offsetX, 0);
-        self.screenY = math.max(nativeScreenY + offsetY, 0);
+        self.screenX = math.max(nativeScreenX + offsetX + windowX * self.scaleX, 0);
+        self.screenY = math.max(nativeScreenY + offsetY + windowY * self.scaleY, 0);
     elseif ((params.isAutoScale == nil or params.isAutoScale) and (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight)) then
         local scale = math.min(self.rootScreenWidth / self.minRootScreenWidth, self.rootScreenHeight / self.minRootScreenHeight);
         self.scaleX, self.scaleY = scale, scale;
@@ -299,9 +299,9 @@ end
 function Window:CreateNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
     -- 创建窗口
-    local windoX, windowY, windowWidth, windowHeight = self:InitWindowPosition();
-    local native_window = ParaUI.CreateUIObject("container", self:GetWindowId(), "_lt", windoX, windowY, windowWidth * math.max(1, self.scaleX), windowHeight * math.max(1, self.scaleY));
-    -- WindowDebug.Format("CreateNativeWindow windoX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", windoX, windowY, windowWidth, windowHeight);
+    local windowX, windowY, windowWidth, windowHeight = self:InitWindowPosition();
+    local native_window = ParaUI.CreateUIObject("container", self:GetWindowId(), "_lt", windowX, windowY, windowWidth * math.max(1, self.scaleX), windowHeight * math.max(1, self.scaleY));
+    -- WindowDebug.Format("CreateNativeWindow windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", windowX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
     native_window:SetField("InputMethodEnabled", true);
@@ -465,11 +465,6 @@ function Window:HandleMouseEvent(event)
     local isCanSimulateEvent = self:IsCanSimulateEvent();
     local eventType = event:GetType();
     local captureFuncName, bubbleFuncName = self:GetEventTypeFuncName(event);
-
-    if (eventType == "mousePressEvent") then
-        print(self:ScreenPointToWindowPoint(event.x, event.y));
-        print(event.x, event.y)
-    end
 
     -- 优先捕获鼠标元素
     local captureElement = self:GetMouseCapture();

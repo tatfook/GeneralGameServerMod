@@ -301,3 +301,17 @@ function Page.ShowSubTitlePage(G, params)
     SubTitlePage:Show(params);
     return SubTitlePage; 
 end
+
+local ShenTongBeiPage = Vue:new();
+function Page.ShowShenTongBeiPage(G, params)
+    params = params or {};
+    params.url = "%ui%/App/RedSummerCamp/ShenTongBei.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
+    params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
+    params.fixedRootScreenHeight = params.fixedRootScreenHeight or 720;
+    ShenTongBeiPage:Show(params);
+    return ShenTongBeiPage;
+end
