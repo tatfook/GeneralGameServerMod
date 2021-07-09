@@ -15,6 +15,8 @@ local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase
 PlayerManager:Property("World");            -- 玩家管理器所属世界
 PlayerManager:Property("MainPlayer");       -- 主玩家
 PlayerManager:Property("AreaSize");         -- 玩家可视区域
+PlayerManager:Property("UserVisible", true, "IsUserVisible");                        -- 玩家是否可见
+PlayerManager:Property("OfflineUserVisible", true, "IsOfflineUserVisible");          -- 离线玩家是否可见   
 
 function PlayerManager:ctor()
     self.players = {};   -- 玩家集
@@ -42,6 +44,7 @@ function PlayerManager:AddPlayer(entityPlayer)
     --     entityPlayer:Destroy();
     -- end
     self.players[username] = entityPlayer;
+    entityPlayer:SetVisible(self:IsUserVisible());
 end
 
 function PlayerManager:RemovePlayer(entityPlayer)
@@ -94,6 +97,7 @@ end
 
 -- 隐藏离线用户
 function PlayerManager:HideOfflinePlayers()
+    self:SetOfflineUserVisible(false);
     for _, player in pairs(self.players) do 
         if (not player:IsOnline()) then
             player:SetVisible(false);
@@ -103,6 +107,7 @@ end
 
 -- 显示离线用户
 function PlayerManager:ShowOfflinePlayers()
+    self:SetOfflineUserVisible(true);
     for _, player in pairs(self.players) do 
         player:SetVisible(true);
     end
@@ -110,6 +115,7 @@ end
 
 -- 隐藏离线用户
 function PlayerManager:HideAllPlayers()
+    self:SetUserVisible(false);
     for _, player in pairs(self.players) do 
         player:SetVisible(false);
     end
@@ -120,4 +126,5 @@ function PlayerManager:ShowAllPlayers()
     for _, player in pairs(self.players) do 
         player:SetVisible(true);
     end
+    self:SetUserVisible(true);
 end

@@ -37,10 +37,14 @@ function VirtualConnection:GetKey(opts)
     return string.format("%s_%s_%s_%s_%s", nid, localThreadName, localNeuronFile, remoteThreadName, remoteNeuronFile);
 end
 
+function VirtualConnection:New(msg)
+    return self:new():Init(msg);
+end
+
 function VirtualConnection:GetVirtualConnection(msg)
     local key = self:GetKey(msg);
     if (__all_virtual_connection__[key]) then return __all_virtual_connection__[key] end
-    local virtual_connection = self:new():Init(msg);
+    local virtual_connection = self:New(msg);
     __all_virtual_connection__[key] = virtual_connection;
     return virtual_connection;
 end
@@ -83,11 +87,15 @@ function VirtualConnection:Init(opts)
 end
 
 function VirtualConnection:OnConnected(...)
-    self.__event_emitter__:RegisterEventCallBack("__connect__", ...);
+    self.__event_emitter__:RegisterEventCallBack("__connected__", ...);
 end
 
 function VirtualConnection:OffConnected(...)
-    self.__event_emitter__:RemoveEventCallBack("__connect__", ...);
+    self.__event_emitter__:RemoveEventCallBack("__connected__", ...);
+end
+
+function VirtualConnection:HandleConnected()
+    self.__event_emitter__:TriggerEventCallBack("__connected__");
 end
 
 function VirtualConnection:Connect(callback)
@@ -95,26 +103,32 @@ function VirtualConnection:Connect(callback)
     if (self:IsConnected()) then return type(callback) == "function" and callback() end 
 
     -- 如果正在连接则直接跳出
-    if (self:IsConnecting()) then return self.__event_emitter__:RegisterOnceEventCallBack("__connect__", callback) end
+    if (self:IsConnecting()) then return self.__event_emitter__:RegisterOnceEventCallBack("__connected__", callback) end
     
     -- 标记正在连接
     self:SetConnecting(true);
 
-    self:GetConnection():Send({
+    -- 发送消息
+    self:SendMsg({
+        __cmd__ = "__connect__",
         __remote_thread_name__ = self:GetLocalThreadName(),
         __remote_neuron_file__ = self:GetLocalNeuronFile(),
-    }, self:GetRemoteThreadName(), self:GetRemoteNeuronFile(), function()
+    }, function()
         self:SetConnected(true);
         self:SetConnecting(false);
-        -- 触发连接回调
-        self.__event_emitter__:TriggerEventCallBack("__connect__");
+        self:HandleConnected();
         return type(callback) == "function" and callback();
     end);
 end
 
-function VirtualConnection:Send(msg, callback)
+-- 发送消息无视是否连接
+function VirtualConnection:SendMsg(msg, callback)
+    self:GetConnection():Send(, self:GetRemoteThreadName(), self:GetRemoteNeuronFile(), callback);
+end
+
+function VirtualConnection:Send(data, callback)
     if (not self:IsConnected()) then return end 
-    self:GetConnection():Send(msg, self:GetRemoteThreadName(), self:GetRemoteNeuronFile(), callback);
+    self:SendMsg({__data__ = data, __cmd__ = "__msg__"}, callback);
 end
 
 function VirtualConnection:OnDisconnected(...)
@@ -146,11 +160,27 @@ function VirtualConnection:CloseConnection()
     self:GetConnection():Close();
 end
 
+function VirtualConnection:Request(action, data, callback)
+    -- local request_action = "__request_" .. action .."__";
+    -- self:SendMsg({
+    --     __cmd__ = "__rpc__",
+    -- })
+end
+
+function VirtualConnection:Response(action, callback)
+end
+
 function VirtualConnection:OnActivate(msg)
     msg.__nid__ = msg and (msg.nid or msg.tid);
     local virtual_connection = self:GetVirtualConnection(msg);
-    virtual_connection:SetConnected(true);
-    virtual_connection:HandleMsg(msg);
+    local __cmd__ = msg and msg.__cmd__;
+
+    if (__cmd__ == "__connect__") then
+        virtual_connection:SetConnected(true);
+        virtual_connection:HandleConnected();
+    else
+        virtual_connection:HandleMsg(msg);
+    end
 end
 
 NPL.this(function()

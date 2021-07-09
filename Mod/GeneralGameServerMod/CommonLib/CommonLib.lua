@@ -109,14 +109,20 @@ end
 
 -- 获取文件内容
 function CommonLib.GetFileText(filename)
-    local file = ParaIO.open(filename , "r");
+    local file = ParaIO.open(filename , "rb");
 	if(file:IsValid()) then
-		local text = file:GetText();
+		local text = file:GetText(0, -1);
 		file:close();
 		return text;
+    else
+        file:close();
 	end	
 end
 
+-- 获取文件MD5
+function CommonLib.GetFileMD5(filename)
+    return ParaMisc.md5(CommonLib.GetFileText(filename) or "");
+end
 
 -- 获取世界路径
 function CommonLib.GetWorldDirectory()

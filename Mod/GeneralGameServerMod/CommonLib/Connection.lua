@@ -59,10 +59,12 @@ function Connection:Close(reason)
 	self:OnClose();
 end
 
+-- 获取地址
 function Connection:GetRemoteAddress(threadname, neuronfile)
 	return string.format("(%s)%s:%s", threadname or __main_thread_name__, self:GetNid(), neuronfile or __neuron_file__);
 end
 
+-- 发送消息
 function Connection:Send(msg, threadname, neuronfile, callback)
 	if (not self:GetNid()) then return end
 	local address = self:GetRemoteAddress(threadname, neuronfile);
@@ -88,15 +90,6 @@ function Connection:Send(msg, threadname, neuronfile, callback)
 	end
 end
 
--- 接受消息
-function Connection:OnReceive(callback)
-	self.__event_emitter__:RegisterEventCallBack("__msg__", callback);
-end
-
-function Connection:HandleReceive(msg)
-	self.__event_emitter__:TriggerEventCallBack("__msg__", msg);
-end
-
 -- 连接断开
 function Connection:OnDisconnected(...)
 	self.__event_emitter__:RegisterEventCallBack("__disconnected__", ...)
@@ -111,20 +104,29 @@ function Connection:HandleDisconnected(msg)
 	self.__event_emitter__:TriggerEventCallBack("__disconnected__", msg);
 end
 
+-- 接受消息
+function Connection:OnMsg(...)
+	self.__event_emitter__:RegisterEventCallBack("__msg__", ...);
+end
+
+function Connection:OffMsg(...)
+	self.__event_emitter__:RemoveEventCallBack("__msg__", ...);
+end
+
+-- 处理消息
+function Connection:HandleMsg(msg)
+	self.__event_emitter__:TriggerEventCallBack("__msg__", msg);
+end
+
 -- 获取连接
 function Connection:GetConnectionByNid(nid)
 	__all_connections__[nid] = __all_connections__[nid] or Connection:new():Init(nid);
 	return __all_connections__[nid];
 end
 
--- 处理消息
-function Connection:OnMsg(msg)
-	self:GetConnectionByNid(msg.nid or msg.tid):HandleReceive(msg);
-end
-
 function Connection:OnActivate(msg)
 	local nid = msg and (msg.nid or msg.tid);
-	if (nid) then return self:OnMsg(msg) end
+	if (nid) then return self:GetConnectionByNid(nid):HandleMsg(msg) end
 
 	local __cmd__ = msg and msg.__cmd__;
 	if (__cmd__ == "__connected__") then

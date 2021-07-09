@@ -9,15 +9,17 @@ local DiffWorld = NPL.load("Mod/GeneralGameServerMod/Command/DiffWorld.lua");
 ------------------------------------------------------------
 ]]
 
+NPL.load("(gl)script/apps/Aries/Creator/Game/Commands/CommandManager.lua");
+local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
+
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
+local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua", IsDevEnv);
 
 local KeepworkServiceProject = NPL.load('(gl)Mod/WorldShare/service/KeepworkService/Project.lua')
 local GitService = NPL.load('(gl)Mod/WorldShare/service/GitService.lua')
 local LocalService = NPL.load('(gl)Mod/WorldShare/service/LocalService.lua')
 local lfs = commonlib.Files.GetLuaFileSystem();
 
-CommonLib.AddPublicFile("Mod/GeneralGameServerMod/Command/DiffWorld.lua");
 
 local function DownloadWorldById(pid, callback)
     KeepworkServiceProject:GetProject(pid, function(data, err)
@@ -38,15 +40,33 @@ local function DownloadWorldById(pid, callback)
 end
 
 local DiffWorld = commonlib.inherit(VirtualConnection, NPL.export());
+DiffWorld:Property("Name", "DiffWorld");
+DiffWorld:Property("RemoteNeuronFile", "Mod/GeneralGameServerMod/Command/DiffWorld.lua");       -- 对端处理文件
+DiffWorld:Property("LocalNeuronFile", "Mod/GeneralGameServerMod/Command/DiffWorld.lua");        -- 本地处理文件
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/Command/DiffWorld.lua");
+
 local RegionSize = 512;
 
 function DiffWorld:ctor()
     self.__regions__ = {};
 end
 
+function DiffWorld:New()
+    return self;
+end
+
 function DiffWorld:GetRegion(key)
     self.__regions__[key] = self.__regions__[key] or {};
     return self.__regions__[key];
+end
+
+function DiffWorld:SyncLoadWorld()
+    CommandManager:RunCommand("/property AsyncChunkMode false");
+    CommandManager:RunCommand("/property UseAsyncLoadWorld false");
+end
+
+function DiffWorld:LoadRegion(x, y, z)
+    ParaBlockWorld.LoadRegion(GameLogic.GetBlockWorld(), x, y or 4, z);
 end
 
 -- 获取所有区域信息
@@ -61,7 +81,7 @@ function DiffWorld:LoadAllRegionInfo()
             region.key = key;
             region.region_x, region.region_z = tonumber(region_x), tonumber(region_z);
             region.block_x, region.block_z = region.region_x * RegionSize, region.region_z * RegionSize;
-            region.filepath = CommonLib.ToCanonicalFilePath(directory .. "/" .. filename);
+            region.rawpath = CommonLib.ToCanonicalFilePath(directory .. "/" .. filename);
         elseif (string.match(filename, "%d+_%d+%.region%.xml")) then 
             local key = string.match(filename, "(%d+_%d+)%.region%.xml");
             table.insert(entities, {key = key, filename = CommonLib.ToCanonicalFilePath(directory .. "/" .. filename)});
@@ -71,25 +91,60 @@ function DiffWorld:LoadAllRegionInfo()
     for _, entity in ipairs(entities) do
         self:GetRegion(entity.key).xmlpath = entity.filename;
     end
+
+    for _, region in pairs(self.__regions__) do
+        region.rawmd5 = CommonLib.GetFileMD5(region.rawpath);
+        region.xmlmd5 = CommonLib.GetFileMD5(region.xmlpath);
+    end
+
+    return self.__regions__;
 end
 
-function DiffWorld:StartServer(ip, port)
-    if (CommonLib.IsServerStarted()) then return end
+function DiffWorld:Start(ip, port)
+    ip = ip or "0.0.0.0";
+    port = port or "9000";
 
-	NPL.StartNetServer(ip or "0.0.0.0", tostring(port or "9000"));
+    if (not CommonLib.IsServerStarted()) then 
+        NPL.StartNetServer(ip or "0.0.0.0", tostring(port or "9000"));
+    end
+
+    -- DownloadWorldById(GameLogic.options:GetProjectId(), function(world_directory)
+    --     if (not world_directory) then return print("worldpath not exist") end
+    --     CommandManager:RunCommand(string.format("/open paracraft://cmd/loadworld %s -port=%s", world_directory, port));
+    -- end);
 end
 
 function DiffWorld:Connect(ip, port)
+    ip = ip or "127.0.0.1";
+    port = port or "9000";
+    self:SetNid(CommonLib.AddNPLRuntimeAddress(ip, port));
+
+    DiffWorld._super.Connect(self, function()
+        
+    end);
 end
 
-print(table, table.insert)
-DiffWorld:InitSingleton();
+function DiffWorld:request_start_diffworld()
+    self:Send({
+        __cmd__ = "__request_sync_world__";
+    }, function()
+    end);
+end
 
-DiffWorld:LoadAllRegionInfo();
--- DownloadWorldById(71542, function(world_directory)
---     print(world_directory);
--- end)
+function DiffWorld:handle_response_start_diffworld()
+end
 
+function DiffWorld:HandleMsg(msg)
+    local __handler__ = "handle_" .. (msg.__handler__ or "");
+    if (type(self[__handler__]) ~= "function") then return end 
+    (self[__handler__])(self, msg);
+end
+
+DiffWorld:InitSingleton():LoadAllRegionInfo();
+
+NPL.this(function()
+    DiffWorld:OnActivate(msg);
+end);
 
 -- diff tool
 
