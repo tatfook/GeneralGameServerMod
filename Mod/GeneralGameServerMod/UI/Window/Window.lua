@@ -61,13 +61,12 @@ function Window:ctor()
     -- 缩放
     self.scaleX, self.scaleY = 1, 1;
 
-    -- 最小根屏幕宽高
+    -- 最小根屏幕宽高  用于window窗口太小情况
     self.minRootScreenWidth, self.minRootScreenHeight = nil, nil;
     self.defaultMinRootScreenWidth, self.defaultMinRootScreenHeight = 1280, 720;
 
-    -- 最大屏幕宽高
+    -- 设计宽高 用于全屏模式
     self.fixedRootScreenWidth, self.fixedRootScreenHeight = nil, nil;
-    -- self.fixedScaleX, self.fixedScaleY = 1, 1;
     
     self:SetName("Window");
     self:SetTagName("Window");
@@ -273,6 +272,7 @@ function Window:InitWindowPosition()
     self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = screenX, screenY, screenWidth, screenHeight;
 
     if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then
+        -- 取最大值
         local scale = math.min(nativeScreenWidth / self.fixedRootScreenWidth, nativeScreenHeight / self.fixedRootScreenHeight);
         local offsetX, offsetY = (nativeScreenWidth - self.fixedRootScreenWidth * scale) / 2, (nativeScreenHeight - self.fixedRootScreenHeight * scale) / 2;
         self.scaleX, self.scaleY = scale, scale;

@@ -18,6 +18,7 @@ local MacrosExtend = NPL.load("Mod/GeneralGameServerMod/UI/Page/Macro/MacrosExte
 local Vue = NPL.load("./Vue/Vue.lua", IsDevEnv);
 local Page = NPL.export();
 local pages = {};
+local __auto_close_pages__ = {};
 local _3d_pages = {};
 local inited = false;
 local windows = {};
@@ -34,6 +35,10 @@ end
 -- 世界退出
 local function OnWorldUnloaded()
     for _, page in pairs(_3d_pages) do 
+        page:CloseWindow();
+    end
+
+    for _, page in ipairs(__auto_close_pages__) do
         page:CloseWindow();
     end
 end
@@ -304,6 +309,8 @@ end
 
 local ShenTongBeiPage = Vue:new();
 function Page.ShowShenTongBeiPage(G, params)
+    __auto_close_pages__[ShenTongBeiPage] = ShenTongBeiPage;
+
     params = params or {};
     params.url = "%ui%/App/RedSummerCamp/ShenTongBei.html";
     params.draggable = false;
@@ -316,14 +323,23 @@ function Page.ShowShenTongBeiPage(G, params)
     return ShenTongBeiPage;
 end
 
+local ShenTongBeiZiZhiPage = Vue:new();
+function Page.ShowShenTongBeiZiZhiPage()
+    __auto_close_pages__[ShenTongBeiZiZhiPage] = ShenTongBeiZiZhiPage;
+    params = params or {};
+    params.url = "%ui%/App/RedSummerCamp/Qualification.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
+    params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
+    params.fixedRootScreenHeight = params.fixedRootScreenHeight or 720;
+    ShenTongBeiPage:Show(params);
+end
 
 local BigImagePage = Vue:new();
 function Page.ShowBigImagePage(G, params)
-    -- local page = Page.ShowVueTestPage({
-    --     url = "Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/all_zz.png",
-    --     w = 1024,
-    --     h = 6416,
-    -- }, {url = "%ui%/Page/Common/BigImage.html", width = "80%", height = "80%"});
+    __auto_close_pages__[BigImagePage] = BigImagePage;
     params = params or {};
     params.url = "%ui%/Page/Common/BigImage.html";
     params.draggable = false;

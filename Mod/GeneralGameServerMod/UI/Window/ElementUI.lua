@@ -196,6 +196,7 @@ function ElementUI:OnRender(painter)
     self:RenderBorder(painter);
     self:RenderContent(painter); -- 绘制元素内容
     self:EndTransform(painter);
+    -- painter:Flush();
 end
 
 -- 开始转换

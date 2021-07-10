@@ -62,6 +62,7 @@ areaIds = {
     all = 1,
     guangdong = 2139,
     hunan = 2002,
+    hubei = 1886,
     jiangxi = 1447,
     zhejiang = 1014,
     guangxi = 2279,
@@ -79,7 +80,7 @@ qrcode = "Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/qrcode/all.pn
 
 function ClickArea(area_name)
     area = area_name
-    qrcode = string.format("Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/qrcode/%s.png", area);
+    qrcode = string.format("Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/qrcode/%s_32bits.png#0 0 396 396", area);
 end
 
 local regionId = (KeepWorkItemManager.GetProfile().school or {}).regionId or 1;

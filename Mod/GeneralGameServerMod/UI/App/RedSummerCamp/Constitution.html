@@ -3,105 +3,42 @@
         <div class="title">＂神通杯＂ 第一届全国学校联盟中小学计算机编程大赛赛事章程</div>
         <div class="close btn" onclick=CloseWindow></div>
     </div>
-    <div style="font-size: 18px; color: #181818; width: 800px; height: 400px; margin-left: 40px; margin-top: 40px; overflow: auto; white-space: pre;">
-        <div style="width: 800px; height: 6000px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/all_zz.jpg);"></div>
+    <div v-if="region == 'hubei'" style="position: absolute; top: 80px; left: 20px; right: 28px; bottom: 20px; background-color: #ffffff; overflow: auto;">
+        <div style="height: 60px; width: 100%;"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/hubei_01_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/hubei_02_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/hubei_03_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/hubei_04_32bits.png);"></div>
+    </div>
+    <div v-if="region == 'hunan'" style="position: absolute; top: 80px; left: 20px; right: 28px; bottom: 20px; background-color: #ffffff; overflow: auto;">
+        <div style="height: 60px; width: 100%;"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/hunan_01_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/hunan_02_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/hunan_03_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/hunan_04_32bits.png);"></div>
+    </div>
+    <div v-if="region == 'all'" style="position: absolute; top: 80px; left: 20px; right: 28px; bottom: 20px; background-color: #ffffff; overflow: auto;">
+        <div style="height: 60px; width: 100%;"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/all_01_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/all_02_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/all_03_32bits.png);"></div>
+        <div style="margin-left: 144px; width: 512px; height: 1024px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/zc/all_04_32bits.png);"></div>
     </div>
 </template>
 
 <script type="text/lua">
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
+local regionId = (KeepWorkItemManager.GetProfile().school or {}).regionId or 1;
 
-text = [[
-指导单位：教育部体育卫生与艺术教育司    
-主办单位：全国学校体育联盟机器人工作委员会、神州通信集团
-
-
-“神通杯第一届全国学校联盟中小学计算机编程大赛”是由教育部体育卫生与艺术教育司指导，全国学校体育联盟机器人工作委员会联合神州通信集团共同主办的计算机编程大赛，比赛面向全国中小学生公益性开展，以立德树人为根本任务，以社会主义核心价值观为引领，以服务学生全面发展、增强综合素质为目标，坚持健康第一的教育理念，旨在进一步普及计算机编程素质教育教学活动，检验计算机编程素质教育成果，推动青少年文化学习和体育竞赛协调发展，培养德智体美劳全面发展的社会主义建设者和接班人。
-
-一、组织单位
-指导单位：
-教育部体育卫生与艺术教育司
-主办单位：
-全国学校体育联盟机器人工作委员会
-神州通信集团
-
-
-二、比赛对象：
-全国中小学在校学生
-
-三、比赛内容：
-
-组织中小学生开展编程理论知识学习和编程作品创作实操技能学习，积极开展人工智能编程兴趣小组活动，鼓励中小学生通过学习编程，利用掌握的编程创作技能创作属于自己的编程作品，培养学生人工智能编程学习兴趣和创新精神，提升学生的计算思维和创新解决问题的能力。
-
-比赛项目：
-小学组：图形化编程； 
-中学组：Python 编程；
-
-比赛形式：理论知识（理论答题）+技能成果（作品创作）
-
-理论答题知识范围： 
-小学组：《图形化编程入门》、《图形化编程与智能硬件》、 《图形化编程进阶》、《全国学校联盟计算机编程知识库》相关知识，理论答题分值为40分；
-
-中学组：《Python 编程入门》、《Python 编程进阶-智能应用开发》、《全国学校联盟计算机编程知识库》相关知识，理论答题分值为30分。
-
-作品创作：
-
-小学组和中学组参赛学生都围绕“编程与学科学习”、“人工智能创作”、“编程与未来生活”三大主题，任选其中一个主题创作作品参赛”，小学组作品创作分值为60分，中学组为70分。
-
-“编程与学科学习”主题：参赛选手创作的编程作品要与语文、数学、英语等学科相结合， 
-例如随意输入三角形的三条边判断是否能够构成三角形，古诗词展示等；
-
-“人工智能创作”主题：参赛选手创作的互动游戏、软件工具等编程作品要融入人工智能相关的功能，例如使用手势控制飞机大战，语音控制动漫角色移动等;
-
-“编程与未来生活”主题：参赛选手创作未来生活中需要使用的智能工具编程作品，例如智能语音助手、智能人脸识别工具等。
-
-四、比赛荣誉奖励：
-
-凡在各级比赛中获得一、二、三等奖的参赛学生，可分别获得地市州级英才证书、省区市级英才证书、国家级英才证书；
-
-可获得由全国学校体育联盟机器人工作委员会交流中心提供中国国际青少年机器人交流活动公费访学资格。
-
-
-省区市级赛事、地市州级比赛：
-
-一等奖： 5%（参赛总人数）
-二等奖： 10%（参赛总人数）
-三等奖： 15%（参赛总人数）
-
- 
-全国总决赛：
-
-一等奖：10人（小学组5人，中学组5人）
-二等奖：100人（小学组50人，中学组50人）
-三等奖：200人（小学组100人，中学组100人）
-
-
-五、参与方式与进度安排
-
-（一）报名
-预约报名：2021年7月12日—2021年8月30日，比赛正式报名时间：2021 年 9 月 1 日至 11 月 15 日 。
-
-（二）比赛时间安排
-地市州级赛事：2021 年 12 月 15 日至 2022 年 5 月 15 日 
-省区市级赛事：2022年6 月15 日至7 月15 日
-全国总决赛：2022 年 8 月中下旬
-
-（三）比赛学习
-
-2021年7月12日—2021年12月12日，登录帕拉卡（Paracraft）平台进行比赛理论知识课程学习和编程作品创作技能提升学习；
-
-（四）作品提交
-2021年7月20日—2021年12月10日，帕拉卡平台学生均可以创作作品提交到神通杯”第一届全国学校联盟中小学计算机编程大赛帕拉卡赛事专区，优秀作品将直接推荐参加“神通杯”省区市级赛事和全国总决赛。
-
-（五）评审展示与交流
-
-7月中旬至12月，帕拉卡平台通过对参加暑期夏令营和赛事集训营学生的优秀作品进行公开展示，获奖的优秀作品将展示在帕拉卡大赛专区，12月地市州正式比赛开始后将推荐优秀作品参加“神通杯”第一届全国学校联盟中小学计算机编程大赛省区市级赛事和全国总决赛。
-
-六、联系指导
-
-联系人：帕拉卡助教老师（微信：Paracraft007）
-联系电话：0755-86233932 、19926452344
-
-]]
+region = "all";
+if (regionId == 1886) then
+    region = "hubei"
+elseif (regionId == 2002) then
+    region = "hunan"
+else
+    region = "all"
+end
 </script>
 
 <style scoped=true>

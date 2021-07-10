@@ -25,15 +25,19 @@
                     <div style="margin-top: 16px; display: flex; justify-content: space-between;">
                         <div onclick=ClickCompetition class="image">
                             <div style="width: 98px; height: 98px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/competition_32bits.png#0 0 99 98);"></div>
+                            <div style="position: absolute; bottom: 2px; left: 2px; right: 2px; height: 24px; line-height: 24px; text-align: center; color: #ffffff; background-color: #00000090;">集训营报名</div>
                         </div>
                         <div onclick=ClickConstituion class="image">
                             <div style="width: 98px; height: 98px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/constitution_32bits.png#0 0 99 98);"></div>
+                            <div style="position: absolute; bottom: 2px; left: 2px; right: 2px; height: 24px; line-height: 24px; text-align: center; color: #ffffff; background-color: #00000090;">赛事章程</div>
                         </div>
                         <div onclick=ClickCourse class="image">
                             <div style="width: 98px; height: 98px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/course_32bits.png#0 0 99 98);"></div>
+                            <div style="position: absolute; bottom: 2px; left: 2px; right: 2px; height: 24px; line-height: 24px; text-align: center; color: #ffffff; background-color: #00000090;">课程安排</div>
                         </div>
                         <div onclick=ClickQualification class="image">
                             <div style="width: 98px; height: 98px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/qualification_32bits.png#0 0 99 98);"></div>
+                            <div style="position: absolute; bottom: 2px; left: 2px; right: 2px; height: 24px; line-height: 24px; text-align: center; color: #ffffff; background-color: #00000090;">赛事资质</div>
                         </div>
                     </div>
                 </div>
@@ -74,13 +78,12 @@ function ClickCompetition()
 end
 
 function ClickConstituion()
-    Page.ShowBigImagePage({w = 1024, h = 6416, url = "Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/all_zz_32bits.png",})
-    <!-- ShowWindow(nil, {
+    ShowWindow(nil, {
         draggable = false,
         zorder = 10,
         fixedRootScreenWidth = 1280, fixedRootScreenHeight = 720,
         url = "%ui%/App/RedSummerCamp/Constitution.html", width = 1280, height = 720
-    }); -->
+    });
 end
 
 function ClickCourse()
@@ -97,7 +100,7 @@ function ClickQualification()
         draggable = false,
         zorder = 10,
         fixedRootScreenWidth = 1280, fixedRootScreenHeight = 720,
-        <!-- url = "%ui%/App/RedSummerCamp/Competition.html", width = 1280, height = 720 -->
+        url = "%ui%/App/RedSummerCamp/Qualification.html", width = 1280, height = 720
     });
 end
 
