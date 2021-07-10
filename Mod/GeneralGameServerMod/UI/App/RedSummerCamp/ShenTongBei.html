@@ -57,8 +57,11 @@
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
 function ShowVip()
-    local VipToolNew = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/VipToolTip/VipToolNew.lua")
-    VipToolNew.Show("red_summer_camp_main")
+    GameLogic.IsVip("ShenTongBei", true, function(result)
+		if result then
+			--Refresh();
+		end
+	end);
 end 
 
 function ClickParentGuide()

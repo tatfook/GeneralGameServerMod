@@ -56,15 +56,14 @@
 </template>
 
 <script type="text/lua">
-local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
-local schoolRegionId = (KeepWorkItemManager.GetProfile().school or {}).regionId or 0;
-local userRegionId = (KeepWorkItemManager.GetProfile().region or {}).stateId or 0
+local Keepwork = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keepwork.lua");
+
 areaIds = {
     all = 1,
     guangdong = 2139,
     hunan = 2002,
     jiangxi = 1447,
-    zhejiang = 1014,
+    zhejiang = 1131,
     guangxi = 2279,
 }
 areas = {
@@ -84,13 +83,16 @@ function ClickArea(area_name)
 end
 
 local region = "all";
-for key, val in pairs(areaIds) do 
-    if (val == userRegionId) then
-        region = key;
-        break;
+
+Keepwork:GetSchoolRegionId(function(schoolRegionId)
+    for key, val in pairs(areaIds) do 
+        if (val == schoolRegionId) then
+            region = key;
+            break;
+        end
     end
-end
-ClickArea(region);
+    ClickArea(region);
+end)
 </script>
 
 <style scoped=true>

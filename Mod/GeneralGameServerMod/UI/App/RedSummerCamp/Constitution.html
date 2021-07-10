@@ -27,18 +27,19 @@
 </template>
 
 <script type="text/lua">
-local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
-local schoolRegionId = (KeepWorkItemManager.GetProfile().school or {}).regionId or 0;
-local userRegionId = (KeepWorkItemManager.GetProfile().region or {}).stateId or 0
+local Keepwork = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keepwork.lua");
 
 region = "all";
-if (userRegionId == 1886) then
-    region = "hubei"
-elseif (userRegionId == 2002) then
-    region = "hunan"
-else
-    region = "all"
-end
+
+Keepwork:GetSchoolRegionId(function(schoolRegionId)
+    if (schoolRegionId == 1886) then
+        region = "hubei"
+    elseif (schoolRegionId == 2002) then
+        region = "hunan"
+    else
+        region = "all"
+    end
+end)
 </script>
 
 <style scoped=true>

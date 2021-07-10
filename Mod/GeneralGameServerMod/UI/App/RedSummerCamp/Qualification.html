@@ -50,8 +50,11 @@
 big_image_index = 0;
 
 function ShowVip()
-    local VipToolNew = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/VipToolTip/VipToolNew.lua")
-    VipToolNew.Show("red_summer_camp_main")
+    GameLogic.IsVip("ShenTongBei", true, function(result)
+        if result then
+            --Refresh();
+    end
+    end);
 end 
 
 function GetImageStyle()
