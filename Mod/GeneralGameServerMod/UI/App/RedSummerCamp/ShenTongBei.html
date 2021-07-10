@@ -101,8 +101,7 @@ function ClickQualification()
 end
 
 function ClickOpenWorld()
-    CloseWindow();
-
+    <!-- CloseWindow(); -->
     local worldId = (IsRlsEnv or IsDevEnv) and 20683 or 72945;
     GameLogic.RunCommand(string.format("/loadworld %d", worldId));    
 end

@@ -95,31 +95,47 @@ function DiffWorld:LoadAllRegionInfo()
     return self.__regions__;
 end
 
-function DiffWorld:Start(ip, port)
+function DiffWorld:Register(...)
+    __rpc__:Register(...);
+end
+
+function DiffWorld:Call(...)
+    __rpc__:Call(...);
+end
+
+function DiffWorld:StartServer(ip, port)
     CommonLib.StartNetServer(ip, port);
 end
 
 
-function DiffWorld:StartDiffWorld()
-    -- for _, region in pairs(self.__regions__) do
-    --     self:Request("DiffRegion", region, function(data)
-    --         echo(data);
-    --     end)
-    -- end
+function DiffWorld:StartClient(ip, port)
+    __rpc__:SetServerIpAndPort(ip, port);
+
+    local key, region = next(self.__regions__);
+    local function UploadRegionInfo()
+        if (not region) then return end 
+        self:Call("UploadRegionInfo", region, function(data)
+            echo(data);
+        end);
+    end
+    UploadRegionInfo();
 end
 
--- DiffWorld:InitSingleton():LoadAllRegionInfo();
-DiffWorld:Start();
 
-__rpc__:Register("RegionInfo", function(data)
-    print("register", data);
+DiffWorld:Register("UploadRegionInfo", function(data)
+    echo(data)
     return "response region info";
 end)
 
-__rpc__:Call("RegionInfo", "request region info", function(data)
-    print("call", data);
-end);
+
+DiffWorld:InitSingleton():LoadAllRegionInfo();
+
 -- diff tool
+
+-- 流程
+-- 1. 用户启动下载当前世界最新版, 启动服务器, 新起新版世界客户端(远程客户端), 加载当前世界所有区域信息
+-- 2. 远程客户端启动后, 加载本脚本, 加载世界所有区域信息, 与本地世界建立RPC通信
+-- 3. 远程世界逐个区域信息上报到本地世界比较
 
 -- 1. 遍历raw文件和entity文件  
 -- 2. 如果raw相同 entity不同, 加载raw(loadregion 512*x + 256 0 512 * z + 256) 只比较entity 
