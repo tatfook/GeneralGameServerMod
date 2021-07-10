@@ -123,7 +123,7 @@ end
 
 -- 发送消息无视是否连接
 function VirtualConnection:SendMsg(msg, callback)
-    self:GetConnection():Send(, self:GetRemoteThreadName(), self:GetRemoteNeuronFile(), callback);
+    self:GetConnection():Send(msg, self:GetRemoteThreadName(), self:GetRemoteNeuronFile(), callback);
 end
 
 function VirtualConnection:Send(data, callback)

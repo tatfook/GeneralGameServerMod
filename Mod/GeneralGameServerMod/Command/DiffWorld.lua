@@ -96,13 +96,7 @@ function DiffWorld:LoadAllRegionInfo()
 end
 
 function DiffWorld:Start(ip, port)
-    ip = ip or "0.0.0.0";
-    port = port or "9000";
-
-    -- DownloadWorldById(GameLogic.options:GetProjectId(), function(world_directory)
-    --     if (not world_directory) then return print("worldpath not exist") end
-    --     CommandManager:RunCommand(string.format("/open paracraft://cmd/loadworld %s -port=%s", world_directory, port));
-    -- end);
+    CommonLib.StartNetServer(ip, port);
 end
 
 
@@ -115,6 +109,7 @@ function DiffWorld:StartDiffWorld()
 end
 
 -- DiffWorld:InitSingleton():LoadAllRegionInfo();
+DiffWorld:Start();
 
 __rpc__:Register("RegionInfo", function(data)
     print("register", data);

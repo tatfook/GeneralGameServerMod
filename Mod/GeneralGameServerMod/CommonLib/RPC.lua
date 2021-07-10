@@ -71,6 +71,7 @@ end);
 local RPC = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 RPC:Property("Nid");
+
 function RPC:ctor()
 end
 
