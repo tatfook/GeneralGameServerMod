@@ -280,8 +280,10 @@ function Window:InitWindowPosition()
 
     if (scale == 1) then
         self.screenX, self.screenY, self.screenWidth, self.screenHeight = windowX, windowY, windowWidth, windowHeight;
-    else
+    elseif (scale > 1) then
         self.screenX, self.screenY, self.screenWidth, self.screenHeight = nativeScreenX, nativeScreenY, nativeScreenWidth, nativeScreenHeight;
+    else 
+        self.screenX, self.screenY, self.screenWidth, self.screenHeight = math.max(windowX, 0) * scale, math.max(windowY, 0) * scale, windowWidth * scale, windowHeight * scale;
     end
 
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, windowWidth, windowHeight;
@@ -301,7 +303,7 @@ function Window:CreateNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
     -- 创建窗口
     local windowX, windowY, windowWidth, windowHeight = self:InitWindowPosition();
-    local native_window = ParaUI.CreateUIObject("container", self:GetWindowId(), "_lt", windowX, windowY, windowWidth * math.max(1, self.scaleX), windowHeight * math.max(1, self.scaleY));
+    local native_window = ParaUI.CreateUIObject("container", self:GetWindowId(), "_lt", windowX, windowY, windowWidth, windowHeight);
     -- WindowDebug.Format("CreateNativeWindow windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s", windowX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);               -- enable owner draw paint event
     native_window:SetField("CanHaveFocus", true);
