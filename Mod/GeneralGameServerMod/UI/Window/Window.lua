@@ -63,11 +63,13 @@ function Window:ctor()
 
     -- 最小根屏幕宽高  用于window窗口太小情况
     self.minRootScreenWidth, self.minRootScreenHeight = nil, nil;
+    -- 默认最小根屏幕宽度
     self.defaultMinRootScreenWidth, self.defaultMinRootScreenHeight = 1280, 720;
-
-    -- 设计宽高 用于全屏模式
+    -- 最大根屏幕宽高 
+    self.maxRootScreenWidth, self.maxRootScreenHeight = nil, nil;
+    -- 设计固定根屏幕宽高, 用于全屏模式, 当于真实根宽高不一致会自动缩放
     self.fixedRootScreenWidth, self.fixedRootScreenHeight = nil, nil;
-    
+
     self:SetName("Window");
     self:SetTagName("Window");
     self:SetStyleManager(StyleManager:new());
@@ -222,12 +224,22 @@ end
 -- 初始化窗口位置
 function Window:InitWindowPosition()
     local params = self:GetParams();
-    -- local screenX, screenY, screenWidth, screenHeight = ParaUI.GetUIObject("root"):GetAbsPosition();
     local screenX, screenY, screenWidth, screenHeight = self:GetParentNativeWindow():GetAbsPosition();
     local nativeScreenX, nativeScreenY, nativeScreenWidth, nativeScreenHeight = screenX, screenY, screenWidth, screenHeight;
     self.minRootScreenWidth, self.minRootScreenHeight = self.minRootScreenWidth or params.minRootScreenWidth or self.defaultMinRootScreenWidth, self.minRootScreenHeight or params.minRootScreenHeight or self.defaultMinRootScreenHeight;
+    self.maxRootScreenWidth, self.maxRootScreenHeight = self.maxRootScreenWidth or params.maxRootScreenWidth, self.maxRootScreenHeight or params.maxRootScreenHeight;
     self.fixedRootScreenWidth, self.fixedRootScreenHeight = self.fixedRootScreenWidth or params.fixedRootScreenWidth, self.fixedRootScreenHeight or params.fixedRootScreenHeight;
-    if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then screenX, screenY, screenWidth, screenHeight = 0, 0, self.fixedRootScreenWidth, self.fixedRootScreenHeight end
+    local scale = 1;
+    
+    if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then 
+        scale = math.min(nativeScreenWidth / self.fixedRootScreenWidth, nativeScreenHeight / self.fixedRootScreenHeight);
+        screenX, screenY, screenWidth, screenHeight = 0, 0, math.max(math.floor(nativeScreenWidth / scale), self.fixedRootScreenWidth), math.max(math.floor(nativeScreenHeight / scale), self.fixedRootScreenHeight); 
+    elseif (self.maxRootScreenWidth and self.maxRootScreenHeight and (nativeScreenWidth > self.maxRootScreenWidth or nativeScreenHeight > self.maxRootScreenHeight)) then
+        -- 自动放大  
+    elseif (nativeScreenWidth < self.minRootScreenWidth or nativeScreenHeight < self.minRootScreenHeight) then
+        scale = math.min(nativeScreenWidth / self.minRootScreenWidth, nativeScreenHeight / self.minRootScreenHeight);
+        screenX, screenY, screenWidth, screenHeight = 0, 0, math.max(math.floor(nativeScreenWidth / scale), self.minRootScreenWidth), math.max(math.floor(nativeScreenHeight / scale), self.minRootScreenHeight); 
+    end
 
     local windowX, windowY, windowWidth, windowHeight = 0, 0, tonumber(params.width) or params.width or screenWidth, tonumber(params.height) or params.height or screenHeight;
     local offsetX, offsetY = tonumber(params.x) or params.x or 0, tonumber(params.y) or params.y or 0;
@@ -236,56 +248,45 @@ function Window:InitWindowPosition()
     if (type(offsetX) == "string" and string.match(offsetX, "^%d+%%$")) then offsetX = math.floor(screenWidth * tonumber(string.match(offsetX, "%d+")) / 100) end
     if (type(offsetY) == "string" and string.match(offsetY, "^%d+%%$")) then offsetY = math.floor(screenHeight * tonumber(string.match(offsetY, "%d+")) / 100) end
     
-    
     if (params.alignment == "_ctb") then                 -- *	- "_ctb": align to center bottom of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
     elseif (params.alignment == "_ctt") then             -- *	- "_ctt": align to center top of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY;
-    elseif (params.alignment == "_ctl") then -- *	- "_ctl": align to center left of the screen
+    elseif (params.alignment == "_ctl") then             -- *	- "_ctl": align to center left of the screen
         windowX, windowY = offsetX, offsetY + math.floor((screenHeight - windowHeight) / 2);
-    elseif (params.alignment == "_ctr") then -- *	- "_ctr": align to center right of the screen
+    elseif (params.alignment == "_ctr") then             -- *	- "_ctr": align to center right of the screen
         windowX, windowY = offsetX + screenWidth - windowWidth , offsetY + math.floor((screenHeight - windowHeight) / 2);
-    elseif (params.alignment == "_lt") then  -- *	- "_lt" align to left top of the screen
+    elseif (params.alignment == "_lt") then              -- *	- "_lt" align to left top of the screen
         windowX, windowY = offsetX, offsetY;
-    elseif (params.alignment == "_lb") then  -- *	- "_lb" align to left bottom of the screen
+    elseif (params.alignment == "_lb") then              -- *	- "_lb" align to left bottom of the screen
         windowX, windowY = offsetX, offsetY + screenHeight - windowHeight;
-    elseif (params.alignment == "_rt") then -- *	- "_rt" align to right top of the screen
+    elseif (params.alignment == "_rt") then              -- *	- "_rt" align to right top of the screen
         windowX, windowY = offsetX + screenWidth - windowWidth, offsetY;
-    elseif (params.alignment == "_rb") then -- *	- "_rb" align to right bottom of the screen
+    elseif (params.alignment == "_rb") then              -- *	- "_rb" align to right bottom of the screen
         windowX, windowY = offsetX + screenWidth - windowWidth, offsetY + screenHeight - windowHeight;
-    elseif (params.alignment == "_mt") then -- *	- "_mt": align to middle top
+    elseif (params.alignment == "_mt") then              -- *	- "_mt": align to middle top
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY;
-    elseif (params.alignment == "_mb") then -- *	- "_mb": align to middle bottom
+    elseif (params.alignment == "_mb") then              -- *	- "_mb": align to middle bottom
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + screenHeight - windowHeight;
-    elseif (params.alignment == "_ml") then -- *	- "_ml": align to middle left
+    elseif (params.alignment == "_ml") then              -- *	- "_ml": align to middle left
         windowX, windowY = offsetX, offsetY + math.floor((screenHeight - windowHeight) / 2);
-    elseif (params.alignment == "_mr") then -- *	- "_mr": align to middle right
+    elseif (params.alignment == "_mr") then              -- *	- "_mr": align to middle right
         windowX, windowY = offsetX + screenWidth - windowWidth, offsetY + math.floor((screenHeight - windowHeight) / 2);
-    elseif (params.alignment == "_fi") then -- *	- "_fi": align to left top and right bottom. This is like fill in the parent window.
+    elseif (params.alignment == "_fi") then              -- *	- "_fi": align to left top and right bottom. This is like fill in the parent window.
         windowX, windowY, windowWidth, windowHeight = 0, 0, screenWidth, screenHeight;
-    else -- *	- "_ct" align to center of the screen
+    else                                                 -- *	- "_ct" align to center of the screen
         windowX, windowY = offsetX + math.floor((screenWidth - windowWidth) / 2), offsetY + math.floor((screenHeight - windowHeight) / 2);
     end
 
-    self.screenX, self.screenY, self.screenWidth, self.screenHeight = windowX, windowY, windowWidth, windowHeight;
+    if (scale == 1) then
+        self.screenX, self.screenY, self.screenWidth, self.screenHeight = windowX, windowY, windowWidth, windowHeight;
+    else
+        self.screenX, self.screenY, self.screenWidth, self.screenHeight = nativeScreenX, nativeScreenY, nativeScreenWidth, nativeScreenHeight;
+    end
+
     self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, windowWidth, windowHeight;
     self.rootScreenX, self.rootScreenY, self.rootScreenWidth, self.rootScreenHeight = screenX, screenY, screenWidth, screenHeight;
-
-    if (self.fixedRootScreenWidth and self.fixedRootScreenHeight) then
-        -- 取最大值
-        local scale = math.min(nativeScreenWidth / self.fixedRootScreenWidth, nativeScreenHeight / self.fixedRootScreenHeight);
-        local offsetX, offsetY = (nativeScreenWidth - self.fixedRootScreenWidth * scale) / 2, (nativeScreenHeight - self.fixedRootScreenHeight * scale) / 2;
-        self.scaleX, self.scaleY = scale, scale;
-        self.screenX = math.max(nativeScreenX + offsetX + windowX * self.scaleX, 0);
-        self.screenY = math.max(nativeScreenY + offsetY + windowY * self.scaleY, 0);
-    elseif ((params.isAutoScale == nil or params.isAutoScale) and (self.rootScreenWidth < self.minRootScreenWidth or self.rootScreenHeight < self.minRootScreenHeight)) then
-        local scale = math.min(self.rootScreenWidth / self.minRootScreenWidth, self.rootScreenHeight / self.minRootScreenHeight);
-        self.scaleX, self.scaleY = scale, scale;
-        self.screenX = math.max(self.screenX, 0) * self.scaleX;
-        self.screenY = math.max(self.screenY, 0) * self.scaleY;
-    else 
-        self.scaleX, self.scaleY = 1, 1;
-    end
+    self.scaleX, self.scaleY = scale, scale;
 
     -- WindowDebug(
     --     string.format("root window screenX = %s, screenY = %s, screenWidth = %s, screenHeight = %s", screenX, screenY, screenWidth, screenHeight),
