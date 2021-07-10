@@ -103,7 +103,7 @@ end
 function ClickOpenWorld()
     <!-- CloseWindow(); -->
     local worldId = (IsRlsEnv or IsDevEnv) and 20683 or 72945;
-    GameLogic.RunCommand(string.format("/loadworld -s %d", worldId));    
+    GameLogic.RunCommand(string.format("/loadworld -s -force %d", worldId));    
 end
 
 </script>
