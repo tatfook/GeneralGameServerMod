@@ -55,8 +55,6 @@
 
 <script type="text/lua">
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
-local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
-local regionId = (KeepWorkItemManager.GetProfile().school or {}).regionId or 1;
 
 function ShowVip()
     local VipToolNew = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/VipToolTip/VipToolNew.lua")

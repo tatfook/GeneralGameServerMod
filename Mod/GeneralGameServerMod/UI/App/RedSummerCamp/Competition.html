@@ -57,7 +57,8 @@
 
 <script type="text/lua">
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
-
+local schoolRegionId = (KeepWorkItemManager.GetProfile().school or {}).regionId or 0;
+local userRegionId = (KeepWorkItemManager.GetProfile().region or {}).stateId or 0
 areaIds = {
     all = 1,
     guangdong = 2139,
@@ -83,10 +84,9 @@ function ClickArea(area_name)
     qrcode = string.format("Texture/Aries/Creator/keepwork/RedSummerCamp/shentongbei/qrcode/%s_32bits.png#0 0 396 396", area);
 end
 
-local regionId = (KeepWorkItemManager.GetProfile().school or {}).regionId or 1;
 local region = "all";
 for key, val in pairs(areaIds) do 
-    if (val == regionId) then
+    if (val == userRegionId) then
         region = key;
         break;
     end
