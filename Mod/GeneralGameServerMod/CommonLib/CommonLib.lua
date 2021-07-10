@@ -119,6 +119,11 @@ function CommonLib.GetFileText(filename)
 	end	
 end
 
+-- 计算文本MD5值
+function CommonLib.MD5(text)
+    return ParaMisc.md5(text or "");
+end
+
 -- 获取文件MD5
 function CommonLib.GetFileMD5(filename)
     return ParaMisc.md5(CommonLib.GetFileText(filename) or "");

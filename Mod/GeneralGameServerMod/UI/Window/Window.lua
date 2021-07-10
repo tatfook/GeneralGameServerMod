@@ -602,4 +602,5 @@ function Window:OnScreenSizeChanged()
 	if (not nativeWnd) then return end 
     local screenX, screenY, screenWidth, screenHeight = self:InitWindowPosition();
     nativeWnd:Reposition("_lt", screenX, screenY, screenWidth, screenHeight);
+    self:UpdateLayout(true);
 end
