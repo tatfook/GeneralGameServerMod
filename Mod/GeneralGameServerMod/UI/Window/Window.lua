@@ -10,6 +10,8 @@ local Window = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Window.lua"
 ]]
 -- Window
 NPL.load("(gl)script/ide/System/Core/PainterContext.lua");
+NPL.load("(gl)script/ide/System/Windows/Screen.lua");
+local Screen = commonlib.gettable("System.Windows.Screen");
 local PainterContext = commonlib.gettable("System.Core.PainterContext");
 local SizeEvent = commonlib.gettable("System.Windows.SizeEvent");
 local FocusPolicy = commonlib.gettable("System.Core.Namespace.FocusPolicy");
@@ -126,7 +128,8 @@ end
 
 function Window:Init()
     if (not self:Is3DWindow()) then
-        GetSceneViewport():Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+        -- GetSceneViewport():Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+        Screen:Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     end
 
     local params = self:GetParams();
@@ -181,7 +184,9 @@ end
 -- 窗口关闭
 function Window:CloseWindow()
     if (not self:GetNativeWindow()) then return end
-    GetSceneViewport():Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+    -- GetSceneViewport():Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+    Screen:Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
+
     if (self:IsSupportSimulator()) then Simulator:UnregisterWindow(self) end
 
     ParaUI.Destroy(self:GetNativeWindow().id);

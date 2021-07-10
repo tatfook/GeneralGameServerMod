@@ -162,6 +162,23 @@ function DiffWorld:LoadRegionBlockInfo(region)
     return region.chunks;
 end
 
+function DiffWorld:LoadRegionChunkBlockInfo(chunk)
+    for i = 0, 15 do
+        for j = 0, 15 do
+            local x, z = chunk.chunk_x + i, chunk.chunk_z + j;
+            for k = -128, 128 do
+                -- local block_id, block_data = 
+            end
+
+        end
+
+    end
+end
+
+function DiffWorld:UploadRegionChunkBlockInfo(chunk)
+
+end
+
 function DiffWorld:DiffRegionBlockInfo(region)
     local local_chunks = self:LoadRegionBlockInfo(region);
 
@@ -169,6 +186,7 @@ function DiffWorld:DiffRegionBlockInfo(region)
         for chunk_key, local_chunk in pairs(local_chunks) do
             local remote_chunk = remote_chunks[chunk_key] or {};
             if (local_chunk.chunk_md5 ~= remote_chunk.chunk_md5) then
+                self:UploadRegionChunkBlockInfo(local_chunk);
             end
         end
     end)
