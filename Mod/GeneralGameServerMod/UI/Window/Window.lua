@@ -36,6 +36,8 @@ Window:Property("PainterContext");                  -- 绘制上下文
 Window:Property("ElementManager", ElementManager);  -- 元素管理器
 Window:Property("StyleManager");                    -- 元素管理器
 Window:Property("HoverElement");                    -- 光标所在元素
+Window:Property("MouseDownElement");                -- 鼠标按下元素
+Window:Property("MouseUpElement");                  -- 鼠标松开元素
 Window:Property("FocusElement");                    -- 焦点元素
 Window:Property("MouseCaptureElement");             -- 鼠标捕获元素
 Window:Property("G");                               -- 全局对象
@@ -540,8 +542,12 @@ function Window:HandleMouseEvent(event)
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "清除元素列表 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 聚焦目标元素  聚焦与事件是否处理无关
     -- if (event:IsAccepted()) then return end
-    if(eventType == "mousePressEvent" and event:IsLeftButton()) then
-        self:SetFocus(if_else(hoverElement:IsDisabled(), nil, hoverElement));
+    if((eventType == "mousePressEvent" or eventType == "mouseReleaseEvent") and event:IsLeftButton()) then
+        self:SetMouseUpElement(hoverElement);
+        if (eventType == "mousePressEvent") then
+            self:SetMouseDownElement(hoverElement);
+        end
+        -- self:SetFocus(if_else(hoverElement:IsDisabled(), nil, hoverElement));
     end
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "鼠标事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
 end

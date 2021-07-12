@@ -335,7 +335,7 @@ function Compile:VFor(element)
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-for"] == nil) then return end
     local vfor = xmlNode.attr["v-for"];
 
-    local keyexp, listexp = string.match(vfor, "%(?(%a[%w%s,]*)%)?%s+in%s+(%w*)");
+    local keyexp, listexp = string.match(vfor, "%(?(%a[%w%s,]*)%)?%s+in%s+(%w[%w%d_]*)");
     if (not keyexp) then return end
 
     local val, key = string.match(keyexp, "(%a%w-)%s*,%s*(%a%w+)");
@@ -448,7 +448,7 @@ function Compile:VBind(element)
         if (realKey and realKey ~= "") then
             self:ExecCode(val, element, function(realVal)
                 -- CompileDebug.If(realKey == "value" and element:GetTagName() == "input", realVal);
-                if (Scope:__is_scope__(realVal)) then realVal = realVal:__get_data__() end
+                if (Scope:__is_scope__(realVal)) then realVal = realVal:ToPlainObject() end
                 -- if (type(realVal) == "table" and realVal.ToPlainObject) then realVal = realVal:ToPlainObject() end
                 element:SetAttrValue(realKey, realVal);
                 -- CompileDebug.If(realKey == "NextPagePorjectList", element:GetAttrValue("NextPagePorjectList"));
@@ -465,7 +465,7 @@ function Compile:VModel(element)
     if (not string.match(vmodel, "^%a[%w%.]*$")) then return end
     local scope = self:GetScope();
     self:ExecCode(vmodel, element, function(val)
-        if (Scope:__is_scope__(val)) then val = val:__get_data__() end
+        if (Scope:__is_scope__(val)) then val = val:ToPlainObject() end
         element:SetAttrValue("value", val);
     end, true);
     -- 注意死循环

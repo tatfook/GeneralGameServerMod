@@ -9,4 +9,4 @@ local Command = NPL.load("Mod/GeneralGameServerMod/Command/Command.lua");
 ------------------------------------------------------------
 ]]
 
-NPL.load("./DiffWorld");
+NPL.load("./DiffWorld/DiffWorld.lua");

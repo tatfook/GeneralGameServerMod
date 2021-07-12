@@ -16,13 +16,14 @@ local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
 local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
 local CmdParser = commonlib.gettable("MyCompany.Aries.Game.CmdParser");	
 local SlashCommand = commonlib.gettable("MyCompany.Aries.SlashCommand.SlashCommand");
-local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-local RPC = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPC.lua", IsDevEnv);
-
 local KeepworkServiceProject = NPL.load('(gl)Mod/WorldShare/service/KeepworkService/Project.lua')
 local GitService = NPL.load('(gl)Mod/WorldShare/service/GitService.lua')
 local LocalService = NPL.load('(gl)Mod/WorldShare/service/LocalService.lua')
 local lfs = commonlib.Files.GetLuaFileSystem();
+
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+local RPC = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPC.lua", IsDevEnv);
 
 local function DownloadWorldById(pid, callback)
     pid = pid or GameLogic.options:GetProjectId();
@@ -43,6 +44,11 @@ local function DownloadWorldById(pid, callback)
             end);
         end)
     end)
+end
+
+local function IsRemoteWorld()
+    local world_directory = ParaWorld.GetWorldDirectory();
+    return string.find(world_directory, "temp/diff_world/", 1, true);
 end
 
 local DiffWorld = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
@@ -387,6 +393,18 @@ function DiffWorld:DiffFinish(__diffs__)
         end
         __chunk_count__ = __chunk_count__ + chunk_count;
     end
+
+    if (not IsRemoteWorld()) then
+        Page.Show({
+            __diffs__ = __diffs__
+        }, {
+            url = "%ggs%/Command/DiffWorld/DiffWorldUI.html",
+            alignment = "_lt",
+            width = 500,
+            height = "100%",
+        });
+    end
+
     print(string.format("diff region = %s  diff chunk = %s   diff block = %s", __region_count__, __chunk_count__, __block_count__));
 end
 

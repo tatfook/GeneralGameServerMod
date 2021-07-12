@@ -152,6 +152,7 @@ function Component:LoadXmlNode(xmlNode, isReload)
     if (self:class() == Component) then
         filename = self:GetAttrStringValue("src") or (xmlNode.attr and xmlNode.attr.src);
         template = self:GetAttrStringValue("template") or (xmlNode.attr and xmlNode.attr.template);
+        self.filename, self.template = filename, template;
     end
     
     -- 从字符串加载

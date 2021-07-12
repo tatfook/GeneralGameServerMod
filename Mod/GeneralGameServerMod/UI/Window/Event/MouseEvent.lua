@@ -73,7 +73,7 @@ function MouseEvent:Init(event_type, window, params)
     end
 	
     if (type(params) == "table") then
-        self.x, self.y, self.mouse_button, self.buttons_state, self.mouse_wheel = params.mouse_x or self.x, params.mouse_y or self.mouse_y, params.mouse_button or self.mouse_button, params.buttons_state or self.buttons_state, params.mouse_wheel or self.mouse_wheel;
+        self.x, self.y, self.mouse_button, self.buttons_state, self.mouse_wheel = params.x or params.mouse_x or self.x, params.y or params.mouse_y or self.mouse_y, params.mouse_button or self.mouse_button, params.buttons_state or self.buttons_state, params.mouse_wheel or self.mouse_wheel;
         self.shift_pressed, self.ctrl_pressed, self.alt_pressed = params.shift_pressed or self.shift_pressed, params.ctrl_pressed or self.ctrl_pressed, params.alt_pressed or self.alt_pressed;
     end
 

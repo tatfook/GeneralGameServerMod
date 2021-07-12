@@ -13,6 +13,7 @@ local Helper = (NPL and NPL.export) and NPL.export() or {};
 
 -- 路径简写
 local PathAliasMap = {
+    ["ggs"] = "Mod/GeneralGameServerMod/",
     ["ui"] = "Mod/GeneralGameServerMod/UI",
     ["tutorial"] = "Mod/GeneralGameServerMod/Tutorial",
     ["vue"] = "Mod/GeneralGameServerMod/UI/Vue",
