@@ -50,11 +50,8 @@
 big_image_index = 0;
 
 function ShowVip()
-    GameLogic.IsVip("ShenTongBei", true, function(result)
-        if result then
-            --Refresh();
-    end
-    end);
+    local VipPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/VipPage.lua");
+    VipPage.ShowPage();
 end 
 
 function GetImageStyle()

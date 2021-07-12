@@ -11,9 +11,11 @@ local DiffWorld = NPL.load("Mod/GeneralGameServerMod/Command/DiffWorld.lua");
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Commands/CommandManager.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
-local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine")
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
+local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
 local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
-
+local CmdParser = commonlib.gettable("MyCompany.Aries.Game.CmdParser");	
+local SlashCommand = commonlib.gettable("MyCompany.Aries.SlashCommand.SlashCommand");
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local RPC = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPC.lua", IsDevEnv);
 
@@ -29,6 +31,8 @@ local function DownloadWorldById(pid, callback)
         GitService:DownloadZIP(data.name, data.username, data.world.commitId, function(bSuccess, downloadPath)
             if (not bSuccess) then return callback() end
             local temp_diff_world_directory = "temp/diff_world/";
+            ParaIO.DeleteFile(temp_diff_world_directory);
+            ParaIO.CreateDirectory(temp_diff_world_directory);
             LocalService:MoveZipToFolder(temp_diff_world_directory, downloadPath, function()
                 -- 次函数无出错处理 可能产生未知情况 
                 for filename in lfs.dir(temp_diff_world_directory) do
@@ -42,9 +46,11 @@ local function DownloadWorldById(pid, callback)
 end
 
 local DiffWorld = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-local __rpc__ = RPC:new():Init("127.0.0.1", 9000);
+local __rpc__ = RPC:new():Init();
 local RegionSize = 512;
 local ChunkSize = 16;
+
+DiffWorld:Property("Local", true, "IsLocal");
 
 function DiffWorld:ctor()
     self:Reset();
@@ -56,7 +62,7 @@ end
 
 function DiffWorld:Reset()
     self.__regions__ = {};
-    self.__diffs__ = {};
+    self.__diffs__ = {__regions__ = {}};
 end
 
 function DiffWorld:GetRegion(key)
@@ -128,66 +134,62 @@ function DiffWorld:StartServer(ip, port)
     self:Reset();
 
     -- DownloadWorldById(nil, function(world_directory)
-    --     CommandManager:RunCommand("/open paracraft://cmd/loadworld %s", world_directory);
+    --      CommandManager:RunCommand(string.format("/open paracraft://cmd/loadworld %s", world_directory));
     -- end);
-
     self:LoadAllRegionInfo();
+    -- server 端为Local数据
+    self:SetLocal(true);
 end
-
 
 function DiffWorld:StartClient(ip, port)
     __rpc__:SetServerIpAndPort(ip, port);
     self:SyncLoadWorld();
     self:Reset();
     self:LoadAllRegionInfo();
+    self:SetLocal(false);
 
-    local key, region = nil, nil;
+    local key, region, diff_regions = nil, nil, {};
     local function NextDiffRegionInfo()
         key, region = next(self.__regions__, key); 
         if (not region) then 
-            return self:Call("DiffWorldFinish", nil, function()
+            return self:Call("DiffWorldFinish", nil, function(data)
                 print("=======================request DiffWorldFinish===========================");
+                self:DiffFinish(data);
             end); 
         end 
-        self:Call("DiffRegionInfo", region, function(data)
-            region.is_equal_rawmd5 = data.is_equal_rawmd5;
-            region.is_equal_xmlmd5 = data.is_equal_xmlmd5;
+
+        if (region.is_equal_rawmd5 and region.is_equal_xmlmd5) then 
+            -- 完全一致 比较下一个区域
+            NextDiffRegionInfo();
+        else
             print(string.format("diff region: %s, is_equal_rawmd5 = %s, is_equal_xmlmd5 = %s", region.region_key, region.is_equal_rawmd5, region.is_equal_xmlmd5));
-            if (region.is_equal_rawmd5 and region.is_equal_xmlmd5) then 
-                -- 完全一致 比较下一个区域
+            -- entity 或 block 不同
+            self:DiffRegionChunkInfo(region, function()
+                -- 对比完成
                 NextDiffRegionInfo();
-            else
-                -- entity 或 block 不同
-                self:DiffRegionChunkInfo(region, function()
-                    -- 对比完成
-                    NextDiffRegionInfo();
-                end);
-            end
-        end);
+            end);
+        end
     end
 
-    self:Call("DiffWorldStart", nil, function()
+    self:Call("DiffWorldStart", self.__regions__, function(remote_regions)
+        self:MergeRegion(remote_regions);
         print("============request DiffWorldStart=============")
         NextDiffRegionInfo();
     end);
 end
 
--- 响应区域信息
-DiffWorld:Register("DiffRegionInfo", function(data)
-    local self = DiffWorld;
-    if (not self:IsExistRegion(data.region_key)) then 
-        local region = self:GetRegion(data.region_key);
-        commonlib.partialcopy(region, data);
-        region.rawmd5, region.xmlmd5 = nil, nil;
-    end 
-    
-    local region = self:GetRegion(data.region_key);
-    region.is_diff = true;
-    region.is_equal_rawmd5 = region.rawmd5 == data.rawmd5;
-    region.is_equal_xmlmd5 = region.xmlmd5 == data.xmlmd5;
-    print("==================response DiffRegionInfo", region.is_equal_rawmd5, region.is_equal_xmlmd5);
-    return {is_equal_rawmd5 = region.is_equal_rawmd5, is_equal_xmlmd5 = region.is_equal_xmlmd5};
-end)
+function DiffWorld:MergeRegion(regions)
+    for key, data in pairs(regions) do
+        local region = self.__regions__[key];
+        if (not region) then
+            region = self:GetRegion(key);
+            commonlib.partialcopy(region, data);
+            region.rawmd5, region.xmlmd5 = nil, nil;
+        end
+        region.is_equal_rawmd5 = region.rawmd5 == data.rawmd5;
+        region.is_equal_xmlmd5 = region.xmlmd5 == data.xmlmd5;
+    end
+end
 
 -- 响应方块信息
 DiffWorld:Register("DiffRegionChunkInfo", function(data)
@@ -309,9 +311,9 @@ DiffWorld:Register("DiffRegionChunkBlockInfo", function(data)
     local chunk, remote_blocks = data.chunk, data.blocks;
     local local_blocks = self:LoadRegionChunkBlockInfo(chunk);
     local region_key, chunk_key = chunk.region_key, chunk.chunk_key;
-    local __diffs__ = self.__diffs__;
-    local diff_region = __diffs__[region_key] or {};
-    __diffs__[region_key] = diff_region;
+    local __regions__ = self.__diffs__.__regions__;
+    local diff_region = __regions__[region_key] or {};
+    __regions__[region_key] = diff_region;
     local diff_region_chunk = diff_region[chunk_key] or {};
     diff_region[chunk_key] = diff_region_chunk;
 
@@ -353,26 +355,75 @@ DiffWorld:Register("DiffRegionChunkBlockInfo", function(data)
 end);
 
 
-DiffWorld:Register("DiffWorldStart", function()
+DiffWorld:Register("DiffWorldStart", function(remote_regions)
     print("-----------------------response DiffWorldStart---------------------------")
-    return ;
+    local self = DiffWorld;
+    self:MergeRegion(remote_regions);
+    return self.__regions__;
 end)
 
 -- 响应世界比较结束
 DiffWorld:Register("DiffWorldFinish", function()
     print("----------------------response DiffWorldFinish----------------------------")
     local self = DiffWorld;
-    local new_regions = {}
-    for key, region in pairs(self.__regions__) do
-        if (not region.is_diff) then
-            new_regions[#new_regions + 1] = key;
-        end
-    end
-    self.__diffs__.__new_regions__ = new_regions;
-    echo(self.__diffs__["37_37"], true)
+
+    self:DiffFinish(self.__diffs__);
+
+    return self.__diffs__;
 end);
 
+function DiffWorld:DiffFinish(__diffs__)
+    local __is_local__ = self:IsLocal();
+    local __regions__ = __diffs__.__regions__;
+    local __region_count__ = 0;
+    local __chunk_count__ = 0;
+    local __block_count__ = 0
+    for _, region in pairs(__regions__) do
+        __region_count__ = __region_count__ + 1;
+        local chunk_count = 0;
+        for _, chunk in pairs(region) do
+            chunk_count = chunk_count + 1;
+            __block_count__ = __block_count__ + chunk.diff_block_count;
+        end
+        __chunk_count__ = __chunk_count__ + chunk_count;
+    end
+    print(string.format("diff region = %s  diff chunk = %s   diff block = %s", __region_count__, __chunk_count__, __block_count__));
+end
+
 DiffWorld:InitSingleton();
+
+Commands["diffworld"] = {
+	mode_deny = "",
+    name = "diffworld",
+    quick_ref = "/diffworld open|connect|server -port=9000",
+    desc = [[
+/diffworld open 新起Paracraft客户端并打开当前世界的最新版本
+/diffworld connect -port=9000 连接对比的远程世界并开始对比世界,  -port 可指定连接端口, 默认9000
+/diffworld server -port=9000 启动对比世界服务器, -port 指定监听端口 默认9000
+    ]],
+    handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
+		local cmd, cmd_text = CmdParser.ParseString(cmd_text);
+        local port = string.match(cmd_text, "-port=(%d+)");
+        print("====================diffworld===================",cmd, port)
+        if (cmd == "open") then
+            if (IsDevEnv) then 
+                return System.os.runAsync([[call "D:\ParacraftDev\ParaEngineClient.exe" IsDevEnv="true" mc="true"  world="worlds/DesignHouse/diffworld1" logfile="D:\workspace\npl\GeneralGameServerMod\client1.log" loadpackage="D:\workspace\npl\paracraft/,;D:\workspace\npl\GeneralGameServerMod/,;"]]);
+                -- return CommandManager:RunCommand(string.format("/open paracraft://cmd/loadworld %s", "worlds/DesignHouse/diffworld1"));
+            end
+            DownloadWorldById(nil, function(world_directory)
+                CommandManager:RunCommand(string.format("/open paracraft://cmd/loadworld %s", world_directory));
+            end);
+        elseif (cmd == "connect") then
+            DiffWorld:StartClient("127.0.0.1", port);
+        elseif (cmd == "server") then
+            DiffWorld:StartServer("0.0.0.0", port);
+        end
+    end
+}
+
+if (IsDevEnv and CommandManager.slash_command) then
+    CommandManager.slash_command:RegisterSlashCommand(Commands["diffworld"]);
+end
 
 -- DiffWorld:SyncLoadWorld();
 -- -- echo(DiffWorld.__regions__, true)

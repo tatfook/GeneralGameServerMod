@@ -56,6 +56,9 @@ function GeneralGameServerMod:init()
 		NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameCommand.lua");
 		local GeneralGameCommand = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.GeneralGameCommand");
 		GeneralGameCommand:init();
+		
+		-- command
+		NPL.load("Mod/GeneralGameServerMod/Command/Command.lua");
 	end
 end
 
