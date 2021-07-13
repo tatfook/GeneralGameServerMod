@@ -502,7 +502,6 @@ function Window:HandleMouseEvent(event)
     end
 
     event.target = hoverElement;
-    -- WindowDebug.If(eventType == "mousePressEvent", hoverElement:GetAttr(), {hoverElement:GetWindowPos()}, {hoverElement:GetWindowSize()});
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "Hover 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
 
     -- 获取事件元素列表

@@ -231,12 +231,10 @@ function Layout:Update(isUpdateWidthHeight)
 	local parentLayout = self:GetParentLayout();
 	-- 父布局存在且在布局中则直接跳出
 	if (parentLayout and not parentLayout:IsLayoutFinish()) then return end
-	
 	-- 父布局存在且不为固定宽高则需更新父布局重新计算宽高 
 	if (parentLayout and not parentLayout:IsFixedSize()) then return parentLayout:Update(true) end
-
 	-- 父布局存在且为固定宽高则直接更新父布局的真实宽高即可
-	if (parentLayout and parentLayout:IsFixedSize()) then parentLayout:UpdateRealContentWidthHeight() end
+	if (parentLayout and parentLayout:IsFixedSize()) then return parentLayout:UpdateRealContentWidthHeight() end
 end
 
 function Layout:UpdateRealContentWidthHeight()

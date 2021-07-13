@@ -22,7 +22,7 @@ local LocalService = NPL.load('(gl)Mod/WorldShare/service/LocalService.lua')
 local lfs = commonlib.Files.GetLuaFileSystem();
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
 local RPC = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPC.lua", IsDevEnv);
 
 local function DownloadWorldById(pid, callback)
@@ -323,15 +323,11 @@ DiffWorld:Register("DiffRegionChunkBlockInfo", function(data)
     local diff_region_chunk = diff_region[chunk_key] or {};
     diff_region[chunk_key] = diff_region_chunk;
 
-    local diff_blocks = {};
-    local diff_block_count = 0;
-
     for block_index, remote_block in pairs(remote_blocks) do
         local local_block = local_blocks[block_index];
         if (not local_block or local_block.block_id ~= remote_block.block_id or local_block.block_data ~= remote_block.block_data or local_block.entity_data_md5 ~= remote_block.entity_data_md5) then
-            diff_block_count = diff_block_count + 1;
             local x, y, z = BlockEngine:FromSparseIndex(block_index);
-            diff_blocks[block_index] = {
+            diff_region_chunk[block_index] = {
                 x = x, y = y, z = z,
                 remote_block_id = remote_block.block_id,
                 remote_block_data = remote_block.block_data,
@@ -345,9 +341,8 @@ DiffWorld:Register("DiffRegionChunkBlockInfo", function(data)
 
     for block_index, local_block in pairs(local_blocks) do
         if (not remote_blocks[block_index]) then
-            diff_block_count = diff_block_count + 1;
             local x, y, z = BlockEngine:FromSparseIndex(block_index);
-            diff_blocks[block_index] = {
+            diff_region_chunk[block_index] = {
                 x = x, y = y, z = z,
                 local_block_id = local_block.block_id,
                 local_block_data = local_block.block_data,
@@ -355,9 +350,8 @@ DiffWorld:Register("DiffRegionChunkBlockInfo", function(data)
             }
         end
     end
-
-    diff_region_chunk.diff_blocks, diff_region_chunk.diff_block_count = diff_blocks, diff_block_count;
-    return diff_block_count;
+    
+    return;
 end);
 
 
@@ -389,7 +383,9 @@ function DiffWorld:DiffFinish(__diffs__)
         local chunk_count = 0;
         for _, chunk in pairs(region) do
             chunk_count = chunk_count + 1;
-            __block_count__ = __block_count__ + chunk.diff_block_count;
+            for _, block in pairs(chunk) do
+                __block_count__ = __block_count__ + 1;
+            end
         end
         __chunk_count__ = __chunk_count__ + chunk_count;
     end

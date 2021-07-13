@@ -21,6 +21,7 @@ local HttpFiles = commonlib.gettable("MyCompany.Aries.Game.Common.HttpFiles");
 local List = NPL.load("./List.lua");
 local Table = NPL.load("./Table.lua");
 local EventEmitter = NPL.load("./EventEmitter.lua");
+local String = NPL.load("./String.lua");
 
 local __event_emitter__ = EventEmitter:new();
 
@@ -30,6 +31,7 @@ _G.CommonLib = CommonLib;
 
 CommonLib.List = List;
 CommonLib.Table = Table;
+CommonLib.String = String;
 CommonLib.EventEmitter = EventEmitter;
 
 function CommonLib.PlayVoiceText(text, speed, lang, callback)
@@ -222,3 +224,11 @@ function CommonLib:StartNetServer(ip, port)
 
     NPL.StartNetServer(ip or "0.0.0.0", tostring(port or "9000"));
 end
+
+
+-- String
+function CommonLib.StringTrim(str, ch)
+    return String.Trim(str, ch)
+end
+
+    

@@ -1,20 +1,42 @@
 <template class="container">
     <WindowTitleBar title="世界对比结果"></WindowTitleBar>
     <div class="regions">
-        <div v-for="region in region_list" class="region" onclick=ClickRegion(region)>
-            <div>区域{{region.region_key}}</div>
+        <div v-for="region in region_list">
+            <div onclick="click_region(region)" class="region-title title">区域{{region.region_key}}</div>
+            <div v-if="region_key == region.region_key" class="chunks">
+                <div v-for="chunk in chunk_list">
+                    <div onclick="click_chunk(chunk)" class="chunk-title title">区块{{chunk.chunk_key}}</div>
+                    <div v-if="chunk_key == chunk.chunk_key">
+                        <div v-for="block in block_list">
+                            <div onclick="click_block(block)" class="block-title title">{{string.format("方块 坐标: %s, %s, %s", block.x, block.y, block.z)}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>    
-
-    <div selected="true">
-        <div class="nth" style="height: 20px; width: 100%;  margin-top: 10px;"></div>
-        <div class="nth" style="height: 20px; width: 100%;  margin-top: 10px;"></div>
-        <div class="nth" style="height: 20px; width: 100%;  margin-top: 10px;"></div>
-    </div>
 </template>
 
 <script type="text/lua" src="%ggs%/Command/DiffWorld/DiffWorldUI.lua">
 RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
+
+function region_title_class(region)
+    return "region-title " .. (region_key == region.region_key and "region-title-active" or "region-title-inactive");
+end
+
+function click_region(region)
+    region_key = region.region_key;
+    chunk_list = get_chunk_list();
+end
+
+function click_chunk(chunk)
+    chunk_key = chunk.chunk_key;
+    block_list = get_block_list();
+end
+
+function click_block(block)
+    block_index = block.block_index;
+end
 
 </script>
 
@@ -23,22 +45,32 @@ RegisterComponent("WindowTitleBar", "%vue%/Components/WindowTitleBar.html");
     width: 100%;
     height: 100%;
     background-color: #00000080;
+    color: #ffffff;
 }
-
-.region {
+.regions {
+    position: absolute;
+    top: 40px;
+    bottom: 2px;
+    left: 0px;
+    right: 0px;
+    overflow: auto;
+}
+.title {
     width: 100%;
     height: 32px;
     line-height: 32px;;
+}
+
+.region-title {
     padding-left: 20px;
 }
 
-[selected=true] {
-    height: 100px;
-    width: 100px;
-    background-color: #ff0000;
+.chunk-title {
+    padding-left: 40px;
 }
 
-.nth:nth-child(2) {
-    background-color: #ffff00;
+.block-title {
+    padding-left: 60px;
 }
+
 </style>

@@ -287,22 +287,44 @@ function BaseLayout:PercentageToNumber(percentage, size)
 	return number;
 end
 
+-- X方向是否允许滚动
+function BaseLayout:IsEnableScrollX()
+	return self.overflowX == "auto" or self.overflowX == "scroll";
+end
+
+-- Y方向是否允许滚动
+function BaseLayout:IsEnableScrollY()
+	return self.overflowY == "auto" or self.overflowY == "scroll";
+end
 
 -- 是否溢出
 function BaseLayout:IsOverflow()
 	return self:IsOverflowX() or self:IsOverflowY();
 end
 
--- 是否溢出
+-- X方向是否溢出
 function BaseLayout:IsOverflowX()
-	return self.overflowX == "auto" or self.overflowX == "scroll";
-	-- return (self.overflowX == "auto" or self.overflowX == "scroll") and self.contentWidth and self.realContentWidth and self.realContentWidth > self.contentWidth;
+	return self.contentWidth and self.realContentWidth and self.realContentWidth > self.contentWidth;
 end
 
--- 是否溢出
+-- Y方向是否溢出
 function BaseLayout:IsOverflowY()
-	return self.overflowY == "auto" or self.overflowY == "scroll";
-	-- return (self.overflowY == "auto" or self.overflowY == "scroll") and self.contentHeight and self.realContentHeight and self.realContentHeight > self.contentHeight;
+	return self.contentHeight and self.realContentHeight and self.realContentHeight > self.contentHeight;
+end
+
+-- 是否可以滚动
+function BaseLayout:IsCanScroll()
+	return self:IsCanScrollX() or self:IsCanScrollY();
+end
+
+-- X方向是否可以滚动
+function BaseLayout:IsCanScrollX()
+	return self:IsEnableScrollX() and self:IsOverflowX();
+end
+
+-- Y方向是否可以滚动
+function BaseLayout:IsCanScrollY()
+	return self:IsEnableScrollY() and self:IsOverflowY();
 end
 
 -- 开始布局

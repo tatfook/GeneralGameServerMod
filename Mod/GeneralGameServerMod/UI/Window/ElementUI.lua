@@ -93,7 +93,7 @@ function ElementUI:RenderStaticElement(painter, root)
     -- 存在滚动需要做裁剪
     local layout = self:GetLayout();
     local scrollX, scrollY = self:GetScrollPos();
-    local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
+    local isCanScroll = self:IsCanScroll();
     local isRenderChildElement = true;
     
     -- 绘制子元素
@@ -104,7 +104,7 @@ function ElementUI:RenderStaticElement(painter, root)
         if (childElement:GetLayout():IsPositionElement()) then
             childElement:RenderStaticElement(painter, root);
         else 
-            if (layout.overflowX == "hidden" or layout.overflowY == "hidden" or isOverflowX or isOverflowY) then
+            if (layout:IsOverflow()) then
                 -- 判断子元素是否在视窗内
                 local child_left, child_top, child_width, child_height = childElement:GetGeometry();
                 child_left, child_top = child_left - scrollX, child_top - scrollY;
@@ -112,7 +112,7 @@ function ElementUI:RenderStaticElement(painter, root)
                 -- ElementUIDebug.FormatIf(self:GetName() == "TextArea", "Render ScrollX = %s, ScrollY = %s", scrollX, scrollY);
                 painter:Save();
                 painter:SetClipRegion(0, 0, width, height);
-                if (isOverflowX or isOverflowY) then painter:Translate(-scrollX, -scrollY) end
+                if (isCanScroll) then painter:Translate(-scrollX, -scrollY) end
             end
             if (isRenderChildElement) then
                 childElement:RenderStaticElement(painter, root);
@@ -120,8 +120,8 @@ function ElementUI:RenderStaticElement(painter, root)
                 childElement:SetViewVisible(false);
             end
             -- 恢复裁剪
-            if (layout.overflowX == "hidden" or layout.overflowY == "hidden" or isOverflowX or isOverflowY) then
-                if (isOverflowX or isOverflowY) then painter:Translate(scrollX, scrollY) end
+            if (layout:IsOverflow()) then
+                if (isCanScroll) then painter:Translate(scrollX, scrollY) end
                 painter:Restore();
             end
         end
@@ -152,14 +152,14 @@ function ElementUI:RenderAbsoluteElement(painter, root)
             local layout = element:GetLayout();
             local width, height = element:GetSize();
             local scrollX, scrollY = element:GetScrollPos();
-            local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
-            if (isOverflowX or isOverflowY) then
+            local isCanScroll = element:IsCanScroll()
+            if (isCanScroll) then
                 painter:Save();
                 painter:SetClipRegion(0, 0, width, height);
                 painter:Translate(-scrollX, -scrollY);
             end
             render(elements, index + 1);
-            if (isOverflowX or isOverflowY) then
+            if (isCanScroll) then
                 painter:Translate(scrollX, scrollY);
                 painter:Restore();
             end
@@ -553,8 +553,8 @@ end
 -- 获取滚动条的位置
 function ElementUI:GetScrollPos()
     local scrollX, scrollY = 0, 0;
-    if (self.horizontalScrollBar and self:GetLayout():IsOverflowX()) then scrollX = self.horizontalScrollBar.scrollLeft end
-    if (self.verticalScrollBar and self:GetLayout():IsOverflowY()) then scrollY = self.verticalScrollBar.scrollTop end
+    if (self.horizontalScrollBar and self.horizontalScrollBar:IsVisible() and self:GetLayout():IsCanScrollX()) then scrollX = self.horizontalScrollBar.scrollLeft end
+    if (self.verticalScrollBar and self.verticalScrollBar:IsVisible() and self:GetLayout():IsCanScrollY()) then scrollY = self.verticalScrollBar.scrollTop end
     return scrollX, scrollY;
 end
 
@@ -914,7 +914,7 @@ end
 
 -- 鼠标滚动事件
 function ElementUI:OnMouseWheel(event)
-    if (self:GetLayout():IsOverflowY()) then 
+    if (self:GetLayout():IsCanScrollY()) then 
         if (self.verticalScrollBar) then
             self.verticalScrollBar:OnMouseWheel(event);
         end
@@ -988,9 +988,8 @@ function ElementUI:CallEventCallback(funcname, ...)
     end
 end
 
-function ElementUI:IsOverflow()
-    local layout = self:GetLayout();
-    return layout:IsOverflowX() or layout:IsOverflowY();
+function ElementUI:IsCanScroll()
+    return self:GetLayout():IsCanScroll();
 end
 
 function ElementUI:IsExistMouseEvent()
@@ -1009,7 +1008,7 @@ end
 function ElementUI:HandleMouseBubbleEventBefore(event)
     local event_type = event:GetEventType();
 
-    if (event_type == "onmousedown" and self:IsTouchMode() and self:IsOverflow()) then
+    if (event_type == "onmousedown" and self:IsTouchMode() and self:IsCanScroll()) then
         self.MouseWheel.mouseX, self.MouseWheel.mouseY = event:GetScreenXY();
         self.MouseWheel.isStartWheel = true;
         self.MouseWheel.isClick = true;

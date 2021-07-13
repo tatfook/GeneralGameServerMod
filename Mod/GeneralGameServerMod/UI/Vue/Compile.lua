@@ -335,8 +335,10 @@ function Compile:VFor(element)
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-for"] == nil) then return end
     local vfor = xmlNode.attr["v-for"];
 
-    local keyexp, listexp = string.match(vfor, "%(?(%a[%w%s,]*)%)?%s+in%s+(%w[%w%d_]*)");
-    if (not keyexp) then return end
+    local inIndex = string.find(vfor, " in ", 1, true);
+    if (not inIndex) then return end 
+    local keyexp = string.sub(vfor, 1, inIndex -1);
+    local listexp = string.sub(vfor, inIndex + 4);
 
     local val, key = string.match(keyexp, "(%a%w-)%s*,%s*(%a%w+)");
     if (not val) then val = string.gsub(keyexp, "[,%s]*$", "") end
@@ -350,6 +352,7 @@ function Compile:VFor(element)
     element:SetVisible(false);
     self:ExecCode(listexp, element, function(list)
         -- BeginTime();
+        list = type(list) == "function" and list() or list;
         local count = type(list) == "number" and list or (type(list) == "table" and Table.len(list) or 0);
         -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s, element = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count, tostring(element));
         local oldComponent = self:GetComponent();
@@ -416,21 +419,15 @@ function Compile:VOn(element)
         local realVal = val;
         if (not realKey or realKey == "") then realKey = string.match(key, "^on(%S+)") end
         if (realKey and realKey ~= "" and type(val) == "string") then 
-            local isFuncExpr = string.match(val, "^%s*[%a%d%_]+%s*$");  -- 若为一个变量名则直接取其值
-            if (isFuncExpr) then 
-                -- 不是函数调用则获取函数
-                realVal = self:ExecCode(val);
-                if (type(realVal) ~= "function") then CompileDebug.Format("invalid function listen, realKey = %s, realVal = %s, key = %s, val = %s", realKey, realVal, key, val) end
+            local isFuncExpr = string.match(val, "^%s*%a[%a%d%_]*%s*$");  -- 若为一个变量名则直接取其值
+            local code_str = string.format("return function(...)\n\t%s\nend", val .. (isFuncExpr and "(...)" or ""));
+            local code_func, errmsg = loadstring(code_str);
+            if (code_func) then
+                -- 这里使用合适的作用作用域
+                setfenv(code_func, self:GetScope());
+                realVal = code_func();
             else
-                -- 函数调用则返回字符串函数
-                local code_func, errmsg = loadstring(val);
-                if (code_func) then
-                    -- 这里使用合适的作用作用域
-                    setfenv(code_func, self:GetScope());
-                    realVal = code_func;
-                else
-                    realVal = function() echo("null function") end;
-                end
+                realVal = function() echo("null function") end;
             end
             element:SetAttrValue("on" .. realKey, realVal);
         end
@@ -479,7 +476,7 @@ function Compile:VModel(element)
         else 
             subscope[keys[size]] = val;
         end
-    end)
+    end);
 end
 
 function Compile:IsComponent(element)

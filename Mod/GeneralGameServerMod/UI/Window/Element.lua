@@ -447,12 +447,13 @@ function Element:ApplyElementStyle()
     -- ElementDebug.If(self:GetTagName() == "GoodsTooltip", self:GetElementScopedStyleSheet(), self:GetParentElement() == nil);
     
     -- 构建滚动条
+    local layout = self:GetLayout();
     local ScrollBar = self:GetWindow():GetElementManager().ScrollBar;
-    if (style["overflow-x"] == "auto" or style["overflow-x"] == "scroll") then
+    if (layout:IsEnableScrollX()) then
         self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self);
     end
 
-    if (style["overflow-y"] == "auto" or style["overflow-y"] == "scroll") then
+    if (layout:IsEnableScrollY()) then
         self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self);
     end
 
@@ -547,23 +548,16 @@ function Element:OnRealContentSizeChange()
     local width, height = layout:GetWidthHeight();
     local contentWidth, contentHeight = layout:GetContentWidthHeight();
     local realContentWidth, realContentHeight = layout:GetRealContentWidthHeight();
-    local isOverflowX, isOverflowY = layout:IsOverflowX(), layout:IsOverflowY();
 
-    -- ElementDebug.If(
-    --     self:GetAttrStringValue("id") == "debug", 
-    --     isOverflowX, isOverflowY, 
-    --     width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
-    -- local style = self:GetStyle();
-    
     if (self.horizontalScrollBar) then
-        self.horizontalScrollBar:SetVisible(isOverflowX and realContentWidth > contentWidth);
+        self.horizontalScrollBar:SetVisible(layout:IsCanScrollX());
         if (self.horizontalScrollBar:IsVisible()) then
             self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
         end
     end
 
     if (self.verticalScrollBar) then
-        self.verticalScrollBar:SetVisible(isOverflowY and realContentHeight > contentHeight);
+        self.verticalScrollBar:SetVisible(layout:IsCanScrollY());
         if (self.verticalScrollBar:IsVisible()) then
             self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
         end
@@ -600,7 +594,7 @@ end
 -- 获取数字属性值
 function Element:GetAttrStringValue(attrName, defaultValue)
     local value = self:GetAttrValue(attrName, defaultValue)
-    return value and tostring(value);
+    return value ~= nil and tostring(value) or nil;
 end
 
 -- 获取布尔属性值

@@ -26,6 +26,14 @@ local function GetTailSelector(comboSelector)
 
     comboSelector = string.gsub(comboSelector, "%s*$", "");
     
+    -- 伪类选择器
+    selector = string.match(comboSelector, ":nth%-child%((%d-)%)$");
+    if (selector) then return selector, "nth-child", string.gsub(comboSelector, ":nth%-child%(%d-%)$", "") end 
+    
+    -- 属性选择器
+    selector = string.match(comboSelector, "%[([%w%d=]-)%]$");
+    if (selector) then return selector, "[", string.gsub(comboSelector, "%[[%w%d=]-%]$", "") end
+
     -- 后代选择器 div p
     local selector = string.match(comboSelector, "%s* ([^%s%+%~%>]-)$");
     if (selector) then return selector, " ", string.gsub(comboSelector, "%s* [^%s%+%~%>]-$", "") end
@@ -42,14 +50,6 @@ local function GetTailSelector(comboSelector)
     selector = string.match(comboSelector, "%s*%+%s*([^%s%+%~%>]-)$");
     if (selector) then return selector, "+", string.gsub(comboSelector, "%s*%+%s*[^%s%+%~%>]-$", "") end
    
-    -- 伪类选择器
-    selector = string.match(comboSelector, ":nth%-child%((%d-)%)$");
-    if (selector) then return selector, "nth-child", string.gsub(comboSelector, ":nth%-child%(%d-%)$", "") end 
-    
-    -- 属性选择器
-    selector = string.match(comboSelector, "%[([%w%d=]-)%]$");
-    if (selector) then return selector, "[", string.gsub(comboSelector, "%[[%w%d=]-%]$", "") end
-
     return nil;
 end
 

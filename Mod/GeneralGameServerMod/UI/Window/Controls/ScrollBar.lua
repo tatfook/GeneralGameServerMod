@@ -323,6 +323,8 @@ end
 
 -- 滚动位置计算
 function ScrollBar:OnScroll()
+    if (not self:IsVisible()) then return end 
+    
     local thumb = self.thumb;
     if (self:IsHorizontal()) then
         self.scrollLeft = math.max(0, self.thumb.left / self.thumb.maxLeft * (self.scrollWidth - self.contentWidth));
