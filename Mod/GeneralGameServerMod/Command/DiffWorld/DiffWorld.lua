@@ -392,7 +392,8 @@ function DiffWorld:DiffFinish(__diffs__)
 
     if (not IsRemoteWorld()) then
         Page.Show({
-            __diffs__ = __diffs__
+            __is_local__ = __is_local__,
+            __diffs__ = __diffs__,
         }, {
             url = "%ggs%/Command/DiffWorld/DiffWorldUI.html",
             alignment = "_lt",
@@ -462,3 +463,6 @@ end
 -- 2. 如果raw相同 entity不同, 加载raw(loadregion 512*x + 256 0 512 * z + 256) 只比较entity 
 -- 3. 如果raw不同 先比较chunk (return ParaTerrain.GetMapChunkData(self.Coords:GetChunkX(), self.Coords:GetChunkZ(), bIncludeInit, verticalSectionFilter (0xffff 返回整高度256));) 
 -- /terraingen 地形生成命令
+
+
+-- http://note.youdao.com/noteshare?id=03e3c8e87d0ca849bc978d5a4210d76a&sub=F6E1A2655F4645348392D4DBF537E33D
