@@ -619,14 +619,16 @@ function ElementUI:OnChange(value)
     self:CallAttrFunction("onchange", nil, value, self, event);
 end
 
+function ElementUI:OnMouseDownBefore(event)
+    
+end
+
+function ElementUI:OnMouseDownAfter()
+end
+
 function ElementUI:OnMouseDown(event)
     if(event:IsAccepted()) then return end
     if (self:CallAttrFunction("onmousedown", nil, self, event)) then return end
-
-    -- if (self:IsTouchMode() and self:IsOverflow()) then
-    --     self.MouseWheel.mouseX, self.MouseWheel.mouseY = event:GetScreenXY();
-    --     self.MouseWheel.isStartWheel = true;
-    -- end
 
     -- 默认拖拽处理
     if(self:IsDraggable() and event:IsLeftButton()) then
@@ -641,23 +643,18 @@ function ElementUI:OnMouseDown(event)
         self.startDragScreenX, self.startDragScreenY = self:GetWindow():GetScreenPosition();
 		event:Accept();
 	end
+end
 
+function ElementUI:OnMouseMoveBefore(event)
+    
+end
+
+function ElementUI:OnMouseMoveAfter()
 end
 
 function ElementUI:OnMouseMove(event)
     if(event:IsAccepted()) then return end
     if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
-
-    -- if (self.MouseWheel.isStartWheel) then
-    --     local x, y = event:GetScreenXY();
-    --     if (y ~= self.MouseWheel.mouseY) then
-    --         local mouse_wheel = y < self.MouseWheel.mouseY and -1 or 1;
-    --         self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
-    --         event.mouse_wheel = mouse_wheel;
-    --         self:OnMouseWheel(event);
-    --     end
-    -- end
-
     if(self.isMouseDown and event:IsLeftButton() and self:IsDraggable()) then
 		if(not self.isDragging and not event:IsMove()) then return end
         
@@ -678,15 +675,19 @@ function ElementUI:OnMouseMove(event)
         end
         event:Accept();
 	end
+end
 
+function ElementUI:OnMouseUpBefore(event)
+    
+end
+
+function ElementUI:OnMouseUpAfter(event)
 end
 
 function ElementUI:OnMouseUp(event)
-    -- if (self.MouseWheel.isStartWheel) then self.MouseWheel.isStartWheel = false end
-
     if(event:IsAccepted()) then return end
-    if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end
 
+    if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end
     if (event:IsRightButton()) then 
         self:OnContextMenu(event);
     else
@@ -703,7 +704,6 @@ function ElementUI:OnMouseUp(event)
 		event:Accept();
 	end
 	self.isMouseDown = false;
-
 end
 
 function ElementUI:OnMouseLeave()
@@ -928,40 +928,10 @@ end
 function ElementUI:OnKey(event)
 end
 function ElementUI:OnMouseDownCapture(event)
-    if (self:IsTouchMode() and self:IsOverflow()) then
-        self.MouseWheel.mouseX, self.MouseWheel.mouseY = event:GetScreenXY();
-        self.MouseWheel.isStartWheel = true;
-        self.MouseWheel.isClick = true;
-        event:Accept();
-        self:CaptureMouse();
-    end
 end
 function ElementUI:OnMouseUpCapture(event)
-    if (self.MouseWheel.isStartWheel) then 
-        self.MouseWheel.isStartWheel = false;
-        self:ReleaseMouseCapture();
-        
-        if (self.MouseWheel.isClick) then
-            local window = self:GetWindow();
-            event:Init("onmousedown", window, event);
-            local target = window:GetMouseTargetElement(event);
-            target:CallEventCallback("OnMouseDown", event);
-            event:Init("onmouseup", window, event);
-            target:CallEventCallback("OnMouseUp", event);
-        end
-    end
 end
 function ElementUI:OnMouseMoveCapture(event)
-    if (self.MouseWheel.isStartWheel) then
-        local x, y = event:GetScreenXY();
-        if (y ~= self.MouseWheel.mouseY) then
-            local mouse_wheel = y < self.MouseWheel.mouseY and -1 or 1;
-            self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
-            event.mouse_wheel = mouse_wheel;
-            self.MouseWheel.isClick = false;
-            self:OnMouseWheel(event);
-        end
-    end
 end
 function ElementUI:OnMouseWheelCapture()
 end
@@ -974,10 +944,6 @@ end
 function ElementUI:OnMouse()
 end
 function ElementUI:OnContextMenuCapture()
-end
-function ElementUI:HandleMouseEventBefore()
-end
-function ElementUI:HandleMouseEventAfter()
 end
 
 function ElementUI:IsCanSimulateEvent()
@@ -1005,8 +971,21 @@ function ElementUI:CallEventCallback(funcname, ...)
     local event = self:GetWindow():GetEvent();
     if (event:IsAccepted() and string.lower(funcname) == event:GetEventType()) then return end 
     event:SetElement(self);
-    if (type(self[funcname]) ~= "function") then return end
-    return (self[funcname])(self, ...);
+    if (funcname == "OnMouseDown") then 
+        if (not event:IsAccepted()) then self:OnMouseDownBefore(...) end
+        if (not event:IsAccepted()) then self:OnMouseDown(...) end
+        if (not event:IsAccepted()) then self:OnMouseDownAfter(...) end
+    elseif (funcname == "OnMouseMove") then
+        if (not event:IsAccepted()) then self:OnMouseMoveBefore(...) end
+        if (not event:IsAccepted()) then self:OnMouseMove(...) end
+        if (not event:IsAccepted()) then self:OnMouseMoveAfter(...) end
+    elseif (funcname == "OnMouseUp") then
+        if (not event:IsAccepted()) then self:OnMouseUpBefore(...) end
+        if (not event:IsAccepted()) then self:OnMouseUp(...) end
+        if (not event:IsAccepted()) then self:OnMouseUpAfter(...) end
+    else 
+        return type(self[funcname]) == "function" and (self[funcname])(self, ...);
+    end
 end
 
 function ElementUI:IsOverflow()
@@ -1023,7 +1002,50 @@ function ElementUI:IsExistMouseEvent()
 end
 
 function ElementUI:IsTouchMode()
-    return true;
-    -- return System.os.IsTouchMode();
+    -- return true;
+    return System.os.IsTouchMode();
 end
 
+function ElementUI:HandleMouseBubbleEventBefore(event)
+    local event_type = event:GetEventType();
+
+    if (event_type == "onmousedown" and self:IsTouchMode() and self:IsOverflow()) then
+        self.MouseWheel.mouseX, self.MouseWheel.mouseY = event:GetScreenXY();
+        self.MouseWheel.isStartWheel = true;
+        self.MouseWheel.isClick = true;
+        event:Accept();
+        self:CaptureMouse();
+        return;
+    end
+
+    if (event_type == "onmousemove" and self.MouseWheel.isStartWheel) then
+        local x, y = event:GetScreenXY();
+        if (y ~= self.MouseWheel.mouseY) then
+            local mouse_wheel = y < self.MouseWheel.mouseY and -1 or 1;
+            self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
+            event.mouse_wheel = mouse_wheel;
+            self.MouseWheel.isClick = false;
+            self:OnMouseWheel(event);
+        end
+    end
+
+    if (event_type == "onmouseup" and self.MouseWheel.isStartWheel) then 
+        self.MouseWheel.isStartWheel = false;
+        self:ReleaseMouseCapture();
+        if (self.MouseWheel.isClick) then
+            local window = self:GetWindow();
+            event:Init("onmousedown", window, event);
+            local target = window:GetMouseTargetElement(event);
+            target:CallEventCallback("OnMouseDown", event);
+            event:Init("onmouseup", window, event);
+            target:CallEventCallback("OnMouseUp", event);
+        end
+    end
+end
+
+function ElementUI:HandleMouseBubbleEventAfter(event)
+end
+function ElementUI:HandleMouseCaptureEventBefore(event)
+end
+function ElementUI:HandleMouseCaptureEventAfter(event)
+end

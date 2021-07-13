@@ -331,7 +331,7 @@ function Window:CreateNativeWindow()
     end
 	local event_list = { "ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmousewheel", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
 	if (self:IsTouchMode()) then
-        event_list = {"ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove",  "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
+        event_list = {"ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmousewheel",  "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
     end
     local function GetHandle(event_type)
         return function()
@@ -481,8 +481,12 @@ function Window:HandleMouseEvent(event)
     local captureElement = self:GetMouseCapture();
     event.target = captureElement;
     if (captureElement) then
+        captureElement:HandleMouseCaptureEventBefore(event);
         captureElement:CallEventCallback(captureFuncName, event);
+        captureElement:HandleMouseCaptureEventAfter(event);
+        captureElement:HandleMouseBubbleEventBefore(event);
         captureElement:CallEventCallback(bubbleFuncName, event);
+        captureElement:HandleMouseBubbleEventAfter(event);
         if (isCanSimulateEvent and not Simulator:IsSimulated()) then captureElement:SimulateEvent(event) end 
         return ;        
     end
@@ -512,10 +516,13 @@ function Window:HandleMouseEvent(event)
     -- 不在任何元素内, 则丢给窗口处理
     if (#EventElementList == 0) then EventElementList[1] = hoverElement or self end 
 
+    -- 模拟手机滚动事件
+    -- self:SimulateTouchMouseWheelEvent(EventElementList, event);
+
     -- 捕获事件
     local EventElementCount = #EventElementList;
     for i = EventElementCount, 1, -1 do
-        EventElementList[i]:HandleMouseEventBefore(event);
+        EventElementList[i]:HandleMouseCaptureEventBefore(event);
         if (event:IsAccepted()) then break end
     end
     for i = EventElementCount, 1, -1 do
@@ -524,15 +531,24 @@ function Window:HandleMouseEvent(event)
         if (isCanSimulateEvent and not Simulator:IsSimulated()) then el:SimulateEvent(event) end 
         if (event:IsAccepted()) then break end
     end
+    for i = EventElementCount, 1, -1 do
+        EventElementList[i]:HandleMouseCaptureEventAfter(event);
+        if (event:IsAccepted()) then break end
+    end
+    
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "捕获事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 冒泡事件
+    for i = 1, EventElementCount, 1 do
+        EventElementList[i]:HandleMouseBubbleEventBefore(event);
+        if (event:IsAccepted()) then break end
+    end
     for i = 1, EventElementCount, 1 do
         el = EventElementList[i];
         el:CallEventCallback(bubbleFuncName, event);
         if (event:IsAccepted()) then break end
     end 
     for i = 1, EventElementCount, 1 do
-        EventElementList[i]:HandleMouseEventAfter(event);
+        EventElementList[i]:HandleMouseBubbleEventAfter(event);
         if (event:IsAccepted()) then break end
     end
 
