@@ -190,7 +190,7 @@ function Layout:ApplyPositionStyle()
 	self:SetWidthHeight(width and math.max(width, 0), height and math.max(height, 0));
 end
 
--- 更新布局
+-- 更新布局  返回向上传递的终止布局对象
 function Layout:Update(isUpdateWidthHeight)
 	local width, height = self:GetWidthHeight();
 	local maxWidth, maxHeight = self:GetMaxWidthHeight();
@@ -226,23 +226,27 @@ function Layout:Update(isUpdateWidthHeight)
 	-- 设置布局完成
 	self:SetLayoutFinish(true);
 	
-	if (not self:IsUseSpace()) then return end
+	-- 返回终止布局
+	if (not self:IsUseSpace()) then return self end
+
 	-- 子元素更新完成, 当父元素存在,非固定宽高时, 需要更新父布局使其有正确的宽高 
 	local parentLayout = self:GetParentLayout();
 	-- 父布局存在且在布局中则直接跳出
-	if (parentLayout and not parentLayout:IsLayoutFinish()) then return end
+	if (parentLayout and not parentLayout:IsLayoutFinish()) then return self end
 	-- 父布局存在且不为固定宽高则需更新父布局重新计算宽高 
 	if (parentLayout and not parentLayout:IsFixedSize()) then return parentLayout:Update(true) end
 	-- 父布局存在且为固定宽高则直接更新父布局的真实宽高即可
 	if (parentLayout and parentLayout:IsFixedSize()) then return parentLayout:UpdateRealContentWidthHeight() end
+
+	return self;
 end
 
 function Layout:UpdateRealContentWidthHeight()
 	local display = self:GetStyle().display;
 	if (display == "flex" or display == "inline-flex") then
-		self:UpdateFlexLayoutRealContentWidthHeight();
+		return self:UpdateFlexLayoutRealContentWidthHeight();
 	else
-		self:UpdateBoxLayoutRealContentWidthHeight();
+		return self:UpdateBoxLayoutRealContentWidthHeight();
 	end
 end
 
@@ -352,6 +356,8 @@ function Layout:UpdateBoxLayoutRealContentWidthHeight()
 
 	-- 设置内容宽高
 	self:SetRealContentWidthHeight(realContentWidth, realContentHeight);
+
+	return self;
 end
 
 

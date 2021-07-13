@@ -258,4 +258,5 @@ end
 
 function Flex.Update(layout)
     Update(layout);
+	return layout;
 end
