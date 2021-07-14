@@ -335,10 +335,6 @@ function Element:ChildElementIterator(isRender, filter)
         end
     end
     
-    -- if (self:GetAttrStringValue("id") == "test") then
-    --     print(isRender, list[1]:GetAttrStringValue("id"), list[2]:GetAttrStringValue("id"));
-    -- end
-
     if (self.horizontalScrollBar) then table.insert(list, isRender and (#list + 1) or 1, self.horizontalScrollBar) end
     if (self.verticalScrollBar) then table.insert(list, isRender and (#list + 1) or 1, self.verticalScrollBar) end
 
@@ -525,7 +521,7 @@ function Element:UpdateLayout(bApplyElementStyle)
     self:OnUpdateLayout();
 
     -- 调整布局
-    local termination_layout = self:GetLayout():Update();
+    self:GetLayout():Update();
 
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
@@ -533,7 +529,7 @@ function Element:UpdateLayout(bApplyElementStyle)
     -- 强制更新一次元素窗口坐标
     local parentElement = self:GetParentElement();
     -- 父元素不存在或父元素已布局完成
-    if (not parentElement or not parentElement.isUpdateLayout) then termination_layout:GetElement():UpdateWindowPos(true) end
+    if (not parentElement or not parentElement.isUpdateLayout) then self:GetWindow():UpdateWindowPos(true) end
 
     self.isUpdateLayout = false;
     return;
@@ -551,6 +547,8 @@ function Element:OnRealContentSizeChange()
         self.horizontalScrollBar:SetVisible(layout:IsCanScrollX());
         if (self.horizontalScrollBar:IsVisible()) then
             self.horizontalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+        else 
+            self.horizontalScrollBar:ScrollTo(0);
         end
     end
 
@@ -558,6 +556,8 @@ function Element:OnRealContentSizeChange()
         self.verticalScrollBar:SetVisible(layout:IsCanScrollY());
         if (self.verticalScrollBar:IsVisible()) then
             self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
+        else 
+            self.horizontalScrollBar:ScrollTo(0);
         end
     end
 end

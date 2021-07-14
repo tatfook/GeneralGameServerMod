@@ -104,7 +104,7 @@ function ElementUI:RenderStaticElement(painter, root)
         if (childElement:GetLayout():IsPositionElement()) then
             childElement:RenderStaticElement(painter, root);
         else 
-            if (layout:IsOverflow()) then
+            if (layout:IsClipOverflow()) then
                 -- 判断子元素是否在视窗内
                 local child_left, child_top, child_width, child_height = childElement:GetGeometry();
                 child_left, child_top = child_left - scrollX, child_top - scrollY;
@@ -120,7 +120,7 @@ function ElementUI:RenderStaticElement(painter, root)
                 childElement:SetViewVisible(false);
             end
             -- 恢复裁剪
-            if (layout:IsOverflow()) then
+            if (layout:IsClipOverflow()) then
                 if (isCanScroll) then painter:Translate(scrollX, scrollY) end
                 painter:Restore();
             end
@@ -486,7 +486,6 @@ function ElementUI:UpdateWindowPos(forceUpdate)
     else 
         windowX, windowY = windowX - parentScrollX, windowY - parentScrollY;
     end
-    
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "=================start===============");
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
     -- ElementUIDebug.FormatIf(parentElement and parentElement:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
@@ -1001,8 +1000,8 @@ function ElementUI:IsExistMouseEvent()
 end
 
 function ElementUI:IsTouchMode()
-    return true;
-    -- return System.os.IsTouchMode();
+    -- return true;
+    return System.os.IsTouchMode();
 end
 
 function ElementUI:HandleMouseBubbleEventBefore(event)

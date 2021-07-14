@@ -287,6 +287,11 @@ function BaseLayout:PercentageToNumber(percentage, size)
 	return number;
 end
 
+-- 是否裁剪溢出
+function BaseLayout:IsClipOverflow()
+	return self.overflowX == "auto" or self.overflowX == "scroll" or self.overflowX == "hidden" or self.overflowY == "auto" or self.overflowY == "scroll" or self.overflowY == "hidden";
+end
+
 -- X方向是否允许滚动
 function BaseLayout:IsEnableScrollX()
 	return self.overflowX == "auto" or self.overflowX == "scroll";
@@ -295,6 +300,10 @@ end
 -- Y方向是否允许滚动
 function BaseLayout:IsEnableScrollY()
 	return self.overflowY == "auto" or self.overflowY == "scroll";
+end
+
+function BaseLayout:IsEnableScroll()
+	return self:IsEnableScrollX() or self:IsEnableScrollY();
 end
 
 -- 是否溢出
