@@ -551,7 +551,7 @@ function Element:OnRealContentSizeChange()
         if (self.verticalScrollBar:IsVisible()) then
             self.verticalScrollBar:SetScrollWidthHeight(width, height, contentWidth, contentHeight, realContentWidth, realContentHeight);
         else 
-            self.horizontalScrollBar:ScrollTo(0);
+            self.verticalScrollBar:ScrollTo(0);
         end
     end
 end
