@@ -11,7 +11,7 @@
                             <div onclick="click_block(block)" class="block-title title">{{string.format("方块 坐标: %s, %s, %s", block.x, block.y, block.z)}}</div>
                             <div v-if="block_index == block.block_index" class="block_detail">
                                 <div class="text">
-                                    <div style="width: 40px;">方块ID</div>
+                                    <div style="width: 80px;">方块ID</div>
                                     <div style="width: 40px;">{{block_detail.is_equal_block_id and "相同" or "不同"}}</div>
                                     <div style="width: 80px;">本地ID</div>
                                     <div style="width: 40px;">{{block_detail.local_block_id or 0}}</div>
@@ -19,7 +19,7 @@
                                     <div style="width: 40px;">{{block_detail.remote_block_id or 0}}</div>
                                 </div>
                                 <div class="text">
-                                    <div style="width: 40px;">方块数据</div>
+                                    <div style="width: 80px;">方块数据</div>
                                     <div style="width: 40px;">{{block_detail.is_equal_block_data and "相同" or "不同"}}</div>
                                     <div style="width: 80px;">本地数据</div>
                                     <div style="width: 40px;">{{block_detail.local_block_data or ""}}</div>
@@ -27,8 +27,9 @@
                                     <div style="width: 40px;">{{block_detail.remote_block_data or ""}}</div>
                                 </div>
                                 <div class="text">
-                                    <div style="width: 40px;">实体数据</div>
+                                    <div style="width: 80px;">实体数据</div>
                                     <div style="width: 40px;">{{block_detail.is_equal_entity_data and "相同" or "不同"}}</div>
+                                    <!-- <div style="width: 120px;" class="text-btn">使用远程数据</div> -->
                                 </div>
                             </div>
                         </div>
@@ -66,7 +67,8 @@ end
 <style scoped=true>
 .container {
     width: 100%;
-    height: 500px;
+    height: 100%;
+    /* height: 500px; */
     background-color: #00000080;
     color: #ffffff;
 }
@@ -105,5 +107,8 @@ end
     display: flex;
     height: 32px;
     line-height: 32px;
+}
+.text-btn:hover {
+    color: #cccccc;
 }
 </style>

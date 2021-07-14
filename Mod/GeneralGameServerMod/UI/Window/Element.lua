@@ -507,7 +507,7 @@ function Element:UpdateLayout(bApplyElementStyle)
     self:OnUpdateLayout();
 
     -- 调整布局
-    self:GetLayout():Update();
+    local topLayout = self:GetLayout():Update();
 
     -- 元素布局更新后回调
     self:OnAfterUpdateLayout();
@@ -516,7 +516,8 @@ function Element:UpdateLayout(bApplyElementStyle)
     local parentElement = self:GetParentElement();
     -- 父元素不存在或父元素已布局完成
     if (not parentElement or not parentElement.isUpdateLayout) then 
-        self:GetWindow():UpdateWindowPos(true); 
+        topLayout:GetElement():UpdateWindowPos(true);
+        -- self:GetWindow():UpdateWindowPos(true); 
     end
 
     self.isUpdateLayout = false;
