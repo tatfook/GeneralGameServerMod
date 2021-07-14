@@ -439,19 +439,6 @@ function Element:ApplyElementStyle()
     self:GetStyleSheet():ApplyElementAnimationStyle(self, style);
     if (scopedStyleSheet) then scopedStyleSheet:ApplyElementAnimationStyle(self, style) end 
     self:GetAnimation():ApplyAnimationStyle();
-    
-    -- ElementDebug.If(self:GetTagName() == "GoodsTooltip", self:GetElementScopedStyleSheet(), self:GetParentElement() == nil);
-    
-    -- 构建滚动条 这里只能使用Style 此时Layout不一定初始化
-    local ScrollBar = self:GetWindow():GetElementManager().ScrollBar;
-    if (style["overflow-x"] == "auto" or style["overflow-x"] == "scroll") then
-        self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self);
-    end
-
-    if (style["overflow-y"] == "auto" or style["overflow-y"] == "scroll") then
-        self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self);
-    end
-    -- ElementDebug.If(self:GetAttrStringValue("id") == "debug", style:GetCurStyle(), self:GetAttr(), self:GetAttrValue("style"));
 
     return;
 end
@@ -539,6 +526,13 @@ end
 function Element:OnRealContentSizeChange()
     if (not self:GetWindow()) then return end
     local layout = self:GetLayout();
+    if (not layout:IsEnableScroll()) then return end 
+
+    -- 构建滚动条 这里只能使用Style 此时Layout不一定初始化
+    local ScrollBar = self:GetWindow():GetElementManager().ScrollBar;
+    if (layout:IsEnableScrollX()) then self.horizontalScrollBar = self.horizontalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "horizontal"}}, self:GetWindow(), self) end
+    if (layout:IsEnableScrollY()) then self.verticalScrollBar = self.verticalScrollBar or ScrollBar:new():Init({name = "ScrollBar", attr = {direction = "vertical"}}, self:GetWindow(), self) end
+
     local width, height = layout:GetWidthHeight();
     local contentWidth, contentHeight = layout:GetContentWidthHeight();
     local realContentWidth, realContentHeight = layout:GetRealContentWidthHeight();

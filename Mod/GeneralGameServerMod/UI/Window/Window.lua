@@ -45,8 +45,9 @@ Window:Property("Params");                          -- 窗口参数
 Window:Property("Event");                           -- 事件对象
 Window:Property("WindowName");                      -- 窗口名称
 Window:Property("WindowId");                        -- 窗口Id
-Window:Property("EnableSimulator");                 -- 宏名称
 Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口
+Window:Property("EnableMouseWheelSimulate", true, "IsEnableMouseWheelSimulate");         -- 是否开启鼠标滚动模拟
+Window:Property("EnableSimulator", true, "IsEnableSimulator");                           -- 是否开启事件模拟器
 
 local function GetSceneViewport()
     NPL.load("(gl)script/ide/System/Scene/Viewports/ViewportManager.lua");

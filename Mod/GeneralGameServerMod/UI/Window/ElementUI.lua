@@ -946,7 +946,7 @@ function ElementUI:OnContextMenuCapture()
 end
 
 function ElementUI:IsCanSimulateEvent()
-    return Simulator:IsRecording() and self:IsSupportSimulator();
+    return Simulator:IsRecording() and self:IsSupportSimulator() and self:GetWindow():IsEnableSimulator();
 end
 
 function ElementUI:SimulateEvent(event)
@@ -1007,12 +1007,14 @@ end
 function ElementUI:HandleMouseBubbleEventBefore(event)
     local event_type = event:GetEventType();
 
+    if (not self:GetWindow():IsEnableMouseWheelSimulate()) then return end 
+
     if (event_type == "onmousedown" and self:IsTouchMode() and self:IsCanScroll()) then
         self.MouseWheel.mouseX, self.MouseWheel.mouseY = event:GetScreenXY();
         self.MouseWheel.isStartWheel = true;
         self.MouseWheel.isClick = true;
-        event:Accept();
         self:CaptureMouse();
+        event:Accept();
         return;
     end
 
@@ -1025,6 +1027,8 @@ function ElementUI:HandleMouseBubbleEventBefore(event)
             self.MouseWheel.isClick = false;
             self:OnMouseWheel(event);
         end
+        event:Accept();
+        return;
     end
 
     if (event_type == "onmouseup" and self.MouseWheel.isStartWheel) then 
@@ -1032,12 +1036,20 @@ function ElementUI:HandleMouseBubbleEventBefore(event)
         self:ReleaseMouseCapture();
         if (self.MouseWheel.isClick) then
             local window = self:GetWindow();
+            window:SetEnableSimulator(false);
+            window:SetEnableMouseWheelSimulate(false);
+            
             event:Init("onmousedown", window, event);
-            local target = window:GetMouseTargetElement(event);
-            target:CallEventCallback("OnMouseDown", event);
+            window:HandleMouseEvent(event);
             event:Init("onmouseup", window, event);
-            target:CallEventCallback("OnMouseUp", event);
+            window:HandleMouseEvent(event);
+            
+            window:SetEnableSimulator(true);
+            window:SetEnableMouseWheelSimulate(true);
+            
         end
+        event:Accept();
+        return ;
     end
 end
 

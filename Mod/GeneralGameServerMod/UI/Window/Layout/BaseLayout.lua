@@ -302,6 +302,7 @@ function BaseLayout:IsEnableScrollY()
 	return self.overflowY == "auto" or self.overflowY == "scroll";
 end
 
+-- 是否允许滚动
 function BaseLayout:IsEnableScroll()
 	return self:IsEnableScrollX() or self:IsEnableScrollY();
 end
