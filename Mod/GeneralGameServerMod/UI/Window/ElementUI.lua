@@ -275,6 +275,7 @@ function ElementUI:RenderBackground(painter)
             painter:DrawRectTexture(x + w - borderRadius, y, borderRadius, borderRadius, "Texture/Aries/Creator/keepwork/ggs/ui/hollow_circle_256x256_32bits.png#128 0 128 128"); -- 右上
             painter:DrawRectTexture(x, y + h - borderRadius, borderRadius, borderRadius, "Texture/Aries/Creator/keepwork/ggs/ui/hollow_circle_256x256_32bits.png#0 128 128 128"); -- 左下
             painter:DrawRectTexture(x + w - borderRadius, y + h - borderRadius, borderRadius, borderRadius, "Texture/Aries/Creator/keepwork/ggs/ui/hollow_circle_256x256_32bits.png#128 128 128 128"); -- 右下
+            painter:Flush();
         end
     elseif (borderRadius > 0) then 
         painter:DrawRect(x + borderRadius, y + borderRadius, w - 2 * borderRadius, h - 2 * borderRadius);
@@ -486,6 +487,7 @@ function ElementUI:UpdateWindowPos(forceUpdate)
     else 
         windowX, windowY = windowX - parentScrollX, windowY - parentScrollY;
     end
+
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "=================start===============");
     -- ElementUIDebug.FormatIf(self:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);
     -- ElementUIDebug.FormatIf(parentElement and parentElement:GetAttrValue("id") == "test", "windowX = %s, windowY = %s, windowWidth = %s, windowHeight = %s, offsetX = %s, offsetY = %s, scrollX = %s, scrollY = %s", windowX, windowY, windowWidth, windowHeight, offsetX, offsetY, scrollX, scrollY);

@@ -496,7 +496,6 @@ function Element:UpdateLayout(bApplyElementStyle)
     if (not isUpdatedChildLayout) then
         for childElement in self:ChildElementIterator() do
             -- ElementDebug.If(self:GetAttrValue("id") == "debug", "Child Update Layout", childElement:GetTagName(), childElement:GetName());
-            
 			childElement:UpdateLayout(bApplyElementStyle);
 		end
     end
@@ -516,7 +515,9 @@ function Element:UpdateLayout(bApplyElementStyle)
     -- 强制更新一次元素窗口坐标
     local parentElement = self:GetParentElement();
     -- 父元素不存在或父元素已布局完成
-    if (not parentElement or not parentElement.isUpdateLayout) then self:GetWindow():UpdateWindowPos(true) end
+    if (not parentElement or not parentElement.isUpdateLayout) then 
+        self:GetWindow():UpdateWindowPos(true); 
+    end
 
     self.isUpdateLayout = false;
     return;

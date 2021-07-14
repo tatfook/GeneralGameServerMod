@@ -485,8 +485,8 @@ function Blockly:RenderContent(painter)
 end
 
 -- 布局Blockly
-function Blockly:UpdateWindowPos()
-    Blockly._super.UpdateWindowPos(self);
+function Blockly:UpdateWindowPos(forceUpdate)
+    Blockly._super.UpdateWindowPos(self, forceUpdate);
     for _, block in ipairs(self.blocks) do
         block:UpdateLayout();
     end

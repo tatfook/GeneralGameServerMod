@@ -437,9 +437,7 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
         name = "input",
         attr = {
             id = "BlocklyFieldInputEditId",
-            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding-left: %spx', 
-                Shape:GetOutputTexture(),
-                self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
+            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; padding-left: %spx', Shape:GetOutputTexture(), self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),
             type = (self:GetType() == "field_number" or (self:GetType() == "input_value" and self:IsNumberType(self:GetShadowType()))) and "number" or "text",
         },
@@ -473,9 +471,7 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
             id = "BlocklyFieldSelectEditId",
             isAllowCreate = isAllowCreate,
             isShowArrowIcon = false, 
-            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; border-radius: %spx; padding-top: 2px; padding-left: %spx', 
-                Shape:GetOutputTexture(),
-                self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount, UnitSize * Const.BlockEdgeWidthUnitCount),
+            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; padding-top: 2px; padding-left: %spx',  Shape:GetOutputTexture(), self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),
             options = self:GetOptions(true),
         },
@@ -617,10 +613,10 @@ function BlockInputField:BeginEdit()
     end
     -- 设置元素编辑状态
     self:SetEdit(true);
-    -- 更新布局
-    self:UpdateEditAreaSize();
     -- 显示编辑
     editor:SetVisible(true);
+    -- 更新布局
+    self:UpdateEditAreaSize();
     -- 全选
     if (self:GetFieldEditType() == "input") then fieldEditElement:handleSelectAll() end
     -- 聚焦

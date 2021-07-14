@@ -502,6 +502,7 @@ function Input:OnClick(event)
 end
 
 function Input:OnMouseDown(event)
+    print("-----------------------------")
     if (self:IsDisabled()) then return end
     if (not self:IsFocus()) then self:FocusIn() end
     
