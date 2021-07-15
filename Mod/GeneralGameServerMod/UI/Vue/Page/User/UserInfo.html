@@ -111,10 +111,10 @@
             <!-- <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div> -->
             <!-- <div v-on:click="ClickPrevRotate" style="position: absolute; left: 70px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanzou_40X35_32bits.png#0 0 40 35);"></div> -->
             <!-- <div v-on:click="ClickNextRotate" style="position: absolute; left: 230px; top: 230px; height:35px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_xuanzhuanyou_40X35_32bits.png#0 0 40 35);"></div> -->
-            <div v-on:click="ClickPersonalPage" class="btn" style="position: absolute; left: 15px; bottom: 15px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
-            <div v-show="UserDetail.paraMini" onclick=ClickHomeBtn class="btn" style="position: absolute; left: 60px; bottom: 10px; height:42px; width: 42px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jiayuan_42X42_32bits.png#0 0 42 42);"></div>
+            <div v-on:click="ClickPersonalPage" class="btn" style="position: absolute; left: 15px; bottom: 8px; height:38px; width: 40px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_gerenwangzhan_38X38_32bits.png#0 0 40 38);"></div>
+            <div v-show="UserDetail.paraMini" onclick=ClickHomeBtn class="btn" style="position: absolute; left: 60px; bottom: 4px; height:42px; width: 42px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_jiayuan_42X42_32bits.png#0 0 42 42);"></div>
             <div v-if="isAuthUser and not isRealName" v-on:click="ClickGoRealName" style="position: absolute; left: 120px; bottom: 6px;  text-align: center; line-height: 24px; width:100px; height: 30px; font-size: 14px; base-font-size: 14px; color: #000000; background: url(Texture/Aries/Creator/keepwork/worldshare_32bits.png#673 198 38 64:12 10 12 15);">实名认证</div>
-            <div v-on:click="ClickSendMsgBtn" class="btn" style="position: absolute; right: 15px; bottom: 10px; height:48px; width: 44px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_faxiaoxi_44X48_32bits.png#0 0 44 48);"></div>
+            <div v-on:click="ClickSendMsgBtn" class="btn" style="position: absolute; right: 15px; bottom: 4px; height:48px; width: 44px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_faxiaoxi_44X48_32bits.png#0 0 44 48);"></div>
             <ScaleSlider v-if="isAuthUser" onscale="OnScale" style="position: absolute; left: 60px; top: 50px;"></ScaleSlider>
         </div>
         <div style="padding-left: 4px; width: 316px; height: 360px; margin-left: 11px;">
@@ -150,7 +150,7 @@
                         <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 34px; height: 17px; background: url(Texture/Aries/Creator/keepwork/ggs/user/zi_xuexiao_34X17_32bits.png#0 0 34 17);"></div>
                     </div>
                     <div v-if="schoolName ~= ''" onclick=ClickSchoolbtn style="max-width: 180px; display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px; color: rgb(60,158,220);">{{schoolName}}</div>
-                    <div v-if="isAuthUser and schoolName == ''" onclick=ClickSchoolEdit style="display: inline-block; line-height: 29px; text-align: center; margin-left: 8px; width: 86px; height: 29px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/btn_gengduo_32X29_32bits.png#0 0 32 29: 5 5 5 5);">加入学校</div>
+                    <div v-if="isAuthUser and schoolName == ''" onclick=ClickSchoolEdit style="margin-top: -2px; display: inline-block; line-height: 29px; text-align: center; margin-left: 8px; width: 86px; height: 29px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">加入学校</div>
                     <div v-if="isAuthUser and schoolName ~= ''" onclick=ClickSchoolEdit style="display: inline; margin-left: 6px; width: 20px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/bianji_20X20_32bits.png#0 0 20 20);"></div>
                 </div>
                 <div v-if="schoolType ~= '大学'" style="margin-top: 16px; height: 24px;">
@@ -159,13 +159,13 @@
                         <div style="position: absolute; left: 18px; top: 4px; display: inline; width: 35px; height: 17px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/banji_35X17_32bits.png#0 0 35 17);"></div>
                     </div>
                     <div v-if="not isAuthUser or className ~= ''" style="max-width: 180px; display: inline; padding-left:10px; width: 230px; height: 24px; line-height: 24px; ">{{className}}</div>
-                    <div v-if="isAuthUser and className == ''" onclick=ClickClassbtn style="display: inline-block; line-height: 29px; text-align: center; margin-left: 8px; width: 86px; height: 29px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/btn_gengduo_32X29_32bits.png#0 0 32 29: 5 5 5 5);">加入班级</div>
+                    <div v-if="isAuthUser and className == ''" onclick=ClickClassbtn style="margin-top: -2px; display: inline-block; line-height: 29px; text-align: center; margin-left: 8px; width: 86px; height: 29px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">加入班级</div>
                     <div v-if="isAuthUser and className ~= ''" onclick=ClickClassbtn style="display: inline; margin-left: 6px; width: 20px; height: 20px; background: url(Texture/Aries/Creator/keepwork/ggs/user/bianji_20X20_32bits.png#0 0 20 20);"></div>
                 </div>
                 <div v-if="isAuthUser" style="margin-top: 16px; height: 24px;">
                     <div v-show="not isExitPrefectUserInfoItem and not isPrefectUserInfo" style="position: absolute; top: 30px; left: 50px; height: 50px; width: 192px; padding:20px 20px 0px; color: #ffffff; font-size: 12px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/kuang_128X71_32bits.png#0 0 128 71:16 16 16 16);">完善个人资料可获得奖励哦</div>
                     <div v-show="not isExitPrefectUserInfoItem and isPrefectUserInfo" style="position: absolute; top: 30px; left: -5px; height: 65px; width: 300px; padding: 20px 20px 0px; color: #ffffff; font-size: 12px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/kuang_128X71_32bits.png#0 0 128 71:16 16 16 16);">恭喜你已完善全部资料，奖励请在“任务”中“完善个人资料任务”领取</div>
-                    <div class="center" onclick=ClickEditMoreBtn style="margin-left: 78px; width: 130px; height: 28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/gerenziliao/btn_shuru2_32X29_32bits.png#0 0 32 29:5 5 5 5);">更多资料</div>
+                    <div class="center" onclick=ClickEditMoreBtn style="margin-top: -2px; margin-left: 78px; width: 130px; height: 28px; background: url(Texture/Aries/Creator/keepwork/ggs/user/btn_confirm_16X16_32bits.png#0 0 16 16: 5 5 5 5);">更多资料</div>
                 </div>
             </div>
         </div>

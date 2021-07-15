@@ -15,8 +15,6 @@ function OnAttrValueChange()
 end
 
 function ClickHonor(honor)
-    <!-- if (honor.gsId ~= 70007 and honor.gsId ~= 70001 and honor.gsId ~= 70002 and honor.gsId ~= 70003 and honor.gsId ~= 70008) then return end -->
-    <!-- -- 不存在大图直接跳出 -->
     if (not honor.certurl or honor.certurl == "") then return end;
 
     local username = UserDetail.username;

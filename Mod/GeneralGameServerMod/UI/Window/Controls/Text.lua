@@ -24,7 +24,7 @@ Text:Property("BaseStyle", {
 
 -- 处理实体字符
 local function ReplaceEntityReference(value)
-	value = string.gsub(value or "", "&nbsp;", " ");
+	value = string.gsub(value or "", "&?nbsp;", " ");
 	return value;
 end
 
