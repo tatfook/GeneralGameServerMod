@@ -111,7 +111,7 @@ end
 
 function Http:Delete(url, config)
     config = config or {};
-    config.method = "PUT";
+    config.method = "DELETE";
     config.url = url;
     return self:Request(config);
 end

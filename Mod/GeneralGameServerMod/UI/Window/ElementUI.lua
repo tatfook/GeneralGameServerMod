@@ -629,7 +629,8 @@ end
 
 function ElementUI:OnMouseDown(event)
     if(event:IsAccepted()) then return end
-    if (self:CallAttrFunction("onmousedown", nil, self, event)) then return end
+
+    self:CallAttrFunction("onmousedown", nil, self, event);
 
     -- 默认拖拽处理
     if(self:IsDraggable() and event:IsLeftButton()) then
@@ -655,7 +656,8 @@ end
 
 function ElementUI:OnMouseMove(event)
     if(event:IsAccepted()) then return end
-    if (self:CallAttrFunction("onmousemove", nil, self, event)) then return end
+    self:CallAttrFunction("onmousemove", nil, self, event);
+    
     if(self.isMouseDown and event:IsLeftButton() and self:IsDraggable()) then
 		if(not self.isDragging and not event:IsMove()) then return end
         
@@ -687,8 +689,8 @@ end
 
 function ElementUI:OnMouseUp(event)
     if(event:IsAccepted()) then return end
+    self:CallAttrFunction("onmouseup", nil, self, event);
 
-    if (self:CallAttrFunction("onmouseup", nil, self, event)) then return end
     if (event:IsRightButton()) then 
         self:OnContextMenu(event);
     else

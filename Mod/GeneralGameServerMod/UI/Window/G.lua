@@ -61,6 +61,13 @@ function G:Init(window, g)
     return self;
 end
 
+function G:Call(func, ...)
+    local g = self:GetG();
+    local __call__ = rawget(g, "__call__");
+    if (type(__call__) == "function") then return __call__(func, ...) end
+    return func(...);
+end
+
 function G:ToString(obj)
     return GGS.Debug.ToString(obj);
 end

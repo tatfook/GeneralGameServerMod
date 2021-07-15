@@ -617,7 +617,7 @@ end
 function Element:CallAttrFunction(attrName, defaultValue, ...)
     local func = self:GetAttrFunctionValue(attrName, defaultValue);
     if (not func) then return nil end
-    return func(...);
+    return self:GetWindow():GetG().Call(func, ...);
 end
 
 -- 样式属性值改变
