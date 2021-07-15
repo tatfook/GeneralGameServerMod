@@ -1004,8 +1004,8 @@ function ElementUI:IsExistMouseEvent()
 end
 
 function ElementUI:IsTouchMode()
-    return true;
-    -- return System.os.IsTouchMode();
+    -- if (IsDevEnv) then return true end 
+    return System.os.IsTouchMode();
 end
 
 function ElementUI:HandleMouseBubbleEventBefore(event)
