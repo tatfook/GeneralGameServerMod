@@ -75,7 +75,7 @@ function ScrollBarThumb:ApplyElementStyle()
     style.CopyStyle(style:GetNormalStyle(), scrollbarStyle["scrollbar-thumb"]);
 end
 
-function ScrollBarThumb:OnUpdateLayout()
+function ScrollBarThumb:OnAfterUpdateLayout()
     local width, height = self:GetSize();
     width = if_else(not width or width == 0, self.maxWidth - 2, width);
     height = if_else(not height or height == 0, self.maxHeight - 2, height);
@@ -91,7 +91,7 @@ function ScrollBarThumb:OnUpdateLayout()
     layout:SetPos(self.left, self.top);
     layout:SetWidthHeight(self.width, self.height);
 
-    ScrollBarThumb._super.OnUpdateLayout(self);
+    ScrollBarThumb._super.OnAfterUpdateLayout(self);
 end
 
 function ScrollBarThumb:OnMouseDown(event)
@@ -159,7 +159,6 @@ function ScrollBarThumb:SetThumbWidthHeight(width, height, scrollBarWidth, scrol
         self.left = (self.maxWidth - self.width) / 2;
         self.top = math.min(scrollTop * self.maxTop / (scrollBar.scrollHeight - scrollBar.contentHeight), self.maxTop);
     end
-
     self:SetStyleValue("width", self.width);
     self:SetStyleValue("height", self.height);
     self:SetStyleValue("left", self.left);
@@ -333,9 +332,6 @@ function ScrollBar:OnScroll()
     end
 
     self:GetParentElement():OnScroll(self);
-end
-
-function ScrollBar:UpdateLayout()
 end
 
 -- 布局更新完成重置元素几何大小
