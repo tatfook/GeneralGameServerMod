@@ -100,10 +100,8 @@ Off
 Emit
 
 -- GGS API
-GGS_Connect
-GGS_Send 
-GGS_Recv
-GGS_Disconnect 
+TriggerNetworkEvent       -- 发送网络消息
+RegisterNetworkEvent      -- 接收网络消息
 
 -- Player API
 GetUserId 

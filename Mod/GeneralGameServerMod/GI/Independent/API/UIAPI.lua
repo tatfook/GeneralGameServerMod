@@ -29,6 +29,9 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         
         setmetatable(G, {__index = CodeEnv});
         
+        -- 在沙盒中运行所有回调
+        G.__call__ = CodeEnv.__call__;
+
         -- 获取窗口
         if (windows[key] and windows[key]:GetNativeWindow()) then windows[key]:CloseWindow() end
         local window = (not IsDevEnv and windows[key]) and windows[key] or Vue:new();

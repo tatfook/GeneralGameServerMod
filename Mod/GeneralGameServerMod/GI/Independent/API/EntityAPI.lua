@@ -11,15 +11,18 @@ local EntityAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/EntityAP
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
 local EntityNPC = NPL.load("../../Game/Entity/EntityNPC.lua", IsDevEnv);
+local EntityPlayer = NPL.load("../../Game/Entity/EntityPlayer.lua", IsDevEnv);
 
 local EntityAPI = NPL.export()
 
 
 local function CreateNPC(CodeEnv, ...)
-    local npc = EntityNPC:Create(...)
-    npc:Attach()
-    table.insert(CodeEnv.__entities__, npc)
-    return npc
+end
+
+local function CreatePlayer(CodeEnv, ...)
+    local entity = EntityPlayer:new():Init(...):Attach();
+    table.insert(CodeEnv.__entities__, entity)
+    return entity;
 end
 
 local function getEntity(id)
@@ -109,20 +112,26 @@ local function GetAllEntityCode()
     return list;
 end
 
+local function SetFocus(entity)
+    EntityManager.SetFocus(entity);
+end
+
 setmetatable(
     EntityAPI,
     {
         __call = function(_, CodeEnv)
-            CodeEnv.GetAllEntities = EntityManager.GetAllEntities
-            CodeEnv.GetEntityById = EntityManager.GetEntityById
-            CodeEnv.GetEntitiesInBlock = EntityManager.GetEntitiesInBlock
-            CodeEnv.GetEntityBlockPos = GetEntityBlockPos
-            CodeEnv.SetEntityBlockPos = SetEntityBlockPos
-            CodeEnv.EnableEntityPicked = EntityManager.EnableEntityPicked
-            CodeEnv.FindEntities = FindEntities
-            CodeEnv.GetAllEntityCode = GetAllEntityCode
+            CodeEnv.GetAllEntities = EntityManager.GetAllEntities;
+            CodeEnv.GetEntityById = EntityManager.GetEntityById;
+            CodeEnv.GetEntitiesInBlock = EntityManager.GetEntitiesInBlock;
+            CodeEnv.GetEntityBlockPos = GetEntityBlockPos;
+            CodeEnv.SetEntityBlockPos = SetEntityBlockPos;
+            CodeEnv.EnableEntityPicked = EntityManager.EnableEntityPicked;
+            CodeEnv.FindEntities = FindEntities;
+            CodeEnv.GetAllEntityCode = GetAllEntityCode;
+            CodeEnv.SetFocus = SetFocus;
         
             CodeEnv.CreateNPC = function(...) return CreateNPC(CodeEnv, ...) end
+            CodeEnv.CreatePlayer = function(...) return CreatePlayer(CodeEnv, ...) end 
         end
     }
 )

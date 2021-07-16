@@ -1,12 +1,9 @@
 
-local UI = require("UI");
-
-
 local GlobalScope = NewScope({
     LoopCount = 10,
 });
 
-UI.ShowWindow({
+ShowWindow({
     GlobalScope = GlobalScope,
     ResetLoopCount = function()
         GlobalScope.LoopCount = 200;

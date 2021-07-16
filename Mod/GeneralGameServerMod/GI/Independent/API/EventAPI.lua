@@ -51,7 +51,7 @@ local function TriggerEventCallBack(__code_env__, eventType, ...)
     end
 end
 
-local function IsKeyDown(...)
+local function IsKeyPressed(...)
     return ParaUI.IsKeyPressed(...)
 end 
 
@@ -85,6 +85,8 @@ end
 
 setmetatable(EventAPI, {
     __call = function(_, CodeEnv)
+        CodeEnv.DIK_SCANCODE = DIK_SCANCODE; -- DIK_SCANCODE.DIK_W
+        
         CodeEnv.EventType = EventType;
         CodeEnv.RegisterTimerCallBack = function(callback) RegisterEventCallBack(CodeEnv, EventType.LOOP, callback) end
         CodeEnv.RemoveTimerCallBack = function(callback) RemoveEventCallBack(CodeEnv, EventType.LOOP, callback) end 
@@ -97,7 +99,7 @@ setmetatable(EventAPI, {
         CodeEnv.Off = function(...) Off(CodeEnv, ...) end
         CodeEnv.Emit = function(...) Emit(CodeEnv, ...) end 
 
-        CodeEnv.IsKeyDown = IsKeyDown;
+        CodeEnv.IsKeyPressed = IsKeyPressed;
 
         -- 事件注册快捷方式
         CodeEnv.OnMouseKey = function(callback) RegisterEventCallBack(CodeEnv, EventType.MOUSE_KEY, callback) end

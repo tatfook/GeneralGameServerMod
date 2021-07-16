@@ -192,6 +192,7 @@ local function GetCamera()
     local facing = att:GetField("CameraRotY") * 180 / math.pi;
     return dist, pitch, facing;
 end
+
 setmetatable(
     SceneAPI,
     {
@@ -211,6 +212,7 @@ setmetatable(
             CodeEnv.GetScreenSize = GetScreenSize
             CodeEnv.GetPickingDist = function() return SelectionManager:GetPickingDist() end
 	        CodeEnv.GetHomePosition = GameLogic.GetHomePosition
+            CodeEnv.GetFacingFromOffset = Direction.GetFacingFromOffset
             CodeEnv.GetFacingFromCamera = Direction.GetFacingFromCamera
             CodeEnv.GetDirection2DFromCamera = Direction.GetDirection2DFromCamera
             CodeEnv.SetCameraObjectDistance = SetCameraObjectDistance
@@ -229,8 +231,80 @@ setmetatable(
             CodeEnv.ClearPickDisplay = ClearPickDisplay
             CodeEnv.MousePickTimerCallBack = MousePickTimerCallBack
             CodeEnv.MousePick = MousePick;
+
+            local camera_key_map = {};
+            for i = 0, 20 do
+                local key = ParaCamera.GetKeyMap(i);
+                if (key < 1024) then
+                    camera_key_map[i] = key;
+                end
+            end
+
+            CodeEnv.DisableDefaultWASDKey = function()
+                ParaCamera.SetKeyMap(2, 0);
+                ParaCamera.SetKeyMap(3, 0);
+                ParaCamera.SetKeyMap(4, 0);
+                ParaCamera.SetKeyMap(5, 0);
+            end
+
+            CodeEnv.FreeCameraMode = function()
+                ParaCamera.GetAttributeObject():SetField("CameraMode", 11);
+            end
+            
+            CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function() 
+                for key, val in pairs(camera_key_map) do
+                    ParaCamera.SetKeyMap(key, val);
+                end
+                -- ParaCamera.GetAttributeObject():SetField("CameraMode", 3);
+            end);
         end
     }
 )
 
 
+
+-- CameraFollow = 1,
+-- /// First person view of the Target object
+-- CameraFollowFirstPerson = 2,
+-- /// Third person view, allow rotation, character centered
+-- CameraFollowThirdPerson = 3,
+-- /// this value is used for the end of Camera follow modes.
+-- CameraFollowEnd = 4,
+-- /// @absoleted: Third person view, disable rotation, character restricted to a rectangular,
+-- /// if character is reaches the edge of this rect, camera will be centered on it again.
+-- CameraFollowDefault = 5,
+
+-- CameraCamera = 10,
+-- /// Camera as a first person. 
+-- CameraCameraFirstPerson = 11
+-- };
+
+
+-- enum CharacterAndCameraKeys
+-- {
+--     MOVE_LEFT = 0,
+--     MOVE_RIGHT,
+--     MOVE_FORWARD,
+--     MOVE_BACKWARD,
+--     SHIFT_RIGHT,
+--     SHIFT_LEFT,
+--     CHARACTER_JUMP,
+--     CAM_LOCK,
+--     CAM_RESET,
+--     ZOOM_IN,
+--     ZOOM_OUT,
+--     FLY_DOWNWARD,
+--     MAX_KEYS,
+--     KEY_UNKNOWN = 0xFF
+-- };
+
+
+-- ParaCamera.GetAttributeObject():SetField("CameraMode", 2)
+
+-- for key, val in pairs(ParaCamera) do
+--     print(key, val)
+-- end
+
+-- for i = 1, 20 do
+--     print(ParaCamera.GetKeyMap(i))
+-- end

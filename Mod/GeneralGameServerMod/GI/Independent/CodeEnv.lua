@@ -10,8 +10,8 @@ local CodeEnv = NPL.load("Mod/GeneralGameServerMod/GI/Independent/CodeEnv.lua");
 ]]
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
 local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
-local EventEmitter = NPL.load("../Game/Event/EventEmitter.lua", IsDevEnv);
 local Event = NPL.load("../Game/Event/Event.lua", IsDevEnv);
 local TickEvent = NPL.load("../Game/Event/TickEvent.lua", IsDevEnv);
 local SceneContext = NPL.load("../Game/Event/SceneContext.lua", IsDevEnv);
@@ -90,10 +90,10 @@ function CodeEnv:Init(Independent)
 	self:InstallIndependentAPI(Independent);
 	self:InstallCodeBlockAPI();
 	
-	SceneAPI(self);
-	PlayerAPI(self);
 	SystemAPI(self);
 	EventAPI(self);
+	SceneAPI(self);
+	PlayerAPI(self);
 	UIAPI(self);
 	EntityAPI(self);
 	BlockAPI(self);
@@ -112,6 +112,6 @@ function CodeEnv:Clear()
 
 	-- 移除 Entity
 	for _, entity in pairs(self.__entities__) do
-		entity:SetDead();
+		entity:Destroy();
 	end
 end

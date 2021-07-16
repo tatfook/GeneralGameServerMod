@@ -12,7 +12,7 @@ local G = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/G.lua");
 local Storage = NPL.load("./Storage.lua", IsDevEnv);
 local Http = NPL.load("./Api/Http.lua", IsDevEnv);
 local Promise = NPL.load("./Api/Promise.lua", IsDevEnv);
-local Date = NPL.load("Mod/GeneralGameServerMod/UI/Window/Api/Date.lua", IsDevEnv);
+local Date = NPL.load("./Date.lua", IsDevEnv);
 local Debug = NPL.load("Mod/GeneralGameServerMod/Core/Common/Debug.lua", IsDevEnv);
 
 local G = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());

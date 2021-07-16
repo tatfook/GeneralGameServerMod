@@ -12,8 +12,8 @@ local GGSAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/GGSAPI.lua"
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameClient.lua");
 local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
 
+local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
 local GIGeneralGameClient = NPL.load("../../Game/GGS/GIGeneralGameClient.lua", IsDevEnv);
-local EventEmitter = NPL.load("../../Game/Event/EventEmitter.lua");
 
 local GGSAPI = NPL.export()
 local __G__ = _G;

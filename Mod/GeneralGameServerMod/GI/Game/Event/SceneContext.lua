@@ -8,9 +8,10 @@ use the lib:
 local SceneContext = NPL.load("Mod/GeneralGameServerMod/GI/Game/Input/SceneContext.lua");
 ------------------------------------------------------------
 ]]
+local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
+
 local SceneContext = commonlib.inherit(commonlib.gettable("System.Core.SceneContext"), NPL.export());
 
-local EventEmitter = NPL.load("./EventEmitter.lua");
 
 SceneContext:Property("Activate", false, "IsActivate");
 

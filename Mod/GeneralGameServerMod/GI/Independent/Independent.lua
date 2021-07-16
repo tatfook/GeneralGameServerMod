@@ -281,3 +281,13 @@ end
 
 Independent:InitSingleton();
 
+-- local last_time = ParaGlobal.timeGetTime();
+-- function Independent:OnCameraFrameMove()
+-- 	local cur_time = ParaGlobal.timeGetTime();
+-- 	print(cur_time - last_time)
+-- 	last_time = cur_time;
+-- end
+
+-- commonlib.setfield("__independent__", Independent);
+-- local attr = ParaCamera.GetAttributeObject();
+-- attr:SetField("On_FrameMove", ";__independent__.OnCameraFrameMove();");
