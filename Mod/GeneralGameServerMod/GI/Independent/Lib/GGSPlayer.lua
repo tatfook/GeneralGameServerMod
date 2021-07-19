@@ -98,6 +98,8 @@ end
 
 function GGSPlayer:OnMainPlayerLogin(callback)
     RegisterEventCallBack(GGS.EVENT_TYPE.MAIN_PLAYER_LOGIN, callback);
+
+    if (__players__[__username__]) then callback(__players__[__username__]) end  
 end
 
 function GGSPlayer:OnMainPlayerLogout(callback)

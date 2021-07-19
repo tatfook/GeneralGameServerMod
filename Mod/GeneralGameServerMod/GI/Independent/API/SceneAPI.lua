@@ -247,6 +247,13 @@ setmetatable(
                 ParaCamera.SetKeyMap(5, 0);
             end
 
+            CodeEnv.EnableDefaultWASDKey = function()
+                ParaCamera.SetKeyMap(2, camera_key_map[2]);
+                ParaCamera.SetKeyMap(3, camera_key_map[3]);
+                ParaCamera.SetKeyMap(4, camera_key_map[4]);
+                ParaCamera.SetKeyMap(5, camera_key_map[5]);
+            end
+
             CodeEnv.FreeCameraMode = function()
                 ParaCamera.GetAttributeObject():SetField("CameraMode", 11);
             end

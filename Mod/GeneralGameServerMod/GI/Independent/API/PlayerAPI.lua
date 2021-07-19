@@ -170,4 +170,9 @@ setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
     CodeEnv.GetItemStackFromInventory = GetItemStackFromInventory;
     CodeEnv.SetItemStackToInventory = SetItemStackToInventory;
     CodeEnv.RemoveItemFromInventory = RemoveItemFromInventory;
+
+    local MainPlayer = GetPlayer();
+    CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function()
+        MainPlayer:SetFocus();
+    end);
 end});

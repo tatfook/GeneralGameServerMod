@@ -197,7 +197,7 @@ GGS_Recv(function(msg)
         GGS:SetConnected(true);
         GGS:SetConnecting(false);
 
-        print("=======================GGS Connect Success======================", GetUserName())
+        -- print("=======================GGS Connect Success======================", GetUserName())
         TriggerEventCallBack(GGS.EVENT_TYPE.CONNECT);
     elseif (__action__ == "__push_share_data__") then 
         SetShareData(__data__);

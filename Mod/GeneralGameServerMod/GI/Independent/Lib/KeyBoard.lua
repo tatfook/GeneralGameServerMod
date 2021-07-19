@@ -19,7 +19,9 @@ local __key_map__ = {
     A = DIK_SCANCODE.DIK_A,
     S = DIK_SCANCODE.DIK_S,
     D = DIK_SCANCODE.DIK_D,
-};
+    F = DIK_SCANCODE.DIK_F,
+    SPACE = DIK_SCANCODE.DIK_SPACE,
+}; -- event_mapping
 
 function GetKeyInfo(key)
     key = string.upper(key);

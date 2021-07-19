@@ -107,7 +107,6 @@ function GIServerDataHandler:RecvData(data)
     elseif (__action__ == "__push_user_data__") then
         return self:HandlePushUserData(data);
     elseif (__to__) then
-        GGS.INFO(data.__data__)
         self:SendDataToPlayer(data, data.__to__);
     else
         self:SendDataToAllPlayer(data);

@@ -11,7 +11,6 @@ local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.l
 
 local EventEmitter = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-
 function EventEmitter:ctor()
     self.__callbacks__ = {};
     self.__once_callbacks__ = {};
