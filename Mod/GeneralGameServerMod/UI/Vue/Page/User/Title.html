@@ -57,27 +57,32 @@
              if (assetfile == CustomCharItems.defaultModelFile and not CustomCharItems:CheckAvatarExist(skin)) then
                  skin = CustomCharItems:ChangeSkinStringToItems(skin);
                  local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
+                local function ChangeAsset(assetfile, skin)
+                    local playerEntity = GameLogic.GetPlayerController():GetPlayer();
+                    playerEntity:SetMainAssetPath(assetfile);
+                    GameLogic.options:SetMainPlayerAssetName(assetfile);
+                    GameLogic.options:SetMainPlayerSkins(skin);
+                    playerEntity:SetSkin(skin);
+                    GlobalScope:Set("AssetSkinGoodsItemId", 0);
+                    UpdatePlayerEntityInfo();
+                end
+
                  GameLogic.IsVip("ChangeAvatarSkin", true, function(isVip)
                      if(isVip) then
-                         skin = removeActivityItems(skin);
-                         local playerEntity = GameLogic.GetPlayerController():GetPlayer();
-                         playerEntity:SetMainAssetPath(assetfile);
-                         GameLogic.options:SetMainPlayerAssetName(assetfile);
-                         GameLogic.options:SetMainPlayerSkins(skin);
-                         playerEntity:SetSkin(skin);
-                         GlobalScope:Set("AssetSkinGoodsItemId", 0);
-                         UpdatePlayerEntityInfo();
+                        skin = removeActivityItems(skin);
+                        ChangeAsset(assetfile, skin)
                      else
                          skin = removeAllUnvalidItems(skin);
                          if (skin ~= nil and skin ~= "") then
-                             local playerEntity = GameLogic.GetPlayerController():GetPlayer();
-                             playerEntity:SetMainAssetPath(assetfile);
-                             GameLogic.options:SetMainPlayerAssetName(assetfile);
-                             GameLogic.options:SetMainPlayerSkins(skin);
-                             playerEntity:SetSkin(skin);
-                             GlobalScope:Set("AssetSkinGoodsItemId", 0);
-                             UpdatePlayerEntityInfo();
+                            ChangeAsset(assetfile, skin)
                          end
+                     end
+
+                     if skin == "80001;81018;88014;" then
+                        local defaul_asset = GlobalScope:Get("DefaulMainAsset")
+                        if defaul_asset and defaul_asset ~= "" and defaul_asset ~= CustomCharItems.defaultModelFile then
+                            ChangeAsset(defaul_asset, skin)
+                        end
                      end
                      CloseWindow();
                  end)

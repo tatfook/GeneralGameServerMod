@@ -277,8 +277,15 @@ function LoadUserInfo()
         end
        
         local ParacraftPlayerEntityInfo = UserDetail.extra and UserDetail.extra.ParacraftPlayerEntityInfo or {};
-        if (ParacraftPlayerEntityInfo.asset) then GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) end 
-        if (ParacraftPlayerEntityInfo.skin) then GlobalScope:Set("MainSkin", ParacraftPlayerEntityInfo.skin) end 
+        
+        if (ParacraftPlayerEntityInfo.asset) then 
+            GlobalScope:Set("MainAsset", ParacraftPlayerEntityInfo.asset) 
+            GlobalScope:Set("DefaulMainAsset", ParacraftPlayerEntityInfo.asset)
+        end 
+        if (ParacraftPlayerEntityInfo.skin) then 
+            GlobalScope:Set("MainSkin", ParacraftPlayerEntityInfo.skin) 
+            GlobalScope:Set("DefaulMainSkin", ParacraftPlayerEntityInfo.skin)
+        end 
         
         NPL.load("(gl)script/apps/Aries/Creator/Game/Movie/CustomSkinPage.lua");
         local CustomSkinPage = commonlib.gettable("MyCompany.Aries.Game.Movie.CustomSkinPage");
