@@ -90,7 +90,7 @@ function EntityPlayer:CheckMotion()
     	return obj:SetField("AnimID", 0);
 	end 
 
-	local dist = 0.15;
+	local dist = 0.2;
     local x, y, z = self:GetPosition();
     local xx, yy, zz = x, y, z;
 	local facing = ParaCamera.GetAttributeObject():GetField("CameraRotY");

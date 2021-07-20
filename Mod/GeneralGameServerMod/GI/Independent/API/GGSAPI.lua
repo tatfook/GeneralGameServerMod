@@ -31,6 +31,7 @@ local EventType = {
     __GGS_DATA__ = "__GGS_DATA__",
     __GGS_CONNECT__ = "__GGS_CONNECT__",
     __GGS_DISCONNECT__ = "__GGS_DISCONNECT__",
+    __GGS_CLOSE__ = "__GGS_CLOSE__",
 }
 local function RecvDataCallBack(...)
     __event_emitter__:TriggerEventCallBack(EventType.__GGS_DATA__, ...);
@@ -139,6 +140,8 @@ setmetatable(GGSAPI, {
         CodeEnv.GGS_Disconnect = function(...) return GGS_Disconnect(CodeEnv, ...) end
         CodeEnv.GGS_GetPlayer = function(...) return GGS_GetPlayer(CodeEnv, ...) end
         CodeEnv.GGS_GetAllPlayer = function(...) return GGS_GetAllPlayer(CodeEnv, ...) end
+        CodeEnv.GGS_OnClose = function(...) CodeEnv.RegisterEventCallBack(EventType.__GGS_CLOSE__, ...) end 
+        CodeEnv.GGS_Close = function() CodeEnv.TriggerEventCallBack(EventType.__GGS_CLOSE__) end 
         
         if (IsDevEnv) then CodeEnv.GGS_Independent() end
         
@@ -147,7 +150,7 @@ setmetatable(GGSAPI, {
         __event_emitter__:RegisterEventCallBack(EventType.__GGS_DISCONNECT__, GGS_DisconnectionCallBack, CodeEnv);
 
         CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function() 
-            GGS_Disconnect(CodeEnv);
+            CodeEnv.GGS_Close();
             __event_emitter__:RemoveEventCallBack(EventType.__GGS_DATA__, GGS_RecvDataCallBack, CodeEnv);
             __event_emitter__:RemoveEventCallBack(EventType.__GGS_CONNECT__, GGS_ConnectionCallBack, CodeEnv);
             __event_emitter__:RemoveEventCallBack(EventType.__GGS_DISCONNECT__, GGS_DisconnectionCallBack, CodeEnv);

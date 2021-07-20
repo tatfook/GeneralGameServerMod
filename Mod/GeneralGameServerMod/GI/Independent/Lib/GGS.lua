@@ -186,6 +186,12 @@ end
 function GGS:OnDisconnect(callback)
     RegisterEventCallBack(GGS.EVENT_TYPE.DISCONNECT, callback);
 end
+function GGS:OnClose(callback)
+    GGS_OnClose(callback);
+end
+function GGS:Close()
+    GGS_Close();
+end
 
 GGS_Recv(function(msg)
     local __action__, __username__, __data__ = msg.__action__, msg.__username__, msg.__data__;

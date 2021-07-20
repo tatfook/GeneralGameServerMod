@@ -163,3 +163,10 @@ GGS:OnRecv(function(msg)
     if (action == GGS.EVENT_TYPE.SET_PLAYER_ENTITY_INFO) then return SetPlayerEntityInfo(msg) end
     if (action == GGS.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO) then return SetPlayerEntityDataInfo(msg) end 
 end);
+
+GGS:OnClose(function()
+    for _, entity in pairs(__player_entity_map__) do
+        entity:Destroy();
+    end
+    __player_entity_map__ = {};
+end);
