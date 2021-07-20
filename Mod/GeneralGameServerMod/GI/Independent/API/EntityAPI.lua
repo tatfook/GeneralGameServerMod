@@ -14,7 +14,7 @@ local EntityPlayer = NPL.load("../../Game/Entity/EntityPlayer.lua", IsDevEnv);
 
 local EntityAPI = NPL.export()
 
-local function CreatePlayer(CodeEnv, username)
+local function CreatePlayerEntity(CodeEnv, username)
     local entity = EntityPlayer:new():Init(username):Attach();
     table.insert(CodeEnv.__entities__, entity)
     return entity;
@@ -125,7 +125,7 @@ setmetatable(
             CodeEnv.GetAllEntityCode = GetAllEntityCode;
             CodeEnv.SetFocus = SetFocus;
         
-            CodeEnv.CreatePlayer = function(...) return CreatePlayer(CodeEnv, ...) end 
+            CodeEnv.CreatePlayerEntity = function(...) return CreatePlayerEntity(CodeEnv, ...) end 
         end
     }
 )

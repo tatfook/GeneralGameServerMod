@@ -64,6 +64,10 @@ function GetGGSRankModule()
     return require("GGSRank");
 end
 
+function GetGGSEntityModule()
+    return require("GGSEntity");
+end
+
 -- 获取KeepWorkAPI
 local __keepwork_api__ = nil;
 function GetKeepworkAPI()
