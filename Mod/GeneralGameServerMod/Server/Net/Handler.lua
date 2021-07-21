@@ -11,17 +11,19 @@ local Net = NPL.load("Mod/GeneralGameServerMod/Server/Net/Net.lua");
 
 local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
 
-local SandBox = NPL.load("../SandBox/SandBox.lua");
-
 local Net = commonlib.inherit(VirtualConnection, NPL.export());
 
 function Net:HandleMsg(msg)
 	if (type(msg) ~= "table" or not msg.__cmd__) then return end
-	-- SandBox:Handle("__net__", msg);
+	local __cmd__, __data__ = msg.__cmd__, msg.__data__;
+
+	if (__cmd__ == "__request_worker_server__") then
+	end
+	
+	echo(msg);
 end
 
 NPL.this(function()
-	echo(msg);
     Net:OnActivate(msg);
 end);
 

@@ -38,15 +38,19 @@ function VirtualConnection:GetKey(opts)
 end
 
 function VirtualConnection:New(msg)
-    return self:new():Init(msg);
+    local connection = self.singletonInited and self or self:new();
+    connection:Init(msg);
+    connection:SetNid(msg.__nid__);
+    return connection;
 end
 
 function VirtualConnection:GetVirtualConnection(msg)
     local key = self:GetKey(msg);
-    if (__all_virtual_connection__[key]) then return __all_virtual_connection__[key], false end
+    if (__all_virtual_connection__[key]) then return __all_virtual_connection__[key] end
+
     local virtual_connection = self:New(msg);
     __all_virtual_connection__[key] = virtual_connection;
-    return virtual_connection, true;
+    return virtual_connection;
 end
 
 function VirtualConnection:SetNid(nid)
@@ -56,10 +60,12 @@ function VirtualConnection:SetNid(nid)
     self.__nid__ = nid;
     local new_connection = self:GetConnection();
     if (new_connection) then new_connection:OnDisconnected(self.__disconnected_callback__, self) end 
+
+    __all_virtual_connection__[self:GetKey()] = self;
 end
 
 function VirtualConnection:GetNid()
-    return self.__nid__ ;
+    return self.__nid__;
 end
 
 function VirtualConnection:GetConnection()
@@ -72,6 +78,8 @@ function VirtualConnection:ctor()
 end
 
 function VirtualConnection:Init(opts)
+    opts = opts or {};
+
     if (opts.__remote_neuron_file__) then self:SetRemoteNeuronFile(opts.__remote_neuron_file__) end
     if (opts.__local_neuron_file__) then self:SetLocalNeuronFile(opts.__local_neuron_file__) end
     if (opts.__remote_thread_name__) then self:SetRemoteThreadName(opts.__remote_thread_name__) end
@@ -102,8 +110,11 @@ function VirtualConnection:Connect(callback)
     -- 已经连接直接执行回调退出
     if (self:IsConnected()) then return type(callback) == "function" and callback() end 
 
+    -- 注册事件回调
+    self.__event_emitter__:RegisterEventCallBack("__connected__", callback);
+    
     -- 如果正在连接则直接跳出
-    if (self:IsConnecting()) then return self.__event_emitter__:RegisterOnceEventCallBack("__connected__", callback) end
+    if (self:IsConnecting()) then return  end
     
     -- 标记正在连接
     self:SetConnecting(true);
@@ -117,7 +128,6 @@ function VirtualConnection:Connect(callback)
         self:SetConnected(true);
         self:SetConnecting(false);
         self:HandleConnected();
-        return type(callback) == "function" and callback();
     end);
 end
 

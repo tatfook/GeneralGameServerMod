@@ -8,7 +8,7 @@ use the lib:
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 ------------------------------------------------------------
 ]]
-
+NPL.load("(gl)script/ide/commonlib.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/HttpFiles.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Sound/SoundManager.lua");
 NPL.load("(gl)script/ide/AudioEngine/AudioEngine.lua");
@@ -225,10 +225,16 @@ function CommonLib:StartNetServer(ip, port)
     NPL.StartNetServer(ip or "0.0.0.0", tostring(port or "9000"));
 end
 
-
 -- String
 function CommonLib.StringTrim(str, ch)
     return String.Trim(str, ch)
 end
 
-    
+-- Timer
+function CommonLib.SetInterval(interval, callback)
+	return commonlib.Timer:new({callbackFunc = callback}):Change(interval, interval);
+end
+
+function CommonLib.SetTimeout(timeout, callback)
+	return commonlib.Timer:new({callbackFunc = callback}):Change(timeout);
+end

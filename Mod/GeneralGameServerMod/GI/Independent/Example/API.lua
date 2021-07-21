@@ -1,5 +1,8 @@
 
 
-SetSharedData("key", GetSharedData("key", 0) + 1);
-print(GetSharedData("key"));
+GetGGSAPI():Get("__server_manager__/select", {
+    worldId = "1234"
+}):Then(function(data)
+    echo(data)
+end);
 

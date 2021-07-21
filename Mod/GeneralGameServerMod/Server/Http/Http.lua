@@ -5,7 +5,7 @@ Date: 2021-06-23
 Desc: Http
 use the lib:
 ------------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/Server/Http/Http.lua");
+local Http = NPL.load("Mod/GeneralGameServerMod/Server/Http/Http.lua");
 ------------------------------------------------------------
 ]]
 
@@ -22,7 +22,7 @@ local Http = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.e
 
 Http:Property("NeuronFile", "Mod/GeneralGameServerMod/Server/Http/Http.lua");
 Http:Property("StaticDirectory");  -- 静态文件目录
-Http:Property("Port", 8888);
+Http:Property("Port", 9000);
 Http:Property("Ip", "0.0.0.0");
 
 function Http:ctor()
@@ -33,6 +33,8 @@ end
 function Http:Init()
     -- 指定Http接口文件
     NPL.AddPublicFile(self:GetNeuronFile(), -10);
+
+    self:UseCors();
 end
 
 -- 启动服务器
@@ -126,7 +128,13 @@ end
 
 -- Cors 中间件
 function Http:UseCors(options)
-    self:Use(Cors:new():Init(options));
+    if (self.__cors_callback__) then return self end 
+
+    local __cros__ = Cors:new():Init(options);
+    self.__cors_callback__ = function(ctx, next) __cros__:Handle(ctx, next) end
+    self:Use(self.__cors_callback__);
+    
+    return self;
 end
 
 function Http:OnActivate(msg)

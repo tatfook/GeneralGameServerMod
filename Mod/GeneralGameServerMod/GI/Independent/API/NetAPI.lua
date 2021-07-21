@@ -21,7 +21,7 @@ local EventType = {
 }
 
 local __virtual_connection__ = VirtualConnection:GetVirtualConnection({
-    __remote_neuron_file__ = "Mod/GeneralGameServerMod/Server/Net/Net.lua",
+    __remote_neuron_file__ = "Mod/GeneralGameServerMod/Server/Net/Handler.lua",
 });
 
 local NetAPI = NPL.export()

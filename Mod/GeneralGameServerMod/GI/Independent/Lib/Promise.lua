@@ -8,7 +8,7 @@ local promise = Promise:new():Init(function(resolve, reject)
 end);
 ]]
 
-local Promise = commonlib.inherit(ToolBase, module("Promise"));
+local Promise = inherit(ToolBase, module("Promise"));
 
 Promise:Property("State", "pending");  -- 状态 resolved  rejected
 Promise:Property("Result", nil);       -- 结果
@@ -167,10 +167,10 @@ end
 
 function Promise.Test()
     local promise = Promise:new():Init(function(resolve, reject)
-        commonlib.TimerManager.SetTimeout(function()  
+        SetTimeout(2000, function()  
             reject("hello world");
             -- resolve("hello world");
-        end, 2000);
+        end);
     end):Then(function(data)
         print("==============1", data);
         return "this is a test"

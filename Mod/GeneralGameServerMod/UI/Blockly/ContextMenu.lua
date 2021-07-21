@@ -32,6 +32,7 @@ local blockly_menus = {
     { text = "撤销", cmd = "undo"},
     { text = "重做", cmd = "redo"},
     { text = "导出工作区XML", cmd = "export_workspace_xml_text"},
+    { text = "导入工作区XML", cmd = "import_workspace_xml_text"},
     { text = "导出工具栏XML", cmd = "export_toolbox_xml_text"},
     { text = "生成宏示教代码", cmd = "export_macro_code"},
 }
@@ -99,6 +100,8 @@ function ContextMenu:OnMouseDown(event)
         blockly:Redo();
     elseif (menuitem.cmd == "export_workspace_xml_text") then
         self:ExportWorkspaceXmlText();
+    elseif (menuitem.cmd == "import_workspace_xml_text") then
+        self:ImportWorkspaceXmlText();
     elseif (menuitem.cmd == "export_toolbox_xml_text") then
         self:ExportToolboxXmlText();
     elseif (menuitem.cmd == "export_macro_code") then
@@ -108,11 +111,22 @@ end
 
 function ContextMenu:ExportWorkspaceXmlText()
     local xmlText = self:GetBlockly():SaveToXmlNodeText();
-    ParaMisc.CopyTextToClipboard(text);
+    ParaMisc.CopyTextToClipboard(xmlText);
     GameLogic.AddBBS("Blockly", "导出 XML 已拷贝至剪切板");
 end
 
 function ContextMenu:ImportWorkspaceXmlText()
+    local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+    Page.Show({
+        title = "请输入工作区XML文本",
+        confirm = function(text)
+            self:GetBlockly():LoadFromXmlNodeText(text);
+        end,
+    }, {
+        url = "%ui%/Blockly/Pages/XmlTextInput.html",
+        width = 500,
+        height = 400,
+    })
 end
 
 function ContextMenu:ExportMacroCode()

@@ -119,6 +119,12 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
 	CodeEnv.cmd = function(...) CommandManager:RunCommand(...) end
     CodeEnv.exit = CodeEnv.__stop__;
 
+    CodeEnv.__get_url__ = function(config, callback) 
+        System.os.GetUrl(config, function(...)
+            CodeEnv.__call__(callback, ...);
+        end);
+    end
+
     -- 会切换协程需做等待处理
     CodeEnv.require = function(name)
         if (CodeEnv.__modules__[name]) then 

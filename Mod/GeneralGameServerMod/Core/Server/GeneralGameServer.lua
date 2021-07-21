@@ -12,6 +12,8 @@ GeneralGameServer.Start();
 -------------------------------------------------------
 ]]
 
+local Server = NPL.load("Mod/GeneralGameServerMod/Server/Net/Server.lua");
+
 local ThreadHelper = NPL.load("./ThreadHelper.lua");
 local WorkerServer = NPL.load("./WorkerServer.lua");
 
@@ -50,7 +52,6 @@ function GeneralGameServer:LoadNetworkSettings()
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Common/Connection.lua", 401);
 	NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua", 402);
 	if (Config.Server.isControlServer) then NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/ControlServer.lua", 403) end
-	NPL.AddPublicFile("Mod/GeneralGameServerMod/Server/Net/Net.lua", 406);
 
 	-- NPL.AddPublicFile("Mod/GeneralGameServerMod/Core/Server/WorkerServer.lua", 404);
 	for i, publicFile in ipairs(Config.PublicFiles) do NPL.AddPublicFile(publicFile, 450 + i) end
@@ -85,8 +86,10 @@ function GeneralGameServer:Start()
     GGS.INFO.Format(string.format("服务器启动: listenIp: %s, listenPort: %s", listenIp, listenPort));
 
 	local threadCount = Config.Server.threadCount;
+	local threadList = {};
 	for i = 1, threadCount do 
 		local threadName = GGS.GetWorkerThreadName(i);
+		threadList[i] = threadName;
 		ThreadHelper:StartWorkerThread(threadName);
 		-- NPL.CreateRuntimeState(threadName, 0):Start(); 
 	end
@@ -94,6 +97,18 @@ function GeneralGameServer:Start()
 	-- 主循环
 	commonlib.Timer:new({callbackFunc = function() GeneralGameServer:Tick() end}):Change(1000, 1000 * 10);
 	
+	Server:Start({
+		controlIp = Config.ControlServer.innerIp or Config.ControlServer.outerIp,
+		controlPort = Config.ControlServer.innerPort or Config.ControlServer.outerPort,
+		outerIp = Config.WorkerServer.outerIp,
+		outerPort = Config.WorkerServer.outerPort,
+		innerIp = Config.WorkerServer.innerIp,
+		innerPort = Config.WorkerServer.innerPort,
+		maxClientCount = Config.Server.maxClientCount,
+		threadMaxClientCount = Config.Server.threadMaxClientCount,
+		threadList = threadList;
+	});
+
 	self.isStart = true;
 end
 

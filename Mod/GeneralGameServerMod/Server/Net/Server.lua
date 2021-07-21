@@ -5,51 +5,82 @@ Date: 2021-06-30
 Desc: MySql
 use the lib:
 ------------------------------------------------------------
-NPL.load("Mod/GeneralGameServerMod/CommonLib/Net/Server.lua");
+local Server = NPL.load("Mod/GeneralGameServerMod/Server/Net/Server.lua");
 ------------------------------------------------------------
 ]]
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
+local ThreadHelper = NPL.load("Mod/GeneralGameServerMod/CommonLib/ThreadHelper.lua");
+
 local Server = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 function Server:ctor() 
+	self.__server__ = {__threads__ = {}};
 end
 
-function Server:LoadNetworkSettings()
-	local att = NPL.GetAttributeObject();
-	att:SetField("TCPKeepAlive", true);
-	att:SetField("KeepAlive", true);
-	att:SetField("IdleTimeout", false);
-	att:SetField("IdleTimeoutPeriod", 1200000);
-
-	NPL.SetUseCompression(true, true);
-	att:SetField("CompressionLevel", -1);
-	att:SetField("CompressionThreshold", 1024*4);
+function Server:Init()
+end
 	
-	att:SetField("UDPIdleTimeoutPeriod", 1200000);
-	att:SetField("UDPCompressionLevel", -1);
-	att:SetField("UDPCompressionThreshold", 1024*16);
-	__rts__:SetMsgQueueSize(500);
+function Server:GetThreadInfo(threadName)
+	local __threads__ = self.__server__.__threads__;
+	__threads__[threadName] = __threads__[threadName] or {};
+	return __threads__[threadName]; 
 end
 
 -- 启动服务
-function Server:Start(ip, port) 
+function Server:Start(config) 
 	if (self.__is_start__) then return end 
+	CommonLib.AddPublicFile("Mod/GeneralGameServerMod/Server/Net/Handler.lua");
+	CommonLib.AddPublicFile("Mod/GeneralGameServerMod/Server/Net/ServerManager.lua");
 
-    -- 设置系统属性
-    self:LoadNetworkSettings();
-
-	-- 启动服务
-	if (NPL.GetAttributeObject():GetField("IsServerStarted", false)) then
-		NPL.StartNetServer(ip or "0.0.0.0", tostring(port or "9000"));
+	-- 工作节点则连接控制节点
+	if (config.controlIp and config.controlPort) then
+		local nid = CommonLib.AddNPLRuntimeAddress(config.controlIp, config.controlPort);
+		self.__connection__ = VirtualConnection:new():Init({__nid__ = nid, __remote_neuron_file__ = "Mod/GeneralGameServerMod/Server/Net/ServerManager.lua"});
+		self.__connection__:Connect(function()
+			print("-----------success connect control server-----------------");
+		end);
 	end
+	
+	-- 启动服务
+	local ip, port = config.innerIp or config.outerIp, config.innerPort or config.outerPort;
+	CommonLib.StartNetServer(ip, port);
 
-	-- 主循环
-	commonlib.Timer:new({callbackFunc = function() GeneralGameServer:Tick() end}):Change(1000, 1000);
+	self.__server__.outerIp = config.outerIp;
+	self.__server__.outerPort = config.outerPort;
+	self.__server__.innerIp = config.innerIp;
+	self.__server__.innerPort = config.innerPort;
+	self.__server__.maxClientCount = config.maxClientCount;
+	self.__server__.threadMaxClientCount = config.threadMaxClientCount;
+	self.__server__.threadList = config.threadList;
+
+	-- 主线程定时推送服务器信息
+	CommonLib.SetInterval(1000 * 60 * 2, function()
+		if (self.__connection__) then self.__connection__:SendMsg({__cmd__ = "__push_worker_server_info__", __data__ = self.__server__}) end
+	end);
 
 	self.__is_start__ = true;
 end
 
+function Server:OnThreadMsg(msg)
+    local __from_thread_name__, __to_thread_name__, __cmd__, __data__ = msg.__from_thread_name__, msg.__to_thread_name__, msg.__cmd__, msg.__data__;
+	local thread_info = self:GetThreadInfo(__from_thread_name__);
+    commonlib.partialcopy(thread_info, __data__);
+	thread_info.__thread_name__ = __from_thread_name__;
 
-function Server:Tick()
+	if (not self.__connection__) then return end
+
+	self.__connection__:SendMsg({
+		__cmd__ = "__push_worker_server_thread_info__",
+		__data__ = {
+			threadName = __from_thread_name__,
+			threadInfo = __data__,
+		},
+	});
 end
 
-Server:InitSingleton();
+Server:InitSingleton():Init();
+
+ThreadHelper:OnMsg(function(msg)
+	Server:OnThreadMsg(msg);
+end);

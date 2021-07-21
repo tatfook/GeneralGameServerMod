@@ -85,3 +85,14 @@ function GetKeepworkAPI()
 
     return __keepwork_api__;
 end
+
+local __ggs_api__ = nil;
+function GetGGSAPI()
+    if (__ggs_api__) then return __ggs_api__ end 
+    __ggs_api__ = require("Http"):new():Init({
+        baseURL = IsDevEnv and "http://127.0.0.1:9000/api/v0/" or "https://ggs.keepwork.com/api/v0/",
+        headers = {["content-type"] = "application/json"},
+    });
+
+    return __ggs_api__;
+end

@@ -5,16 +5,17 @@ Desc: Http
 -----------------------------------------------
 ]]
 
-local Promise = require("Promise.lua")
+local Promise = require("Promise")
 
-local Http = commonlib.inherit(ToolBase, module("Http"));
+local Http = inherit(ToolBase, module("Http"));
 
 Http:Property("Token");                    -- Bearer token
 Http:Property("Config", {headers = {}});   -- 配置
 
 local function HttpRequest(config, callback)
-    -- echo(config, true)
-    System.os.GetUrl(config, callback);
+    echo(config, true)
+    -- System.os.GetUrl(config, callback);
+    __get_url__(config, callback);
 end
 
 function Http:ctor()
@@ -26,7 +27,7 @@ function Http:ctor()
 end
 
 function Http:Init(config)
-    commonlib.partialcopy(self:GetConfig(), config);
+    partialcopy(self:GetConfig(), config);
     return self;
 end
 
@@ -49,8 +50,8 @@ function Http:GetUrl(config)
 end
 
 function Http:GetHeaders(config)
-    local headers = commonlib.deepcopy(self:GetConfig().headers or {});
-    commonlib.partialcopy(headers, config.headers);
+    local headers = deepcopy(self:GetConfig().headers or {});
+    partialcopy(headers, config.headers);
     return headers;
 end
 
@@ -86,10 +87,11 @@ function Http:Request(config)
     end);
 end
 
-function Http:Get(url, config)
+function Http:Get(url, data, config)
     config = config or {};
     config.method = "GET";
     config.url = url;
+    config.data = data;
     return self:Request(config);
 end
 
@@ -109,9 +111,10 @@ function Http:Put(url, data, config)
     return self:Request(config);
 end
 
-function Http:Delete(url, config)
+function Http:Delete(url, data, config)
     config = config or {};
     config.method = "DELETE";
     config.url = url;
+    config.data = data;
     return self:Request(config);
 end

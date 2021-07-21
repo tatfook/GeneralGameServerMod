@@ -47,6 +47,11 @@ end
 function Connection:OnClose()
 end
 
+-- 连接是否关闭
+function Connection:IsClose()
+	return self:GetNid() == nil;
+end
+
 -- 关闭连接
 function Connection:Close(reason)
 	-- 断开链接
