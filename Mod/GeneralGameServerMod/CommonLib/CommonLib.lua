@@ -143,13 +143,17 @@ end
 -- 添加接口文件
 local PublicFileNo = 500;
 local PublicFiles = {};
+CommonLib.__public_files__ = PublicFiles;
 function CommonLib.AddPublicFile(filename, id)
     if (PublicFiles[filename]) then return end
-    PublicFiles[filename] = filename;
     if (not id) then id, PublicFileNo = PublicFileNo, PublicFileNo + 1 end
+    PublicFiles[filename] = id;
     -- print("AddPublicFile:", filename, id)
     NPL.AddPublicFile(filename, id);
 end
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/RPCVirtualConnection.lua");
 
 -- 添加地址
 local __nids__ = {};

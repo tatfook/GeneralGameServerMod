@@ -12,60 +12,60 @@ local API = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/API.lua");
 local API = module("API");
 
 -- 定义快捷方式接口
-function GetGGSModule()
-    return require("GGS");
+function GetNetModule()
+    return require("Net");
 end
 
 function SetSharedData(key, val)
-    GetGGSModule():SetShareData({[key] = val})
+    GetNetModule():SetShareData({[key] = val})
 end
 
 function GetSharedData(key, default_val)
-    return GetGGSModule():GetShareData()[key] or default_val;
+    return GetNetModule():GetShareData()[key] or default_val;
 end
 
 function OnSharedDataChanged(key, callback)
-    return GetGGSModule():OnShareDataItem(key, callback);
+    return GetNetModule():OnShareDataItem(key, callback);
 end
 
-function GetGGSStateModule()
-    return require("GGSState");
+function GetNetStateModule()
+    return require("NetState");
 end
 
 function GetUserData(key, default_val)
-    return GetGGSStateModule():GetUserState()[key] or default_val;
+    return GetNetStateModule():GetUserState()[key] or default_val;
 end
 
 function SetUserData(key, val)
-    GetGGSStateModule():GetUserState()[key] = val;
+    GetNetStateModule():GetUserState()[key] = val;
 end
 
 function GetAllUserData()
-    return GetGGSStateModule():GetAllUserState();
+    return GetNetStateModule():GetAllUserState();
 end
 
 function RegisterNetworkEvent(msgname, callback)
-    GetGGSModule():On(msgname, callback);
+    GetNetModule():On(msgname, callback);
 end
 
 function TriggerNetworkEvent(msgname, msgdata)
-    GetGGSModule():Emit(msgname, msgdata);
+    GetNetModule():Emit(msgname, msgdata);
 end
 
-function RegisterGGSConnectEvent(callback)
-    GetGGSModule():Connect(callback);
+function RegisterNetConnectEvent(callback)
+    GetNetModule():Connect(callback);
 end
 
-function GetGGSPlayerModule()
-    return require("GGSPlayer");
+function GetNetPlayerModule()
+    return require("NetPlayer");
 end
 
-function GetGGSRankModule()
-    return require("GGSRank");
+function GetNetRankModule()
+    return require("NetRank");
 end
 
-function GetGGSEntityModule()
-    return require("GGSEntity");
+function GetNetEntityModule()
+    return require("NetEntity");
 end
 
 -- 获取KeepWorkAPI
@@ -86,13 +86,13 @@ function GetKeepworkAPI()
     return __keepwork_api__;
 end
 
-local __ggs_api__ = nil;
-function GetGGSAPI()
-    if (__ggs_api__) then return __ggs_api__ end 
-    __ggs_api__ = require("Http"):new():Init({
-        baseURL = IsDevEnv and "http://127.0.0.1:9000/api/v0/" or "https://ggs.keepwork.com/api/v0/",
+local __Net_api__ = nil;
+function GetNetAPI()
+    if (__Net_api__) then return __Net_api__ end 
+    __Net_api__ = require("Http"):new():Init({
+        baseURL = IsDevEnv and "http://127.0.0.1:9000/api/v0/" or "https://Net.keepwork.com/api/v0/",
         headers = {["content-type"] = "application/json"},
     });
 
-    return __ggs_api__;
+    return __Net_api__;
 end

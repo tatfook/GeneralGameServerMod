@@ -14,7 +14,7 @@ setmetatable(
     API,
     {
         __call = function(_, CodeEnv)
-            -- TODO extend CodeEnv
+            CodeEnv.GetWorldId = function() return GameLogic.options:GetProjectId() end 
         end
     }
 )

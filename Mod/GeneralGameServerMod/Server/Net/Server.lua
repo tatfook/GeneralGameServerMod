@@ -31,6 +31,7 @@ end
 function Server:Start(config) 
 	if (self.__is_start__) then return end 
 	CommonLib.AddPublicFile("Mod/GeneralGameServerMod/Server/Net/Handler.lua");
+	CommonLib.AddPublicFile("Mod/GeneralGameServerMod/Server/Net/RPC.lua");
 	CommonLib.AddPublicFile("Mod/GeneralGameServerMod/Server/Net/ServerManager.lua");
 
 	-- 工作节点则连接控制节点

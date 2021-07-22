@@ -21,6 +21,8 @@ local EntityPlayer = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.
 
 local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
 
+EntityPlayer.framemove_interval = 0.02;
+
 function EntityPlayer:ctor()
 	local dataWatcher = self:GetDataWatcher(true);
 	self.dataFieldWKeyPressed = dataWatcher:AddField(nil, nil);
@@ -81,7 +83,6 @@ function EntityPlayer:CheckCollision(deltaTime)
 	deltaTime = math.min(0.3, deltaTime);
 	EntityPlayer._super.CheckCollision(self, deltaTime);
 end
-
 function EntityPlayer:CheckMotion()
 	local obj = self:GetInnerObject();
 	if (not obj) then return end 
@@ -90,7 +91,7 @@ function EntityPlayer:CheckMotion()
     	return obj:SetField("AnimID", 0);
 	end 
 
-	local dist = 0.2;
+	local dist = 0.15;
     local x, y, z = self:GetPosition();
     local xx, yy, zz = x, y, z;
 	local facing = ParaCamera.GetAttributeObject():GetField("CameraRotY");

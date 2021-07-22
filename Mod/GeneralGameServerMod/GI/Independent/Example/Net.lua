@@ -1,16 +1,16 @@
 
 
-NetConnect(function()
-    print("========connect success=========");
+-- NetConnect(function()
+--     print("========connect success=========");
 
-    NetSend({"hello world"})
+--     NetSend({"hello world"})
 
-    -- NetClose();
-end)
+--     -- NetClose();
+-- end)
 
-NetOnDisconnected(function()
-    print("=================disconnection=============")
-end)
+-- NetOnDisconnected(function()
+--     print("=================disconnection=============")
+-- end)
 
 
 
@@ -18,3 +18,10 @@ end)
 --     print("========")
 --     NetSend({"hello world"})
 -- end)
+
+local Net = require("Net");
+
+Net:Connect(function(data)
+    print("==============121")
+    echo(data)
+end);

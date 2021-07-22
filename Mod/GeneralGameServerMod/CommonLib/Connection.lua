@@ -30,6 +30,7 @@ CommonLib.AddPublicFile(__neuron_file__);
 function Connection:ctor()
 	self.__timer__ = commonlib.Timer:new();
 	self.__event_emitter__ = EventEmitter:new();       -- 事件触发器
+	self.__all_virtual_connection__ = {};              -- 关联的虚拟链接
 end
 
 -- 初始化
@@ -43,13 +44,23 @@ function Connection:Init(nid)
 	return self;
 end
 
--- 链接关闭
-function Connection:OnClose()
-end
-
 -- 连接是否关闭
 function Connection:IsClose()
 	return self:GetNid() == nil;
+end
+
+function Connection:AddVirtualConnection(virtual_connection)
+	self.__all_virtual_connection__[virtual_connection] = virtual_connection;
+end
+
+function Connection:RemoveVirtualConnection(virtual_connection)
+	self.__all_virtual_connection__[virtual_connection] = nil;
+end
+
+function Connection:GetVirtualConnectionCount()
+	local count = 0;
+	for _ in pairs(self.__all_virtual_connection__) do count = count + 1 end
+	return count;
 end
 
 -- 关闭连接
@@ -61,7 +72,7 @@ function Connection:Close(reason)
 	-- 置空链接标识符
 	self:SetNid(nil);
 	-- 触发回调
-	self:OnClose();
+	self:HandleClosed();
 end
 
 -- 获取地址
@@ -73,9 +84,10 @@ end
 function Connection:Send(msg, threadname, neuronfile, callback)
 	if (not self:GetNid()) then return end
 	local address = self:GetRemoteAddress(threadname, neuronfile);
+	-- print("Connection:Send", address);
 	local result = NPL.activate(address, msg);
 	if (result ~= 0) then
-		local timeout = 100;
+		local timeout = 500;
 		local function OnTimer()
 			if (not self:GetNid()) then return end
 			timeout = timeout + timeout;
@@ -93,6 +105,20 @@ function Connection:Send(msg, threadname, neuronfile, callback)
 	else
 		if (type(callback) == "function") then callback() end
 	end
+end
+
+-- 链接关闭
+function Connection:OnClosed(...)
+	self.__event_emitter__:RegisterEventCallBack("__closed__", ...)
+end
+
+-- 链接关闭
+function Connection:OffClosed(...)
+	self.__event_emitter__:RemoveEventCallBack("__closed__", ...)
+end
+
+function Connection:HandleClosed(...)
+	self.__event_emitter__:TriggerEventCallBack("__closed__", ...)
 end
 
 -- 连接断开

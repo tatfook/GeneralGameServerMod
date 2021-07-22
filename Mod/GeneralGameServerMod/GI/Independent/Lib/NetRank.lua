@@ -1,20 +1,20 @@
 --[[
-Title: GGSRank
+Title: NetRank
 Author(s):  wxa
 Date: 2021-06-01
 Desc: 排行榜
 use the lib:
 ------------------------------------------------------------
-local GGSRank = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/GGSRank.lua");
+local NetRank = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/NetRank.lua");
 ------------------------------------------------------------
 ]]
-local GGS = require("GGS");
-local GGSRank = inherit(ToolBase, module("GGSRank"));
+local Net = require("Net");
+local NetRank = inherit(ToolBase, module("NetRank"));
 
 -- 比较方式 使用排序
-GGSRank:Property("Sort", "score");   
-GGSRank:Property("FieldWidth", 100);
-GGSRank:Property("FieldHeight", 30);
+NetRank:Property("Sort", "score");   
+NetRank:Property("FieldWidth", 100);
+NetRank:Property("FieldHeight", 30);
 
 -- 窗口对象
 local __ui__ = nil;
@@ -23,7 +23,7 @@ local __scope__ = NewScope();
 -- 当前用户排行数据 
 local __rank__ = {};
 
-function GGSRank:Init()
+function NetRank:Init()
     __scope__:Set("fields", {});
     __scope__:Set("title", "排行榜");
 
@@ -47,24 +47,24 @@ end
 }
 --]] 
 
-function GGSRank:GetMaxLineCount()
+function NetRank:GetMaxLineCount()
     return __scope__:Get("MaxLineCount") or 0;
 end
 
-function GGSRank:SetMaxLineCount(count)
+function NetRank:SetMaxLineCount(count)
     __scope__:Set("MaxLineCount", count);
     __scope__:Set("ContentHeight", self:GetFieldHeight() * count);
 end
 
-function GGSRank:GetFields()
+function NetRank:GetFields()
     return __scope__:Get("fields", {});
 end
 
-function GGSRank:GetRanks()
+function NetRank:GetRanks()
     return __scope__:Get("ranks", {});
 end
 
-function GGSRank:DefineField(field)
+function NetRank:DefineField(field)
     local fields = self:GetFields();
     
     field.width = field.width or self:GetFieldWidth();
@@ -76,20 +76,20 @@ function GGSRank:DefineField(field)
     self:RefreshRanks();
 end
 
-function GGSRank:SetFieldValue(key, value)
+function NetRank:SetFieldValue(key, value)
     __rank__[key] = value;
-    GGS:SetUserData(__rank__); 
+    Net:SetUserData(__rank__); 
 end
 
-function GGSRank:GetFieldValue(key)
+function NetRank:GetFieldValue(key)
     return __rank__[key];
 end
 
-function GGSRank:SetTitle(title)
+function NetRank:SetTitle(title)
     __scope__:Set("title", title);
 end
 
-function GGSRank:Sort()
+function NetRank:Sort()
     local ranks = self:GetRanks();
     local compare = self:GetSort();
     if (type(compare) == "function") then
@@ -104,7 +104,7 @@ function GGSRank:Sort()
     end
 end
 
-function GGSRank:GetWidthHeight()
+function NetRank:GetWidthHeight()
     local fields = self:GetFields();
     local width, height, fieldCount = 0, 0, 0;
     for _, field in pairs(fields) do
@@ -117,14 +117,14 @@ function GGSRank:GetWidthHeight()
     return width, height;
 end
 
-function GGSRank:ShowUI(G, params)
+function NetRank:ShowUI(G, params)
     self:CloseUI();
 
     G = G or {};
     params = params or {};
 
     G.GlobalScope = __scope__;
-    params.url = params.url or "%gi%/Independent/UI/GGSRank.html";
+    params.url = params.url or "%gi%/Independent/UI/NetRank.html";
     params.alignment = params.alignment or "_rt";
     params.isClickThrough = true;
     params.zorder = params.zorder or -100;
@@ -138,14 +138,14 @@ function GGSRank:ShowUI(G, params)
     return __ui__;
 end
 
-function GGSRank:CloseUI()
+function NetRank:CloseUI()
     if (not __ui__) then return end
     __ui__:CloseWindow();
 end
 
-function GGSRank:RefreshRank(userdata)
-    local ranks = GGSRank:GetRanks();
-    local fields = GGSRank:GetFields();
+function NetRank:RefreshRank(userdata)
+    local ranks = NetRank:GetRanks();
+    local fields = NetRank:GetFields();
     local rank = nil;
 
     for _, currank in ipairs(ranks) do
@@ -177,24 +177,24 @@ function GGSRank:RefreshRank(userdata)
         end
     end
 
-    GGSRank:Sort();
+    NetRank:Sort();
 end
 
-function GGSRank:RefreshRanks()
-    local allUserData = GGS:GetAllUserData();
+function NetRank:RefreshRanks()
+    local allUserData = Net:GetAllUserData();
     for _, userdata in pairs(allUserData) do 
         self:RefreshRank(userdata);
     end
 end
 
-GGSRank:InitSingleton():Init();
+NetRank:InitSingleton():Init();
 
 -- 收到其他用户状态同步
-GGS:OnUserData(function(userdata)         
-    GGSRank:RefreshRank(userdata);
+Net:OnUserData(function(userdata)         
+    NetRank:RefreshRank(userdata);
 end);
 
--- 依赖 GGS 故直接连接
-GGS:Connect(function()
-    GGS:SetUserData(__rank__);            -- 连接成功直接同步当前用户状态
+-- 依赖 Net 故直接连接
+Net:Connect(function()
+    Net:SetUserData(__rank__);            -- 连接成功直接同步当前用户状态
 end);

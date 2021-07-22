@@ -23,7 +23,11 @@ local lfs = commonlib.Files.GetLuaFileSystem();
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
-local RPC = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPC.lua", IsDevEnv);
+local RPCVirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPCVirtualConnection.lua", IsDevEnv);
+
+
+local RPC = commonlib.inherit(RPCVirtualConnection, {});
+RPC:InitSingleton();
 
 local function DownloadWorldById(pid, callback)
     pid = pid or GameLogic.options:GetProjectId();

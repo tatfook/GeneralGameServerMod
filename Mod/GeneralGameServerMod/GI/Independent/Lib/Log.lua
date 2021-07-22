@@ -15,8 +15,6 @@ local ToString = Debug.ToString;
 local Print = Debug.Print;
 local LocationInfo = Debug.LocationInfo;
 
-
-
 local Level = {
     DEBUG = 1,
     INFO = 2,

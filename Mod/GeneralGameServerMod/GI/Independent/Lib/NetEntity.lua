@@ -1,29 +1,29 @@
 --[[
-Title: GGSEntity
+Title: NetEntity
 Author(s):  wxa
 Date: 2021-06-01
-Desc: GGS 玩家实体类
+Desc: Net 玩家实体类
 use the lib:
 ------------------------------------------------------------
-local GGSEntity = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/GGSEntity.lua");
+local NetEntity = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/NetEntity.lua");
 ------------------------------------------------------------
 ]]
 
-local GGS = require("GGS");
-local GGSPlayer = require("GGSPlayer");
+local Net = require("Net");
+local NetPlayer = require("NetPlayer");
 local KeyBoard = require("KeyBoard");
 
-local GGSEntity = inherit(ToolBase, module("GGSEntity"));
+local NetEntity = inherit(ToolBase, module("NetEntity"));
 
-GGSEntity:InitSingleton();
+NetEntity:InitSingleton();
 
 local __username__ = GetUserName();
 local __player_entity_map__ = {};
 local __cur_main_player_entity__ = GetPlayer();
 local __main_player_entity__ = nil;
 
-GGS.EVENT_TYPE.SET_PLAYER_ENTITY_INFO = "__set_player_entity_info__";
-GGS.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO = "__set_player_entity_data_info__";
+Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO = "__set_player_entity_info__";
+Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO = "__set_player_entity_data_info__";
 
 local function GetPlayerEntity(username)
     username = username or __username__;
@@ -71,14 +71,14 @@ local function SetPlayerEntityDataInfo(msg)
 end
 
 local function SyncPlayerEntityDataInfo(data)
-    GGS:Send({
-        action = GGS.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO,
+    Net:Send({
+        action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO,
         username = __username__,
         data = data,
     });
 end
 
-GGSPlayer:OnMainPlayerLogin(function(player)
+NetPlayer:OnMainPlayerLogin(function(player)
     if (__main_player_entity__) then return end 
 
     __main_player_entity__ = GetPlayerEntity(player.username);
@@ -88,27 +88,27 @@ GGSPlayer:OnMainPlayerLogin(function(player)
     DisableDefaultWASDKey();
 
     -- 主玩家登录给所有其它玩家发送自己的所有信息
-    GGS:Send({
-        action = GGS.EVENT_TYPE.SET_PLAYER_ENTITY_INFO,
+    Net:Send({
+        action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO,
         username = __username__,
         data = GetPlayerEntityInfo();
     })
 end);
 
-GGSPlayer:OnPlayerLogin(function(player)
+NetPlayer:OnPlayerLogin(function(player)
     -- 玩家登录给其发送完整的当前玩家信息
-    GGS:SendTo(player.username, {
-        action = GGS.EVENT_TYPE.SET_PLAYER_ENTITY_INFO,
+    Net:SendTo(player.username, {
+        action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO,
         username = __username__,
         data = GetPlayerEntityInfo(),
     });
 end);
 
-GGSPlayer:OnPlayerLogout(function(player)
+NetPlayer:OnPlayerLogout(function(player)
     RemovePlayerEntity(player.username);
 end);
 
-GGSPlayer:OnMainPlayerLogout(function(player)
+NetPlayer:OnMainPlayerLogout(function(player)
     RemovePlayerEntity(player.username);
     __main_player_entity__ = nil;
     __cur_main_player_entity__:SetVisible(true);
@@ -158,13 +158,13 @@ KeyBoard:OnKeyUp("d", function()
 end);
 
 -- 收到数据
-GGS:OnRecv(function(msg)
+Net:OnRecv(function(msg)
     local action = msg.action;
-    if (action == GGS.EVENT_TYPE.SET_PLAYER_ENTITY_INFO) then return SetPlayerEntityInfo(msg) end
-    if (action == GGS.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO) then return SetPlayerEntityDataInfo(msg) end 
+    if (action == Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO) then return SetPlayerEntityInfo(msg) end
+    if (action == Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO) then return SetPlayerEntityDataInfo(msg) end 
 end);
 
-GGS:OnClose(function()
+Net:OnClosed(function()
     for _, entity in pairs(__player_entity_map__) do
         entity:Destroy();
     end

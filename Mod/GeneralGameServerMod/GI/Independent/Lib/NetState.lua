@@ -1,30 +1,30 @@
 --[[
-Title: GGSState
+Title: NetState
 Author(s):  wxa
 Date: 2021-06-01
 Desc: 排行榜
 use the lib:
 ------------------------------------------------------------
-local GGSState = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/GGSState.lua");
+local NetState = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/NetState.lua");
 ------------------------------------------------------------
 ]]
 
-local GGS = require("GGS");
-local GGSState = inherit(ToolBase, module("GGSState"));
+local Net = require("Net");
+local NetState = inherit(ToolBase, module("NetState"));
 
-GGSState:Property("AutoSyncState", true, "IsAutoSyncState");
+NetState:Property("AutoSyncState", true, "IsAutoSyncState");
 
 local __username__ = GetUserName();
 local __states__ = NewScope();
 local __state__ = __states__:Get(__username__, {});            -- 用户独立数据 
 
-GGS.EVENT_TYPE.REQUEST_SYNC_STATE = "GGS_REQUEST_SYNC_STATE";
-GGS.EVENT_TYPE.RESPONSE_SYNC_STATE = "GGS_RESPONSE_SYNC_STATE";
-GGS.EVENT_TYPE.AUTO_SYNC_STATE = "GGS_AUTO_SYNC_STATE";
+Net.EVENT_TYPE.REQUEST_SYNC_STATE = "Net_REQUEST_SYNC_STATE";
+Net.EVENT_TYPE.RESPONSE_SYNC_STATE = "Net_RESPONSE_SYNC_STATE";
+Net.EVENT_TYPE.AUTO_SYNC_STATE = "Net_AUTO_SYNC_STATE";
 
 local __sync_key_val_list__ = {};
 __states__:__set_newindex_callback__(function(scope, key, newval, oldval)
-    if (not GGS:IsConnected() or not GGSState:IsAutoSyncState()) then return end 
+    if (not Net:IsConnected() or not NetState:IsAutoSyncState()) then return end 
 
     local keys = scope:__get_keys__(key);
     keys.size = #keys;
@@ -34,7 +34,7 @@ end);
 
 local __cache_list__ = {size = 0};
 RegisterTimerCallBack(function()
-    if (not GGS:IsConnected() or not GGSState:IsAutoSyncState()) then return end 
+    if (not Net:IsConnected() or not NetState:IsAutoSyncState()) then return end 
     
     local size = #__sync_key_val_list__;
     local cache_size = #__cache_list__;
@@ -44,16 +44,16 @@ RegisterTimerCallBack(function()
         __sync_key_val_list__[i] = nil;
     end
 
-    __cache_list__.action = GGS.EVENT_TYPE.AUTO_SYNC_STATE;
+    __cache_list__.action = Net.EVENT_TYPE.AUTO_SYNC_STATE;
     __cache_list__.size = size;
     
     if (size == 0) then return end 
-    -- log("同步GGS STATE", __cache_list__)
-    GGS:Send(__cache_list__);
+    -- log("同步Net STATE", __cache_list__)
+    Net:Send(__cache_list__);
 end);
 
 local function AutoSyncState(msg)
-    GGSState:SetAutoSyncState(false);
+    NetState:SetAutoSyncState(false);
     local keys_list = msg;
     local keys_list_size = keys_list.size;
     for i = 1, keys_list_size do
@@ -67,18 +67,18 @@ local function AutoSyncState(msg)
         end
         state:Set(keys[size], value);
     end
-    GGSState:SetAutoSyncState(true);
+    NetState:SetAutoSyncState(true);
 end
 
 local function RequestSyncState(msg)
     local username, state = msg.username, msg.state;
 
-    GGSState:SetAutoSyncState(false);
+    NetState:SetAutoSyncState(false);
     __states__:Set(username, state);
-    GGSState:SetAutoSyncState(true);
+    NetState:SetAutoSyncState(true);
 
-    GGS:SendTo(username, {
-        action = GGS.EVENT_TYPE.RESPONSE_SYNC_STATE,
+    Net:SendTo(username, {
+        action = Net.EVENT_TYPE.RESPONSE_SYNC_STATE,
         username = __username__,
         state = __state__:ToPlainObject(),
     });
@@ -87,50 +87,50 @@ end
 local function ResponseSyncState(msg)
     local username, state = msg.username, msg.state;
 
-    GGSState:SetAutoSyncState(false);
+    NetState:SetAutoSyncState(false);
     __states__:Set(username, state);
-    GGSState:SetAutoSyncState(true);
+    NetState:SetAutoSyncState(true);
 end
 
-function GGSState:Init()
+function NetState:Init()
     return self;
 end
 
-function GGSState:GetUserState(username)
+function NetState:GetUserState(username)
     return (not username or username == __username__) and __state__ or __states__:Get(username, {});
 end
 
-function GGSState:GetAllUserState()
+function NetState:GetAllUserState()
     return __states__;
 end
 
-function GGSState:Get(key, default_value)
+function NetState:Get(key, default_value)
     return __state__:Get(key, default_value)
 end
 
-function GGSState:Set(key, value)
+function NetState:Set(key, value)
     return __state__:Set(key, value)
 end
 
-GGSState:InitSingleton():Init();
+NetState:InitSingleton():Init();
 
 -- 收到数据
-GGS:OnRecv(function(msg)
+Net:OnRecv(function(msg)
     local action = msg.action;
-    if (action == GGS.EVENT_TYPE.REQUEST_SYNC_STATE) then return RequestSyncState(msg) end
-    if (action == GGS.EVENT_TYPE.RESPONSE_SYNC_STATE) then return ResponseSyncState(msg) end
-    if (action == GGS.EVENT_TYPE.AUTO_SYNC_STATE) then return AutoSyncState(msg) end
+    if (action == Net.EVENT_TYPE.REQUEST_SYNC_STATE) then return RequestSyncState(msg) end
+    if (action == Net.EVENT_TYPE.RESPONSE_SYNC_STATE) then return ResponseSyncState(msg) end
+    if (action == Net.EVENT_TYPE.AUTO_SYNC_STATE) then return AutoSyncState(msg) end
 end);
 
 -- 断开
-GGS:OnDisconnect(function(username)
+Net:OnDisconnect(function(username)
 end)
 
 -- 连接
-GGS:Connect(function()
+Net:Connect(function()
     -- 发送状态
-    GGS:Send({
-        action = GGS.EVENT_TYPE.REQUEST_SYNC_STATE, 
+    Net:Send({
+        action = Net.EVENT_TYPE.REQUEST_SYNC_STATE, 
         username = __username__,
         state = __state__:ToPlainObject(),
     });

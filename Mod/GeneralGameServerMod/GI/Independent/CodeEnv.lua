@@ -16,6 +16,7 @@ local Event = NPL.load("../Game/Event/Event.lua", IsDevEnv);
 local TickEvent = NPL.load("../Game/Event/TickEvent.lua", IsDevEnv);
 local SceneContext = NPL.load("../Game/Event/SceneContext.lua", IsDevEnv);
 
+local API = NPL.load("./API/API.lua", IsDevEnv);
 local SceneAPI = NPL.load("./API/SceneAPI.lua", IsDevEnv);
 local PlayerAPI = NPL.load("./API/PlayerAPI.lua", IsDevEnv);
 local SystemAPI = NPL.load("./API/SystemAPI.lua", IsDevEnv);
@@ -26,6 +27,7 @@ local BlockAPI = NPL.load("./API/BlockAPI.lua", IsDevEnv);
 local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
 local GGSAPI = NPL.load("./API/GGSAPI.lua", IsDevEnv);
 local NetAPI = NPL.load("./API/NetAPI.lua", IsDevEnv);
+local RPCAPI = NPL.load("./API/RPCAPI.lua", IsDevEnv);
 
 local CodeEnv = commonlib.inherit(nil, NPL.export());
 
@@ -50,6 +52,11 @@ function CodeEnv:ctor()
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
+
+	-- 联机相关数据
+	self.__share_data__ = {};          -- 共享数据
+	self.__all_user_data__ = {};       -- 所有用户数据
+	self.__all_entity_data__ = {};     -- 所有实体数据
 end
 
 function CodeEnv:InstallAPI(api)
@@ -79,6 +86,11 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	self.__call__ = function(...) return Independent:Call(...) end
 	self.__loadfile__ = function(...) return Independent:LoadFile(...) end
 	self.__is_running__ = function() return Independent:IsRunning() end 
+	self.__safe_callback__ = function(callback) 
+		return function(...) 
+			Independent:Call(callback, ...) 
+		end 
+	end 
 end
 
 function CodeEnv:InstallCodeBlockAPI()
@@ -100,6 +112,8 @@ function CodeEnv:Init(Independent)
 	UtilityAPI(self);
 	GGSAPI(self);
 	NetAPI(self);
+	RPCAPI(self);
+	API(self);
 	
     return self;
 end

@@ -96,7 +96,7 @@ function GGS:Connect(callback)
     -- 连接中则等待
     if (self:IsConnecting()) then
         -- 阻塞当前执行流程
-        while(not GGS:IsConnected()) do sleep() end
+        while(not self:IsConnected()) do sleep() end
         return;   
         -- 由事件触发回调
         -- return type(callback) == "function" and callback();
@@ -112,7 +112,7 @@ function GGS:Connect(callback)
     end);
 
     -- 阻塞当前执行流程
-    while(not GGS:IsConnected()) do sleep() end
+    while(not self:IsConnected()) do sleep() end
     -- 由事件触发回调
     -- if (type(callback) == "function") then callback() end 
 end
