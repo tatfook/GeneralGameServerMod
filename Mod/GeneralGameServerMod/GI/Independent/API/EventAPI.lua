@@ -31,8 +31,6 @@ local EventType = {
     KEY_UP = "key_up",
 
     MOUSE_KEY = "mouse_key",    -- 鼠标和按键
-
-    NID = "nid",                -- 网络连接改变 
 }
 
 local function RegisterEventCallBack(__code_env__, eventType, callback)
@@ -108,13 +106,6 @@ setmetatable(EventAPI, {
         CodeEnv.OnMouseKey = function(callback) RegisterEventCallBack(CodeEnv, EventType.MOUSE_KEY, callback) end
         CodeEnv.OnMouse = function(callback) RegisterEventCallBack(CodeEnv, EventType.MOUSE, callback) end
         CodeEnv.OnKey = function(callback) RegisterEventCallBack(CodeEnv, EventType.KEY, callback) end
-
-        CodeEnv.OnNid = function(callback) RegisterEventCallBack(CodeEnv, EventType.NID, callback) end
-        CodeEnv.SetNid = function(nid) 
-            CodeEnv.__nid__ = nid;
-            TriggerEventCallBack(CodeEnv, EventType.NID, nid);
-        end
-        CodeEnv.SetNid(CommonLib.AddNPLRuntimeAddress(CodeEnv.__ip__ or "127.0.0.1", CodeEnv.__port__ or "9000"));
 
         local SceneContext = CodeEnv.SceneContext;
        

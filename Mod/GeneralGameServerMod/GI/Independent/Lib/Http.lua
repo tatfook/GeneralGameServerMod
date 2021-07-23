@@ -13,7 +13,6 @@ Http:Property("Token");                    -- Bearer token
 Http:Property("Config", {headers = {}});   -- 配置
 
 local function HttpRequest(config, callback)
-    echo(config, true)
     -- System.os.GetUrl(config, callback);
     __get_url__(config, callback);
 end

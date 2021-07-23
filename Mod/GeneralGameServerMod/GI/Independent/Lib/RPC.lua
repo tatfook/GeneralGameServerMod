@@ -42,6 +42,16 @@ local function SetShareData(sharedata)
     TriggerEventCallBack(EventType.SHARE_DATA, __share_data__);
 end
 
+function RPC:Init(opts)
+    if (opts) then
+        if (opts.threadName) then __rpc_virtual_connection__:SetRemoteThreadName(opts.threadName) end 
+        if (opts.ip or opts.port) then __rpc_virtual_connection__:SetNid(AddNPLRuntimeAddress(opts.ip, opts.port)) end 
+        if (opts.worldKey) then SetWorldKey(opts.worldKey) end
+    end
+    
+    return self;
+end
+
 function RPC:Connect(callback)
     self:SetConnectCallBack(callback);
 
@@ -49,6 +59,7 @@ function RPC:Connect(callback)
         username = GetUserName(),
         worldId = GetWorldId(),
         worldName = "",
+        worldKey = GetWorldKey(),
     }, function(data)
         __share_data__ = data.__share_data__ or {};
         __all_user_data__ = data.__all_user_data__ or {};
@@ -71,7 +82,7 @@ function RPC:OnRecv(callback)
     RPC_OnBroadcast(callback);
 end
 
-function RPC:OnDisconnect(callback)
+function RPC:OnDisconnected(callback)
     RPC_OnDisconnected(callback);
 end
 
@@ -137,7 +148,3 @@ end);
 RPC_On("ReLogin", function() 
     RPC:Connect();
 end); 
-
-RPC_OnDisconnected(function() 
-    RPC:Connect() 
-end);

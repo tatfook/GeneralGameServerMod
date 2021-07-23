@@ -17,11 +17,36 @@ Net:Property("Connecting", false, "IsConnecting");  -- 是否正在连接
 
 local __username__ = GetUserName();
 local __connection__ = RPC;
+local __control_server_ip__ = IsDevEnv and "127.0.0.1" or "ggs.keepwork.com";
+local __control_server_port = IsDevEnv and "9000" or "9000";
+local __worker_server_ip__, __worker_server_ip__ = nil, nil;
 
 Net.EVENT_TYPE = {
     CONNECTED = "NET_CONNECTED",
     CONNECT_CLOSED = "NET_CONNECT_CLOSED",
 }
+
+local function SelectWorldServer(callback, try_wait_time)
+    print("========================SelectWorldServer=============================");
+
+    try_wait_time = try_wait_time or 10000;
+    local function error_handle()
+        fatal("Unable to get server address");
+        sleep(try_wait_time);
+        try_wait_time = try_wait_time + try_wait_time;
+        SelectWorldServer(callback, try_wait_time);
+    end
+
+    GetNetAPI():Get("__server_manager__/__select_world_server__", {
+        worldId = GetWorldId(),
+    }):Then(__safe_callback__(function(msg)
+        if (msg.status ~= 200) then return error_handle() end
+        return type(callback) == "function" and callback(msg.data);
+    end)):Catch(__safe_callback__(function()
+        error_handle();
+    end));
+end
+
 
 -- 构造函数
 function Net:ctor()
@@ -30,7 +55,7 @@ end
 -- 连接
 function Net:Connect(callback)
     -- 注册连接事件
-    self:OnConnect(callback);
+    self:OnConnected(callback);
 
     -- 已经连接直接执行返回
     if (self:IsConnected()) then return type(callback) == "function" and callback() end
@@ -46,12 +71,14 @@ function Net:Connect(callback)
     self:SetConnecting(true);
 
     -- 进行登录连接
-    __connection__:Connect(function(data)
-        self:SetConnected(true);
-        self:SetConnecting(false);
-        TriggerEventCallBack(Net.EVENT_TYPE.CONNECTED, data);
+    SelectWorldServer(function(opts)
+        __connection__:Init(opts):Connect(function(data)
+            self:SetConnected(true);
+            self:SetConnecting(false);
+            TriggerEventCallBack(Net.EVENT_TYPE.CONNECTED, data);
+        end);
     end);
-
+    
     -- 阻塞当前执行流程
     while(not self:IsConnected()) do sleep() end
 
@@ -70,25 +97,25 @@ end
 
 -- 接收
 function Net:OnRecv(callback)
-    __connection__:OnRecv(callback);
+    __connection__:OnRecv(__safe_callback__(callback));
 end
 
 -- 断开
-function Net:OnDisconnect(callback)
-    __connection__:OnDisconnect(callback)
+function Net:OnDisconnected(callback)
+    __connection__:OnDisconnected(__safe_callback__(callback))
 end
 
 -- 连接
-function Net:OnConnect(callback)
-    RegisterEventCallBack(Net.EVENT_TYPE.CONNECTED, callback);
+function Net:OnConnected(callback)
+    RegisterEventCallBack(Net.EVENT_TYPE.CONNECTED, __safe_callback__(callback));
 end
 
 function Net:OnClosed(callback)
-    __connection__:OnClosed(callback);
+    __connection__:OnClosed(__safe_callback__(callback));
 end
 
 function Net:OnNetClosed(callback)
-    __connection__:OnNetClosed(callback);
+    __connection__:OnNetClosed(__safe_callback__(callback));
 end
 
 function Net:SetUserData(userdata)
@@ -116,7 +143,7 @@ function Net:GetShareData()
 end
 
 function Net:OnShareDataItem(key, callback)
-    __connection__:OnShareDataItem(key, callback);
+    __connection__:OnShareDataItem(key, __safe_callback__(callback));
 end
 
 function Net:OnShareData(...)
@@ -127,4 +154,12 @@ Net:InitSingleton():Connect(function(data)
     log("=================net connect success=============", data)
 end);
 
+Net:OnDisconnected(function() 
+    print("========================Net:OnDisconnected========================")
+    Net:SetConnected(false);
+    Net:Connect() 
+end);
 
+Net:OnClosed(function()
+    print("========================Net:OnClosed========================")
+end)

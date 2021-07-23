@@ -122,10 +122,6 @@ Net:OnRecv(function(msg)
     if (action == Net.EVENT_TYPE.AUTO_SYNC_STATE) then return AutoSyncState(msg) end
 end);
 
--- 断开
-Net:OnDisconnect(function(username)
-end)
-
 -- 连接
 Net:Connect(function()
     -- 发送状态

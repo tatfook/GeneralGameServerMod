@@ -9,7 +9,7 @@ local RPCVirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPCVir
 -------------------------------------------------------
 ]]
 local CommonLib = NPL.load("./CommonLib.lua");
-local VirtualConnection = NPL.load("./VirtualConnection.lua");
+local VirtualConnection = NPL.load("./VirtualConnection.lua", IsDevEnv);
 local RPCVirtualConnection = commonlib.inherit(VirtualConnection, NPL.export());
 
 local __neuron_file__ = "Mod/GeneralGameServerMod/CommonLib/RPCVirtualConnection.lua";

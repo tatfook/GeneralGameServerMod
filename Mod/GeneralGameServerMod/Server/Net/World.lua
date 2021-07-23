@@ -10,6 +10,7 @@ local World = NPL.load("Mod/GeneralGameServerMod/Server/Net/World.lua");
 ------------------------------------------------------------
 ]]
 
+local ThreadHelper = NPL.load("Mod/GeneralGameServerMod/CommonLib/ThreadHelper.lua");
 local World = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local __all_world__ = {};
@@ -57,12 +58,28 @@ function World:Init(worldId, worldName, worldKey)
     return self;
 end
 
+function World:UploadWorldInfo()
+    local worldKey = self:GetWorldKey();
+    ThreadHelper:SendMsgToMainThread({
+        __worlds__ = {
+            [worldKey]  = {
+                worldId = self:GetWorldId(),
+                worldName = self:GetWorldName(),
+                maxClientCount = self:GetMaxClientCount(),
+                clientCount = self:GetPlayerCount(),
+            }
+        }
+    });
+end
+
 function World:AddPlayer(player)
     self.__all_player__[player:GetUserName()] = player;
+    self:UploadWorldInfo();
 end
 
 function World:RemovePlayer(player)
     self.__all_player__[player:GetUserName()] = nil;
+    self:UploadWorldInfo();
 end
 
 function World:GetPlayer(username)

@@ -98,6 +98,8 @@ function GeneralGameServer:Start()
 	commonlib.Timer:new({callbackFunc = function() GeneralGameServer:Tick() end}):Change(1000, 1000 * 10);
 	
 	Server:Start({
+		isControlServer = Config.Server.isControlServer,
+		isWorkerServer = Config.Server.isWorkerServer,
 		controlIp = Config.ControlServer.innerIp or Config.ControlServer.outerIp,
 		controlPort = Config.ControlServer.innerPort or Config.ControlServer.outerPort,
 		outerIp = Config.WorkerServer.outerIp,

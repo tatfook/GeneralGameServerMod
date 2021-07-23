@@ -11,7 +11,7 @@ local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualCo
 
 local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-local Connection = NPL.load("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
+local Connection = NPL.load("Mod/GeneralGameServerMod/CommonLib/Connection.lua", IsDevEnv);
 
 local VirtualConnection = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -56,6 +56,8 @@ function VirtualConnection:GetVirtualConnection(msg)
     local key = self:GetKey(msg);
     if (__all_virtual_connection__[key]) then return __all_virtual_connection__[key] end
 
+    -- print("VirtualConnection:GetVirtualConnection", key);
+
     local virtual_connection = self:New(msg);
     __all_virtual_connection__[self:GetKey()] = virtual_connection;
 
@@ -99,7 +101,7 @@ function VirtualConnection:Init(opts)
     if (opts.__remote_neuron_file__) then self:SetRemoteNeuronFile(opts.__remote_neuron_file__) end
     if (opts.__local_neuron_file__) then self:SetLocalNeuronFile(opts.__local_neuron_file__) end
     if (opts.__remote_thread_name__) then self:SetRemoteThreadName(opts.__remote_thread_name__) end
-    if (opts.__local_thread_name__) then self:SetRemoteThreadName(opts.__local_thread_name__) end
+    if (opts.__local_thread_name__) then self:SetLocalThreadName(opts.__local_thread_name__) end
 
     self.__disconnected_callback__ = function(msg)
         self:HandleDisconnected(msg);
@@ -145,7 +147,7 @@ function VirtualConnection:Close()
 end
 
 function VirtualConnection:CloseConnection()
-    self:GetConnection():Close();
+    if (self:GetConnection()) then self:GetConnection():Close() end 
 end
 
 function VirtualConnection:Connect(callback)
@@ -175,6 +177,7 @@ function VirtualConnection:SendMsg(msg, callback)
     msg.__local_thread_name__ = self:GetRemoteThreadName();
     msg.__remote_thread_name__ = self:GetLocalThreadName();
     msg.__remote_neuron_file__ = self:GetLocalNeuronFile();
+    -- print("VirtualConnection:SendMsg", self:GetRemoteAddress());
     self:GetConnection():Send(msg, self:GetRemoteThreadName(), self:GetRemoteNeuronFile(), callback);
 end
 
@@ -219,7 +222,6 @@ end
 function VirtualConnection:OnActivate(msg)
     local __nid__ = msg and (msg.nid or msg.tid);
     if (type(msg) ~= "table" or not __nid__) then return end
-
     msg.__nid__ = __nid__;
     local virtual_connection = self:GetVirtualConnection(msg);
     if (not virtual_connection:IsConnected()) then

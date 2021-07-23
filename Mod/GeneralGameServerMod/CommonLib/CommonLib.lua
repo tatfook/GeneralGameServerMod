@@ -184,21 +184,21 @@ function CommonLib.__OnNetworkEvent__()
     __event_emitter__:TriggerEventCallBack("__OnNetworkEvent__", msg);
 end
 -- NPL_OK = 0, 
--- NPL_Error, 
--- NPL_ConnectionNotEstablished,
--- NPL_QueueIsFull,
--- NPL_StreamError,
--- NPL_RuntimeState_NotExist,
--- NPL_FailedToLoadFile,
--- NPL_RuntimeState_NotReady,
--- NPL_FileAccessDenied,
--- NPL_ConnectionEstablished,
--- NPL_UnableToResolveName,
--- NPL_ConnectionTimeout,
--- NPL_ConnectionDisconnected,
--- NPL_ConnectionAborted,
--- NPL_Command,
--- NPL_WrongProtocol
+-- NPL_Error = 1, 
+-- NPL_ConnectionNotEstablished = 2,
+-- NPL_QueueIsFull = 3,
+-- NPL_StreamError = 4,
+-- NPL_RuntimeState_NotExist = 5,
+-- NPL_FailedToLoadFile = 6,
+-- NPL_RuntimeState_NotReady = 7,
+-- NPL_FileAccessDenied = 8,
+-- NPL_ConnectionEstablished = 9,
+-- NPL_UnableToResolveName = 10,
+-- NPL_ConnectionTimeout = 11,
+-- NPL_ConnectionDisconnected = 12,
+-- NPL_ConnectionAborted = 13,
+-- NPL_Command = 14,
+-- NPL_WrongProtocol = 15
 
 function CommonLib.IsServerStarted()
     return NPL.GetAttributeObject():GetField("IsServerStarted", false);

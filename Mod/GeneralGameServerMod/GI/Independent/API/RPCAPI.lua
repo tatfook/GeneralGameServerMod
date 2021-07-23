@@ -16,9 +16,10 @@ local RPCAPI = NPL.export()
 
 setmetatable(RPCAPI, {__call = function(_, CodeEnv)
     local __rpc_virtual_connection__ = RPCVirtualConnection:GetVirtualConnection({
-        __nid__ = CodeEnv.__nid__,
         __remote_neuron_file__ = "Mod/GeneralGameServerMod/Server/Net/RPC.lua",
     });
+    
+    CodeEnv.__rpc_virtual_connection__ = __rpc_virtual_connection__;
 
     CodeEnv.RPC_Register = function(method, callback) 
         __rpc_virtual_connection__:Register(method, callback);

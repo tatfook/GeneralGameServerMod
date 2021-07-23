@@ -79,7 +79,9 @@ end
 
 function Promise:Then(callback)
     if (type(callback) ~= "function") then error("Promise:Then(callback) 参数 callback 必须为函数") end
-
+    
+    callback = __safe_callback__(callback);
+    
     if (self:GetState() == "resolved") then return Promise.Resolve(callback(self:GetResult())) end
 
     return self:SetStateCallBack("then", callback);
@@ -87,6 +89,8 @@ end
 
 function Promise:Catch(callback)
     if (type(callback) ~= "function") then error("Promise:Catch(callback) 参数 callback 必须为函数") end
+    
+    callback = __safe_callback__(callback);
 
     if (self:GetState() == "rejected") then return callback(self:GetResult()) end
 

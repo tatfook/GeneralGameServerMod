@@ -74,7 +74,7 @@ function ThreadHelper:StartWorkerThread(thread_name)
     self:SetWorkerThreadCount(self:GetWorkerThreadCount() + 1);
     thread_name = thread_name or self:GetTheadNameByWorkerThreadIndex();
 
-    -- print("=======================create worker thread==========================", thread_name);
+    print("=======================create worker thread==========================", thread_name);
     NPL.CreateRuntimeState(thread_name, 0):Start();
 
     local thread_info = {

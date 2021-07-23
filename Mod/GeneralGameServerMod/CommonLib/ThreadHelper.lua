@@ -68,7 +68,7 @@ function ThreadHelper:SendMsgToWorkerThread(thread_name, data, cmd)
     };
 
     if (thread_name == self:GetThreadName()) then 
-        self:OnActivate(data);
+        self:OnActivate(msg);
     else
         NPL.activate(self:GetRemoteAddress(thread_name), msg);
     end

@@ -1,9 +1,15 @@
 
 
 
+local function SelectWorldServer()
+    GetNetAPI():Get("__server_manager__/__select_world_server__", {
+        worldId = GetWorldId(),
+    }):Then(__safe_callback__(function(msg)
+        echo(msg)
+    end));
+end
 
-
-print("hello world")
+SelectWorldServer();
 
 -- local GGS = require("GGS");
 

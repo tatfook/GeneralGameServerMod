@@ -52,11 +52,6 @@ function CodeEnv:ctor()
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
-
-	-- 联机相关数据
-	-- self.__share_data__ = {};          -- 共享数据
-	-- self.__all_user_data__ = {};       -- 所有用户数据
-	-- self.__all_entity_data__ = {};     -- 所有实体数据
 end
 
 function CodeEnv:InstallAPI(api)

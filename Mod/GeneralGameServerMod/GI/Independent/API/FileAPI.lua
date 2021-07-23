@@ -9,7 +9,7 @@ local FileAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/FileAPI.lu
 ------------------------------------------------------------
 ]]
 
-local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua", IsDevEnv);
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 
 local FileAPI = NPL.export()
 

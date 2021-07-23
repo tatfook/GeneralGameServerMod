@@ -20,8 +20,3 @@
 -- end)
 
 local Net = require("Net");
-
-Net:Connect(function(data)
-    print("==============121")
-    echo(data)
-end);
