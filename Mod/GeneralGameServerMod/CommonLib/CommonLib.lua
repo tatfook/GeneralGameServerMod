@@ -131,6 +131,12 @@ function CommonLib.GetFileMD5(filename)
     return ParaMisc.md5(CommonLib.GetFileText(filename) or "");
 end
 
+-- 获取Temp
+function CommonLib.GetTempDirectory()
+    local install_directory = ParaIO.GetCurDirectory(0);
+    return CommonLib.ToCanonicalFilePath(install_directory .. "/" .. "temp");
+end
+
 -- 获取世界路径
 function CommonLib.GetWorldDirectory()
     local install_directory = ParaIO.GetCurDirectory(0);

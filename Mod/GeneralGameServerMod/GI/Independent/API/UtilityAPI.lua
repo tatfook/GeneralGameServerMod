@@ -8,10 +8,9 @@ use the lib:
 local UtilityAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/UtilityAPI.lua");
 ------------------------------------------------------------
 ]]
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local UtilityAPI = NPL.export()
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
-
-local ParticleSystem = NPL.load("../../Game/ParticleSystem/ParticleSystem.lua");
 
 local function GetParticleSystem()
     return ParticleSystem.singleton();
@@ -37,15 +36,15 @@ local function Tip(text, duration, color, id)
         }
     )
 end
+
 setmetatable(
     UtilityAPI,
     {
         __call = function(_, CodeEnv)
-            CodeEnv.Tip = Tip
-            CodeEnv.CreateParticle = CreateParticle
-            CodeEnv.GetParticleSystem = GetParticleSystem
-	        CodeEnv.MessageBox = _guihelper.MessageBox
-            CodeEnv.GetLogTimeString = commonlib.log.GetLogTimeString
+            CodeEnv.Tip = Tip;
+	        CodeEnv.MessageBox = _guihelper.MessageBox;
+            CodeEnv.GetLogTimeString = commonlib.log.GetLogTimeString;
+            CodeEnv.MD5 = CommonLib.MD5;
         end
     }
 )

@@ -88,10 +88,16 @@ end
 -- 链接关闭
 function RPC:HandleClosed()
     if (not self:IsValid()) then return end 
-    local username = self:GetPlayer():GetUserName();
+    local player = self:GetPlayer();
+    local world = self:GetWorld();
+    local username = player:GetUserName();
+    world:SendToAllPlayer("ConnectClosed", username, nil);
+    world:RemovePlayer(player);
+    self:SetWorld(nil);
+    self:SetPlayer(nil);
     __all_rpc__[username] = nil;
-    self:GetWorld():SendToAllPlayer("ConnectClosed", self:GetPlayer():GetUserName(), nil);
 end
+
 
 -- 处理未知消息
 function RPC:HandleMsg(msg)

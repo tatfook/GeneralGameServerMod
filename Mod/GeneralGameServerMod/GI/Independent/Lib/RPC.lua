@@ -19,6 +19,9 @@ EventType.USER_DATA = "USER_DATA";
 EventType.SHARE_DATA = "SHARE_DATA";
 EventType.SHARE_DATA_ITEM = "SHARE_DATA_ITEM";
 
+local __share_data__ = {};          -- 共享数据
+local __all_user_data__ = {};       -- 所有用户数据
+local __all_entity_data__ = {};     -- 所有实体数据
 
 local function SetUserData(userdata)
     local username = userdata.__username__;

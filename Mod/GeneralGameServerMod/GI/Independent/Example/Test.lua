@@ -2,6 +2,9 @@
 
 
 
+
+print("hello world")
+
 -- local GGS = require("GGS");
 
 -- GGS:Connect(function()

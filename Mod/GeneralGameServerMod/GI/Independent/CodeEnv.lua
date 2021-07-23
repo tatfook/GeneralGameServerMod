@@ -8,6 +8,7 @@ use the lib:
 local CodeEnv = NPL.load("Mod/GeneralGameServerMod/GI/Independent/CodeEnv.lua");
 ------------------------------------------------------------
 ]]
+local lfs = commonlib.Files.GetLuaFileSystem();
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
@@ -28,9 +29,11 @@ local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
 local GGSAPI = NPL.load("./API/GGSAPI.lua", IsDevEnv);
 local NetAPI = NPL.load("./API/NetAPI.lua", IsDevEnv);
 local RPCAPI = NPL.load("./API/RPCAPI.lua", IsDevEnv);
+local FileAPI = NPL.load("./API/FileAPI.lua", IsDevEnv);
 
 local CodeEnv = commonlib.inherit(nil, NPL.export());
 
+CodeEnv.lfs = lfs;
 CodeEnv.IsDevEnv = IsDevEnv;
 CodeEnv.Vue = Vue;
 CodeEnv.Debug = GGS.Debug;
@@ -40,23 +43,20 @@ CodeEnv.EventEmitter = EventEmitter;
 CodeEnv.SceneContext = SceneContext;
 CodeEnv.Event = Event;
 CodeEnv.TickEvent = TickEvent;
-CodeEnv.Unpack = CommonLib.Table.Unpack;
-CodeEnv.Pack = CommonLib.Table.Pack;
 
 function CodeEnv:ctor()
 	self._G = self;
 	self.__env__ = self;          -- 快捷方式
 
-	self.___modules___ = {};      -- 防止文件代码重复执行
 	self.__modules__ = {};        -- 模块
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
 
 	-- 联机相关数据
-	self.__share_data__ = {};          -- 共享数据
-	self.__all_user_data__ = {};       -- 所有用户数据
-	self.__all_entity_data__ = {};     -- 所有实体数据
+	-- self.__share_data__ = {};          -- 共享数据
+	-- self.__all_user_data__ = {};       -- 所有用户数据
+	-- self.__all_entity_data__ = {};     -- 所有实体数据
 end
 
 function CodeEnv:InstallAPI(api)
@@ -91,6 +91,7 @@ function CodeEnv:InstallIndependentAPI(Independent)
 			Independent:Call(callback, ...) 
 		end 
 	end 
+	self.__loadstring__ = function(...) return Independent:LoadString(...) end
 end
 
 function CodeEnv:InstallCodeBlockAPI()
@@ -102,6 +103,7 @@ function CodeEnv:Init(Independent)
 	self:InstallIndependentAPI(Independent);
 	self:InstallCodeBlockAPI();
 	
+	API(self);
 	SystemAPI(self);
 	EventAPI(self);
 	SceneAPI(self);
@@ -113,7 +115,7 @@ function CodeEnv:Init(Independent)
 	GGSAPI(self);
 	NetAPI(self);
 	RPCAPI(self);
-	API(self);
+	FileAPI(self);
 	
     return self;
 end

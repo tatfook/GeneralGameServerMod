@@ -126,40 +126,27 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     end
 
     -- 会切换协程需做等待处理
+    local __modules__ = {};
     CodeEnv.require = function(name)
-        if (CodeEnv.__modules__[name]) then 
-            while(not CodeEnv.__modules__[name].__loaded__) do
-                CodeEnv.sleep();
-            end
-            
-            return CodeEnv.__modules__[name];
+        if (__modules__[name]) then 
+            while(not __modules__[name].__loaded__) do CodeEnv.sleep() end
+            return __modules__[name].__module__;
+        else
+            __modules__[name] = {}; 
         end
         
-        CodeEnv.__modules__[name] = {}; -- 解决循环依赖
-        local filename = nil;
+        local __module__ = nil;
         -- 为单词则默认为系统库文件
         if (string.match(name, "^[%a%d]+$")) then 
-            filename = CodeEnv.__loadfile__(string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name));
+            __module__ = CodeEnv.__loadfile__(string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name));
         else -- 加载指令路径文件
-            filename = CodeEnv.__loadfile__(name);
+            __module__ = CodeEnv.__loadfile__(name);
         end
         -- 设置模块内部信息
-        CodeEnv.__modules__[name].__filename__ = filename;
-        CodeEnv.__modules__[name].__loaded__ = false;
-        -- filename 存在表明模块正在加载
-        if (filename) then
-            -- 模块未加载完成则一直等待
-            while(not CodeEnv.___modules___[filename] or not CodeEnv.___modules___[filename].__loaded__) do
-                CodeEnv.sleep();
-            end
-        end
-        CodeEnv.__modules__[name].__loaded__ = true;
-        return CodeEnv.__modules__[name];
-    end
-
-    CodeEnv.module = function(name, module)
-        CodeEnv.__modules__[name] = CodeEnv.__modules__[name] or module or {};
-		return CodeEnv.__modules__[name];
+        __modules__[name].__module__ = __module__;
+        __modules__[name].__loaded__ = true;
+       
+        return __modules__[name].__module__;
     end
 
     CodeEnv.GetTime = ParaGlobal.timeGetTime;

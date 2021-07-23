@@ -103,27 +103,31 @@ function Independent:IsLoaded(filename)
 	return false;
 end
 
-function Independent:LoadFile(filename)
-	if (not filename or not self:IsRunning() or self:IsLoaded(filename)) then return end
-	
-	local text = Helper.ReadFile(filename);
-	if (not text or text == "") then return end
+function Independent:LoadString(text, filename)
+	filename = filename or ParaMisc.md5(text);
 
-	local filepath = Helper.FormatFilename(filename);
 	-- 生成防止重复执行代码, 未知原因会重复执行
-	local inner_text = string.format([[
+	local header_text = string.format([[
 		local __filename__ = "%s";
-		if (___modules___[__filename__]) then return end
-		___modules___[__filename__] = {__filename__ = __filename__, __loaded__ = false};
-	]], filepath);
+		if (__modules__[__filename__]) then return end
+		__modules__[__filename__] = {__filename__ = __filename__, __loaded__ = false, __module__ = nil};
+
+		local function module(__name__, __module__)
+			__module__ = __module__ or __name__;
+			if (type(__module__) ~= "table") then __module__ = {} end 
+			if (type(__name__) ~= "string") then __name__ = __filename__ end 
+			__modules__[__filename__].__module__ = __module__;
+			__modules__[__filename__].__name__ = __name__;
+			return __module__;
+		end
+	]], filename);
 	
-	text = inner_text .. "\n" .. text .. "\n___modules___[__filename__].__loaded__ = true";
+	local tail_text = [[__modules__[__filename__].__loaded__ = true;]]
+	text = header_text .. "\n" .. text .. "\n" .. tail_text;
+
 	-- 生成函数
-	local code_func, errormsg = loadstring(text, "loadstring:" .. filepath);
-	if errormsg then
-		GGS.INFO("Independent:LoadFile LoadString Failed", filepath, errormsg);
-		return;
-	end
+	local code_func, errormsg = loadstring(text, "loadstring:" .. filename);
+	if errormsg then return GGS.INFO("Independent:LoadFile LoadString Failed", filename, errormsg) end
 
 	-- 设置代码环境
 	setfenv(code_func, self:GetCodeEnv());
@@ -133,7 +137,16 @@ function Independent:LoadFile(filename)
 
 	self.__files__[#self.__files__ + 1] = filename;
 
-	return filepath;
+	return self:GetCodeEnv().__modules__[filename].__module__;
+end
+
+function Independent:LoadFile(filename)
+	if (not filename or not self:IsRunning() or self:IsLoaded(filename)) then return end
+	
+	local text = Helper.ReadFile(filename);
+	if (not text or text == "") then return end
+
+	return self:LoadString(text, Helper.FormatFilename(filename));
 end
 
 function Independent:Load(files)

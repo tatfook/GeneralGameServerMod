@@ -97,4 +97,3 @@ function sleep(sleep)
 	RemoveEventCallBack(EventType.LOOP, SleepLoopCallBack);
 end
 
-

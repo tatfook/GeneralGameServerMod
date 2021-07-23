@@ -50,6 +50,7 @@ local function GetPlayerEntityInfo(username)
     local info = {};
 
     info.x, info.y, info.z = entity_player:GetPosition();
+    info.username = entity_player:GetUserName();
     info.watcher_data = entity_player:GetWatcherData();
 
     return info;
@@ -70,6 +71,14 @@ local function SetPlayerEntityDataInfo(msg)
     entity_player:LoadWatcherData(data);
 end
 
+local function SyncPlayerEntityInfo(username)
+    if (username) then
+        Net:SendTo(username, {action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO, data = GetPlayerEntityInfo()});
+    else
+        Net:Send({action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO, data = GetPlayerEntityInfo()});
+    end
+end
+
 local function SyncPlayerEntityDataInfo(data)
     Net:Send({
         action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO,
@@ -88,20 +97,12 @@ NetPlayer:OnMainPlayerLogin(function(player)
     DisableDefaultWASDKey();
 
     -- 主玩家登录给所有其它玩家发送自己的所有信息
-    Net:Send({
-        action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO,
-        username = __username__,
-        data = GetPlayerEntityInfo();
-    })
+    SyncPlayerEntityInfo();
 end);
 
 NetPlayer:OnPlayerLogin(function(player)
     -- 玩家登录给其发送完整的当前玩家信息
-    Net:SendTo(player.username, {
-        action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO,
-        username = __username__,
-        data = GetPlayerEntityInfo(),
-    });
+    SyncPlayerEntityInfo(player.username);
 end);
 
 NetPlayer:OnPlayerLogout(function(player)
