@@ -177,7 +177,7 @@ function Value:GetValueAsString()
         elseif (self:IsCodeType()) then
             return string.format('%s', value == "" and "nil" or value);
         else 
-            return string.format('"%s"', value);   -- 虚拟一个图块
+            return string.format("'%s'", value);   -- 虚拟一个图块
         end
     end
     return self:GetInputBlock():GetCode();
