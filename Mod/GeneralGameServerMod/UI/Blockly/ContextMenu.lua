@@ -145,6 +145,8 @@ function ContextMenu:ExportMacroCode()
     toolbox:SwitchCategory(oldCategoryName);
     local isSetBlocklyEnv = false;
     local function ExportBlockMacroCode(block)
+        if (not block) then return end 
+
         local blocktype = block:GetType();
         local blockoption = block:GetOption();
         if (string.match(blocktype, "^NPL_Macro_")) then
@@ -193,14 +195,13 @@ function ContextMenu:ExportMacroCode()
                 ExportBlockMacroCode(inputfield:GetInputBlock());
             end
         end
+
+        -- 导出下一个块
+        ExportBlockMacroCode(block:GetNextBlock());
     end
     for _, block in ipairs(blocks) do
         -- if (not block.previousConnection and block.nextConnection) then
-            while (block) do
-                local nextBlock = block:GetNextBlock();
-                ExportBlockMacroCode(block);
-                block = nextBlock;
-            end
+        ExportBlockMacroCode(block);
         -- end
     end
     -- blockly.offsetX, blockly.offsetY = offsetX, offsetY;
