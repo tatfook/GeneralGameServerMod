@@ -54,7 +54,7 @@ end
 
 function RPC:Connect(callback)
     self:SetConnectCallBack(callback);
-
+    -- print("====================login=======================")
     RPC_Call("Login", {
         username = GetUserName(),
         worldId = GetWorldId(),

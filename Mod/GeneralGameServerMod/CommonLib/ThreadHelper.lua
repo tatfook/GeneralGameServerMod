@@ -11,6 +11,7 @@ local ThreadHelper = NPL.load("Mod/GeneralGameServerMod/CommonLib/ThreadHelper.l
 
 NPL.load("(gl)script/ide/System/System.lua");
 
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
 local ThreadHelper = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -25,6 +26,10 @@ local __main_thread_name__ = "main";
 
 function ThreadHelper:ctor()
     self:SetThreadName(__rts__:GetName());
+end
+
+function ThreadHelper:Init()
+    CommonLib.SetInterval(1000 * 60 * 2, function() self:Tick() end);
 end
 
 function ThreadHelper:GetTheadNameByWorkerThreadIndex(index)
@@ -83,19 +88,23 @@ function ThreadHelper:OnMsg(callback)
     __event_emitter__:RegisterEventCallBack("__msg__", callback);
 end
 
+function ThreadHelper:Tick()
+end
+
 -- 激活函数
 function ThreadHelper:OnActivate(msg)
     if (type(msg) ~= "table") then return end
     
     -- 提取内置数据
     -- local __from_thread_name__, __to_thread_name__, __cmd__, __data__ = msg.__from_thread_name__, msg.__to_thread_name__, msg.__cmd__, msg.__data__;
+    
 
     -- 线程初始化
     self:HandleMsg(msg);
 end
 
 --单列模式
-ThreadHelper:InitSingleton();
+ThreadHelper:InitSingleton():Init();
 
 NPL.this(function()
     ThreadHelper:OnActivate(msg);

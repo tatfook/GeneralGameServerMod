@@ -41,6 +41,7 @@ local function SelectWorldServer(callback, try_wait_time)
         worldId = GetWorldId(),
     }):Then(__safe_callback__(function(msg)
         if (msg.status ~= 200) then return error_handle() end
+        print("==================================server address============================", msg.data.ip, msg.data.port)
         return type(callback) == "function" and callback(msg.data);
     end)):Catch(__safe_callback__(function()
         error_handle();
@@ -73,6 +74,7 @@ function Net:Connect(callback)
     -- 进行登录连接
     SelectWorldServer(function(opts)
         __connection__:Init(opts):Connect(function(data)
+            print("==========================net connect success=========================")
             self:SetConnected(true);
             self:SetConnecting(false);
             TriggerEventCallBack(Net.EVENT_TYPE.CONNECTED, data);

@@ -11,7 +11,7 @@ local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualCo
 
 local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-local Connection = NPL.load("Mod/GeneralGameServerMod/CommonLib/Connection.lua", IsDevEnv);
+local Connection = NPL.load("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
 
 local VirtualConnection = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
@@ -158,7 +158,7 @@ function VirtualConnection:Connect(callback)
     self.__event_emitter__:RegisterEventCallBack("__connected__", callback);
     
     -- 如果正在连接则直接跳出
-    if (self:IsConnecting()) then return  end
+    if (self:IsConnecting()) then return end
     
     -- 标记正在连接
     self:SetConnecting(true);

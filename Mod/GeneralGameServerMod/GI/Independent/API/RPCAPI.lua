@@ -10,6 +10,8 @@ local Net = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/Net.lua");
 ]]
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
+local Connection = NPL.load("Mod/GeneralGameServerMod/CommonLib/Connection.lua", IsDevEnv);
+local VirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua", IsDevEnv);
 local RPCVirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPCVirtualConnection.lua", IsDevEnv);
 
 local RPCAPI = NPL.export()

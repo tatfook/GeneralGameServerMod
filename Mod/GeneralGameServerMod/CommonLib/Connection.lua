@@ -97,6 +97,7 @@ function Connection:Send(msg, threadname, neuronfile, callback)
 				self.__timer__:Change(timeout);
 			else 
 				self.__timer__.callbackFunc = nil;
+				self.__timer__:Change(nil);
 				if (type(callback) == "function") then callback() end
 			end
 		end
