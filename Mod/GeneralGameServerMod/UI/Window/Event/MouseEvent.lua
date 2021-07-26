@@ -67,13 +67,13 @@ function MouseEvent:Init(event_type, window, params)
         self.buttons_state = 0;
         if(ParaUI.IsMousePressed(0)) then self.buttons_state = self.buttons_state + 1 end
         if(ParaUI.IsMousePressed(1)) then self.buttons_state = self.buttons_state + 2 end
-        if (event_type == "onmousedown") then self.down_buttons_state = self.buttons_state end   -- 记录按下值 
+        if (event_type == "onmousedown") then self.down_buttons_state = self.buttons_state end       -- 记录按下值 
     elseif (event_type == "onmouseup") then
-        self.buttons_state = self.down_buttons_state;  -- 抬起使用与按下相同的按键状态
+        self.buttons_state = self.down_buttons_state;                                                -- 抬起使用与按下相同的按键状态
     end
 	
     if (type(params) == "table") then
-        self.x, self.y, self.mouse_button, self.buttons_state, self.mouse_wheel = params.x or params.mouse_x or self.x, params.y or params.mouse_y or self.mouse_y, params.mouse_button or self.mouse_button, params.buttons_state or self.buttons_state, params.mouse_wheel or self.mouse_wheel;
+        self.x, self.y, self.mouse_button, self.buttons_state, self.mouse_wheel = params.x or params.mouse_x or self.x, params.y or params.mouse_y or self.y, params.mouse_button or self.mouse_button, params.buttons_state or self.buttons_state, params.mouse_wheel or self.mouse_wheel;
         self.shift_pressed, self.ctrl_pressed, self.alt_pressed = params.shift_pressed or self.shift_pressed, params.ctrl_pressed or self.ctrl_pressed, params.alt_pressed or self.alt_pressed;
     end
 
