@@ -81,11 +81,20 @@ end
 
 -- 处理通信消息
 function ThreadHelper:HandleMsg(msg)
+    __event_emitter__:TriggerEventCallBack(msg.__cmd__, msg);
     __event_emitter__:TriggerEventCallBack("__msg__", msg);
 end
 
 function ThreadHelper:OnMsg(callback)
     __event_emitter__:RegisterEventCallBack("__msg__", callback);
+end
+
+function ThreadHelper:On(msgname, callback)
+    __event_emitter__:RegisterEventCallBack(msgname, callback);
+end
+
+function ThreadHelper:Emit(thread_name, msgname, data)
+    self:SendMsgToWorkerThread(thread_name, data, msgname);
 end
 
 function ThreadHelper:Tick()
