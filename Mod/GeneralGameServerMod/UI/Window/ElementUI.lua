@@ -953,6 +953,11 @@ function ElementUI:IsCanSimulateEvent()
     return Simulator:IsRecording() and self:IsSupportSimulator() and self:GetWindow():IsEnableSimulator();
 end
 
+-- 是否在播放模拟事件
+function ElementUI:IsPlaySimulateEvent()
+    return Simulator:IsPlaying() and self:IsSupportSimulator() and self:GetWindow():IsEnableSimulator();
+end
+
 function ElementUI:SimulateEvent(event)
 end
 
