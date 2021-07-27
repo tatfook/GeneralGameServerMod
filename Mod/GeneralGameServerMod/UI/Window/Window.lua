@@ -336,6 +336,12 @@ function Window:CreateNativeWindow()
     end
     local function GetHandle(event_type)
         return function()
+            -- 鼠标事件
+            if (event_type == "onmousedown" or event_type == "onmouseup" or event_type == "onmousemove" or event_type == "onmousewheel" or event_type == "onmouseleave" or event_type == "onmouseenter") then
+                -- 正在播放宏示教则不处理系统事件
+                if (self:IsPlaySimulateEvent()) then return end 
+            end
+
             self:OnEvent(event_type);
         end
     end
