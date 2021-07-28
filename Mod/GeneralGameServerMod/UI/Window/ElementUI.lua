@@ -896,12 +896,15 @@ function ElementUI:SetFocus(element)
     local focusElement = window:GetFocusElement();
     if (focusElement == element) then return end
 
+    -- print("================ElementUI:SetFocus===================", focusElement and focusElement:GetTagName(), element and element:GetTagName())
     -- 先失去焦点 再获取焦点, 避免失去焦点又把刚获取焦点置空了
-    if (focusElement) then focusElement:CallEventCallback("OnFocusOut") end
-
+    
     -- 设置聚焦元素
     window:SetFocusElement(element);
-
+    -- 失焦
+    if (focusElement) then focusElement:CallEventCallback("OnFocusOut") end
+    -- 再次设置聚焦元素, OnFocusOut 很有可能破坏聚焦元素
+    window:SetFocusElement(element);
     -- 聚焦
     if (element) then element:CallEventCallback("OnFocusIn") end
 end

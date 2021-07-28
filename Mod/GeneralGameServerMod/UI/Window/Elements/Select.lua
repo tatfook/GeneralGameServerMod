@@ -29,8 +29,7 @@ function SelectSimulator:HandlerSelectOption(params, window)
     local selectId, value = params.selectId, params.value;
     local select = window:GetElementById(selectId);
     if (not select) then return end
-    select:SetFocus(nil);
-    select:OnFocusOut();
+    select:ReleaseFocus();
     select:SetAttrValue("value", value);
     select:CallAttrFunction("onselect", nil, select:GetValue(), select:GetLabel());
 end
@@ -172,6 +171,7 @@ Select:Property("Value", "");
 Select:Property("ListBoxElement");
 Select:Property("InputBoxElement");
 Select:Property("SelectedOptionElement");
+Select:Property("CaptureFocus", false, "IsCaptureFocus"); -- 是否捕获焦点
 Select:Property("BaseStyle", {
     NormalStyle = {
         ["display"] = "inline-block",
@@ -204,8 +204,7 @@ function Select:Init(xmlNode, window, parent)
             self:CallAttrFunction("onchange", nil, self:GetValue(), self:GetLabel());
             self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
         end
-        self:OnFocusOut();
-        self:SetFocus(nil);
+        self:ReleaseFocus();
     end
     -- local listboxAttrStyle = ListBox:GetAttrStyle();
     -- listboxAttrStyle["padding-top"], listboxAttrStyle["padding-right"], listboxAttrStyle["padding-bottom"], listboxAttrStyle["padding-left"] = attrStyle["padding-top"], attrStyle["padding-right"], attrStyle["padding-bottom"], attrStyle["padding-left"];
@@ -334,9 +333,7 @@ end
 
 function Select:OnSelect(option)
     if (self:GetSelectedOptionElement() == option) then return end
-    self:SetFocus(nil);
-    self:OnFocusOut();
-
+    self:ReleaseFocus();
     self:SetSelectedOptionElement(option);
     local value = option and option:GetValue();
     local label = option and option:GetLabel();
@@ -385,10 +382,17 @@ function Select:AutoScrollToValue(value)
     return ListBox:RelativePointToScreenPoint(relX, relY);
 end
 
+function Select:ReleaseFocus()
+    self:SetCaptureFocus(false);
+    self:SetFocus(nil);
+    self:OnFocusOut();
+end
+
 function Select:OnFocusIn(event)
     if (self:IsDisabled()) then return end
     
     if (self:IsAllowCreate()) then
+        self:SetCaptureFocus(true);
         self:GetInputBoxElement():SetAttrValue("value", self:GetLabel());
         self:GetInputBoxElement():handleSelectAll();
         self:GetInputBoxElement():FocusIn();
@@ -404,7 +408,7 @@ function Select:OnFocusIn(event)
 end
 
 function Select:OnFocusOut(event)
-    if (self:GetInputBoxElement():IsFocus()) then return end
+    if (self:IsCaptureFocus()) then return end
 
     self:GetInputBoxElement():SetVisible(false);
     self:GetListBoxElement():SetVisible(false);
