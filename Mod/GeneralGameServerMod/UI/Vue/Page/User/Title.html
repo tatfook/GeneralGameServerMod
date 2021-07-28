@@ -7,6 +7,7 @@
 </template>
 
 <script type="text/lua">
+    local Keepwork = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keepwork.lua");
     local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
     NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
     local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
@@ -20,7 +21,7 @@
         local isVip = KeepWorkItemManager.IsVip();
         local itemIds = commonlib.split(skin, ";");
 
-        if (KeepWorkItemManager.HasGSItem(11001)) then return currentSkin end 
+        if (Keepwork:IsExperienceVipCloth()) then return currentSkin end 
 
         if (itemIds and #itemIds > 0) then
             for _, id in ipairs(itemIds) do
@@ -40,7 +41,7 @@
         local isVip = KeepWorkItemManager.IsVip();
         local itemIds = commonlib.split(skin, ";");
         
-        if (KeepWorkItemManager.HasGSItem(11001)) then return currentSkin end 
+        if (Keepwork:IsExperienceVipCloth()) then return currentSkin end 
 
         if (itemIds and #itemIds > 0) then
             for _, id in ipairs(itemIds) do

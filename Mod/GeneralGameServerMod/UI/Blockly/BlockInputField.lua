@@ -617,10 +617,10 @@ function BlockInputField:BeginEdit()
     editor:SetVisible(true);
     -- 更新布局
     self:UpdateEditAreaSize();
-    -- 全选
-    if (self:GetFieldEditType() == "input") then fieldEditElement:handleSelectAll() end
     -- 聚焦
     fieldEditElement:FocusIn();
+    -- 全选
+    if (self:GetFieldEditType() == "input") then fieldEditElement:handleSelectAll() end
 end
 
 function BlockInputField:EndEdit()
