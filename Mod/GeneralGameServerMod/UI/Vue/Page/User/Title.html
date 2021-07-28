@@ -19,6 +19,9 @@
         local currentSkin = skin;
         local isVip = KeepWorkItemManager.IsVip();
         local itemIds = commonlib.split(skin, ";");
+
+        if (KeepWorkItemManager.HasGSItem(11001)) then return currentSkin end 
+
         if (itemIds and #itemIds > 0) then
             for _, id in ipairs(itemIds) do
                 local data = CustomCharItems:GetItemById(id);
@@ -36,6 +39,9 @@
         local currentSkin = skin;
         local isVip = KeepWorkItemManager.IsVip();
         local itemIds = commonlib.split(skin, ";");
+        
+        if (KeepWorkItemManager.HasGSItem(11001)) then return currentSkin end 
+
         if (itemIds and #itemIds > 0) then
             for _, id in ipairs(itemIds) do
                 local data = CustomCharItems:GetItemById(id);

@@ -386,8 +386,6 @@ function Select:AutoScrollToValue(value)
 end
 
 function Select:OnFocusIn(event)
-    if (self:IsPlaySimulateEvent()) then print("=================Select:OnFocusIn1==============", self:GetAttrStringValue("id")) end
-
     if (self:IsDisabled()) then return end
     
     if (self:IsAllowCreate()) then
@@ -403,18 +401,14 @@ function Select:OnFocusIn(event)
         self:AutoScrollToValue();
     end
     Select._super.OnFocusIn(self, event);
-
-    if (self:IsPlaySimulateEvent()) then print("=================Select:OnFocusIn2==============", self:GetAttrStringValue("id")) end
 end
 
 function Select:OnFocusOut(event)
-    if (self:IsPlaySimulateEvent()) then print("=================Select:OnFocusOut1==============", self:GetAttrStringValue("id")) end
     if (self:GetInputBoxElement():IsFocus()) then return end
 
     self:GetInputBoxElement():SetVisible(false);
     self:GetListBoxElement():SetVisible(false);
     Select._super.OnFocusOut(self, event);
-    if (self:IsPlaySimulateEvent()) then print("=================Select:OnFocusOut2==============", self:GetAttrStringValue("id")) end
 end
 
 local ArrowAreaSize = 20;

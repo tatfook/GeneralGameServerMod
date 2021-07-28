@@ -583,7 +583,6 @@ function BlockInputField:GetFieldEditElement(parentElement)
 end
 
 function BlockInputField:BeginEdit()
-    if (self:GetBlockly():IsPlaySimulateEvent()) then print("----------------focus2-----------------") end
     if (not self:IsCanEdit()) then return end
 
     -- 获取编辑器元素
@@ -622,7 +621,6 @@ function BlockInputField:BeginEdit()
     if (self:GetFieldEditType() == "input") then fieldEditElement:handleSelectAll() end
     -- 聚焦
     fieldEditElement:FocusIn();
-    if (self:GetBlockly():IsPlaySimulateEvent()) then print("----------------focus3-----------------", self:GetFieldEditType()) end
 end
 
 function BlockInputField:EndEdit()
