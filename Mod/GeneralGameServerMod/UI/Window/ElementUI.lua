@@ -900,7 +900,7 @@ function ElementUI:SetFocus(element)
     -- 先失去焦点 再获取焦点, 避免失去焦点又把刚获取焦点置空了
     
     -- 设置聚焦元素
-    window:SetFocusElement(element);
+    window:SetFocusElement(nil);
     -- 失焦
     if (focusElement) then focusElement:CallEventCallback("OnFocusOut") end
     -- 再次设置聚焦元素, OnFocusOut 很有可能破坏聚焦元素
