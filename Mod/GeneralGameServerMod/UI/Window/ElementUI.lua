@@ -892,21 +892,18 @@ end
 function ElementUI:SetFocus(element)
     local window = self:GetWindow();
     if (not window) then return end
+
     local focusElement = window:GetFocusElement();
-    window:SetFocusElement(element);
     if (focusElement == element) then return end
 
     -- 先失去焦点 再获取焦点, 避免失去焦点又把刚获取焦点置空了
-    if (focusElement) then
-        focusElement:CallEventCallback("OnFocusOut");
-        -- self:UpdateLayout(true);  -- 太过耗时
-    end
+    if (focusElement) then focusElement:CallEventCallback("OnFocusOut") end
 
-    if (element) then
-        element:CallEventCallback("OnFocusIn");
-        -- self:UpdateLayout(true);
-        ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
-    end
+    -- 设置聚焦元素
+    window:SetFocusElement(element);
+
+    -- 聚焦
+    if (element) then element:CallEventCallback("OnFocusIn") end
 end
 
 -- 选择样式
