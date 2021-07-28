@@ -894,13 +894,16 @@ function ElementUI:SetFocus(element)
     if (not window) then return end
     local focusElement = window:GetFocusElement();
     window:SetFocusElement(element);
+    if (self:IsPlaySimulateEvent()) then print("=================ElementUI:SetFocus1==============", element and element:GetAttrStringValue("id")) end
     if (focusElement == element) then return end
     if (element) then
         element:CallEventCallback("OnFocusIn");
+        if (self:IsPlaySimulateEvent()) then print("=================ElementUI:SetFocus2==============", element and element:GetAttrStringValue("id")) end
         -- self:UpdateLayout(true);
         ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
     end
     if (focusElement) then
+        if (self:IsPlaySimulateEvent()) then print("=================ElementUI:SetFocus3==============", focusElement:GetAttrStringValue("id")) end
         focusElement:CallEventCallback("OnFocusOut");
         -- self:UpdateLayout(true);  -- 太过耗时
     end
