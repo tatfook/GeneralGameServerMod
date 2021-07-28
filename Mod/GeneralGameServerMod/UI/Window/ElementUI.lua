@@ -896,16 +896,19 @@ function ElementUI:SetFocus(element)
     window:SetFocusElement(element);
     if (self:IsPlaySimulateEvent()) then print("=================ElementUI:SetFocus1==============", element and element:GetAttrStringValue("id")) end
     if (focusElement == element) then return end
-    if (element) then
-        element:CallEventCallback("OnFocusIn");
-        if (self:IsPlaySimulateEvent()) then print("=================ElementUI:SetFocus2==============", element and element:GetAttrStringValue("id")) end
-        -- self:UpdateLayout(true);
-        ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
-    end
+
+    -- 先失去焦点 再获取焦点, 避免失去焦点又把刚获取焦点置空了
     if (focusElement) then
-        if (self:IsPlaySimulateEvent()) then print("=================ElementUI:SetFocus3==============", focusElement:GetAttrStringValue("id")) end
+        if (self:IsPlaySimulateEvent()) then print("=================ElementUI:SetFocus2==============", focusElement:GetAttrStringValue("id")) end
         focusElement:CallEventCallback("OnFocusOut");
         -- self:UpdateLayout(true);  -- 太过耗时
+    end
+
+    if (element) then
+        element:CallEventCallback("OnFocusIn");
+        if (self:IsPlaySimulateEvent()) then print("=================ElementUI:SetFocus3==============", element and element:GetAttrStringValue("id")) end
+        -- self:UpdateLayout(true);
+        ElementFocusDebug.Format("Focus Element, Name = %s", element:GetName());
     end
 end
 
