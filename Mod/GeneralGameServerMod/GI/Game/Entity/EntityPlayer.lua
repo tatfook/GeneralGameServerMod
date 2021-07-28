@@ -53,12 +53,8 @@ function EntityPlayer:Init(username, entityId)
 
 	self:CreateInnerObject();
 	self:RefreshClientModel();
+    self:Attach();
 	return self;
-end
-
-function EntityPlayer:Attach()
-    EntityPlayer._super.Attach(self);
-    return self;
 end
 
 function EntityPlayer:IsShowHeadOnDisplay()
@@ -83,6 +79,7 @@ function EntityPlayer:CheckCollision(deltaTime)
 	deltaTime = math.min(0.3, deltaTime);
 	EntityPlayer._super.CheckCollision(self, deltaTime);
 end
+
 function EntityPlayer:CheckMotion()
 	local obj = self:GetInnerObject();
 	if (not obj) then return end 

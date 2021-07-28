@@ -30,7 +30,7 @@ local function GetPlayerEntity(username)
     local entity_player = __player_entity_map__[username];
     if (entity_player) then return entity_player end 
 
-    local create_player_entity = CreatePlayerEntity;
+    local create_player_entity = CreateEntityPlayer;
     if (type(__create_player_entity__) == "function") then create_player_entity = __create_player_entity__ end 
 
     entity_player = create_player_entity(username);  
