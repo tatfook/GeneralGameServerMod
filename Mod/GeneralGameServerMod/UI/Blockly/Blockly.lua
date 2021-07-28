@@ -572,6 +572,7 @@ function Blockly:OnMouseDown(event)
     end
 
     self.mouse_down_ui = ui;
+    if (self:IsPlaySimulateEvent()) then print("----------------Blockly:OnMouseDown---------------", ui:GetClassName()) end
     -- 元素被点击 直接返回元素事件处理
     if (ui ~= self) then 
         return ui:OnMouseDown(event);
@@ -684,6 +685,8 @@ function Blockly:OnMouseUp(event)
     local x, y = self:GetLogicAbsPoint(event);
     local ui = self:GetMouseUI(x, y, event) or self;
 
+    if (self:IsPlaySimulateEvent()) then print("----------------Blockly:OnMouseUp---------------", ui:GetClassName(), event:IsLeftButton()) end
+
     if (event:IsLeftButton()) then
         local focusUI = self:GetFocusUI();  -- 获取焦点
         if (focusUI ~= ui and focusUI) then focusUI:OnFocusOut() end
@@ -693,6 +696,7 @@ function Blockly:OnMouseUp(event)
                 ui:OnClick();
             end 
             if (focusUI ~= ui) then
+                if (self:IsPlaySimulateEvent()) then print("----------------focus1-----------------") end
                 ui:OnFocusIn(); 
                 self:SetFocusUI(ui);
             end
