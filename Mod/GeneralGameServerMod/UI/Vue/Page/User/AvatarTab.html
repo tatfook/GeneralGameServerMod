@@ -67,6 +67,10 @@ end
 
 GetGlobalScope():Watch("isAuthUser", function(val)
     SelectTab(val and "suit" or "head");
+    if AvatarDefaulIndex then
+        SelectTab(AvatarDefaulIndex)
+        AvatarDefaulIndex = nil
+    end
 end)
 </script>
 
