@@ -148,9 +148,8 @@ function AppGeneralGameClient:CopyKpUserInfo(userinfo)
     self:SetMainPlayerEntitySkin(self.userinfo.skin);
     local oldPlayerEntity = EntityManager.GetPlayer();
     if (oldPlayerEntity and self:GetMainPlayerEntityScale()) then oldPlayerEntity:SetScaling(self:GetMainPlayerEntityScale()) end
-    if (oldPlayerEntity and self:GetMainPlayerEntityAsset()) then oldPlayerEntity:SetMainAssetPath(self:GetMainPlayerEntityAsset()) end
     if (oldPlayerEntity and self:GetMainPlayerEntitySkin()) then oldPlayerEntity:SetSkin(self:GetMainPlayerEntitySkin()) end
-
+    if (oldPlayerEntity and self:GetMainPlayerEntityAsset()) then oldPlayerEntity:SetMainAssetPath(self:GetMainPlayerEntityAsset()) end
     GameLogic.GetFilters():apply_filters("ggs", {action = "UpdateUserInfo", userinfo = self:GetUserInfo()});
 end
 
