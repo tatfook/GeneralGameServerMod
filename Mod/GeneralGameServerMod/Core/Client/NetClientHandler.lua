@@ -159,8 +159,8 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     end
 
     if (self:GetClient():GetMainPlayerEntityScale()) then entityPlayer:SetScaling(self:GetClient():GetMainPlayerEntityScale()) end
-    if (self:GetClient():GetMainPlayerEntityAsset()) then entityPlayer:SetMainAssetPath(self:GetClient():GetMainPlayerEntityAsset()) end
     if (self:GetClient():GetMainPlayerEntitySkin()) then entityPlayer:SetSkin(self:GetClient():GetMainPlayerEntitySkin()) end
+    if (self:GetClient():GetMainPlayerEntityAsset()) then entityPlayer:SetMainAssetPath(self:GetClient():GetMainPlayerEntityAsset()) end
 
     -- 构建玩家信息
     local playerInfo = {
