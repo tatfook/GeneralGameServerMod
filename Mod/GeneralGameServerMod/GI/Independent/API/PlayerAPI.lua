@@ -174,5 +174,7 @@ setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
     local MainPlayer = GetPlayer();
     CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function()
         MainPlayer:SetFocus();
+        local obj = MainPlayer:GetInnerObject();
+        if(obj and obj.ToCharacter) then obj:ToCharacter():SetFocus() end
     end);
 end});

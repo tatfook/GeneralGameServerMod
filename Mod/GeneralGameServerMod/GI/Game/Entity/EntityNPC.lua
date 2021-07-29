@@ -80,7 +80,9 @@ function EntityNPC:FrameMove(deltaTime)
         self.stepCount = self.stepCount - 1;
         if (self.stepCount == 0) then
             self:SetPosition(self.targetX, self.targetY, self.targetZ);
+            self:SetAnimId(0);
         else
+            self:SetAnimId(5);
             local x, y, z = self:GetPosition();
             self:SetPosition(x + self.stepX, y + self.stepY, z + self.stepZ);
         end

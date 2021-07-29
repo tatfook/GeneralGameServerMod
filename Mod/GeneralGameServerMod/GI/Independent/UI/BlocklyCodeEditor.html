@@ -1,0 +1,58 @@
+<template class="container">
+    <div class="header">
+
+    </div>
+    <div style="">
+        <Blockly ref="blockly" v-bind:language="Language or 'SystemNplBlock'" style="width: 100%; height: 100%;" onchange=OnBlocklyChange v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
+    </div>
+</template>
+
+<script type="text/lua">
+local BlocklyEl = nil;
+
+-- 组件解析完成
+function OnReady()
+    BlocklyEl = GetRef("blockly");
+
+    _G.GetCode = function()
+        local rawcode, prettycode = BlocklyEl:GetCode();
+        return string.gsub(prettycode, "\t", "    ");
+    end
+
+    _G.GetXml = function()
+        local xmlNodeText = BlocklyEl:SaveToXmlNodeText();
+        return xmlNodeText;
+    end
+
+    BlocklyEl:LoadFromXmlNodeText(_G.xmltext);
+end
+
+function OnBlocklyChange()
+    if (type(_G.OnChange) == "function") then
+        _G.OnChange();
+    end
+end
+
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    padding: 0px 2px 2px 2px;
+    background-color: #a37c2d;
+}
+
+.blockly {
+    position: absolute; 
+    left: 0px; 
+    right: 0px; 
+    top: 40px; 
+    bottom: 0px;
+}
+
+.header {
+    height: 40px;
+    width: 100%;
+}
+</style>

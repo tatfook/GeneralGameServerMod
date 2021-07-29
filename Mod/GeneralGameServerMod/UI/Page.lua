@@ -124,50 +124,6 @@ function Page.Show(G, params, isNew)
     return page;
 end
 
--- 显示3DUI
-function Page.Show3D(G, params)
-    Page.StaticInit();
-
-    params = params or {};
-    local key = params.html or params.template or params.url;
-    if (not key) then return end
-    local page = _3d_pages[key] or Vue:new();
-    _3d_pages[key] = page;
-    
-    if (page:GetNativeWindow()) then 
-        page:CloseWindow();
-    end
-
-    params.G = G;
-    params.is3DUI = true;
-
-    page:Show(params);
-
-    Page.BindPageToBlockSign(params.blockX, params.blockY, params.blockZ, page);
-
-    return page;
-end
-
-function Page.ShowVue3DTestPage(G, params)
-    if (IsDevEnv) then
-        if (_G.Vue3DTestPage) then
-            _G.VueTestPage:CloseWindow();
-        end        
-        _G.VueTestPage = Vue:new();
-    end
-
-    params = params or {};
-    params.url = params.url or "%vue%/Example/3D.html";
-    params.is3DUI = true;
-    params.G = G;
-
-    _G.VueTestPage:Show(params);
-
-    Page.BindPageToBlockSign(params.blockX, params.blockY, params.blockZ, _G.VueTestPage);
-    
-    return _G.VueTestPage;
-end
-
 -- 显示用户信息
 local UserInfoPage = Vue:new();
 function Page.ShowUserInfoPage(G, params)

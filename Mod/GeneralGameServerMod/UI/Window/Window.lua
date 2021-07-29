@@ -129,13 +129,27 @@ function Window:NewG(g)
     return G.New(self, g);
 end
 
+function Window:OnWorldLoaded()
+end
+
+function Window:OnWorldUnloaded()
+    self:CloseWindow();
+end
+
 function Window:Init()
     if (not self:Is3DWindow()) then
         -- GetSceneViewport():Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
         Screen:Connect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     end
-
+    
     local params = self:GetParams();
+
+    -- 卸载世界自动关闭窗口  默认为真
+    if (params.__is_auto_close_in_world_unload__ or params.__is_auto_close_in_world_unload__ == nil) then
+        GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+        GameLogic:Connect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
+    end
+
     self:SetWindow(self);
     self:SetWindowName(params.windowName);
     if (self:IsSupportSimulator()) then Simulator:RegisterWindow(self) end
@@ -172,7 +186,7 @@ function Window.Show(self, params)
     end
 
     params = params or self:GetParams() or {};
-    self:Set3DWindow(params.is3DUI and true or false);
+    self:Set3DWindow(params.__is_3d_ui__ and true or false);
     self:SetParams(params);
     self:SetNativeWindow(self:Is3DWindow() and self:Create3DNativeWindow() or self:CreateNativeWindow());
     -- 初始化
@@ -186,6 +200,9 @@ end
 
 -- 窗口关闭
 function Window:CloseWindow()
+    GameLogic:Disconnect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");
+    GameLogic:Disconnect("WorldUnloaded", self, self.OnWorldUnloaded, "UniqueConnection");
+
     if (not self:GetNativeWindow()) then return end
     -- GetSceneViewport():Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
     Screen:Disconnect("sizeChanged", self, self.OnScreenSizeChanged, "UniqueConnection");
@@ -209,7 +226,9 @@ end
 -- 创建原生窗口
 function Window:Create3DNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
-    local windowX, windowY, windowWidth, windowHeight = self:Init3DWindowPosition();
+
+    local params = self:GetParams();
+    local windowX, windowY, windowWidth, windowHeight = params.x or 0, params.y or 0, params.width or 100, params.height or 100;
     local native_window = ParaUI.CreateUIObject("button", self:GetWindowId(), "_lt", windowX, windowY, windowWidth, windowHeight);
     native_window:SetField("OwnerDraw", true);              
     native_window.enabled = false;
@@ -221,6 +240,13 @@ function Window:Create3DNativeWindow()
         self:HandleRender();
     end);
    
+    local obj = self:GetParams().__3d_object__;
+    if (obj) then
+        obj:ShowHeadOnDisplay(true, 0);
+        obj:SetHeadOnUITemplateName(self:GetWindowId(), 0);
+        obj:SetField("HeadOn3DFacing", -1.57);
+    end
+
     return native_window;
 end
 

@@ -62,8 +62,8 @@
             local skin = GetGlobalScope():Get("MainSkin");
             if (assetfile and skin and skin ~= "" and type(skin) == "string") then
              if (assetfile == CustomCharItems.defaultModelFile and not CustomCharItems:CheckAvatarExist(skin)) then
-                 skin = CustomCharItems:ChangeSkinStringToItems(skin);
-                 local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
+                skin = CustomCharItems:ChangeSkinStringToItems(skin);
+                local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
                 local function ChangeAsset(assetfile, skin)
                     local playerEntity = GameLogic.GetPlayerController():GetPlayer();
                     playerEntity:SetMainAssetPath(assetfile);
@@ -74,7 +74,19 @@
                     UpdatePlayerEntityInfo();
                 end
 
-                 GameLogic.IsVip("ChangeAvatarSkin", true, function(isVip)
+                if (Keepwork:IsExperienceVipCloth()) then 
+                    ChangeAsset(assetfile, skin)
+                    if skin == "80001;81018;88014;" then
+                        local defaul_asset = GlobalScope:Get("DefaulMainAsset")
+                        if defaul_asset and defaul_asset ~= "" and defaul_asset ~= CustomCharItems.defaultModelFile then
+                            ChangeAsset(defaul_asset, skin)
+                        end
+                    end
+                    CloseWindow();
+                    return ;
+                end 
+
+                GameLogic.IsVip("ChangeAvatarSkin", true, function(isVip)
                      if(isVip) then
                         skin = removeActivityItems(skin);
                         ChangeAsset(assetfile, skin)
