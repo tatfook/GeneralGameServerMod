@@ -38,6 +38,5 @@
 
 ShowWindow(nil, {
     url = "%gi%/Independent/UI/BlocklyCodeEditor.html",
-    height = 600,
-    width = 800,
+    draggable = true,
 })

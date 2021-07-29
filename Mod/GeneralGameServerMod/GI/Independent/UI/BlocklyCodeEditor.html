@@ -1,10 +1,15 @@
 <template class="container">
     <div class="header">
-
+        <div style="height: 100%; width: 300px; display: flex; align-items: center;">
+            <div tooltip="编译并运行" class="btn" style="width:62px;height:30px;background:url(@/textures/code_32bits.png#152 64 62 30);" onclick=OnClickCompileAndRun></div>
+            <div tooltip="暂停" class="btn" style="width:62px;height:30px;background:url(@/textures/zanting_32bits.png#8 6 122 56);" onclick=OnClickPause></div>
+        </div>
+       
+        <div style="height: 100%; display: flex; align-items: center;">
+            <div tooltip="编译并运行" class="btn" style="width:35px;height:39px;background:url(@/textures/code_32bits.png#91 76 35 39);" onclick=CloseWindow></div>
+        </div> 
     </div>
-    <div style="">
-        <Blockly ref="blockly" v-bind:language="Language or 'SystemNplBlock'" style="width: 100%; height: 100%;" onchange=OnBlocklyChange v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
-    </div>
+    <Blockly ref="blockly" class="blockly" onchange=OnBlocklyChange v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
 </template>
 
 <script type="text/lua">
@@ -27,20 +32,27 @@ function OnReady()
     BlocklyEl:LoadFromXmlNodeText(_G.xmltext);
 end
 
-function OnBlocklyChange()
-    if (type(_G.OnChange) == "function") then
-        _G.OnChange();
-    end
+function OnClickCompileAndRun()
 end
-
+function OnClickPause()
+end
 </script>
 
 <style>
 .container {
     height: 100%; 
-    width: 100%; 
+    width: 50%; 
     padding: 0px 2px 2px 2px;
     background-color: #a37c2d;
+}
+
+.header {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 10px;
 }
 
 .blockly {
@@ -51,8 +63,7 @@ end
     bottom: 0px;
 }
 
-.header {
-    height: 40px;
-    width: 100%;
+.btn {
+    background-color: #cccccc;
 }
 </style>
