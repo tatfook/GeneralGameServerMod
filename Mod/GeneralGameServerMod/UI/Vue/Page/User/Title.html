@@ -21,8 +21,6 @@
         local isVip = KeepWorkItemManager.IsVip();
         local itemIds = commonlib.split(skin, ";");
 
-        if (Keepwork:IsExperienceVipCloth()) then return currentSkin end 
-
         if (itemIds and #itemIds > 0) then
             for _, id in ipairs(itemIds) do
                 local data = CustomCharItems:GetItemById(id);
@@ -41,8 +39,6 @@
         local isVip = KeepWorkItemManager.IsVip();
         local itemIds = commonlib.split(skin, ";");
         
-        if (Keepwork:IsExperienceVipCloth()) then return currentSkin end 
-
         if (itemIds and #itemIds > 0) then
             for _, id in ipairs(itemIds) do
                 local data = CustomCharItems:GetItemById(id);
@@ -73,17 +69,9 @@
                     GlobalScope:Set("AssetSkinGoodsItemId", 0);
                     UpdatePlayerEntityInfo();
                 end
-                skin = Keepwork:CheckSkin(skin);
-                if skin == "80001;81018;88014;" then
-                    local defaul_asset = GlobalScope:Get("DefaulMainAsset")
-                    if defaul_asset and defaul_asset ~= "" and defaul_asset ~= CustomCharItems.defaultModelFile then
-                        ChangeAsset(defaul_asset, skin)
-                    end
-                else
-                    ChangeAsset(assetfile, skin)
-                end
-                CloseWindow();
-                <!-- if (Keepwork:IsExperienceVipCloth()) then 
+               
+                if (Keepwork:IsExperienceVipCloth()) then 
+                    skin = Keepwork:CheckSkin(skin);
                     ChangeAsset(assetfile, skin)
                     if skin == "80001;81018;88014;" then
                         local defaul_asset = GlobalScope:Get("DefaulMainAsset")
@@ -113,7 +101,7 @@
                         end
                      end
                      CloseWindow();
-                 end) -->
+                 end)
              else
                  CloseWindow();
              end
