@@ -54,4 +54,7 @@ setmetatable(BlockAPI, {__call = function(_, CodeEnv)
     CodeEnv.ConvertToBlockPosition = function(x, y, z) return BlockEngine:block(x, y, z) end
 	CodeEnv.ConvertToBlockIndex = function (...) return BlockEngine:ConvertToBlockIndex(...) end
     CodeEnv.LoadTemplate = LoadTemplate;
+
+
+    CodeEnv.__BlockSize__ = BlockEngine.blocksize;
 end});

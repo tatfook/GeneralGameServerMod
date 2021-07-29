@@ -17,7 +17,7 @@ local Independent = commonlib.inherit(commonlib.gettable("System.Core.ToolBase")
 Independent:Property("CodeEnv");                              -- 代码环境
 Independent:Property("Running", false, "IsRunning");          -- 是否在运行
 Independent:Property("LoopTimer");                            -- 循环定时器
-Independent:Property("LoopTickCount", 20);                    -- 主循环频率
+Independent:Property("LoopTickCount", 50);                    -- 主循环频率 每秒50帧
 Independent:Property("ErrorExit", true, "IsErrorExit");       -- 出错退出
 Independent:Property("ShareMouseKeyBoard", false, "IsShareMouseKeyBoard");            -- 是否共享鼠标键盘事件
 Independent:Property("MainFileName");                         -- 入口文件
@@ -241,7 +241,8 @@ function Independent:Start(filename)
 
 	-- 开始定时器
 	local loopTickCount = self:GetLoopTickCount();
-	self:GetLoopTimer():Change(loopTickCount, loopTickCount);
+	local duration = math.floor(1000 / loopTickCount);
+	self:GetLoopTimer():Change(duration, duration);
 end
 
 function Independent:Tick()

@@ -87,6 +87,7 @@ function CodeEnv:InstallIndependentAPI(Independent)
 		end 
 	end 
 	self.__loadstring__ = function(...) return Independent:LoadString(...) end
+	self.__get_loop_tick_count__ = function() return Independent:GetLoopTickCount() end 
 end
 
 function CodeEnv:InstallCodeBlockAPI()

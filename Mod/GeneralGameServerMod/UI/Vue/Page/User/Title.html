@@ -73,8 +73,17 @@
                     GlobalScope:Set("AssetSkinGoodsItemId", 0);
                     UpdatePlayerEntityInfo();
                 end
-
-                if (Keepwork:IsExperienceVipCloth()) then 
+                skin = Keepwork:CheckSkin(skin);
+                if skin == "80001;81018;88014;" then
+                    local defaul_asset = GlobalScope:Get("DefaulMainAsset")
+                    if defaul_asset and defaul_asset ~= "" and defaul_asset ~= CustomCharItems.defaultModelFile then
+                        ChangeAsset(defaul_asset, skin)
+                    end
+                else
+                    ChangeAsset(assetfile, skin)
+                end
+                CloseWindow();
+                <!-- if (Keepwork:IsExperienceVipCloth()) then 
                     ChangeAsset(assetfile, skin)
                     if skin == "80001;81018;88014;" then
                         local defaul_asset = GlobalScope:Get("DefaulMainAsset")
@@ -104,7 +113,7 @@
                         end
                      end
                      CloseWindow();
-                 end)
+                 end) -->
              else
                  CloseWindow();
              end

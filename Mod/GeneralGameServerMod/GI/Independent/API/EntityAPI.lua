@@ -132,6 +132,9 @@ setmetatable(
         
             CodeEnv.CreateEntityPlayer = function(...) return CreateEntityPlayer(CodeEnv, ...) end 
             CodeEnv.CreateEntityNPC = function(...) return  CreateEntityNPC(CodeEnv, ...) end
+
+            CodeEnv.__AddEntity__ = function(entity) table.insert(CodeEnv.__entities__, entity) end
+            CodeEnv.__EntityNPC__ = EntityNPC;
         end
     }
 )

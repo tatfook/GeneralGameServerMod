@@ -15,7 +15,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityNPC.lua");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local EntityNPC = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityMovable"), NPL.export());
 
-EntityNPC.framemove_interval = 0.02;
+EntityNPC.framemove_interval = 0.05;
 
 function EntityNPC:ctor()
     self.stepCount = 0;
@@ -75,7 +75,10 @@ function EntityNPC:GetTickCount(duration)
     return (duration or 1) / self.framemove_interval;
 end
 
-function EntityNPC:FrameMove(deltaTime)
+function EntityNPC:FrameMoveRidding()
+end
+
+function EntityNPC:FrameMove()
     if (self.stepCount > 0) then
         self.stepCount = self.stepCount - 1;
         if (self.stepCount == 0) then
