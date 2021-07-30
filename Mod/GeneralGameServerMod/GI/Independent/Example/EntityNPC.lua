@@ -1,4 +1,12 @@
 
+
+-- local npc = CreateEntity({
+--     bx = 19191,
+--     by = 5,
+--     bz = 19199,
+--     assetfile = "character/CC/artwar/game/sunbin.x"
+-- });
+
 local EntityNPC = require("EntityNPC");
 
 local npc = EntityNPC:new():Init({
@@ -8,9 +16,9 @@ local npc = EntityNPC:new():Init({
     assetfile = "character/CC/artwar/game/sunbin.x"
 });
 
--- npc:Say("hello world", 1);
+npc:Say("hello world", 1);
 npc:Turn(180);
--- npc:MoveForward(10, 3);
+npc:MoveForward(10, 3);
 
 -- -- ShowWindow(nil, {
 -- --     url = "%vue%/Example/3D.html",
@@ -36,29 +44,29 @@ npc:Turn(180);
 -- SetCameraLookAtBlockPos(19444, 7, 19235);
 -- SetCamera(20, 90, -90);
 
-local CodeGlobal = {
-    sunbin = npc,
-}
-local function RunCode(code, G)
-    local code_func, errormsg = loadstring(code, "loadstring:RunCode");
-    if (errmsg) then return warn("invalid code", code) end
+-- local CodeGlobal = {
+--     sunbin = npc,
+-- }
+-- local function RunCode(code, G)
+--     local code_func, errormsg = loadstring(code, "loadstring:RunCode");
+--     if (errmsg) then return warn("invalid code", code) end
 
-    G = G or {};
-    setmetatable(G, {__index = _G});
-	-- 设置代码环境
-	setfenv(code_func, G);
+--     G = G or {};
+--     setmetatable(G, {__index = _G});
+-- 	-- 设置代码环境
+-- 	setfenv(code_func, G);
 
-    code_func();
-end
+--     code_func();
+-- end
 
-ShowWindow({
-    run = function(code)
-        RunCode(code, CodeGlobal);
-    end,
-    pause = function()
+-- ShowWindow({
+--     run = function(code)
+--         RunCode(code, CodeGlobal);
+--     end,
+--     pause = function()
         
-    end,
-}, {
-    url = "%gi%/Independent/UI/BlocklyCodeEditor.html",
-    draggable = true,
-})
+--     end,
+-- }, {
+--     url = "%gi%/Independent/UI/BlocklyCodeEditor.html",
+--     draggable = true,
+-- })

@@ -27,3 +27,6 @@ function UI.ShowEditWindow(text, callback)
         url = "%gi%/Independent/UI/EditWindow.html",
     });
 end
+
+
+

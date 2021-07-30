@@ -10,10 +10,17 @@ local EntityAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/EntityAP
 ]]
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
+local Entity = NPL.load("../../Game/Entity/Entity.lua", IsDevEnv);
 local EntityNPC = NPL.load("../../Game/Entity/EntityNPC.lua", IsDevEnv);
 local EntityPlayer = NPL.load("../../Game/Entity/EntityPlayer.lua", IsDevEnv);
 
 local EntityAPI = NPL.export()
+
+local function CreateEntity(CodeEnv, opts)
+    local entity = Entity:new():Init(opts);
+    table.insert(CodeEnv.__entities__, entity)
+    return entity;
+end
 
 local function CreateEntityNPC(CodeEnv, opts)
     local entity = EntityNPC:new():Init(opts);
@@ -131,9 +138,11 @@ setmetatable(
             CodeEnv.SetFocus = SetFocus;
         
             CodeEnv.CreateEntityPlayer = function(...) return CreateEntityPlayer(CodeEnv, ...) end 
-            CodeEnv.CreateEntityNPC = function(...) return  CreateEntityNPC(CodeEnv, ...) end
+            CodeEnv.__CreateEntityNPC__ = function(...) return  CreateEntityNPC(CodeEnv, ...) end
+            CodeEnv.__CreateEntity__ = function(...) return CreateEntity(CodeEnv, ...) end
 
             CodeEnv.__AddEntity__ = function(entity) table.insert(CodeEnv.__entities__, entity) end
+            CodeEnv.__Entity__ = Entity;
             CodeEnv.__EntityNPC__ = EntityNPC;
         end
     }

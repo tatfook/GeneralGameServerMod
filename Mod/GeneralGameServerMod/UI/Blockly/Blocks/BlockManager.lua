@@ -35,7 +35,11 @@ function BlockManager.LoadCategoryAndBlock(filename)
     if (AllCategoryAndBlockMap[filename]) then return AllCategoryAndBlockMap[filename] end
     
     local io = ParaIO.open(filename, "r");
-    if(not io:IsValid()) then return nil end 
+    if(not io:IsValid()) then 
+        print("file invalid: ", filename)
+        return nil;
+    end 
+
     local text = io:GetText();
     io:close();
     local CategoryBlockMap = NPL.LoadTableFromString(text);
@@ -90,7 +94,6 @@ function BlockManager.SaveCategoryAndBlock(filename)
     local io = ParaIO.open(filename, "w");
 	io:WriteString(text);
     io:close();
-    
     if (not isNormalUserCustomSystemBlock) then GameLogic.AddBBS("Blockly", "图块更改已保存") end
 end
 
@@ -153,7 +156,7 @@ function BlockManager.GetLanguageBlockMap(path)
 end
 
 local function OnWorldLoaded()
-    local directory = CommonLib.ToCanonicalFilePath(ParaIO.GetCurDirectory(0) .. ParaWorld.GetWorldDirectory() .. "/blockly/");
+    local directory = CommonLib.ToCanonicalFilePath(CommonLib.GetWorldDirectory() .. "/blockly/");
     local filename = CommonLib.ToCanonicalFilePath(directory .. "/CustomBlock");
     if (filename == WorldCategoryAndBlockPath) then return end
     WorldCategoryAndBlockDirectory = directory;

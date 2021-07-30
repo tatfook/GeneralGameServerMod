@@ -10,12 +10,9 @@ local EntityNPC = NPL.load("Mod/GeneralGameServerMod/GI/Game/Entity/EntityNPC.lu
 ]]
 
 NPL.load("(gl)script/ide/mathlib.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityNPC.lua");
-
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
-local EntityNPC = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityMovable"), NPL.export());
-
-EntityNPC.framemove_interval = 0.05;
+local Entity = NPL.load("./Entity.lua", IsDevEnv);
+local EntityNPC = commonlib.inherit(Entity, NPL.export());
 
 function EntityNPC:ctor()
     self.stepCount = 0;
@@ -24,29 +21,16 @@ end
 function EntityNPC:Init(opts)
     opts = opts or {};
 
-    if (opts.name) then self:SetName(opts.name) end 
-    if (opts.opacity) then self:SetOpacity(opts.opacity) end
-    if (opts.item_id and opts.item_id ~= 0) then self.item_id = item_id end 
-    
-    self:SetBlockPos(opts.bx or 0, opts.by or 0, opts.bz or 0);
-    self:SetMainAssetPath(opts.assetfile or "character/CC/02human/actor/actor.x");
-
-    self:CreateInnerObject(self:GetMainAssetPath(), true, 0, 1, self:GetSkin());
-	self:RefreshClientModel();
-    self:Attach();
-
-	return self;
-end
-
--- virtual function: overwrite to customize physical object
-function EntityNPC:CreatePhysicsObject()
-	local physic_obj = Entity._super.CreatePhysicsObject(self);
+    EntityNPC._super.Init(self, opts);
+	
+    local physic_obj = self:GetPhysicsObject();
     physic_obj:SetRadius(BlockEngine.half_blocksize);
     physic_obj:SetCanBounce(false);
     physic_obj:SetSurfaceDecay(3);
     physic_obj:SetAirDecay(0);
     physic_obj:SetMinSpeed(0.1);
-    return physic_obj;
+
+    return self;
 end
 
 function EntityNPC:SetAnimId(animId)

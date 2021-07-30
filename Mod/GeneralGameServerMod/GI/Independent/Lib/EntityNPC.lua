@@ -8,20 +8,25 @@ use the lib:
 local EntityNPC = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/EntityNPC.lua");
 ------------------------------------------------------------
 ]]
-local EntityNPC = inherit(__EntityNPC__, module("EntityNPC"));
+local Entity = require("Entity");
+local EntityNPC = inherit(Entity, module("EntityNPC"));
 
 function EntityNPC:Init(opts)
+    opts = opts or {};
     EntityNPC._super.Init(self, opts);
-
-    __AddEntity__(self);
-
     return self;
 end
 
-function EntityNPC:FrameMove()
+function EntityNPC:SetAnimId(animId)
+    self:GetInnerObject():SetField("AnimID", animId or 0);
 end
 
-function EntityNPC:FrameMoveRidding()
+function EntityNPC:Turn(degree)
+    self:SetFacingDelta(degree * math.pi / 180);
+end
+
+function EntityNPC:TurnTo(degree)
+    self:SetFacing(mathlib.ToStandardAngle(degree * math.pi / 180));
 end
 
 function EntityNPC:MoveForward(dist, duration)
@@ -43,3 +48,6 @@ function EntityNPC:MoveForward(dist, duration)
     self:SetAnimId(0);
 end
 
+function CreateNPC(opts)
+    return EntityNPC:new():Init(opts);
+end
