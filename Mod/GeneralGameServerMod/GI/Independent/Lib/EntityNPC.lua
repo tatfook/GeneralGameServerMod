@@ -17,17 +17,7 @@ function EntityNPC:Init(opts)
     return self;
 end
 
-function EntityNPC:SetAnimId(animId)
-    self:GetInnerObject():SetField("AnimID", animId or 0);
-end
 
-function EntityNPC:Turn(degree)
-    self:SetFacingDelta(degree * math.pi / 180);
-end
-
-function EntityNPC:TurnTo(degree)
-    self:SetFacing(mathlib.ToStandardAngle(degree * math.pi / 180));
-end
 
 function EntityNPC:MoveForward(dist, duration)
     local facing = self:GetFacing();

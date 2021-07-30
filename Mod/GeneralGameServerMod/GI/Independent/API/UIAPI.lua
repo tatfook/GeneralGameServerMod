@@ -94,7 +94,7 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         params.height = "100%";
         params.alignment = "_rt";
         
-        scene_viewport:SetMarginRight(width);
+        scene_viewport:SetMarginRight(params.width);
         blockly_code_editor = CodeEnv.ShowWindow(G, params);
         return blockly_code_editor;
     end

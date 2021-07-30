@@ -136,3 +136,8 @@ UnloadRegion();
 LoadLevel();
 -- sleep(3000);
 -- cmd(format("/goto %s %s %s", math.floor((maxX + minX) / 2), minY, math.floor((maxZ + minZ) / 2)));
+
+
+function clear()
+    cmd("/home");
+end
