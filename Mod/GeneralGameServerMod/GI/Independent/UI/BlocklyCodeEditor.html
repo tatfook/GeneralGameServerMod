@@ -2,11 +2,11 @@
     <div class="header">
         <div style="height: 100%; width: 300px; display: flex; align-items: center;">
             <div tooltip="编译并运行" class="btn" style="width:62px;height:30px;background:url(@/textures/code_32bits.png#152 64 62 30);" onclick=OnClickRun></div>
-            <div tooltip="暂停" class="btn" style="width:62px;height:30px;background:url(@/textures/zanting_32bits.png#8 6 122 56);" onclick=OnClickPause></div>
+            <div tooltip="重置" class="btn" style="width:62px;height:30px;background:url(@/textures/code_32bits.png#89 42 62 30);" onclick=OnClickRestart></div>
         </div>
        
         <div style="height: 100%; display: flex; align-items: center;">
-            <div tooltip="编译并运行" class="btn" style="width:35px;height:39px;background:url(@/textures/code_32bits.png#91 76 35 39);" onclick=CloseWindow></div>
+            <!-- <div tooltip="编译并运行" class="btn" style="width:35px;height:39px;background:url(@/textures/code_32bits.png#91 76 35 39);" onclick=CloseWindow></div> -->
         </div> 
     </div>
     <Blockly ref="blockly" class="blockly" v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
@@ -42,8 +42,8 @@ function OnClickRun()
     if (type(rawget(_G, "run")) == "function") then _G.run(GetCode()) end
 end
 
-function OnClickPause()
-    if (type(rawget(_G, "pause")) == "function") then _G.pause() end
+function OnClickRestart()
+    if (type(rawget(_G, "restart")) == "function") then _G.restart() end
 end
 
 

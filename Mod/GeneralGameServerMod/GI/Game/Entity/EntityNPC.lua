@@ -23,13 +23,6 @@ function EntityNPC:Init(opts)
 
     EntityNPC._super.Init(self, opts);
 	
-    local physic_obj = self:GetPhysicsObject();
-    physic_obj:SetRadius(BlockEngine.half_blocksize);
-    physic_obj:SetCanBounce(false);
-    physic_obj:SetSurfaceDecay(3);
-    physic_obj:SetAirDecay(0);
-    physic_obj:SetMinSpeed(0.1);
-
     return self;
 end
 

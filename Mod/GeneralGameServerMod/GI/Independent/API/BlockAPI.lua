@@ -52,7 +52,8 @@ setmetatable(BlockAPI, {__call = function(_, CodeEnv)
 	CodeEnv.GetBlockFull = function (...) return BlockEngine:GetBlockFull(...) end
     CodeEnv.ConvertToRealPosition = function (...) return BlockEngine:ConvertToRealPosition_float(...) end
     CodeEnv.ConvertToBlockPosition = function(x, y, z) return BlockEngine:block(x, y, z) end
-	CodeEnv.ConvertToBlockIndex = function (...) return BlockEngine:ConvertToBlockIndex(...) end
+	CodeEnv.ConvertToBlockIndex = function (...) return BlockEngine:GetSparseIndex(...) end
+	CodeEnv.ConvertToBlockPositionFromBlockIndex = function (...) return BlockEngine:FromSparseIndex(...) end
     CodeEnv.LoadTemplate = LoadTemplate;
 
 

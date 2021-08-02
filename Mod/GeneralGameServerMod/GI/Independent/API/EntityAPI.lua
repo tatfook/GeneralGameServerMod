@@ -8,6 +8,7 @@ use the lib:
 local EntityAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/EntityAPI.lua");
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityMovable.lua");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
 local Entity = NPL.load("../../Game/Entity/Entity.lua", IsDevEnv);
@@ -141,9 +142,29 @@ setmetatable(
             CodeEnv.__CreateEntityNPC__ = function(...) return  CreateEntityNPC(CodeEnv, ...) end
             CodeEnv.__CreateEntity__ = function(...) return CreateEntity(CodeEnv, ...) end
 
-            CodeEnv.__AddEntity__ = function(entity) table.insert(CodeEnv.__entities__, entity) end
-            CodeEnv.__Entity__ = Entity;
-            CodeEnv.__EntityNPC__ = EntityNPC;
+            CodeEnv.__AddEntity__ = function(entity) 
+                CodeEnv.__entities__[entity] = entity;
+            end
+            CodeEnv.__GetAllEntity__ = function() 
+                return CodeEnv.__entities__;
+            end
+            local __entity_list__ = {};
+            CodeEnv.__GetEntityList__ = function()
+                local size = #__entity_list__;
+                for index = 1, size do __entity_list__[index] = nil end
+                for _, entity in pairs(CodeEnv.__entities__) do table.insert(__entity_list__, entity) end
+                return __entity_list__;
+            end
+            CodeEnv.__RemoveEntity__ = function(entity)
+                CodeEnv.__entities__[entity] = nil;
+                entity:Destroy();
+            end
+            CodeEnv.__ClearAllEntity__ = function()
+                for _, entity in ipairs(CodeEnv.__GetEntityList__()) do
+                    entity:Destroy();
+                end 
+            end
+            CodeEnv.__Entity__ = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityMovable");
         end
     }
 )

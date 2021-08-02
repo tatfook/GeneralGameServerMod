@@ -96,3 +96,11 @@ function GetNetAPI()
 
     return __Net_api__;
 end
+
+function CreateEntity(opts)
+    return require("Entity"):new():Init(opts);
+end
+
+function CreateGoods(opts)
+    return require("Goods"):new():Init(opts);
+end

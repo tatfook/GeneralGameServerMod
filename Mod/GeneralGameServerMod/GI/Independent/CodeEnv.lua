@@ -122,8 +122,8 @@ function CodeEnv:Clear()
 		window:CloseWindow();
 	end
 
-	-- 移除 Entity
-	for _, entity in pairs(self.__entities__) do
+	-- 安全移除Entity
+	for _, entity in ipairs(self.__GetEntityList__()) do
 		entity:Destroy();
 	end
 end

@@ -84,6 +84,12 @@ end
 local function DefaultKeyReleaseCallBack(__code_env__, event)
 end
 
+local function DefaultMousePressEventCallBack(__code_env__, event)
+    local result = __code_env__.MousePick();
+    if (not result) then return end
+    if (result.entity) then result.entity:OnClick() end
+end
+
 setmetatable(EventAPI, {
     __call = function(_, CodeEnv)
         CodeEnv.DIK_SCANCODE = DIK_SCANCODE; -- DIK_SCANCODE.DIK_W
@@ -113,6 +119,7 @@ setmetatable(EventAPI, {
             TriggerEventCallBack(CodeEnv, EventType.MOUSE_DOWN, ...) 
             TriggerEventCallBack(CodeEnv, EventType.MOUSE, ...) 
             TriggerEventCallBack(CodeEnv, EventType.MOUSE_KEY, ...) 
+            DefaultMousePressEventCallBack(CodeEnv, ...);
         end
 
         local function MouseMoveEventCallBack(...)
