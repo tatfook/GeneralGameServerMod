@@ -701,7 +701,8 @@ function Blockly:OnMouseUp(event)
     
     if (event:IsRightButton() and not self:IsInnerToolBox(event) and not self:IsReadOnly()) then
         local contextmenu = self:GetContextMenu();
-        local absX, absY = self:GetLogicViewPoint(event);
+        local absX, absY = Blockly._super.GetRelPoint(self, event.x, event.y);  -- 相对坐标为窗口的缩放后坐标
+        -- local absX, absY = self:GetLogicViewPoint(event);
         local menuType = "block";
         contextmenu:SetStyleValue("left", absX);
         contextmenu:SetStyleValue("top", absY);
