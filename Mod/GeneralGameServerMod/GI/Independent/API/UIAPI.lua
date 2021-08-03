@@ -99,6 +99,13 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         return blockly_code_editor;
     end
 
+    CodeEnv.SetSceneMarginRight = function(size) 
+        scene_viewport:SetMarginRight(size);
+        for _, wnd in pairs(windows) do
+            wnd:OnScreenSizeChanged();
+        end
+    end
+
     -- CodeEnv.ShowBlocklyFactory = function()
     --     return CodeEnv.ShowWindow(nil, {
     --         draggable = false,

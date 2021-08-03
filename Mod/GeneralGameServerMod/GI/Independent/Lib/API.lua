@@ -97,8 +97,38 @@ function GetNetAPI()
     return __Net_api__;
 end
 
+function GetAllEntity()
+    return require("Entity"):GetAllEntity();
+end
+
 function CreateEntity(opts)
     return require("Entity"):new():Init(opts);
+end
+
+function DestoryEntityByKey(key)
+    local entity = require("Entity"):GetEntityByKey(key);
+    if (not entity) then return end
+    entity:Destroy();
+end
+
+function ShowEntityEditor(key)
+    local entity = require("Entity"):GetEntityByKey(key);
+    if (not entity) then return end 
+    local screen_width = GetScreenSize();
+    local width = math.floor(screen_width / 2);
+    SetSceneMarginRight(width);
+    ShowWindow({
+        __entity__ = entity,
+        OnClose = function()
+            SetSceneMarginRight(0);
+        end,
+    }, {
+        parent = GetRootUIObject(),
+        url = "%gi%/Independent/UI/EntityEditor.html",
+        width = width,
+        height = "100%",
+        alignment = "_rt",
+    });
 end
 
 function CreateGoods(opts)

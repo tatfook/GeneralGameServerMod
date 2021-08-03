@@ -1,15 +1,19 @@
 
+ShowWindow(nil, {
+    url = "%gi%/Independent/UI/EntityList.html",
+    width = 500,
+    height = 600,
+});
 
+-- local function SelectWorldServer()
+--     GetNetAPI():Get("__server_manager__/__select_world_server__", {
+--         worldId = GetWorldId(),
+--     }):Then(__safe_callback__(function(msg)
+--         echo(msg)
+--     end));
+-- end
 
-local function SelectWorldServer()
-    GetNetAPI():Get("__server_manager__/__select_world_server__", {
-        worldId = GetWorldId(),
-    }):Then(__safe_callback__(function(msg)
-        echo(msg)
-    end));
-end
-
-SelectWorldServer();
+-- SelectWorldServer();
 
 -- local GGS = require("GGS");
 

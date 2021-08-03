@@ -70,7 +70,7 @@ end
 
 -- 扩展全局方法
 function Vue:ExtendG(G)
-    G.ShowWindow = function(G, params)
+    G.ShowWindow = G.ShowWindow or function(G, params)
         params = params or {};
         if (not params.url) then return end
 

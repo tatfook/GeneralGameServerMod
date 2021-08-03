@@ -12,28 +12,48 @@ local Entity = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/Entity.lua"
 local Entity = inherit(__Entity__, module("Entity"));
 
 local __all_block_index_entity__ = {};
+local __all_entity__ = {};
 
 Entity:Property("Name", "GI_Entity");
 Entity:Property("DestroyBeCollided", false, "IsDestroyBeCollided");   -- 被碰撞销毁
 Entity:Property("Biped", false, "IsBiped");                           -- 是否是两栖动物
 Entity:Property("GoodsChangeCallBack");                               -- 物品变化回调
 Entity:Property("ClickCallBack");                                     -- 物品变化回调
+Entity:Property("Code");                                              -- 实体代码
+Entity:Property("CodeXmlText");                                       -- 实体代码的XML Text
 
+local NID = 0;
 function Entity:ctor()
+    NID = NID + 1;
+    self.__nid__ = NID;
     self.__goods__ = {};
+    self.__key__ = string.format("NPC_%s", self.__nid__);
+    __all_entity__[self.__key__] = self;
+
+end
+
+function Entity:GetKey()
+    return self.__key__;
+end
+
+function Entity:GetEntityByKey(key)
+    return __all_entity__[key];
 end
 
 function Entity:Init(opts)
     opts = opts or {};
 
-    if (opts.name) then self:SetName(opts.name) end 
+    opts.name = opts.name or "NPC";
+    self:SetName(opts.name);
+
     if (opts.opacity) then self:SetOpacity(opts.opacity) end
     if (opts.assetfile and string.match(opts.assetfile, "^@")) then
         opts.assetfile = string.gsub(opts.assetfile, "@", GetWorldDirectory());
         opts.assetfile = ToCanonicalFilePath(opts.assetfile);
     end
-
-    self:SetBlockPos(opts.bx or 0, opts.by or 0, opts.bz or 0);
+    -- 获取主玩家位置
+    local bx, by, bz = GetPlayer():GetBlockPos();
+    self:SetBlockPos(opts.bx or bx or 0, opts.by or by or 0, opts.bz or bz or 0);
     self:SetMainAssetPath(opts.assetfile or "character/CC/02human/actor/actor.x");
     self:CreateInnerObject(self:GetMainAssetPath(), true, 0, 1, self:GetSkin());
 	self:RefreshClientModel();
@@ -50,12 +70,22 @@ function Entity:Init(opts)
     return self;
 end
 
+function Entity:SetAssetFile(assetfile)
+    self:SetMainAssetPath(assetfile);
+    self:RefreshClientModel();
+end
+
 function Entity:SetPosition(x, y, z)
     Entity._super.SetPosition(self, x, y, z);
     self:UpdatePosition();
 end
 
 function Entity:SetBlockPos(bx, by, bz)
+    if (type(bx) == "string") then
+        local x, y, z = string.match(bx, "(%d+)[,%s]+(%d+)[,%s]+(%d+)");
+        if (not x or not y or not z) then return end
+        bx, by, bz = tonumber(x), tonumber(y), tonumber(z);
+    end
     Entity._super.SetBlockPos(self, bx, by, bz);
     self:UpdatePosition();
 end
@@ -109,6 +139,7 @@ end
 function Entity:Destroy()
     if (self.__is_destory__) then return end
     self.__is_destory__ = true;
+    __all_entity__[self.__key__] = nil;
 
     Entity._super.Destroy(self);
 
@@ -164,16 +195,9 @@ function Entity:GetAllGoods()
     return index, __temp_goods_list__;
 end
 
-local __temp_entity_list__ = {};
 function Entity:GetAllEntity()
-    local index = 0;
-    for _, entity in pairs(__GetAllEntity__()) do
-        index = index + 1;
-        __temp_entity_list__[index] = entity;
-    end 
-    return index, __temp_entity_list__;
+    return __all_entity__;
 end
-
 
 function Entity:CanCollideWith(entity)
     return self:IsBiped();
@@ -187,7 +211,7 @@ function Entity:CheckEntityCollision()
     if (not self:IsBiped()) then return end 
 
     local aabb = self:GetCollisionAABB();
-    local size, entity_list = self:GetAllEntity();
+    local size, entity_list = __GetEntityList__();
     for index = 1, size do
         local entity = entity_list[index];
         local entity_aabb = entity:GetCollisionAABB();
@@ -226,6 +250,23 @@ end
 function Entity:OnClick()
     local callback = self:GetClickCallBack();
     if (type(callback) == "function") then callback() end
+end
+
+function Entity:RunCode(code, G)
+    local code_func, errormsg = loadstring(code, "loadstring:RunCode");
+    if (errmsg) then return warn("invalid code", code) end
+
+    -- 构建全局环境
+    G = G or {};
+    G.__entity__ = self;
+    setmetatable(G, {__index = _G});
+
+    -- 设置代码环境
+    setfenv(code_func, G);
+
+    -- 并行执行
+    -- code_func();
+    run(code_func);
 end
 
 -- local __temp_entity_list__ = {};

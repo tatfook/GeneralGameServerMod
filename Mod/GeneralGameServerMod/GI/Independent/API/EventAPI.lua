@@ -77,6 +77,12 @@ local function DefaultKeyPressCallBack(__code_env__, event)
             __code_env__.__stop__();
         elseif (event.ctrl_pressed and event.keyname == "DIK_R") then
             __code_env__.__restart__();
+        elseif (event.ctrl_pressed and event.keyname == "DIK_T") then
+            local result = __code_env__.MousePick();
+            if (not result or not result.blockX) then return end
+            local blockpos = string.format("%s, %s, %s", result.blockX, result.blockY, result.blockZ);
+            ParaMisc.CopyTextToClipboard(blockpos);
+            __code_env__.Tip(blockpos);
         end
     end
 end

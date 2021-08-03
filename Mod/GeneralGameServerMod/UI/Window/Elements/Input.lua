@@ -496,6 +496,10 @@ function Input:FocusIn()
     self:ResetCursor();
 end
 
+function Input:OnFocusOut()
+    self:ClearSelected();
+end
+
 function Input:OnClick(event)
     if (self:IsDisabled()) then return end
     if (not self:IsFocus()) then self:FocusIn() end

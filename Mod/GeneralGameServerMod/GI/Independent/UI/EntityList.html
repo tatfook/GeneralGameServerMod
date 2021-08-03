@@ -1,0 +1,99 @@
+<template class="container">
+    <div class="header">
+        <div class="title">NPC 列表</div>
+        <div class="close-btn" onclick=CloseWindow></div>
+    </div>
+    <div class="button" style="width: 100%; height: 30px; line-height: 30px; text-align: center;" onclick=ClickNewEntity>新增</div>
+    <div class="entity-container">
+        <div style="display: flex;" v-for="entity in EntityList">
+            <div style="width: 160px;">{{entity.key}}</div>
+            <div style="width: 160px;">{{entity.name}}</div>
+            <div class="button" style="width: 60px;" onclick="ClickEditEntity(entity.key)">编辑</div>
+            <div class="button" style="width: 60px;" onclick="ClickDeleteEntity(entity.key)">删除</div>
+        </div>
+    </div>
+</template>
+
+<script type="text/lua">
+EntityList = {};
+
+local function GetEntityData(entity)
+    return {key = entity:GetKey(), name = entity:GetName()};
+end 
+
+for _, entity in pairs(GetAllEntity()) do
+    table.insert(EntityList, GetEntityData(entity));
+end
+
+function ClickNewEntity()
+    table.insert(EntityList, GetEntityData(CreateEntity()))
+end
+
+function ClickDeleteEntity(key)
+    DestoryEntityByKey(key);
+    for i, entity in ipairs(EntityList) do
+        if (entity.key == key) then
+            table.remove(EntityList, i);
+        end
+    end
+end 
+
+function ClickEditEntity(key)
+    ShowEntityEditor(key);
+    CloseWindow();
+end
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    background-color: #00000080;
+    color: #ffffff;
+}
+
+.header {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 10px;
+    /* border-bottom: 1px solid #ffffff; */
+}
+
+.title {
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 22px;
+    height: 22px;
+    margin-left: 20px;
+    width: 200px;
+}
+
+.close-btn {
+    width: 22px; 
+    height: 22px; 
+    margin-right: 20px; 
+    background-color: #e6e6e6;
+    background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);
+}
+
+.close-btn:hover {
+    background-color: #ffffff;
+}
+
+.button:hover {
+    color: #cccccc;
+}
+
+.entity-container {
+    position: absolute; 
+    left: 0px; 
+    right: 0px; 
+    top: 70px; 
+    bottom: 0px;
+    z-index: 1;
+}
+
+</style>

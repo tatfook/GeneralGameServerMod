@@ -1,0 +1,82 @@
+<template class="container">
+    <div class="header">
+        <div style="line-height: 22px; height: 22px; margin-left: 10px;" class="button" onclick=ClickRun>运行</div>
+        <div style="line-height: 22px; height: 22px; margin-left: 40px;">NPC 编辑</div>
+        <div class="close-btn" onclick=ClickClose></div>
+    </div>
+    <Blockly ref="blockly" class="blockly" v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
+</template>
+
+<script type="text/lua">
+ToolBoxXmlText = [[
+<toolbox>
+	<category name="NPC">
+		<block type="NPC_SetName"/>
+		<block type="NPC_SetBlockPos"/>
+		<block type="NPC_SetAssetFile"/>
+	</category>
+</toolbox>
+]]
+local BlocklyEl = nil;
+-- 组件解析完成
+function OnReady()
+    BlocklyEl = GetRef("blockly");
+    BlocklyEl:LoadFromXmlNodeText(_G.xmltext);
+end
+
+function ClickRun()
+    local rawcode, prettycode = BlocklyEl:GetCode();
+    local xmlNodeText = BlocklyEl:SaveToXmlNodeText();
+    __entity__:SetCode(rawcode);
+    __entity__:SetCodeXmlText(xmlNodeText);
+    __entity__:RunCode(rawcode);
+end 
+
+function ClickClose()
+    ClickRun();
+    CloseWindow();
+end
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    background-color: rgb(96,108,127);
+    color: #ffffff;
+}
+
+.header {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 10px;
+}
+
+.close-btn {
+    width: 22px; 
+    height: 22px; 
+    margin-right: 12px; 
+    background-color: #e6e6e6;
+    background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);
+}
+
+.close-btn:hover {
+    background-color: #ffffff;
+}
+
+.button:hover {
+    color: #cccccc;
+}
+
+.blockly {
+    position: absolute; 
+    left: 0px; 
+    right: 0px; 
+    top: 40px; 
+    bottom: 0px;
+    z-index: 1;
+}
+</style>
