@@ -5,7 +5,7 @@ Date: 2020-06-12
 Desc: DiffWorld
 use the lib:
 ------------------------------------------------------------
-local DiffWorld = NPL.load("Mod/GeneralGameServerMod/Command/DiffWorld.lua");
+local DiffWorld = NPL.load("Mod/GeneralGameServerMod/Command/DiffWorld/DiffWorld.lua");
 ------------------------------------------------------------
 ]]
 
@@ -25,9 +25,13 @@ local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
 local RPCVirtualConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/RPCVirtualConnection.lua", IsDevEnv);
 
+local __rpc__ = commonlib.inherit(RPCVirtualConnection, {});
+local __neuron_file__ = "Mod/GeneralGameServerMod/Command/DiffWorld/DiffWorld.lua";
+__rpc__:Property("RemoteNeuronFile", __neuron_file__);       -- 对端处理文件
+__rpc__:Property("LocalNeuronFile", __neuron_file__);        -- 本地处理文件
+CommonLib.AddPublicFile(__neuron_file__);
+__rpc__:InitSingleton();
 
-local RPC = commonlib.inherit(RPCVirtualConnection, {});
-RPC:InitSingleton();
 
 local function DownloadWorldById(pid, callback)
     pid = pid or GameLogic.options:GetProjectId();
@@ -56,7 +60,6 @@ local function IsRemoteWorld()
 end
 
 local DiffWorld = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-local __rpc__ = RPC:new():Init();
 local RegionSize = 512;
 local ChunkSize = 16;
 
@@ -152,7 +155,7 @@ function DiffWorld:StartServer(ip, port)
 end
 
 function DiffWorld:StartClient(ip, port)
-    __rpc__:SetServerIpAndPort(ip, port);
+    __rpc__:SetNid(CommonLib.AddNPLRuntimeAddress(ip, port));
     self:SyncLoadWorld();
     self:Reset();
     self:LoadAllRegionInfo();
@@ -443,6 +446,10 @@ Commands["diffworld"] = {
 if (IsDevEnv and CommandManager.slash_command) then
     CommandManager.slash_command:RegisterSlashCommand(Commands["diffworld"]);
 end
+
+NPL.this(function()
+    __rpc__:OnActivate(msg);
+end);
 
 -- DiffWorld:SyncLoadWorld();
 -- -- echo(DiffWorld.__regions__, true)

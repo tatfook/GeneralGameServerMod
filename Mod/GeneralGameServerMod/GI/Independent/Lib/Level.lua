@@ -14,7 +14,9 @@ local Level = inherit(ToolBase, module("Level"));
 Level:Property("LevelName", "");  -- 关卡名称
 
 function Level:ctor()
+    -- 左下角
     self.__x__, self.__y__, self.__z__ = 10000, 8, 10000;
+    -- 边长
     self.__dx__, self.__dy__, self.__dz__ = 128, 16, 128;
 
     self.__all_entity__ = {};
@@ -25,27 +27,26 @@ end
 function Level:LoadMap()
     cmd("/property UseAsyncLoadWorld false")
     cmd("/property AsyncChunkMode false");
-    cmd(format("/loadregion %d %d %d %d",  self.__x__, self.__y__, self.__z__, math.max(self.__dx__, self.__dz__) + 10));
+    cmd(format("/loadregion %d %d %d %d", self.__x__ + math.floor(self.__dx__ / 2), self.__y__, self.__z__ + math.floor(self.__dz__ / 2), math.max(self.__dx__, self.__dz__) + 10));
 
     -- 加载地图内容
     local level_name = self:GetLevelName();
-    if (level_name and level_name ~= "") then cmd(format("/loadtemplate %d %d %d %s",  self.__x__ + self.__dx__ / 2, self.__y__, self.__z__, level_name)) end
+    if (level_name and level_name ~= "") then cmd(format("/loadtemplate %d %d %d %s", self.__x__ + math.floor(self.__dx__ / 2), self.__y__, self.__z__ + math.floor(self.__dz__ / 2), level_name)) end
 
     cmd("/property AsyncChunkMode true");
     cmd("/property UseAsyncLoadWorld true");
 
     -- 模板文件不存在则创建底座
-    for x = self.__x__ - self.__dx__, self.__x__ + self.__dx__ do
-        for z = self.__z__ - self.__dz__, self.__z__ + self.__dz__ do
+    for x = self.__x__, self.__x__ + self.__dx__ do
+        for z = self.__z__, self.__z__ + self.__dz__ do
             SetBlock(x, self.__y__, z, 62);
         end
     end
 end
 
 function Level:UnloadMap()
-    for x = self.__x__ - self.__dx__, self.__x__ + self.__dx__ do
-        for z = self.__z__ - self.__dz__, self.__z__ + self.__dz__ do
-            -- 垂直高度为 [-8, 24] 只允许建总高度为32的场景
+    for x = self.__x__, self.__x__ + self.__dx__ do
+        for z = self.__z__, self.__z__ + self.__dz__ do
             for y = self.__y__, self.__y__ + self.__dy__ do
                 SetBlock(x, y, z, 0);
             end
@@ -63,7 +64,7 @@ end
 function Level:Edit()
     self:LoadMap();
 
-    cmd(format("/goto %s %s %s", self.__x__, self.__y__, self.__z__));
+    cmd(format("/goto %s %s %s", self.__x__ + math.floor(self.__dx__ / 2), self.__y__, self.__z__ + math.floor(self.__dz__ / 2)));
     -- cmd("/mode game");
     cmd("/clearbag");
 
