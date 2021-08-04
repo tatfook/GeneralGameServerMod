@@ -78,14 +78,14 @@ function GI:GetSandboxAPI()
 end
 
 function GI:GetCodeBlockAPI()
-    -- if (IsDevEnv) then
-    --     self:GetSandBox():Stop();
-    --     local SandBox = NPL.load("./Independent/SandBox.lua", true);
-    --     local SandBoxCodeBlockAPI = SandBox:GetCodeBlockAPI();
-    --     self:SetSandBox(SandBox);
-    --     self:SetContext(SandBox:GetAPI().SceneContext);
-    --     return SandBoxCodeBlockAPI;
-    -- end
+    if (IsDevEnv) then
+        self:GetSandBox():Stop();
+        local SandBox = NPL.load("./Independent/SandBox.lua", true);
+        local SandBoxCodeBlockAPI = SandBox:GetCodeBlockAPI();
+        self:SetSandBox(SandBox);
+        self:SetContext(SandBox:GetAPI().SceneContext);
+        return SandBoxCodeBlockAPI;
+    end
     
     return SandBox:GetCodeBlockAPI();
 end

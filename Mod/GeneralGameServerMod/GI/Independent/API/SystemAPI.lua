@@ -130,25 +130,17 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     -- 会切换协程需做等待处理
     local __modules__ = {};
     CodeEnv.require = function(name)
-        if (__modules__[name]) then 
-            while(not __modules__[name].__loaded__) do CodeEnv.sleep() end
-            return __modules__[name].__module__;
-        else
-            __modules__[name] = {}; 
-        end
-        
-        local __module__ = nil;
-        -- 为单词则默认为系统库文件
-        if (string.match(name, "^[%a%d]+$")) then 
-            __module__ = CodeEnv.__loadfile__(string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name));
-        else -- 加载指令路径文件
-            __module__ = CodeEnv.__loadfile__(name);
-        end
-        -- 设置模块内部信息
-        __modules__[name].__module__ = __module__;
-        __modules__[name].__loaded__ = true;
-       
-        return __modules__[name].__module__;
+        local filename = (string.match(name, "^[%a%d]+$")) and (string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name)) or name;
+        if (__modules__[filename]) then return __modules__[filename] end
+        __modules__[filename] = CodeEnv.__loadfile__(filename);
+        return __modules__[filename];
+    end
+
+    CodeEnv.module = function(name, module)
+        module = module or {};
+        CodeEnv.__module__.__module__ = module;
+        CodeEnv.__module__.__name__ = name;
+        return module;
     end
 
     CodeEnv.GetTime = ParaGlobal.timeGetTime;

@@ -8,9 +8,7 @@ use the lib:
 local Scene = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/Scene.lua");
 ------------------------------------------------------------
 ]]
-
 local Timer = require("Timer");
-
 local Scene = module("Scene");
 
 local MousePickTimer = nil;

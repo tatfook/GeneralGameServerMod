@@ -105,41 +105,58 @@ function Independent:IsLoaded(filename)
 end
 
 function Independent:LoadString(text, filename)
-	filename = filename or ParaMisc.md5(text);
-	filename = string.gsub(filename, "\\", "/");
+	local CodeEnv = self:GetCodeEnv();
+	local __modules__ = CodeEnv.__modules__;
 
-	-- 生成防止重复执行代码, 未知原因会重复执行
-	local header_text = string.format([[
+	local __filename__ = filename or ParaMisc.md5(text);
+	__filename__ = string.gsub(__filename__, "\\", "/");
+
+	-- 已加载完成直接返回
+	if (__modules__[__filename__] and __modules__[__filename__].__loaded__) then return __modules__[__filename__].__module__ end
+	-- 加载中则等待
+	if (__modules__[__filename__] and not __modules__[__filename__].__loaded__) then 
+		while (not __modules__[__filename__].__loaded__) do CodeEnv.sleep() end 	
+		return __modules__[__filename__].__module__;
+	end
+
+	-- 初始化模块
+	local __module__ = {__filename__ = __filename__, __loaded__ = false, __module__ = nil};
+	__modules__[__filename__] = __module__;
+
+	-- 追加添加完成标志
+	text = text .. "\n" .. string.format([[
 local __filename__ = "%s";
-if (__modules__[__filename__]) then return end
-__modules__[__filename__] = {__filename__ = __filename__, __loaded__ = false, __module__ = nil};
-
-local function module(__name__, __module__)
-	__module__ = __module__ or __name__;
-	if (type(__module__) ~= "table") then __module__ = {} end 
-	if (type(__name__) ~= "string") then __name__ = __filename__ end 
-	__modules__[__filename__].__module__ = __module__;
-	__modules__[__filename__].__name__ = __name__;
-	return __module__;
-end
-	]], filename);
-	
-	local tail_text = [[__modules__[__filename__].__loaded__ = true;]]
-	text = header_text .. "\n" .. text .. "\n" .. tail_text;
+local __module__ = __modules__[__filename__];
+__module__.__loaded__ = true;
+]], __filename__);
 
 	-- 生成函数
 	local code_func, errormsg = loadstring(text, "loadstring:" .. filename);
 	if errormsg then return GGS.INFO("Independent:LoadString Failed", filename, errormsg) end
 
+	-- 备份当前模块
+	local __old_module__ = CodeEnv.__module__;
+	-- 设置当前
+	CodeEnv.__module__ = __module__;
 	-- 设置代码环境
-	setfenv(code_func, self:GetCodeEnv());
-	
+	setfenv(code_func, CodeEnv);
 	-- 执行代码
 	self:Call(code_func);
+	-- 等待执行完成
+	while (not __module__.__loaded__) do CodeEnv.sleep() end 	
+	-- 还原当前模块
+	CodeEnv.__module__ = __old_module__;
+	
+	if (filename) then 
+		-- 添加至加载列表
+		self.__files__[#self.__files__ + 1] = filename;
+	else
+		-- 纯代码不保存模块
+		__modules__[__filename__] = nil;
+	end 
 
-	self.__files__[#self.__files__ + 1] = filename;
-
-	return self:GetCodeEnv().__modules__[filename].__module__;
+	-- 返回模块
+	return __module__.__module__;
 end
 
 function Independent:LoadFile(filename)
@@ -147,6 +164,7 @@ function Independent:LoadFile(filename)
 	
 	local text = Helper.ReadFile(filename);
 	if (not text or text == "") then return end
+	
 	return self:LoadString(text, Helper.FormatFilename(filename));
 end
 
