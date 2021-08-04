@@ -12,6 +12,8 @@ local NplToolbox = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/NplToolb
 NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeHelpWindow.lua");
 local CodeHelpWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeHelpWindow");
 
+local GIBlockly = NPL.load("Mod/GeneralGameServerMod/GI/Independent/GIBlockly.lua", IsDevEnv);
+
 local NplBlockManager = NPL.export();
 
 local BlockManager = nil;
@@ -112,6 +114,10 @@ function NplBlockManager.IsMcmlLanguage()
     return CodeHelpWindow.GetLanguageConfigFile() == "mcml" or CodeHelpWindow.GetLanguageConfigFile() == "html";
 end
 
+function NplBlockManager.IsGILanguage()
+    return CodeHelpWindow.GetLanguageConfigFile() == "game_inventor";
+end
+
 function NplBlockManager.GetMcmlBlockMap()
     return BlockManager.GetLanguageBlockMap("SystemUIBlock");
 end
@@ -143,15 +149,31 @@ function NplBlockManager.GetBlockMap(blockManager)
     BlockManager = blockManager;
     if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplBlockMap() end
     if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlBlockMap() end
+    local all_cmds = CodeHelpWindow.GetAllCmds();
+    local all_categories = CodeHelpWindow.GetCategoryButtons();
 
-    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
+    if (IsDevEnv and NplBlockManager.IsGILanguage()) then
+        all_cmds = GIBlockly.GetAllCmds();
+        all_categories = GIBlockly.GetCategoryButtons();
+    end
+
+    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(all_cmds, all_categories);
     return AllBlockMap;
 end
+
 function NplBlockManager.GetCategoryListAndMap(blockManager)
     BlockManager = blockManager;
     if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplCategoryListAndMap() end
     if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlCategoryListAndMap() end
 
-    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(CodeHelpWindow.GetAllCmds(), CodeHelpWindow.GetCategoryButtons());
+    local all_cmds = CodeHelpWindow.GetAllCmds();
+    local all_categories = CodeHelpWindow.GetCategoryButtons();
+    
+    if (IsDevEnv and NplBlockManager.IsGILanguage()) then
+        all_cmds = GIBlockly.GetAllCmds();
+        all_categories = GIBlockly.GetCategoryButtons();
+    end
+
+    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(all_cmds, all_categories);
     return CategoryList, AllCategoryMap;
 end

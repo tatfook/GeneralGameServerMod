@@ -8,6 +8,7 @@ use the lib:
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/ide/DateTime.lua");
 NPL.load("(gl)script/ide/commonlib.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/HttpFiles.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Sound/SoundManager.lua");
@@ -247,4 +248,9 @@ end
 
 function CommonLib.SetTimeout(timeout, callback)
 	return commonlib.Timer:new({callbackFunc = callback}):Change(timeout);
+end
+
+-- DateTime
+function CommonLib.GetTimeStampByDateTime(datetime)
+    return commonlib.timehelp.GetTimeStampByDateTime(datetime);
 end

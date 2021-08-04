@@ -40,6 +40,13 @@ function Entity:GetEntityByKey(key)
     return __all_entity__[key];
 end
 
+function Entity:GetEntityByName(name)
+    for _, entity in pairs(__all_entity__) do
+        if (entity:GetName() == name) then return entity end
+    end
+    return nil;
+end
+
 function Entity:Init(opts)
     opts = opts or {};
 
@@ -252,46 +259,40 @@ function Entity:OnClick()
     if (type(callback) == "function") then callback() end
 end
 
-function Entity:RunCode(code, G)
-    local code_func, errormsg = loadstring(code, "loadstring:RunCode");
-    if (errmsg) then return warn("invalid code", code) end
 
+local __api_list__ = {
+    "MoveForward",
+    "Turn",
+    "TurnTo",
+    "SetAssetFile",
+    "SetPosition",
+    "SetBlockPos",
+    "SetAnimId",
+    "AddGoods",
+    "RemoveGoods",
+    "HasGoods",
+};
+
+function Entity:Run(func, G)
     -- 构建全局环境
     G = G or {};
     G.__entity__ = self;
+
+    for _, funcname in ipairs(__api_list__) do
+        G[funcname] = function(...) return (self[funcname])(self, ...) end
+    end
+
     setmetatable(G, {__index = _G});
 
     -- 设置代码环境
-    setfenv(code_func, G);
+    setfenv(func, G);
 
     -- 并行执行
-    -- code_func();
-    run(code_func);
+    run(func);
 end
 
--- local __temp_entity_list__ = {};
--- function Entity:GetEntitiesByAABBExcept(aabb, excludingEntity)
---     local index = 0;
--- 	local min_x, min_y, min_z = aabb:GetMinValues();
--- 	local max_x, max_y, max_z = aabb:GetMaxValues();
-	
--- 	min_x, min_y, min_z = ConvertToBlockPosition(min_x, min_y, min_z);
--- 	max_x, max_y, max_z = ConvertToBlockPosition(max_x, max_y, max_z);
-
--- 	for x = min_x, max_x do
--- 		for y = min_y, max_y do
--- 			for z = min_z, max_z do
--- 				local block_index = ConvertToBlockIndex(x, y, z);
---                 if (__all_block_index_entity__[block_index]) then
---                     for _, entity in pairs(__all_block_index_entity__[block_index]) do
---                         if (entity ~= excludingEntity) then
---                             index = index + 1;
---                             __temp_entity_list__[index] = entity;
---                         end
---                     end
---                 end
--- 			end
--- 		end
--- 	end
--- 	return index, __temp_entity_list__;
--- end
+function Entity:RunCode(code, G)
+    local code_func, errormsg = loadstring(code, "loadstring:RunCode");
+    if (errmsg) then return warn("invalid code", code) end
+    return self:Run(code_func, G);
+end

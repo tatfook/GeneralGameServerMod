@@ -28,6 +28,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Common/Files.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Commands/CommandManager.lua");
 
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local SceneContext = NPL.load("./Game/Event/SceneContext.lua");
 local Independent = NPL.load("./Independent/Independent.lua");
 local SandBox = NPL.load("./Independent/SandBox.lua");
@@ -51,6 +52,9 @@ function GI:OnWorldLoaded()
     -- Independent:OnWorldLoaded();
     -- SandBox:OnWorldLoaded();
     self:GetContext():OnWorldLoaded();
+
+    -- 加载世界默认启动世界目录下的 main.lua 文件
+    self:GetSandBox():Start(CommonLib.ToCanonicalFilePath(CommonLib.GetWorldDirectory() .. "/main.lua"));
 end
 
 function GI:OnWorldUnloaded()

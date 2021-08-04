@@ -458,7 +458,9 @@ _G.GetUserShowGoods = function()
     local bagNo = 1001;
     local goods = {}; 
     for _, item in ipairs(KeepWorkItemManager.items) do
-        -- echo(item, true);
+        if (item.gsId == 11001) then
+            echo(item, true);
+        end
         local copies = item.copies or 0;
         if (item.bagNo == bagNo and copies > 0) then
             local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
@@ -469,6 +471,13 @@ _G.GetUserShowGoods = function()
                     name = itemTpl.name,
                     desc = itemTpl.desc,
                 });
+                if ((itemTpl.extra or {}).VIP_cloth_7days and itemTpl.expiredSeconds) then
+                    local timestamp = commonlib.timehelp.GetTimeStampByDateTime(item.expireTime);
+                    local obj = os.date("*t", timestamp - itemTpl.expiredSeconds);
+                    local datetime = string.format("%s/%s/%s", obj.year, obj.month, obj.day);
+                    local goods_item = goods[#goods];
+                    goods_item.desc = (goods_item.desc or "") .. string.format("\n开始日期: %s\n有效期剩余: %s 小时", datetime, math.floor((timestamp - os.time()) / 3600));
+                end
             end
         end
     end

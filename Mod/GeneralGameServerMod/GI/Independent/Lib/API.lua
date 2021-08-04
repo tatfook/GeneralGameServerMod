@@ -97,18 +97,28 @@ function GetNetAPI()
     return __Net_api__;
 end
 
+function GetEntityModule()
+    return require("Entity");
+end
+
 function GetAllEntity()
-    return require("Entity"):GetAllEntity();
+    return GetEntityModule():GetAllEntity();
 end
 
 function CreateEntity(opts)
-    return require("Entity"):new():Init(opts);
+    return GetEntityModule():new():Init(opts);
 end
 
 function DestoryEntityByKey(key)
-    local entity = require("Entity"):GetEntityByKey(key);
+    local entity = GetEntityModule():GetEntityByKey(key);
     if (not entity) then return end
     entity:Destroy();
+end
+
+function RunForEntity(entity, func)
+    local entity = type(entity) == "table" and entity or GetEntityModule():GetEntityByName(name);
+    if (not entity) then return end
+    return entity:Run(func);
 end
 
 function ShowEntityEditor(key)

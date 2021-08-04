@@ -59,6 +59,8 @@ function GeneralGameServerMod:init()
 		
 		-- command
 		NPL.load("Mod/GeneralGameServerMod/Command/Command.lua");
+		-- GI
+		NPL.load("Mod/GeneralGameServerMod/GI/GI.lua");
 	end
 end
 
