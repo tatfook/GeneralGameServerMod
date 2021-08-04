@@ -46,7 +46,7 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
         local func_description = string.gsub(cmd.func_description or "", "\\n", "\n");
         func_description = string.gsub(func_description, "%%d", "%%s");
         local block = {
-            color = category.color;
+            color = category and category.color;
             category = cmd.category;
             message = cmd.message,
             arg = cmd.arg,
