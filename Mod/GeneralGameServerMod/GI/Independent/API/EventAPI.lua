@@ -31,6 +31,10 @@ local EventType = {
     KEY_UP = "key_up",
 
     MOUSE_KEY = "mouse_key",    -- 鼠标和按键
+
+    -- -- 资源创建事件
+    RESOURCE_WINDOW = "resource_window", 
+    RESOURCE_ENTITY = "resource_entity",
 }
 
 local function RegisterEventCallBack(__code_env__, eventType, callback)
@@ -96,6 +100,7 @@ local function DefaultMousePressEventCallBack(__code_env__, event)
     if (result.entity) then result.entity:OnClick() end
 end
 
+
 setmetatable(EventAPI, {
     __call = function(_, CodeEnv)
         CodeEnv.DIK_SCANCODE = DIK_SCANCODE; -- DIK_SCANCODE.DIK_W
@@ -107,6 +112,14 @@ setmetatable(EventAPI, {
         CodeEnv.RemoveEventCallBack = function(...) RemoveEventCallBack(CodeEnv, ...) end
         CodeEnv.TriggerEventCallBack = function(...) TriggerEventCallBack(CodeEnv, ...) end
         
+        CodeEnv.TriggerWindowCallBack = function(...) 
+            -- TriggerEventCallBack(CodeEnv, EventType.RESOURCE_WINDOW, ...);
+        end
+        
+        CodeEnv.TriggerEntityCallBack = function(...) 
+            -- TriggerEventCallBack(CodeEnv, EventType.RESOURCE_ENTITY, ...);
+        end 
+
         -- 用户事件机制
         CodeEnv.On = function(...) On(CodeEnv, ...) end
         CodeEnv.Off = function(...) Off(CodeEnv, ...) end

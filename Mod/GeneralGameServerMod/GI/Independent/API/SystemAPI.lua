@@ -143,6 +143,11 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
         return module;
     end
 
+    CodeEnv.if_else = function(_bool, _true, _false) 
+        if (_bool) then return _true end
+        return _false;
+    end
+
     CodeEnv.GetTime = ParaGlobal.timeGetTime;
     CodeEnv.GetTimeStamp = ParaGlobal.timeGetTime;
     CodeEnv.ToolBase = commonlib.gettable("System.Core.ToolBase");

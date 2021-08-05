@@ -34,6 +34,7 @@ local blockly_menus = {
     { text = "导出工作区XML", cmd = "export_workspace_xml_text"},
     { text = "导入工作区XML", cmd = "import_workspace_xml_text"},
     { text = "导出工具栏XML", cmd = "export_toolbox_xml_text"},
+    { text = "生成图块代码", cmd = "export_code"},
     { text = "生成宏示教代码", cmd = "export_macro_code"},
 }
 
@@ -104,6 +105,8 @@ function ContextMenu:OnMouseDown(event)
         self:ImportWorkspaceXmlText();
     elseif (menuitem.cmd == "export_toolbox_xml_text") then
         self:ExportToolboxXmlText();
+    elseif (menuitem.cmd == "export_code") then
+        self:ExportCode();
     elseif (menuitem.cmd == "export_macro_code") then
         self:ExportMacroCode();
     end 
@@ -127,6 +130,15 @@ function ContextMenu:ImportWorkspaceXmlText()
         width = 500,
         height = 400,
     })
+end
+
+function ContextMenu:ExportCode()
+    local blockly = self:GetBlockly();
+    local rawcode, prettycode = blockly:GetCode();
+    local text = string.gsub(prettycode, "\t", "    ");
+    print(text);
+    ParaMisc.CopyTextToClipboard(text);
+    GameLogic.AddBBS("Blockly", "图块代码已拷贝至剪切板");
 end
 
 function ContextMenu:ExportMacroCode()

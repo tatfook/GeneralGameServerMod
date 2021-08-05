@@ -13,8 +13,8 @@ local Entity = inherit(__Entity__, module("Entity"));
 
 local __all_block_index_entity__ = {};
 local __all_entity__ = {};
+local __all_name_entity__ = {};
 
-Entity:Property("Name", "GI_Entity");
 Entity:Property("DestroyBeCollided", false, "IsDestroyBeCollided");   -- 被碰撞销毁
 Entity:Property("Biped", false, "IsBiped");                           -- 是否是两栖动物
 Entity:Property("GoodsChangeCallBack");                               -- 物品变化回调
@@ -28,7 +28,9 @@ function Entity:ctor()
     self.__nid__ = NID;
     self.__goods__ = {};
     self.__key__ = string.format("NPC_%s", self.__nid__);
+    self.__name__ = self.__key__;
     __all_entity__[self.__key__] = self;
+    __all_name_entity__[self.__name__] = self;
 
 end
 
@@ -40,11 +42,18 @@ function Entity:GetEntityByKey(key)
     return __all_entity__[key];
 end
 
+function Entity:SetName(name) 
+    if (self.__name__) then __all_name_entity__[self.__name__] = nil end
+    self.__name__ = name;
+    if (self.__name__) then __all_name_entity__[self.__name__] = self end
+end
+
+function Entity:GetName() 
+    return self.__name__;
+end
+
 function Entity:GetEntityByName(name)
-    for _, entity in pairs(__all_entity__) do
-        if (entity:GetName() == name) then return entity end
-    end
-    return nil;
+    return __all_name_entity__[name];
 end
 
 function Entity:Init(opts)
@@ -150,6 +159,7 @@ function Entity:Destroy()
     if (self.__is_destory__) then return end
     self.__is_destory__ = true;
     __all_entity__[self.__key__] = nil;
+    __all_name_entity__[self.__name__] = nil;
 
     Entity._super.Destroy(self);
 
@@ -157,6 +167,8 @@ function Entity:Destroy()
         __all_block_index_entity__[self.__block_index__][self] = nil;
         if (not next(__all_block_index_entity__[self.__block_index__])) then __all_block_index_entity__[self.__block_index__] = nil end
     end
+
+    for _, goods in pairs(self.__goods__) do goods:Destroy() end 
 
     __RemoveEntity__(self);
 end
@@ -175,13 +187,20 @@ function Entity:TurnTo(degree)
 end
 
 function Entity:AddGoods(goods)
+    goods = GetGoodsByName(goods);
     self.__goods__[goods] = goods;
     self:OnGoodsChange();
 end
 
 function Entity:RemoveGoods(goods)
+    goods = GetGoodsByName(goods);
     self.__goods__[goods] = nil;
     self:OnGoodsChange();
+end
+
+function Entity:HasGoods(goods)
+    goods = GetGoodsByName(goods);
+    return self.__goods__[goods] ~= nil;
 end
 
 function Entity:OnGoodsChange()
@@ -191,18 +210,16 @@ function Entity:OnGoodsChange()
     end
 end
 
-function Entity:HasGoods(goods)
-    return self.__goods__[goods] ~= nil;
-end
-
 local __temp_goods_list__ = {};
-function Entity:GetAllGoods()
+function Entity:GetGoodsList()
+    local size = #__temp_goods_list__;
+    for i = 1, size do __temp_goods_list__[i] = nil end
     local index = 0;
     for _, goods in pairs(self.__goods__) do
         index = index + 1;
         __temp_goods_list__[index] = goods;
     end
-    return index, __temp_goods_list__;
+    return __temp_goods_list__;
 end
 
 function Entity:GetAllEntity()
@@ -221,9 +238,7 @@ function Entity:CheckEntityCollision()
     if (not self:IsBiped()) then return end 
 
     local aabb = self:GetCollisionAABB();
-    local size, entity_list = __GetEntityList__();
-    for index = 1, size do
-        local entity = entity_list[index];
+    for _, entity in ipairs(__GetEntityList__()) do
         local entity_aabb = entity:GetCollisionAABB();
         if (aabb and entity_aabb and entity ~= self and aabb:Intersect(entity_aabb)) then
             -- 主动碰撞
@@ -239,14 +254,8 @@ function Entity:CheckEntityCollision()
 end
 
 function Entity:BeCollidedWithEntity(entity)
-    local size, goods_list = self:GetAllGoods();
-    for index = 1, size do
-        local goods = goods_list[index];
-        -- 转移物品
-        if (goods:IsCanTransfer()) then 
-            self:RemoveGoods(goods);
-            entity:AddGoods(goods);
-        end
+    for _, goods in ipairs(self:GetGoodsList()) do
+        goods:Activate(self, entity);
     end
 
     if (self:IsDestroyBeCollided()) then
@@ -262,14 +271,14 @@ function Entity:OnClick()
     if (type(callback) == "function") then callback() end
 end
 
-
 local __api_list__ = {
+    "SetName",
     "MoveForward",
     "Turn",
     "TurnTo",
     "SetAssetFile",
     "SetPosition",
-    "SetBlockPos",
+    "SetBlockPosition",
     "SetAnimId",
     "AddGoods",
     "RemoveGoods",
@@ -279,7 +288,6 @@ local __api_list__ = {
 function Entity:Run(func, G)
     -- 构建全局环境
     G = G or {};
-    G.__entity__ = self;
 
     for _, funcname in ipairs(__api_list__) do
         G[funcname] = function(...) return (self[funcname])(self, ...) end
@@ -300,23 +308,10 @@ function Entity:RunCode(code, G)
     return self:Run(code_func, G);
 end
 
-
 -- blockly api
-function GetEntityByName(name)
-    for _, entity in pairs(__all_entity__) do
-        if (entity:GetName() == name) then return entity end
+for _, funcname in ipairs(__api_list__) do
+    _G["Entity" .. funcname] = function(name, ...)
+        local entity = Entity:GetEntityByName(name);
+        return entity and (entity[funcname])(entity, ...);
     end
-    return nil;
-end
-
-function SetEntityBlockPosition(name, pos)
-    local entity = GetEntityByName(name);
-    if (not entity) then return end
-    entity:SetBlockPosition(pos);
-end
-
-function SetEntityAssetFile(name, assetfile)
-    local entity = GetEntityByName(name);
-    if (not entity) then return end
-    entity:SetAssetFile(assetfile);
 end

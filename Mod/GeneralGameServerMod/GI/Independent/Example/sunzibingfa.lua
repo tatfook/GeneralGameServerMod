@@ -68,15 +68,14 @@ local function Reset()
     });
     sunbin:Turn(-90);
 
-    local fireglowingcircle = CreateEntity({bx = 20090, by = 9, bz = 20077, destroyBeCollided = true, assetfile = "character/CC/05effect/fireglowingcircle.x"});
-    local tianshucanjuan = CreateEntity({bx = 20090, by = 9, bz = 20077, destroyBeCollided = true, assetfile = "@/blocktemplates/tianshucanjuan.x"});
+    CreateEntity({bx = 20090, by = 9, bz = 20077, assetfile = "character/CC/05effect/fireglowingcircle.x"}):AddGoods(CreateGoods({gsid = 1}));
+    local tianshucanjuan = CreateEntity({bx = 20090, by = 9, bz = 20077, assetfile = "@/blocktemplates/tianshucanjuan.x"});
+    tianshucanjuan:AddGoods(CreateGoods({gsid = 1}));
+    tianshucanjuan:AddGoods(CreateGoods({gsid = 2}));
+    
     local pangjuan = CreateEntity({bx = 20090, by = 9, bz = 20089, physicsRadius = 2, assetfile = "character/CC/artwar/game/pangjuan.x"});
     pangjuan:Turn(90);
-
-    local tianshucanjuan_goods = CreateGoods({transfer = true, title = "天书残卷"});
-    local position_goods = CreateGoods({transfer = true, title = "目标位置"});
-    tianshucanjuan:AddGoods(tianshucanjuan_goods);
-    pangjuan:AddGoods(position_goods);
+    pangjuan:AddGoods(CreateGoods({gsid = 3}));
 
     G.sunbin = sunbin;
 end

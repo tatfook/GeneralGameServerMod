@@ -141,6 +141,15 @@ function ShowEntityEditor(key)
     });
 end
 
+function GetGoodsModule()
+    return require("Goods");
+end
+
 function CreateGoods(opts)
-    return require("Goods"):new():Init(opts);
+    return GetGoodsModule():new():Init(opts);
+end
+
+function GetGoodsByName(name)
+    if (type(name) == "table") then return name end 
+    return GetGoodsModule():GetGoodsByName(name);
 end

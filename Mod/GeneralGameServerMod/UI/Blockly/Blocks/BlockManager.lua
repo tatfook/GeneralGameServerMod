@@ -30,6 +30,10 @@ local AllBlockMap = {};
 local inited = false;
 local BlockManager = NPL.export();
 
+function BlockManager.GetBlocklyDirectory()
+    return CommonLib.ToCanonicalFilePath(CommonLib.GetWorldDirectory() .. "/blockly/");
+end
+
 function BlockManager.LoadCategoryAndBlock(filename)
     filename = filename or CurrentCategoryAndBlockPath;
 
@@ -70,6 +74,9 @@ function BlockManager.LoadCategoryAndBlock(filename)
 end
 
 function BlockManager.SaveCategoryAndBlock(filename)
+    -- 确保目存在
+    ParaIO.CreateDirectory(BlockManager.GetBlocklyDirectory());
+
     filename = filename or CurrentCategoryAndBlockPath;
     local isNormalUserCustomSystemBlock = false;
     if (filename ~= WorldCategoryAndBlockPath and not IsDevEnv) then
@@ -157,14 +164,16 @@ function BlockManager.GetLanguageBlockMap(path)
 end
 
 local function OnWorldLoaded()
-    local directory = CommonLib.ToCanonicalFilePath(CommonLib.GetWorldDirectory() .. "/blockly/");
+    local directory = BlockManager.GetBlocklyDirectory();
     local filename = CommonLib.ToCanonicalFilePath(directory .. "/CustomBlock");
     if (filename == WorldCategoryAndBlockPath) then return end
     WorldCategoryAndBlockDirectory = directory;
     WorldCategoryAndBlockPath = filename;
     CurrentCategoryAndBlockPath = WorldCategoryAndBlockPath;
+    
     -- 确保目存在
-    ParaIO.CreateDirectory(directory);
+    -- ParaIO.CreateDirectory(directory);
+
     --加载数据
     BlockManager.LoadCategoryAndBlock();
 end

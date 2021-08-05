@@ -97,3 +97,25 @@ function sleep(sleep)
 	RemoveEventCallBack(EventType.LOOP, SleepLoopCallBack);
 end
 
+function __independent_run__(callback, G)
+	G = G or {};
+	local __all_window__ = {};
+	local __all_entity__ = {};
+	local __all_timer__ = {};
+	G.CreateEntity = function(...)
+		local entity = CreateEntity(...);
+		if (entity) then table.insert(__all_entity__, entity) end
+		return entity;
+	end
+
+	G.ShowWindow = function(...)
+		local window = ShowWindow(...);
+		if (window) then table.insert(__all_window__, window) end
+		return window;
+	end
+
+	G.SetTimeout = function(...)
+		local timer = SetTimeout(...);
+		if (timer) then end
+	end
+end
