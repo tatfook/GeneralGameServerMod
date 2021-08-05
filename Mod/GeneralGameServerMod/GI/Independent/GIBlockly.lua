@@ -9,6 +9,7 @@ local GIBlockly = NPL.load("Mod/GeneralGameServerMod/GI/Independent/GIBlockly.lu
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeBlockWindow.lua");
+local ViewportManager = commonlib.gettable("System.Scene.Viewports.ViewportManager");
 local CodeBlockWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeBlockWindow");
 
 local GIBlockly = NPL.export();
@@ -152,6 +153,7 @@ function GIBlockly.CompileCode(code, filename, codeblock)
     
     --  TODO 重复执行需要提供回收机制
     local IsDedug = CodeBlockWindow.IsVisible() and CodeBlockWindow.GetCodeBlock() == codeblock;
+    local viewport = ViewportManager:GetSceneViewport();
     __env__.IsDevEnv = IsDevEnv;
 
     return function() 
@@ -168,6 +170,11 @@ function GIBlockly.CompileCode(code, filename, codeblock)
         if (IsDedug) then
             registerStopEvent(function()
                 __env__.__gi_env__.__stop__();
+                if (CodeBlockWindow.IsVisible()) then
+                    viewport:SetMarginRight(CodeBlockWindow.margin_right);
+                else
+                    viewport:SetMarginRight(0);
+                end
             end)
         end
     end

@@ -58,24 +58,17 @@ local function Reset()
 
     __ClearAllEntity__();
 
-    local sunbin = CreateEntity({
-        bx = 20090,
-        by = 9,
-        bz = 20067,
-        biped = true,
-        assetfile = "character/CC/artwar/game/sunbin.x",
-        physicsHeight = 1.765,
-    });
+    local sunbin = CreateEntity({bx = 20090, by = 9, bz = 20067, biped = true, assetfile = "character/CC/artwar/game/sunbin.x", physicsHeight = 1.765});
     sunbin:Turn(-90);
 
     CreateEntity({bx = 20090, by = 9, bz = 20077, assetfile = "character/CC/05effect/fireglowingcircle.x"}):AddGoods(CreateGoods({gsid = 1}));
     local tianshucanjuan = CreateEntity({bx = 20090, by = 9, bz = 20077, assetfile = "@/blocktemplates/tianshucanjuan.x"});
     tianshucanjuan:AddGoods(CreateGoods({gsid = 1}));
-    tianshucanjuan:AddGoods(CreateGoods({gsid = 2}));
+    tianshucanjuan:AddGoods(CreateGoods({gsid = 2, name = "tianshu"}));
     
     local pangjuan = CreateEntity({bx = 20090, by = 9, bz = 20089, physicsRadius = 2, assetfile = "character/CC/artwar/game/pangjuan.x"});
     pangjuan:Turn(90);
-    pangjuan:AddGoods(CreateGoods({gsid = 3}));
+    pangjuan:AddGoods(CreateGoods({gsid = 3, name = "pos"}));
 
     G.sunbin = sunbin;
 end
@@ -90,7 +83,13 @@ local function LoadLevel()
     end
 
     local function RunCodeAfter()
-        if (G.sunbin:HasGoods(tianshucanjuan_goods) and G.sunbin:HasGoods(position_goods)) then
+        -- for _, goods in pairs(G.sunbin:GetAllGoods()) do
+        --     log(goods)
+        -- end
+
+        if (G.sunbin:HasGoods("tianshu") and G.sunbin:HasGoods("pos")) then
+            Tip("恭喜通关");
+            print("恭喜通关");
         end
     end
 

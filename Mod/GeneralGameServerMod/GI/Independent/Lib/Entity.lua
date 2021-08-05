@@ -159,7 +159,7 @@ function Entity:Destroy()
     if (self.__is_destory__) then return end
     self.__is_destory__ = true;
     __all_entity__[self.__key__] = nil;
-    __all_name_entity__[self.__name__] = nil;
+    if (self.__name__) then __all_name_entity__[self.__name__] = nil end
 
     Entity._super.Destroy(self);
 
@@ -186,20 +186,31 @@ function Entity:TurnTo(degree)
     self:SetFacing(mathlib.ToStandardAngle(degree * math.pi / 180));
 end
 
+function Entity:GetGoodsByName(name)
+    if (type(name) == "table") then return name end
+    for _, goods in pairs(self.__goods__) do
+        if (goods:GetGoodsName() == name) then return goods end 
+    end
+end
+
 function Entity:AddGoods(goods)
+    -- 从全局物品中取
     goods = GetGoodsByName(goods);
+    if (not goods) then return end
     self.__goods__[goods] = goods;
     self:OnGoodsChange();
 end
 
 function Entity:RemoveGoods(goods)
-    goods = GetGoodsByName(goods);
+    goods = self:GetGoodsByName(goods);
+    if (not goods) then return end
     self.__goods__[goods] = nil;
     self:OnGoodsChange();
 end
 
 function Entity:HasGoods(goods)
-    goods = GetGoodsByName(goods);
+    goods = self:GetGoodsByName(goods);
+    if (not goods) then return false end
     return self.__goods__[goods] ~= nil;
 end
 
@@ -208,6 +219,10 @@ function Entity:OnGoodsChange()
     if (type(callback) == "function") then
         callback();
     end
+end
+
+function Entity:GetAllGoods()
+    return self.__goods__;
 end
 
 local __temp_goods_list__ = {};
@@ -283,6 +298,8 @@ local __api_list__ = {
     "AddGoods",
     "RemoveGoods",
     "HasGoods",
+    "SetPhysicsRadius",
+    "SetPhysicsHeight",
 };
 
 function Entity:Run(func, G)

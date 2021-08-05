@@ -45,10 +45,6 @@ local GoodsConfig = {
     },
 }
 
-function Goods.GetGoodsById(gsid)
-    local goods = Goods:new():Init(GoodsConfig[gsid]);
-end
-
 function Goods:ctor()
     self.__name__ = nil;
 end
@@ -58,7 +54,7 @@ function Goods:Init(config)
     
     self:SetConfig(config);
     self:SetGoodsID(config.gsid or 0);
-    self:SetGoodsName(config.name);
+    self:SetGoodsName(config.name or "goods");
 
     local tpl = GoodsConfig[self:GetGoodsID()];
     self:SetTitle(config.title or (tpl and tpl.title));
@@ -82,11 +78,15 @@ function Goods:SetGoodsName(name)
 end
 
 function Goods:Destroy()
-    __all_goods__[self.__name__] = nil;
+    -- if (self.__name__) then __all_goods__[self.__name__] = nil end 
 end
 
 function Goods:GetGoodsByName(name)
-    return name and __all_goods__[name];
+    return type(name) == "table" and name or __all_goods__[name];
+end
+
+function Goods:IsDeadGoods()
+    return self:GetGoodsID() == 1;
 end
 
 function Goods:Activate(entity, triggerEntity)
@@ -97,7 +97,7 @@ function Goods:Activate(entity, triggerEntity)
         triggerEntity:AddGoods(self);
     end
 
-    if (gsid == 0) then entity:Destroy() end
+    if (self:IsDeadGoods()) then entity:Destroy() end
 end
 
 local __api_list__ = {

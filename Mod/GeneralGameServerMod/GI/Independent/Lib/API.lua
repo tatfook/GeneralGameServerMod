@@ -109,8 +109,18 @@ function CreateEntity(opts)
     return GetEntityModule():new():Init(opts);
 end
 
-function DestoryEntityByKey(key)
+function DestroyEntityByKey(key)
     local entity = GetEntityModule():GetEntityByKey(key);
+    if (not entity) then return end
+    entity:Destroy();
+end
+
+function GetEntityByName(name)
+    return GetEntityModule():GetEntityByName(name);
+end
+
+function DestroyEntityByName(name)
+    local entity = GetEntityByName(name);
     if (not entity) then return end
     entity:Destroy();
 end
