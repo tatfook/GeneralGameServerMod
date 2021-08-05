@@ -26,6 +26,7 @@ local coroutine_running = coroutine.running;
 local coroutine_status = coroutine.status;
 local coroutine_yield = coroutine.yield;
 local coroutine_resume = coroutine.resume;
+local coroutine_create = coroutine.create;
 
 function Independent:Pack(args, ...)
 	args = type(args) == "table" and args or {};
@@ -229,6 +230,14 @@ function Independent:Restart()
 end
 
 function Independent:Start(filename)
+	-- 保证在非主线程中执行
+	local _, isMainThread = coroutine_running();
+	if (isMainThread) then
+		return coroutine_resume(coroutine_create(function() 
+			return self:Start(filename);
+		end));
+	end
+
 	if (self:IsRunning()) then return end
 	print("====================Independent:Start=====================");
 	-- 确保已初始化

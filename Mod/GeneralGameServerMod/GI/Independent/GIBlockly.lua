@@ -118,7 +118,7 @@ end
 function GIBlockly.CompileCode(code, filename, codeblock)
     local code_func, errormsg = loadstring(code, filename);
     if(not code_func or errormsg) then
-        LOG.std(nil, "error", "CodeBlock", self.errormsg);
+        LOG.std(nil, "error", "CodeBlock", errormsg);
         return ;
     end
 

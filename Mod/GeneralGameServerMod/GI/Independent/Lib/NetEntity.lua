@@ -14,7 +14,6 @@ local NetPlayer = require("NetPlayer");
 local KeyBoard = require("KeyBoard");
 
 local NetEntity = inherit(ToolBase, module("NetEntity"));
-
 NetEntity:InitSingleton();
 
 local __username__ = GetUserName();

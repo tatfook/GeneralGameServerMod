@@ -54,7 +54,7 @@ function GI:OnWorldLoaded()
     self:GetContext():OnWorldLoaded();
 
     -- 加载世界默认启动世界目录下的 main.lua 文件
-    self:GetSandBox():Start(CommonLib.ToCanonicalFilePath(CommonLib.GetWorldDirectory() .. "/main.lua"));
+    -- self:GetSandBox():Start(CommonLib.ToCanonicalFilePath(CommonLib.GetWorldDirectory() .. "/main.lua"));
 end
 
 function GI:OnWorldUnloaded()
