@@ -145,10 +145,20 @@ function NplBlockManager.GetNplCategoryListAndMap()
     return BlockManager.GetLanguageCategoryListAndMap("SystemNplBlock");
 end
 
+function NplBlockManager.GetGIBlockMap()
+    return BlockManager.GetLanguageBlockMap("SystemGIBlock");
+end
+
+function NplBlockManager.GetGICategoryListAndMap()
+    return BlockManager.GetLanguageCategoryListAndMap("SystemGIBlock");
+end
+
 function NplBlockManager.GetBlockMap(blockManager)
     BlockManager = blockManager;
     if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplBlockMap() end
     if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlBlockMap() end
+    if (NplBlockManager.IsGILanguage()) then return NplBlockManager.GetGIBlockMap() end 
+   
     local all_cmds = CodeHelpWindow.GetAllCmds();
     local all_categories = CodeHelpWindow.GetCategoryButtons();
 
@@ -165,6 +175,7 @@ function NplBlockManager.GetCategoryListAndMap(blockManager)
     BlockManager = blockManager;
     if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplCategoryListAndMap() end
     if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlCategoryListAndMap() end
+    if (NplBlockManager.IsGILanguage()) then return NplBlockManager.GetGICategoryListAndMap() end 
 
     local all_cmds = CodeHelpWindow.GetAllCmds();
     local all_categories = CodeHelpWindow.GetCategoryButtons();

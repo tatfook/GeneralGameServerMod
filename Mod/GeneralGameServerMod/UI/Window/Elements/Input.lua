@@ -497,6 +497,7 @@ function Input:FocusIn()
 end
 
 function Input:OnFocusOut()
+    Input._super.OnFocusOut(self);
     self:ClearSelected();
 end
 

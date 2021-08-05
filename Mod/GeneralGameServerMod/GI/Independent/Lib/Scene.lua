@@ -22,4 +22,4 @@ function EnableMousePick(bEnable)
     end
 end
 
-EnableMousePick(true);
+EnableMousePick(IsDevEnv);

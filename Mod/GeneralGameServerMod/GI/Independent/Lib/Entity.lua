@@ -88,14 +88,17 @@ function Entity:SetPosition(x, y, z)
 end
 
 function Entity:SetBlockPos(bx, by, bz)
-    if (type(bx) == "string") then
-        local x, y, z = string.match(bx, "(%d+)[,%s]+(%d+)[,%s]+(%d+)");
-        if (not x or not y or not z) then return end
-        bx, by, bz = tonumber(x), tonumber(y), tonumber(z);
-    end
     Entity._super.SetBlockPos(self, bx, by, bz);
     self:UpdatePosition();
 end
+
+function Entity:SetBlockPosition(pos)
+    local x, y, z = string.match(pos, "(%d+)[,%s]+(%d+)[,%s]+(%d+)");
+    if (not x or not y or not z) then return end
+    local bx, by, bz = tonumber(x), tonumber(y), tonumber(z);
+    self:SetBlockPos(bx, by, bz);
+end
+
 
 function Entity:GetBlockIndex()
     local bx, by, bz = self:GetBlockPos();
@@ -295,4 +298,25 @@ function Entity:RunCode(code, G)
     local code_func, errormsg = loadstring(code, "loadstring:RunCode");
     if (errmsg) then return warn("invalid code", code) end
     return self:Run(code_func, G);
+end
+
+
+-- blockly api
+function GetEntityByName(name)
+    for _, entity in pairs(__all_entity__) do
+        if (entity:GetName() == name) then return entity end
+    end
+    return nil;
+end
+
+function SetEntityBlockPosition(name, pos)
+    local entity = GetEntityByName(name);
+    if (not entity) then return end
+    entity:SetBlockPosition(pos);
+end
+
+function SetEntityAssetFile(name, assetfile)
+    local entity = GetEntityByName(name);
+    if (not entity) then return end
+    entity:SetAssetFile(assetfile);
 end

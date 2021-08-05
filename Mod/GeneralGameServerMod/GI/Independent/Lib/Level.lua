@@ -17,7 +17,7 @@ function Level:ctor()
     -- 左下角
     self.__x__, self.__y__, self.__z__ = 10000, 8, 10000;
     -- 边长
-    self.__dx__, self.__dy__, self.__dz__ = 128, 16, 128;
+    self.__dx__, self.__dy__, self.__dz__ = 128, 32, 128;
 
     self.__all_entity__ = {};
     self.__all_goods__ = {};
@@ -73,10 +73,9 @@ function Level:Export()
     cmd("/select -clear");
 end
 
-function Level:Edit(level_name)
+function Level:Edit()
     local cx, cy, cz = self:GetCenterPoint();
     self:ResetFoundation();
-    if (level_name) then cmd(format("/loadtemplate %d %d %d %s", cx, cy, cz, level_name)) end
     cmd(format("/goto %s %s %s", cx, cy, cz));
 
     -- cmd("/mode game");
@@ -90,4 +89,11 @@ function Level:Edit(level_name)
     -- });
 end
 
+
 Level:InitSingleton();
+
+--[[
+关卡创建:
+- Level:SetLevelName("level1");   -- 设置关卡名
+- 
+]]

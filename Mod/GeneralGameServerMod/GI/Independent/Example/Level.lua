@@ -2,7 +2,8 @@
 local Level = require("Level");
 
 
-Level:Edit("level");
+Level:LoadMap();
+Level:Edit();
 
 -- Level:Export();
 -- print(Level:GetCenterPoint());

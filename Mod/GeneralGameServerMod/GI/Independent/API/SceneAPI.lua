@@ -193,6 +193,8 @@ local function GetCamera()
     return dist, pitch, facing;
 end
 
+local key_2_code, key_3_code, key_4_code, key_5_code = ParaCamera.GetKeyMap(2), ParaCamera.GetKeyMap(3), ParaCamera.GetKeyMap(4), ParaCamera.GetKeyMap(5);
+
 setmetatable(
     SceneAPI,
     {
@@ -232,26 +234,21 @@ setmetatable(
             CodeEnv.MousePickTimerCallBack = MousePickTimerCallBack
             CodeEnv.MousePick = MousePick;
 
-            local camera_key_map = {};
-            for i = 0, 20 do
-                local key = ParaCamera.GetKeyMap(i);
-                if (key < 1024) then
-                    camera_key_map[i] = key;
-                end
-            end
-
+            local isDisableDefaultWASDKey = false;
             CodeEnv.DisableDefaultWASDKey = function()
                 ParaCamera.SetKeyMap(2, 0);
                 ParaCamera.SetKeyMap(3, 0);
                 ParaCamera.SetKeyMap(4, 0);
                 ParaCamera.SetKeyMap(5, 0);
+                isDisableDefaultWASDKey = true;
             end
 
             CodeEnv.EnableDefaultWASDKey = function()
-                ParaCamera.SetKeyMap(2, camera_key_map[2]);
-                ParaCamera.SetKeyMap(3, camera_key_map[3]);
-                ParaCamera.SetKeyMap(4, camera_key_map[4]);
-                ParaCamera.SetKeyMap(5, camera_key_map[5]);
+                ParaCamera.SetKeyMap(2, key_2_code);
+                ParaCamera.SetKeyMap(3, key_3_code);
+                ParaCamera.SetKeyMap(4, key_4_code);
+                ParaCamera.SetKeyMap(5, key_5_code);
+                isDisableDefaultWASDKey = false;
             end
 
             CodeEnv.FreeCameraMode = function()
@@ -259,10 +256,7 @@ setmetatable(
             end
             
             CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function() 
-                for key, val in pairs(camera_key_map) do
-                    ParaCamera.SetKeyMap(key, val);
-                end
-                -- ParaCamera.GetAttributeObject():SetField("CameraMode", 3);
+                if (isDisableDefaultWASDKey) then CodeEnv.EnableDefaultWASDKey() end 
             end);
         end
     }

@@ -148,6 +148,8 @@ __module__.__loaded__ = true;
 	-- 还原当前模块
 	CodeEnv.__module__ = __old_module__;
 	
+	print("========================loadfile=======================", filename);
+	
 	if (filename) then 
 		-- 添加至加载列表
 		self.__files__[#self.__files__ + 1] = filename;
