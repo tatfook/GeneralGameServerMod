@@ -425,19 +425,22 @@ _G.GetAllAssets = function()
         local extra = tpl.extra or {};
         -- echo(extra, true)
         if (tpl.bagId == bagId and extra.modelFrom) then
-            table.insert(assets, {
-                id = tpl.id,
-                gsId = tpl.gsId,
-                modelUrl = tpl.modelUrl,
-                modelFrom = if_else(not extra.modelFrom or extra.modelFrom == "", nil, extra.modelFrom),
-                modelOrder = tonumber(extra.modelOrder or 0) or 0,
-                icon = GetItemIcon(tpl),
-                name = tpl.name,
-                desc = tpl.desc,
-                owned = IsOwned(tpl),
-                requireVip = tpl.extra and tpl.extra.vip_enabled,
-                skin = tpl.extra and tpl.extra.skin;
-            });
+            -- 客户端临时处理 下架套装
+            if(tpl.id ~= 5087 and tpl.id ~= 5067 and tpl.id ~= 5090 and tpl.id ~= 5077) then
+                table.insert(assets, {
+                    id = tpl.id,
+                    gsId = tpl.gsId,
+                    modelUrl = tpl.modelUrl,
+                    modelFrom = if_else(not extra.modelFrom or extra.modelFrom == "", nil, extra.modelFrom),
+                    modelOrder = tonumber(extra.modelOrder or 0) or 0,
+                    icon = GetItemIcon(tpl),
+                    name = tpl.name,
+                    desc = tpl.desc,
+                    owned = IsOwned(tpl),
+                    requireVip = tpl.extra and tpl.extra.vip_enabled,
+                    skin = tpl.extra and tpl.extra.skin;
+                });
+            end
         end
     end
 
@@ -450,6 +453,8 @@ _G.GetAllAssets = function()
     end);
     
     GlobalScope:Set("AllAssets", assets);
+
+    -- commonlib.echo(assets, true);
 
     return assets;
 end
@@ -539,6 +544,7 @@ _G.GetAvatarItems = function(category)
     local skin = GetGlobalScope():Get("MainSkin");
     local items = CustomCharItems:GetModelItems(asset, category, skin, true);
     GlobalScope:Set("AvatarItems", items);
+    -- commonlib.echo(items, true);
     return items;
 end
 
