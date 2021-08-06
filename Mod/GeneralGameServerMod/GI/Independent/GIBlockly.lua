@@ -8,9 +8,9 @@ use the lib:
 local GIBlockly = NPL.load("Mod/GeneralGameServerMod/GI/Independent/GIBlockly.lua");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeBlockWindow.lua");
-local ViewportManager = commonlib.gettable("System.Scene.Viewports.ViewportManager");
-local CodeBlockWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeBlockWindow");
+-- NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeBlockWindow.lua");
+-- local ViewportManager = commonlib.gettable("System.Scene.Viewports.ViewportManager");
+-- local CodeBlockWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeBlockWindow");
 
 local GIBlockly = NPL.export();
 
@@ -131,6 +131,7 @@ local function GetCodeEnv(codeblock)
     __env__.__codeblock__ = codeblock;
     __env__.__codeblock_env__ = codeblock:GetCodeEnv();
     __env__.__gi_env__ = GameLogic.GetCodeGlobal():GetSandboxAPI().API;
+    setmetatable(__env__, {__index = __env__.__gi_env__});
 
     __all_env__[key] = __env__;
 
@@ -140,6 +141,46 @@ end
 function GIBlockly.CompileRun(code, filename, codeblock)
 end
 
+-- function GIBlockly.CompileCode(code, filename, codeblock)
+--     local code_func, errormsg = loadstring(code, filename);
+--     if(not code_func or errormsg) then
+--         LOG.std(nil, "error", "CodeBlock", errormsg);
+--         return ;
+--     end
+
+--     local __env__ = GetCodeEnv(codeblock);
+--     setmetatable(__env__, {__index = __env__.__gi_env__})
+--     setfenv(code_func, __env__);
+    
+--     --  TODO 重复执行需要提供回收机制
+--     local IsDedug = CodeBlockWindow.IsVisible() and CodeBlockWindow.GetCodeBlock() == codeblock;
+--     local viewport = ViewportManager:GetSceneViewport();
+--     __env__.IsDevEnv = IsDevEnv;
+
+--     return function() 
+--         if (IsDedug) then
+--             local SandBox = NPL.load("Mod/GeneralGameServerMod/GI/Independent/SandBox.lua", __env__.IsDevEnv);
+--             local SandBoxClone = commonlib.inherit(SandBox, {});
+--             SandBoxClone:InitSingleton();
+--             __env__.__gi_env__ = SandBoxClone:GetAPI();
+--             setmetatable(__env__, {__index = __env__.__gi_env__})
+--         end
+
+--         code_func();
+
+--         if (IsDedug) then
+--             registerStopEvent(function()
+--                 __env__.__gi_env__.__stop__();
+--                 if (CodeBlockWindow.IsVisible()) then
+--                     viewport:SetMarginRight(CodeBlockWindow.margin_right);
+--                 else
+--                     viewport:SetMarginRight(0);
+--                 end
+--             end)
+--         end
+--     end
+-- end
+
 function GIBlockly.CompileCode(code, filename, codeblock)
     local code_func, errormsg = loadstring(code, filename);
     if(not code_func or errormsg) then
@@ -148,34 +189,14 @@ function GIBlockly.CompileCode(code, filename, codeblock)
     end
 
     local __env__ = GetCodeEnv(codeblock);
-    setmetatable(__env__, {__index = __env__.__gi_env__})
     setfenv(code_func, __env__);
     
-    --  TODO 重复执行需要提供回收机制
-    local IsDedug = CodeBlockWindow.IsVisible() and CodeBlockWindow.GetCodeBlock() == codeblock;
-    local viewport = ViewportManager:GetSceneViewport();
-    __env__.IsDevEnv = IsDevEnv;
-
     return function() 
-        if (IsDedug) then
-            local SandBox = NPL.load("Mod/GeneralGameServerMod/GI/Independent/SandBox.lua", __env__.IsDevEnv);
-            local SandBoxClone = commonlib.inherit(SandBox, {});
-            SandBoxClone:InitSingleton();
-            __env__.__gi_env__ = SandBoxClone:GetAPI();
-            setmetatable(__env__, {__index = __env__.__gi_env__})
-        end
-
+        local __cur_co__ = __env__.__gi_env__.__coroutine_running__();
         code_func();
 
-        if (IsDedug) then
-            registerStopEvent(function()
-                __env__.__gi_env__.__stop__();
-                if (CodeBlockWindow.IsVisible()) then
-                    viewport:SetMarginRight(CodeBlockWindow.margin_right);
-                else
-                    viewport:SetMarginRight(0);
-                end
-            end)
-        end
+        registerStopEvent(function()
+            __env__.__gi_env__.__clean_coroutine_data__(__cur_co__);
+        end)
     end
 end

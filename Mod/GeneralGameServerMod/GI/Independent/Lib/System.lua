@@ -36,12 +36,22 @@ function select(index)
     return __arguments__[index], __arguments__[index + 1], __arguments__[index + 2], __arguments__[index + 3], __arguments__[index + 4], __arguments__[index + 5], __arguments__[index + 6], __arguments__[index + 7], __arguments__[index + 8], __arguments__[index + 9];
 end
 
-function run(callback, ...)
-	if (type(callback) ~= "function") then return end
+function __run__(callback, ...)
+	if (type(callback) == "string") then
+		local func, err = loadstring(callback, "__run__");
+		if (not func or err) then return end
+		setfenv(func, _G);
+		callback = func;
+	end
+	if (type(callback) ~= "function") then return end 
 
 	__coroutine_wrap__(function(callback, ...)
 		callback(...);
 	end)(callback, ...);
+end
+
+function run(callback, ...)
+	__run__(callback, ...)
 end
 
 -- 空函数

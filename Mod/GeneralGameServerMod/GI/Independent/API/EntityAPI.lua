@@ -144,6 +144,10 @@ setmetatable(
 
             CodeEnv.__AddEntity__ = function(entity) 
                 CodeEnv.__entities__[entity] = entity;
+
+                -- 协程数据标记
+                local __data__ = CodeEnv.__get_coroutine_data__();
+                __data__.__entities__[entity] = entity;
             end
             CodeEnv.__GetAllEntity__ = function() 
                 return CodeEnv.__entities__;
@@ -155,15 +159,26 @@ setmetatable(
                 for _, entity in pairs(CodeEnv.__entities__) do table.insert(__entity_list__, entity) end
                 return __entity_list__;
             end
+
             CodeEnv.__RemoveEntity__ = function(entity)
                 CodeEnv.__entities__[entity] = nil;
                 entity:Destroy();
+
+                -- 协程数据标记
+                local __data__ = CodeEnv.__get_coroutine_data__();
+                __data__.__entities__[entity] = nil;
             end
+
             CodeEnv.__ClearAllEntity__ = function()
                 for _, entity in ipairs(CodeEnv.__GetEntityList__()) do
                     entity:Destroy();
                 end 
+
+                -- 协程数据标记
+                local __data__ = CodeEnv.__get_coroutine_data__();
+                __data__.__entities__ = {};
             end
+            
             CodeEnv.__Entity__ = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityMovable");
         end
     }

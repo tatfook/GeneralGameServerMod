@@ -59,6 +59,7 @@ function Independent:Init()
 
 	-- 创建执行协同程序
 	local __args__ = {};
+	-- 默认协程
 	self.__co__ = coroutine.create(function(...)
 		self:Pack(__args__, ...);
 		local callback = self:Select(1, __args__);
@@ -69,6 +70,9 @@ function Independent:Init()
 		end
 	end);
 
+	-- 主协程
+	self.__main_co__ = coroutine_running();
+	
 	-- 加载内置模块
 	self.__files__ = {};
 
@@ -86,16 +90,14 @@ function Independent:Reset()
 end
 
 function Independent:LoadInnerModule()
-	local func = loadstring([[
-local System = require("System");
-local Log = require("Log");
-local State = require("State");
-local Timer = require("Timer");
-local Scene = require("Scene");
-local API = require("API");
-	]]);
-	setfenv(func, self:GetCodeEnv());
-	self:Call(func); 
+	local CodeEnv = self:GetCodeEnv();
+	CodeEnv.require("System");
+	CodeEnv.require("Log");
+	CodeEnv.require("State");
+	CodeEnv.require("Timer");
+	CodeEnv.require("Scene");
+	CodeEnv.require("UI");
+	CodeEnv.require("API");
 end
 
 function Independent:IsLoaded(filename)
@@ -249,12 +251,6 @@ function Independent:Start(filename)
 	self:SetRunning(true);
 	self:SetMainFileName(filename);
 
-	-- 先加载内部模块
-	self:LoadInnerModule();
-
-	-- 再加载入口文件
-	self:LoadFile(self:GetMainFileName());
-
 	-- 激活上下文环境
 	local CodeEnv = self:GetCodeEnv();
 
@@ -263,16 +259,22 @@ function Independent:Start(filename)
 		CodeEnv.SceneContext:activate();
 	end
 
+	-- 开始定时器
+	local loopTickCount = self:GetLoopTickCount();
+	local duration = math.floor(1000 / loopTickCount);
+	self:GetLoopTimer():Change(duration, duration);
+
+	-- 先加载内部模块
+	self:LoadInnerModule();
+
+	-- 再加载入口文件
+	self:LoadFile(self:GetMainFileName());
+
 	-- 触发 MAIN 事件回调
 	self:CallEventCallBack(CodeEnv.EventType.MAIN);
 
 	-- 调用 快捷方式 MAIN
 	self:Call(rawget(CodeEnv, "main"));
-
-	-- 开始定时器
-	local loopTickCount = self:GetLoopTickCount();
-	local duration = math.floor(1000 / loopTickCount);
-	self:GetLoopTimer():Change(duration, duration);
 end
 
 function Independent:Tick()

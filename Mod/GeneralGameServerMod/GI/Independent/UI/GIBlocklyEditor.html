@@ -1,0 +1,99 @@
+<template class="container">
+    <div class="header">
+        <div class="run-btn" onclick=OnClickRun>运行</div>
+        <div class="close-btn" onclick=CloseWindow></div>
+    </div>
+    <div class="header">
+        <div style="height: 100%; width: 300px; display: flex; align-items: center;">
+            <div tooltip="运行" class="btn" style="width:62px;height:30px;background:url(@/textures/code_32bits.png#152 64 62 30);" onclick=OnClickRun></div>
+        </div>
+        <div style="height: 100%; display: flex; align-items: center;">
+            <div tooltip="编译并运行" class="btn" style="width:35px;height:39px;background:url(@/textures/code_32bits.png#91 76 35 39);" onclick=CloseWindow></div>
+        </div> 
+    </div>
+    <Blockly ref="blockly" class="blockly" language="SystemGIBlock"></Blockly>
+</template>
+
+<script type="text/lua">
+local BlocklyEl = nil;
+
+-- 组件解析完成
+function OnReady()
+    BlocklyEl = GetRef("blockly");
+
+    _G.GetCode = function()
+        local rawcode, prettycode = BlocklyEl:GetCode();
+        return string.gsub(prettycode, "\t", "    ");
+    end
+
+    _G.GetXml = function()
+        local xmlNodeText = BlocklyEl:SaveToXmlNodeText();
+        return xmlNodeText;
+    end
+
+    BlocklyEl:LoadFromXmlNodeText(_G.xmltext);
+end
+
+local function GetCode()
+    if (not BlocklyEl) then return end
+    local rawcode, prettycode = BlocklyEl:GetCode();
+    return rawcode;
+end
+
+function OnClickRun()
+    if (type(rawget(_G, "run")) == "function") then _G.run(GetCode()) end
+end
+
+
+</script>
+
+<style>
+.container {
+    height: 80%; 
+    width: 80%; 
+    background-color: #00000080;
+    color: #ffffff;
+}
+
+.header {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 10px;
+}
+
+.run-btn {
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 22px;
+    height: 22px;
+    margin-left: 20px;
+    width: 200px;
+}
+
+.run-btn:hover {
+    color: #cccccc;
+}
+
+.close-btn {
+    width: 22px; 
+    height: 22px; 
+    margin-right: 20px; 
+    background-color: #e6e6e6;
+    background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);
+}
+
+.close-btn:hover {
+    background-color: #ffffff;
+}
+
+.blockly {
+    position: absolute; 
+    left: 2px; 
+    right: 2px; 
+    top: 40px; 
+    bottom: 2px;
+}
+</style>

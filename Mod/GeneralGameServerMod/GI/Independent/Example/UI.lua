@@ -1,32 +1,35 @@
 
-local GlobalScope = NewScope({
-    LoopCount = 10,
-});
 
-ShowWindow({
-    GlobalScope = GlobalScope,
-    ResetLoopCount = function()
-        GlobalScope.LoopCount = 200;
-    end,
-}, {
-    template = [[
-<template>
-<div>
-循环函数执行次数: {{LoopCount or 0}}
-</div>
-<div onclick=ResetLoopCount>重置</div>
-</template>
-    ]],
-    width = 300,
-    height = 300,
-});
+ShowGIBlocklyEditorPage();
+-- ShowCodeBlockBlocklyEditorPage();
+-- local GlobalScope = NewScope({
+--     LoopCount = 10,
+-- });
 
-function loop()
-    GlobalScope.LoopCount = GlobalScope.LoopCount + 1;
-    if (GlobalScope.LoopCount > 400) then
-        exit();
-    end
-end
+-- ShowWindow({
+--     GlobalScope = GlobalScope,
+--     ResetLoopCount = function()
+--         GlobalScope.LoopCount = 200;
+--     end,
+-- }, {
+--     template = [[
+-- <template>
+-- <div>
+-- 循环函数执行次数: {{LoopCount or 0}}
+-- </div>
+-- <div onclick=ResetLoopCount>重置</div>
+-- </template>
+--     ]],
+--     width = 300,
+--     height = 300,
+-- });
+
+-- function loop()
+--     GlobalScope.LoopCount = GlobalScope.LoopCount + 1;
+--     if (GlobalScope.LoopCount > 400) then
+--         exit();
+--     end
+-- end
 
 -- local LoopCount = 0;
 -- local ui = ShowWindow({

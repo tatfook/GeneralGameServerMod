@@ -41,6 +41,10 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         local window = (not IsDevEnv and windows[key]) and windows[key] or Vue:new();
         windows[key] = window;
 
+        -- 协程数据标记
+        local __data__ = CodeEnv.__get_coroutine_data__();
+        __data__.__windows__[key] = window;
+
         -- 指定默认参数
         params.G = G;
         params.draggable = if_else(params.draggable == nil, false, params.draggable);  -- 默认不支持拖拽
@@ -55,69 +59,26 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
 	end
 
     CodeEnv.GetRootUIObject = function() return ParaUI.GetUIObject("root") end 
+    CodeEnv.GetScreenSize = function() return Screen:GetWidth(), Screen:GetHeight() end 
+    CodeEnv.GetScreenWidth = function() return Screen:GetWidth() end
+    CodeEnv.GetScreenHeight = function() return Screen:GetHeight() end
 
-    CodeEnv.GetScreenSize = function() 
-        local width = Screen:GetWidth();
-        local height = Screen:GetHeight();
-        return width, height;
+    CodeEnv.RegisterSceneViewportSizeChange = function(...)
+        CodeEnv.RegisterEventCallBack("__scece_viewport_size_change__", ...);
     end
 
     local scene_viewport = ViewportManager:GetSceneViewport();
-    local blockly_code_editor = nil;
-    local function OnViewportChange()
-        
-        local MAX_3DCANVAS_WIDTH = 600;
-        local MIN_CODEWINDOW_WIDTH = 200+350;
-        local screenWidth = Screen:GetWidth();
-        local width = math.max(math.floor(screenWidth * 1/3), MIN_CODEWINDOW_WIDTH);
-        local halfScreenWidth = math.floor(screenWidth * 11 / 20);  -- 50% 55%  
-        if(halfScreenWidth > MAX_3DCANVAS_WIDTH) then
-            width = halfScreenWidth;
-        elseif((screenWidth - width) > MAX_3DCANVAS_WIDTH) then
-            width = screenWidth - MAX_3DCANVAS_WIDTH;
-        end
+    CodeEnv.SetSceneMarginRight = function(size) scene_viewport:SetMarginRight(size) end
+    CodeEnv.GetSceneMarginRight = function() return scene_viewport:GetMarginRight() end
+    CodeEnv.SetSceneMarginBottom = function(size) scene_viewport:SetMarginBottom(size) end
+    CodeEnv.GetSceneMarginBottom = function() return scene_viewport:GetMarginBottom() end
 
-        if (not blockly_code_editor) then return width end
-
-        blockly_code_editor:GetParams().width = width;
-        blockly_code_editor:OnScreenSizeChanged();
+    local function OnSceneViewportSizeChange()
+        CodeEnv.TriggerEventCallBack("__scece_viewport_size_change__");
     end
-
-    scene_viewport:Connect("sizeChanged", nil, OnViewportChange, "UniqueConnection");
-
-    CodeEnv.ShowBlocklyCodeEditor = function(G, params)
-        params = params or {};
-        params.url = params.url or "%gi%/Independent/UI/BlocklyCodeEditor.html";
-        params.parent = ParaUI.GetUIObject("root");
-    
-        params.width = OnViewportChange();
-        params.height = "100%";
-        params.alignment = "_rt";
-        
-        scene_viewport:SetMarginRight(params.width);
-        blockly_code_editor = CodeEnv.ShowWindow(G, params);
-        return blockly_code_editor;
-    end
-
-    CodeEnv.SetSceneMarginRight = function(size) 
-        scene_viewport:SetMarginRight(size);
-        for _, wnd in pairs(windows) do
-            wnd:OnScreenSizeChanged();
-        end
-    end
-
-    -- CodeEnv.ShowBlocklyFactory = function()
-    --     return CodeEnv.ShowWindow(nil, {
-    --         draggable = false,
-    --         width = 1200,
-    --         height = 1000,
-    --         url = "%ui%/Blockly/Pages/BlocklyFactory.html",
-    --     });
-    -- end
+    scene_viewport:Connect("sizeChanged", nil, OnSceneViewportSizeChange, "UniqueConnection");
 
     CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function()
-        scene_viewport:SetMarginRight(0);
-        scene_viewport:Disconnect("sizeChanged", nil, OnViewportChange, "UniqueConnection");
+        scene_viewport:Disconnect("sizeChanged", nil, OnSceneViewportSizeChange, "UniqueConnection");
     end);
-
 end});

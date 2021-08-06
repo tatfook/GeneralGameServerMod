@@ -21,6 +21,8 @@ Entity:Property("GoodsChangeCallBack");                               -- 物品�
 Entity:Property("ClickCallBack");                                     -- 物品变化回调
 Entity:Property("Code");                                              -- 实体代码
 Entity:Property("CodeXmlText");                                       -- 实体代码的XML Text
+Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否是主玩家
+Entity:Property("Focus", false, "IsFocus");                           -- 是否聚焦
 
 local NID = 0;
 function Entity:ctor()
@@ -32,6 +34,12 @@ function Entity:ctor()
     __all_entity__[self.__key__] = self;
     __all_name_entity__[self.__name__] = self;
 
+end
+
+function Entity:FrameMoveRidding()
+end
+
+function Entity:FrameMove()
 end
 
 function Entity:GetKey()
@@ -115,6 +123,7 @@ function Entity:GetBlockIndex()
 end
 
 function Entity:UpdatePosition()
+    if (self:IsFocus()) then SetCameraLookAtPos(self:GetPosition()) end
     local new_block_index = self:GetBlockIndex();
     local old_block_index = self.__block_index__;
     if (old_block_index and __all_block_index_entity__[old_block_index]) then
@@ -130,17 +139,24 @@ function Entity:UpdatePosition()
     self:CheckEntityCollision();
 end
 
+function Entity:GetTickCountPerSecond()
+    return __get_loop_tick_count__(); -- 可以乘以倍数
+end
+
+function Entity:GetStepDistance()
+    return 0.06;                      -- 获取步长
+end
+
+-- 向前行走, duration 存在则通过时间计算步数, 否则通过单位步长计算步数
 function Entity:MoveForward(dist, duration)
     local facing = self:GetFacing();
     local distance = (dist or 1) * __BlockSize__;
     local dx, dy, dz = math.cos(facing) * distance, 0, -math.sin(facing) * distance;
     local x, y, z = self:GetPosition();
-    local tickCountPerSecond = __get_loop_tick_count__();
-    local stepCount = math.floor((duration or 1) * tickCountPerSecond);
+    local stepCount = duration and math.floor(duration * self:GetTickCountPerSecond()) or math.floor(distance / self:GetStepDistance());
     self:SetAnimId(5);
     while(stepCount > 0) do
         if (self:IsDestory()) then return end 
-        
         local stepX, stepY, stepZ = dx / stepCount, dy / stepCount, dz / stepCount;
         x, y, z = x + stepX, y + stepY, z + stepZ;
         self:SetPosition(x, y, z);

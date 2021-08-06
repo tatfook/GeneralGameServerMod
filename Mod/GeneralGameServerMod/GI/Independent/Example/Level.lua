@@ -1,8 +1,31 @@
 
 local Level = require("Level");
 
--- SetCamera(20, 45, -90);
+
+Level:LoadMap();
+Level:Edit();
+
+-- Level:UnloadMap();
+-- Level:Export();
+-- print(Level:GetCenterPoint());
+
+-- ShowBlocklyCodeEditor({
+--     run = function(code)
+--     end,
+--     restart = function()
+--     end
+-- });
+
+function clear()
+    cmd("/mode edit");
+    cmd("/home");
+    -- Level:UnloadMap();
+end
+
+
+
 -- SetCameraLookAtBlockPos(10090,12,10075);
+-- SetCamera(20, 45, -90);
 
 -- __ClearAllEntity__();
 -- local sunbin = CreateEntity({
@@ -24,25 +47,4 @@ local Level = require("Level");
 -- local position_goods = CreateGoods({transfer = true, title = "目标位置"});
 -- tianshucanjuan:AddGoods(tianshucanjuan_goods);
 -- pangjuan:AddGoods(position_goods);
-
-
--- Level:LoadMap();
--- Level:Edit();
-
--- Level:Export();
--- print(Level:GetCenterPoint());
-
--- ShowBlocklyCodeEditor({
---     run = function(code)
---     end,
---     restart = function()
---     end
--- });
-
-function clear()
-    cmd("/mode edit");
-    cmd("/home");
-    -- Level:UnloadMap();
-end
-
 
