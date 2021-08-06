@@ -117,6 +117,7 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.copy = commonlib.copy
     CodeEnv.partialcopy = commonlib.partialcopy
     CodeEnv.mincopy = commonlib.mincopy
+    CodeEnv.split = commonlib.split;
 
 	CodeEnv.cmd = function(...) CommandManager:RunCommand(...) end
     CodeEnv.exit = CodeEnv.__stop__;

@@ -80,3 +80,17 @@ function ShowBlocklyFactory()
         url = "%ui%/Blockly/Pages/BlocklyFactory.html",
     });
 end
+
+-- RegisterGICmdEvent(function(cmd_name, cmd_text, cmd_params)
+--     print(cmd_text);
+-- end);
+
+-- RegisterSlashCommand({
+-- 	mode_deny = "",
+--     name = "gi_codeblock_blockly_editor",
+--     quick_ref = "/gi_codeblock_blockly_editor",
+--     desc = "打开GI环境的图块编辑器",
+--     handler = function()
+--         ShowCodeBlockBlocklyEditorPage();
+--     end
+-- })

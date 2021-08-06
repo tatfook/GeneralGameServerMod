@@ -71,23 +71,20 @@ function Entity:Init(opts)
     self:SetName(opts.name);
 
     if (opts.opacity) then self:SetOpacity(opts.opacity) end
-    if (opts.assetfile and string.match(opts.assetfile, "^@")) then
-        opts.assetfile = string.gsub(opts.assetfile, "@", GetWorldDirectory());
-        opts.assetfile = ToCanonicalFilePath(opts.assetfile);
-    end
+    
     -- 获取主玩家位置
     local bx, by, bz = GetPlayer():GetBlockPos();
     self:SetBlockPos(opts.bx or bx or 0, opts.by or by or 0, opts.bz or bz or 0);
-    self:SetMainAssetPath(opts.assetfile or "character/CC/02human/actor/actor.x");
+    self:SetAssetFile(opts.assetfile or "character/CC/02human/actor/actor.x");
     self:CreateInnerObject(self:GetMainAssetPath(), true, 0, 1, self:GetSkin());
 	self:RefreshClientModel();
     self:Attach();
 
     __AddEntity__(self);
 
+    self:SetSkipPicking(false);
     self:SetPhysicsRadius(opts.physicsRadius or 0.5);
     self:SetPhysicsHeight(opts.physicsHeight or 1);
-    self:SetSkipPicking(false);
     self:SetBiped(opts.biped);
     self:SetDestroyBeCollided(opts.destroyBeCollided);
 
@@ -95,6 +92,10 @@ function Entity:Init(opts)
 end
 
 function Entity:SetAssetFile(assetfile)
+    if (assetfile and string.match(assetfile, "^@")) then
+        assetfile = string.gsub(assetfile, "@", GetWorldDirectory());
+        assetfile = ToCanonicalFilePath(assetfile);
+    end
     self:SetMainAssetPath(assetfile);
     self:RefreshClientModel();
 end
@@ -304,18 +305,20 @@ end
 
 local __api_list__ = {
     "SetName",
+    "SetPosition",
+    "SetBlockPosition",
+    "SetAssetFile",
+    "SetPhysicsRadius",
+    "SetPhysicsHeight",
+    "SetAnimId",
     "MoveForward",
     "Turn",
     "TurnTo",
-    "SetAssetFile",
-    "SetPosition",
-    "SetBlockPosition",
-    "SetAnimId",
     "AddGoods",
     "RemoveGoods",
     "HasGoods",
-    "SetPhysicsRadius",
-    "SetPhysicsHeight",
+    "SetFocus",
+    "SetBiped",
 };
 
 function Entity:Run(func, G)
