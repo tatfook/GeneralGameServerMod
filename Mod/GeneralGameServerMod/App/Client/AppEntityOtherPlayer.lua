@@ -30,12 +30,14 @@ end
 
 -- 玩家被点击
 function AppEntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
-    local mainasset = self:GetMainAssetPath();
-    local username = self:GetUserName()
-    page.ShowUserInfoPage({username = username, mainasset = mainasset});
-    
-    -- 阻止默认行为     
-    return true;
+    if mouse_button == "left" then
+        local mainasset = self:GetMainAssetPath();
+        local username = self:GetUserName()
+        page.ShowUserInfoPage({username = username, mainasset = mainasset});
+        
+        -- 阻止默认行为     
+        return true;
+    end
 end
 
 -- 是否可以被点击
