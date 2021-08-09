@@ -317,6 +317,7 @@ local __api_list__ = {
     "AddGoods",
     "RemoveGoods",
     "HasGoods",
+    "SetGoodsChangeCallBack",
     "SetFocus",
     "SetBiped",
 };

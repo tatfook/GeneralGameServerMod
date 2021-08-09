@@ -68,15 +68,29 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         CodeEnv.RegisterEventCallBack("__scece_viewport_size_change__", ...);
     end
 
-    local scene_viewport = ViewportManager:GetSceneViewport();
-    CodeEnv.SetSceneMarginRight = function(size) scene_viewport:SetMarginRight(size) end
-    CodeEnv.GetSceneMarginRight = function() return scene_viewport:GetMarginRight() end
-    CodeEnv.SetSceneMarginBottom = function(size) scene_viewport:SetMarginBottom(size) end
-    CodeEnv.GetSceneMarginBottom = function() return scene_viewport:GetMarginBottom() end
-
     local function OnSceneViewportSizeChange()
         CodeEnv.TriggerEventCallBack("__scece_viewport_size_change__");
+        for _, wnd in pairs(windows) do
+            wnd:OnScreenSizeChanged();
+        end
     end
+
+    local scene_viewport = ViewportManager:GetSceneViewport();
+    
+    CodeEnv.SetSceneMarginRight = function(size) 
+        scene_viewport:SetMarginRight(size);
+        OnSceneViewportSizeChange();
+    end
+    
+    CodeEnv.GetSceneMarginRight = function() return scene_viewport:GetMarginRight() end
+    
+    CodeEnv.SetSceneMarginBottom = function(size) 
+        scene_viewport:SetMarginBottom(size) 
+        OnSceneViewportSizeChange();
+    end
+    
+    CodeEnv.GetSceneMarginBottom = function() return scene_viewport:GetMarginBottom() end
+    
     scene_viewport:Connect("sizeChanged", nil, OnSceneViewportSizeChange, "UniqueConnection");
 
     CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function()

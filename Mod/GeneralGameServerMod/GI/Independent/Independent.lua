@@ -197,7 +197,7 @@ function Independent:Call(...)
 	end
 	-- 出错是否停止沙盒
 	if (not ok) then 
-		print("Error:", err, self.__co__ == coroutine_running(), self.__co__ and coroutine.status(self.__co__));
+		print("Error:", err, self.__co__ == coroutine_running(), self.__co__);
 		if (self:IsErrorExit()) then
 			self:Stop() 
 		end

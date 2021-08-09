@@ -35,6 +35,8 @@ local EventType = {
     -- -- 资源创建事件
     RESOURCE_WINDOW = "resource_window", 
     RESOURCE_ENTITY = "resource_entity",
+
+    -- CODE_BLOCK_STOP = "code_block_stop", -- 代码方块停止事件
 }
 
 local function RegisterEventCallBack(__code_env__, eventType, callback)
@@ -88,12 +90,12 @@ local function DefaultKeyPressCallBack(__code_env__, event)
             __code_env__.__stop__();
         elseif (event.ctrl_pressed and event.keyname == "DIK_R") then
             __code_env__.__restart__();
-        elseif (event.ctrl_pressed and event.keyname == "DIK_T") then
-            local result = __code_env__.MousePick();
-            if (not result or not result.blockX) then return end
-            local blockpos = string.format("%s, %s, %s", result.blockX, result.blockY, result.blockZ);
-            ParaMisc.CopyTextToClipboard(blockpos);
-            __code_env__.Tip(blockpos);
+        -- elseif (event.ctrl_pressed and event.keyname == "DIK_T") then
+        --     local result = __code_env__.MousePick();
+        --     if (not result or not result.blockX) then return end
+        --     local blockpos = string.format("%s, %s, %s", result.blockX, result.blockY, result.blockZ);
+        --     ParaMisc.CopyTextToClipboard(blockpos);
+        --     __code_env__.Tip(blockpos);
         end
     end
 end
@@ -119,13 +121,8 @@ setmetatable(EventAPI, {
         CodeEnv.RemoveEventCallBack = function(...) RemoveEventCallBack(CodeEnv, ...) end
         CodeEnv.TriggerEventCallBack = function(...) TriggerEventCallBack(CodeEnv, ...) end
         
-        CodeEnv.TriggerWindowCallBack = function(...) 
-            -- TriggerEventCallBack(CodeEnv, EventType.RESOURCE_WINDOW, ...);
-        end
-        
-        CodeEnv.TriggerEntityCallBack = function(...) 
-            -- TriggerEventCallBack(CodeEnv, EventType.RESOURCE_ENTITY, ...);
-        end 
+        -- CodeEnv.RegisterCodeBlockStopEventCallBack = function(callback) RegisterEventCallBack(CodeEnv, EventType.CODE_BLOCK_STOP, callback) end
+        -- CodeEnv.TriggerCodeBlockStopEventCallBack = function(callback) RegisterEventCallBack(CodeEnv, EventType.CODE_BLOCK_STOP, callback) end
 
         -- 用户事件机制
         CodeEnv.On = function(...) On(CodeEnv, ...) end

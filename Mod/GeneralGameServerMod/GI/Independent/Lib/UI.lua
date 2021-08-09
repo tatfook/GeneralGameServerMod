@@ -72,6 +72,59 @@ function ShowCodeBlockBlocklyEditorPage(G, params)
     return ShowWindow(G, params);
 end
 
+-- 场景外显示关卡图块编辑
+local LevelBlocklyEditorPage = nil;
+function ShowLevelBlocklyEditorPage(G, params)
+    params = params or {};
+    params.url = params.url or "%gi%/Independent/UI/LevelBlocklyEditor.html";
+    params.parent = GetRootUIObject();
+    params.width = GetCodeBlockEditorWidth();
+    params.height = "100%";
+    params.alignment = "_rt";
+    
+    local margin_right = GetSceneMarginRight();
+    SetSceneMarginRight(params.width);
+
+    G = G or {};
+    local OnClose = G.OnClose;
+    G.OnClose = function()
+        if (type(OnClose) == "function") then OnClose() end 
+        SetSceneMarginRight(margin_right);
+    end
+
+    local function RunCode(code, G)
+        local code_func, errormsg = loadstring(code, "loadstring:RunCode");
+        if (errmsg) then return warn("invalid code", code) end
+    
+        G = G or {};
+        setmetatable(G, {__index = _G});
+        -- 设置代码环境
+        setfenv(code_func, G);
+    
+        code_func();
+    end
+
+    G.Run = function(code)
+        -- 执行关卡代码前
+        Emit("RunLevelCodeBefore");
+
+        -- 执行关卡代码
+        RunCode(code);
+
+        -- 执行关卡代码后
+        Emit("RunLevelCodeAfter");
+    end
+
+    local LevelBlocklyEditorPage = ShowWindow(G, params);
+    return LevelBlocklyEditorPage;
+end
+
+function CloseLevelBlocklyEditorPage()
+    if (not LevelBlocklyEditorPage) then return end 
+    LevelBlocklyEditorPage:CloseWindow();
+    LevelBlocklyEditorPage = nil;
+end
+
 function ShowBlocklyFactory()
     return CodeEnv.ShowWindow(nil, {
         draggable = false,
@@ -81,16 +134,3 @@ function ShowBlocklyFactory()
     });
 end
 
--- RegisterGICmdEvent(function(cmd_name, cmd_text, cmd_params)
---     print(cmd_text);
--- end);
-
--- RegisterSlashCommand({
--- 	mode_deny = "",
---     name = "gi_codeblock_blockly_editor",
---     quick_ref = "/gi_codeblock_blockly_editor",
---     desc = "打开GI环境的图块编辑器",
---     handler = function()
---         ShowCodeBlockBlocklyEditorPage();
---     end
--- })

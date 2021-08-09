@@ -2,15 +2,19 @@
     <div style="display: flex; height: 40px; justify-content: center; align-items: center;">
         <div class="button">场景</div>
         <div class="button" onclick=ClickGIBlocklyEditor>GI图块编辑器</div>
+        <div class="button" onclick=ClickLevelBlocklyEditor>关卡图块编辑器</div>
     </div>
 </template>
 
 <script type="text/lua">
-
-
 function ClickGIBlocklyEditor()
     ShowGIBlocklyEditorPage()
 end
+
+function ClickLevelBlocklyEditor()
+    ShowLevelBlocklyEditorPage();
+end
+
 </script>
 
 <style>

@@ -1,11 +1,14 @@
 
 local Level = require("Level");
 
+Emit("UnloadLevel");
+Level:SetLevelName("_level2")
 
 -- Level:LoadMap();
+Level:UnloadMap();
 Level:Edit();
 
--- Level:UnloadMap();
+-- cmd(format("/goto %s %s %s", 10093,11,10069));
 -- Level:Export();
 -- print(Level:GetCenterPoint());
 

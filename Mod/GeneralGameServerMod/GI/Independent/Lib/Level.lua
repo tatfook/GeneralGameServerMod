@@ -12,16 +12,13 @@ local Level = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/Level.lua");
 local Level = inherit(ToolBase, module("Level"));
 
 Level:Property("LevelName", "level");  -- 关卡名称
+Level:Property("ToolBoxXmlText");      -- 定制工具栏文本
 
 function Level:ctor()
     -- 左下角
     self.__x__, self.__y__, self.__z__ = 10000, 8, 10000;
     -- 边长
     self.__dx__, self.__dy__, self.__dz__ = 128, 32, 128;
-
-    self.__all_entity__ = {};
-    self.__all_goods__ = {};
-    self.__scene__ = {};
 end
 
 -- 重置地基
@@ -66,11 +63,20 @@ function Level:UnloadMap()
 end
 
 function Level:Export()
+    Emit("UnloadLevel"); 
+    
     local level_name = self:GetLevelName();
     if (not level_name or level_name == "") then level_name = "level" end 
     cmd(format("/select %d %d %d (%d %d %d)", self.__x__, self.__y__, self.__z__, self.__dx__, self.__dy__, self.__dz__));
     cmd(format("/savetemplate -auto_pivot %s", level_name));
     cmd("/select -clear");
+end
+
+function Level:ShowLevelBlocklyEditor()
+    ShowLevelBlocklyEditorPage({
+        ToolBoxXmlText = [[
+        ]]
+    })
 end
 
 function Level:Edit()

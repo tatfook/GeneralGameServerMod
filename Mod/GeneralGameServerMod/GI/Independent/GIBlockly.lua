@@ -144,11 +144,28 @@ function GIBlockly.CompileCode(code, filename, codeblock)
     local __env__ = GetCodeEnv(codeblock);
     setfenv(code_func, __env__);
     
+    local __setfenv__ = setfenv;
+    local format = string.format;
     return function() 
         local __cur_co__ = __env__.__gi_env__.__coroutine_running__();
+        __env__.runInGIEnv = function(callback)
+            if (type(callback) ~= "function") then return end 
+            __setfenv__(callback, __env__.__gi_env__);
+            callback();
+        end
+        __env__.runInCodeBlockEnv = function(callback)
+            if (type(callback) ~= "function") then return end 
+            __setfenv__(callback, __env__.__codeblock_env__);
+            callback();
+        end
+        __env__.registerStopEvent = function(callback)
+            __env__.__gi_env__.RegisterEventCallBack(format("__code_block_stop__%s", __cur_co__), callback);
+        end
+
         code_func();
 
         registerStopEvent(function()
+            __env__.__gi_env__.TriggerEventCallBack(format("__code_block_stop__%s", __cur_co__));
             __env__.__gi_env__.__clean_coroutine_data__(__cur_co__);
         end)
     end
