@@ -1,6 +1,6 @@
 
 
-ShowGIBlocklyEditorPage();
+-- ShowGIBlocklyEditorPage();
 -- ShowCodeBlockBlocklyEditorPage();
 -- local GlobalScope = NewScope({
 --     LoopCount = 10,

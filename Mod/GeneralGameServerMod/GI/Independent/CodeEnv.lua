@@ -12,10 +12,7 @@ local lfs = commonlib.Files.GetLuaFileSystem();
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local EventEmitter = NPL.load("Mod/GeneralGameServerMod/CommonLib/EventEmitter.lua");
-local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
-local Event = NPL.load("../Game/Event/Event.lua", IsDevEnv);
-local TickEvent = NPL.load("../Game/Event/TickEvent.lua", IsDevEnv);
-local SceneContext = NPL.load("../Game/Event/SceneContext.lua", IsDevEnv);
+local SceneContext = NPL.load("./SceneContext.lua");
 
 local API = NPL.load("./API/API.lua", IsDevEnv);
 local SceneAPI = NPL.load("./API/SceneAPI.lua", IsDevEnv);
@@ -35,14 +32,11 @@ local CodeEnv = commonlib.inherit(nil, NPL.export());
 
 CodeEnv.lfs = lfs;
 CodeEnv.IsDevEnv = IsDevEnv;
-CodeEnv.Vue = Vue;
 CodeEnv.Debug = GGS.Debug;
 CodeEnv.DebugStack = DebugStack;
 
 CodeEnv.EventEmitter = EventEmitter;
 CodeEnv.SceneContext = SceneContext;
-CodeEnv.Event = Event;
-CodeEnv.TickEvent = TickEvent;
 
 function CodeEnv:ctor()
 	self._G = self;
