@@ -15,11 +15,12 @@ local Screen = commonlib.gettable("System.Windows.Screen");
 local ViewportManager = commonlib.gettable("System.Scene.Viewports.ViewportManager");
 local SceneViewport = commonlib.gettable("MyCompany.Aries.Game.Common.SceneViewport")
 
+local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
+
 local UIAPI = NPL.export();
 
 setmetatable(UIAPI, {__call = function(_, CodeEnv)
     local windows = CodeEnv.__windows__;
-    local Vue = CodeEnv.Vue;
     local Scope = Vue.Scope;
 
     CodeEnv.NewScope = function(val) return Scope:__new__(val) end 

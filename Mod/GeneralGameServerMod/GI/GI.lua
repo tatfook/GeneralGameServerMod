@@ -29,7 +29,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Common/Files.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Commands/CommandManager.lua");
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-local SceneContext = NPL.load("./Game/Event/SceneContext.lua");
+local SceneContext = NPL.load("./Independent/SceneContext.lua");
 local Independent = NPL.load("./Independent/Independent.lua");
 local SandBox = NPL.load("./Independent/SandBox.lua");
 

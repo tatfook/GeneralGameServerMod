@@ -1,23 +1,16 @@
 <template class="container">
     <div style="display: flex; height: 40px; justify-content: center; align-items: center;">
         <div class="button">场景</div>
-        <div class="button" onclick=ClickNPC>NPC</div>
+        <div class="button" onclick=ClickGIBlocklyEditor>GI图块编辑器</div>
     </div>
 </template>
 
 <script type="text/lua">
 
-local npc_wnd = nil;
-function ClickNPC()
-    if (npc_wnd) then return end 
-    
-    npc_wnd = ShowWindow(nil, {
-        url = "%gi%/Independent/UI/EntityList.html",
-        width = 500,
-        height = 600,
-    });
-end 
 
+function ClickGIBlocklyEditor()
+    ShowGIBlocklyEditorPage()
+end
 </script>
 
 <style>
@@ -32,7 +25,7 @@ end
     height: 30px;
     line-height: 30px;
     text-align: center;
-    width: 80px;
+    width: 100px;
 }
 
 .button:hover {

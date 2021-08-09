@@ -81,12 +81,12 @@ function Level:Edit()
     -- cmd("/mode game");
     cmd("/clearbag");
 
-    -- ShowWindow(nil, {
-    --     url = "%gi%/Independent/UI/Level.html",
-    --     height = 40,
-    --     width = 500,
-    --     alignment = "_ctt",
-    -- });
+    ShowWindow(nil, {
+        url = "%gi%/Independent/UI/Level.html",
+        height = 40,
+        width = 500,
+        alignment = "_ctt",
+    });
 end
 
 

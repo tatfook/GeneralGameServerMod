@@ -83,7 +83,7 @@ local function Emit(__code_env__, eventName, ...)
 end
 
 local function DefaultKeyPressCallBack(__code_env__, event)
-    if (__code_env__.SceneContext:IsActivate()) then
+    if (IsDevEnv) then
         if (event.ctrl_pressed and event.keyname == "DIK_Q") then
             __code_env__.__stop__();
         elseif (event.ctrl_pressed and event.keyname == "DIK_R") then

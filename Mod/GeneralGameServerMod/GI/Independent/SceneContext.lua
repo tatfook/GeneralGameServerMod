@@ -73,7 +73,7 @@ function SceneContext:HandleMouseKeyBoardEvent(event)
     elseif (eventType == "keyPressEvent") then
         self:TriggerEventCallBack(EventType.KEY_PRESS_EVENT, event);
     elseif (eventType == "keyReleaseEvent") then
-       self:TriggerEventCallBack(EventType.KEY_RELEASE_EVENT, event);
+        self:TriggerEventCallBack(EventType.KEY_RELEASE_EVENT, event);
     end
 end
 

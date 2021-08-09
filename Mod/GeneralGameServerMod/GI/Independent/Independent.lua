@@ -44,7 +44,7 @@ function Independent:Select(index, args)
 end
 
 function Independent:ctor()
-	-- self:SetShareMouseKeyBoard(true);
+	self:SetShareMouseKeyBoard(true);
 end
 
 -- 初始化函数 

@@ -3,7 +3,7 @@ local Level = require("Level");
 
 
 -- Level:LoadMap();
--- Level:Edit();
+Level:Edit();
 
 -- Level:UnloadMap();
 -- Level:Export();
