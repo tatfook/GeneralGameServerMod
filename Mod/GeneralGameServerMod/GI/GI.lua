@@ -39,6 +39,10 @@ GI:Property("Context", SceneContext);
 GI:Property("Independent", Independent);
 GI:Property("SandBox", SandBox);
 
+function GI:ctor()
+    CommonLib.SetAliasPath("gi", "Mod/GeneralGameServerMod/GI");
+end
+
 function GI:Init()
     -- 监听世界加载完成事件
     GameLogic:Connect("WorldLoaded", self, self.OnWorldLoaded, "UniqueConnection");

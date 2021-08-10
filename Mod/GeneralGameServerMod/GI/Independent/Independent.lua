@@ -9,7 +9,7 @@ local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independen
 Independent:Start("%gi%/Independent/Example/Empty.lua");
 ------------------------------------------------------------
 ]]
-local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Helper.lua", IsDevEnv);
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local CodeEnv = NPL.load("./CodeEnv.lua", IsDevEnv);
 
 local Independent = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
@@ -167,10 +167,14 @@ end
 function Independent:LoadFile(filename)
 	if (not filename or not self:IsRunning() or self:IsLoaded(filename)) then return end
 	
-	local text = Helper.ReadFile(filename);
-	if (not text or text == "") then return end
+	local filepath = CommonLib.GetFullPath(filename);
+	local text = CommonLib.GetFileText(filepath);
+	if (not text or text == "") then 
+		print("file not exist: ", filepath);
+		return 
+	end
 	
-	return self:LoadString(text, Helper.FormatFilename(filename));
+	return self:LoadString(text, filepath);
 end
 
 function Independent:Load(files)

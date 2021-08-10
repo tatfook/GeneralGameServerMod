@@ -19,6 +19,7 @@ Entity:Property("DestroyBeCollided", false, "IsDestroyBeCollided");   -- 被碰�
 Entity:Property("Biped", false, "IsBiped");                           -- 是否是两栖动物
 Entity:Property("GoodsChangeCallBack");                               -- 物品变化回调
 Entity:Property("ClickCallBack");                                     -- 物品变化回调
+Entity:Property("PositionChangeCallBack");                            -- 位置变化回调
 Entity:Property("Code");                                              -- 实体代码
 Entity:Property("CodeXmlText");                                       -- 实体代码的XML Text
 Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否是主玩家
@@ -123,8 +124,15 @@ function Entity:GetBlockIndex()
     return ConvertToBlockIndex(bx, by, bz);
 end
 
+function Entity:OnPositionChange()
+    local callback = self:GetPositionChangeCallBack();
+    if (type(callback) == "function") then callback() end
+end
+
 function Entity:UpdatePosition()
     if (self:IsFocus()) then SetCameraLookAtPos(self:GetPosition()) end
+    self:OnPositionChange();
+
     local new_block_index = self:GetBlockIndex();
     local old_block_index = self.__block_index__;
     if (old_block_index and __all_block_index_entity__[old_block_index]) then

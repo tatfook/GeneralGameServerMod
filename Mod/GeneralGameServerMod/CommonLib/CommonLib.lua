@@ -147,6 +147,23 @@ function CommonLib.GetWorldDirectory()
     return CommonLib.ToCanonicalFilePath(install_directory .. "/" .. world_directory);
 end
 
+-- 格式化文件名
+local AliasPathMap = {};
+function CommonLib.SetAliasPath(alias, path)
+    AliasPathMap[alias] = path;
+end
+
+function CommonLib.GetFullPath(filename)
+    local path = string.gsub(filename or "", "%%(.-)%%", function(alias)
+        local path = AliasPathMap[string.lower(alias)];
+        if (type(path) == "string") then return path end
+        if (type(path) == "function") then return path() end
+        return "";
+    end);
+    path = string.gsub(path, "^@", CommonLib.GetWorldDirectory());
+    return CommonLib.ToCanonicalFilePath(path);
+end
+
 -- 添加接口文件
 local PublicFileNo = 500;
 local PublicFiles = {};

@@ -109,10 +109,10 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.serialize = commonlib.serialize
     CodeEnv.unserialize = commonlib.LoadTableFromString;
     CodeEnv.inherit = commonlib.inherit;
-    CodeEnv.getfield = function(key) return commonlib.getfield(key, CodeEnv) end 
-    CodeEnv.setfield = function(key, val) return commonlib.setfield(key, val, CodeEnv) end 
-    CodeEnv.gettable = function(key) return commonlib.gettable(key, CodeEnv) end 
-    CodeEnv.settable = function(key, val) return commonlib.settable(key, val, CodeEnv) end 
+    CodeEnv.getfield = function(key) return commonlib.getfield(key, CodeEnv.__tables__) end 
+    CodeEnv.setfield = function(key, val) return commonlib.setfield(key, val, CodeEnv.__tables__) end 
+    CodeEnv.gettable = function(key) return commonlib.gettable(key, CodeEnv.__tables__) end 
+    CodeEnv.settable = function(key, val) return commonlib.settable(key, val, CodeEnv.__tables__) end 
     CodeEnv.deepcopy = commonlib.deepcopy
     CodeEnv.copy = commonlib.copy
     CodeEnv.partialcopy = commonlib.partialcopy
@@ -137,6 +137,7 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
         return __modules__[filename];
     end
 
+    -- 模块一个文件只能有一个
     CodeEnv.module = function(name, module)
         module = module or {};
         CodeEnv.__module__.__module__ = module;

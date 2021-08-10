@@ -43,6 +43,7 @@ function CodeEnv:ctor()
 	self.__env__ = self;          -- 快捷方式
 
 	self.__modules__ = {};        -- 模块
+	self.__tables__ = {};         -- 全局表集
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
@@ -130,6 +131,7 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	end 
 	self.__loadstring__ = function(...) return Independent:LoadString(...) end
 	self.__get_loop_tick_count__ = function() return Independent:GetLoopTickCount() end 
+	self.__is_share_mouse_keyboard_event__ = function() return Independent:IsShareMouseKeyBoard() end 
 end
 
 function CodeEnv:InstallCodeBlockAPI()

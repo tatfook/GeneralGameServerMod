@@ -104,9 +104,10 @@ local function DefaultKeyReleaseCallBack(__code_env__, event)
 end
 
 local function DefaultMousePressEventCallBack(__code_env__, event)
+    if (__code_env__.__is_share_mouse_keyboard_event__()) then return end 
     local result = __code_env__.MousePick();
     if (not result) then return end
-    if (result.entity) then result.entity:OnClick() end
+    if (result.entity and result.entity.OnMouseClick) then result.entity:OnMouseClick() end
 end
 
 
