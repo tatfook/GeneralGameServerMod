@@ -19,50 +19,44 @@ Goods:Property("Amount", 1);            -- 数量
 Goods:Property("Config");               -- 配置
 Goods:Property("Title");
 Goods:Property("Description");
-Goods:Property("CanTransfer", false, "IsCanTransfer"); -- 是否可以转移
+Goods:Property("Count", 1);             -- 初始数量
+Goods:Property("StackCount", 1);        -- 累加数量
+Goods:Property("CanStack", false, "IsCanStack");           -- 是否可加累加
+Goods:Property("DeadGoods", false, "IsDeadGoods");         -- 碰撞消失物品
+Goods:Property("CanTransfer", false, "IsCanTransfer");     -- 是否可以转移
 
 local __all_goods__ = {};
-
-local GoodsConfig = {
-    [0] = {
-        title = "默认物品",
-        description = "示例物品",
-    },
-    [1] = {
-        transfer = false,
-        title = "触碰死亡",
-        description = "拥有此物品的角色被触碰会死亡"
-    },
-    [2] = {
-        transfer = true,
-        title = "天书残卷",
-        description = "荣誉物品",
-    },
-    [3] = {
-        transfer = true,
-        title = "目标位置",
-        description = "位置物品",
-    },
-}
-
+local GSID = 0;
 function Goods:ctor()
     self.__name__ = nil;
 end
 
+--[[
+{
+    gsid = 1,          -- 物品ID 相当类别
+    name = "goods",    -- 物品标识符 方便获取尽量唯一 不唯一可能互相覆盖
+    title = "物品名称",
+    description = "物品描述",
+    dead = false,      -- 拥有物品实体触碰消失
+    transfer = trie,   -- 碰撞转移物品  默认为true
+    stack = true,      -- 同类物品(gsid相同) 是否可以累加  默认为true
+    count = 1,         -- 数量 默认1
+    stackCount = 1,    -- 累加数量
+}
+]]
 function Goods:Init(config)
     config = config or {};
-    
+    GSID = GSID + 1;
     self:SetConfig(config);
-    self:SetGoodsID(config.gsid or 0);
+    self:SetGoodsID(tostring(config.gsid or self));
     self:SetGoodsName(config.name or "goods");
-
-    local tpl = GoodsConfig[self:GetGoodsID()];
-    self:SetTitle(config.title or (tpl and tpl.title));
-    self:SetDescription(config.description or (tpl and tpl.description));
-
-    -- 默认可以转移
-    local transfer = if_else(config.transfer == nil, tpl and tpl.transfer, config.transfer);
-    if (transfer or transfer == nil) then self:SetCanTransfer(true) end
+    self:SetTitle(config.title);
+    self:SetDescription(config.description);
+    self:SetDeadGoods(config.dead);
+    self:SetCanStack(if_else(config.stack == nil or config.stack, true, false));
+    self:SetCanTransfer(if_else(config.transfer == nil or config.transfer, true, false)); 
+    self:SetCount(config.count or 1); 
+    self:SetStackCount(config.stackCount or self:GetCount());
 
     return self;
 end
@@ -83,10 +77,6 @@ end
 
 function Goods:GetGoodsByName(name)
     return type(name) == "table" and name or __all_goods__[name];
-end
-
-function Goods:IsDeadGoods()
-    return self:GetGoodsID() == 1;
 end
 
 function Goods:Activate(entity, triggerEntity)

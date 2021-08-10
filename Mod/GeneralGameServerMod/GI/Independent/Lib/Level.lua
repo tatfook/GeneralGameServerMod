@@ -13,12 +13,18 @@ local Level = inherit(ToolBase, module("Level"));
 
 Level:Property("LevelName", "level");  -- 关卡名称
 Level:Property("ToolBoxXmlText");      -- 定制工具栏文本
+Level:Property("WorkspaceXmlText");    -- 定制工作区文本
+Level:Property("PassLevelXmlText");    -- 通关工作区xmltext
+Level:Property("StatementBlockCount", 0);  -- 语句块的数量
+Level:Property("CodeEnv");             -- 代码环境
 
 function Level:ctor()
     -- 左下角
     self.__x__, self.__y__, self.__z__ = 10000, 8, 10000;
     -- 边长
     self.__dx__, self.__dy__, self.__dz__ = 128, 32, 128;
+    -- 代码环境
+    self:SetCodeEnv(setmetatable({}, {__index = _G}));
 end
 
 -- 重置地基
@@ -36,14 +42,24 @@ function Level:GetCenterPoint()
     return self.__x__ + math.floor(self.__dx__ / 2), self.__y__, self.__z__ + math.floor(self.__dz__ / 2);
 end
 
-function Level:LoadMap()
+function Level:LoadRegion()
     local cx, cy, cz = self:GetCenterPoint();
     cmd("/property UseAsyncLoadWorld false")
     cmd("/property AsyncChunkMode false");
     cmd(format("/loadregion %d %d %d %d", cx, cy, cz, math.max(self.__dx__, self.__dz__) + 10));
+    cmd("/property AsyncChunkMode true");
+    cmd("/property UseAsyncLoadWorld true");
+end
+
+function Level:LoadMap(level_name)
+    self:LoadRegion();
+
+    local cx, cy, cz = self:GetCenterPoint();
+    cmd("/property UseAsyncLoadWorld false")
+    cmd("/property AsyncChunkMode false");
 
     -- 加载地图内容
-    local level_name = self:GetLevelName();
+    level_name = level_name or self:GetLevelName();
     if (level_name and level_name ~= "") then cmd(format("/loadtemplate %d %d %d %s", cx, cy, cz, level_name)) end
 
     cmd("/property AsyncChunkMode true");
@@ -53,6 +69,8 @@ function Level:LoadMap()
 end
 
 function Level:UnloadMap()
+    self:LoadRegion();
+
     for x = self.__x__, self.__x__ + self.__dx__ do
         for z = self.__z__, self.__z__ + self.__dz__ do
             for y = self.__y__, self.__y__ + self.__dy__ do
@@ -62,9 +80,16 @@ function Level:UnloadMap()
     end
 end
 
+function Level:Import()
+    self:UnloadMap();
+    self:LoadMap();
+    self:LoadLevel();
+    self:ShowLevelBlocklyEditor();
+end
+
 function Level:Export()
-    Emit("UnloadLevel"); 
-    
+    self:UnloadLevel();
+
     local level_name = self:GetLevelName();
     if (not level_name or level_name == "") then level_name = "level" end 
     cmd(format("/select %d %d %d (%d %d %d)", self.__x__, self.__y__, self.__z__, self.__dx__, self.__dy__, self.__dz__));
@@ -72,22 +97,78 @@ function Level:Export()
     cmd("/select -clear");
 end
 
+function Level:LoadLevel()
+    Emit("LoadLevel");
+end
+
+function Level:UnloadLevel()
+    Emit("UnloadLevel");
+end
+
+function Level:ResetLevel()
+    Emit("ResetLevel");
+    self:UnloadLevel();
+    self:LoadLevel();
+end
+
+function Level:RunLevelCodeBefore()
+    Emit("RunLevelCodeBefore");
+    self:ResetLevel();
+end
+
+
+function Level:RunLevelCodeAfter()
+    Emit("RunLevelCodeAfter");
+end
+
+function Level:RunCode(code)
+    -- print("=======================Level:RunCode=======================");
+    -- 执行关卡代码前
+    self:RunLevelCodeBefore();
+
+    -- 执行关卡代码
+    local code_func, errormsg = loadstring(code, "loadstring:RunCode");
+    if (code_func) then
+        setfenv(code_func, self:GetCodeEnv());
+        code_func();
+    else
+        print("run code error:", code, errormsg);
+    end
+
+    -- 执行关卡代码后
+    self:RunLevelCodeAfter();
+end
+
 function Level:ShowLevelBlocklyEditor()
     ShowLevelBlocklyEditorPage({
-        ToolBoxXmlText = [[
-        ]]
-    })
+        ToolBoxXmlText = self:GetToolBoxXmlText(),
+        WorkspaceXmlText = self:GetWorkspaceXmlText(),
+        Run = function(code, statementBlockCount)
+            self:SetStatementBlockCount(statementBlockCount or 0);
+            self:RunCode(code);
+        end,
+        SetSpeed = function(speed)
+            self:SetSpeed(speed);
+        end
+    });
+end
+
+function Level:CloseLevelBlocklyEditor()
+    CloseLevelBlocklyEditorPage();
 end
 
 function Level:Edit()
-    local cx, cy, cz = self:GetCenterPoint();
+    -- local cx, cy, cz = self:GetCenterPoint();
     self:ResetFoundation();
-    cmd(format("/goto %s %s %s", cx, cy, cz));
+    
+    -- cmd(format("/goto %s %s %s", cx, cy, cz));
 
     -- cmd("/mode game");
     cmd("/clearbag");
 
-    ShowWindow(nil, {
+    ShowWindow({
+        __level__ = self;
+    }, {
         url = "%gi%/Independent/UI/Level.html",
         height = 40,
         width = 500,

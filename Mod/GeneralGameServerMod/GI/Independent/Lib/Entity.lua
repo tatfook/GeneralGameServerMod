@@ -24,6 +24,8 @@ Entity:Property("Code");                                              -- 实体�
 Entity:Property("CodeXmlText");                                       -- 实体代码的XML Text
 Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否是主玩家
 Entity:Property("Focus", false, "IsFocus");                           -- 是否聚焦
+Entity:Property("Speed", 1);                                          -- 移动速度
+Entity:Property("CanMotion", true, "IsCanMotion");                    -- 是否可以移动
 
 local NID = 0;
 function Entity:ctor()
@@ -148,15 +150,17 @@ function Entity:UpdatePosition()
 end
 
 function Entity:GetTickCountPerSecond()
-    return __get_loop_tick_count__(); -- 可以乘以倍数
+    return __get_loop_tick_count__() * self:GetSpeed(); -- 可以乘以倍数
 end
 
 function Entity:GetStepDistance()
-    return 0.06;                      -- 获取步长
+    return 0.06 * self:GetSpeed();                      -- 获取步长
 end
 
 -- 向前行走, duration 存在则通过时间计算步数, 否则通过单位步长计算步数
 function Entity:MoveForward(dist, duration)
+    if (not self:IsCanMotion()) then return end 
+
     local facing = self:GetFacing();
     local distance = (dist or 1) * __BlockSize__;
     local dx, dy, dz = math.cos(facing) * distance, 0, -math.sin(facing) * distance;
@@ -170,9 +174,18 @@ function Entity:MoveForward(dist, duration)
         self:SetPosition(x, y, z);
         stepCount = stepCount - 1;
         dx, dy, dz = dx - stepX, dy - stepY, dz - stepZ;
-        sleep();
+        if (self:IsCanMotion()) then
+            sleep();
+        else
+            break;
+        end
     end
+    
     self:SetAnimId(0);
+end
+
+function Entity:Stop()
+    self:SetCanMotion(false);
 end
 
 function Entity:IsDestory()
@@ -206,6 +219,14 @@ function Entity:Turn(degree)
     self:SetFacingDelta(degree * math.pi / 180);
 end
 
+function Entity:TurnLeft(degree)
+    return self:Turn(-degree);
+end
+
+function Entity:TurnRight(degree)
+    return self:Turn(degree);
+end
+
 function Entity:TurnTo(degree)
     self:SetFacing(mathlib.ToStandardAngle(degree * math.pi / 180));
 end
@@ -219,23 +240,22 @@ end
 
 function Entity:AddGoods(goods)
     -- 从全局物品中取
-    goods = GetGoodsByName(goods);
-    if (not goods) then return end
-    self.__goods__[goods] = goods;
+    local gsid = goods:GetGoodsID();
+    if (self.__goods__[gsid] and goods:IsCanStack()) then
+        goods:SetStackCount(self.__goods__[gids]:GetStackCount() + goods:GetStackCount());
+    end 
+    self.__goods__[gsid] = goods;
     self:OnGoodsChange();
 end
 
 function Entity:RemoveGoods(goods)
-    goods = self:GetGoodsByName(goods);
-    if (not goods) then return end
-    self.__goods__[goods] = nil;
+    self.__goods__[goods:GetGoodsID()] = nil;
     self:OnGoodsChange();
 end
 
 function Entity:HasGoods(goods)
-    goods = self:GetGoodsByName(goods);
-    if (not goods) then return false end
-    return self.__goods__[goods] ~= nil;
+    local gsid = type(goods) == "string" and goods or goods:GetGoodsID();
+    return self.__goods__[gsid] ~= nil;
 end
 
 function Entity:OnGoodsChange()
@@ -320,6 +340,8 @@ local __api_list__ = {
     "SetAnimId",
     "MoveForward",
     "Turn",
+    "TurnLeft",
+    "TurnRight",
     "TurnTo",
     "AddGoods",
     "RemoveGoods",

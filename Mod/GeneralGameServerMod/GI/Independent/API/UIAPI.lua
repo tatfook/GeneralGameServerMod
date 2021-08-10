@@ -68,11 +68,27 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         CodeEnv.RegisterEventCallBack("__scece_viewport_size_change__", ...);
     end
 
+    CodeEnv.RemoveSceneViewportSizeChange = function(...)
+        CodeEnv.RemoveEventCallBack("__scece_viewport_size_change__", ...);
+    end
+
+    CodeEnv.RegisterScreenSizeChange = function(...)
+        CodeEnv.RegisterEventCallBack("__screen_size_change__", ...);
+    end
+
+    CodeEnv.RemoveScreenSizeChange = function(...)
+        CodeEnv.RemoveEventCallBack("__screen_size_change__", ...);
+    end
+
     local function OnSceneViewportSizeChange()
         CodeEnv.TriggerEventCallBack("__scece_viewport_size_change__");
         for _, wnd in pairs(windows) do
             wnd:OnScreenSizeChanged();
         end
+    end
+
+    local function OnScreenSizeChanged()
+        CodeEnv.TriggerEventCallBack("__screen_size_change__");
     end
 
     local scene_viewport = ViewportManager:GetSceneViewport();
@@ -92,8 +108,10 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
     CodeEnv.GetSceneMarginBottom = function() return scene_viewport:GetMarginBottom() end
     
     scene_viewport:Connect("sizeChanged", nil, OnSceneViewportSizeChange, "UniqueConnection");
+    Screen:Connect("sizeChanged", nil, OnScreenSizeChanged, "UniqueConnection");
 
     CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function()
         scene_viewport:Disconnect("sizeChanged", nil, OnSceneViewportSizeChange, "UniqueConnection");
+        Screen:Disconnect("sizeChanged", nil, OnScreenSizeChanged, "UniqueConnection");
     end);
 end});

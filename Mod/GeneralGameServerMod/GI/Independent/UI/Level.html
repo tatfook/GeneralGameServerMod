@@ -1,6 +1,7 @@
 <template class="container">
     <div style="display: flex; height: 40px; justify-content: center; align-items: center;">
         <div class="button">场景</div>
+        <div class="button" onclick=ClickExportLevel>导出关卡</div>
         <div class="button" onclick=ClickGIBlocklyEditor>GI图块编辑器</div>
         <div class="button" onclick=ClickLevelBlocklyEditor>关卡图块编辑器</div>
     </div>
@@ -12,7 +13,11 @@ function ClickGIBlocklyEditor()
 end
 
 function ClickLevelBlocklyEditor()
-    ShowLevelBlocklyEditorPage();
+    __level__:ShowLevelBlocklyEditor();
+end
+
+function ClickExportLevel()
+    __level__:Export();
 end
 
 </script>

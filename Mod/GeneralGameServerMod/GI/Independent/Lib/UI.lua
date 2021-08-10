@@ -51,6 +51,7 @@ local function GetCodeBlockEditorWidth()
 end
 
 -- 场景外显示GI图块编辑
+local CodeBlockBlocklyEditorPage = nil;
 function ShowCodeBlockBlocklyEditorPage(G, params)
     params = params or {};
     params.url = params.url or "%gi%/Independent/UI/CodeBlockBlocklyEditor.html";
@@ -64,17 +65,30 @@ function ShowCodeBlockBlocklyEditorPage(G, params)
 
     G = G or {};
     local OnClose = G.OnClose;
+    local function OnScreenSizeChanged()
+        if (not CodeBlockBlocklyEditorPage) then return end
+        local width = GetCodeBlockEditorWidth();
+        CodeBlockBlocklyEditorPage:GetParams().width = width;
+        CodeBlockBlocklyEditorPage:OnScreenSizeChanged();
+        SetSceneMarginRight(width);
+    end
     G.OnClose = function()
         if (type(OnClose) == "function") then OnClose() end 
         SetSceneMarginRight(margin_right);
+        RemoveScreenSizeChange(OnScreenSizeChanged);
+        CodeBlockBlocklyEditorPage = nil;
     end
 
-    return ShowWindow(G, params);
+    RegisterScreenSizeChange(OnScreenSizeChanged);
+    CodeBlockBlocklyEditorPage = ShowWindow(G, params);
+    return CodeBlockBlocklyEditorPage;
 end
 
 -- 场景外显示关卡图块编辑
 local LevelBlocklyEditorPage = nil;
 function ShowLevelBlocklyEditorPage(G, params)
+    if (LevelBlocklyEditorPage) then return end
+
     params = params or {};
     params.url = params.url or "%gi%/Independent/UI/LevelBlocklyEditor.html";
     params.parent = GetRootUIObject();
@@ -87,35 +101,22 @@ function ShowLevelBlocklyEditorPage(G, params)
 
     G = G or {};
     local OnClose = G.OnClose;
+    local function OnScreenSizeChanged()
+        if (not LevelBlocklyEditorPage) then return end
+        local width = GetCodeBlockEditorWidth();
+        LevelBlocklyEditorPage:GetParams().width = width;
+        LevelBlocklyEditorPage:OnScreenSizeChanged();
+        SetSceneMarginRight(width);
+    end
     G.OnClose = function()
         if (type(OnClose) == "function") then OnClose() end 
         SetSceneMarginRight(margin_right);
+        RemoveScreenSizeChange(OnScreenSizeChanged);
+        LevelBlocklyEditorPage = nil;
     end
 
-    local function RunCode(code, G)
-        local code_func, errormsg = loadstring(code, "loadstring:RunCode");
-        if (errmsg) then return warn("invalid code", code) end
-    
-        G = G or {};
-        setmetatable(G, {__index = _G});
-        -- 设置代码环境
-        setfenv(code_func, G);
-    
-        code_func();
-    end
-
-    G.Run = function(code)
-        -- 执行关卡代码前
-        Emit("RunLevelCodeBefore");
-
-        -- 执行关卡代码
-        RunCode(code);
-
-        -- 执行关卡代码后
-        Emit("RunLevelCodeAfter");
-    end
-
-    local LevelBlocklyEditorPage = ShowWindow(G, params);
+    RegisterScreenSizeChange(OnScreenSizeChanged);
+    LevelBlocklyEditorPage = ShowWindow(G, params);
     return LevelBlocklyEditorPage;
 end
 

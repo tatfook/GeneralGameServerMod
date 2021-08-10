@@ -943,3 +943,15 @@ function Blockly:EmitUI(eventName, eventData)
     end);
 end
 
+function Blockly:GetStatementBlockCount()
+    local count = 0;
+    for _, block in ipairs(self.blocks) do
+        local nextBlock = block;
+        while (nextBlock) do
+            nextBlock = nextBlock:GetNextBlock();
+            count = count + 1;
+        end
+    end
+
+    return count;
+end

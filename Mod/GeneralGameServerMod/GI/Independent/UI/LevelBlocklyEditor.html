@@ -1,8 +1,8 @@
 <template class="container">
     <div class="header">
         <div style="height: 100%; width: 300px; display: flex; align-items: center;">
-            <div tooltip="编译并运行" class="btn" style="width:62px;height:30px;background:url(@/textures/code_32bits.png#152 64 62 30);" onclick=OnClickRun></div>
-            <div tooltip="重置" class="btn" style="width:62px;height:30px;background:url(@/textures/code_32bits.png#89 42 62 30);" onclick=OnClickRestart></div>
+            <div tooltip="编译并运行" class="btn" style="width:62px; height:30px; background:url(@/textures/code_32bits.png#152 64 62 30);" onclick=OnClickRun></div>
+            <div tooltip="设置倍速" class="btn" v-bind:style="format('margin-left: 4px; width:62px; height:30px; background:url(@/textures/beisu%d_32bits.png#8 6 122 56);', Speed)" onclick=OnClickSpeed></div>
         </div>
        
         <div style="height: 100%; display: flex; align-items: center;">
@@ -15,10 +15,14 @@
 <script type="text/lua">
 local BlocklyEl = nil;
 
+Speed = 1;
+
 -- 组件解析完成
 function OnReady()
     BlocklyEl = GetRef("blockly");
     BlocklyEl:LoadFromXmlNodeText(_G.WorkspaceXmlText);
+
+    Speed = _G.speed or 1;
 end
 
 local function GetCode()
@@ -27,8 +31,14 @@ local function GetCode()
     return rawcode;
 end
 
+function OnClickSpeed()
+    Speed = Speed + 1;
+	if (Speed > 5) then Speed = 1 end
+    if (type(rawget(_G, "SetSpeed")) == "function") then _G.SetSpeed(Speed) end
+end
+
 function OnClickRun()
-    if (type(rawget(_G, "Run")) == "function") then _G.Run(GetCode()) end
+    if (type(rawget(_G, "Run")) == "function") then _G.Run(GetCode(), BlocklyEl and BlocklyEl:GetStatementBlockCount()) end
 end
 
 function OnClickRestart()

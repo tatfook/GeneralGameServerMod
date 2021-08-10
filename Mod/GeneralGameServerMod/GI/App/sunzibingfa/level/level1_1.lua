@@ -7,49 +7,84 @@ Desc: 关卡模板文件
 use the lib:
 ]]
 
-local Level1_1 = inherit(require("%gi%/App/sunzibingfa/Level/Level.lua"), module());
+local Level = inherit(require("%gi%/App/sunzibingfa/Level/Level.lua"), module());
 
-function Level1_1:ctor()
+function Level:ctor()
     self:SetLevelName("_level1.1");
+
+    self:SetToolBoxXmlText([[
+<toolbox>
+    <category name="运动">
+        <block type="sunbin_MoveForward"/>
+        <block type="sunbin_TurnLeft"/>
+        <block type="sunbin_TurnRight"/>
+    </category>
+</toolbox>
+    ]]);
+
+    self:SetPassLevelXmlText([[
+    <Blockly offsetY="0" offsetX="0">
+        <Block leftUnitCount="141" type="sunbin_MoveForward" isInputShadowBlock="false" isDraggable="true" topUnitCount="84">
+            <Field label="10" name="dist" value="10"/>
+            <Block leftUnitCount="141" type="sunbin_TurnLeft" isInputShadowBlock="false" isDraggable="true" topUnitCount="96">
+                <Field label="90" name="angle" value="90"/>
+                <Block leftUnitCount="141" type="sunbin_MoveForward" isInputShadowBlock="false" isDraggable="true" topUnitCount="108">
+                    <Field label="10" name="dist" value="10"/>
+                    <Block leftUnitCount="141" type="sunbin_TurnRight" isInputShadowBlock="false" isDraggable="true" topUnitCount="120">
+                        <Field label="90" name="angle" value="90"/>
+                        <Block leftUnitCount="141" type="sunbin_MoveForward" isInputShadowBlock="false" isDraggable="true" topUnitCount="132">
+                            <Field label="10" name="dist" value="10"/>
+                        </Block>
+                    </Block>
+                </Block>
+            </Block>
+        </Block>
+        <ToolBox category="运动" offset="0"/>
+    </Blockly>
+    ]]);
 end
 
-function Level1_1:LoadLevel()
-    CreateSunBinEntity(10093,13,10064);
-    CreateTianShuCanJuanEntity(10083,13,10074);
-    CreateTargetPositionEntity(10083,12,10084);
+function Level:LoadLevel()
+    Level._super.LoadLevel(self);
+
+    self:CreateSunBinEntity(10093,12,10064);
+    self:CreateTianShuCanJuanEntity(10083,12,10074);
+    self:CreateGoalPointEntity(10083,12,10084);
+
+    -- 添加任务
+    self:AddPassLevelTask(self.GOODS_ID.GOAL_POINT, 1);
+    self:AddPassLevelExtraTask(self.GOODS_ID.TIAN_SHU_CAN_JUAN, 1);
+
     SetCamera(30, 75, -90);
-    SetCameraLookAtBlockPos(10093,13,10074);
+    SetCameraLookAtBlockPos(10093,12,10074);
 end
 
-function Level1_1:Edit()
-    Level1_1._super.Edit(self);
-    -- self:UnloadMap();
-    -- cmd("/loadtemplate 10064 12 10064 level1.1");
+function Level:RunLevelCodeBefore()
+    Level._super.RunLevelCodeBefore(self);
+    if (not self.__sunbin__) then return end
+    -- self.__sunbin__:SetSpeed(5);
+end
+
+--  代码执行完成
+function Level:RunLevelCodeAfter()
+    Level._super.RunLevelCodeAfter(self);
+    -- 可在此自定义通关逻辑  默认到达目标点
+end
+
+-- 通关逻辑
+function Level:PassLevel()
+    Level._super.PassLevel(self);
+end
+
+-- 编辑旧关卡
+function Level:EditOld()
+    Level._super:EditOld("level1");
+end
+
+function Level:Edit()
+    Level._super.Edit(self);
     self:LoadLevel();
     cmd(format("/goto %s %s %s", 10090,13,10064));
 end
 
-Level1_1:InitSingleton();
-
--- -- 监听关卡加载事件,  完成关卡内容设置
--- On("LoadLevel", function()
--- end);
-
--- -- 监听关卡卸载事件,  移除关卡相关资源
--- On("UnloadLevel", function()
--- end)
-
--- -- 执行关卡代码前, 
--- On("RunLevelCodeBefore", function()
--- end)
-
--- -- 执行关卡代码后
--- On("RunLevelCodeAfter", function()
--- end)
-
--- -- 重置关卡
--- On("ResetLevel", function()
--- end);
-
--- -- 触发关卡重置
--- Emit("ResetLevel");
+Level:InitSingleton();
