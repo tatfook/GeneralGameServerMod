@@ -65,6 +65,8 @@ function CodeEnv:InstallLuaAPI()
 	self.__coroutine_yield__ = coroutine.yield;
 	self.__coroutine_status__ = coroutine.status;
 	self.__get_coroutine_data__ = function(__co__)
+		if (self.__is_touch_device__()) then return {__windows__ = {}, __entities__ = {}, __event_callback__ = {}, __clean_callback__ = {}} end 
+
 		__co__ = __co__ or self.__coroutine_running__();
 
 		local __data__ = self.__coroutines__[__co__] or {};
@@ -77,16 +79,22 @@ function CodeEnv:InstallLuaAPI()
 	end
 
 	self.__add_clean_coroutine_data_callback__ = function(callback)
+		if (self.__is_touch_device__()) then return end 
+		
 		if (type(callback) ~= "function") then return end
 		self.__clean_callback__[callback] = callback;
 	end
 
 	self.__remove_clean_coroutine_data_callback__ = function(callback)
+		if (self.__is_touch_device__()) then return end 
+		
 		if (type(callback) ~= "function") then return end
 		self.__clean_callback__[callback] = nil;
 	end
 
 	self.__clean_coroutine_data__ = function(__co__)
+		if (self.__is_touch_device__()) then return end 
+
 		self.TriggerEventCallBack("__clean_coroutine_data__");
 
 		local __data__ = self.__get_coroutine_data__(__co__);
@@ -111,6 +119,8 @@ function CodeEnv:InstallLuaAPI()
 			end
 		end
 	end
+
+	self.__is_touch_device__ = function() return System.os.IsTouchMode() end 
 end
 
 function CodeEnv:InstallIndependentAPI(Independent)
