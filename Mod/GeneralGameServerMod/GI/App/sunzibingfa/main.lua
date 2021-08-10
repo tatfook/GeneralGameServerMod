@@ -7,16 +7,14 @@ use the lib:
 ]]
 
 -- require("@/npc.lua");
-require("%gi%/App/sunzibingfa/npc.lua");
-
-local Level = require("Level");
+local Level = require("%gi%/App/sunzibingfa/Level/Level.lua");
+local Level1_1 = require("%gi%/App/sunzibingfa/Level/Level1_1.lua")
 
 Emit("UnloadLevel");
-Level:SetLevelName("_level2")
 
 -- Level:LoadMap();
-Level:UnloadMap();
-Level:Edit();
+-- Level:UnloadMap();
+Level1_1:Edit();
 
 -- cmd(format("/goto %s %s %s", 10093,11,10069));
 -- Level:Export();

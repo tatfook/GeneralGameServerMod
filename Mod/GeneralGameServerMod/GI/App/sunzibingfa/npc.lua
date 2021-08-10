@@ -52,7 +52,9 @@ function CreateTargetPositionEntity(bx, by, bz)
     local target_position = CreateEntity({
         bx = bx, by = by, bz = bz,
         name = "target_position",
-        assetfile = "@/blocktemplates/goalpoint.bmax",
+        -- assetfile = "@/blocktemplates/goalpoint.bmax",
+        assetfile = "character/CC/05effect/fireglowingcircle.x",
     });
     target_position:AddGoods(CreateGoods({name = "target_position", title = "目标位置", description = "角色到达指定地点获得该物品"}));
+    return target_position;
 end

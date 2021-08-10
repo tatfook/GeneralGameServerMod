@@ -72,7 +72,6 @@ function Entity:Init(opts)
     self:SetName(opts.name);
 
     if (opts.opacity) then self:SetOpacity(opts.opacity) end
-    
     -- 获取主玩家位置
     local bx, by, bz = GetPlayer():GetBlockPos();
     self:SetBlockPos(opts.bx or bx or 0, opts.by or by or 0, opts.bz or bz or 0);
