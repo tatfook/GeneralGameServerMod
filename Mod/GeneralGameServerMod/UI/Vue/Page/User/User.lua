@@ -304,6 +304,9 @@ function LoadUserInfo()
 		        end
 	        end
         end
+
+        -- avtarIcons DS
+        -- { { icon="Texture/Aries/Creator/keepwork/Avatar/icons/mouth_boy_07_01_32bits.png", id="89001", name="pet" }
         GlobalScope:Set("AvatarIcons", avtarIcons);
 
         -- 获取用户荣誉
@@ -544,6 +547,7 @@ _G.GetAvatarItems = function(category)
     local skin = GetGlobalScope():Get("MainSkin");
     local items = CustomCharItems:GetModelItems(asset, category, skin, true);
     GlobalScope:Set("AvatarItems", items);
+    -- commonlib.echo("info of items");
     -- commonlib.echo(items, true);
     return items;
 end

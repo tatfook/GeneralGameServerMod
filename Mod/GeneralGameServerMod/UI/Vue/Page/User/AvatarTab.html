@@ -3,9 +3,7 @@
         <div onclick="SelectTab('suit')" v-bind:class="GetClass('suit')">
             <div class="tab-content" style="background: url(Texture/Aries/Creator/keepwork/Avatar/zi_taozhuang1_27X14_32bits.png#0 0 28 14);"></div>
         </div>
-        <div onclick="SelectTab('head')" v-bind:class="GetClass('head')">
-            <div class="tab-content" style="background: url(Texture/Aries/Creator/keepwork/Avatar/zi_toubu1_28X14_32bits.png#0 0 28 14);"></div>
-        </div>
+        
         <div onclick="SelectTab('hair')" v-bind:class="GetClass('hair')">
             <div class="tab-content" style="background: url(Texture/Aries/Creator/keepwork/Avatar/zi_toushi2_28X14_32bits.png#0 0 28 14);"></div>
         </div>
@@ -26,6 +24,9 @@
         </div>
         <div onclick="SelectTab('back')" v-bind:class="GetClass('back')">
             <div class="tab-content" style="background: url(Texture/Aries/Creator/keepwork/Avatar/zi_beibu2_28X14_32bits.png#0 0 28 14);"></div>
+        </div>
+        <div onclick="SelectTab('pet')" v-bind:class="GetClass('pet')">
+            <div class="tab-content" style="background: url(Texture/Aries/Creator/keepwork/Avatar/zi_zuoqi2_28X14_32bits.png#0 0 28 14);"></div>
         </div>
     </div>
 
@@ -66,7 +67,7 @@ function GetClass(index)
 end
 
 GetGlobalScope():Watch("isAuthUser", function(val)
-    SelectTab(val and "suit" or "head");
+    SelectTab(val and "suit");
     if AvatarDefaulIndex then
         SelectTab(AvatarDefaulIndex)
         AvatarDefaulIndex = nil
