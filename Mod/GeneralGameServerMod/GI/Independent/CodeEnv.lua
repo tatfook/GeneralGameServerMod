@@ -142,6 +142,8 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	self.__loadstring__ = function(...) return Independent:LoadString(...) end
 	self.__get_loop_tick_count__ = function() return Independent:GetLoopTickCount() end 
 	self.__is_share_mouse_keyboard_event__ = function() return Independent:IsShareMouseKeyBoard() end 
+	self.__get_tick_count__ = function() return Independent:GetTickCount() end  
+	self.__get_timestamp__ = function() return math.floor(Independent:GetTickCount() * 1000 / Independent:GetLoopTickCount()) end   -- ms
 end
 
 function CodeEnv:InstallCodeBlockAPI()

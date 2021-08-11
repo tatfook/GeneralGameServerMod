@@ -3,6 +3,7 @@
         <div style="height: 100%; width: 300px; display: flex; align-items: center;">
             <div tooltip="编译并运行" class="btn" style="width:62px; height:30px; background:url(@/textures/code_32bits.png#152 64 62 30);" onclick=OnClickRun></div>
             <div tooltip="设置倍速" class="btn" v-bind:style="format('margin-left: 4px; width:62px; height:30px; background:url(@/textures/beisu%d_32bits.png#8 6 122 56);', Speed)" onclick=OnClickSpeed></div>
+            <div class="btn" style="margin-left: 4px; height: 30px; line-height: 30px; width: 100px;" onclick=OnClickImportPassLevelXmlText>导入通过代码</div>
         </div>
        
         <div style="height: 100%; display: flex; align-items: center;">
@@ -22,7 +23,7 @@ function OnReady()
     BlocklyEl = GetRef("blockly");
     BlocklyEl:LoadFromXmlNodeText(_G.WorkspaceXmlText);
 
-    Speed = _G.speed or 1;
+    Speed = _G.Speed or 1;
 end
 
 local function GetCode()
@@ -45,6 +46,10 @@ function OnClickRestart()
     if (type(rawget(_G, "restart")) == "function") then _G.restart() end
 end
 
+function OnClickImportPassLevelXmlText()
+    if (not _G.PassLevelXmlText or not BlocklyEl) then return end
+    BlocklyEl:LoadFromXmlNodeText(_G.PassLevelXmlText);
+end
 
 </script>
 

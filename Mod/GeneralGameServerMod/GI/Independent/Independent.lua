@@ -21,6 +21,7 @@ Independent:Property("LoopTickCount", 50);                    -- 主循环频率
 Independent:Property("ErrorExit", true, "IsErrorExit");       -- 出错退出
 Independent:Property("ShareMouseKeyBoard", false, "IsShareMouseKeyBoard");            -- 是否共享鼠标键盘事件
 Independent:Property("MainFileName");                         -- 入口文件
+Independent:Property("TickCount", 0);                         -- tick 次数
 
 local coroutine_running = coroutine.running;
 local coroutine_status = coroutine.status;
@@ -253,6 +254,7 @@ function Independent:Start(filename)
 
 	-- 设置运行标识
 	self:SetRunning(true);
+	self:SetTickCount(0);
 	self:SetMainFileName(filename);
 
 	-- 激活上下文环境
@@ -284,6 +286,8 @@ end
 function Independent:Tick()
 	local CodeEnv = self:GetCodeEnv();
 	if (not CodeEnv) then return end
+	-- 虚拟时间
+	self:SetTickCount(self:GetTickCount() + 1);
 
 	-- 触发定时回调
 	self:CallEventCallBack(CodeEnv.EventType.LOOP);

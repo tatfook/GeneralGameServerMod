@@ -71,11 +71,6 @@ function Level:RunLevelCodeAfter()
     -- 可在此自定义通关逻辑  默认到达目标点
 end
 
--- 通关逻辑
-function Level:PassLevel()
-    Level._super.PassLevel(self);
-end
-
 -- 编辑旧关卡
 function Level:EditOld()
     Level._super:EditOld("level1");

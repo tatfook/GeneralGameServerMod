@@ -47,8 +47,6 @@ function Level:LoadLevel()
     -- 调整场景
     SetCamera(30, 75, -90);
     SetCameraLookAtBlockPos(10090,12,10077);
-
-
 end
 
 -- 代码执行前 默认完成场景重置操作
@@ -60,11 +58,6 @@ end
 function Level:RunLevelCodeAfter()
     Level._super.RunLevelCodeAfter(self);
     -- 可在此自定义通关逻辑  默认到达目标点
-end
-
--- 通关逻辑 
-function Level:PassLevel()
-    Level._super.PassLevel(self);
 end
 
 -- 编辑旧关卡

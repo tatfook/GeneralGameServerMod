@@ -58,25 +58,10 @@ function Level:LoadLevel()
     -- 添加任务
     self:AddPassLevelTask(self.GOODS_ID.GOAL_POINT, 1);
     self:AddPassLevelExtraTask(self.GOODS_ID.TIAN_SHU_CAN_JUAN, 1);
+    self:AddPassLevelExtraTask(self.GOODS_ID.CODE_LINE, 5);
 
     SetCamera(30, 75, -90);
     SetCameraLookAtBlockPos(10088,11,10074);
-end
-
--- 代码执行前 默认完成场景重置操作
-function Level:RunLevelCodeBefore()
-    Level._super.RunLevelCodeBefore(self);
-end
-
---  代码执行完成 默认完成检测主玩家是否到达指定地点
-function Level:RunLevelCodeAfter()
-    Level._super.RunLevelCodeAfter(self);
-    -- 可在此自定义通关逻辑  默认到达目标点
-end
-
--- 通关逻辑 
-function Level:PassLevel()
-    Level._super.PassLevel(self);
 end
 
 -- 编辑旧关卡

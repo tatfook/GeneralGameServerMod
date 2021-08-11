@@ -21,3 +21,7 @@
 SetTimeout(1000, function()
     print("SetTimeout");
 end)
+
+SetInterval(1000, function()
+    print("SetInterval")
+end)

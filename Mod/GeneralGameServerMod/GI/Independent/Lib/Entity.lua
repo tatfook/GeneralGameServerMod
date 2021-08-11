@@ -20,6 +20,7 @@ Entity:Property("Biped", false, "IsBiped");                           -- 是否�
 Entity:Property("GoodsChangeCallBack");                               -- 物品变化回调
 Entity:Property("ClickCallBack");                                     -- 物品变化回调
 Entity:Property("PositionChangeCallBack");                            -- 位置变化回调
+Entity:Property("DestroyCallBack");                                   -- 消失回调
 Entity:Property("Code");                                              -- 实体代码
 Entity:Property("CodeXmlText");                                       -- 实体代码的XML Text
 Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否是主玩家
@@ -36,7 +37,6 @@ function Entity:ctor()
     self.__name__ = self.__key__;
     __all_entity__[self.__key__] = self;
     __all_name_entity__[self.__name__] = self;
-
 end
 
 function Entity:FrameMoveRidding()
@@ -195,6 +195,10 @@ end
 function Entity:Destroy()
     if (self.__is_destory__) then return end
     self.__is_destory__ = true;
+
+    local callback = self:GetDestroyCallBack();
+    if (type(callback) == "function") then callback() end
+
     __all_entity__[self.__key__] = nil;
     if (self.__name__) then __all_name_entity__[self.__name__] = nil end
 
@@ -217,6 +221,12 @@ end
 
 function Entity:Turn(degree)
     self:SetFacingDelta(degree * math.pi / 180);
+end
+
+function Entity:TurnEntity(entity)
+    local tx, ty, tz = entity:GetPosition();
+    local x, y, z = self:GetPosition();
+    self:SetFacing(GetFacingFromOffset(tx - x, ty - y, tz - z));
 end
 
 function Entity:TurnLeft(degree)
@@ -242,7 +252,7 @@ function Entity:AddGoods(goods)
     -- 从全局物品中取
     local gsid = goods:GetGoodsID();
     if (self.__goods__[gsid] and goods:IsCanStack()) then
-        goods:SetStackCount(self.__goods__[gids]:GetStackCount() + goods:GetStackCount());
+        goods:SetStackCount(self.__goods__[gsid]:GetStackCount() + goods:GetStackCount());
     end 
     self.__goods__[gsid] = goods;
     self:OnGoodsChange();

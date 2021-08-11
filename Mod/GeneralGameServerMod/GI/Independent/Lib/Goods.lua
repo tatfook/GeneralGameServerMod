@@ -22,7 +22,8 @@ Goods:Property("Description");
 Goods:Property("Count", 1);             -- 初始数量
 Goods:Property("StackCount", 1);        -- 累加数量
 Goods:Property("CanStack", false, "IsCanStack");           -- 是否可加累加
-Goods:Property("DeadGoods", false, "IsDeadGoods");         -- 碰撞消失物品
+Goods:Property("DeadGoods", false, "IsDeadGoods");         -- 被碰撞者消失物品
+Goods:Property("DeadPeerGoods", false, "IsDeadPeerGoods"); -- 碰撞者消失物品
 Goods:Property("CanTransfer", false, "IsCanTransfer");     -- 是否可以转移
 
 local __all_goods__ = {};
@@ -38,6 +39,7 @@ end
     title = "物品名称",
     description = "物品描述",
     dead = false,      -- 拥有物品实体触碰消失
+    dead_peer = false, -- 碰撞者消失
     transfer = trie,   -- 碰撞转移物品  默认为true
     stack = true,      -- 同类物品(gsid相同) 是否可以累加  默认为true
     count = 1,         -- 数量 默认1
@@ -53,6 +55,7 @@ function Goods:Init(config)
     self:SetTitle(config.title);
     self:SetDescription(config.description);
     self:SetDeadGoods(config.dead);
+    self:SetDeadPeerGoods(config.dead_peer);
     self:SetCanStack(if_else(config.stack == nil or config.stack, true, false));
     self:SetCanTransfer(if_else(config.transfer == nil or config.transfer, true, false)); 
     self:SetCount(config.count or 1); 
@@ -88,6 +91,7 @@ function Goods:Activate(entity, triggerEntity)
     end
 
     if (self:IsDeadGoods()) then entity:Destroy() end
+    if (self:IsDeadPeerGoods()) then triggerEntity:Destroy() end 
 end
 
 local __api_list__ = {

@@ -17,6 +17,7 @@ Level:Property("WorkspaceXmlText");    -- 定制工作区文本
 Level:Property("PassLevelXmlText");    -- 通关工作区xmltext
 Level:Property("StatementBlockCount", 0);  -- 语句块的数量
 Level:Property("CodeEnv");             -- 代码环境
+Level:Property("Speed", IsDevEnv and 5 or 1);            -- 倍速
 
 function Level:ctor()
     -- 左下角
@@ -141,8 +142,10 @@ end
 
 function Level:ShowLevelBlocklyEditor()
     ShowLevelBlocklyEditorPage({
+        Speed = self:GetSpeed(),
         ToolBoxXmlText = self:GetToolBoxXmlText(),
         WorkspaceXmlText = self:GetWorkspaceXmlText(),
+        PassLevelXmlText = self:GetPassLevelXmlText(),
         Run = function(code, statementBlockCount)
             self:SetStatementBlockCount(statementBlockCount or 0);
             self:RunCode(code);

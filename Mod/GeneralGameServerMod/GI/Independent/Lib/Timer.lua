@@ -18,27 +18,30 @@ function Timer:Start(delay, interval, callback)
     if (type(callback) ~= "function" or self.TimerCallBack) then return self end
     if (type(delay) ~= "number" and type(interval) ~= "number") then return self end
 
-    local lastTime = GetTime();
+    local delay_tick_count = delay and (math.floor(delay * __get_loop_tick_count__() / 1000));
+    local interval_tick_count = interval and (math.floor(interval * __get_loop_tick_count__() / 1000));
+    local last_tick_count = __get_tick_count__();
+
     self.TimerCallBack = function()
-        local curTime = GetTime();
-        local time = curTime - lastTime;
+        local cur_tick_count = __get_tick_count__();
+        local tick_count = cur_tick_count - last_tick_count;
 
         -- timeout
-        if (delay and time >= delay) then
-            lastTime = curTime;
-            delay = nil; -- 清掉, 防止再次执行
+        if (delay_tick_count and tick_count >= delay_tick_count) then
+            last_tick_count = cur_tick_count;
+            delay_tick_count = nil; -- 清掉, 防止再次执行
             callback(self);
             return ;
         end
 
         -- interval
-        if (interval and time >= interval) then
-            lastTime = curTime;
+        if (interval_tick_count and tick_count >= interval_tick_count) then
+            last_tick_count = cur_tick_count;
             callback(self);
             return;
         end
 
-        if (not delay and not interval) then
+        if (not delay_tick_count and not interval_tick_count) then
             self:Stop();
         end
     end

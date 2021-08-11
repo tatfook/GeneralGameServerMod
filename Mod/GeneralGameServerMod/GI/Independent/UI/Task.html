@@ -1,0 +1,56 @@
+<template class="container">
+    <div class="task-title">目标: {{state}}</div>
+    <div v-for="taskitem in taskitem_list">
+        <div class="taskitem" style="color: #000000; font-weight: bold;">{{format("%s : %s / %s", taskitem.title, taskitem.count, taskitem.goalcount)}}</div>
+    </div>
+    <div v-if="extra_taskitem_list and (#extra_taskitem_list) > 0"  style="margin-top: 10px;">
+        <div class="extra-task-title">额外目标</div>
+        <div v-for="taskitem in extra_taskitem_list">
+            <div class="taskitem">{{format("%s : %s / %s", taskitem.title, taskitem.count, taskitem.goalcount)}}</div>
+        </div>    
+    </div>
+</template>
+
+<script type="text/lua">
+</script>
+
+<style scoped=true>
+
+.container {
+    width:200px;
+    height: 100%;
+    color:#000000;
+    font-size:18px;
+    background-color: rgb(231,208,184);
+    overflow-y: auto;
+    /* background: url(@/textures/target.png#0 0 241 222:15 40 10 10); */
+}
+
+.task-title {
+    font-size:22px; 
+    color:#008000; 
+    height: 40px; 
+    line-height: 40px; 
+    text-align: center;
+    background-color: rgb(255,218,156);
+    border-bottom: 2px solid rgb(65,61,34);
+}
+
+.taskitem {
+    margin-top: 5px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 18px;
+    padding-left: 4px;
+    color: #808080;
+}
+
+.extra-task-title {
+    border-bottom: 2px solid #808080;
+    text-align: center;
+    height: 36px;
+    line-height: 36px;
+    font-size: 20px;
+    color: #808080;
+}
+</style>
