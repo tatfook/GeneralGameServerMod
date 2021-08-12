@@ -43,7 +43,7 @@ function Level:ctor()
     self.__all_entity__ = {};
     self.__all_timer__ = {};
     self.__task__ = Task:new();
-    self:SetPassed(false);
+    self:SetPassLevelState(0);
 end
 
 function Level:AddPassLevelTask(gsid, count, title, description)
@@ -212,7 +212,9 @@ function Level:CreateGoalPointEntity(bx, by, bz)
         bx = bx, by = by, bz = bz,
         name = "goalpoint",
         -- assetfile = "@/blocktemplates/goalpoint.bmax",
-        assetfile = "character/CC/05effect/fireglowingcircle.x",
+        -- assetfile = "character/CC/05effect/fireglowingcircle.x", 
+        assetfile = "character/v5/09effect/TransmittalDoor/TransmittalDoor.x",  
+
     });
     self.__all_entity__["goalpoint"] = goalpoint;
     goalpoint:AddGoods(CreateGoods({gsid = self.GOODS_ID.GOAL_POINT, title = "目标位置", description = "角色到达指定地点获得该物品", transfer = true}));

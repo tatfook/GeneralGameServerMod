@@ -566,7 +566,7 @@ function Canvas3D:SetMaskTexture(textureFile)
 	end
 end
 
-function Canvas3D:mousePressEvent(e)
+function Canvas3D:OnMouseDown(event)
 	if (not self.IsInteractive) then return end
 	local screenX, screenY = event:GetScreenXY();
     local relX, relY = self:GetRelPoint(screenX, screenY);
@@ -575,14 +575,14 @@ function Canvas3D:mousePressEvent(e)
 	self.IsMouseDown = true;
 	self.lastMousePos.x = relX;
 	self.lastMousePos.y = relY;
-
-	if (e:IsMiddleButton()) then
-		self.IsMidMouseDown = true;
-	end
-	e:Accept();
+	self:CaptureMouse();
+	-- if (event:IsMiddleButton()) then
+	-- 	self.IsMidMouseDown = true;
+	-- end
+	event:Accept();
 end
 
-function Canvas3D:mouseMoveEvent(e)
+function Canvas3D:OnMouseMove(event)
 	if (not self.IsInteractive) then return end
 	local screenX, screenY = event:GetScreenXY();
     local relX, relY = self:GetRelPoint(screenX, screenY);
@@ -629,18 +629,17 @@ function Canvas3D:mouseMoveEvent(e)
 				end
 			end
 		end
-		e:Accept();
+		event:Accept();
 	end
 
 	self.lastMousePos.x = relX;
 	self.lastMousePos.y = relY;
 end
 
-function Canvas3D:mouseReleaseEvent(e)
+function Canvas3D:OnMouseUp(event)
 	if (not self.IsInteractive) then return end
-	if (not self.IsMouseDown) then
-		return;
-	end
+	self:ReleaseMouseCapture();
+	if (not self.IsMouseDown) then return end
 	self.IsMouseDown = false;
 	self.IsMidMouseDown = false;
 	local dragDist = (math.abs(self.lastMousePos.x-self.lastMouseDown.x) + math.abs(self.lastMousePos.y-self.lastMouseDown.y));
@@ -651,10 +650,10 @@ function Canvas3D:mouseReleaseEvent(e)
     local relX, relY = self:GetRelPoint(screenX, screenY);
 	self.lastMousePos.x = relX;
 	self.lastMousePos.y = relY;
-	e:Accept();
+	event:Accept();
 end
 
-function Canvas3D:mouseWheelEvent(e)
+function Canvas3D:mouseWheelEvent(event)
 	if (not self.IsInteractive) then return end
 	if (self.resourceName == nil) then
 		return;
@@ -685,14 +684,6 @@ function Canvas3D:mouseWheelEvent(e)
 		-- 2D image
 		--
 	end	
-end
-
-function Canvas3D:mouseEnterEvent(mouse_event)
-	if (not self.IsInteractive) then return end
-end
-
-function Canvas3D:mouseLeaveEvent(mouse_event)
-	if (not self.IsInteractive) then return end
 end
 
 -- manually draw the miniscene graph, in case active rendering is disabled. 

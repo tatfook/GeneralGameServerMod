@@ -1,7 +1,7 @@
 <template style="display: inline-block;">
     <div style="margin-top: 11px; margin-left: 9px; height:569px; width: 339px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwukuang_339X529_32bits.png#0 0 339 529:50 300 50 50);">
         <div style="height: 298px; position: relative;">
-             <div style="margin-top: 4px;">
+            <div style="margin-top: 4px;">
                 <div class="center">
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <div style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang_50X50_32bits.png#0 0 50 50);">
@@ -112,7 +112,9 @@
                 </div>
             </div>
             <div class="center" style="margin-top: 0px;">
-                <canvas3d v-bind:assetfile="MainAsset" v-bind:skin="MainSkin" v-bind:scale="scale" miniscenegraphname="AvatarMyselfTabCharacter" style="width:256px; height:256px;" IsInteractive="false" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></canvas3d>
+                <div style="position: absolute; top: 20px; left: 70px; width: 200px; height: 200px; z-index: 10;">
+                    <canvas3d v-bind:assetfile="MainAsset" v-bind:skin="MainSkin" v-bind:scale="scale" miniscenegraphname="AvatarMyselfTabCharacter" style="margin-left: -30px; margin-top: -20px; width:256px; height:256px;" IsInteractive="true" LookAtHeight=0.9 CameraObjectDist=5 RenderTargetSize=256></canvas3d>
+                </div>
             </div>
             <!-- <div v-if="isAuthUser" v-on:click="ClickPrevAsset" style="position: absolute; left: 70px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanzuo_12X21_32bits.png#0 0 12 21);"></div> -->
             <!-- <div v-if="isAuthUser" v-on:click="ClickNextAsset" style="position: absolute; left: 260px; top: 160px; height:21px; width: 12px; background:url(Texture/Aries/Creator/keepwork/ggs/user/btn_qiehuanyou_12X21_32bits.png#0 0 12 21);"></div> -->

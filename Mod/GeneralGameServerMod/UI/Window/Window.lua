@@ -177,7 +177,6 @@ end
 -- 窗口刷新
 function Window:Refresh()
 end
-
 -- 窗口显示
 function Window.Show(self, params)
     if (not self or not self.isa or self == Window or not self:isa(Window)) then 
@@ -239,7 +238,6 @@ function Window:Create3DNativeWindow()
     native_window:SetScript("ondraw", function()
         self:HandleRender();
     end);
-   
     local obj = self:GetParams().__3d_object__;
     if (obj) then
         obj:ShowHeadOnDisplay(true, 0);
