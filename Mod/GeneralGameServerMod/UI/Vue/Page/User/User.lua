@@ -416,6 +416,12 @@ _G.GetAllAssets = function()
     -- Log(userinfo)
 
     local function IsOwned(item)
+
+        -- 临时修复, 用户默认拥有以下id的两件套装，这个bug可能属于后端同步用户套装数据的问题
+        if(item.id == 5056 or item.id == 5057) then
+            return true
+        end
+
         local vip_enabled = (item.extra or {}).vip_enabled;
         if (isVip and vip_enabled) then return true end
         for _, asset in ipairs(userAssets) do
@@ -457,7 +463,8 @@ _G.GetAllAssets = function()
     
     GlobalScope:Set("AllAssets", assets);
 
-    -- commonlib.echo(assets, true);
+    commonlib.echo("AllAssets");
+    commonlib.echo(assets, true);
 
     return assets;
 end
@@ -547,8 +554,8 @@ _G.GetAvatarItems = function(category)
     local skin = GetGlobalScope():Get("MainSkin");
     local items = CustomCharItems:GetModelItems(asset, category, skin, true);
     GlobalScope:Set("AvatarItems", items);
-    -- commonlib.echo("info of items");
-    -- commonlib.echo(items, true);
+    commonlib.echo("info of items");
+    commonlib.echo(items, true);
     return items;
 end
 
