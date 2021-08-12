@@ -34,6 +34,7 @@ local Independent = NPL.load("./Independent/Independent.lua");
 local SandBox = NPL.load("./Independent/SandBox.lua");
 
 local GI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
+-- local GI = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), {});
 
 GI:Property("Context", SceneContext);
 GI:Property("Independent", Independent);

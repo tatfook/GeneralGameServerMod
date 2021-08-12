@@ -217,8 +217,8 @@ end
 
 function Window:Init3DWindowPosition()
     local params = self:GetParams();
-    self.screenX, self.screenY, self.screenWidth, self.screenHeight = -50, -10, 100, 100;
-    self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, params.width or 100, params.height or 100;
+    self.screenX, self.screenY, self.screenWidth, self.screenHeight = params.x or 0, params.y or 0, params.width or 100, params.height or 100;
+    self.windowX, self.windowY, self.windowWidth, self.windowHeight = 0, 0, self.screenWidth, self.screenHeight;
     return self.screenX, self.screenY, self.screenWidth, self.screenHeight
 end
 
@@ -226,10 +226,10 @@ end
 function Window:Create3DNativeWindow()
     if (self:GetNativeWindow()) then return self:GetNativeWindow() end
 
-    local params = self:GetParams();
-    local windowX, windowY, windowWidth, windowHeight = params.x or 0, params.y or 0, params.width or 100, params.height or 100;
-    local native_window = ParaUI.CreateUIObject("button", self:GetWindowId(), "_lt", windowX, windowY, windowWidth, windowHeight);
-    native_window:SetField("OwnerDraw", true);              
+    local windowX, windowY, windowWidth, windowHeight = self:Init3DWindowPosition();
+    local native_window = ParaUI.CreateUIObject("container", self:GetWindowId(), "_lt", windowX, windowY, windowWidth, windowHeight);  -- container
+    native_window:SetField("OwnerDraw", true);         
+        
     native_window.enabled = false;
     native_window.visible = false;
     -- 加到有效窗口上
@@ -238,11 +238,14 @@ function Window:Create3DNativeWindow()
     native_window:SetScript("ondraw", function()
         self:HandleRender();
     end);
+
     local obj = self:GetParams().__3d_object__;
+    local params = self:GetParams();
     if (obj) then
         obj:ShowHeadOnDisplay(true, 0);
         obj:SetHeadOnUITemplateName(self:GetWindowId(), 0);
         obj:SetField("HeadOn3DFacing", -1.57);
+        obj:SetHeadOnOffset(params.__offset_x__ or 0, params.__offset_y__ or 0, params.__offset_z__ or 0, 0);
     end
 
     return native_window;

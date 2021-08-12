@@ -17,4 +17,5 @@ setmetatable(API, {__call = function(_, CodeEnv)
     CodeEnv.SetWorldKey = function(worldKey) __world_key__ = worldKey end 
     CodeEnv.GetWorldKey = function() return __world_key__ end 
     CodeEnv.AddNPLRuntimeAddress = CommonLib.AddNPLRuntimeAddress;
+    CodeEnv.LuaXML_ParseString = ParaXML.LuaXML_ParseString;
 end});

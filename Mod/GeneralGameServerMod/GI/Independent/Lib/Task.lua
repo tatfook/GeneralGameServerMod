@@ -41,10 +41,45 @@ end
 function TaskItem:Destroy()
 end
 
+
+local TimeTaskItem = inherit(TaskItem, {});
+
+function TimeTaskItem:Init(gsid, goalcount, title, description, reverse_compare)
+    TimeTaskItem._super.Init(self, gsid, goalcount, title, description, reverse_compare);
+
+    self.__timer__ = SetInterval(1000, function()
+        self:SetCount(self:GetCount() + 1);
+    end);
+
+    return self;
+end
+
+function TimeTaskItem:Destroy()
+    if (not self.__timer__) then return end
+    self.__timer__:Stop();
+    self.__timer__ = nil;
+end
+
 function Task:ctor()
     self.__task_item_list__ = {};
     self.__extra_task_item_list__ = {};
     self.__all_task_item__ = {};
+end
+
+function Task:AddTimeTaskItem(gsid, goalcount, title, description, reverse_compare)
+    local taskitem = TimeTaskItem:new():Init(gsid, goalcount, title, description, reverse_compare);
+    self.__all_task_item__[gsid] = taskitem;
+    table.insert(self.__task_item_list__, taskitem);
+    self:RefreshUI();
+    return taskitem;
+end
+
+function Task:AddTimeExtraTaskItem(gsid, goalcount, title, description, reverse_compare)
+    local taskitem = TimeTaskItem:new():Init(gsid, goalcount, title, description, reverse_compare);
+    self.__all_task_item__[gsid] = taskitem;
+    table.insert(self.__extra_task_item_list__, taskitem);
+    self:RefreshUI();
+    return taskitem;
 end
 
 function Task:AddTaskItem(gsid, goalcount, title, description, reverse_compare)

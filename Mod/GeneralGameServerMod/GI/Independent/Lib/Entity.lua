@@ -27,6 +27,9 @@ Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否�
 Entity:Property("Focus", false, "IsFocus");                           -- 是否聚焦
 Entity:Property("Speed", 1);                                          -- 移动速度
 Entity:Property("CanMotion", true, "IsCanMotion");                    -- 是否可以移动
+Entity:Property("Blood", 100);                                        -- 血量
+Entity:Property("TotalBlood", 100);                                   -- 总血量
+Entity:Property("CheckTerrain", true, "IsCheckTerrain");              -- 是否需要检测地形
 
 local NID = 0;
 function Entity:ctor()
@@ -35,6 +38,9 @@ function Entity:ctor()
     self.__goods__ = {};
     self.__key__ = string.format("NPC_%s", self.__nid__);
     self.__name__ = self.__key__;
+    self.__scope__ = NewScope();
+    self.__skill__ = {};  -- 技能集
+
     __all_entity__[self.__key__] = self;
     __all_name_entity__[self.__name__] = self;
 end
@@ -55,7 +61,10 @@ end
 
 function Entity:SetName(name) 
     if (self.__name__) then __all_name_entity__[self.__name__] = nil end
+
     self.__name__ = name;
+    self.__scope__:Set("username", name);
+
     if (self.__name__) then __all_name_entity__[self.__name__] = self end
 end
 
@@ -89,6 +98,7 @@ function Entity:Init(opts)
     self:SetPhysicsHeight(opts.physicsHeight or 1);
     self:SetBiped(opts.biped);
     self:SetDestroyBeCollided(opts.destroyBeCollided);
+    if (opts.checkTerrain == false) then self:SetCheckTerrain(false) end
 
     return self;
 end
@@ -157,21 +167,46 @@ function Entity:GetStepDistance()
     return 0.06 * self:GetSpeed();                      -- 获取步长
 end
 
+function Entity:IsStandInPosition(x, y, z)
+    if (not self:IsCheckTerrain()) then return end 
+    
+    local bx, by, bz = ConvertToBlockPosition(x, y + 0.1, z);
+    local cur_bx, cur_by, cur_bz = self:GetBlockPos();
+    if (bx == cur_bx and by == cur_by and bz == cur_bz) then return true end 
+
+    local block = GetBlock(bx, by, bz);
+    -- 存在方块档
+    if (block and block.obstruction) then return false end 
+    block = GetBlock(bx, by - 1, bz);
+    -- 下方无实心方块
+    if (not block or not block.obstruction) then return false end 
+    return true;
+end
+
+function Entity:IsStandInBlockPosition(bx, by, bz)
+    return self:IsStandInPosition(ConvertToRealPosition(bx, by, bz));
+end 
+
 -- 向前行走, duration 存在则通过时间计算步数, 否则通过单位步长计算步数
-function Entity:MoveForward(dist, duration)
+function Entity:MoveForward(dist, duration, bEnableAnim)
     if (not self:IsCanMotion()) then return end 
 
     local facing = self:GetFacing();
     local distance = (dist or 1) * __BlockSize__;
     local dx, dy, dz = math.cos(facing) * distance, 0, -math.sin(facing) * distance;
     local x, y, z = self:GetPosition();
-    local stepCount = duration and math.floor(duration * self:GetTickCountPerSecond()) or math.floor(distance / self:GetStepDistance());
-    self:SetAnimId(5);
+    local stepCount = duration and math.ceil(duration * self:GetTickCountPerSecond()) or math.floor(distance / self:GetStepDistance());
+    bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
+    if (bEnableAnim) then self:SetAnimId(5) end
     while(stepCount > 0) do
         if (self:IsDestory()) then return end 
         local stepX, stepY, stepZ = dx / stepCount, dy / stepCount, dz / stepCount;
         x, y, z = x + stepX, y + stepY, z + stepZ;
-        self:SetPosition(x, y, z);
+        if (self:IsStandInPosition(x, y, z)) then
+            self:SetPosition(x, y, z);
+        else 
+            stepCount = 1;   -- 停止前进
+        end
         stepCount = stepCount - 1;
         dx, dy, dz = dx - stepX, dy - stepY, dz - stepZ;
         if (self:IsCanMotion()) then
@@ -181,7 +216,142 @@ function Entity:MoveForward(dist, duration)
         end
     end
     
-    self:SetAnimId(0);
+    if (bEnableAnim) then self:SetAnimId(0) end
+end
+
+-- 深度优先智能寻路
+function Entity:GetDepthSearchPaths(tbx, tby, tbz)
+    local paths = {};
+    local bx, by, bz = self:GetBlockPos();
+    local function DepthSearch(bx, by, bz)
+        if (bx == tbx and bz == tbz) then return true end 
+        local dx,  dz = tbx > bx and 1 or (tbx == bx and 0 or -1), tbz > bz and 1 or (tbz == bz and 0 or -1);
+        
+        local _bx, _by, _bz = bx + dx, by, bz + dz;
+        if (dx ~= 0 and dz ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
+            if (DepthSearch(_bx, _by, _bz)) then 
+                paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
+                return true;
+            end
+        end
+
+        _bx, _by, _bz = bx, by, bz + dz;
+        if (dz ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
+            if (DepthSearch(_bx, _by, _bz)) then 
+                paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
+                return true;
+            end
+        end
+
+        _bx, _by, _bz = bx + dx, by, bz;
+        if (dx ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
+            if (DepthSearch(_bx, _by, _bz)) then 
+                paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
+                return true;
+            end
+        end
+
+        -- 回退
+        _bx, _by, _bz = bx, by, bz - dz;
+        if (dz ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
+            if (DepthSearch(_bx, _by, _bz)) then 
+                paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
+                return true;
+            end
+        end
+
+        _bx, _by, _bz = bx - dx, by, bz;
+        if (dx ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
+            if (DepthSearch(_bx, _by, _bz)) then 
+                paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
+                return true;
+            end
+        end
+
+        return false;
+    end
+
+    if (DepthSearch(bx, by, bz)) then
+        local size = #paths;
+        for i = 1, math.floor(size / 2) do
+            paths[i], paths[size - i + 1] = paths[size - i + 1], paths[i];
+        end
+        return paths;
+    end
+    -- 简化寻路方式
+  
+    return paths;    
+end
+
+-- 贪心模式路径
+function Entity:GetGreedyPaths(tbx, tby, tbz)
+    local paths = {};
+    local bx, by, bz = self:GetBlockPos();
+    paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
+    while(true) do
+        -- if (bx == tbx and by == tby and bz == tbz) then break end 
+        if (bx == tbx and bz == tbz) then break end 
+        local dx, dy, dz = tbx > bx and 1 or (tbx == bx and 0 or -1), 0, tbz > bz and 1 or (tbz == bz and 0 or -1);
+        if (self:IsStandInBlockPosition(bx + dx, by, bz + dz)) then
+            bx, by, bz = bx + dx, by, bz + dz;
+            paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
+        elseif (dx ~= 0 and self:IsStandInBlockPosition(bx + dx, by, bz)) then
+            bx, by, bz = bx + dx, by, bz;
+            paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
+        elseif (dz ~= 0 and self:IsStandInBlockPosition(bx, by, bz + dz)) then
+            bx, by, bz = bx, by, bz + dz;
+            paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
+        else 
+            break;
+        end
+    end
+    return paths;
+end
+
+function Entity:MoveXYZ(bx, by, bz, bEnableAnim, bEnableDepthSearch)
+    local paths = bEnableDepthSearch and self:GetDepthSearchPaths(bx, by, bz) or self:GetGreedyPaths(bx, by, bz);
+    self:SetAnimId(5);
+    bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
+    if (bEnableAnim) then self:SetAnimId(5) end
+    for _, blockIndex in ipairs(paths) do
+        local x, y, z = ConvertToRealPosition(ConvertToBlockPositionFromBlockIndex(blockIndex));
+        self:Move(x, y, z);
+    end
+    if (bEnableAnim) then self:SetAnimId(0) end
+end
+
+function Entity:Move(tx, ty, tz, bEnableAnim)
+    if (not self:IsCanMotion()) then return end 
+    bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
+    if (bEnableAnim) then self:SetAnimId(5) end
+    while (true) do
+        local x, y, z = self:GetPosition();
+        local dx, dy, dz = math.abs(tx - x), math.abs(ty - y), math.abs(tz - z);
+        -- local max = math.max(math.max(dx, dy), dz);
+        -- 不考虑垂直方向 sy == 0 
+        local max = math.max(math.max(dx, 0), dz);
+        local stepDistance = self:GetStepDistance(); 
+        local stepCount = math.ceil(max / stepDistance);
+        local sx, sy, sz = (tx - x) / stepCount, (ty - y) / stepCount, (tz - z) / stepCount;
+        if (stepCount == 1) then
+            x, y, z = tx, ty, tz;
+        else
+            x, y, z = x + sx, y + sy, z + sz;
+        end
+        self:SetFacing(GetFacingFromOffset(sx, sy, sz));
+        if (self:IsStandInPosition(x, y, z)) then
+            self:SetPosition(x, y, z);
+        elseif (math.abs(sx) >= stepDistance and self:IsStandInPosition(x - sx, y, z)) then
+            self:SetPosition(x - sz, y, z);
+        elseif (math.abs(sz) >= stepDistance and self:IsStandInPosition(x, y, z - sz)) then
+            self:SetPosition(x, y, z - sz);
+        else
+            break;  -- 无路可走
+        end
+        if (self:IsCanMotion()) then sleep() end  
+        if (not self:IsCanMotion() or stepCount <= 1) then break end 
+    end
+    if (bEnableAnim) then self:SetAnimId(0) end
 end
 
 function Entity:Stop()
@@ -198,6 +368,8 @@ function Entity:Destroy()
 
     local callback = self:GetDestroyCallBack();
     if (type(callback) == "function") then callback() end
+
+    self:CloseHeadOnDisplay();
 
     __all_entity__[self.__key__] = nil;
     if (self.__name__) then __all_name_entity__[self.__name__] = nil end
@@ -335,9 +507,74 @@ end
 function Entity:CollideWithEntity(entity)
 end
 
+function Entity:SetCurrentBlood(blood)
+    self:SetBlood(blood);
+    self.__scope__:Set("blood_strip_percentage", self:GetBlood() * 100 / self:GetTotalBlood());
+    if (blood <= 0) then self:Destroy() end 
+end
+
+function Entity:IncrementBlood(blood)
+    self:SetCurrentBlood(self:GetBlood() + blood);
+end
+
+function Entity:ShowHeadOnDisplay(G, params)
+    if (self.__head_on_displayer_ui__) then self.__head_on_displayer_ui__:CloseWindow() end
+
+    G = G or {};
+    G.GlobalScope = self.__scope__;
+
+    params = params or {};
+    params.__is_3d_ui__ = true;
+    params.__3d_object__ = self:GetInnerObject();
+    params.__offset_y__ = params.__offset_y__ or 2.8;
+    params.__offset_z__ = params.__offset_z__ or 0.05;
+    params.width = params.width or 160;
+    params.height = params.height or 100;
+    params.x = params.x or (-params.width / 2);
+    params.parent = GetRootUIObject();
+    params.template = params.template or [[
+<template style="width: 100%; height: 100%;">
+    <div style="color:#ffffff; font-size: 20px; text-align: center;">{{username}}</div>
+    <div style="display: flex; justify-content: center; margin-top: 10px;"><progress style="background-color: #FF0000; height: 8px;" color="#00FF00" v-bind:percentage=blood_strip_percentage></progress></div>
+</template>
+    ]]
+    self.__scope__:Set("username", self:GetName());
+    self.__scope__:Set("blood_strip_percentage", self:GetBlood() * 100 / self:GetTotalBlood());
+    self.__head_on_displayer_ui__ = ShowWindow(G, params);
+
+    return self.__head_on_displayer_ui__;
+end
+
+function Entity:CloseHeadOnDisplay()
+    if (self.__head_on_displayer_ui__) then self.__head_on_displayer_ui__:CloseWindow() end
+end
+
 function Entity:OnClick()
     local callback = self:GetClickCallBack();
     if (type(callback) == "function") then callback() end
+end
+
+function Entity:Build(blockId, blockData)
+    local x, y, z = self:GetBlockPos();
+    local facing = self:getFacing() / 180 * math.pi;
+    x = x + math.floor(math.cos(facing)+0.5);
+    z = z - math.floor(math.sin(facing)+0.5);
+    
+    SetBlock(x, y - 1, z, blockId, blockData);
+end
+
+function Entity:AddSkill(skill)
+    self.__skill__[skill:GetName()] = skill;
+end
+
+function Entity:GetSkil(skillName)
+    return self.__skill__[skillName or "normal"];
+end
+
+function Entity:Attack(skillName, target_entity)
+    local skill = self:GetSkil(skillName);
+    if (not skill) then return end 
+    skill:Activate(self, target_entity);
 end
 
 local __api_list__ = {
@@ -359,6 +596,8 @@ local __api_list__ = {
     "SetGoodsChangeCallBack",
     "SetFocus",
     "SetBiped",
+    "TurnEntity",
+    "Build",
 };
 
 function Entity:Run(func, G)

@@ -31,6 +31,7 @@ local Select = NPL.load("./Elements/Select.lua", IsDevEnv);
 local TextArea = NPL.load("./Elements/TextArea.lua", IsDevEnv);
 local Canvas = NPL.load("./Elements/Canvas.lua", IsDevEnv);
 local Loading = NPL.load("./Elements/Loading.lua", IsDevEnv);
+local Progress = NPL.load("./Elements/Progress.lua", IsDevEnv);
 local QRCode = NPL.load("./Elements/QRCode.lua", IsDevEnv);
 local ColorPicker = NPL.load("./Elements/ColorPicker.lua", IsDevEnv);
 local DateTimeText = NPL.load("./Elements/DateTimeText.lua", IsDevEnv);
@@ -72,6 +73,7 @@ function ElementManager:ctor()
     ElementManager:RegisterByTagName("TextArea", TextArea);
     ElementManager:RegisterByTagName("Canvas", Canvas);
     ElementManager:RegisterByTagName("Loading", Loading);
+    ElementManager:RegisterByTagName("Progress", Progress);
     ElementManager:RegisterByTagName("QRCode", QRCode);
     ElementManager:RegisterByTagName("ColorPicker", ColorPicker);
     ElementManager:RegisterByTagName("DateTimeText", DateTimeText);

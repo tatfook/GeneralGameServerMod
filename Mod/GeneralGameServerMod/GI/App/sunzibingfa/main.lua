@@ -29,8 +29,8 @@ local Level3 = require("%gi%/App/sunzibingfa/Level/Level3.lua");
 -- Level2:Import();
 
 -- Level3:EditOld()
--- Level3:Edit();
-Level3:Import();
+Level3:Edit();
+-- Level3:Import();
 
 -- ShowWindow({}, {
 --     url = "%gi%/Independent/UI/Task.html",

@@ -58,7 +58,7 @@ end
 local function null_function() end
 
 function sleep(sleep)
-	local sleepTo = GetTime() + (sleep or 0);
+	local sleepTo = __get_timestamp__() + (sleep or 0);
 	local isSleeping = true;
 
 	-- 获取当前协程
@@ -68,7 +68,7 @@ function sleep(sleep)
 
 	-- 唤醒检测函数
 	local function SleepLoopCallBack()
-		local curtime = GetTime();
+		local curtime = __get_timestamp__();
 		isSleeping = isSleeping and curtime < sleepTo and __is_running__();  -- 加上__is_running__如果沙盒可以快速停止相关协程的等待, 从而快速退出
 
 		-- 如果挂起的不是执行协程, 则由执行协程唤醒继续执行, 定时立即唤醒防止无法退出, 若不考虑退出问题可以加上 not isSleeping 条件

@@ -49,6 +49,7 @@ setmetatable(BlockAPI, {__call = function(_, CodeEnv)
     CodeEnv.GetBlockEntity = EntityManager.GetBlockEntity;
 	CodeEnv.CreateBlockPieces = function (blockid, ...) return GameLogic.GetWorld():CreateBlockPieces(block_types.get(blockid), ...) end
 	CodeEnv.SetBlock = function(...) BlockEngine:SetBlock(...) end
+    CodeEnv.GetBlock = function(...) return BlockEngine:GetBlock(...) end 
 	CodeEnv.GetBlockFull = function (...) return BlockEngine:GetBlockFull(...) end
     CodeEnv.ConvertToRealPosition = function (...) return BlockEngine:ConvertToRealPosition_float(...) end
     CodeEnv.ConvertToBlockPosition = function(x, y, z) return BlockEngine:block(x, y, z) end

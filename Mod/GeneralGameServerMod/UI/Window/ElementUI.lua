@@ -291,6 +291,7 @@ function ElementUI:RenderBackground(painter)
     else 
         painter:DrawRect(x, y, w, h);
     end
+
 end
 
 -- 绘制边框
