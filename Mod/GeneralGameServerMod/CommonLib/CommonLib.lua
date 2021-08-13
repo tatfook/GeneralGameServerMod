@@ -153,7 +153,8 @@ function CommonLib.SetAliasPath(alias, path)
     AliasPathMap[alias] = path;
 end
 
-function CommonLib.GetFullPath(filename)
+function CommonLib.GetFullPath(filename, alias_path_map)
+    alias_path_map = alias_path_map or AliasPathMap;
     local path = string.gsub(filename or "", "%%(.-)%%", function(alias)
         local path = AliasPathMap[string.lower(alias)];
         if (type(path) == "string") then return path end

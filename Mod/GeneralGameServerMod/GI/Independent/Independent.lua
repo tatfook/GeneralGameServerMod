@@ -77,6 +77,11 @@ function Independent:Init()
 	-- 加载内置模块
 	self.__files__ = {};
 
+	self.__alias_path_map__ = {
+		["gi"] = "Mod/GeneralGameServerMod/GI",
+		["lib"] = "Mod/GeneralGameServerMod/GI/Independent/Lib",
+	};
+
 	-- 设置环境
 	self:SetCodeEnv(CodeEnv:new():Init(self));
 
@@ -136,7 +141,7 @@ __module__.__loaded__ = true;
 
 	-- 生成函数
 	local code_func, errormsg = loadstring(text, "loadstring:" .. filename);
-	if errormsg then return GGS.INFO("Independent:LoadString Failed", filename, errormsg) end
+	if errormsg then return print("Independent:LoadString Failed", filename, errormsg) end
 
 	-- 备份当前模块
 	local __old_module__ = CodeEnv.__module__;
@@ -168,7 +173,7 @@ end
 function Independent:LoadFile(filename)
 	if (not filename or not self:IsRunning() or self:IsLoaded(filename)) then return end
 	
-	local filepath = CommonLib.GetFullPath(filename);
+	local filepath = CommonLib.GetFullPath(filename, self.__alias_path_map__);
 	local text = CommonLib.GetFileText(filepath);
 	if (not text or text == "") then 
 		print("file not exist: ", filepath);

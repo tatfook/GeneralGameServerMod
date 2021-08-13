@@ -1,13 +1,36 @@
 
+print(__BlockSize__)
+-- local npc = CreateEntity({
+--     bx = 19191,
+--     by = 5,
+--     bz = 19199,
+--     assetfile = "character/CC/artwar/game/sunbin.x",
+--     types = {["human"] = 0},
+--     biped = true,
+-- });
 
-local npc = CreateEntity({
-    bx = 19191,
-    by = 5,
-    bz = 19199,
-    assetfile = "character/CC/artwar/game/sunbin.x"
-});
 
-npc:MoveXYZ(19187,5,19203);
+-- local wolf = CreateEntity({
+--     bx = 19195,
+--     by = 5,
+--     bz = 19203,
+--     biped = true,
+--     assetfile = "character/CC/codewar/lang.x",
+--     types = {["lang"] = 0, ["animal"] = 0, ["human"] = 1},
+--     isAutoAttack = true,
+--     visibleRadius = 5,
+--     speed = 2,
+--     defaultSkill = CreateSkill({skillRadius = 1}),
+-- });
+
+-- npc:MoveForward(4)
+-- wolf:AddSkill(Skill:new():Init({
+--     skillTime = 0,
+--     skillDistance = 10,
+--     entity_config = {
+--         assetfile = "character/CC/07items/arrow.x",
+--     },
+-- }));
 -- npc:Turn(180);
 -- npc:MoveForward(3);
 -- npc:MoveForward(3);

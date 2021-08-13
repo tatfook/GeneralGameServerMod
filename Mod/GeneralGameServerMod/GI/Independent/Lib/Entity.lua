@@ -15,7 +15,11 @@ local __all_block_index_entity__ = {};
 local __all_entity__ = {};
 local __all_name_entity__ = {};
 
+local MOVE_ANIM_ID = 5;
+local STOP_MOVE_ANIM_ID = 0;
+
 Entity:Property("DestroyBeCollided", false, "IsDestroyBeCollided");   -- 被碰撞销毁
+Entity:Property("AttackBeCollided", false, "IsAttackBeCollided");     -- 被碰撞攻击
 Entity:Property("Biped", false, "IsBiped");                           -- 是否是两栖动物
 Entity:Property("GoodsChangeCallBack");                               -- 物品变化回调
 Entity:Property("ClickCallBack");                                     -- 物品变化回调
@@ -27,22 +31,69 @@ Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否�
 Entity:Property("Focus", false, "IsFocus");                           -- 是否聚焦
 Entity:Property("Speed", 1);                                          -- 移动速度
 Entity:Property("CanMotion", true, "IsCanMotion");                    -- 是否可以移动
+Entity:Property("HasBloold", true, "IsHasBlood");                     -- 是否有血量
 Entity:Property("Blood", 100);                                        -- 血量
 Entity:Property("TotalBlood", 100);                                   -- 总血量
 Entity:Property("CheckTerrain", true, "IsCheckTerrain");              -- 是否需要检测地形
+Entity:Property("VisibleRadius", 1);                                  -- 可视半径
+Entity:Property("CanVisible", true, "IsCanVisible");                  -- 是否可见
+Entity:Property("CanBeCollided", true, "IsCanBeCollided");            -- 是否可被碰撞
+Entity:Property("AutoAttack", false, "IsAutoAttack");                 -- 是否自动攻击
+Entity:Property("DefaultSkill");                                      -- 实体默认技能
 
 local NID = 0;
 function Entity:ctor()
     NID = NID + 1;
     self.__nid__ = NID;
-    self.__goods__ = {};
     self.__key__ = string.format("NPC_%s", self.__nid__);
     self.__name__ = self.__key__;
-    self.__scope__ = NewScope();
-    self.__skill__ = {};  -- 技能集
+    self.__scope__ = NewScope();                   -- 响应式变量 
+    self.__skills__ = {};                          -- 技能集
+    self.__goods__ = {};                           -- 物品集
+    self.__types__ = {};                           -- 实体类型   0 -- 实体类型  1 -- 可攻击类型  2  -- 被攻击类型  3 -- 不可攻击类型   4 -- 可以碰撞  5 - 不可以碰撞  6 可以被碰撞  7 不可以被碰撞
 
     __all_entity__[self.__key__] = self;
     __all_name_entity__[self.__name__] = self;
+end
+
+function Entity:Init(opts)
+    opts = opts or {};
+
+    opts.name = opts.name or "NPC";
+    self:SetName(opts.name);
+
+    if (opts.opacity) then self:SetOpacity(opts.opacity) end
+    -- 获取主玩家位置
+    local bx, by, bz = GetPlayer():GetBlockPos();
+    self:SetBlockPos(opts.bx or bx or 0, opts.by or by or 0, opts.bz or bz or 0);
+    self:SetAssetFile(opts.assetfile or "character/CC/02human/actor/actor.x");
+    self:CreateInnerObject(self:GetMainAssetPath(), true, 0, 1, self:GetSkin());
+	self:RefreshClientModel();
+    self:Attach();
+
+    __AddEntity__(self);
+
+    self:SetSkipPicking(false);
+    self:SetPhysicsRadius(opts.physicsRadius or 0.5);
+    self:SetPhysicsHeight(opts.physicsHeight or 2);
+    self:SetBiped(opts.biped);
+    self:SetDestroyBeCollided(opts.destroyBeCollided);
+    if (opts.checkTerrain == false) then self:SetCheckTerrain(false) end
+    if (opts.canVisible == false) then self:SetCanVisible(false) end 
+    if (opts.canBeCollided == false) then self:SetCanBeCollided(false) end 
+    if (opts.hasBloold == false) then self:SetHasBloold(false) end 
+    if (opts.speed) then self:SetSpeed(opts.speed) end
+    self:SetVisibleRadius(opts.visibleRadius or 1);
+    self:SetAutoAttack(opts.isAutoAttack);
+    self:SetDefaultSkill(opts.defaultSkill);
+    if (opts.types) then self.__types__ = opts.types end 
+    if (opts.goods) then 
+        for _, goods_config in pairs(opts.goods) do
+            self:AddGoods(CreateGoods(goods_config));
+        end
+    end
+
+    return self;
 end
 
 function Entity:FrameMoveRidding()
@@ -74,33 +125,6 @@ end
 
 function Entity:GetEntityByName(name)
     return __all_name_entity__[name];
-end
-
-function Entity:Init(opts)
-    opts = opts or {};
-
-    opts.name = opts.name or "NPC";
-    self:SetName(opts.name);
-
-    if (opts.opacity) then self:SetOpacity(opts.opacity) end
-    -- 获取主玩家位置
-    local bx, by, bz = GetPlayer():GetBlockPos();
-    self:SetBlockPos(opts.bx or bx or 0, opts.by or by or 0, opts.bz or bz or 0);
-    self:SetAssetFile(opts.assetfile or "character/CC/02human/actor/actor.x");
-    self:CreateInnerObject(self:GetMainAssetPath(), true, 0, 1, self:GetSkin());
-	self:RefreshClientModel();
-    self:Attach();
-
-    __AddEntity__(self);
-
-    self:SetSkipPicking(false);
-    self:SetPhysicsRadius(opts.physicsRadius or 0.5);
-    self:SetPhysicsHeight(opts.physicsHeight or 1);
-    self:SetBiped(opts.biped);
-    self:SetDestroyBeCollided(opts.destroyBeCollided);
-    if (opts.checkTerrain == false) then self:SetCheckTerrain(false) end
-
-    return self;
 end
 
 function Entity:SetAssetFile(assetfile)
@@ -157,6 +181,7 @@ function Entity:UpdatePosition()
     if (old_block_index == new_block_index) then return end 
     self.__block_index__ = new_block_index;
     self:CheckEntityCollision();
+    self:CheckEntityVisible();
 end
 
 function Entity:GetTickCountPerSecond()
@@ -168,7 +193,7 @@ function Entity:GetStepDistance()
 end
 
 function Entity:IsStandInPosition(x, y, z)
-    if (not self:IsCheckTerrain()) then return end 
+    if (not self:IsCheckTerrain()) then return true end 
     
     local bx, by, bz = ConvertToBlockPosition(x, y + 0.1, z);
     local cur_bx, cur_by, cur_bz = self:GetBlockPos();
@@ -186,6 +211,11 @@ end
 function Entity:IsStandInBlockPosition(bx, by, bz)
     return self:IsStandInPosition(ConvertToRealPosition(bx, by, bz));
 end 
+
+function Entity:GetDistanceOffsetXY(distance)
+    local facing = self:GetFacing();
+    return math.cos(facing) * distance, -math.sin(facing) * distance;
+end
 
 -- 向前行走, duration 存在则通过时间计算步数, 否则通过单位步长计算步数
 function Entity:MoveForward(dist, duration, bEnableAnim)
@@ -217,6 +247,12 @@ function Entity:MoveForward(dist, duration, bEnableAnim)
     end
     
     if (bEnableAnim) then self:SetAnimId(0) end
+end
+
+-- 像目标移动
+function Entity:MoveEntity(entity)
+    self:TurnEntity(entity);
+    self:MoveForward(self:GetStepDistance());
 end
 
 -- 深度优先智能寻路
@@ -287,7 +323,7 @@ end
 function Entity:GetGreedyPaths(tbx, tby, tbz)
     local paths = {};
     local bx, by, bz = self:GetBlockPos();
-    paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
+    -- paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
     while(true) do
         -- if (bx == tbx and by == tby and bz == tbz) then break end 
         if (bx == tbx and bz == tbz) then break end 
@@ -481,7 +517,7 @@ function Entity:CheckEntityCollision()
     local aabb = self:GetCollisionAABB();
     for _, entity in ipairs(__GetEntityList__()) do
         local entity_aabb = entity:GetCollisionAABB();
-        if (aabb and entity_aabb and entity ~= self and aabb:Intersect(entity_aabb)) then
+        if (aabb and entity_aabb and entity ~= self and self:IsCanBeCollided() and entity:IsCanBeCollided() and aabb:Intersect(entity_aabb)) then
             -- 主动碰撞
             if (self:CanCollideWith(entity)) then
                 self:CollideWithEntity(entity);
@@ -494,7 +530,7 @@ function Entity:CheckEntityCollision()
     end
 end
 
-function Entity:BeCollidedWithEntity(entity)
+function Entity:OnCollidedWithEntity(entity)
     for _, goods in ipairs(self:GetGoodsList()) do
         goods:Activate(self, entity);
     end
@@ -504,17 +540,102 @@ function Entity:BeCollidedWithEntity(entity)
     end
 end
 
+function Entity:BeCollidedWithEntity(entity)
+    self:OnCollidedWithEntity(entity);
+end
+
 function Entity:CollideWithEntity(entity)
+    self:OnCollidedWithEntity(entity);
+end
+
+function Entity:DistanceTo(tbx, tby, tbz)
+    local bx, by, bz = self:GetBlockPos();
+    local dx, dy, dz = math.abs(tbx - bx), math.abs(tby - by), math.abs(tbz - bz);
+    return math.max(math.max(dx, dy), dz);
+end
+
+function Entity:DistanceToEntity(entity)
+    local tbx, tby, tbz = entity:GetBlockPos();
+    return self:DistanceTo(tbx, tby, tbz);
+end
+
+function Entity:IsVisibleEntity(entity)
+    return self:DistanceToEntity(entity) <= self:GetVisibleRadius();
+end
+
+function Entity:CheckEntityVisible()
+    if (not self:IsBiped()) then return end 
+    for _, entity in ipairs(__GetEntityList__()) do
+        if (self ~= entity) then
+            if (self:IsVisibleEntity(entity)) then
+                self:VisibleWithEntity(entity);
+                entity:BeVisibledWithEntity(self);
+            end
+
+            if (entity:IsVisibleEntity(self)) then
+                entity:VisibleWithEntity(self);
+                self:BeVisibledWithEntity(entity);
+            end
+        end
+    end
+end
+
+function Entity:IsInnerAttackRangeEntity(entity)
+    if (not self:GetSkill()) then return end
+    local skillAABB = self:GetSkill():GetSkillAABB(self);
+    local entityAABB = entity:GetCollisionAABB();
+    return skillAABB:Intersect(entityAABB);
+end
+
+function Entity:AutoAttackEntity(entity)
+    self:SetCanVisible(false);
+    while (not entity:IsDestory() and self:IsVisibleEntity(entity)) do
+        if (self:IsInnerAttackRangeEntity(entity)) then
+            self:SetAnimId(0);
+            sleep(self:GetSkill():GetNextActivateTimeStamp());
+            self:Attack(entity);
+        else 
+            local paths = self:GetGreedyPaths(entity:GetBlockPos());
+            -- 无路可走退出
+            if (#paths == 0) then break end
+            local bx, by, bz = ConvertToBlockPositionFromBlockIndex(paths[1]);
+            local x, y, z = ConvertToRealPosition(bx, by, bz);
+            self:SetAnimId(MOVE_ANIM_ID);
+            self:Move(x, y, z, false);
+        end
+    end
+    self:SetAnimId(0);
+    self:SetCanVisible(true);
+end
+
+function Entity:VisibleWithEntity(entity)
+    if (not self:IsCanVisible()) then return end
+    if (self:IsAutoAttack() and self:GetSkill() and self:IsAttackEntity(entity)) then
+        __run__(function() self:AutoAttackEntity(entity) end);
+    end
+end
+
+function Entity:BeVisibledWithEntity(entity)
 end
 
 function Entity:SetCurrentBlood(blood)
+    if (not self:IsHasBlood()) then return end
     self:SetBlood(blood);
     self.__scope__:Set("blood_strip_percentage", self:GetBlood() * 100 / self:GetTotalBlood());
+    if (blood < 100 and blood > 0) then self:ShowHeadOnDisplay() end 
     if (blood <= 0) then self:Destroy() end 
+end
+
+function Entity:GetCurrentBlood()
+    return self:GetBlood();
 end
 
 function Entity:IncrementBlood(blood)
     self:SetCurrentBlood(self:GetBlood() + blood);
+end
+
+function Entity:IsShowHeadOnDisplay()
+    return self.__head_on_displayer_ui__ ~= nil;
 end
 
 function Entity:ShowHeadOnDisplay(G, params)
@@ -528,6 +649,7 @@ function Entity:ShowHeadOnDisplay(G, params)
     params.__3d_object__ = self:GetInnerObject();
     params.__offset_y__ = params.__offset_y__ or 2.8;
     params.__offset_z__ = params.__offset_z__ or 0.05;
+    params.__facing__ = 0;
     params.width = params.width or 160;
     params.height = params.height or 100;
     params.x = params.x or (-params.width / 2);
@@ -564,17 +686,51 @@ function Entity:Build(blockId, blockData)
 end
 
 function Entity:AddSkill(skill)
-    self.__skill__[skill:GetName()] = skill;
+    self.__skills__[skill:GetName()] = skill;
 end
 
-function Entity:GetSkil(skillName)
-    return self.__skill__[skillName or "normal"];
+function Entity:GetSkill(skillName)
+    return skillName and self.__skills__[skillName] or self:GetDefaultSkill();
 end
 
-function Entity:Attack(skillName, target_entity)
-    local skill = self:GetSkil(skillName);
+function Entity:SetTypeValue(typ, val)
+    self.__types__[typ] = val;
+end
+
+function Entity:GetTypes()
+    return self.__types__;
+end
+
+function Entity:IsAttackedEntity(entity)
+    for type_name, type_value in pairs(entity:GetTypes()) do
+        if (type_value == 0 and self.__types__[type_name]  == 2) then return true end
+    end
+    return false;
+end
+
+function Entity:IsAttackEntity(entity)
+    for type_name, type_value in pairs(entity:GetTypes()) do
+        if (type_value == 0 and self.__types__[type_name] == 1) then return true end
+    end
+    return false;
+end
+
+function Entity:Attack(target_entity, skillName)
+    if (target_entity) then
+        self:TurnEntity(target_entity);
+    end
+
+    local skill = self:GetSkill(skillName);
     if (not skill) then return end 
     skill:Activate(self, target_entity);
+
+    if (target_entity) then
+        target_entity:Attacked(self);
+    end
+end
+
+-- 被攻击
+function Entity:Attacked(target_entity)
 end
 
 local __api_list__ = {

@@ -163,3 +163,11 @@ function GetGoodsByName(name)
     if (type(name) == "table") then return name end 
     return GetGoodsModule():GetGoodsByName(name);
 end
+
+function GetSkillModule()
+    return require("Skill");
+end
+
+function CreateSkill(opts)
+    return GetSkillModule():new():Init(opts);
+end

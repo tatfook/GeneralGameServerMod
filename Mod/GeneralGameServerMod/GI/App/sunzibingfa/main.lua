@@ -29,17 +29,18 @@ local Level3 = require("%gi%/App/sunzibingfa/Level/Level3.lua");
 -- Level2:Import();
 
 -- Level3:EditOld()
-Level3:Edit();
+-- Level3:Edit();
 -- Level3:Import();
 
--- ShowWindow({}, {
---     url = "%gi%/Independent/UI/Task.html",
---     alignment = "_lt",
---     width = 200,
---     height = 300,
---     x = 4,
---     y = 4,
--- })
+local tower = Level:CreateTowerEntity(19205,5,19202);
+
+local hunter = Level:CreateHunterEntity(19205,5,19206);
+SetCameraLookAtPos(hunter:GetPosition())
+
+-- -- sleep(3000);
+
+-- local wolf = Level:CreateWolfEntity(19210,5,19206);
+-- wolf:MoveForward();
 
 function clear()
     cmd("/mode edit");

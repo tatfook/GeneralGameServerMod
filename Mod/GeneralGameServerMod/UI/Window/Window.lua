@@ -244,7 +244,7 @@ function Window:Create3DNativeWindow()
     if (obj) then
         obj:ShowHeadOnDisplay(true, 0);
         obj:SetHeadOnUITemplateName(self:GetWindowId(), 0);
-        obj:SetField("HeadOn3DFacing", -1.57);
+        obj:SetField("HeadOn3DFacing", params.__facing__  or -1.57);
         obj:SetHeadOnOffset(params.__offset_x__ or 0, params.__offset_y__ or 0, params.__offset_z__ or 0, 0);
     end
 

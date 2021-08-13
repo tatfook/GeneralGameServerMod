@@ -45,9 +45,11 @@ function __run__(callback, ...)
 	end
 	if (type(callback) ~= "function") then return end 
 
-	__coroutine_wrap__(function(callback, ...)
+	local ok, err = __coroutine_resume__(__coroutine_create__(function(callback, ...)
 		callback(...);
-	end)(callback, ...);
+	end), callback, ...);
+
+	if (not ok) then print("__run__:error",err) end
 end
 
 function run(callback, ...)
@@ -105,6 +107,7 @@ function sleep(sleep)
 	
 	-- 移除定时回调
 	RemoveEventCallBack(EventType.LOOP, SleepLoopCallBack);
+	if (not __is_running__()) then __error__("环境已销毁") end 
 end
 
 function __independent_run__(callback, G)

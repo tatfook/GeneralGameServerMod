@@ -31,6 +31,8 @@ local FileAPI = NPL.load("./API/FileAPI.lua", IsDevEnv);
 local CodeEnv = commonlib.inherit(nil, NPL.export());
 
 CodeEnv.lfs = lfs;
+CodeEnv.ShapeAABB = commonlib.gettable("mathlib.ShapeAABB");
+CodeEnv.vector3d = commonlib.gettable("mathlib.vector3d");
 CodeEnv.IsDevEnv = IsDevEnv;
 CodeEnv.Debug = GGS.Debug;
 CodeEnv.DebugStack = DebugStack;
@@ -144,6 +146,7 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	self.__is_share_mouse_keyboard_event__ = function() return Independent:IsShareMouseKeyBoard() end 
 	self.__get_tick_count__ = function() return Independent:GetTickCount() end  
 	self.__get_timestamp__ = function() return math.floor(Independent:GetTickCount() * 1000 / Independent:GetLoopTickCount()) end   -- ms
+	self.__set_alias_path__ = function(alias, path) Independent.__alias_path_map__[alias] = path end 
 end
 
 function CodeEnv:InstallCodeBlockAPI()

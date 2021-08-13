@@ -15,6 +15,7 @@ Level.GOODS_ID = {
     TIAN_SHU_CAN_JUAN = "tianshucanjuan",
     CODE_LINE = "codeline",
     MAX_ALIVE_TIME = "max_alive_time",
+    ARROW = "arrow",
 }
 
 Level.GOODS = {
@@ -36,7 +37,10 @@ Level.GOODS = {
         title = "最长存活时间",
         task_title = "完成时间少于",
         task_reverse_compare = true,
-    }
+    },
+    [Level.GOODS_ID.ARROW] = {
+        title = "箭",
+    },
 }
 
 function Level:ctor()
@@ -221,9 +225,100 @@ function Level:CreateGoalPointEntity(bx, by, bz)
     return goalpoint;
 end
 
+-- 创建猎人
+function Level:CreateHunterEntity(bx, by, bz)
+    local hunter = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "hunter",
+        biped = true,
+        assetfile = "character/CC/artwar/game/lieren.x",  
+        isAutoAttack = true,
+        types = {["hunter"] = 0, ["wolf"] = 1},
+        visibleRadius = 10,
+        defaultSkill = CreateSkill({
+            skillRadius = 10,
+            entity_config = {assetfile = "character/CC/07items/arrow.x", speed = 5, checkTerrain = false},
+            moveToTargetEntity = true,
+            skillDistance = 15,
+        }),
+    });
+    self.__all_entity__["hunter"] = hunter;
+    return hunter;
+end
+
+-- 创建狼
+function Level:CreateWolfEntity(bx, by, bz)
+    local wolf = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "wolf",
+        biped = true,
+        assetfile = "character/CC/codewar/lang.x",  
+        isAutoAttack = true,
+        types = {["wolf"] = 0, ["human"] = 1},
+        visibleRadius = 5,
+        defaultSkill = CreateSkill({
+            skillRadius = 1,
+        }),
+    });
+    self.__all_entity__["wolf"] = wolf;
+    return wolf;
+end
+
+-- 创建箭塔
+function Level:CreateTowerEntity(bx, by, bz)
+    local towerbase = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "towerbase",
+        assetfile = "@/blocktemplates/jiguannu_dipan.x",  
+        hasBloold = false,
+        canBeCollided = false,
+    });
+    towerbase:SetAnimId(5);
+    local tower = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "tower",
+        hasBloold = false,
+        canBeCollided = false,
+        assetfile = "@/blocktemplates/jiguannu.x",  
+        defaultSkill = CreateSkill({
+            entity_config = {
+                name = "arrow",
+                assetfile = "character/CC/07items/arrow.x", 
+                speed = 5, 
+                hasBloold = false,
+                checkTerrain = false,
+                canVisible = false,
+                destroyBeCollided = true,
+                biped = true,
+                goods = {
+                    [1] = {
+                        gsid = self.GOODS_ID.ARROW,
+                        blood_peer = true,
+                        blood_peer_value = -20, 
+                    }
+                }
+            },
+            skillDistance = 15,
+            skillTime = 0,
+            offsetY = 1,
+            skillInterval = 400,
+        })
+    });
+
+    self.__all_entity__["towerbase"] = towerbase;
+    self.__all_entity__["tower"] = tower;
+
+    __run__(function()
+        while(self:GetPassLevelState() == 0 and __is_running__()) do
+            tower:Turn(45);
+            tower:Attack();
+            sleep(500);
+        end
+    end);
+    return tower;
+end
+
 Level:InitSingleton();
-
-
 
 -- -- 监听关卡加载事件,  完成关卡内容设置
 -- On("LoadLevel", function()
