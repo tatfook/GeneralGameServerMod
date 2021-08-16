@@ -272,7 +272,11 @@ function LoadUserInfo()
         if (System.User.keepworkUsername == UserDetail.username) then
             GlobalScope:Set("AuthUserId", UserDetail.id);
             GlobalScope:Set("isAuthUser", true);
-            GetAllAssets();
+
+            -- make true load all user items, so KeepWorkItemManager.items is the latest data
+            KeepWorkItemManager.LoadItems(nil, function ()
+                GetAllAssets();
+            end);
             -- echo("--------------------------------IsAuthUser------------------------------------");
         end
        
@@ -350,6 +354,7 @@ end
 _G.GetUserAssets = function()
     local bagNo = 1007;
     local assets = {};
+
     for _, item in ipairs(KeepWorkItemManager.items) do
         if (item.bagNo == bagNo) then
             local tpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
@@ -364,6 +369,7 @@ _G.GetUserAssets = function()
             end
         end
     end
+
     return assets;
 end
 
@@ -456,9 +462,6 @@ _G.GetAllAssets = function()
     end);
     
     GlobalScope:Set("AllAssets", assets);
-
-    -- commonlib.echo(assets, true);
-
     return assets;
 end
 
@@ -495,6 +498,7 @@ end
 _G.GetUserHonors = function ()
     local bagNo = 1006;
     local honors = {}; 
+    
     for _, item in ipairs(KeepWorkItemManager.items) do
         if (item.bagNo == bagNo) then
             local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
