@@ -61,6 +61,14 @@ function Draggable:OnMouseUp(event)
     event:Accept();
 end
 
+local NoteTextArea = commonlib.inherit(TextArea, {});
+NoteTextArea:Property("Note");
+
+function NoteTextArea:OnMouseDown(event)
+    self:GetNote():AdjustZOrder();
+    return NoteTextArea._super.OnMouseDown(self, event);
+end
+
 Note:Property("BaseStyle", {
     NormalStyle = {
         ["color"] = "#000000",
@@ -88,14 +96,15 @@ end
 function Note:Init(xmlNode, window, parent)
     Note._super.Init(self, xmlNode, window, parent);
 
-    local textarea = TextArea:new():Init({
-        name = "textarea",
+    local textarea = NoteTextArea:new():Init({
+        name = "notetextarea",
         attr = {
             style = "position: absolute; left: 1px; top: 30px; bottom: 1px; right: 1px; border: none; min-width: 0px; min-height: 0px; background-color: rgb(254,244,156);",
         }
     }, window, self);
     table.insert(self.childrens, textarea);
-
+    textarea:SetNote(self);
+    
     local draggable = Draggable:new():Init({
         name = "textarea",
         attr = {
@@ -204,6 +213,17 @@ function Note:HandleIconEvent(event)
     return false;
 end
 
+function Note:AdjustZOrder()
+    -- 调整z-index序
+    local childrens = self:GetBlockly().childrens;
+    for index, note in ipairs(childrens) do
+        if (note == self) then
+            childrens[#childrens], childrens[index] = childrens[index], childrens[#childrens];
+            break;
+        end
+    end
+end
+
 function Note:OnMouseDown(event)
     if (self:HandleIconEvent(event)) then return end 
 
@@ -211,6 +231,7 @@ function Note:OnMouseDown(event)
     self.startDragX, self.startDragY = event:GetScreenXY();
     self.startDragElementX, self.startDragElementY = self:GetPosition();
     self:CaptureMouse();
+    self:AdjustZOrder();
     event:Accept();
 end
 
