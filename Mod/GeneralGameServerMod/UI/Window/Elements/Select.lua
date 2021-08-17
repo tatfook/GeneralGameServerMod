@@ -119,7 +119,6 @@ end
 
 function Option:OnMouseDown(event)
     Option._super.OnMouseDown(self, event);
-
     local select = self:GetSelectElement();
     select:OnSelect(self);
 

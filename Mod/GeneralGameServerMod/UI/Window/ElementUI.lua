@@ -792,17 +792,18 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
     end
 
     -- 事件序遍历 取第一悬浮元素
-    zindex = zindex  .. "-" .. self:GetZIndex();
+    zindex = zindex .. "-" .. self:GetZIndex();
     maxZIndex = zindex;
-    local maxChildZindex = "";
+    local maxChildZIndex = "";
     for child in self:ChildElementIterator(false) do
         if (child:GetViewVisible()) then
             local childHoverElement, childMaxZIndex, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
             local isChildPositionElement = child:GetLayout():IsPositionElement();
-            local isMaxZIndex = if_else(isChildPositionElement, maxChildZindex < childZIndex, maxZIndex < childMaxZIndex);
+            local isMaxZIndex = if_else(isChildPositionElement, maxChildZIndex < (childZIndex or zindex), maxZIndex < (childMaxZIndex or zindex));
             if (childHoverElement and isMaxZIndex) then
                 hoverElement = childHoverElement;
                 maxZIndex = childZIndex;
+                maxChildZIndex = childZIndex;
             end
         else 
             SetElementOffHover(child);
@@ -851,18 +852,18 @@ function ElementUI:GetMouseHoverElement(event, zindex, isParentElementHover, isP
     -- 初始化zindex
     zindex = zindex .. "-" .. self:GetZIndex();
     maxZIndex = zindex;
-    local maxChildZindex = "";
+    local maxChildZIndex = "";
     -- 事件序遍历 取第一悬浮元素
     for child in self:ChildElementIterator(false) do
         if (child:GetViewVisible()) then
             local childHoverElement, childMaxZIndex, childZIndex = child:GetMouseHoverElement(event, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
             local isChildPositionElement = child:GetLayout():IsPositionElement();
             -- 同级定位元素只比较当前层级序否则比价全部层级序
-            local isMaxZIndex = if_else(isChildPositionElement, maxChildZindex < childZIndex, maxZIndex < childMaxZIndex);
+            local isMaxZIndex = if_else(isChildPositionElement, maxChildZIndex < (childZIndex or zindex), maxZIndex < (childMaxZIndex or zindex));
             if (childHoverElement and isMaxZIndex) then
                 hoverElement = childHoverElement;
                 maxZIndex = childMaxZIndex;
-                maxChildZindex = childZIndex;
+                maxChildZIndex = childZIndex;
             end
         end
     end
