@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: 标签字段
 use the lib:
 -------------------------------------------------------
-local Textarea = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Fields/Textarea.lua");
+local Textarea = NPL.load("Mod/GeneralGameServerMod/UI/Core/Blockly/Fields/Textarea.lua");
 -------------------------------------------------------
 ]]
 

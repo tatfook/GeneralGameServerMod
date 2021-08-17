@@ -26,11 +26,13 @@ local block_menus = {
     { text = "删除单块", cmd = "delete"},
     { text = "复制整块", cmd = "copyAll"},
     { text = "删除整块", cmd = "deleteAll"},
+    { text = "添加注释", cmd = "add_note"},
 }
 
 local blockly_menus = {
     { text = "撤销", cmd = "undo"},
     { text = "重做", cmd = "redo"},
+    { text = "添加注释", cmd = "add_note"},
     { text = "导出工作区XML", cmd = "export_workspace_xml_text"},
     { text = "导入工作区XML", cmd = "import_workspace_xml_text"},
     { text = "导出工具栏XML", cmd = "export_toolbox_xml_text"},
@@ -109,6 +111,8 @@ function ContextMenu:OnMouseDown(event)
         self:ExportCode();
     elseif (menuitem.cmd == "export_macro_code") then
         self:ExportMacroCode();
+    elseif (menuitem.cmd == "add_note") then
+        self:GetBlockly():AddNote();
     end 
 end
 

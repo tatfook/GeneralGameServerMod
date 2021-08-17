@@ -1,5 +1,7 @@
 
-SetCameraLookAtBlockPos(19195,4,19203);
+
+ShowGIBlocklyEditorPage();
+-- SetCameraLookAtBlockPos(19195,4,19203);
 
 -- local function SelectWorldServer()
 --     GetNetAPI():Get("__server_manager__/__select_world_server__", {

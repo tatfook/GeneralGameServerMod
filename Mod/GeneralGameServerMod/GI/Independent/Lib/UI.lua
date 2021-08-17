@@ -23,17 +23,20 @@ local UI = inherit(nil, module("UI"));
 -- end
 
 -- 场景内显示GI图块编辑
-function ShowGIBlocklyEditorPage()
-    ShowWindow({
-        run = function(text) 
-            __run__(text);
-        end,
-    }, {
-        draggable = true,
-        url = "%gi%/Independent/UI/GIBlocklyEditor.html",
-        width = "100%",
-        height = "100%",
-    });
+function ShowGIBlocklyEditorPage(G, params)
+    G = G or {};
+    params = params or {};
+
+    params.url = "%gi%/Independent/UI/GIBlocklyEditor.html";
+    params.draggable = true;
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
+
+    G.run = function(text)
+        __run__(text);
+    end
+
+    return ShowWindow(G, params);
 end
 
 local function GetCodeBlockEditorWidth()

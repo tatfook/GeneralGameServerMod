@@ -26,6 +26,7 @@ local ContextMenu = NPL.load("./ContextMenu.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
 local ShadowBlock = NPL.load("./ShadowBlock.lua", IsDevEnv);
 local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
+local Note = NPL.load("./Note.lua", IsDevEnv);
 local BlocklySimulator = NPL.load("./BlocklySimulator.lua", IsDevEnv);
 
 local Blockly = commonlib.inherit(Element, NPL.export());
@@ -45,7 +46,7 @@ Blockly:Property("FileManager");              -- 文件管理器
 Blockly:Property("ToolBox");                  -- 工具栏
 Blockly:Property("ShadowBlock");              -- 占位块
 Blockly:Property("Scale", 1);                 -- 缩放
-Blockly:Property("ReadOnly", false, "IsReadOnly");                 -- 缩放
+Blockly:Property("ReadOnly", false, "IsReadOnly");    -- 只读
 Blockly:Property("OptionGlobal");             -- 选项全局表
 
 function Blockly.PlayCreateBlockSound()
@@ -72,6 +73,7 @@ function Blockly:Reset()
     self.undos = {};
     self.redos = {};
     self.blocks = {};
+    self.notes = {};
     self.offsetX, self.offsetY = 0, 0;
     self.mouseMoveX, self.mouseMoveY = 0, 0;
     self:SetScale(1);
@@ -114,6 +116,7 @@ function Blockly:Init(xmlNode, window, parent)
     self.isHideToolBox = self:GetAttrBoolValue("isHideToolBox", false);
     self.isHideIcons = self:GetAttrBoolValue("isHideIcons", false);
     self:SetReadOnly(self:GetAttrBoolValue("readonly", false));
+
     return self;
 end
 
@@ -203,6 +206,83 @@ function Blockly:LoadBlockMap()
         -- 调用初始化回调
         if (type(option.OnInit) == "function") then option.OnInit(option) end 
     end 
+end
+
+-- 添加一个注释
+function Blockly:AddNote(block)
+    block = block or self:GetCurrentBlock();
+    local x, y = self:GetLogicAbsPoint(nil, self.__context_menu_x__ or 0, self.__context_menu_y__ or 0);  -- 相对坐标为窗口的缩放后坐标
+    if (block) then
+        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+        local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
+        x, y = (leftUnitCount + widthUnitCount + 10) * Const.UnitSize, topUnitCount * Const.UnitSize;
+    end
+
+    local note = Note:new():Init({
+        name = "Note",
+        attr = {ID = #self.notes + 1},
+    }, self:GetWindow(), self);
+
+    table.insert(self.childrens, note);
+    note:SetBlockly(self);
+    note:SetBlock(block);
+    note:UpdateLayout(true);
+    note:SetStyleValue("left", x);
+    note:SetStyleValue("top", y);
+    note:SetPosition(x,  y);
+    note:UpdateWindowPos();
+    table.insert(self.notes, note);
+    return note;
+end
+
+-- 移除注释
+function Blockly:RemoveNote(note)
+    for index, item in ipairs(self.notes) do
+        if (item == note) then
+            table.remove(self.notes, index);
+            break;
+        end
+    end
+    for index, item in ipairs(self.childrens) do
+        if (item == note) then
+            table.remove(self.childrens, index);
+            break;
+        end
+    end
+end
+
+function Blockly:RemoveBlockNotes(block)
+    local notes = {};
+    for _, note in ipairs(self.notes) do
+        if (note:GetBlock() == block) then
+            for index, item in ipairs(self.childrens) do
+                if (item == note) then
+                    table.remove(self.childrens, index);
+                    break;
+                end
+            end
+        else
+            table.insert(notes, note);
+        end
+        
+    end
+    self.notes = notes;
+end
+
+function Blockly:ClearNotes()
+    for _, note in ipairs(self.notes) do
+        for index, item in ipairs(self.childrens) do
+            if (item == note) then
+                table.remove(self.childrens, index);
+                break;
+            end
+        end
+    end
+    self.notes = {};
+end
+
+function Blockly:GetNotes()
+    return self.notes;
 end
 
 function Blockly:GetUnitSize()
@@ -507,14 +587,14 @@ function Blockly:ReleaseMouseCapture()
 	return Blockly._super.ReleaseMouseCapture(self);
 end
 
-function Blockly:GetLogicViewPoint(event)
-    local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);  -- 相对坐标为窗口的缩放后坐标
+function Blockly:GetLogicViewPoint(event, screen_x, screen_y)
+    local x, y = Blockly._super.GetRelPoint(self, screen_x or event.x, screen_y or event.y);  -- 相对坐标为窗口的缩放后坐标
     local scale = self:GetScale();                                    -- 获取缩放值
     return math.floor(x / scale + 0.5), math.floor(y / scale + 0.5);  -- 转化为逻辑坐标
 end
 
-function Blockly:GetLogicAbsPoint(event)
-    local x, y = self:GetLogicViewPoint(event);
+function Blockly:GetLogicAbsPoint(event, screen_x, screen_y)
+    local x, y = self:GetLogicViewPoint(event, screen_x, screen_y);
     return x - self.offsetX, y - self.offsetY;
 end
 
@@ -668,6 +748,7 @@ function Blockly:OnMouseMove(event)
     end
     self.offsetX = self.startOffsetX + offsetX;
     self.offsetY = self.startOffsetY + offsetY;
+    self:OnOffsetChange();
 end
 
 -- 鼠标抬起事件
@@ -708,12 +789,24 @@ function Blockly:OnMouseUp(event)
         contextmenu:SetStyleValue("top", absY);
         if (ui:GetClassName() == "Blockly") then 
             menuType = "blockly";
+            self:SetCurrentBlock(nil);
         else 
             block = ui:GetBlock();
             self:SetCurrentBlock(block:GetProxyBlock() or block);
         end
         self:GetContextMenu():Show(menuType);
+        self.__context_menu_x__, self.__context_menu_y__ = event:GetScreenXY();
     end
+end
+
+function Blockly:OnOffsetChange()
+    for _, note in ipairs(self.notes) do
+        note:UpdateWindowPos();
+    end
+end
+
+function Blockly:GetOffset()
+    return self.offsetX, self.offsetY;
 end
 
 -- 获取鼠标元素
@@ -892,6 +985,13 @@ function Blockly:SaveToXmlNode()
     local toolboxXmlNode = self:GetToolBox():SaveToXmlNode();
     if (toolboxXmlNode) then table.insert(xmlNode, toolboxXmlNode) end
 
+    -- 注释
+    for _, note in ipairs(self.notes) do
+        if (not note:GetBlock()) then
+            table.insert(xmlNode, note:SaveToXmlNode());
+        end
+    end
+
     return xmlNode;
 end
 
@@ -908,6 +1008,8 @@ function Blockly:LoadFromXmlNode(xmlNode)
             table.insert(self.blocks, block);
         elseif (subXmlNode.name == "ToolBox") then
             self:GetToolBox():LoadFromXmlNode(subXmlNode);
+        elseif (subXmlNode.name == "Note") then
+            self:AddNote():LoadFromXmlNode(subXmlNode);
         end
     end
 
@@ -918,6 +1020,7 @@ end
 
 function Blockly:LoadFromXmlNodeText(text)
     self:ClearBlocks();
+    self:ClearNotes();
     local xmlNode = Helper.XmlString2Lua(text);
     if (not xmlNode) then return end
     local blocklyXmlNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//Blockly");
