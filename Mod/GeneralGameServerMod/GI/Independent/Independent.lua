@@ -113,7 +113,7 @@ function Independent:GetModuleEnv(__module__)
 	local CodeEnv = self:GetCodeEnv();
 	local __filename__ = __module__.__filename__;
 	local __directory__ = string.gsub(__filename__, "[^/\\]*$", "");
-	return setmetatable({
+	local __env__ = {
 		__module__ = __module__,
 		__filename__ = __filename__,
 		__directory__ = __directory__,
@@ -133,7 +133,9 @@ function Independent:GetModuleEnv(__module__)
 			if (not string.match(path, "%.lua$")) then path = path .. ".lua" end 
 			return self:LoadFile(path);
 		end,
-	}, {
+	};
+	__env__.__env__ = __env__;
+	return setmetatable(__env__, {
 		__index = function(t, key) 
 			if (key == "__module__") then return __module__ end 
 			return CodeEnv[key];

@@ -42,8 +42,6 @@ CodeEnv.SceneContext = SceneContext;
 
 function CodeEnv:ctor()
 	self._G = self;
-	self.__env__ = self;          -- 快捷方式
-
 	self.__modules__ = {};        -- 模块
 	self.__tables__ = {};         -- 全局表集
 	self.__windows__ = {};        -- 窗口
