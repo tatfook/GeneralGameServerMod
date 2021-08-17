@@ -65,8 +65,18 @@ local NoteTextArea = commonlib.inherit(TextArea, {});
 NoteTextArea:Property("Note");
 
 function NoteTextArea:OnMouseDown(event)
-    self:GetNote():AdjustZOrder();
+    if (not self:IsFocus()) then
+        return self:GetNote():OnMouseDown(event);
+    end
     return NoteTextArea._super.OnMouseDown(self, event);
+end
+
+function NoteTextArea:OnMouseMove(event)
+    return NoteTextArea._super.OnMouseMove(self, event);
+end
+
+function NoteTextArea:OnMouseUp(event)
+    return NoteTextArea._super.OnMouseUp(self, event);
 end
 
 Note:Property("BaseStyle", {
@@ -245,8 +255,9 @@ function Note:OnMouseMove(event)
 end
 
 function Note:OnMouseUp(event)
-    Note._super.OnMouseUp(self, event);
+    if (self.isMouseDown and not event:IsMove()) then self.__textarea__:FocusIn() end
 
+    Note._super.OnMouseUp(self, event);
     self:ReleaseMouseCapture();
     self.isMouseDown = false;
     local left, top = self:GetPosition();
