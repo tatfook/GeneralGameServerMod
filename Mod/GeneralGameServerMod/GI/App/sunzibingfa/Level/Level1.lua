@@ -41,8 +41,8 @@ function Level:LoadLevel()
     self:CreatePangJuanEntity(10090,12,10089);
     
     -- 添加任务
-    self:AddPassLevelTask(self.GOODS_ID.GOAL_POINT, 1);
-    self:AddPassLevelExtraTask(self.GOODS_ID.TIAN_SHU_CAN_JUAN, 1);
+    self:AddGoalPointTask(1);
+    self:AddTianShuCanJuanTask(1, true);
 
     -- 调整场景
     SetCamera(30, 75, -90);

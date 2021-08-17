@@ -8,6 +8,9 @@ use the lib:
 local API = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/API.lua");
 ------------------------------------------------------------
 ]]
+
+local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
+
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local API = NPL.export()
 

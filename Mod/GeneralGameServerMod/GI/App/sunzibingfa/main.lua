@@ -16,7 +16,7 @@ local Level3 = require("%gi%/App/sunzibingfa/Level/Level3.lua");
 -- Level1:EditOld("level1")
 -- Level1:Edit("level1")
 -- Level1:Export();
--- Level1:Import();
+Level1:Import();
 
 -- Level1_1:EditOld()
 -- Level1_1:Edit();
@@ -32,10 +32,10 @@ local Level3 = require("%gi%/App/sunzibingfa/Level/Level3.lua");
 -- Level3:Edit();
 -- Level3:Import();
 
-local tower = Level:CreateTowerEntity(19205,5,19202);
+-- local tower = Level:CreateTowerEntity(19205,5,19202);
 
-local hunter = Level:CreateHunterEntity(19205,5,19206);
-SetCameraLookAtPos(hunter:GetPosition())
+-- local hunter = Level:CreateHunterEntity(19205,5,19206);
+-- SetCameraLookAtPos(hunter:GetPosition())
 
 -- -- sleep(3000);
 

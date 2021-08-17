@@ -52,7 +52,7 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         params.width = params.width or (IsDevEnv and "80%" or "100%");
         params.height = params.height or (IsDevEnv and "80%" or "100%");
         params.parent = params.parent or SceneViewport.GetUIObject();
-        params.url = params.url and CodeEnv.GetFullPath(params.url);
+        -- params.url = params.url and CodeEnv.GetFullPath(params.url);
 
         -- 显示窗口
         window:Show(params);

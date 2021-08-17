@@ -14,7 +14,7 @@ local Element = NPL.load("Mod/GeneralGameServerMod/UI/Window/Element.lua");
 local TextArea = NPL.load("Mod/GeneralGameServerMod/UI/Window/Elements/TextArea.lua");
 
 local Const = NPL.load("./Const.lua");
-
+local DEFAULT_EXPAND_HEIGHT = 30;
 local Note = commonlib.inherit(Element, NPL.export());
 
 local Draggable = commonlib.inherit(Element, {});
@@ -128,7 +128,7 @@ function Note:Init(xmlNode, window, parent)
 
     self.__textarea__ = textarea;
     self.__draggable__ = draggable;
-    self.__expand_height__ = 30;
+    self.__expand_height__ = DEFAULT_EXPAND_HEIGHT;
 
     return self;
 end
@@ -138,7 +138,7 @@ function Note:RenderContent(painter)
     local icon_size = 16;
     painter:SetPen("#000000");
     if (self:IsExpand()) then
-        painter:DrawRectTexture(x + 8, y + (30 - icon_size) / 2, icon_size, icon_size, "Texture/Aries/Creator/keepwork/ggs/blockly/icons_80x16bits.png#0 0 16 16");
+        painter:DrawRectTexture(x + 8, y + 7, icon_size, icon_size, "Texture/Aries/Creator/keepwork/ggs/blockly/icons_80x16bits.png#0 0 16 16");
     else
         painter:DrawRectTexture(x + 8, y + 7, icon_size, icon_size, "Texture/Aries/Creator/keepwork/ggs/blockly/icons_80x16bits.png#32 0 16 16");
         painter:DrawText(x + 32, y + 7, self:GetLabel());
@@ -189,6 +189,23 @@ function Note:UpdateLable()
     self:SetLabel(label .. "...");
 end
 
+function Note:SwitchExpand(expand)
+    -- 展开或收起
+    self:SetExpand(expand);
+    self:UpdateLable();
+    if (self:IsExpand()) then
+        self.__textarea__:SetVisible(true);
+        self.__draggable__:SetVisible(true);
+    else
+        self.__textarea__:SetVisible(false);
+        self.__draggable__:SetVisible(false);
+    end
+    local __expand_height__ = self:GetHeight();
+    self:SetStyleValue("height", self.__expand_height__);
+    self.__expand_height__ = __expand_height__;
+    self:UpdateLayout();
+end
+
 function Note:HandleIconEvent(event)
     if (self:IsInnerBlocklyToolBox(event)) then return true end 
 
@@ -197,20 +214,7 @@ function Note:HandleIconEvent(event)
     if (y < 7 or y > 23) then return false end
     
     if (8 <= x and x <= 24) then
-        -- 展开或收起
-        self:SetExpand(not self:IsExpand());
-        self:UpdateLable();
-        if (self:IsExpand()) then
-            self.__textarea__:SetVisible(true);
-            self.__draggable__:SetVisible(true);
-        else
-            self.__textarea__:SetVisible(false);
-            self.__draggable__:SetVisible(false);
-        end
-        local __expand_height__ = self:GetHeight();
-        self:SetStyleValue("height", self.__expand_height__);
-        self.__expand_height__ = __expand_height__;
-        self:UpdateLayout();
+        self:SwitchExpand(not self:IsExpand());
         return true;
     end
 
@@ -307,8 +311,9 @@ function Note:SaveToXmlNode()
     local xmlNode = {name = "Note", attr = {}};
     local attr = xmlNode.attr;
     attr.x, attr.y, attr.w, attr.h = self:GetGeometry();
+    attr.expand = tostring(self:IsExpand())
+    attr.expandHeight = self.__expand_height__;
     attr.text = self.__textarea__:GetValue();
-    attr.expand = self:IsExpand();
     return xmlNode;
 end
 
@@ -318,8 +323,11 @@ function Note:LoadFromXmlNode(xmlNode)
     self:SetStyleValue("top", attr.y);
     self:SetStyleValue("width", attr.w);
     self:SetStyleValue("height", attr.h);
+    self:SetExpand(attr.expand == "true");
+    self.__expand_height__ = tonumber(attr.expandHeight) or DEFAULT_EXPAND_HEIGHT;
     self.__textarea__:SetAttrValue("value", attr.text);
-    self:SetExpand(attr.expand);
+    self.__textarea__:SetVisible(self:IsExpand());
+    self.__draggable__:SetVisible(self:IsExpand());
     self:UpdateLable();
     self:UpdateLayout();
 end

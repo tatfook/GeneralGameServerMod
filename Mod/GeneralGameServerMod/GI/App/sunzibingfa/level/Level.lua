@@ -30,6 +30,22 @@ function Level:AddPassLevelExtraTask(gsid, count, title, description)
     self.__task__:AddExtraTaskItem(gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
 end
 
+function Level:AddGoalPointTask(goal_count, bIsExtraTask)
+    if (bIsExtraTask) then
+        self:AddPassLevelExtraTask(GoodsConfig.GOAL_POINT.ID, goal_count)
+    else 
+        self:AddPassLevelTask(GoodsConfig.GOAL_POINT.ID, goal_count)
+    end
+end
+
+function Level:AddTianShuCanJuanTask(goal_count, bIsExtraTask)
+    if (bIsExtraTask) then
+        self:AddPassLevelExtraTask(GoodsConfig.TIAN_SHU_CAN_JUAN.ID, goal_count)
+    else 
+        self:AddPassLevelTask(GoodsConfig.TIAN_SHU_CAN_JUAN.ID, goal_count)
+    end
+end
+
 -- 监听关卡加载事件,  完成关卡内容设置
 function Level:LoadLevel()
     self:UnloadLevel();
