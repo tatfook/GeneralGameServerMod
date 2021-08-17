@@ -166,7 +166,7 @@ end
 function Note:UpdateLable()
     local text = self.__textarea__:GetValue();
     local width = self:GetWidth() - 64;
-    local label = _guihelper.TrimUtf8TextByWidth(text, width, self:GetFont());
+    local label = _guihelper.TrimUtf8TextByWidth(string.gsub(text, "\n", " "), width, self:GetFont());
     self:SetLabel(label .. "...");
 end
 

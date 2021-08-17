@@ -132,3 +132,29 @@ function __independent_run__(callback, G)
 		if (timer) then end
 	end
 end
+
+function GetFullPath(path)
+	local __directory__ = __module__.__directory__ or "";
+	if (string.match(path, "^[^/\\@%%]")) then path = __directory__ .. "/" .. path end
+	path = ToCanonicalFilePath(path, "linux");
+	local paths = split(path, "/");
+	local filenames = {};
+	for _, filename in ipairs(paths) do
+		if (filename == ".") then
+		elseif (filename == "..") then
+			table.remove(filenames, #filenames);
+		else
+			table.insert(filenames, #filenames + 1, filename);
+		end
+	end
+	local full_path = table.concat(filenames, "/");
+	return ToCanonicalFilePath(full_path);
+end
+
+function import(path)
+	return require(GetFullPath(path));
+end
+
+function export(module)
+	__module__.__module__ = module or {};
+end

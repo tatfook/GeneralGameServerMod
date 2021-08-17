@@ -6,42 +6,12 @@ Desc: 关卡模板文件
 use the lib:
 ]]
 
+local GoodsConfig = require("%gi%/App/sunzibingfa/Level/GoodsConfig.lua");
 local Task = require("Task");
 local Level = inherit(require("Level"), module()) ;
 
+Level.GoodsConfig = GoodsConfig;
 Level:Property("PassLevelState", 0);        -- 0 初始态 1 通关 2 失败
-Level.GOODS_ID = {
-    GOAL_POINT = "goalpoint",
-    TIAN_SHU_CAN_JUAN = "tianshucanjuan",
-    CODE_LINE = "codeline",
-    MAX_ALIVE_TIME = "max_alive_time",
-    ARROW = "arrow",
-}
-
-Level.GOODS = {
-    [Level.GOODS_ID.GOAL_POINT] = {
-        title = "目标点",
-        task_title = "达到目的地",
-    },
-    [Level.GOODS_ID.TIAN_SHU_CAN_JUAN] = {
-        title = "天书残卷",
-        task_title = "收集天书残卷",
-    },
-    [Level.GOODS_ID.CODE_LINE] = {
-        title = "代码行",
-        task_title = "代码行数少于",
-        task_description = nil,
-        task_reverse_compare = true,
-    },
-    [Level.GOODS_ID.MAX_ALIVE_TIME] = {
-        title = "最长存活时间",
-        task_title = "完成时间少于",
-        task_reverse_compare = true,
-    },
-    [Level.GOODS_ID.ARROW] = {
-        title = "箭",
-    },
-}
 
 function Level:ctor()
     self.__all_entity__ = {};
@@ -51,12 +21,12 @@ function Level:ctor()
 end
 
 function Level:AddPassLevelTask(gsid, count, title, description)
-    local goods = self.GOODS[gsid];
+    local goods = GoodsConfig[gsid];
     self.__task__:AddTaskItem(gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
 end
 
 function Level:AddPassLevelExtraTask(gsid, count, title, description)
-    local goods = self.GOODS[gsid];
+    local goods = GoodsConfig[gsid];
     self.__task__:AddExtraTaskItem(gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
 end
 
@@ -86,7 +56,7 @@ function Level:RunLevelCodeBefore()
     Level._super.RunLevelCodeBefore(self);
     if (not self.__sunbin__) then return end
     self.__sunbin__:SetSpeed(self:GetSpeed());
-    self.__task__:SetTaskItemCount(self.GOODS_ID.CODE_LINE, self:GetStatementBlockCount());
+    self.__task__:SetTaskItemCount(GoodsConfig.CODE_LINE.ID, self:GetStatementBlockCount());
 end
 
 -- 检测是否通关
@@ -191,7 +161,7 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
     });
     self.__all_entity__["tianshucanjuan"] = tianshucanjuan;
     tianshucanjuan:AddGoods(CreateGoods({dead = true}));
-    tianshucanjuan:AddGoods(CreateGoods({gsid = self.GOODS_ID.TIAN_SHU_CAN_JUAN, transfer = true, title = "天书残卷", description = "荣誉物品"}));
+    tianshucanjuan:AddGoods(CreateGoods({gsid = GoodsConfig.TIAN_SHU_CAN_JUAN.ID, transfer = true, title = "天书残卷", description = "荣誉物品"}));
     tianshucanjuan:SetPositionChangeCallBack(function()
         fireglowingcircle:SetPosition(tianshucanjuan:GetPosition())
     end);
@@ -221,7 +191,7 @@ function Level:CreateGoalPointEntity(bx, by, bz)
 
     });
     self.__all_entity__["goalpoint"] = goalpoint;
-    goalpoint:AddGoods(CreateGoods({gsid = self.GOODS_ID.GOAL_POINT, title = "目标位置", description = "角色到达指定地点获得该物品", transfer = true}));
+    goalpoint:AddGoods(CreateGoods({gsid = GoodsConfig.GOAL_POINT.ID, title = "目标位置", description = "角色到达指定地点获得该物品", transfer = true}));
     return goalpoint;
 end
 
@@ -292,7 +262,7 @@ function Level:CreateTowerEntity(bx, by, bz)
                 biped = true,
                 goods = {
                     [1] = {
-                        gsid = self.GOODS_ID.ARROW,
+                        gsid = GoodsConfig.ARROW.ID,
                         blood_peer = true,
                         blood_peer_value = -20, 
                     }

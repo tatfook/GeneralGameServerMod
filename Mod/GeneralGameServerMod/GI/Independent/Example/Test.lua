@@ -1,6 +1,8 @@
 
 
-ShowGIBlocklyEditorPage();
+print(GetFullPath("./API.lua"));
+
+-- ShowGIBlocklyEditorPage();
 -- SetCameraLookAtBlockPos(19195,4,19203);
 
 -- local function SelectWorldServer()

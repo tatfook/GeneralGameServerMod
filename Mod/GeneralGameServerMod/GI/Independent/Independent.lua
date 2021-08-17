@@ -129,7 +129,12 @@ function Independent:LoadString(text, filename)
 	end
 
 	-- 初始化模块
-	local __module__ = {__filename__ = __filename__, __loaded__ = false, __module__ = nil};
+	local __module__ = {
+		__filename__ = __filename__, 
+		__directory__ = string.gsub(__filename__, "[^/\\]*$", ""),
+		__loaded__ = false, 
+		__module__ = nil,
+	};
 	__modules__[__filename__] = __module__;
 
 	-- 追加添加完成标志

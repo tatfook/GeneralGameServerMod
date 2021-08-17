@@ -33,19 +33,7 @@ local function CreateParticle(x,y,z, params)
     return GetParticleSystem().createScene(name , x, y, z, params)
 end
 
-local function Tip(text, duration, color, id)
-    BroadcastHelper.PushLabel(
-        {
-            id = id or "GI",
-            label = text,
-            max_duration = duration or 3000,
-            color = color or "255 255 255",
-            scaling = 1,
-            bold = true,
-            shadow = true
-        }
-    )
-end
+
 
 -- {name="hello", quick_ref="/hello text", desc="some description", handler = function(cmd_name, cmd_text, cmd_params) _guihelper.MessageBox("Hello World! "..cmd_text);end}
 local function RegisterSlashCommand(cmd)
@@ -77,11 +65,8 @@ setmetatable(
     UtilityAPI,
     {
         __call = function(_, CodeEnv)
-            CodeEnv.Tip = Tip;
-	        CodeEnv.MessageBox = _guihelper.MessageBox;
-            CodeEnv.GetLogTimeString = commonlib.log.GetLogTimeString;
-            CodeEnv.MD5 = CommonLib.MD5;
-
+            
+            
             __default_gi_cmd_handler__ = function(cmd_name, cmd_text, cmd_params)
                 local strs = CodeEnv.split(cmd_text, " ");
                 local subcmd = strs[1];

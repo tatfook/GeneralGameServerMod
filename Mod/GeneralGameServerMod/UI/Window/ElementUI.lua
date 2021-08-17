@@ -730,7 +730,8 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
     local hoverElement = nil;
     
     isParentElementHover = isParentElementHover == nil and true or isParentElementHover;
-    zindex = (zindex or "") .. "-" .. self:GetZIndex();
+    zindex = zindex or "";
+    -- zindex = (zindex or "") .. "-" .. self:GetZIndex();
 
     local function SetElementOffHover(element)
         if (element:IsHover()) then
@@ -763,7 +764,7 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
         else 
             SetElementOffHover(self);
             if (isUpdateLayout and isChangeHoverState) then self:UpdateLayout(true) end
-            return nil, maxZIndex; 
+            return nil, maxZIndex, zindex; 
         end
     end
 
@@ -791,6 +792,8 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
     end
 
     -- 事件序遍历 取第一悬浮元素
+    zindex = zindex  .. "-" .. self:GetZIndex();
+    maxZIndex = zindex;
     local maxChildZindex = "";
     for child in self:ChildElementIterator(false) do
         if (child:GetViewVisible()) then
@@ -837,13 +840,14 @@ function ElementUI:GetMouseHoverElement(event, zindex, isParentElementHover, isP
         if (isPositionElement) then 
             scrollElement = nil;
         else 
-            return nil, maxZIndex; 
+            return nil, maxZIndex, zindex; 
         end
     end
     if (isHover) then hoverElement = self end
     -- 设置滚动元素
     local scrollX, scrollY = self:GetScrollPos();
     if (scrollX > 0 or scrollY > 0) then scrollElement = self end
+
     -- 初始化zindex
     zindex = zindex .. "-" .. self:GetZIndex();
     maxZIndex = zindex;
