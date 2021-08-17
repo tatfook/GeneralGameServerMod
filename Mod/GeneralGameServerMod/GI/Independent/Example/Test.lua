@@ -1,6 +1,31 @@
 
 
-print(GetFullPath("./API.lua"));
+local str1 = [[
+    function test1 ()
+    end
+]]
+
+local str2 = [[
+    function test2()
+    end
+]]
+
+local G = {};
+function exec(str)
+    local func = loadstring(str);
+    setfenv(func, setmetatable({}, {
+        __index = G,
+        __newindex = function(t, key, val)
+            print(t, key, val)
+        end
+    }));
+    func();
+end
+exec(str1)
+exec(str2);
+print(G.test1, G.test2)
+
+-- print(GetFullPath("./API.lua"));
 
 -- ShowGIBlocklyEditorPage();
 -- SetCameraLookAtBlockPos(19195,4,19203);

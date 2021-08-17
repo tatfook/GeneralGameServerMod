@@ -133,9 +133,9 @@ function __independent_run__(callback, G)
 	end
 end
 
-function GetFullPath(path)
-	local __directory__ = __module__.__directory__ or "";
-	if (string.match(path, "^[^/\\@%%]")) then path = __directory__ .. "/" .. path end
+function GetFullPath(path, directory)
+	directory = directory or __module__.__directory__ or "";
+	if (string.match(path, "^[^/\\@%%]")) then path = directory .. "/" .. path end
 	path = ToCanonicalFilePath(path, "linux");
 	local paths = split(path, "/");
 	local filenames = {};
@@ -149,12 +149,4 @@ function GetFullPath(path)
 	end
 	local full_path = table.concat(filenames, "/");
 	return ToCanonicalFilePath(full_path);
-end
-
-function import(path)
-	return require(GetFullPath(path));
-end
-
-function export(module)
-	__module__.__module__ = module or {};
 end

@@ -6,18 +6,25 @@ Desc: 关卡模板文件
 use the lib:
 ]]
 
-local GoodsConfig = require("%gi%/App/sunzibingfa/Level/GoodsConfig.lua");
+local GoodsConfig = require("./GoodsConfig.lua");
 local Task = require("Task");
 local Level = inherit(require("Level"), module()) ;
 
 Level.GoodsConfig = GoodsConfig;
-Level:Property("PassLevelState", 0);        -- 0 初始态 1 通关 2 失败
+Level:Property("LevelState", 0);        -- 0 初始态 1 开始 2 通关 3 失败
+
+Level.STATE = {
+    INIT = 0,
+    PLAYING = 1,
+    SUCCESS = 2,
+    FAILED = 3,
+}
 
 function Level:ctor()
     self.__all_entity__ = {};
     self.__all_timer__ = {};
     self.__task__ = Task:new();
-    self:SetPassLevelState(0);
+    self:SetLevelState(0);
 end
 
 function Level:AddPassLevelTask(gsid, count, title, description)
@@ -46,12 +53,21 @@ function Level:AddTianShuCanJuanTask(goal_count, bIsExtraTask)
     end
 end
 
+function Level:AddCodeLineTask(goal_count, bIsExtraTask)
+    if (bIsExtraTask) then
+        self:AddPassLevelExtraTask(GoodsConfig.CODE_LINE.ID, goal_count)
+    else 
+        self:AddPassLevelTask(GoodsConfig.CODE_LINE.ID, goal_count)
+    end
+end
+
 -- 监听关卡加载事件,  完成关卡内容设置
 function Level:LoadLevel()
     self:UnloadLevel();
 
     Level._super.LoadLevel(self);
     
+    self:SetLevelState(self.STATE.PLAYING);
     self.__task__:ShowUI();
 end
 
@@ -59,7 +75,7 @@ end
 function Level:UnloadLevel()
     Level._super.UnloadLevel(self);
 
-    self:SetPassLevelState(0);
+    self:SetLevelState(self.STATE.INIT);
     self.__task__:Clear();
     self.__task__:CloseUI();
     for _, entity in pairs(self.__all_entity__) do
@@ -78,7 +94,7 @@ end
 -- 检测是否通关
 function Level:CheckPassLevel()
     if (not self.__sunbin__) then return end
-    if (self:GetPassLevelState() ~= 0) then return end 
+    if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     
     -- 更新任务列表
     for _, goods in pairs(self.__sunbin__:GetAllGoods()) do
@@ -106,19 +122,19 @@ end
 
 -- 通关
 function Level:PassLevelSuccess()
-    if (self:GetPassLevelState() ~= 0) then return end 
+    if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     -- 停止移动
     if (self.__sunbin__) then self.__sunbin__:Stop() end 
-    self:SetPassLevelState(1);
+    self:SetLevelState(self.STATE.SUCCESS);
     Tip("通过成功");
 end
 
 -- 通关失败
 function Level:PassLevelFailed()
-    if (self:GetPassLevelState() ~= 0) then return end 
+    if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     -- 停止移动
     if (self.__sunbin__) then self.__sunbin__:Stop() end 
-    self:SetPassLevelState(2);
+    self:SetLevelState(self.STATE.FAILED);
     Tip("通过失败");
 end
 
@@ -166,17 +182,17 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
         bx = bx, by = by, bz = bz,
         name = "fireglowingcircle",
         assetfile = "character/CC/05effect/fireglowingcircle.x",
+        destroyBeCollided = true,
     });
     self.__all_entity__["fireglowingcircle"] = fireglowingcircle;
 
-    fireglowingcircle:AddGoods(CreateGoods({dead = true}));
     local tianshucanjuan = CreateEntity({
         bx = bx, by = by, bz = bz,
         name = "tianshucanjuan",
         assetfile = "@/blocktemplates/tianshucanjuan.x",
+        destroyBeCollided = true,
     });
     self.__all_entity__["tianshucanjuan"] = tianshucanjuan;
-    tianshucanjuan:AddGoods(CreateGoods({dead = true}));
     tianshucanjuan:AddGoods(CreateGoods({gsid = GoodsConfig.TIAN_SHU_CAN_JUAN.ID, transfer = true, title = "天书残卷", description = "荣誉物品"}));
     tianshucanjuan:SetPositionChangeCallBack(function()
         fireglowingcircle:SetPosition(tianshucanjuan:GetPosition())
@@ -295,7 +311,7 @@ function Level:CreateTowerEntity(bx, by, bz)
     self.__all_entity__["tower"] = tower;
 
     __run__(function()
-        while(self:GetPassLevelState() == 0 and __is_running__()) do
+        while(self:GetLevelState() == 0 and __is_running__()) do
             tower:Turn(45);
             tower:Attack();
             sleep(500);

@@ -7,7 +7,7 @@ Desc: 关卡模板文件
 use the lib:
 ]]
 
-local Level = inherit(require("%gi%/App/sunzibingfa/Level/Level.lua"), module());
+local Level = inherit(require("./Level.lua"), module());
 
 function Level:ctor()
     self:SetLevelName("_level1");
@@ -43,6 +43,7 @@ function Level:LoadLevel()
     -- 添加任务
     self:AddGoalPointTask(1);
     self:AddTianShuCanJuanTask(1, true);
+    self:AddCodeLineTask(1, true);
 
     -- 调整场景
     SetCamera(30, 75, -90);

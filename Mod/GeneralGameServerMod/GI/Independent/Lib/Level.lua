@@ -86,6 +86,8 @@ function Level:Import()
     self:LoadMap();
     self:LoadLevel();
     self:ShowLevelBlocklyEditor();
+    cmd("/mode game");
+    cmd("/clearbag");
 end
 
 function Level:Export()

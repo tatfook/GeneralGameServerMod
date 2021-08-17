@@ -96,21 +96,53 @@ function Independent:Reset()
 end
 
 function Independent:LoadInnerModule()
-	local CodeEnv = self:GetCodeEnv();
-	CodeEnv.require("System");
-	CodeEnv.require("Log");
-	CodeEnv.require("State");
-	CodeEnv.require("Timer");
-	CodeEnv.require("Scene");
-	CodeEnv.require("UI");
-	CodeEnv.require("API");
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/System.lua");
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/Log.lua");
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/State.lua");
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/Timer.lua");
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/Scene.lua");
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/UI.lua");
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/API.lua");
 end
 
 function Independent:IsLoaded(filename)
-	for i = 1, #self.__files__ do
-		if (self.__files__[i] == filename) then return true end
-	end
-	return false;
+	return self.__files__[filename];
+end
+
+function Independent:GetModuleEnv(__module__) 
+	local CodeEnv = self:GetCodeEnv();
+	local __filename__ = __module__.__filename__;
+	local __directory__ = string.gsub(__filename__, "[^/\\]*$", "");
+	return setmetatable({
+		__module__ = __module__,
+		__filename__ = __filename__,
+		__directory__ = __directory__,
+		module = function() 
+			return __module__.__module__;
+		end,
+		loadfile = function(path)
+			return self:LoadFile(path);
+		end,
+		require = function(path)
+			-- 字母开头默认为系统库路径
+			if (string.match(path, "^[A-Za-z]")) then 
+				path = string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", path);
+			else 
+				path = CodeEnv.GetFullPath(path, __directory__);
+			end
+			if (not string.match(path, "%.lua$")) then path = path .. ".lua" end 
+			return self:LoadFile(path);
+		end,
+	}, {
+		__index = function(t, key) 
+			if (key == "__module__") then return __module__ end 
+			return CodeEnv[key];
+		end,
+		__newindex = function(t, key, val)
+			if (key == "__module__") then return end 
+			CodeEnv[key] = val;
+		end
+	});
 end
 
 function Independent:LoadString(text, filename)
@@ -122,6 +154,7 @@ function Independent:LoadString(text, filename)
 
 	-- 已加载完成直接返回
 	if (__modules__[__filename__] and __modules__[__filename__].__loaded__) then return __modules__[__filename__].__module__ end
+
 	-- 加载中则等待
 	if (__modules__[__filename__] and not __modules__[__filename__].__loaded__) then 
 		while (not __modules__[__filename__].__loaded__) do CodeEnv.sleep() end 	
@@ -129,43 +162,25 @@ function Independent:LoadString(text, filename)
 	end
 
 	-- 初始化模块
-	local __module__ = {
-		__filename__ = __filename__, 
-		__directory__ = string.gsub(__filename__, "[^/\\]*$", ""),
-		__loaded__ = false, 
-		__module__ = nil,
-	};
+	local __module__ = {__filename__ = __filename__, __loaded__ = false, __module__ = {}};
 	__modules__[__filename__] = __module__;
 
-	-- 追加添加完成标志
-	text = text .. "\n" .. string.format([[
-local __filename__ = "%s";
-local __module__ = __modules__[__filename__];
-__module__.__loaded__ = true;
-]], __filename__);
-
 	-- 生成函数
-	local code_func, errormsg = loadstring(text, "loadstring:" .. filename);
+	local code_func, errormsg = loadstring(text .. "\n__module__.__loaded__ = true;", "loadstring:" .. filename);
 	if errormsg then return print("Independent:LoadString Failed", filename, errormsg) end
 
-	-- 备份当前模块
-	local __old_module__ = CodeEnv.__module__;
-	-- 设置当前
-	CodeEnv.__module__ = __module__;
 	-- 设置代码环境
-	setfenv(code_func, CodeEnv);
+	setfenv(code_func, self:GetModuleEnv(__module__));
 	-- 执行代码
 	self:Call(code_func);
 	-- 等待执行完成
 	while (not __module__.__loaded__) do CodeEnv.sleep() end 	
-	-- 还原当前模块
-	CodeEnv.__module__ = __old_module__;
 	
 	print("========================loadfile=======================", filename);
 	
 	if (filename) then 
 		-- 添加至加载列表
-		self.__files__[#self.__files__ + 1] = filename;
+		self.__files__[filename] = __module__;
 	else
 		-- 纯代码不保存模块
 		__modules__[__filename__] = nil;
@@ -176,9 +191,10 @@ __module__.__loaded__ = true;
 end
 
 function Independent:LoadFile(filename)
-	if (not filename or not self:IsRunning() or self:IsLoaded(filename)) then return end
-	
+	if (not filename or not self:IsRunning()) then return end
 	local filepath = CommonLib.GetFullPath(filename, self.__alias_path_map__);
+	if (self.__files__[filepath]) then return self.__files__[filepath].__module__ end 
+
 	local text = CommonLib.GetFileText(filepath);
 	if (not text or text == "") then 
 		print("file not exist: ", filepath);
@@ -196,7 +212,7 @@ end
 
 function Independent:XPCall(callback, ...)
 	return xpcall(callback, function (err) 
-		GGS.INFO("Independent:Call:Error", err);
+		print("Independent:Call:Error", err);
 		DebugStack();
 	end, ...);
 end
