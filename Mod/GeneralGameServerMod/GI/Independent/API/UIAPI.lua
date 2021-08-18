@@ -95,6 +95,7 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
     local scene_viewport = ViewportManager:GetSceneViewport();
     
     CodeEnv.SetSceneMarginRight = function(size) 
+        -- print("==============CodeEnv.SetSceneMarginRight==============", size);
         scene_viewport:SetMarginRight(size);
         OnSceneViewportSizeChange();
     end

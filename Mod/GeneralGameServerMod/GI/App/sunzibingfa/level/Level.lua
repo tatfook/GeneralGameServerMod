@@ -27,6 +27,7 @@ function Level:ctor()
     self:SetLevelState(0);
 end
 
+----------------------------------------------task api----------------------------------------------
 function Level:AddPassLevelTask(gsid, count, title, description)
     local goods = GoodsConfig[gsid];
     self.__task__:AddTaskItem(gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
@@ -87,7 +88,10 @@ end
 function Level:RunLevelCodeBefore()
     Level._super.RunLevelCodeBefore(self);
     if (not self.__sunbin__) then return end
-    self.__sunbin__:SetSpeed(self:GetSpeed());
+    for _, entity in pairs(self.__all_entity__) do
+        entity:SetSpeed(entity:GetSpeed() * self:GetSpeed());
+    end
+    -- self.__sunbin__:SetSpeed(self:GetSpeed());
     self.__task__:SetTaskItemCount(GoodsConfig.CODE_LINE.ID, self:GetStatementBlockCount());
 end
 
@@ -138,18 +142,6 @@ function Level:PassLevelFailed()
     Tip("通过失败");
 end
 
--- 编辑旧关卡 后续废弃
-function Level:EditOld(level_name)
-    Level._super.Edit(self);
-    self:UnloadMap();
-    cmd("/property UseAsyncLoadWorld false")
-    cmd("/property AsyncChunkMode false");
-    if (level_name and level_name ~= "") then cmd(format("/loadtemplate 10064 12 10064 %s", level_name)) end
-    cmd("/property AsyncChunkMode true");
-    cmd("/property UseAsyncLoadWorld true");
-    cmd(format("/goto %s %s %s", 10064, 8, 10064));
-end
-
 -- 编辑
 function Level:Edit()
     Level._super.Edit(self);
@@ -163,6 +155,7 @@ function Level:CreateSunBinEntity(bx, by, bz)
         biped = true,
         assetfile = "character/CC/artwar/game/sunbin.x",
         physicsHeight = 1.765,
+        types = {["human"] = 0},
     });
     sunbin:TurnLeft(90);
     sunbin:SetGoodsChangeCallBack(function()
@@ -171,7 +164,7 @@ function Level:CreateSunBinEntity(bx, by, bz)
     sunbin:SetDestroyCallBack(function()
         self:PassLevelFailed();
     end);
-    self.__all_entity__["sunbin"] = sunbin;
+    table.insert(self.__all_entity__, sunbin);
     self.__sunbin__ = sunbin;
     return sunbin;
 end
@@ -184,7 +177,7 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
         assetfile = "character/CC/05effect/fireglowingcircle.x",
         destroyBeCollided = true,
     });
-    self.__all_entity__["fireglowingcircle"] = fireglowingcircle;
+    table.insert(self.__all_entity__, fireglowingcircle);
 
     local tianshucanjuan = CreateEntity({
         bx = bx, by = by, bz = bz,
@@ -192,7 +185,7 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
         assetfile = "@/blocktemplates/tianshucanjuan.x",
         destroyBeCollided = true,
     });
-    self.__all_entity__["tianshucanjuan"] = tianshucanjuan;
+    table.insert(self.__all_entity__, tianshucanjuan);
     tianshucanjuan:AddGoods(CreateGoods({gsid = GoodsConfig.TIAN_SHU_CAN_JUAN.ID, transfer = true, title = "天书残卷", description = "荣誉物品"}));
     tianshucanjuan:SetPositionChangeCallBack(function()
         fireglowingcircle:SetPosition(tianshucanjuan:GetPosition())
@@ -208,7 +201,7 @@ function Level:CreatePangJuanEntity(bx, by, bz)
         assetfile = "character/CC/artwar/game/pangjuan.x",
     });
     pangjuan:Turn(90);
-    self.__all_entity__["pangjuan"] = pangjuan;
+    table.insert(self.__all_entity__, pangjuan);
     return pangjuan;
 end
 
@@ -222,7 +215,7 @@ function Level:CreateGoalPointEntity(bx, by, bz)
         assetfile = "character/v5/09effect/TransmittalDoor/TransmittalDoor.x",  
 
     });
-    self.__all_entity__["goalpoint"] = goalpoint;
+    table.insert(self.__all_entity__, goalpoint);
     goalpoint:AddGoods(CreateGoods({gsid = GoodsConfig.GOAL_POINT.ID, title = "目标位置", description = "角色到达指定地点获得该物品", transfer = true}));
     return goalpoint;
 end
@@ -244,7 +237,7 @@ function Level:CreateHunterEntity(bx, by, bz)
             skillDistance = 15,
         }),
     });
-    self.__all_entity__["hunter"] = hunter;
+    table.insert(self.__all_entity__, hunter);
     return hunter;
 end
 
@@ -256,10 +249,15 @@ function Level:CreateWolfEntity(bx, by, bz)
         biped = true,
         assetfile = "character/CC/codewar/lang.x",  
         isAutoAttack = true,
-        types = {["wolf"] = 0, ["human"] = 1},
+        isAutoAvoid = true,
+        types = {["wolf"] = 0, ["human"] = 1, ["light"] = 2},
         visibleRadius = 5,
+        speed = 3, 
         defaultSkill = CreateSkill({
             skillRadius = 1,
+            targetBlood = 50,
+            skillInterval = 500,
+            skillTime = 200,
         }),
     });
     self.__all_entity__["wolf"] = wolf;
@@ -307,8 +305,8 @@ function Level:CreateTowerEntity(bx, by, bz)
         })
     });
 
-    self.__all_entity__["towerbase"] = towerbase;
-    self.__all_entity__["tower"] = tower;
+    table.insert(self.__all_entity__, towerbase);
+    table.insert(self.__all_entity__, tower);
 
     __run__(function()
         while(self:GetLevelState() == 0 and __is_running__()) do
@@ -319,6 +317,21 @@ function Level:CreateTowerEntity(bx, by, bz)
     end);
     return tower;
 end
+
+function Level:CreateTorchEntity(bx, by, bz)
+    local torch = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "towerbase",
+        assetfile = "character/CC/artwar/game/huoba_ming.x",  
+        destroyBeCollided = true,
+        light = true,
+    });
+    torch:SetCollidedCallBack(function(self_entity, target_entity)
+        target_entity:SetCanLight(true);
+    end);
+    table.insert(self.__all_entity__, torch);
+    return torch;
+end 
 
 Level:InitSingleton();
 

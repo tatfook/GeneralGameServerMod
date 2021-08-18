@@ -342,6 +342,7 @@ function BlockManager.GetLanguageCategoryListAndMap(path)
     for _, category in ipairs(categoryList) do
         table.sort(category.blocktypes);
     end
+    
     return categoryList, categoryMap;
 end
 

@@ -26,7 +26,8 @@ Goods:Property("DeadGoods", false, "IsDeadGoods");             -- 被碰撞者�
 Goods:Property("DeadPeerGoods", false, "IsDeadPeerGoods");     -- 碰撞者消失物品
 Goods:Property("BloodPeerGoods", false, "IsBloodPeerGoods");   -- 对端血量物品
 Goods:Property("BloodPeerValue", 0);                           -- 对端血量变化
-Goods:Property("CanTransfer", false, "IsCanTransfer");     -- 是否可以转移
+Goods:Property("CanTransfer", false, "IsCanTransfer");         -- 是否可以转移
+Goods:Property("ActivateCallBack");                            -- 激活回调
 
 local __all_goods__ = {};
 local GSID = 0;
@@ -64,7 +65,7 @@ function Goods:Init(config)
     self:SetCanTransfer(if_else(config.transfer == nil or config.transfer, true, false)); 
     self:SetCount(config.count or 1); 
     self:SetStackCount(config.stackCount or self:GetCount());
-
+    self:SetActivateCallBack(config.activate_callback);
     return self;
 end
 
@@ -97,6 +98,9 @@ function Goods:Activate(entity, triggerEntity)
     if (self:IsDeadGoods()) then entity:Destroy() end
     if (self:IsDeadPeerGoods()) then triggerEntity:Destroy() end 
     if (self:IsBloodPeerGoods()) then triggerEntity:IncrementBlood(self:GetBloodPeerValue()) end 
+
+    local ActivateCallBack = self:GetActivateCallBack();
+    if (type(ActivateCallBack) == "function") then ActivateCallBack(entity, triggerEntity) end 
 end
 
 local __api_list__ = {

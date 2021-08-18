@@ -24,12 +24,14 @@ Entity:Property("Biped", false, "IsBiped");                           -- 是否�
 Entity:Property("GoodsChangeCallBack");                               -- 物品变化回调
 Entity:Property("ClickCallBack");                                     -- 物品变化回调
 Entity:Property("PositionChangeCallBack");                            -- 位置变化回调
+Entity:Property("CollidedCallBack");                                  -- 碰撞回调
 Entity:Property("DestroyCallBack");                                   -- 消失回调
 Entity:Property("Code");                                              -- 实体代码
 Entity:Property("CodeXmlText");                                       -- 实体代码的XML Text
 Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否是主玩家
 Entity:Property("Focus", false, "IsFocus");                           -- 是否聚焦
 Entity:Property("Speed", 1);                                          -- 移动速度
+Entity:Property("Step", 0.06);                                        -- 步长
 Entity:Property("CanMotion", true, "IsCanMotion");                    -- 是否可以移动
 Entity:Property("HasBloold", true, "IsHasBlood");                     -- 是否有血量
 Entity:Property("Blood", 100);                                        -- 血量
@@ -39,6 +41,7 @@ Entity:Property("VisibleRadius", 1);                                  -- 可视�
 Entity:Property("CanVisible", true, "IsCanVisible");                  -- 是否可见
 Entity:Property("CanBeCollided", true, "IsCanBeCollided");            -- 是否可被碰撞
 Entity:Property("AutoAttack", false, "IsAutoAttack");                 -- 是否自动攻击
+Entity:Property("AutoAvoid", false, "IsAutoAvoid");                   -- 是否自动回避攻击
 Entity:Property("DefaultSkill");                                      -- 实体默认技能
 
 local NID = 0;
@@ -85,7 +88,9 @@ function Entity:Init(opts)
     if (opts.speed) then self:SetSpeed(opts.speed) end
     self:SetVisibleRadius(opts.visibleRadius or 1);
     self:SetAutoAttack(opts.isAutoAttack);
+    self:SetAutoAvoid(opts.isAutoAvoid);
     self:SetDefaultSkill(opts.defaultSkill);
+    self:SetCanLight(opts.light);
     if (opts.types) then self.__types__ = opts.types end 
     if (opts.goods) then 
         for _, goods_config in pairs(opts.goods) do
@@ -100,6 +105,22 @@ function Entity:FrameMoveRidding()
 end
 
 function Entity:FrameMove()
+end
+
+function Entity:SetCanLight(bCanLight)
+    if (bCanLight and not self.__entity_light__) then 
+        self.__entity_light__ = __EntityLight__:new();
+        self.__entity_light__.modelFilepath = "";
+        self.__entity_light__:SetBlockPos(self:GetBlockPos());
+        self.__entity_light__:CreateInnerObject();
+        self.__entity_light__:SetField("LightType", 1);
+        self.__types__["light"] = 0;
+    end
+    if (not bCanLight and self.__entity_light__) then 
+        self.__entity_light__:Destroy();
+        self.__entity_light__ = nil;
+        self.__types__["light"] = nil;
+    end
 end
 
 function Entity:GetKey()
@@ -165,6 +186,8 @@ function Entity:OnPositionChange()
 end
 
 function Entity:UpdatePosition()
+    if (self.__entity_light__) then self.__entity_light__:SetPosition(self:GetPosition()) end
+
     if (self:IsFocus()) then SetCameraLookAtPos(self:GetPosition()) end
     self:OnPositionChange();
 
@@ -185,11 +208,11 @@ function Entity:UpdatePosition()
 end
 
 function Entity:GetTickCountPerSecond()
-    return __get_loop_tick_count__() * self:GetSpeed(); -- 可以乘以倍数
+    return __get_loop_tick_count__() * self:GetSpeed();           -- 可以乘以倍数
 end
 
 function Entity:GetStepDistance()
-    return 0.06 * self:GetSpeed();                      -- 获取步长
+    return self:GetStep() * self:GetSpeed();                      -- 获取步长
 end
 
 function Entity:IsStandInPosition(x, y, z)
@@ -402,6 +425,11 @@ function Entity:Destroy()
     if (self.__is_destory__) then return end
     self.__is_destory__ = true;
 
+    if (self.__entity_light__) then
+        self.__entity_light__:Destroy();
+        self.__entity_light__ = nil;
+    end
+    
     local callback = self:GetDestroyCallBack();
     if (type(callback) == "function") then callback() end
 
@@ -538,6 +566,9 @@ function Entity:OnCollidedWithEntity(entity)
     if (self:IsDestroyBeCollided()) then
         self:Destroy();
     end
+
+    local CollidedCallBack = self:GetCollidedCallBack();
+    if (type(CollidedCallBack) == "function") then CollidedCallBack(self, entity) end 
 end
 
 function Entity:BeCollidedWithEntity(entity)
@@ -608,8 +639,21 @@ function Entity:AutoAttackEntity(entity)
     self:SetCanVisible(true);
 end
 
+function Entity:AutoAvoid(entity)
+    self:SetCanVisible(false);
+    self:SetFacing(entity:GetFacing());
+    self:MoveForward(self:GetVisibleRadius() * 4);
+    self:SetCanVisible(true);
+end
+
 function Entity:VisibleWithEntity(entity)
     if (not self:IsCanVisible()) then return end
+
+    -- 看到被攻击对象
+    if (self:IsAutoAvoid() and self:IsAttackedEntity(entity)) then
+        __run__(function() self:AutoAvoid(entity) end);
+    end
+
     if (self:IsAutoAttack() and self:GetSkill() and self:IsAttackEntity(entity)) then
         __run__(function() self:AutoAttackEntity(entity) end);
     end

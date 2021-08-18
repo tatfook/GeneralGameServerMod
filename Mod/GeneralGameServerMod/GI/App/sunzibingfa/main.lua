@@ -7,17 +7,38 @@ use the lib:
 ]]
 
 -- require("@/npc.lua");
-local Level = require("%gi%/App/sunzibingfa/Level/Level.lua");
-local Level1 = require("%gi%/App/sunzibingfa/Level/Level1.lua");
+local Level = require("./Level/Level.lua");
+local Level1 = require("./Level/Level1.lua");
+local Level2 = require("./Level/Level2.lua");
+local Level3 = require("./Level/Level3.lua");
+local Level4 = require("./Level/Level4.lua");
+local Level5 = require("./Level/Level5.lua");
 
-local Level2 = require("%gi%/App/sunzibingfa/Level/Level2.lua");
-local Level3 = require("%gi%/App/sunzibingfa/Level/Level3.lua");
-local Level4 = require("%gi%/App/sunzibingfa/Level/Level4.lua");
+local function TranformTemplate(old_level_name, new_level_name)
+    cmd("/property UseAsyncLoadWorld false")
+    cmd("/property AsyncChunkMode false");
+    Level:ClearRegion();
 
--- Level1:EditOld("level1")
--- Level1:Edit("level1")
+    if (old_level_name and old_level_name ~= "") then cmd(format("/loadtemplate 10064 12 10064 %s", old_level_name)) end
+    cmd(format("/goto %s %s %s", 10064, 8, 10064));
+    sleep(200);
+    Level:Export(new_level_name);
+
+    if (old_level_name and old_level_name ~= "") then cmd(format("/loadtemplate -r 10064 12 10064 %s", old_level_name)) end
+    cmd("/property AsyncChunkMode true");
+    cmd("/property UseAsyncLoadWorld true");
+end
+
+-- Level:CreateTorchEntity(19195,5,19200);
+
+-- TranformTemplate("level3.1", "_level5");
+Level:ClearRegion();
+Level5:Import();
+-- Level5:Edit();
+
+-- Level1:Edit()
 -- Level1:Export();
-Level1:Import();
+-- Level1:Import();
 
 -- Level2:EditOld()
 -- Level2:Edit();
@@ -44,7 +65,6 @@ Level1:Import();
 function clear()
     cmd("/mode edit");
     cmd("/home");
-    -- Level:UnloadMap();
 end
 
 

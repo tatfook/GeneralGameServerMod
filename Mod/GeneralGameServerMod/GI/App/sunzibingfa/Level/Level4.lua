@@ -73,18 +73,4 @@ function Level:LoadLevel()
     SetCameraLookAtBlockPos(10087,11,10071);
 end
 
--- 编辑旧关卡
-function Level:EditOld()
-    Level._super:EditOld("level3");
-end
-
--- 关卡编辑
-function Level:Edit()
-    Level._super.Edit(self);
-    -- self:UnloadMap();
-    -- cmd("/loadtemplate 10064 12 10064 level1.1");
-    self:LoadLevel();
-    -- cmd(format("/goto %s %s %s", 10090,12,10077));
-end
-
 Level:InitSingleton();
