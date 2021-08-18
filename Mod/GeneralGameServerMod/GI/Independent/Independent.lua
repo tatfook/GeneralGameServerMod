@@ -109,9 +109,12 @@ function Independent:IsLoaded(filename)
 	return self.__files__[filename];
 end
 
-function Independent:GetModuleEnv(__module__) 
+function Independent:GetModuleEnv(__module__)
+	__module__ = __module__ or {};
+
 	local CodeEnv = self:GetCodeEnv();
-	local __filename__ = __module__.__filename__;
+	local __default_directory__ = "Mod/GeneralGameServerMod/GI/Independent/Lib"; 
+	local __filename__ = __module__.__filename__ or "";
 	local __directory__ = string.gsub(__filename__, "[^/\\]*$", "");
 	local __env__ = {
 		__module__ = __module__,
@@ -124,9 +127,8 @@ function Independent:GetModuleEnv(__module__)
 			return self:LoadFile(path);
 		end,
 		require = function(path)
-			-- 字母开头默认为系统库路径
 			if (string.match(path, "^[A-Za-z]")) then 
-				path = string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", path);
+				path = string.format("%s/%s.lua", __default_directory__, path);
 			else 
 				path = CodeEnv.GetFullPath(path, __directory__);
 			end

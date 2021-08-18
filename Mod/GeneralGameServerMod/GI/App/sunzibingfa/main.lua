@@ -32,13 +32,12 @@ end
 -- Level:CreateTorchEntity(19195,5,19200);
 
 -- TranformTemplate("level3.1", "_level5");
-Level:ClearRegion();
-Level5:Import();
+-- Level5:Import();
 -- Level5:Edit();
 
 -- Level1:Edit()
 -- Level1:Export();
--- Level1:Import();
+Level1:Import();
 
 -- Level2:EditOld()
 -- Level2:Edit();

@@ -73,6 +73,9 @@ function Level:LoadMap(level_name)
     cmd("/property UseAsyncLoadWorld false")
     cmd("/property AsyncChunkMode false");
 
+    -- 先清除
+    self:ClearRegion();
+
     -- 加载地图内容
     level_name = level_name or self:GetLevelName();
     if (level_name and level_name ~= "") then cmd(format("/loadtemplate %d %d %d %s", cx, cy, cz, level_name)) end

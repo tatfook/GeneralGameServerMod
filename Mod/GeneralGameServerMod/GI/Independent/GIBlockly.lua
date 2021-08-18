@@ -122,12 +122,10 @@ local function GetCodeEnv(codeblock)
     local bx, by, bz = codeblock:GetBlockPos();
     local key = string.format("%s_%s_%s", bx, by, bz);
     if (__all_env__[key]) then return __all_env__[key] end
-    local __env__ = {};
+    local __env__ = GameLogic.GetCodeGlobal():GetSandboxAPI().API.__get_module_env__();
 
     __env__.__codeblock__ = codeblock;
     __env__.__codeblock_env__ = codeblock:GetCodeEnv();
-    __env__.__gi_env__ = GameLogic.GetCodeGlobal():GetSandboxAPI().API;
-    setmetatable(__env__, {__index = __env__.__gi_env__});
 
     __all_env__[key] = __env__;
 
@@ -147,10 +145,10 @@ function GIBlockly.CompileCode(code, filename, codeblock)
     local __setfenv__ = setfenv;
     local format = string.format;
     return function() 
-        local __cur_co__ = __env__.__gi_env__.__coroutine_running__();
+        local __cur_co__ = __env__.__coroutine_running__();
         __env__.runInGIEnv = function(callback)
             if (type(callback) ~= "function") then return end 
-            __setfenv__(callback, __env__.__gi_env__);
+            __setfenv__(callback, __env__);
             callback();
         end
         __env__.runInCodeBlockEnv = function(callback)
@@ -159,14 +157,14 @@ function GIBlockly.CompileCode(code, filename, codeblock)
             callback();
         end
         __env__.registerStopEvent = function(callback)
-            __env__.__gi_env__.RegisterEventCallBack(format("__code_block_stop__%s", __cur_co__), callback);
+            __env__.RegisterEventCallBack(format("__code_block_stop__%s", __cur_co__), callback);
         end
 
         code_func();
 
         registerStopEvent(function()
-            __env__.__gi_env__.TriggerEventCallBack(format("__code_block_stop__%s", __cur_co__));
-            __env__.__gi_env__.__clean_coroutine_data__(__cur_co__);
+            __env__.TriggerEventCallBack(format("__code_block_stop__%s", __cur_co__));
+            __env__.__clean_coroutine_data__(__cur_co__);
         end)
     end
 end
