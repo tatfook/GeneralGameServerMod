@@ -918,8 +918,12 @@ function Blockly:handleDeleteAll()
     if (block.previousConnection) then
         block.previousConnection:Disconnection();
     end
+    local nextBlock = block;
+    while (nextBlock) do
+        self:OnDestroyBlock(nextBlock);
+        nextBlock = nextBlock:GetNextBlock();
+    end
     self:RemoveBlock(block);
-    self:OnDestroyBlock(block);
     self:SetCurrentBlock(nil);
     self:OnChange();
 end

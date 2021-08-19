@@ -71,9 +71,6 @@ function Independent:Init()
 		end
 	end);
 
-	-- 主协程
-	self.__main_co__ = coroutine_running();
-	
 	-- 加载内置模块
 	self.__files__ = {};
 
@@ -253,7 +250,6 @@ function Independent:IsCodeEnv()
 	local status = self.__co__ and coroutine_status(self.__co__);
 	-- 不是主线程, 默认协程处于活跃状态则以当前环境执行
 	return not isMainThread and (co == self.__co__ or status == "running" or status == "normal");
-	-- return co == self.__co__ or status == "running" or status == "normal";
 end
 
 function Independent:Yield(...)
@@ -269,14 +265,6 @@ function Independent:Restart()
 end
 
 function Independent:Start(filename)
-	-- 保证在非主线程中执行
-	local _, isMainThread = coroutine_running();
-	if (isMainThread) then
-		return coroutine_resume(coroutine_create(function() 
-			return self:Start(filename);
-		end));
-	end
-
 	if (self:IsRunning()) then return end
 	print("====================Independent:Start=====================");
 	-- 确保已初始化
@@ -300,17 +288,19 @@ function Independent:Start(filename)
 	local duration = math.floor(1000 / loopTickCount);
 	self:GetLoopTimer():Change(duration, duration);
 
-	-- 先加载内部模块
-	self:LoadInnerModule();
+	self:Call(function()
+		-- 先加载内部模块
+		self:LoadInnerModule();
 
-	-- 再加载入口文件
-	self:LoadFile(self:GetMainFileName());
+		-- 再加载入口文件
+		self:LoadFile(self:GetMainFileName());
 
-	-- 触发 MAIN 事件回调
-	self:CallEventCallBack(CodeEnv.EventType.MAIN);
+		-- 触发 MAIN 事件回调
+		self:CallEventCallBack(CodeEnv.EventType.MAIN);
 
-	-- 调用 快捷方式 MAIN
-	self:Call(rawget(CodeEnv, "main"));
+		-- 调用 快捷方式 MAIN
+		self:Call(rawget(CodeEnv, "main"));
+	end);
 end
 
 function Independent:Tick()

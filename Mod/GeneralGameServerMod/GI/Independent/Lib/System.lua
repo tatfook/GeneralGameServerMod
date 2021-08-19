@@ -36,6 +36,7 @@ function select(index)
     return __arguments__[index], __arguments__[index + 1], __arguments__[index + 2], __arguments__[index + 3], __arguments__[index + 4], __arguments__[index + 5], __arguments__[index + 6], __arguments__[index + 7], __arguments__[index + 8], __arguments__[index + 9];
 end
 
+
 function __run__(callback, ...)
 	if (type(callback) == "string") then
 		local func, err = loadstring(callback, "__run__");
@@ -52,8 +53,18 @@ function __run__(callback, ...)
 	if (not ok) then print("__run__:error",err) end
 end
 
+-- 废弃
 function run(callback, ...)
 	__run__(callback, ...)
+end
+
+function async_run(...)
+	__run__(...);
+end
+
+function sync_run(callback, ...)
+	if (type(callback) ~= "function") then return end 
+	callback(...);
 end
 
 -- 空函数
@@ -100,9 +111,13 @@ function sleep(sleep)
 			-- 激活的不是函数则结束sleep退出
 			isSleeping = false;
 		else
+			sync_run(unpack());
 			-- 激活的是函数则创建新协程执行
-			print(cur_co, __co__, SleepLoopCallBack, callback);
-			run(unpack());
+			-- if (isSleeping and callback ~= null_function) then
+			-- 	run(unpack());
+			-- else
+			-- 	sync_run(unpack());
+			-- end
 		end
 	end
 	
