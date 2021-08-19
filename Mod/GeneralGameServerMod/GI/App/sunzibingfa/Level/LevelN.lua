@@ -30,17 +30,17 @@ end
 function Level:LoadLevel()
     Level._super.LoadLevel(self);
 
-    -- -- 摆放角色
+    -- 摆放角色
     -- self:CreateSunBinEntity(10083,12,10066); 
     -- self:CreateTianShuCanJuanEntity(10103,12,10086);
     -- self:CreateGoalPointEntity(10093,12,10086);
 
-    -- -- -- 添加任务
+    -- 添加任务
     -- self:AddGoalPointTask(1);
     -- self:AddTianShuCanJuanTask(1, true);
     -- self:AddCodeLineTask(1, true);
 
-    -- -- 设置视角
+    -- 设置视角
     -- SetCamera(40, 75, -90);
     -- SetCameraLookAtBlockPos(10088,12,10076);
 end

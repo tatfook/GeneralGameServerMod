@@ -1,13 +1,18 @@
 <template class="container">
     <div style="display: flex; height: 40px; justify-content: center; align-items: center;">
-        <div class="button">场景</div>
+        <div class="button" onclick=TogglePlaying>{{playing and "停止关卡" or "开始关卡"}}</div>
         <div class="button" onclick=ClickExportLevel>导出关卡</div>
-        <div class="button" onclick=ClickGIBlocklyEditor>GI图块编辑器</div>
-        <div class="button" onclick=ClickLevelBlocklyEditor>关卡图块编辑器</div>
+        <!-- <div class="button" onclick=ClickGIBlocklyEditor>GI图块编辑器</div> -->
+        <!-- <div class="button" onclick=ClickLevelBlocklyEditor>关卡图块编辑器</div> -->
+        <div class="button" onclick=CloseWindow>退出编辑</div>
     </div>
 </template>
 
 <script type="text/lua">
+
+playing = false;
+
+local MainPlayer = GetPlayer();
 function ClickGIBlocklyEditor()
     ShowGIBlocklyEditorPage()
 end
@@ -18,6 +23,22 @@ end
 
 function ClickExportLevel()
     __level__:Export();
+end
+
+function TogglePlaying()
+    playing = not playing;
+    if (playing) then
+        __level__:LoadLevel();
+        MainPlayer:SetVisible(false);
+        __level__:ShowLevelBlocklyEditor();
+        <!-- cmd("/mode game"); -->
+    else
+        __level__:UnloadLevel();
+        __level__:CloseLevelBlocklyEditor();
+        MainPlayer:SetVisible(true);
+        FocusPlayer();
+        <!-- cmd("/mode editor"); -->
+    end
 end
 
 </script>

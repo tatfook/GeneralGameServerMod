@@ -94,7 +94,7 @@ function Level:UnloadMap(level_name)
     if (level_name and level_name ~= "") then cmd(format("/loadtemplate -r %d %d %d %s", cx, cy, cz, level_name)) end
 end
 
-function Level:Import()
+function Level:Load()
     -- self:UnloadMap();
     self:LoadMap();
     self:LoadLevel();
@@ -102,6 +102,13 @@ function Level:Import()
     cmd("/mode game");
     cmd("/clearbag");
     cmd("/hide quickselectbar");
+end
+
+-- 关卡结束
+function Level:Unload()
+    self:UnloadLevel();
+    self:UnloadMap();
+    self:CloseLevelBlocklyEditor();
 end
 
 function Level:Export(level_name)
@@ -126,13 +133,7 @@ function Level:ResetLevel()
     Emit("ResetLevel");
     self:UnloadLevel();
     self:LoadLevel();
-end
-
--- 关卡结束
-function Level:Exit()
-    self:UnloadLevel();
-    self:UnloadMap();
-    self:CloseLevelBlocklyEditor();
+    self:ShowLevelBlocklyEditor();
 end
 
 function Level:RunLevelCodeBefore()
@@ -183,12 +184,11 @@ function Level:CloseLevelBlocklyEditor()
     CloseLevelBlocklyEditorPage();
 end
 
-function Level:Edit()
+function Level:Edit(bLoadMap)
+    if (bLoadMap) then self:LoadMap() end
     local cx, cy, cz = self:GetCenterPoint();
     cmd(format("/goto %s %s %s", cx, cy, cz));
-
     cmd("/mode editor");
-
     ShowWindow({
         __level__ = self;
     }, {

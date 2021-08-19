@@ -142,6 +142,14 @@ local function SetPlayerVisible(visible)
     GetPlayer():SetVisible(visible);
 end
 
+local function FocusPlayer(player)
+    player = player or GetPlayer();
+    if (not player) then return end
+    player:SetFocus();
+    local obj = player:GetInnerObject();
+    if(obj and obj.ToCharacter) then obj:ToCharacter():SetFocus() end
+end
+
 setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
     CodeEnv.GetUserInfo = GetUserInfo;
     CodeEnv.GetSystemUser = GetSystemUser;
@@ -153,6 +161,7 @@ setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
     CodeEnv.SetNickName = SetNickName;
     CodeEnv.GetSchoolName = GetSchoolName;
     CodeEnv.GetPlayer = GetPlayer;
+    CodeEnv.FocusPlayer = FocusPlayer;
     
     CodeEnv.GetPlayerEntityId = function() return EntityManager.GetPlayer().entityId end
     CodeEnv.IsInWater = function() return GameLogic.GetPlayerController():IsInWater() end
@@ -173,8 +182,6 @@ setmetatable(PlayerAPI, {__call = function(_, CodeEnv)
 
     local MainPlayer = GetPlayer();
     CodeEnv.RegisterEventCallBack(CodeEnv.EventType.CLEAR, function()
-        MainPlayer:SetFocus();
-        local obj = MainPlayer:GetInnerObject();
-        if(obj and obj.ToCharacter) then obj:ToCharacter():SetFocus() end
+        FocusPlayer(MainPlayer);
     end);
 end});

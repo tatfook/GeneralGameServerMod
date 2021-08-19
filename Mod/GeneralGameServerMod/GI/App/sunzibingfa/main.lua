@@ -15,6 +15,7 @@ local Level4 = require("./Level/Level4.lua");
 local Level5 = require("./Level/Level5.lua");
 local Level6 = require("./Level/Level6.lua");
 local Level7 = require("./Level/Level7.lua");
+local Level8 = require("./Level/Level8.lua");
 
 local function TranformTemplate(old_level_name, new_level_name)
     cmd("/property UseAsyncLoadWorld false")
@@ -32,29 +33,33 @@ local function TranformTemplate(old_level_name, new_level_name)
     cmd("/property UseAsyncLoadWorld true");
 end
 
--- TranformTemplate("level4.1", "_level7");
+-- TranformTemplate("level5", "_level8");
+-- Level:ClearRegion();
 
 -- Level1:Edit()
--- Level1:Import();
+-- Level1:Load();
 
 -- Level2:Edit();
 -- Level2:Export();
--- Level2:Import();
+-- Level2:Load();
 
 -- Level3:Edit();
--- Level3:Import();
+-- Level3:Load();
 
 -- Level4:Edit();
--- Level4:Import();
+-- Level4:Load();
 
 -- Level5:Edit();
--- Level5:Import();
+-- Level5:Load();
 
 -- Level6:Edit();
--- Level6:Import();
+-- Level6:Load();
 
 -- Level7:Edit();
-Level7:Import();
+-- Level7:Load();
+
+-- Level8:Load();
+Level8:Edit(true);
 
 function clear()
     cmd("/mode edit");

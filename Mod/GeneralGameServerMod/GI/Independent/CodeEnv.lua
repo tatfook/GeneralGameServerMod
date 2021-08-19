@@ -82,14 +82,14 @@ function CodeEnv:InstallLuaAPI()
 		if (self.__is_touch_device__()) then return end 
 		
 		if (type(callback) ~= "function") then return end
-		self.__clean_callback__[callback] = callback;
+		self.__get_coroutine_data__().__clean_callback__[callback] = callback;
 	end
 
 	self.__remove_clean_coroutine_data_callback__ = function(callback)
 		if (self.__is_touch_device__()) then return end 
 		
 		if (type(callback) ~= "function") then return end
-		self.__clean_callback__[callback] = nil;
+		self.__get_coroutine_data__().__clean_callback__[callback] = nil;
 	end
 
 	self.__clean_coroutine_data__ = function(__co__)
