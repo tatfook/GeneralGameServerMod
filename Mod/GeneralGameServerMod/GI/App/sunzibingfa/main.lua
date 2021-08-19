@@ -13,6 +13,8 @@ local Level2 = require("./Level/Level2.lua");
 local Level3 = require("./Level/Level3.lua");
 local Level4 = require("./Level/Level4.lua");
 local Level5 = require("./Level/Level5.lua");
+local Level6 = require("./Level/Level6.lua");
+local Level7 = require("./Level/Level7.lua");
 
 local function TranformTemplate(old_level_name, new_level_name)
     cmd("/property UseAsyncLoadWorld false")
@@ -20,50 +22,44 @@ local function TranformTemplate(old_level_name, new_level_name)
     Level:ClearRegion();
 
     if (old_level_name and old_level_name ~= "") then cmd(format("/loadtemplate 10064 12 10064 %s", old_level_name)) end
-    cmd(format("/goto %s %s %s", 10064, 8, 10064));
+    -- cmd(format("/goto %s %s %s", 10064, 8, 10064));
     sleep(200);
     Level:Export(new_level_name);
+    sleep(200);
 
     if (old_level_name and old_level_name ~= "") then cmd(format("/loadtemplate -r 10064 12 10064 %s", old_level_name)) end
     cmd("/property AsyncChunkMode true");
     cmd("/property UseAsyncLoadWorld true");
 end
 
--- Level:CreateTorchEntity(19195,5,19200);
-
--- TranformTemplate("level3.1", "_level5");
--- Level5:Import();
--- Level5:Edit();
+-- TranformTemplate("level4.1", "_level7");
 
 -- Level1:Edit()
--- Level1:Export();
-Level1:Import();
+-- Level1:Import();
 
--- Level2:EditOld()
 -- Level2:Edit();
 -- Level2:Export();
 -- Level2:Import();
 
--- Level3:EditOld()
 -- Level3:Edit();
 -- Level3:Import();
 
--- Level4:EditOld()
 -- Level4:Edit();
 -- Level4:Import();
 
--- local tower = Level:CreateTowerEntity(19205,5,19202);
--- local hunter = Level:CreateHunterEntity(19205,5,19206);
--- SetCameraLookAtPos(hunter:GetPosition())
+-- Level5:Edit();
+-- Level5:Import();
 
--- -- sleep(3000);
+-- Level6:Edit();
+-- Level6:Import();
 
--- local wolf = Level:CreateWolfEntity(19210,5,19206);
--- wolf:MoveForward();
+-- Level7:Edit();
+Level7:Import();
 
 function clear()
     cmd("/mode edit");
     cmd("/home");
+    cmd("/show quickselectbar");
 end
 
 

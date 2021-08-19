@@ -101,6 +101,7 @@ function Level:Import()
     self:ShowLevelBlocklyEditor();
     cmd("/mode game");
     cmd("/clearbag");
+    cmd("/hide quickselectbar");
 end
 
 function Level:Export(level_name)
@@ -125,6 +126,13 @@ function Level:ResetLevel()
     Emit("ResetLevel");
     self:UnloadLevel();
     self:LoadLevel();
+end
+
+-- 关卡结束
+function Level:Exit()
+    self:UnloadLevel();
+    self:UnloadMap();
+    self:CloseLevelBlocklyEditor();
 end
 
 function Level:RunLevelCodeBefore()

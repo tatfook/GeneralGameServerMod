@@ -86,6 +86,7 @@ function Entity:Init(opts)
     if (opts.canBeCollided == false) then self:SetCanBeCollided(false) end 
     if (opts.hasBloold == false) then self:SetHasBloold(false) end 
     if (opts.speed) then self:SetSpeed(opts.speed) end
+    if (opts.scale) then self:SetScaling(opts.scale) end 
     self:SetVisibleRadius(opts.visibleRadius or 1);
     self:SetAutoAttack(opts.isAutoAttack);
     self:SetAutoAvoid(opts.isAutoAvoid);
@@ -582,7 +583,7 @@ end
 function Entity:DistanceTo(tbx, tby, tbz)
     local bx, by, bz = self:GetBlockPos();
     local dx, dy, dz = math.abs(tbx - bx), math.abs(tby - by), math.abs(tbz - bz);
-    return math.max(math.max(dx, dy), dz);
+    return math.max(math.floor(math.sqrt(dx * dx + dz * dz)), dy);
 end
 
 function Entity:DistanceToEntity(entity)
@@ -652,9 +653,7 @@ function Entity:VisibleWithEntity(entity)
     -- 看到被攻击对象
     if (self:IsAutoAvoid() and self:IsAttackedEntity(entity)) then
         __run__(function() self:AutoAvoid(entity) end);
-    end
-
-    if (self:IsAutoAttack() and self:GetSkill() and self:IsAttackEntity(entity)) then
+    elseif (self:IsAutoAttack() and self:GetSkill() and self:IsAttackEntity(entity)) then
         __run__(function() self:AutoAttackEntity(entity) end);
     end
 end

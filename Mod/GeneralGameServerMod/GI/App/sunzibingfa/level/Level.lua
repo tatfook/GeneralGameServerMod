@@ -70,6 +70,7 @@ function Level:LoadLevel()
     
     self:SetLevelState(self.STATE.PLAYING);
     self.__task__:ShowUI();
+    self:ShowCameraUI();
 end
 
 -- 监听关卡卸载事件,  移除关卡相关资源
@@ -82,6 +83,11 @@ function Level:UnloadLevel()
     for _, entity in pairs(self.__all_entity__) do
         entity:Destroy();
     end
+end
+
+-- 重置关卡
+function Level:ResetLevel()
+    Level._super.ResetLevel(self);
 end
 
 -- 执行关卡代码前, 
@@ -119,11 +125,6 @@ function Level:RunLevelCodeAfter()
     self:CheckPassLevel();
 end
 
--- 重置关卡
-function Level:ResetLevel()
-    Level._super.ResetLevel(self);
-end
-
 -- 通关
 function Level:PassLevelSuccess()
     if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
@@ -145,6 +146,32 @@ end
 -- 编辑
 function Level:Edit()
     Level._super.Edit(self);
+end
+
+-- 显示相机UI
+function Level:ShowCameraUI()
+    self.__camera_ui__ = ShowWindow({
+        OnDefaultView = function()
+            self:ResetLevel();
+        end,
+        OnZoomIn = function()
+            SetCameraObjectDistance(math.max(GetCameraObjectDistance() - 2, 6)); 
+        end,
+        OnZoomOut = function()
+            SetCameraObjectDistance(math.min(GetCameraObjectDistance() + 2, 50)); 
+        end,
+    }, {
+        template = [[
+<template style="display: flex; background-color:#00000000;color:#eeeeee;font-size:14px;margin:5px;">
+    <div style="width:30px; height:30px;background:url(@/textures/resetView.png); margin:5px;"  tooltip="恢复默认视角" onclick="OnDefaultView"></div>
+    <div style="width:30px; height:30px;background:url(@/textures/zoomIn.png); margin:5px;"  tooltip="放大视角" onclick="OnZoomIn"></div>
+    <div style="width:30px; height:30px;background:url(@/textures/zoomOut.png); margin:5px;" tooltip="缩小视角" onclick="OnZoomOut"></div>
+</template>
+        ]],
+        alignment = "_rt",
+        width = 120,
+        height = 50,
+    })
 end
 
 -- 创建孙膑NPC
@@ -325,6 +352,7 @@ function Level:CreateTorchEntity(bx, by, bz)
         assetfile = "character/CC/artwar/game/huoba_ming.x",  
         destroyBeCollided = true,
         light = true,
+        -- scale = 1.5,
     });
     torch:SetCollidedCallBack(function(self_entity, target_entity)
         target_entity:SetCanLight(true);
@@ -332,6 +360,18 @@ function Level:CreateTorchEntity(bx, by, bz)
     table.insert(self.__all_entity__, torch);
     return torch;
 end 
+
+function Level:CreateTrapEntity(bx, by, bz)
+    local trap = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "trap",
+        assetfile = "@/blocktemplates/bushoujia.x",  
+        destroyBeCollided = true,
+        goods = {{dead_peer = true, name = "trap"}},
+    });
+    table.insert(self.__all_entity__, trap);
+    return trap;
+end
 
 Level:InitSingleton();
 
