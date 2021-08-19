@@ -62,6 +62,10 @@ function Level:AddCodeLineTask(goal_count, bIsExtraTask)
     end
 end
 
+function Level:IsPlaying()
+    return self:GetLevelState() == self.STATE.PLAYING;
+end
+
 -- 监听关卡加载事件,  完成关卡内容设置
 function Level:LoadLevel()
     self:UnloadLevel();
@@ -80,6 +84,7 @@ function Level:UnloadLevel()
     self:SetLevelState(self.STATE.INIT);
     self.__task__:Clear();
     self.__task__:CloseUI();
+    self:CloseCameraUI();
     for _, entity in pairs(self.__all_entity__) do
         entity:Destroy();
     end
@@ -129,7 +134,7 @@ end
 function Level:PassLevelSuccess()
     if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     -- 停止移动
-    if (self.__sunbin__) then self.__sunbin__:Stop() end 
+    if (self.__sunbin__) then self.__sunbin__:StopMove() end 
     self:SetLevelState(self.STATE.SUCCESS);
     Tip("通过成功");
 end
@@ -138,14 +143,14 @@ end
 function Level:PassLevelFailed()
     if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     -- 停止移动
-    if (self.__sunbin__) then self.__sunbin__:Stop() end 
+    if (self.__sunbin__) then self.__sunbin__:StopMove() end 
     self:SetLevelState(self.STATE.FAILED);
     Tip("通过失败");
 end
 
 -- 编辑
-function Level:Edit()
-    Level._super.Edit(self);
+function Level:Edit(...)
+    Level._super.Edit(self, ...);
 end
 
 -- 显示相机UI
@@ -172,6 +177,12 @@ function Level:ShowCameraUI()
         width = 120,
         height = 50,
     })
+end
+
+function Level:CloseCameraUI()
+    if (not self.__camera_ui__) then return end
+    self.__camera_ui__:CloseWindow();
+    self.__camera_ui__ = nil;
 end
 
 -- 创建孙膑NPC
@@ -254,7 +265,7 @@ function Level:CreateHunterEntity(bx, by, bz)
         name = "hunter",
         biped = true,
         assetfile = "character/CC/artwar/game/lieren.x",  
-        isAutoAttack = true,
+        isCanAutoAttack = true,
         types = {["hunter"] = 0, ["wolf"] = 1},
         visibleRadius = 10,
         defaultSkill = CreateSkill({
@@ -275,8 +286,8 @@ function Level:CreateWolfEntity(bx, by, bz)
         name = "wolf",
         biped = true,
         assetfile = "character/CC/codewar/lang.x",  
-        isAutoAttack = true,
-        isAutoAvoid = true,
+        isCanAutoAttack = true,
+        isCanAutoAvoid = true,
         types = {["wolf"] = 0, ["human"] = 1, ["light"] = 2},
         visibleRadius = 5,
         speed = 3, 
@@ -287,7 +298,7 @@ function Level:CreateWolfEntity(bx, by, bz)
             skillTime = 200,
         }),
     });
-    self.__all_entity__["wolf"] = wolf;
+    table.insert(self.__all_entity__, wolf);
     return wolf;
 end
 
@@ -298,14 +309,14 @@ function Level:CreateTowerEntity(bx, by, bz)
         name = "towerbase",
         assetfile = "@/blocktemplates/jiguannu_dipan.x",  
         hasBloold = false,
-        canBeCollided = false,
+        isCanBeCollided = false,
     });
     towerbase:SetAnimId(5);
     local tower = CreateEntity({
         bx = bx, by = by, bz = bz,
         name = "tower",
         hasBloold = false,
-        canBeCollided = false,
+        isCanBeCollided = false,
         assetfile = "@/blocktemplates/jiguannu.x",  
         defaultSkill = CreateSkill({
             entity_config = {
@@ -314,7 +325,7 @@ function Level:CreateTowerEntity(bx, by, bz)
                 speed = 5, 
                 hasBloold = false,
                 checkTerrain = false,
-                canVisible = false,
+                isCanVisible = false,
                 destroyBeCollided = true,
                 biped = true,
                 goods = {

@@ -466,7 +466,6 @@ function Block:OnMouseUp(event)
         blockly:OnDestroyBlock(self);
         blockly:SetCurrentBlock(nil);
         blockly:ReleaseMouseCapture();
-        blockly:RemoveBlockNotes(self);
         -- 移除块
         if (not self.isNewBlock) then 
             blockly:Do({action = "DeleteBlock", block = self});

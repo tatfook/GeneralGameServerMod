@@ -40,9 +40,13 @@ Entity:Property("CheckTerrain", true, "IsCheckTerrain");              -- 是否�
 Entity:Property("VisibleRadius", 1);                                  -- 可视半径
 Entity:Property("CanVisible", true, "IsCanVisible");                  -- 是否可见
 Entity:Property("CanBeCollided", true, "IsCanBeCollided");            -- 是否可被碰撞
-Entity:Property("AutoAttack", false, "IsAutoAttack");                 -- 是否自动攻击
-Entity:Property("AutoAvoid", false, "IsAutoAvoid");                   -- 是否自动回避攻击
+Entity:Property("CanAutoAttack", false, "IsCanAutoAttack");           -- 是否自动攻击
+Entity:Property("AutoAttacking", false, "IsAutoAttacking");           -- 是否正在自动攻击
+Entity:Property("CanAutoAvoid", false, "IsCanAutoAvoid");             -- 是否自动回避攻击
 Entity:Property("DefaultSkill");                                      -- 实体默认技能
+Entity:Property("CanRandomMove", false, "IsCanRandomMove");           -- 是否可以随机移动
+Entity:Property("RandomMoveRange");                                   -- 随机移动范围
+Entity:Property("Moving", false, "IsMoving");                         -- 是否在移动中
 
 local NID = 0;
 function Entity:ctor()
@@ -82,14 +86,16 @@ function Entity:Init(opts)
     self:SetBiped(opts.biped);
     self:SetDestroyBeCollided(opts.destroyBeCollided);
     if (opts.checkTerrain == false) then self:SetCheckTerrain(false) end
-    if (opts.canVisible == false) then self:SetCanVisible(false) end 
-    if (opts.canBeCollided == false) then self:SetCanBeCollided(false) end 
+    if (opts.isCanVisible == false) then self:SetCanVisible(false) end 
+    if (opts.isCanBeCollided == false) then self:SetCanBeCollided(false) end 
     if (opts.hasBloold == false) then self:SetHasBloold(false) end 
     if (opts.speed) then self:SetSpeed(opts.speed) end
     if (opts.scale) then self:SetScaling(opts.scale) end 
+    if (opts.isCanRandomMove == false) then self:SetCanRandomMove(false) end 
+    self:SetRandomMoveRange(opts.randomMoveRange);
     self:SetVisibleRadius(opts.visibleRadius or 1);
-    self:SetAutoAttack(opts.isAutoAttack);
-    self:SetAutoAvoid(opts.isAutoAvoid);
+    self:SetCanAutoAttack(opts.isCanAutoAttack);
+    self:SetCanAutoAvoid(opts.isCanAutoAvoid);
     self:SetDefaultSkill(opts.defaultSkill);
     self:SetCanLight(opts.light);
     if (opts.types) then self.__types__ = opts.types end 
@@ -241,9 +247,36 @@ function Entity:GetDistanceOffsetXY(distance)
     return math.cos(facing) * distance, -math.sin(facing) * distance;
 end
 
+function Entity:SetRandomMove(canRandomMove, randomMoveRange)
+    self:SetCanRandomMove(canRandomMove);
+    self:SetRandomMoveRange(randomMoveRange);
+    if (self:IsCanRandomMove()) then self:RandomMove() end
+end
+
+function Entity:RandomMove()
+    local randomMoveRange = self:GetRandomMoveRange();
+    if (type(randomMoveRange) ~= "table") then return end
+    local minX, minY, minZ, maxX, maxY, maxZ = randomMoveRange.minX, randomMoveRange.minY, randomMoveRange.minZ, randomMoveRange.maxX, randomMoveRange.maxY, randomMoveRange.maxZ;
+    local min, max = randomMoveRange.min, randomMoveRange.max;
+    if (min and max) then minX, minY, minZ, maxX, maxY, maxZ = min[1], min[2], min[3], max[1], max[2], max[3] end 
+    local minIntervalTime, maxIntervalTime = randomMoveRange.minIntervalTime or 200, randomMoveRange.maxIntervalTime or 2000;
+    if (self.__is_random_move__) then return end 
+    self.__is_random_move__ = true;
+    __run__(function()
+        while (self:IsCanRandomMove() and not self:IsDestory()) do
+            local bx, by, bz = math.random(minX, maxX), minY, math.random(minZ, maxZ);
+            local x, y, z = ConvertToRealPosition(bx, by, bz);
+            self:Move(x, y, z, true);
+            sleep(math.random(minIntervalTime, maxIntervalTime));
+        end
+        self.__is_random_move__ = false;
+    end);
+end
+
 -- 向前行走, duration 存在则通过时间计算步数, 否则通过单位步长计算步数
 function Entity:MoveForward(dist, duration, bEnableAnim)
-    if (not self:IsCanMotion()) then return end 
+    if (not self:IsCanMotion()) then return sleep() end  -- 不可运动执行运动, 停顿一帧, 避免死循环 
+    self:StopMove();
 
     local facing = self:GetFacing();
     local distance = (dist or 1) * __BlockSize__;
@@ -252,8 +285,8 @@ function Entity:MoveForward(dist, duration, bEnableAnim)
     local stepCount = duration and math.ceil(duration * self:GetTickCountPerSecond()) or math.floor(distance / self:GetStepDistance());
     bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
     if (bEnableAnim) then self:SetAnimId(5) end
-    while(stepCount > 0) do
-        if (self:IsDestory()) then return end 
+    self:SetMoving(true);
+    while(stepCount > 0 and not self:IsDestory() and self:IsCanMotion()) do
         local stepX, stepY, stepZ = dx / stepCount, dy / stepCount, dz / stepCount;
         x, y, z = x + stepX, y + stepY, z + stepZ;
         if (self:IsStandInPosition(x, y, z)) then
@@ -263,13 +296,9 @@ function Entity:MoveForward(dist, duration, bEnableAnim)
         end
         stepCount = stepCount - 1;
         dx, dy, dz = dx - stepX, dy - stepY, dz - stepZ;
-        if (self:IsCanMotion()) then
-            sleep();
-        else
-            break;
-        end
+        sleep();
     end
-    
+    self:SetMoving(false);
     if (bEnableAnim) then self:SetAnimId(0) end
 end
 
@@ -381,10 +410,12 @@ function Entity:MoveXYZ(bx, by, bz, bEnableAnim, bEnableDepthSearch)
 end
 
 function Entity:Move(tx, ty, tz, bEnableAnim)
-    if (not self:IsCanMotion()) then return end 
+    if (not self:IsCanMotion()) then return sleep() end  -- 不可运动执行运动, 停顿一帧, 避免死循环 
+    self:StopMove();
     bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
     if (bEnableAnim) then self:SetAnimId(5) end
-    while (true) do
+    self:SetMoving(true);
+    while (not self:IsDestory()) do
         local x, y, z = self:GetPosition();
         local dx, dy, dz = math.abs(tx - x), math.abs(ty - y), math.abs(tz - z);
         -- local max = math.max(math.max(dx, dy), dz);
@@ -411,11 +442,16 @@ function Entity:Move(tx, ty, tz, bEnableAnim)
         if (self:IsCanMotion()) then sleep() end  
         if (not self:IsCanMotion() or stepCount <= 1) then break end 
     end
+    self:SetMoving(false);
     if (bEnableAnim) then self:SetAnimId(0) end
 end
 
-function Entity:Stop()
+function Entity:StopMove()
     self:SetCanMotion(false);
+    while (not self:IsDestory() and self:IsMoving()) do
+        sleep();
+    end
+    self:SetCanMotion(true);
 end
 
 function Entity:IsDestory()
@@ -621,6 +657,8 @@ end
 
 function Entity:AutoAttackEntity(entity)
     self:SetCanVisible(false);
+    self:SetAutoAttacking(true);
+    self:StopMove();
     while (not entity:IsDestory() and self:IsVisibleEntity(entity)) do
         if (self:IsInnerAttackRangeEntity(entity)) then
             self:SetAnimId(0);
@@ -637,6 +675,7 @@ function Entity:AutoAttackEntity(entity)
         end
     end
     self:SetAnimId(0);
+    self:SetAutoAttacking(false);
     self:SetCanVisible(true);
 end
 
@@ -651,9 +690,9 @@ function Entity:VisibleWithEntity(entity)
     if (not self:IsCanVisible()) then return end
 
     -- 看到被攻击对象
-    if (self:IsAutoAvoid() and self:IsAttackedEntity(entity)) then
+    if (self:IsCanAutoAvoid() and self:IsAttackedEntity(entity)) then
         __run__(function() self:AutoAvoid(entity) end);
-    elseif (self:IsAutoAttack() and self:GetSkill() and self:IsAttackEntity(entity)) then
+    elseif (self:IsCanAutoAttack() and self:GetSkill() and self:IsAttackEntity(entity)) then
         __run__(function() self:AutoAttackEntity(entity) end);
     end
 end

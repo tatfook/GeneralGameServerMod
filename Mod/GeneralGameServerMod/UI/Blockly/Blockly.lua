@@ -435,6 +435,7 @@ function Blockly:OnCreateBlock(block)
 end
 
 function Blockly:OnDestroyBlock(block)
+    self:RemoveBlockNotes(block);
 end
 
 -- 是否在工作区内
