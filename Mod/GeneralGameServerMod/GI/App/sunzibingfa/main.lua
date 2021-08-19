@@ -59,9 +59,9 @@ end
 -- Level7:Load();
 
 -- Level8:Load();
--- Level8:Edit(true);
+Level8:Edit(true);
 
-Level:CreateSunBinEntity(19197,5,19202):MoveForward(1)
+-- Level:CreateSunBinEntity(19197,5,19202):MoveForward(1)
 
 function clear()
     cmd("/mode edit");

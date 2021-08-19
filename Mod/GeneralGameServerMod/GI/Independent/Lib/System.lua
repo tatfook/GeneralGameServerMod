@@ -46,11 +46,9 @@ function __run__(callback, ...)
 	end
 	if (type(callback) ~= "function") then return end 
 
-	local ok, err = __coroutine_resume__(__coroutine_create__(function(callback, ...)
-		callback(...);
+	__coroutine_resume__(__coroutine_create__(function(callback, ...)
+		__xpcall__(callback, ...);
 	end), callback, ...);
-
-	if (not ok) then print("__run__:error",err) end
 end
 
 -- 废弃

@@ -36,21 +36,40 @@ function Level:LoadLevel()
     self:CreateGoalPointEntity(10108,12,10094);
 
     local randomRange = {min = {10093,12,10078}, max = {10095,12,10082}};
-    -- self:CreateWolfEntity(10094,13,10080):SetRandomMove(true, randomRange);
-    -- self:CreateWolfEntity(10094,13,10080):SetRandomMove(true, randomRange);
-    -- self:CreateWolfEntity(10094,13,10080):SetRandomMove(true, randomRange);
+    self:CreateWolfEntity(10094,13,10080):SetRandomMove(true, randomRange);
+    self:CreateWolfEntity(10094,13,10080):SetRandomMove(true, randomRange);
 
-    local wolf1 = self:CreateWolfEntity(10068,12,10084);
+    local wolf1 = self:CreateWolfEntity(10078,12,10084);
+    wolf1:SetSpeed(1);
+    wolf1:Turn(180);
+    wolf1:MoveForward(10);
+    wolf1:Turn(180);
     __run__(function()
         while(not wolf1:IsDestory()) do
             wolf1:MoveForward(30);
-            if (self:IsAutoAttacking()) then break end
+            if (wolf1:IsAutoAttacking()) then break end
             wolf1:Turn(180);
             wolf1:MoveForward(30);
-            if (self:IsAutoAttacking()) then break end
+            if (wolf1:IsAutoAttacking()) then break end
             wolf1:Turn(180);
         end
     end)
+
+    local wolf2 = self:CreateWolfEntity(10098,12,10084);
+    wolf2:SetSpeed(1);
+    wolf2:Turn(-90);
+    wolf2:MoveForward(20);
+    wolf2:Turn(180);
+    __run__(function()
+        while(not wolf2:IsDestory()) do
+            wolf2:MoveForward(30);
+            if (wolf2:IsAutoAttacking()) then break end
+            wolf2:Turn(180);
+            wolf2:MoveForward(30);
+            if (wolf2:IsAutoAttacking()) then break end
+            wolf2:Turn(180);
+        end
+    end);
 
     -- 添加任务
     self:AddGoalPointTask(1);

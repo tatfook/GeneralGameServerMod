@@ -132,6 +132,7 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	self.__start__ = function(...) Independent:Start(...) end
 	self.__stop__ = function() Independent:Stop() end
 	self.__call__ = function(...) return Independent:Call(...) end
+	self.__xpcall__ = function(...) return Independent:XPCall(...) end
 	self.__loadfile__ = function(...) return Independent:LoadFile(...) end
 	self.__is_running__ = function() return Independent:IsRunning() end 
 	self.__safe_callback__ = function(callback) 
