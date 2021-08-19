@@ -110,6 +110,13 @@ function CommonLib.OpenTextureFileDialog(filters, title, directory)
     return filename;
 end
 
+function CommonLib.IsExistFile(filename)
+    local file = ParaIO.open(filename , "rb");
+    local exist = file:IsValid() and true or false;
+    file:close();
+    return exist;
+end
+
 -- 获取文件内容
 function CommonLib.GetFileText(filename)
     local file = ParaIO.open(filename , "rb");
@@ -153,7 +160,8 @@ function CommonLib.SetAliasPath(alias, path)
     AliasPathMap[alias] = path;
 end
 
-function CommonLib.GetFullPath(filename)
+function CommonLib.GetFullPath(filename, alias_path_map)
+    alias_path_map = alias_path_map or AliasPathMap;
     local path = string.gsub(filename or "", "%%(.-)%%", function(alias)
         local path = AliasPathMap[string.lower(alias)];
         if (type(path) == "string") then return path end

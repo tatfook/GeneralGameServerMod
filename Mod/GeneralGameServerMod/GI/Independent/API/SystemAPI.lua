@@ -79,7 +79,7 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.tostring = tostring;
     CodeEnv.type = type;
     -- CodeEnv.unpack = unpack;
-    CodeEnv.error = error;
+    CodeEnv.__error__ = error;
     CodeEnv.rawset = rawset;
     CodeEnv.rawget = rawget;
     -- CodeEnv.select = select;
@@ -129,21 +129,13 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     end
 
     -- 会切换协程需做等待处理
-    local __modules__ = {};
-    CodeEnv.require = function(name)
-        local filename = (string.match(name, "^[%a%d]+$")) and (string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name)) or name;
-        if (__modules__[filename]) then return __modules__[filename] end
-        __modules__[filename] = CodeEnv.__loadfile__(filename);
-        return __modules__[filename];
-    end
-
-    -- 模块一个文件只能有一个
-    CodeEnv.module = function(name, module)
-        module = module or {};
-        CodeEnv.__module__.__module__ = module;
-        CodeEnv.__module__.__name__ = name;
-        return module;
-    end
+    -- local __modules__ = {};
+    -- CodeEnv.require = function(name)
+    --     local filename = (string.match(name, "^[%a%d]+$")) and (string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name)) or name;
+    --     if (__modules__[filename]) then return __modules__[filename] end
+    --     __modules__[filename] = CodeEnv.__loadfile__(filename);
+    --     return __modules__[filename];
+    -- end
 
     CodeEnv.if_else = function(_bool, _true, _false) 
         if (_bool) then return _true end

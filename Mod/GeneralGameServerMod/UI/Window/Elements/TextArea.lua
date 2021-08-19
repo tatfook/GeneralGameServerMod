@@ -4,7 +4,7 @@ Author(s): wxa
 Date: 2020/8/14
 Desc: 文本编辑器
 -------------------------------------------------------
-local TextArea = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Elements/TextArea.lua");
+local TextArea = NPL.load("Mod/GeneralGameServerMod/App/UI/Window/Elements/TextArea.lua");
 
 cursorAt 取值为 [0, text:length()] 光标处于指定位置字符后面, 故插入字符位置为 cursorAt + 1
 -------------------------------------------------------

@@ -45,9 +45,11 @@ function __run__(callback, ...)
 	end
 	if (type(callback) ~= "function") then return end 
 
-	__coroutine_wrap__(function(callback, ...)
+	local ok, err = __coroutine_resume__(__coroutine_create__(function(callback, ...)
 		callback(...);
-	end)(callback, ...);
+	end), callback, ...);
+
+	if (not ok) then print("__run__:error",err) end
 end
 
 function run(callback, ...)
@@ -105,6 +107,7 @@ function sleep(sleep)
 	
 	-- 移除定时回调
 	RemoveEventCallBack(EventType.LOOP, SleepLoopCallBack);
+	if (not __is_running__()) then __error__("环境已销毁") end 
 end
 
 function __independent_run__(callback, G)
@@ -128,4 +131,22 @@ function __independent_run__(callback, G)
 		local timer = SetTimeout(...);
 		if (timer) then end
 	end
+end
+
+function GetFullPath(path, directory)
+	directory = directory or __module__.__directory__ or "";
+	if (string.match(path, "^[^/\\@%%]")) then path = directory .. "/" .. path end
+	path = ToCanonicalFilePath(path, "linux");
+	local paths = split(path, "/");
+	local filenames = {};
+	for _, filename in ipairs(paths) do
+		if (filename == ".") then
+		elseif (filename == "..") then
+			table.remove(filenames, #filenames);
+		else
+			table.insert(filenames, #filenames + 1, filename);
+		end
+	end
+	local full_path = table.concat(filenames, "/");
+	return ToCanonicalFilePath(full_path);
 end

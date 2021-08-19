@@ -7,7 +7,7 @@ Desc: 关卡模板文件
 use the lib:
 ]]
 
-local Level = inherit(require("%gi%/App/sunzibingfa/Level/Level.lua"), module());
+local Level = inherit(require("./Level.lua"), module());
 
 function Level:ctor()
     self:SetLevelName("_level1");
@@ -41,8 +41,9 @@ function Level:LoadLevel()
     self:CreatePangJuanEntity(10090,12,10089);
     
     -- 添加任务
-    self:AddPassLevelTask(self.GOODS_ID.GOAL_POINT, 1);
-    self:AddPassLevelExtraTask(self.GOODS_ID.TIAN_SHU_CAN_JUAN, 1);
+    self:AddGoalPointTask(1);
+    self:AddTianShuCanJuanTask(1, true);
+    self:AddCodeLineTask(1, true);
 
     -- 调整场景
     SetCamera(30, 75, -90);
@@ -58,20 +59,6 @@ end
 function Level:RunLevelCodeAfter()
     Level._super.RunLevelCodeAfter(self);
     -- 可在此自定义通关逻辑  默认到达目标点
-end
-
--- 编辑旧关卡
-function Level:EditOld()
-    Level._super:EditOld("level1");
-end
-
--- 关卡编辑
-function Level:Edit()
-    Level._super.Edit(self);
-    -- self:UnloadMap();
-    -- cmd("/loadtemplate 10064 12 10064 level1.1");
-    self:LoadLevel();
-    -- cmd(format("/goto %s %s %s", 10090,12,10077));
 end
 
 Level:InitSingleton();

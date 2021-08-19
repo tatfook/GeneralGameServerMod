@@ -21,10 +21,13 @@ Goods:Property("Title");
 Goods:Property("Description");
 Goods:Property("Count", 1);             -- 初始数量
 Goods:Property("StackCount", 1);        -- 累加数量
-Goods:Property("CanStack", false, "IsCanStack");           -- 是否可加累加
-Goods:Property("DeadGoods", false, "IsDeadGoods");         -- 被碰撞者消失物品
-Goods:Property("DeadPeerGoods", false, "IsDeadPeerGoods"); -- 碰撞者消失物品
-Goods:Property("CanTransfer", false, "IsCanTransfer");     -- 是否可以转移
+Goods:Property("CanStack", false, "IsCanStack");               -- 是否可加累加
+Goods:Property("DeadGoods", false, "IsDeadGoods");             -- 被碰撞者消失物品
+Goods:Property("DeadPeerGoods", false, "IsDeadPeerGoods");     -- 碰撞者消失物品
+Goods:Property("BloodPeerGoods", false, "IsBloodPeerGoods");   -- 对端血量物品
+Goods:Property("BloodPeerValue", 0);                           -- 对端血量变化
+Goods:Property("CanTransfer", false, "IsCanTransfer");         -- 是否可以转移
+Goods:Property("ActivateCallBack");                            -- 激活回调
 
 local __all_goods__ = {};
 local GSID = 0;
@@ -56,11 +59,13 @@ function Goods:Init(config)
     self:SetDescription(config.description);
     self:SetDeadGoods(config.dead);
     self:SetDeadPeerGoods(config.dead_peer);
+    self:SetBloodPeerGoods(config.blood_peer);
+    self:SetBloodPeerValue(config.blood_peer_value);
     self:SetCanStack(if_else(config.stack == nil or config.stack, true, false));
     self:SetCanTransfer(if_else(config.transfer == nil or config.transfer, true, false)); 
     self:SetCount(config.count or 1); 
     self:SetStackCount(config.stackCount or self:GetCount());
-
+    self:SetActivateCallBack(config.activate_callback);
     return self;
 end
 
@@ -92,6 +97,10 @@ function Goods:Activate(entity, triggerEntity)
 
     if (self:IsDeadGoods()) then entity:Destroy() end
     if (self:IsDeadPeerGoods()) then triggerEntity:Destroy() end 
+    if (self:IsBloodPeerGoods()) then triggerEntity:IncrementBlood(self:GetBloodPeerValue()) end 
+
+    local ActivateCallBack = self:GetActivateCallBack();
+    if (type(ActivateCallBack) == "function") then ActivateCallBack(entity, triggerEntity) end 
 end
 
 local __api_list__ = {

@@ -730,7 +730,8 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
     local hoverElement = nil;
     
     isParentElementHover = isParentElementHover == nil and true or isParentElementHover;
-    zindex = (zindex or "") .. "-" .. self:GetZIndex();
+    zindex = zindex or "";
+    -- zindex = (zindex or "") .. "-" .. self:GetZIndex();
 
     local function SetElementOffHover(element)
         if (element:IsHover()) then
@@ -763,7 +764,7 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
         else 
             SetElementOffHover(self);
             if (isUpdateLayout and isChangeHoverState) then self:UpdateLayout(true) end
-            return nil, maxZIndex; 
+            return nil, maxZIndex, zindex; 
         end
     end
 
@@ -791,12 +792,18 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
     end
 
     -- 事件序遍历 取第一悬浮元素
+    zindex = zindex .. "-" .. self:GetZIndex();
+    maxZIndex = zindex;
+    local maxChildZIndex = "";
     for child in self:ChildElementIterator(false) do
         if (child:GetViewVisible()) then
-            local childHoverElement, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
-            if (childHoverElement and maxZIndex < childZIndex) then
+            local childHoverElement, childMaxZIndex, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
+            local isChildPositionElement = child:GetLayout():IsPositionElement();
+            local isMaxZIndex = if_else(isChildPositionElement, maxChildZIndex < (childZIndex or zindex), maxZIndex < (childMaxZIndex or zindex));
+            if (childHoverElement and isMaxZIndex) then
                 hoverElement = childHoverElement;
                 maxZIndex = childZIndex;
+                maxChildZIndex = childZIndex;
             end
         else 
             SetElementOffHover(child);
@@ -808,7 +815,7 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
         self:UpdateLayout(true);
     end
 
-    return hoverElement, maxZIndex;
+    return hoverElement, maxZIndex, zindex;
 end
 
 -- 获取悬浮元素
@@ -834,27 +841,33 @@ function ElementUI:GetMouseHoverElement(event, zindex, isParentElementHover, isP
         if (isPositionElement) then 
             scrollElement = nil;
         else 
-            return nil, maxZIndex; 
+            return nil, maxZIndex, zindex; 
         end
     end
     if (isHover) then hoverElement = self end
     -- 设置滚动元素
     local scrollX, scrollY = self:GetScrollPos();
     if (scrollX > 0 or scrollY > 0) then scrollElement = self end
+
     -- 初始化zindex
     zindex = zindex .. "-" .. self:GetZIndex();
     maxZIndex = zindex;
+    local maxChildZIndex = "";
     -- 事件序遍历 取第一悬浮元素
     for child in self:ChildElementIterator(false) do
         if (child:GetViewVisible()) then
-            local childHoverElement, childZIndex = child:GetMouseHoverElement(event, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
-            if (childHoverElement and maxZIndex < childZIndex) then
+            local childHoverElement, childMaxZIndex, childZIndex = child:GetMouseHoverElement(event, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
+            local isChildPositionElement = child:GetLayout():IsPositionElement();
+            -- 同级定位元素只比较当前层级序否则比价全部层级序
+            local isMaxZIndex = if_else(isChildPositionElement, maxChildZIndex < (childZIndex or zindex), maxZIndex < (childMaxZIndex or zindex));
+            if (childHoverElement and isMaxZIndex) then
                 hoverElement = childHoverElement;
-                maxZIndex = childZIndex;
+                maxZIndex = childMaxZIndex;
+                maxChildZIndex = childZIndex;
             end
         end
     end
-    return hoverElement, maxZIndex;
+    return hoverElement, maxZIndex, zindex;
 end
 
 function ElementUI:OnFocusOut()
@@ -1071,4 +1084,12 @@ end
 function ElementUI:HandleMouseCaptureEventBefore(event)
 end
 function ElementUI:HandleMouseCaptureEventAfter(event)
+end
+
+-- 事件处理前
+function ElementUI:HandleMouseEventBefore(event)
+end
+
+-- 事件处理后
+function ElementUI:HandleMouseEventAfter(event)
 end

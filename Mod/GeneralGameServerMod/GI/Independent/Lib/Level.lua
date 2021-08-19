@@ -23,7 +23,7 @@ function Level:ctor()
     -- 左下角
     self.__x__, self.__y__, self.__z__ = 10000, 8, 10000;
     -- 边长
-    self.__dx__, self.__dy__, self.__dz__ = 128, 32, 128;
+    self.__dx__, self.__dy__, self.__dz__ = 128, 128, 128;
     -- 代码环境
     self:SetCodeEnv(setmetatable({}, {__index = _G}));
 end
@@ -43,6 +43,10 @@ function Level:GetCenterPoint()
     return self.__x__ + math.floor(self.__dx__ / 2), self.__y__, self.__z__ + math.floor(self.__dz__ / 2);
 end
 
+function Level:SetCenterPoint(x, y, z, dx, dy, dz)
+    self.__x__, self.__y__, self.__z__, self.__dx__, self.__dy__, self.__dz__ = x or self.__x__, y or self.__y__, z or self.__z__, dx or self.__dx__, dy or self.__dy__, dz or self.__dz__;
+end
+
 function Level:LoadRegion()
     local cx, cy, cz = self:GetCenterPoint();
     cmd("/property UseAsyncLoadWorld false")
@@ -52,12 +56,25 @@ function Level:LoadRegion()
     cmd("/property UseAsyncLoadWorld true");
 end
 
+function Level:ClearRegion()
+    for x = self.__x__, self.__x__ + self.__dx__ do
+        for z = self.__z__, self.__z__ + self.__dz__ do
+            for y = self.__y__, self.__y__ + self.__dy__ do
+                SetBlock(x, y, z, 0);
+            end
+        end
+    end
+end
+
 function Level:LoadMap(level_name)
     self:LoadRegion();
 
     local cx, cy, cz = self:GetCenterPoint();
     cmd("/property UseAsyncLoadWorld false")
     cmd("/property AsyncChunkMode false");
+
+    -- 先清除
+    self:ClearRegion();
 
     -- 加载地图内容
     level_name = level_name or self:GetLevelName();
@@ -69,30 +86,29 @@ function Level:LoadMap(level_name)
     self:ResetFoundation();
 end
 
-function Level:UnloadMap()
+function Level:UnloadMap(level_name)
     self:LoadRegion();
-
-    for x = self.__x__, self.__x__ + self.__dx__ do
-        for z = self.__z__, self.__z__ + self.__dz__ do
-            for y = self.__y__, self.__y__ + self.__dy__ do
-                SetBlock(x, y, z, 0);
-            end
-        end
-    end
+    -- 加载地图内容
+    local cx, cy, cz = self:GetCenterPoint();
+    level_name = level_name or self:GetLevelName();
+    if (level_name and level_name ~= "") then cmd(format("/loadtemplate -r %d %d %d %s", cx, cy, cz, level_name)) end
 end
 
 function Level:Import()
-    self:UnloadMap();
+    -- self:UnloadMap();
     self:LoadMap();
     self:LoadLevel();
     self:ShowLevelBlocklyEditor();
+    cmd("/mode game");
+    cmd("/clearbag");
+    cmd("/hide quickselectbar");
 end
 
-function Level:Export()
+function Level:Export(level_name)
     self:UnloadLevel();
 
-    local level_name = self:GetLevelName();
-    if (not level_name or level_name == "") then level_name = "level" end 
+    level_name = level_name or self:GetLevelName();
+    if (not level_name or level_name == "") then return end 
     cmd(format("/select %d %d %d (%d %d %d)", self.__x__, self.__y__, self.__z__, self.__dx__, self.__dy__, self.__dz__));
     cmd(format("/savetemplate -auto_pivot %s", level_name));
     cmd("/select -clear");
@@ -110,6 +126,13 @@ function Level:ResetLevel()
     Emit("ResetLevel");
     self:UnloadLevel();
     self:LoadLevel();
+end
+
+-- 关卡结束
+function Level:Exit()
+    self:UnloadLevel();
+    self:UnloadMap();
+    self:CloseLevelBlocklyEditor();
 end
 
 function Level:RunLevelCodeBefore()
@@ -161,13 +184,10 @@ function Level:CloseLevelBlocklyEditor()
 end
 
 function Level:Edit()
-    -- local cx, cy, cz = self:GetCenterPoint();
-    self:ResetFoundation();
-    
-    -- cmd(format("/goto %s %s %s", cx, cy, cz));
+    local cx, cy, cz = self:GetCenterPoint();
+    cmd(format("/goto %s %s %s", cx, cy, cz));
 
-    -- cmd("/mode game");
-    cmd("/clearbag");
+    cmd("/mode editor");
 
     ShowWindow({
         __level__ = self;
@@ -178,7 +198,6 @@ function Level:Edit()
         alignment = "_ctt",
     });
 end
-
 
 Level:InitSingleton();
 

@@ -244,7 +244,7 @@ function Window:Create3DNativeWindow()
     if (obj) then
         obj:ShowHeadOnDisplay(true, 0);
         obj:SetHeadOnUITemplateName(self:GetWindowId(), 0);
-        obj:SetField("HeadOn3DFacing", -1.57);
+        obj:SetField("HeadOn3DFacing", params.__facing__  or -1.57);
         obj:SetHeadOnOffset(params.__offset_x__ or 0, params.__offset_y__ or 0, params.__offset_z__ or 0, 0);
     end
 
@@ -515,12 +515,14 @@ function Window:HandleMouseEvent(event)
     local captureElement = self:GetMouseCapture();
     event.target = captureElement;
     if (captureElement) then
+        -- captureElement:HandleMouseEventBefore(event);
         captureElement:HandleMouseCaptureEventBefore(event);
         captureElement:CallEventCallback(captureFuncName, event);
         captureElement:HandleMouseCaptureEventAfter(event);
         captureElement:HandleMouseBubbleEventBefore(event);
         captureElement:CallEventCallback(bubbleFuncName, event);
         captureElement:HandleMouseBubbleEventAfter(event);
+        -- captureElement:HandleMouseEventAfter(event);
         if (isCanSimulateEvent and not Simulator:IsSimulated()) then captureElement:SimulateEvent(event) end 
         return ;        
     end
@@ -554,6 +556,10 @@ function Window:HandleMouseEvent(event)
 
     -- 捕获事件
     local EventElementCount = #EventElementList;
+    -- for i = EventElementCount, 1, -1 do
+    --     EventElementList[i]:HandleMouseEventBefore(event);
+    --     if (event:IsAccepted()) then break end
+    -- end
     for i = EventElementCount, 1, -1 do
         EventElementList[i]:HandleMouseCaptureEventBefore(event);
         if (event:IsAccepted()) then break end
@@ -584,6 +590,10 @@ function Window:HandleMouseEvent(event)
         EventElementList[i]:HandleMouseBubbleEventAfter(event);
         if (event:IsAccepted()) then break end
     end
+    -- for i = 1, EventElementCount, 1 do
+    --     EventElementList[i]:HandleMouseEventAfter(event);
+    --     if (event:IsAccepted()) then break end
+    -- end
 
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "冒泡事件 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 清空列表

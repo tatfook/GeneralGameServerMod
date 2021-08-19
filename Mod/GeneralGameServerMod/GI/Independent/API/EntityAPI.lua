@@ -180,6 +180,7 @@ setmetatable(
             end
             
             CodeEnv.__Entity__ = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityMovable");
+            CodeEnv.__EntityLight__ = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityLight");
         end
     }
 )

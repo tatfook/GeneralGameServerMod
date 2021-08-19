@@ -22,7 +22,7 @@ local EventAPI = NPL.load("./API/EventAPI.lua", IsDevEnv);
 local UIAPI = NPL.load("./API/UIAPI.lua", IsDevEnv);
 local EntityAPI = NPL.load("./API/EntityAPI.lua", IsDevEnv);
 local BlockAPI = NPL.load("./API/BlockAPI.lua", IsDevEnv);
-local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
+-- local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
 local GGSAPI = NPL.load("./API/GGSAPI.lua", IsDevEnv);
 local NetAPI = NPL.load("./API/NetAPI.lua", IsDevEnv);
 local RPCAPI = NPL.load("./API/RPCAPI.lua", IsDevEnv);
@@ -31,6 +31,8 @@ local FileAPI = NPL.load("./API/FileAPI.lua", IsDevEnv);
 local CodeEnv = commonlib.inherit(nil, NPL.export());
 
 CodeEnv.lfs = lfs;
+CodeEnv.ShapeAABB = commonlib.gettable("mathlib.ShapeAABB");
+CodeEnv.vector3d = commonlib.gettable("mathlib.vector3d");
 CodeEnv.IsDevEnv = IsDevEnv;
 CodeEnv.Debug = GGS.Debug;
 CodeEnv.DebugStack = DebugStack;
@@ -40,8 +42,6 @@ CodeEnv.SceneContext = SceneContext;
 
 function CodeEnv:ctor()
 	self._G = self;
-	self.__env__ = self;          -- 快捷方式
-
 	self.__modules__ = {};        -- 模块
 	self.__tables__ = {};         -- 全局表集
 	self.__windows__ = {};        -- 窗口
@@ -144,6 +144,8 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	self.__is_share_mouse_keyboard_event__ = function() return Independent:IsShareMouseKeyBoard() end 
 	self.__get_tick_count__ = function() return Independent:GetTickCount() end  
 	self.__get_timestamp__ = function() return math.floor(Independent:GetTickCount() * 1000 / Independent:GetLoopTickCount()) end   -- ms
+	self.__set_alias_path__ = function(alias, path) Independent.__alias_path_map__[alias] = path end 
+	self.__get_module_env__ = function(...) return Independent:GetModuleEnv(...) end
 end
 
 function CodeEnv:InstallCodeBlockAPI()
@@ -163,7 +165,7 @@ function CodeEnv:Init(Independent)
 	UIAPI(self);
 	EntityAPI(self);
 	BlockAPI(self);
-	UtilityAPI(self);
+	-- UtilityAPI(self);
 	GGSAPI(self);
 	NetAPI(self);
 	RPCAPI(self);

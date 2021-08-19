@@ -76,6 +76,8 @@ function ToolBox:SetCategoryList(categorylist)
                 self.blockPosMap[blocktype] = {leftUnitCount = offsetX, topUnitCount = offsetY, widthUnitCount = widthUnitCount, heightUnitCount = heightUnitCount, block = block};
                 offsetY = offsetY + heightUnitCount;
                 table.insert(self.blocks, block);
+            else 
+                print("无效图块", blocktype, block, block and block:IsHideInToolbox());
             end
         end
         if (#blocktypes > 0) then

@@ -466,6 +466,7 @@ function Block:OnMouseUp(event)
         blockly:OnDestroyBlock(self);
         blockly:SetCurrentBlock(nil);
         blockly:ReleaseMouseCapture();
+        blockly:RemoveBlockNotes(self);
         -- 移除块
         if (not self.isNewBlock) then 
             blockly:Do({action = "DeleteBlock", block = self});
@@ -781,6 +782,13 @@ function Block:SaveToXmlNode()
     local nextBlock = self:GetNextBlock();
     if (nextBlock) then table.insert(xmlNode, nextBlock:SaveToXmlNode()) end
 
+    local blockly = self:GetBlockly();
+    for _, note in ipairs(blockly:GetNotes()) do
+        if (note:GetBlock() == self) then
+            table.insert(xmlNode, note:SaveToXmlNode());
+        end
+    end
+
     return xmlNode;
 end
 
@@ -792,12 +800,15 @@ function Block:LoadFromXmlNode(xmlNode)
     self:SetInputShadowBlock(attr.isInputShadowBlock == "true");
     self:SetDraggable(if_else(attr.isDraggable == "false", false, true));
 
+    local blockly = self:GetBlockly();
     for _, childXmlNode in ipairs(xmlNode) do
         if (childXmlNode.name == "Block") then
             local nextBlock = self:GetBlockly():GetBlockInstanceByXmlNode(childXmlNode);
             if (nextBlock) then
                 self.nextConnection:Connection(nextBlock.previousConnection);
             end
+        elseif (childXmlNode.name == "Note") then
+            blockly:AddNote(self):LoadFromXmlNode(childXmlNode);
         else
             local inputField = self:GetInputField(childXmlNode.attr.name);
             if (inputField) then 

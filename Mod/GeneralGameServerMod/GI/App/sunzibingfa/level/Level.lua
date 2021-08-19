@@ -6,54 +6,60 @@ Desc: 关卡模板文件
 use the lib:
 ]]
 
+local GoodsConfig = require("./GoodsConfig.lua");
 local Task = require("Task");
 local Level = inherit(require("Level"), module()) ;
 
-Level:Property("PassLevelState", 0);        -- 0 初始态 1 通关 2 失败
-Level.GOODS_ID = {
-    GOAL_POINT = "goalpoint",
-    TIAN_SHU_CAN_JUAN = "tianshucanjuan",
-    CODE_LINE = "codeline",
-    MAX_ALIVE_TIME = "max_alive_time",
-}
+Level.GoodsConfig = GoodsConfig;
+Level:Property("LevelState", 0);        -- 0 初始态 1 开始 2 通关 3 失败
 
-Level.GOODS = {
-    [Level.GOODS_ID.GOAL_POINT] = {
-        title = "目标点",
-        task_title = "达到目的地",
-    },
-    [Level.GOODS_ID.TIAN_SHU_CAN_JUAN] = {
-        title = "天书残卷",
-        task_title = "收集天书残卷",
-    },
-    [Level.GOODS_ID.CODE_LINE] = {
-        title = "代码行",
-        task_title = "代码行数少于",
-        task_description = nil,
-        task_reverse_compare = true,
-    },
-    [Level.GOODS_ID.MAX_ALIVE_TIME] = {
-        title = "最长存活时间",
-        task_title = "完成时间少于",
-        task_reverse_compare = true,
-    }
+Level.STATE = {
+    INIT = 0,
+    PLAYING = 1,
+    SUCCESS = 2,
+    FAILED = 3,
 }
 
 function Level:ctor()
     self.__all_entity__ = {};
     self.__all_timer__ = {};
     self.__task__ = Task:new();
-    self:SetPassLevelState(0);
+    self:SetLevelState(0);
 end
 
+----------------------------------------------task api----------------------------------------------
 function Level:AddPassLevelTask(gsid, count, title, description)
-    local goods = self.GOODS[gsid];
+    local goods = GoodsConfig[gsid];
     self.__task__:AddTaskItem(gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
 end
 
 function Level:AddPassLevelExtraTask(gsid, count, title, description)
-    local goods = self.GOODS[gsid];
+    local goods = GoodsConfig[gsid];
     self.__task__:AddExtraTaskItem(gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
+end
+
+function Level:AddGoalPointTask(goal_count, bIsExtraTask)
+    if (bIsExtraTask) then
+        self:AddPassLevelExtraTask(GoodsConfig.GOAL_POINT.ID, goal_count)
+    else 
+        self:AddPassLevelTask(GoodsConfig.GOAL_POINT.ID, goal_count)
+    end
+end
+
+function Level:AddTianShuCanJuanTask(goal_count, bIsExtraTask)
+    if (bIsExtraTask) then
+        self:AddPassLevelExtraTask(GoodsConfig.TIAN_SHU_CAN_JUAN.ID, goal_count)
+    else 
+        self:AddPassLevelTask(GoodsConfig.TIAN_SHU_CAN_JUAN.ID, goal_count)
+    end
+end
+
+function Level:AddCodeLineTask(goal_count, bIsExtraTask)
+    if (bIsExtraTask) then
+        self:AddPassLevelExtraTask(GoodsConfig.CODE_LINE.ID, goal_count)
+    else 
+        self:AddPassLevelTask(GoodsConfig.CODE_LINE.ID, goal_count)
+    end
 end
 
 -- 监听关卡加载事件,  完成关卡内容设置
@@ -62,14 +68,16 @@ function Level:LoadLevel()
 
     Level._super.LoadLevel(self);
     
+    self:SetLevelState(self.STATE.PLAYING);
     self.__task__:ShowUI();
+    self:ShowCameraUI();
 end
 
 -- 监听关卡卸载事件,  移除关卡相关资源
 function Level:UnloadLevel()
     Level._super.UnloadLevel(self);
 
-    self:SetPassLevelState(0);
+    self:SetLevelState(self.STATE.INIT);
     self.__task__:Clear();
     self.__task__:CloseUI();
     for _, entity in pairs(self.__all_entity__) do
@@ -77,18 +85,26 @@ function Level:UnloadLevel()
     end
 end
 
+-- 重置关卡
+function Level:ResetLevel()
+    Level._super.ResetLevel(self);
+end
+
 -- 执行关卡代码前, 
 function Level:RunLevelCodeBefore()
     Level._super.RunLevelCodeBefore(self);
     if (not self.__sunbin__) then return end
-    self.__sunbin__:SetSpeed(self:GetSpeed());
-    self.__task__:SetTaskItemCount(self.GOODS_ID.CODE_LINE, self:GetStatementBlockCount());
+    for _, entity in pairs(self.__all_entity__) do
+        entity:SetSpeed(entity:GetSpeed() * self:GetSpeed());
+    end
+    -- self.__sunbin__:SetSpeed(self:GetSpeed());
+    self.__task__:SetTaskItemCount(GoodsConfig.CODE_LINE.ID, self:GetStatementBlockCount());
 end
 
 -- 检测是否通关
 function Level:CheckPassLevel()
     if (not self.__sunbin__) then return end
-    if (self:GetPassLevelState() ~= 0) then return end 
+    if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     
     -- 更新任务列表
     for _, goods in pairs(self.__sunbin__:GetAllGoods()) do
@@ -109,44 +125,53 @@ function Level:RunLevelCodeAfter()
     self:CheckPassLevel();
 end
 
--- 重置关卡
-function Level:ResetLevel()
-    Level._super.ResetLevel(self);
-end
-
 -- 通关
 function Level:PassLevelSuccess()
-    if (self:GetPassLevelState() ~= 0) then return end 
+    if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     -- 停止移动
     if (self.__sunbin__) then self.__sunbin__:Stop() end 
-    self:SetPassLevelState(1);
+    self:SetLevelState(self.STATE.SUCCESS);
     Tip("通过成功");
 end
 
 -- 通关失败
 function Level:PassLevelFailed()
-    if (self:GetPassLevelState() ~= 0) then return end 
+    if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     -- 停止移动
     if (self.__sunbin__) then self.__sunbin__:Stop() end 
-    self:SetPassLevelState(2);
+    self:SetLevelState(self.STATE.FAILED);
     Tip("通过失败");
-end
-
--- 编辑旧关卡 后续废弃
-function Level:EditOld(level_name)
-    Level._super.Edit(self);
-    self:UnloadMap();
-    cmd("/property UseAsyncLoadWorld false")
-    cmd("/property AsyncChunkMode false");
-    if (level_name and level_name ~= "") then cmd(format("/loadtemplate 10064 12 10064 %s", level_name)) end
-    cmd("/property AsyncChunkMode true");
-    cmd("/property UseAsyncLoadWorld true");
-    cmd(format("/goto %s %s %s", 10064, 8, 10064));
 end
 
 -- 编辑
 function Level:Edit()
     Level._super.Edit(self);
+end
+
+-- 显示相机UI
+function Level:ShowCameraUI()
+    self.__camera_ui__ = ShowWindow({
+        OnDefaultView = function()
+            self:ResetLevel();
+        end,
+        OnZoomIn = function()
+            SetCameraObjectDistance(math.max(GetCameraObjectDistance() - 2, 6)); 
+        end,
+        OnZoomOut = function()
+            SetCameraObjectDistance(math.min(GetCameraObjectDistance() + 2, 50)); 
+        end,
+    }, {
+        template = [[
+<template style="display: flex; background-color:#00000000;color:#eeeeee;font-size:14px;margin:5px;">
+    <div style="width:30px; height:30px;background:url(@/textures/resetView.png); margin:5px;"  tooltip="恢复默认视角" onclick="OnDefaultView"></div>
+    <div style="width:30px; height:30px;background:url(@/textures/zoomIn.png); margin:5px;"  tooltip="放大视角" onclick="OnZoomIn"></div>
+    <div style="width:30px; height:30px;background:url(@/textures/zoomOut.png); margin:5px;" tooltip="缩小视角" onclick="OnZoomOut"></div>
+</template>
+        ]],
+        alignment = "_rt",
+        width = 120,
+        height = 50,
+    })
 end
 
 -- 创建孙膑NPC
@@ -157,6 +182,7 @@ function Level:CreateSunBinEntity(bx, by, bz)
         biped = true,
         assetfile = "character/CC/artwar/game/sunbin.x",
         physicsHeight = 1.765,
+        types = {["human"] = 0},
     });
     sunbin:TurnLeft(90);
     sunbin:SetGoodsChangeCallBack(function()
@@ -165,7 +191,7 @@ function Level:CreateSunBinEntity(bx, by, bz)
     sunbin:SetDestroyCallBack(function()
         self:PassLevelFailed();
     end);
-    self.__all_entity__["sunbin"] = sunbin;
+    table.insert(self.__all_entity__, sunbin);
     self.__sunbin__ = sunbin;
     return sunbin;
 end
@@ -176,18 +202,18 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
         bx = bx, by = by, bz = bz,
         name = "fireglowingcircle",
         assetfile = "character/CC/05effect/fireglowingcircle.x",
+        destroyBeCollided = true,
     });
-    self.__all_entity__["fireglowingcircle"] = fireglowingcircle;
+    table.insert(self.__all_entity__, fireglowingcircle);
 
-    fireglowingcircle:AddGoods(CreateGoods({dead = true}));
     local tianshucanjuan = CreateEntity({
         bx = bx, by = by, bz = bz,
         name = "tianshucanjuan",
         assetfile = "@/blocktemplates/tianshucanjuan.x",
+        destroyBeCollided = true,
     });
-    self.__all_entity__["tianshucanjuan"] = tianshucanjuan;
-    tianshucanjuan:AddGoods(CreateGoods({dead = true}));
-    tianshucanjuan:AddGoods(CreateGoods({gsid = self.GOODS_ID.TIAN_SHU_CAN_JUAN, transfer = true, title = "天书残卷", description = "荣誉物品"}));
+    table.insert(self.__all_entity__, tianshucanjuan);
+    tianshucanjuan:AddGoods(CreateGoods({gsid = GoodsConfig.TIAN_SHU_CAN_JUAN.ID, transfer = true, title = "天书残卷", description = "荣誉物品"}));
     tianshucanjuan:SetPositionChangeCallBack(function()
         fireglowingcircle:SetPosition(tianshucanjuan:GetPosition())
     end);
@@ -202,7 +228,7 @@ function Level:CreatePangJuanEntity(bx, by, bz)
         assetfile = "character/CC/artwar/game/pangjuan.x",
     });
     pangjuan:Turn(90);
-    self.__all_entity__["pangjuan"] = pangjuan;
+    table.insert(self.__all_entity__, pangjuan);
     return pangjuan;
 end
 
@@ -216,14 +242,138 @@ function Level:CreateGoalPointEntity(bx, by, bz)
         assetfile = "character/v5/09effect/TransmittalDoor/TransmittalDoor.x",  
 
     });
-    self.__all_entity__["goalpoint"] = goalpoint;
-    goalpoint:AddGoods(CreateGoods({gsid = self.GOODS_ID.GOAL_POINT, title = "目标位置", description = "角色到达指定地点获得该物品", transfer = true}));
+    table.insert(self.__all_entity__, goalpoint);
+    goalpoint:AddGoods(CreateGoods({gsid = GoodsConfig.GOAL_POINT.ID, title = "目标位置", description = "角色到达指定地点获得该物品", transfer = true}));
     return goalpoint;
 end
 
+-- 创建猎人
+function Level:CreateHunterEntity(bx, by, bz)
+    local hunter = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "hunter",
+        biped = true,
+        assetfile = "character/CC/artwar/game/lieren.x",  
+        isAutoAttack = true,
+        types = {["hunter"] = 0, ["wolf"] = 1},
+        visibleRadius = 10,
+        defaultSkill = CreateSkill({
+            skillRadius = 10,
+            entity_config = {assetfile = "character/CC/07items/arrow.x", speed = 5, checkTerrain = false},
+            moveToTargetEntity = true,
+            skillDistance = 15,
+        }),
+    });
+    table.insert(self.__all_entity__, hunter);
+    return hunter;
+end
+
+-- 创建狼
+function Level:CreateWolfEntity(bx, by, bz)
+    local wolf = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "wolf",
+        biped = true,
+        assetfile = "character/CC/codewar/lang.x",  
+        isAutoAttack = true,
+        isAutoAvoid = true,
+        types = {["wolf"] = 0, ["human"] = 1, ["light"] = 2},
+        visibleRadius = 5,
+        speed = 3, 
+        defaultSkill = CreateSkill({
+            skillRadius = 1,
+            targetBlood = 50,
+            skillInterval = 500,
+            skillTime = 200,
+        }),
+    });
+    self.__all_entity__["wolf"] = wolf;
+    return wolf;
+end
+
+-- 创建箭塔
+function Level:CreateTowerEntity(bx, by, bz)
+    local towerbase = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "towerbase",
+        assetfile = "@/blocktemplates/jiguannu_dipan.x",  
+        hasBloold = false,
+        canBeCollided = false,
+    });
+    towerbase:SetAnimId(5);
+    local tower = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "tower",
+        hasBloold = false,
+        canBeCollided = false,
+        assetfile = "@/blocktemplates/jiguannu.x",  
+        defaultSkill = CreateSkill({
+            entity_config = {
+                name = "arrow",
+                assetfile = "character/CC/07items/arrow.x", 
+                speed = 5, 
+                hasBloold = false,
+                checkTerrain = false,
+                canVisible = false,
+                destroyBeCollided = true,
+                biped = true,
+                goods = {
+                    [1] = {
+                        gsid = GoodsConfig.ARROW.ID,
+                        blood_peer = true,
+                        blood_peer_value = -20, 
+                    }
+                }
+            },
+            skillDistance = 15,
+            skillTime = 0,
+            offsetY = 1,
+            skillInterval = 400,
+        })
+    });
+
+    table.insert(self.__all_entity__, towerbase);
+    table.insert(self.__all_entity__, tower);
+
+    __run__(function()
+        while(self:GetLevelState() == 0 and __is_running__()) do
+            tower:Turn(45);
+            tower:Attack();
+            sleep(500);
+        end
+    end);
+    return tower;
+end
+
+function Level:CreateTorchEntity(bx, by, bz)
+    local torch = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "towerbase",
+        assetfile = "character/CC/artwar/game/huoba_ming.x",  
+        destroyBeCollided = true,
+        light = true,
+        -- scale = 1.5,
+    });
+    torch:SetCollidedCallBack(function(self_entity, target_entity)
+        target_entity:SetCanLight(true);
+    end);
+    table.insert(self.__all_entity__, torch);
+    return torch;
+end 
+
+function Level:CreateTrapEntity(bx, by, bz)
+    local trap = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "trap",
+        assetfile = "@/blocktemplates/bushoujia.x",  
+        destroyBeCollided = true,
+        goods = {{dead_peer = true, name = "trap"}},
+    });
+    table.insert(self.__all_entity__, trap);
+    return trap;
+end
+
 Level:InitSingleton();
-
-
 
 -- -- 监听关卡加载事件,  完成关卡内容设置
 -- On("LoadLevel", function()
