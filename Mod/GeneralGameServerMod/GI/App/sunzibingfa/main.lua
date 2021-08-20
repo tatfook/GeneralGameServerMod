@@ -58,10 +58,43 @@ end
 -- Level7:Edit();
 -- Level7:Load();
 
--- Level8:Load();
+Level8:Load();
 -- Level8:Edit(true);
 
-Level:CreateSunBinEntity(19197,5,19202):MoveForward(1)
+-- local last_tick1 = 0;
+-- __run__(function()
+--     while(__is_running__()) do
+--         local tick = __get_tick_count__();
+--         sleep(1000);
+--         print("-------------------------1", tick, tick - last_tick1)
+--         last_tick1 = tick;
+--     end
+-- end)
+
+-- local last_tick2 = 0;
+-- __run__(function()
+--     while(__is_running__()) do
+--         local tick = __get_tick_count__();
+--         sleep(1000);
+--         print("-------------------------2", tick, tick - last_tick2)
+--         last_tick2 = tick;
+--     end
+-- end)
+
+-- local last_tick3 = 0;
+-- __run__(function()
+--     while(__is_running__()) do
+--         local tick = __get_tick_count__();
+--         sleep(1000);
+--         print("-------------------------3", tick, tick - last_tick3)
+--         last_tick3 = tick;
+--     end
+-- end)
+
+-- local sunbin = Level:CreateSunBinEntity(19197,5,19202);
+-- sunbin:MoveForward(1)
+-- sunbin:MoveForward(1)
+
 function clear()
     cmd("/mode edit");
     cmd("/home");

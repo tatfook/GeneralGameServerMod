@@ -32,7 +32,7 @@ Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否�
 Entity:Property("Focus", false, "IsFocus");                           -- 是否聚焦
 Entity:Property("Speed", 1);                                          -- 移动速度
 Entity:Property("Step", 0.06);                                        -- 步长
-Entity:Property("CanMotion", true, "IsCanMotion");                    -- 是否可以移动
+Entity:Property("CanMoving", true, "IsCanMoving");                    -- 是否可以移动
 Entity:Property("HasBloold", true, "IsHasBlood");                     -- 是否有血量
 Entity:Property("Blood", 100);                                        -- 血量
 Entity:Property("TotalBlood", 100);                                   -- 总血量
@@ -58,7 +58,7 @@ function Entity:ctor()
     self.__skills__ = {};                          -- 技能集
     self.__goods__ = {};                           -- 物品集
     self.__types__ = {};                           -- 实体类型   0 -- 实体类型  1 -- 可攻击类型  2  -- 被攻击类型  3 -- 不可攻击类型   4 -- 可以碰撞  5 - 不可以碰撞  6 可以被碰撞  7 不可以被碰撞
-
+    self.__contexts__ = {};                        -- 协程环境上下文
     __all_entity__[self.__key__] = self;
     __all_name_entity__[self.__name__] = self;
 end
@@ -112,6 +112,12 @@ function Entity:FrameMoveRidding()
 end
 
 function Entity:FrameMove()
+end
+
+function Entity:GetContext()
+    local co = __coroutine_running__();
+    self.__contexts__[co] = self.__contexts__[co] or {};
+    return self.__contexts__[co];
 end
 
 function Entity:SetCanLight(bCanLight)
@@ -275,9 +281,9 @@ end
 
 -- 向前行走, duration 存在则通过时间计算步数, 否则通过单位步长计算步数
 function Entity:MoveForward(dist, duration, bEnableAnim)
-    if (not self:IsCanMotion()) then return sleep() end  -- 不可运动执行运动, 停顿一帧, 避免死循环 
+    if (not self:IsCanMoving()) then return sleep() end  -- 不可运动执行运动, 停顿一帧, 避免死循环 
     self:StopMove();
-
+    local __context__ = self:GetContext();
     local facing = self:GetFacing();
     local distance = (dist or 1) * __BlockSize__;
     local dx, dy, dz = math.cos(facing) * distance, 0, -math.sin(facing) * distance;
@@ -286,7 +292,8 @@ function Entity:MoveForward(dist, duration, bEnableAnim)
     bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
     if (bEnableAnim) then self:SetAnimId(5) end
     self:SetMoving(true);
-    while(stepCount > 0 and not self:IsDestory() and self:IsCanMotion()) do
+    __context__.moving = true;
+    while(__context__.moving and stepCount > 0 and not self:IsDestory() and self:IsCanMoving()) do
         local stepX, stepY, stepZ = dx / stepCount, dy / stepCount, dz / stepCount;
         x, y, z = x + stepX, y + stepY, z + stepZ;
         if (self:IsStandInPosition(x, y, z)) then
@@ -298,6 +305,7 @@ function Entity:MoveForward(dist, duration, bEnableAnim)
         dx, dy, dz = dx - stepX, dy - stepY, dz - stepZ;
         sleep();
     end
+    __context__.moving = false;
     self:SetMoving(false);
     if (bEnableAnim) then self:SetAnimId(0) end
 end
@@ -410,12 +418,14 @@ function Entity:MoveXYZ(bx, by, bz, bEnableAnim, bEnableDepthSearch)
 end
 
 function Entity:Move(tx, ty, tz, bEnableAnim)
-    if (not self:IsCanMotion()) then return sleep() end  -- 不可运动执行运动, 停顿一帧, 避免死循环 
+    if (not self:IsCanMoving()) then return sleep() end  -- 不可运动执行运动, 停顿一帧, 避免死循环 
     self:StopMove();
     bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
     if (bEnableAnim) then self:SetAnimId(5) end
+    local __context__ = self:GetContext();
     self:SetMoving(true);
-    while (not self:IsDestory()) do
+    __context__.moving = true;
+    while (__context__.moving and not self:IsDestory()) do
         local x, y, z = self:GetPosition();
         local dx, dy, dz = math.abs(tx - x), math.abs(ty - y), math.abs(tz - z);
         -- local max = math.max(math.max(dx, dy), dz);
@@ -439,19 +449,18 @@ function Entity:Move(tx, ty, tz, bEnableAnim)
         else
             break;  -- 无路可走
         end
-        if (self:IsCanMotion()) then sleep() end  
-        if (not self:IsCanMotion() or stepCount <= 1) then break end 
+        if (self:IsCanMoving()) then sleep() end  
+        if (not self:IsCanMoving() or stepCount <= 1) then break end 
     end
+    __context__.moving = false;
     self:SetMoving(false);
     if (bEnableAnim) then self:SetAnimId(0) end
 end
 
 function Entity:StopMove()
-    self:SetCanMotion(false);
-    while (not self:IsDestory() and self:IsMoving()) do
-        sleep();
+    for _, __context__ in pairs(self.__contexts__) do
+        __context__.moving = false;
     end
-    self:SetCanMotion(true);
 end
 
 function Entity:IsDestory()

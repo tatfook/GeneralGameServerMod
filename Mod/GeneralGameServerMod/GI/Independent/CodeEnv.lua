@@ -78,9 +78,21 @@ function CodeEnv:ctor()
 		end
 	end
 
+	local __tick_callback_list__ = {};
 	self.__activate_tick_event__ = function()
 		self.__activate_tick_callback__(function()
-			self.TriggerEventCallBack(self.EventType.TICK);
+			-- self.TriggerEventCallBack(self.EventType.TICK);
+			local __event_callback__ = self.__event_callback__[self.EventType.TICK];
+			if (not __event_callback__) then return end
+			local size = 0;
+			for _, callback in pairs(__event_callback__) do
+				size = size + 1;
+				__tick_callback_list__[size] = callback;
+			end
+			for i = 1, size do
+				(__tick_callback_list__[i])();
+				__tick_callback_list__[i] = nil;
+			end
 		end);
 	end
 
@@ -179,7 +191,6 @@ end
 
 function CodeEnv:InstallIndependentAPI(Independent)
 	-- 内部函数, 不可随意调用
-	self.__co__ = Independent.__co__;
 	self.__yield__ = function(...) Independent:Yield(...) end
 	self.__clear__ = function() self:Clear() end 
 	self.__restart__ = function() Independent:Restart() end
@@ -196,6 +207,7 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	end 
 	self.__loadstring__ = function(...) return Independent:LoadString(...) end
 	self.__get_loop_tick_count__ = function() return Independent:GetLoopTickCount() end 
+	self.__get_ms_per_tick__ = self.__get_loop_tick_count__; -- 每个tick所用时间
 	self.__is_share_mouse_keyboard_event__ = function() return Independent:IsShareMouseKeyBoard() end 
 	self.__get_tick_count__ = function() return Independent:GetTickCount() end  
 	self.__get_timestamp__ = function() return math.floor(Independent:GetTickCount() * 1000 / Independent:GetLoopTickCount()) end   -- ms

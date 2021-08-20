@@ -68,7 +68,7 @@ function Level:LoadLevel()
 
     -- 摆放角色
     self:CreateSunBinEntity(10078,12,10064); 
-    self:CreateTianShuCanJuanEntity(10098,12,10104);
+    self:CreateTianShuCanJuanEntity(10078,12,10094);
     self:CreateGoalPointEntity(10108,12,10094);
 
     local randomRange = {min = {10093,12,10078}, max = {10095,12,10082}};
@@ -81,7 +81,6 @@ function Level:LoadLevel()
         wolf1:MoveForward(20);
         wolf1:Turn(180);
         while(not wolf1:IsDestory()) do
-            print("-------------------------", __get_tick_count__())
             wolf1:MoveForward(30);
             if (wolf1:IsAutoAttacking()) then break end
             wolf1:Turn(180);
@@ -91,14 +90,11 @@ function Level:LoadLevel()
         end
     end)
 
-    local wolf2 = self:CreateWolfEntity(10098,12,10084);
+    local wolf2 = self:CreateWolfEntity(10098,12,10074);
     __run__(function()
         wolf2:SetSpeed(2);
         wolf2:Turn(-90);
-        wolf2:MoveForward(20);
-        wolf2:Turn(180);
         while(not wolf2:IsDestory()) do
-            print("-------------------------1", __get_tick_count__())
             wolf2:MoveForward(30);
             if (wolf2:IsAutoAttacking()) then break end
             wolf2:Turn(180);

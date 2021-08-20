@@ -135,6 +135,7 @@ function Level:PassLevelSuccess()
     if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     -- 停止移动
     if (self.__sunbin__) then self.__sunbin__:StopMove() end 
+
     self:SetLevelState(self.STATE.SUCCESS);
     Tip("通过成功");
 end

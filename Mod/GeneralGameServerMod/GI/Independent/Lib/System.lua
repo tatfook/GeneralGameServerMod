@@ -62,7 +62,7 @@ function sleep(sleep)
 		local curtime = __get_timestamp__();
 		isSleeping = isSleeping and curtime < sleepTo and __is_running__();  -- 加上__is_running__如果沙盒可以快速停止相关协程的等待, 从而快速退出
 		-- 如果挂起的不是执行协程, 则由执行协程唤醒继续执行, 定时立即唤醒防止无法退出, 若不考虑退出问题可以加上 not isSleeping 条件
-		if (not isSleeping and cur_co ~= __co__) then 
+		if (not isSleeping) then 
 			if (cur_co_is_code_block_co) then
 				if (not code_block_co.isStopped) then
 					-- 代码方块协程设置当前协程环境
@@ -90,11 +90,11 @@ function sleep(sleep)
 		else
 			sync_run(unpack());
 			-- 激活的是函数则创建新协程执行
-			-- if (isSleeping and callback ~= null_function and cur_co ~= __co__) then
-			-- 	async_run(unpack());
-			-- else
-			-- 	sync_run(unpack());
-			-- end
+			if (isSleeping and callback ~= null_function) then
+				async_run(unpack());
+			else
+				sync_run(unpack());
+			end
 		end
 
 	end
