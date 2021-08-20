@@ -41,7 +41,7 @@ function VirtualConnection:GetKey(opts)
 end
 
 function VirtualConnection:New(msg)
-    return self.singletonInited and self or self:new():Init(msg);
+    return self.singletonInited and self:Init(msg) or self:new():Init(msg);
 end
 
 function VirtualConnection:Clear()
