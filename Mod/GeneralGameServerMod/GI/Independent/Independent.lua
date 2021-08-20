@@ -29,21 +29,6 @@ local coroutine_yield = coroutine.yield;
 local coroutine_resume = coroutine.resume;
 local coroutine_create = coroutine.create;
 
-function Independent:Pack(args, ...)
-	args = type(args) == "table" and args or {};
-    args.n = select("#", ...);
-	for i = 1, 20 do args[i] = nil end
-    for i = 1, args.n do
-        args[i] = select(i, ...);
-    end
-    return args;
-end
-
-function Independent:Select(index, args)
-	index = index or 1;
-    return args[index], args[index + 1], args[index + 2], args[index + 3], args[index + 4], args[index + 5], args[index + 6], args[index + 7], args[index + 8], args[index + 9];
-end
-
 function Independent:ctor()
 	self:SetShareMouseKeyBoard(true);
 end
@@ -58,22 +43,10 @@ function Independent:Init()
 		self:Tick();
 	end}));
 
-	-- 创建执行协同程序
-	local __args__ = {};
-	-- 默认协程
-	self.__co__ = coroutine.create(function(...)
-		self:Pack(__args__, ...);
-		local callback = self:Select(1, __args__);
-		while(type(callback) == "function") do
-			self:XPCall(callback, self:Select(2, __args__));
-			self:Pack(__args__, coroutine_yield());
-			callback = self:Select(1, __args__);
-		end
-	end);
-
 	-- 加载内置模块
 	self.__files__ = {};
 
+	-- 路径映射
 	self.__alias_path_map__ = {
 		["gi"] = "Mod/GeneralGameServerMod/GI",
 		["lib"] = "Mod/GeneralGameServerMod/GI/Independent/Lib",
@@ -172,8 +145,10 @@ function Independent:LoadString(text, filename)
 
 	-- 设置代码环境
 	setfenv(code_func, self:GetModuleEnv(__module__));
+	
 	-- 执行代码
 	self:Call(code_func);
+
 	-- 等待执行完成
 	while (not __module__.__loaded__) do CodeEnv.sleep() end 	
 	
@@ -219,45 +194,18 @@ function Independent:XPCall(callback, ...)
 end
 
 function Independent:Call(...)
-	local callback = select(1, ...);
-	if (type(callback) ~= "function") then return false end
-	local ok = nil;
-	if (self:IsCodeEnv()) then 
-		ok, err = self:XPCall(callback, select(2, ...));
-	else
-		ok, err = self:Resume(...);
-	end
-	-- 出错是否停止沙盒
-	if (not ok) then 
-		print("Error:", err, self.__co__ == coroutine_running(), self.__co__);
-		if (self:IsErrorExit()) then
-			self:Stop() 
-		end
-	end
+	if (not self:GetCodeEnv()) then return end
+	self:GetCodeEnv().__activate_event_callback__(...);
 end
 
 function Independent:CallEventCallBack(eventType)
 	local CodeEnv = self:GetCodeEnv();
+	if (not CodeEnv) then return print("CodeEnv Not Exist", eventType) end 
 	local __event_callback__ = CodeEnv.__event_callback__[eventType];
 	if (not __event_callback__) then return end
 	for _, callback in pairs(__event_callback__) do
 		self:Call(callback);
 	end
-end
-
-function Independent:IsCodeEnv()
-	local co, isMainThread = coroutine_running();
-	local status = self.__co__ and coroutine_status(self.__co__);
-	-- 不是主线程, 默认协程处于活跃状态则以当前环境执行
-	return not isMainThread and (co == self.__co__ or status == "running" or status == "normal");
-end
-
-function Independent:Yield(...)
-	self:Call(coroutine_yield(...));
-end
-
-function Independent:Resume(...)
-	return self.__co__ and coroutine_resume(self.__co__, ...);
 end
 
 function Independent:Restart()
@@ -309,11 +257,15 @@ function Independent:Tick()
 	-- 虚拟时间
 	self:SetTickCount(self:GetTickCount() + 1);
 
+	-- 激活tick事件
+	CodeEnv.__activate_tick_event__();
+	
 	-- 触发定时回调
 	self:CallEventCallBack(CodeEnv.EventType.LOOP);
 
 	-- 触发 LOOP 快捷回调
-	self:Call(rawget(CodeEnv, "loop"));
+	local loop = rawget(CodeEnv, "loop");
+	if (loop) then self:Call(loop) end 
 end
 
 function Independent:Stop()
@@ -337,11 +289,8 @@ function Independent:Stop()
 	CodeEnv.SceneContext:Inactivate();
 
 	CodeEnv:Clear();
-
 	self:SetCodeEnv(nil);
 
-	self:Resume();  -- 使用空值退出协同程序
-	self.__co__ = nil;
 	-- collectgarbage("collect");
 end
 
@@ -354,14 +303,3 @@ function Independent:OnWorldUnloaded()
 end
 
 Independent:InitSingleton();
-
--- local last_time = ParaGlobal.timeGetTime();
--- function Independent:OnCameraFrameMove()
--- 	local cur_time = ParaGlobal.timeGetTime();
--- 	print(cur_time - last_time)
--- 	last_time = cur_time;
--- end
-
--- commonlib.setfield("__independent__", Independent);
--- local attr = ParaCamera.GetAttributeObject();
--- attr:SetField("On_FrameMove", ";__independent__.OnCameraFrameMove();");

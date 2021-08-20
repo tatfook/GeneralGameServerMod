@@ -17,6 +17,7 @@ local EventAPI = NPL.export();
 
 local EventType = {
     MAIN = "main",
+    TICK = "tick",
     LOOP = "loop",
     CLEAR = "clear",
 
@@ -116,15 +117,16 @@ setmetatable(EventAPI, {
         CodeEnv.DIK_SCANCODE = DIK_SCANCODE; -- DIK_SCANCODE.DIK_W
         
         CodeEnv.EventType = EventType;
+        CodeEnv.RegisterTickCallBack = function(callback) RegisterEventCallBack(CodeEnv, EventType.TICK, callback) end
+        CodeEnv.RemoveTickCallBack = function(callback) RemoveEventCallBack(CodeEnv, EventType.TICK, callback) end 
+        CodeEnv.TriggerTickCallBack = function(...) TriggerEventCallBack(CodeEnv, EventType.TICK, ...) end
+
         CodeEnv.RegisterTimerCallBack = function(callback) RegisterEventCallBack(CodeEnv, EventType.LOOP, callback) end
         CodeEnv.RemoveTimerCallBack = function(callback) RemoveEventCallBack(CodeEnv, EventType.LOOP, callback) end 
         CodeEnv.RegisterEventCallBack = function(...) RegisterEventCallBack(CodeEnv, ...) end
         CodeEnv.RemoveEventCallBack = function(...) RemoveEventCallBack(CodeEnv, ...) end
         CodeEnv.TriggerEventCallBack = function(...) TriggerEventCallBack(CodeEnv, ...) end
         
-        -- CodeEnv.RegisterCodeBlockStopEventCallBack = function(callback) RegisterEventCallBack(CodeEnv, EventType.CODE_BLOCK_STOP, callback) end
-        -- CodeEnv.TriggerCodeBlockStopEventCallBack = function(callback) RegisterEventCallBack(CodeEnv, EventType.CODE_BLOCK_STOP, callback) end
-
         -- 用户事件机制
         CodeEnv.On = function(...) On(CodeEnv, ...) end
         CodeEnv.Off = function(...) Off(CodeEnv, ...) end

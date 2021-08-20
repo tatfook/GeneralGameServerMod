@@ -279,3 +279,27 @@ end
 function CommonLib.GetTimeStampByDateTime(datetime)
     return commonlib.timehelp.GetTimeStampByDateTime(datetime);
 end
+
+-- table.pack table.unpack, select 
+local __arguments__ = {n = 0};
+local __select__ = select;
+function CommonLib.pack(...)
+	-- 先清除旧参数
+	for i = 1, __arguments__.n do __arguments__[i] = nil end 
+	-- 获取新参数大小
+	__arguments__.n = __select__("#", ...);
+	-- 设置新参数
+	for i = 1, __arguments__.n do __arguments__[i] = __select__(i, ...) end 
+
+	return CommonLib.unpack();
+end
+
+function CommonLib.unpack()
+	return __arguments__[1], __arguments__[2], __arguments__[3], __arguments__[4], __arguments__[5], __arguments__[6], __arguments__[7], __arguments__[8], __arguments__[9];
+end
+
+function CommonLib.select(index)
+	if (index == "#") then return __arguments__.n end 
+	index = tonumber(index) or 1;
+    return __arguments__[index], __arguments__[index + 1], __arguments__[index + 2], __arguments__[index + 3], __arguments__[index + 4], __arguments__[index + 5], __arguments__[index + 6], __arguments__[index + 7], __arguments__[index + 8], __arguments__[index + 9];
+end

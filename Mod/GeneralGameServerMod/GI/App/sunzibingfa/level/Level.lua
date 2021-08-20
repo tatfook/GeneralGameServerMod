@@ -290,7 +290,7 @@ function Level:CreateWolfEntity(bx, by, bz)
         isCanAutoAvoid = true,
         types = {["wolf"] = 0, ["human"] = 1, ["light"] = 2},
         visibleRadius = 5,
-        speed = 3, 
+        speed = 2, 
         defaultSkill = CreateSkill({
             skillRadius = 1,
             targetBlood = 50,

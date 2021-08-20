@@ -40,6 +40,10 @@ CodeEnv.DebugStack = DebugStack;
 CodeEnv.EventEmitter = EventEmitter;
 CodeEnv.SceneContext = SceneContext;
 
+CodeEnv.pack = CommonLib.pack;
+CodeEnv.unpack = CommonLib.unpack;
+CodeEnv.select = CommonLib.select;
+
 function CodeEnv:ctor()
 	self._G = self;
 	self.__modules__ = {};        -- 模块
@@ -48,6 +52,56 @@ function CodeEnv:ctor()
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
 	self.__coroutines__ = {};     -- 协程资源集
+
+	-- 循环执行函数
+	self.__loop_function__ = function(...)
+		local callback = self.pack(...);
+		while(type(callback) == "function") do
+			self.__xpcall__(callback, self.select(2));
+			callback = self.pack(self.__coroutine_yield__());
+		end
+	end
+	-- 不可执行阻塞路基, 专用于唤醒协程, 以便均匀分配tick
+	self.__tick_co__ = coroutine.create(self.__loop_function__);
+	self.__is_tick_co_env__ = function()
+		local __cur_co__, __is_main_thread__ = self.__coroutine_running__();
+		local __tick_co_status__ = self.__coroutine_status__(self.__tick_co__);
+		return not __is_main_thread__ and __cur_co__ == self.__tick_co__ and (__tick_co_status__ == "running" or __tick_co_status__ == "normal");
+	end
+	self.__activate_tick_callback__ = function (...)
+		local callback = self.pack(...);
+		if (type(callback) ~= "function") then return end
+		if (self.__is_tick_co_env__()) then
+			return callback(self.select(2));
+		else
+			self.__coroutine_resume__(self.__tick_co__, ...);
+		end
+	end
+
+	self.__activate_tick_event__ = function()
+		self.__activate_tick_callback__(function()
+			self.TriggerEventCallBack(self.EventType.TICK);
+		end);
+	end
+
+	-- 默认事件处理协程
+	self.__event_co__ = coroutine.create(self.__loop_function__);
+	
+	self.__is_event_co_env__ = function()
+		local __cur_co__, __is_main_thread__ = self.__coroutine_running__();
+		local __event_co_status__ = self.__coroutine_status__(self.__event_co__);
+		return not __is_main_thread__ and __cur_co__ == self.__event_co__ and (__event_co_status__ == "running" or __event_co_status__ == "normal");
+	end
+
+	self.__activate_event_callback__ = function (...)
+		local callback = self.pack(...);
+		if (type(callback) ~= "function") then return end
+		if (self.__is_event_co_env__()) then
+			return callback(self.select(2));
+		else
+			self.__coroutine_resume__(self.__event_co__, ...);
+		end
+	end
 end
 
 function CodeEnv:InstallAPI(api)
@@ -185,4 +239,9 @@ function CodeEnv:Clear()
 	for _, entity in ipairs(self.__GetEntityList__()) do
 		entity:Destroy();
 	end
+
+	coroutine.resume(self.__tick_co__);
+	coroutine.resume(self.__event_co__);
+	self.__tick_co__ = nil;
+	self.__event_co__ = nil;
 end
