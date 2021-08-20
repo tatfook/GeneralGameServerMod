@@ -36,7 +36,7 @@ end
 -- TranformTemplate("level5", "_level8");
 -- Level:ClearRegion();
 
--- Level1:Edit()
+Level1:Edit(true)
 -- Level1:Load();
 
 -- Level2:Edit();
@@ -58,7 +58,7 @@ end
 -- Level7:Edit();
 -- Level7:Load();
 
-Level8:Load();
+-- Level8:Load();
 -- Level8:Edit(true);
 
 -- local last_tick1 = 0;
