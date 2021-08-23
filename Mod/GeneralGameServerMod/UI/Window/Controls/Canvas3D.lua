@@ -191,6 +191,7 @@ function Canvas3D:OnAttrValueChange()
     if (filename) then
         obj_params.AssetFile = PlayerAssetFile:GetValidAssetByString(filename);
     end
+
 	if (skin) then
 		obj_params.CustomGeosets = skin;
 	end
@@ -205,6 +206,7 @@ function Canvas3D:OnAttrValueChange()
             Attribute = 128,
         };
     end
+	-- the scene player ID
     obj_params.name = "mc_player";
     self:AutoSetObjectSkin(obj_params)
 
@@ -221,6 +223,12 @@ function Canvas3D:OnAttrValueChange()
 
     local scaling = obj_params.scaling;
     obj_params.scaling = 1;
+
+	-- hide pet id skin
+	NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
+	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems")
+	obj_params.CustomGeosets = CustomCharItems:RemovePetIdFromSkinIds(obj_params.CustomGeosets)
+
     self:ShowModel(obj_params);
     obj_params.scaling = scaling;
     self:ShowModel(obj_params);

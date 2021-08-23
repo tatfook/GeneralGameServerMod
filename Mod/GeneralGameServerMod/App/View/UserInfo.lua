@@ -41,6 +41,12 @@ function UserInfo:OnCreate()
         -- MESH_USE_LIGHT = 0x1<<7: use block ambient and diffuse lighting for this model. 
         obj_params.Attribute = 128;
         obj_params.AssetFile = self:GetEntityPlayer():GetMainAssetPath();
+
+        -- hide pet id skin
+        NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/CustomCharItems.lua");
+        local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems")
+        obj_params.CustomGeosets = CustomCharItems:RemovePetIdFromSkinIds(obj_params.CustomGeosets)
+
         ctl:ShowModel(obj_params);    
     else
         self:GetPage():CallMethod("player", "SetAssetFile", self:GetEntityPlayer():GetMainAssetPath());
