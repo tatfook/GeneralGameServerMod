@@ -63,14 +63,14 @@ function DefaultSimulator:UIWindowClick(params, window)
     local mouse_down_x, mouse_down_y = window:WindowPointToScreenPoint(params.down_mouse_window_x, params.down_mouse_window_y);
     local mouse_up_x, mouse_up_y = window:WindowPointToScreenPoint(params.up_mouse_window_x, params.up_mouse_window_y);
     local mouse_button, buttons_state = params.mouse_button, params.buttons_state;
-    print("simulator onmousedown:", mouse_down_x, mouse_down_y, mouse_button, buttons_state);
+    -- print("simulator onmousedown:", mouse_down_x, mouse_down_y, mouse_button, buttons_state);
     mouse_up_x, mouse_up_y = mouse_up_x + params.window_offset_x, mouse_up_y + params.window_offset_y;
     window:OnEvent("onmousedown", {mouse_x = mouse_down_x, mouse_y = mouse_down_y, mouse_button = mouse_button, buttons_state = buttons_state});
     if (params.mouse_down_up_distance > 4) then 
         window:OnEvent("onmousemove", {mouse_x = mouse_down_x + (mouse_up_x > mouse_down_x and 4 or -4), mouse_y = mouse_down_y, mouse_button = mouse_button, buttons_state = buttons_state});
         window:OnEvent("onmousemove", {mouse_x = mouse_up_x, mouse_y = mouse_up_y, mouse_button = mouse_button, buttons_state = buttons_state});
     end
-    print("simulator onmouseup:", mouse_up_x, mouse_up_y, mouse_button, buttons_state);
+    -- print("simulator onmouseup:", mouse_up_x, mouse_up_y, mouse_button, buttons_state);
     window:OnEvent("onmouseup", {mouse_x = mouse_up_x, mouse_y = mouse_up_y, mouse_button = mouse_button, buttons_state = buttons_state});
 end
 

@@ -6,7 +6,10 @@ Desc: 关卡模板文件
 use the lib:
 ]]
 
+require("../Entity/EntityAPI.lua");
+
 local GoodsConfig = require("./GoodsConfig.lua");
+local API = require("./API.lua");
 local Task = require("Task");
 local Level = inherit(require("Level"), module()) ;
 
@@ -28,37 +31,59 @@ function Level:ctor()
 end
 
 ----------------------------------------------task api----------------------------------------------
-function Level:AddPassLevelTask(gsid, count, title, description)
+function Level:AddTaskItem(gsid, count, title, description)
     local goods = GoodsConfig[gsid];
-    self.__task__:AddTaskItem(gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
+    local TaskItemName = string.format("Add%sTaskItem", goods and goods.task_item or "");
+    return (self.__task__[TaskItemName])(self.__task__, gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
 end
 
-function Level:AddPassLevelExtraTask(gsid, count, title, description)
+function Level:AddExtraTaskItem(gsid, count, title, description)
     local goods = GoodsConfig[gsid];
-    self.__task__:AddExtraTaskItem(gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
+    local TaskItemName = string.format("Add%sExtraTaskItem", goods and goods.task_item or "");
+    return (self.__task__[TaskItemName])(self.__task__, gsid, count, goods and goods.task_title, goods and goods.task_description, goods and goods.task_reverse_compare);
+end
+
+function Level:GetTaskItemCount(gsid)
+    return self.__task__:GetTaskItemCount(gsid);
+end
+
+function Level:SetTaskItemCount(gsid, count)
+    self.__task__:SetTaskItemCount(gsid, count);
+end
+
+function Level:__AddTaskItem__(bIsExtraTask, ...)
+    if (bIsExtraTask) then
+        self:AddExtraTaskItem(...);
+    else 
+        self:AddTaskItem(...);
+    end
 end
 
 function Level:AddGoalPointTask(goal_count, bIsExtraTask)
-    if (bIsExtraTask) then
-        self:AddPassLevelExtraTask(GoodsConfig.GOAL_POINT.ID, goal_count)
-    else 
-        self:AddPassLevelTask(GoodsConfig.GOAL_POINT.ID, goal_count)
-    end
+    self:__AddTaskItem__(bIsExtraTask, GoodsConfig.GOAL_POINT.ID, goal_count);
 end
 
 function Level:AddTianShuCanJuanTask(goal_count, bIsExtraTask)
-    if (bIsExtraTask) then
-        self:AddPassLevelExtraTask(GoodsConfig.TIAN_SHU_CAN_JUAN.ID, goal_count)
-    else 
-        self:AddPassLevelTask(GoodsConfig.TIAN_SHU_CAN_JUAN.ID, goal_count)
-    end
+    self:__AddTaskItem__(bIsExtraTask, GoodsConfig.TIAN_SHU_CAN_JUAN.ID, goal_count);
 end
 
 function Level:AddCodeLineTask(goal_count, bIsExtraTask)
+    self:__AddTaskItem__(bIsExtraTask, GoodsConfig.CODE_LINE.ID, goal_count);
+end
+
+function Level:AddKillEnemyTask(goal_count, bIsExtraTask)
+    self:__AddTaskItem__(bIsExtraTask, GoodsConfig.KILL_ENEMY.ID, goal_count);
+end
+
+function Level:AddAliveTimeTask(goal_count, bIsExtraTask)
     if (bIsExtraTask) then
-        self:AddPassLevelExtraTask(GoodsConfig.CODE_LINE.ID, goal_count)
+        self:AddExtraTaskItem(GoodsConfig.ALIVE_TIME.ID, goal_count)
     else 
-        self:AddPassLevelTask(GoodsConfig.CODE_LINE.ID, goal_count)
+        local taskitem = self:AddTaskItem(GoodsConfig.ALIVE_TIME.ID, goal_count);
+        taskitem:SetFinishCallBack(function()
+            self:PassLevelSuccess();
+            taskitem:Stop();
+        end);
     end
 end
 
@@ -75,6 +100,15 @@ function Level:LoadLevel()
     self:SetLevelState(self.STATE.PLAYING);
     self.__task__:ShowUI();
     self:ShowCameraUI();
+    self.__timer__ = SetInterval(1000, function()
+        -- 是否到达目标点
+        if (self.__task__:IsFinishGoal()) then
+            self:PassLevelSuccess();
+        end
+        if (self:GetLevelState() ~= self.STATE.PLAYING) then
+            self.__timer__:Stop();
+        end
+    end);
 end
 
 -- 监听关卡卸载事件,  移除关卡相关资源
@@ -85,8 +119,14 @@ function Level:UnloadLevel()
     self.__task__:Clear();
     self.__task__:CloseUI();
     self:CloseCameraUI();
+    
     for _, entity in pairs(self.__all_entity__) do
         entity:Destroy();
+    end
+
+    if (self.__timer__) then
+        self.__timer__:Stop();
+        self.__timer__ = nil;
     end
 end
 
@@ -95,15 +135,21 @@ function Level:ResetLevel()
     Level._super.ResetLevel(self);
 end
 
+function Level:BuildEnv()
+    local CodeEnv = self:GetCodeEnv();
+    CodeEnv.sunbin = self.__sunbin__;
+    for key, val in pairs(API) do CodeEnv[key] = val end 
+    CodeEnv.SetG(CodeEnv);
+    CodeEnv.SetLevel(self);
+end
+
 -- 执行关卡代码前, 
 function Level:RunLevelCodeBefore()
     Level._super.RunLevelCodeBefore(self);
     if (not self.__sunbin__) then return end
-    for _, entity in pairs(self.__all_entity__) do
-        entity:SetSpeed(entity:GetSpeed() * self:GetSpeed());
-    end
-    -- self.__sunbin__:SetSpeed(self:GetSpeed());
+    __set_tick_speed__(self:GetSpeed());
     self.__task__:SetTaskItemCount(GoodsConfig.CODE_LINE.ID, self:GetStatementBlockCount());
+    self:BuildEnv();
 end
 
 -- 执行关卡代码后
@@ -191,14 +237,7 @@ end
 
 -- 创建孙膑NPC
 function Level:CreateSunBinEntity(bx, by, bz)
-    local sunbin = CreateEntity({
-        bx = bx, by = by, bz = bz,
-        name = "sunbin",
-        biped = true,
-        assetfile = "character/CC/artwar/game/sunbin.x",
-        physicsHeight = 1.765,
-        types = {["human"] = 0},
-    });
+    local sunbin = CreateSunBinEntity(bx, by, bz);
     sunbin:TurnLeft(90);
     sunbin:SetGoodsChangeCallBack(function()
         -- 更新任务列表
@@ -221,6 +260,7 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
         name = "fireglowingcircle",
         assetfile = "character/CC/05effect/fireglowingcircle.x",
         destroyBeCollided = true,
+        hasBlood = false,
     });
     table.insert(self.__all_entity__, fireglowingcircle);
 
@@ -228,6 +268,7 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
         bx = bx, by = by, bz = bz,
         name = "tianshucanjuan",
         assetfile = "@/blocktemplates/tianshucanjuan.x",
+        hasBlood = false,
         destroyBeCollided = true,
     });
     table.insert(self.__all_entity__, tianshucanjuan);
@@ -267,44 +308,17 @@ end
 
 -- 创建猎人
 function Level:CreateHunterEntity(bx, by, bz)
-    local hunter = CreateEntity({
-        bx = bx, by = by, bz = bz,
-        name = "hunter",
-        biped = true,
-        assetfile = "character/CC/artwar/game/lieren.x",  
-        isCanAutoAttack = true,
-        types = {["hunter"] = 0, ["wolf"] = 1},
-        visibleRadius = 10,
-        defaultSkill = CreateSkill({
-            skillRadius = 10,
-            entity_config = {assetfile = "character/CC/07items/arrow.x", speed = 5, checkTerrain = false},
-            moveToTargetEntity = true,
-            skillDistance = 15,
-        }),
-    });
+    local hunter = CreateHunterEntity(bx, by, bz);
     table.insert(self.__all_entity__, hunter);
     return hunter;
 end
 
 -- 创建狼
 function Level:CreateWolfEntity(bx, by, bz)
-    local wolf = CreateEntity({
-        bx = bx, by = by, bz = bz,
-        name = "wolf",
-        biped = true,
-        assetfile = "character/CC/codewar/lang.x",  
-        isCanAutoAttack = true,
-        isCanAutoAvoid = true,
-        types = {["wolf"] = 0, ["human"] = 1, ["light"] = 2},
-        visibleRadius = 5,
-        speed = 2, 
-        defaultSkill = CreateSkill({
-            skillRadius = 1,
-            targetBlood = 50,
-            skillInterval = 500,
-            skillTime = 200,
-        }),
-    });
+    local wolf = CreateWolfEntity(bx, by, bz);
+    wolf:SetDestroyCallBack(function()
+        self:SetTaskItemCount(GoodsConfig.KILL_ENEMY.ID, self:GetTaskItemCount(GoodsConfig.KILL_ENEMY.ID) + 1);
+    end);
     table.insert(self.__all_entity__, wolf);
     return wolf;
 end
@@ -315,14 +329,14 @@ function Level:CreateTowerEntity(bx, by, bz)
         bx = bx, by = by, bz = bz,
         name = "towerbase",
         assetfile = "@/blocktemplates/jiguannu_dipan.x",  
-        hasBloold = false,
+        hasBlood = false,
         isCanBeCollided = false,
     });
     towerbase:SetAnimId(5);
     local tower = CreateEntity({
         bx = bx, by = by, bz = bz,
         name = "tower",
-        hasBloold = false,
+        hasBlood = false,
         isCanBeCollided = false,
         assetfile = "@/blocktemplates/jiguannu.x",  
         defaultSkill = CreateSkill({
@@ -330,7 +344,7 @@ function Level:CreateTowerEntity(bx, by, bz)
                 name = "arrow",
                 assetfile = "character/CC/07items/arrow.x", 
                 speed = 5, 
-                hasBloold = false,
+                hasBlood = false,
                 checkTerrain = false,
                 isCanVisible = false,
                 destroyBeCollided = true,
@@ -389,6 +403,22 @@ function Level:CreateTrapEntity(bx, by, bz)
     });
     table.insert(self.__all_entity__, trap);
     return trap;
+end
+
+function Level:CreateCunMingEntity(bx, by, bz)
+    local cunming = CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "cunming",
+        assetfile = "character/CC/02human/blockman/cunming.x",  
+    });
+    table.insert(self.__all_entity__, cunming);
+    return cunming;
+end
+
+function Level:CreateCrossFenceEntity(bx, by, bz)
+    local fence = CreateCrossFenceEntity(bx, by, bz);
+    table.insert(self.__all_entity__, fence);
+    return fence;
 end
 
 Level:InitSingleton();

@@ -22,12 +22,7 @@ Independent:Property("ErrorExit", true, "IsErrorExit");       -- 出错退出
 Independent:Property("ShareMouseKeyBoard", false, "IsShareMouseKeyBoard");            -- 是否共享鼠标键盘事件
 Independent:Property("MainFileName");                         -- 入口文件
 Independent:Property("TickCount", 0);                         -- tick 次数
-
-local coroutine_running = coroutine.running;
-local coroutine_status = coroutine.status;
-local coroutine_yield = coroutine.yield;
-local coroutine_resume = coroutine.resume;
-local coroutine_create = coroutine.create;
+Independent:Property("TickSpeed", 1);                         -- 设置Tick速度
 
 function Independent:ctor()
 	self:SetShareMouseKeyBoard(true);
@@ -254,18 +249,24 @@ end
 function Independent:Tick()
 	local CodeEnv = self:GetCodeEnv();
 	if (not CodeEnv) then return end
-	-- 虚拟时间
-	self:SetTickCount(self:GetTickCount() + 1);
+	local function Tick()
+		-- 虚拟时间
+		self:SetTickCount(self:GetTickCount() + 1);
 
-	-- 激活tick事件
-	CodeEnv.__activate_tick_event__();
-	
-	-- 触发定时回调
-	self:CallEventCallBack(CodeEnv.EventType.LOOP);
+		-- 激活tick事件
+		CodeEnv.__activate_tick_event__();
+		
+		-- 触发定时回调
+		self:CallEventCallBack(CodeEnv.EventType.LOOP);
 
-	-- 触发 LOOP 快捷回调
-	local loop = rawget(CodeEnv, "loop");
-	if (loop) then self:Call(loop) end 
+		-- 触发 LOOP 快捷回调
+		local loop = rawget(CodeEnv, "loop");
+		if (loop) then self:Call(loop) end 
+	end
+	local TickSpeed = self:GetTickSpeed();
+	for i = 1, TickSpeed do
+		Tick();
+	end
 end
 
 function Independent:Stop()

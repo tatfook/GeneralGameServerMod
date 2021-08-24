@@ -28,15 +28,20 @@ GoodsConfig.CODE_LINE = {
     task_reverse_compare = true,
 }
 
-GoodsConfig.MAX_ALIVE_TIME = {
-    ID = "MAX_ALIVE_TIME",
-    title = "最长存活时间",
-    task_title = "完成时间少于",
-    task_reverse_compare = true,
+GoodsConfig.ALIVE_TIME = {
+    ID = "ALIVE_TIME",
+    title = "生存时间",
+    task_title = "生存时间",
+    task_item = "Time",
 }
 
 GoodsConfig.ARROW = {
     ID = "ARROW",
     blood_peer = true,
     blood_peer_value = -20, 
+}
+
+GoodsConfig.KILL_ENEMY = {
+    ID = "KILL_ENEMY",
+    task_title = "消灭敌人数",
 }

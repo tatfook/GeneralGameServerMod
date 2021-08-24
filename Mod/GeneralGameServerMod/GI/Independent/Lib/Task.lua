@@ -16,14 +16,17 @@ local TaskItem = inherit(ToolBase, {});
 local __task_page__ = nil;
 local __scope__ = NewScope();
 
+TaskItem:Property("Task");             -- 所属任务
 TaskItem:Property("GoodsID");          -- 物品ID
 TaskItem:Property("Title");            -- 标题
 TaskItem:Property("Description");      -- 描述
 TaskItem:Property("Count", 0);         -- 数量
 TaskItem:Property("GoalCount", 1);     -- 目标数量
 TaskItem:Property("ReverseCompare", false, "IsReverseCompare"); -- 是否反向比较
+TaskItem:Property("FinishCallBack");   -- 完成回调
 
-function TaskItem:Init(gsid, goalcount, title, description, reverse_compare)
+function TaskItem:Init(task, gsid, goalcount, title, description, reverse_compare)
+    self:SetTask(task);
     self:SetGoodsID(gsid);
     self:SetGoalCount(goalcount);
     self:SetTitle(title);
@@ -38,20 +41,37 @@ function TaskItem:IsFinish()
     return if_else(self:IsReverseCompare(), count <= goalcount, count >= goalcount);
 end
 
+function TaskItem:CheckFinish()
+    if (not self:IsFinish()) then return end
+    local callback = self:GetFinishCallBack();
+    if (type(callback) == "function") then callback() end
+end
+
+function TaskItem:Stop()
+end
+
 function TaskItem:Destroy()
 end
 
 
 local TimeTaskItem = inherit(TaskItem, {});
 
-function TimeTaskItem:Init(gsid, goalcount, title, description, reverse_compare)
-    TimeTaskItem._super.Init(self, gsid, goalcount, title, description, reverse_compare);
+function TimeTaskItem:Init(task, gsid, goalcount, title, description, reverse_compare)
+    TimeTaskItem._super.Init(self, task, gsid, goalcount, title, description, reverse_compare);
 
     self.__timer__ = SetInterval(1000, function()
         self:SetCount(self:GetCount() + 1);
+        self:GetTask():RefreshUI();
+        self:CheckFinish();
     end);
 
     return self;
+end
+
+function TimeTaskItem:Stop()
+    if (not self.__timer__) then return end
+    self.__timer__:Stop();
+    self.__timer__ = nil;
 end
 
 function TimeTaskItem:Destroy()
@@ -66,36 +86,46 @@ function Task:ctor()
     self.__all_task_item__ = {};
 end
 
-function Task:AddTimeTaskItem(gsid, goalcount, title, description, reverse_compare)
-    local taskitem = TimeTaskItem:new():Init(gsid, goalcount, title, description, reverse_compare);
-    self.__all_task_item__[gsid] = taskitem;
+function Task:GetTaskItem(TaskItemClass, ...)
+    TaskItemClass = TaskItemClass or TaskItem;
+    return TaskItemClass:new():Init(self, ...);
+end
+
+function Task:__AddTaskItem__(TaskItemClass, ...)
+    local taskitem = self:GetTaskItem(TaskItemClass, ...);
+    self.__all_task_item__[taskitem:GetGoodsID()] = taskitem;
     table.insert(self.__task_item_list__, taskitem);
     self:RefreshUI();
     return taskitem;
 end
 
-function Task:AddTimeExtraTaskItem(gsid, goalcount, title, description, reverse_compare)
-    local taskitem = TimeTaskItem:new():Init(gsid, goalcount, title, description, reverse_compare);
-    self.__all_task_item__[gsid] = taskitem;
+function Task:__AddExtraTaskItem__(TaskItemClass, ...)
+    local taskitem = self:GetTaskItem(TaskItemClass, ...);
+    self.__all_task_item__[taskitem:GetGoodsID()] = taskitem;
     table.insert(self.__extra_task_item_list__, taskitem);
     self:RefreshUI();
     return taskitem;
 end
 
 function Task:AddTaskItem(gsid, goalcount, title, description, reverse_compare)
-    local taskitem = TaskItem:new():Init(gsid, goalcount, title, description, reverse_compare);
-    self.__all_task_item__[gsid] = taskitem;
-    table.insert(self.__task_item_list__, taskitem);
-    self:RefreshUI();
-    return taskitem;
+    return self:__AddTaskItem__(TaskItem, gsid, goalcount, title, description, reverse_compare);
 end
 
 function Task:AddExtraTaskItem(gsid, goalcount, title, description, reverse_compare)
-    local taskitem = TaskItem:new():Init(gsid, goalcount, title, description, reverse_compare);
-    self.__all_task_item__[gsid] = taskitem;
-    table.insert(self.__extra_task_item_list__, taskitem);
-    self:RefreshUI();
-    return taskitem;
+    return self:__AddExtraTaskItem__(TaskItem, gsid, goalcount, title, description, reverse_compare);
+end
+
+function Task:AddTimeTaskItem(gsid, goalcount, title, description, reverse_compare)
+    return self:__AddTaskItem__(TimeTaskItem, gsid, goalcount, title, description, reverse_compare);
+end
+
+function Task:AddTimeExtraTaskItem(gsid, goalcount, title, description, reverse_compare)
+    return self:__AddExtraTaskItem__(TimeTaskItem, gsid, goalcount, title, description, reverse_compare);
+end
+
+function Task:GetTaskItemCount(gsid)
+    local taskitem = self.__all_task_item__[gsid];
+    return taskitem and taskitem:GetCount() or 0;
 end
 
 function Task:SetTaskItemCount(gsid, count)

@@ -4,7 +4,7 @@
         <div class="button" onclick=ClickExportLevel>导出关卡</div>
         <!-- <div class="button" onclick=ClickGIBlocklyEditor>GI图块编辑器</div> -->
         <!-- <div class="button" onclick=ClickLevelBlocklyEditor>关卡图块编辑器</div> -->
-        <div class="button" onclick=CloseWindow>退出编辑</div>
+        <div class="button" onclick=ClickExitEdit>退出编辑</div>
     </div>
 </template>
 
@@ -23,6 +23,11 @@ end
 
 function ClickExportLevel()
     __level__:Export();
+end
+
+function ClickExitEdit()
+    if (playing) then TogglePlaying() end 
+    CloseWindow();
 end
 
 function TogglePlaying()

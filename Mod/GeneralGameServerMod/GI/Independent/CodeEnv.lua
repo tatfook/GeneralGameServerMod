@@ -213,6 +213,8 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	self.__get_timestamp__ = function() return math.floor(Independent:GetTickCount() * 1000 / Independent:GetLoopTickCount()) end   -- ms
 	self.__set_alias_path__ = function(alias, path) Independent.__alias_path_map__[alias] = path end 
 	self.__get_module_env__ = function(...) return Independent:GetModuleEnv(...) end
+	self.__get_tick_speed__ = function() return Independent:GetTickSpeed() end
+	self.__set_tick_speed__ = function(...) return Independent:SetTickSpeed(...) end 
 end
 
 function CodeEnv:InstallCodeBlockAPI()

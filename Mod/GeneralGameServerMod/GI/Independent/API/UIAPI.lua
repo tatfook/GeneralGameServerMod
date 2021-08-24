@@ -29,7 +29,7 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         -- 预处理参数
         G = G or {};
         params = params or {};
-        local key = params.html or params.template or params.url;
+        local key = params.__key__ or params.html or params.template or params.url;
         if (not key) then return end
         
         setmetatable(G, {__index = CodeEnv});

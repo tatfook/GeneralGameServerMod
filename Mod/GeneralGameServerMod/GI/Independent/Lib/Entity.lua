@@ -33,7 +33,7 @@ Entity:Property("Focus", false, "IsFocus");                           -- 是否�
 Entity:Property("Speed", 1);                                          -- 移动速度
 Entity:Property("Step", 0.06);                                        -- 步长
 Entity:Property("CanMoving", true, "IsCanMoving");                    -- 是否可以移动
-Entity:Property("HasBloold", true, "IsHasBlood");                     -- 是否有血量
+Entity:Property("HasBlood", true, "IsHasBlood");                     -- 是否有血量
 Entity:Property("Blood", 100);                                        -- 血量
 Entity:Property("TotalBlood", 100);                                   -- 总血量
 Entity:Property("CheckTerrain", true, "IsCheckTerrain");              -- 是否需要检测地形
@@ -47,8 +47,22 @@ Entity:Property("DefaultSkill");                                      -- 实体�
 Entity:Property("CanRandomMove", false, "IsCanRandomMove");           -- 是否可以随机移动
 Entity:Property("RandomMoveRange");                                   -- 随机移动范围
 Entity:Property("Moving", false, "IsMoving");                         -- 是否在移动中
+Entity:Property("Obstruction", false, "IsObstruction");               -- 是否是实体
 
 local NID = 0;
+
+ENTITY_TYPE = {
+    DEFAULT_TYPE = 0,
+    ATTACK_TYPE = 1,
+    ATTACKED_TYPE = 2,
+    NOT_ATTACK_TYPE = 3,
+    NOT_ATTACKED_TYPE = 4,
+    COLLIDE_TYPE = 5,
+    NOT_COLLIDE_TYPE = 6,
+    COLLIDED_TYPE = 7,
+    NOT_COLLIDED_TYPE = 8,
+}
+Entity.ENTITY_TYPE = ENTITY_TYPE;
 function Entity:ctor()
     NID = NID + 1;
     self.__nid__ = NID;
@@ -57,7 +71,7 @@ function Entity:ctor()
     self.__scope__ = NewScope();                   -- 响应式变量 
     self.__skills__ = {};                          -- 技能集
     self.__goods__ = {};                           -- 物品集
-    self.__types__ = {};                           -- 实体类型   0 -- 实体类型  1 -- 可攻击类型  2  -- 被攻击类型  3 -- 不可攻击类型   4 -- 可以碰撞  5 - 不可以碰撞  6 可以被碰撞  7 不可以被碰撞
+    self.__types__ = {};                           -- 实体类型   0 -- 实体类型  1 -- 可攻击类型  2  -- 被攻击类型  3 -- 不可攻击类型  4 - 不可被攻击类型 5 -- 可以碰撞  6 - 不可以碰撞  7 可以被碰撞  8 不可以被碰撞
     self.__contexts__ = {};                        -- 协程环境上下文
     __all_entity__[self.__key__] = self;
     __all_name_entity__[self.__name__] = self;
@@ -88,10 +102,11 @@ function Entity:Init(opts)
     if (opts.checkTerrain == false) then self:SetCheckTerrain(false) end
     if (opts.isCanVisible == false) then self:SetCanVisible(false) end 
     if (opts.isCanBeCollided == false) then self:SetCanBeCollided(false) end 
-    if (opts.hasBloold == false) then self:SetHasBloold(false) end 
+    if (opts.hasBlood == false) then self:SetHasBlood(false) end 
     if (opts.speed) then self:SetSpeed(opts.speed) end
     if (opts.scale) then self:SetScaling(opts.scale) end 
     if (opts.isCanRandomMove == false) then self:SetCanRandomMove(false) end 
+    self:SetObstruction(opts.obstruction);
     self:SetRandomMoveRange(opts.randomMoveRange);
     self:SetVisibleRadius(opts.visibleRadius or 1);
     self:SetCanAutoAttack(opts.isCanAutoAttack);
@@ -198,7 +213,7 @@ function Entity:OnPositionChange()
     if (type(callback) == "function") then callback() end
 end
 
-function Entity:UpdatePosition()
+function Entity:UpdatePosition(bForceUpdate)
     if (self.__entity_light__) then self.__entity_light__:SetPosition(self:GetPosition()) end
 
     if (self:IsFocus()) then SetCameraLookAtPos(self:GetPosition()) end
@@ -214,8 +229,9 @@ function Entity:UpdatePosition()
     __all_block_index_entity__[new_block_index][self] = self;
 
     -- 不精准碰撞
-    if (old_block_index == new_block_index) then return end 
+    if (old_block_index == new_block_index and not bForceUpdate) then return end 
     self.__block_index__ = new_block_index;
+
     self:CheckEntityCollision();
     self:CheckEntityVisible();
 end
@@ -241,6 +257,14 @@ function Entity:IsStandInPosition(x, y, z)
     block = GetBlock(bx, by - 1, bz);
     -- 下方无实心方块
     if (not block or not block.obstruction) then return false end 
+    -- 被实体占据
+    local block_index = ConvertToBlockIndex(bx, by, bz);
+    local entities = __all_block_index_entity__[block_index];
+    if (entities) then
+        for _, entity in pairs(entities) do
+            if (entity:IsObstruction()) then return false end 
+        end
+    end
     return true;
 end
 
@@ -318,15 +342,18 @@ end
 
 -- 深度优先智能寻路
 function Entity:GetDepthSearchPaths(tbx, tby, tbz)
+    local visibleRadius = self:GetVisibleRadius();
     local paths = {};
     local bx, by, bz = self:GetBlockPos();
-    local function DepthSearch(bx, by, bz)
+    local function DepthSearch(bx, by, bz, dept)
+        dept = dept or 1;
+        if (dept > visibleRadius) then return false end 
         if (bx == tbx and bz == tbz) then return true end 
         local dx,  dz = tbx > bx and 1 or (tbx == bx and 0 or -1), tbz > bz and 1 or (tbz == bz and 0 or -1);
         
         local _bx, _by, _bz = bx + dx, by, bz + dz;
         if (dx ~= 0 and dz ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
-            if (DepthSearch(_bx, _by, _bz)) then 
+            if (DepthSearch(_bx, _by, _bz, dept + 1)) then 
                 paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
                 return true;
             end
@@ -334,7 +361,7 @@ function Entity:GetDepthSearchPaths(tbx, tby, tbz)
 
         _bx, _by, _bz = bx, by, bz + dz;
         if (dz ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
-            if (DepthSearch(_bx, _by, _bz)) then 
+            if (DepthSearch(_bx, _by, _bz, dept + 1)) then 
                 paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
                 return true;
             end
@@ -342,7 +369,7 @@ function Entity:GetDepthSearchPaths(tbx, tby, tbz)
 
         _bx, _by, _bz = bx + dx, by, bz;
         if (dx ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
-            if (DepthSearch(_bx, _by, _bz)) then 
+            if (DepthSearch(_bx, _by, _bz, dept + 1)) then 
                 paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
                 return true;
             end
@@ -351,7 +378,7 @@ function Entity:GetDepthSearchPaths(tbx, tby, tbz)
         -- 回退
         _bx, _by, _bz = bx, by, bz - dz;
         if (dz ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
-            if (DepthSearch(_bx, _by, _bz)) then 
+            if (DepthSearch(_bx, _by, _bz, dept + 1)) then 
                 paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
                 return true;
             end
@@ -359,7 +386,7 @@ function Entity:GetDepthSearchPaths(tbx, tby, tbz)
 
         _bx, _by, _bz = bx - dx, by, bz;
         if (dx ~= 0 and self:IsStandInBlockPosition(_bx, _by, _bz)) then
-            if (DepthSearch(_bx, _by, _bz)) then 
+            if (DepthSearch(_bx, _by, _bz, dept + 1)) then 
                 paths[#paths + 1] = ConvertToBlockIndex(_bx, _by, _bz);
                 return true;
             end
@@ -382,17 +409,20 @@ end
 
 -- 贪心模式路径
 function Entity:GetGreedyPaths(tbx, tby, tbz)
+    local visibleRadius = self:GetVisibleRadius();
     local paths = {};
     local bx, by, bz = self:GetBlockPos();
     -- paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
-    while(true) do
+    while(not self:IsDestory()) do
         -- if (bx == tbx and by == tby and bz == tbz) then break end 
         if (bx == tbx and bz == tbz) then break end 
         local dx, dy, dz = tbx > bx and 1 or (tbx == bx and 0 or -1), 0, tbz > bz and 1 or (tbz == bz and 0 or -1);
-        if (self:IsStandInBlockPosition(bx + dx, by, bz + dz)) then
-            bx, by, bz = bx + dx, by, bz + dz;
-            paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
-        elseif (dx ~= 0 and self:IsStandInBlockPosition(bx + dx, by, bz)) then
+        -- 不支持协路走
+        -- if (self:IsStandInBlockPosition(bx + dx, by, bz + dz)) then
+        --     bx, by, bz = bx + dx, by, bz + dz;
+        --     paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
+        -- elseif (dx ~= 0 and self:IsStandInBlockPosition(bx + dx, by, bz)) then
+        if (dx ~= 0 and self:IsStandInBlockPosition(bx + dx, by, bz)) then
             bx, by, bz = bx + dx, by, bz;
             paths[#paths + 1] = ConvertToBlockIndex(bx, by, bz);
         elseif (dz ~= 0 and self:IsStandInBlockPosition(bx, by, bz + dz)) then
@@ -425,7 +455,7 @@ function Entity:Move(tx, ty, tz, bEnableAnim)
     local __context__ = self:GetContext();
     self:SetMoving(true);
     __context__.moving = true;
-    while (__context__.moving and not self:IsDestory()) do
+    while (__context__.moving and not self:IsDestory() and self:IsCanMoving()) do
         local x, y, z = self:GetPosition();
         local dx, dy, dz = math.abs(tx - x), math.abs(ty - y), math.abs(tz - z);
         -- local max = math.max(math.max(dx, dy), dz);
@@ -447,10 +477,10 @@ function Entity:Move(tx, ty, tz, bEnableAnim)
         elseif (math.abs(sz) >= stepDistance and self:IsStandInPosition(x, y, z - sz)) then
             self:SetPosition(x, y, z - sz);
         else
-            break;  -- 无路可走
+            stepCount = 0;  -- 无路可走直接退出
         end
-        if (self:IsCanMoving()) then sleep() end  
-        if (not self:IsCanMoving() or stepCount <= 1) then break end 
+        sleep();
+        if (stepCount <= 1) then break end 
     end
     __context__.moving = false;
     self:SetMoving(false);
@@ -578,10 +608,20 @@ function Entity:GetAllEntity()
 end
 
 function Entity:CanCollideWith(entity)
-    return self:IsBiped();
+    if (not self:IsBiped()) then return false end
+    local types = self:GetTypes();
+    for key, val in pairs(entity:GetTypes()) do
+        if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.NOT_COLLIDE_TYPE) then return false end 
+    end
+    
+    return true;
 end
 
 function Entity:CanBeCollidedWith(entity)
+    local types = self:GetTypes();
+    for key, val in pairs(entity:GetTypes()) do
+        if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.NOT_COLLIDED_TYPE) then return false end 
+    end
     return true;
 end
 
@@ -608,6 +648,12 @@ function Entity:OnCollidedWithEntity(entity)
     for _, goods in ipairs(self:GetGoodsList()) do
         goods:Activate(self, entity);
     end
+
+    -- if (self:GetName() == "hunter_arrow" and entity:GetName() == "sunbin") then
+    --     echo(self:GetTypes(), true);
+    --     echo(entity:GetTypes(), true);
+    --     DebugStack();
+    -- end
 
     if (self:IsDestroyBeCollided()) then
         self:Destroy();
@@ -664,11 +710,41 @@ function Entity:IsInnerAttackRangeEntity(entity)
     return skillAABB:Intersect(entityAABB);
 end
 
+function Entity:GetNearestEntity()
+    local min, nearest_entity = nil, nil;
+    for _, entity in ipairs(__GetEntityList__()) do
+        if (self ~= entity and self:IsVisibleEntity(entity)) then
+            local dist = self:DistanceToEntity(entity);
+            if (not min or min > dist) then
+                min = dist;
+                nearest_entity = entity;
+            end
+        end
+    end
+    return nearest_entity;
+end
+
+function Entity:GetNearestAttackEntity()
+    local min, nearest_entity = nil, nil;
+    for _, entity in ipairs(__GetEntityList__()) do
+        if (self ~= entity and self:IsVisibleEntity(entity) and self:IsAttackEntity(entity)) then
+            local dist = self:DistanceToEntity(entity);
+            if (not min or min > dist) then
+                min = dist;
+                nearest_entity = entity;
+            end
+        end
+    end
+    return nearest_entity;
+end
+
 function Entity:AutoAttackEntity(entity)
     self:SetCanVisible(false);
     self:SetAutoAttacking(true);
     self:StopMove();
-    while (not entity:IsDestory() and self:IsVisibleEntity(entity)) do
+
+    entity = self:GetNearestAttackEntity();
+    while (not self:IsDestory() and entity and not entity:IsDestory() and self:IsVisibleEntity(entity)) do
         if (self:IsInnerAttackRangeEntity(entity)) then
             self:SetAnimId(0);
             sleep(self:GetSkill():GetNextActivateTimeStamp());
@@ -681,8 +757,10 @@ function Entity:AutoAttackEntity(entity)
             local x, y, z = ConvertToRealPosition(bx, by, bz);
             self:SetAnimId(MOVE_ANIM_ID);
             self:Move(x, y, z, false);
+            entity = self:GetNearestAttackEntity();
         end
     end
+    
     self:SetAnimId(0);
     self:SetAutoAttacking(false);
     self:SetCanVisible(true);
@@ -690,7 +768,10 @@ end
 
 function Entity:AutoAvoid(entity)
     self:SetCanVisible(false);
-    self:SetFacing(entity:GetFacing());
+    local x, y, z = entity:GetPosition();
+    local tx, ty, tz = self:GetPosition();
+    local facing = GetFacingFromOffset(tx - x, ty - y, tz - z);
+    self:SetFacing(facing);
     self:MoveForward(self:GetVisibleRadius() * 4);
     self:SetCanVisible(true);
 end
@@ -736,18 +817,19 @@ function Entity:ShowHeadOnDisplay(G, params)
     G.GlobalScope = self.__scope__;
 
     params = params or {};
+    params.__key__ = format("EntityHeadOnDisplay_%s", tostring(self));
     params.__is_3d_ui__ = true;
     params.__3d_object__ = self:GetInnerObject();
-    params.__offset_y__ = params.__offset_y__ or 2.8;
+    params.__offset_y__ = params.__offset_y__ or 2;
     params.__offset_z__ = params.__offset_z__ or 0.05;
-    params.__facing__ = 0;
-    params.width = params.width or 160;
-    params.height = params.height or 100;
+    -- params.__facing__ = -1.57;
+    params.width = params.width or 80;
+    params.height = params.height or 80;
     params.x = params.x or (-params.width / 2);
     params.parent = GetRootUIObject();
     params.template = params.template or [[
 <template style="width: 100%; height: 100%;">
-    <div style="color:#ffffff; font-size: 20px; text-align: center;">{{username}}</div>
+    <div style="color:#ffffff; font-size: 16px; text-align: center;">{{username}}</div>
     <div style="display: flex; justify-content: center; margin-top: 10px;"><progress style="background-color: #FF0000; height: 8px;" color="#00FF00" v-bind:percentage=blood_strip_percentage></progress></div>
 </template>
     ]]
@@ -769,10 +851,9 @@ end
 
 function Entity:Build(blockId, blockData)
     local x, y, z = self:GetBlockPos();
-    local facing = self:getFacing() / 180 * math.pi;
+    local facing = self:GetFacing();
     x = x + math.floor(math.cos(facing)+0.5);
     z = z - math.floor(math.sin(facing)+0.5);
-    
     SetBlock(x, y - 1, z, blockId, blockData);
 end
 
@@ -794,19 +875,25 @@ end
 
 function Entity:IsAttackedEntity(entity)
     for type_name, type_value in pairs(entity:GetTypes()) do
-        if (type_value == 0 and self.__types__[type_name]  == 2) then return true end
+        if (type_value == ENTITY_TYPE.DEFAULT_TYPE and self.__types__[type_name]  == ENTITY_TYPE.ATTACKED_TYPE) then return true end
     end
     return false;
 end
 
 function Entity:IsAttackEntity(entity)
     for type_name, type_value in pairs(entity:GetTypes()) do
-        if (type_value == 0 and self.__types__[type_name] == 1) then return true end
+        if (type_value == ENTITY_TYPE.DEFAULT_TYPE and self.__types__[type_name] == ENTITY_TYPE.ATTACK_TYPE) then return true end
     end
     return false;
 end
 
+function Entity:AddAttackType(type_name)
+    self.__types__[type_name] = ENTITY_TYPE.ATTACK_TYPE;
+end
+
 function Entity:Attack(target_entity, skillName)
+    target_entity = target_entity or self:GetNearestAttackEntity();
+
     if (target_entity) then
         self:TurnEntity(target_entity);
     end

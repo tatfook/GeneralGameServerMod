@@ -16,6 +16,13 @@ local Level5 = require("./Level/Level5.lua");
 local Level6 = require("./Level/Level6.lua");
 local Level7 = require("./Level/Level7.lua");
 local Level8 = require("./Level/Level8.lua");
+local Level9 = require("./Level/Level9.lua");
+local Level10 = require("./Level/Level10.lua");
+local Level11 = require("./Level/Level11.lua");
+local Level12 = require("./Level/Level12.lua");
+local Level13 = require("./Level/Level13.lua");
+local Level14 = require("./Level/Level14.lua");
+local Level15 = require("./Level/Level15.lua");
 
 local function TranformTemplate(old_level_name, new_level_name)
     cmd("/property UseAsyncLoadWorld false")
@@ -33,10 +40,10 @@ local function TranformTemplate(old_level_name, new_level_name)
     cmd("/property UseAsyncLoadWorld true");
 end
 
--- TranformTemplate("level5", "_level8");
+-- TranformTemplate("level9", "_level15");
 -- Level:ClearRegion();
 
-Level1:Edit(true)
+-- Level1:Edit(true)
 -- Level1:Load();
 
 -- Level2:Edit();
@@ -61,41 +68,38 @@ Level1:Edit(true)
 -- Level8:Load();
 -- Level8:Edit(true);
 
--- local last_tick1 = 0;
--- __run__(function()
---     while(__is_running__()) do
---         local tick = __get_tick_count__();
---         sleep(1000);
---         print("-------------------------1", tick, tick - last_tick1)
---         last_tick1 = tick;
---     end
--- end)
+-- Level9:Load();
+-- Level9:Edit(true);
 
--- local last_tick2 = 0;
--- __run__(function()
---     while(__is_running__()) do
---         local tick = __get_tick_count__();
---         sleep(1000);
---         print("-------------------------2", tick, tick - last_tick2)
---         last_tick2 = tick;
---     end
--- end)
+-- Level10:Load();
+-- Level10:Edit(true);
 
--- local last_tick3 = 0;
--- __run__(function()
---     while(__is_running__()) do
---         local tick = __get_tick_count__();
---         sleep(1000);
---         print("-------------------------3", tick, tick - last_tick3)
---         last_tick3 = tick;
---     end
--- end)
+-- Level11:Load();
+-- Level11:Edit(true);
 
--- local sunbin = Level:CreateSunBinEntity(19197,5,19202);
+-- Level12:Load();
+-- Level12:Edit(true);
+
+-- Level13:Load();
+-- Level13:Edit(true);
+
+-- Level14:Load();
+-- Level14:Edit(true);
+
+-- Level15:Load();
+Level15:Edit(true);
+
+-- local sunbin = CreateSunBinEntity(19197,5,19202);
+-- sunbin:SetCurrentBlood(80)
+-- local wolf = CreateWolfEntity(19197,5,19206);
+-- wolf:SetCurrentBlood(80)
 -- sunbin:MoveForward(1)
 -- sunbin:MoveForward(1)
 
 function clear()
+    if (wolf) then wolf:Destroy() end 
+    if (sunbin) then sunbin:Destroy() end 
+
     cmd("/mode edit");
     cmd("/home");
     cmd("/show quickselectbar");

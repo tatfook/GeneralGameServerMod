@@ -22,6 +22,13 @@ function Timer:Start(delay, interval, callback)
     local interval_tick_count = interval and (math.floor(interval * __get_loop_tick_count__() / 1000));
     local last_tick_count = __get_tick_count__();
 
+    local co_callback = __coroutine_wrap__(function()
+        while(not self:IsStop()) do 
+            callback(self);
+            __coroutine_yield__();
+        end
+    end);
+
     self.TimerCallBack = function()
         local cur_tick_count = __get_tick_count__();
         local tick_count = cur_tick_count - last_tick_count;
@@ -30,14 +37,14 @@ function Timer:Start(delay, interval, callback)
         if (delay_tick_count and tick_count >= delay_tick_count) then
             last_tick_count = cur_tick_count;
             delay_tick_count = nil; -- 清掉, 防止再次执行
-            callback(self);
+            co_callback(self);
             return ;
         end
 
         -- interval
         if (interval_tick_count and tick_count >= interval_tick_count) then
             last_tick_count = cur_tick_count;
-            callback(self);
+            co_callback(self);
             return;
         end
 
@@ -46,14 +53,18 @@ function Timer:Start(delay, interval, callback)
         end
     end
 
-    RegisterTimerCallBack(self.TimerCallBack);
+    RegisterTickCallBack(self.TimerCallBack);
 
     return self;
 end
 
+function Timer:IsStop()
+    return self.TimerCallBack == nil;
+end
+
 function Timer:Stop()
     if (not self.TimerCallBack) then return end
-    RemoveTimerCallBack(self.TimerCallBack);
+    RemoveTickCallBack(self.TimerCallBack);
     self.TimerCallBack = nil;
 end
 

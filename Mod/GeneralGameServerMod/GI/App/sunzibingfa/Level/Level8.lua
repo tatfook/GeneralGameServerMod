@@ -107,7 +107,7 @@ function Level:LoadLevel()
     -- 添加任务
     self:AddGoalPointTask(1);
     self:AddTianShuCanJuanTask(1, true);
-    self:AddCodeLineTask(1, true);
+    self:AddCodeLineTask(11, true);
 
     -- -- 设置视角
     SetCamera(40, 75, -90);

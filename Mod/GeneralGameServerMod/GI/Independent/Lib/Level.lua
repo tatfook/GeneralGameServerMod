@@ -9,6 +9,7 @@ local Level = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/Level.lua");
 ------------------------------------------------------------
 ]]
 
+local Entity = require("Entity");
 local Level = inherit(ToolBase, module("Level"));
 
 Level:Property("LevelName", "level");  -- 关卡名称
@@ -16,8 +17,8 @@ Level:Property("ToolBoxXmlText");      -- 定制工具栏文本
 Level:Property("WorkspaceXmlText");    -- 定制工作区文本
 Level:Property("PassLevelXmlText");    -- 通关工作区xmltext
 Level:Property("StatementBlockCount", 0);  -- 语句块的数量
-Level:Property("CodeEnv");             -- 代码环境
-Level:Property("Speed", 1);            -- 倍速
+Level:Property("CodeEnv");                 -- 代码环境
+Level:Property("Speed", 1);                -- 倍速
 
 function Level:ctor()
     -- 左下角
@@ -67,14 +68,11 @@ function Level:ClearRegion()
 end
 
 function Level:LoadMap(level_name)
-    self:LoadRegion();
+    self:ResetFoundation();
 
     local cx, cy, cz = self:GetCenterPoint();
     cmd("/property UseAsyncLoadWorld false")
     cmd("/property AsyncChunkMode false");
-
-    -- 先清除
-    self:ClearRegion();
 
     -- 加载地图内容
     level_name = level_name or self:GetLevelName();
@@ -95,7 +93,8 @@ function Level:UnloadMap(level_name)
 end
 
 function Level:Load()
-    -- self:UnloadMap();
+    self:ClearRegion();
+    self:LoadRegion();
     self:LoadMap();
     self:LoadLevel();
     self:ShowLevelBlocklyEditor();
@@ -131,6 +130,8 @@ end
 
 function Level:ResetLevel()
     Emit("ResetLevel");
+    
+    self:LoadMap();
     self:UnloadLevel();
     self:LoadLevel();
     self:ShowLevelBlocklyEditor();
@@ -185,7 +186,11 @@ function Level:CloseLevelBlocklyEditor()
 end
 
 function Level:Edit(bLoadMap)
-    if (bLoadMap) then self:LoadMap() end
+    if (bLoadMap) then 
+        self:ClearRegion();
+        self:LoadRegion();
+        self:LoadMap();
+    end
     local cx, cy, cz = self:GetCenterPoint();
     cmd(format("/goto %s %s %s", cx, cy, cz));
     cmd("/mode editor");
