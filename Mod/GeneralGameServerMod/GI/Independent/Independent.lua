@@ -143,8 +143,8 @@ function Independent:LoadString(text, filename)
 	__modules__[__filename__] = __module__;
 
 	-- 生成函数
-	local code_func, errormsg = loadstring(text .. "\n__module__.__loaded__ = true;", "loadstring:" .. filename);
-	if errormsg then return print("Independent:LoadString Failed", filename, errormsg) end
+	local code_func, errormsg = loadstring(text .. "\n__module__.__loaded__ = true;", "loadstring:" .. __filename__);
+	if errormsg then return print("Independent:LoadString Failed", __filename__, errormsg) end
 
 	-- 设置代码环境
 	setfenv(code_func, self:GetModuleEnv(__module__));
@@ -169,6 +169,40 @@ function Independent:LoadString(text, filename)
 	return __module__.__module__;
 end
 
+local inject_map = {
+	{"^(%s*function%A+[^%)]+%)%s*)$", "%1 __checkyield__();"},
+	{"^(%s*local%s+function%W+[^%)]+%)%s*)$", "%1 __checkyield__();"}, 
+	{"^(%s*for%s.*%s+do%s*)$", "%1 __checkyield__();"},
+	{"^(%s*while%A.*%Ado%s*)$", "%1 __checkyield__();"},
+	{"^(%s*repeat%s*)$", "%1 __checkyield__();"},
+}
+function Independent:InjectCheckYieldToCode(code, filename)
+	local lines = {};
+	local isInLongString
+
+	filename = filename or ParaMisc.md5(code);
+	local function injectLine_(line, key)
+		local old_line = line;
+		for i,v in ipairs(inject_map) do
+			line = string.gsub(line, v[1], v[2]);
+		end
+		line = line .. string.format(" __fileline__('%s', %s, '%s');", filename, #lines + 1, old_line);
+		return line;
+	end
+
+	for line in string.gmatch(code or "", "([^\r\n]*)\r?\n?") do
+		if(isInLongString) then
+			lines[#lines+1] = line;	
+			isInLongString = line:match("%]%]") == nil;
+		else
+			isInLongString = line:match("%[%[[^%]]*$") ~= nil;
+			lines[#lines+1] = injectLine_(line);	
+		end
+	end
+	code = table.concat(lines, "\n");
+	return code;
+end
+	
 function Independent:LoadFile(filename)
 	if (not filename or not self:IsRunning()) then return end
 	local filepath = CommonLib.GetFullPath(filename, self.__alias_path_map__);

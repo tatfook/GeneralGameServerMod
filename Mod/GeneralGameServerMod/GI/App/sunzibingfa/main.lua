@@ -23,6 +23,7 @@ local Level12 = require("./Level/Level12.lua");
 local Level13 = require("./Level/Level13.lua");
 local Level14 = require("./Level/Level14.lua");
 local Level15 = require("./Level/Level15.lua");
+local Level16 = require("./Level/Level16.lua");
 
 local function TranformTemplate(old_level_name, new_level_name)
     cmd("/property UseAsyncLoadWorld false")
@@ -40,8 +41,8 @@ local function TranformTemplate(old_level_name, new_level_name)
     cmd("/property UseAsyncLoadWorld true");
 end
 
--- TranformTemplate("level9", "_level15");
--- Level:ClearRegion();
+-- TranformTemplate("level9.1", "_level16");
+Level:ClearRegion();
 
 -- Level1:Edit(true)
 -- Level1:Load();
@@ -86,8 +87,11 @@ end
 -- Level14:Load();
 -- Level14:Edit(true);
 
-Level15:Load();
+-- Level15:Load();
 -- Level15:Edit(true);
+
+-- Level16:Load();
+-- Level16:Edit(true);
 
 -- local sunbin = CreateSunBinEntity(19197,5,19202);
 -- sunbin:SetCurrentBlood(80)

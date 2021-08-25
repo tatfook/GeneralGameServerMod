@@ -158,6 +158,7 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	self.__get_module_env__ = function(...) return Independent:GetModuleEnv(...) end
 	self.__get_tick_speed__ = function() return Independent:GetTickSpeed() end
 	self.__set_tick_speed__ = function(...) return Independent:SetTickSpeed(...) end 
+	self.__inject_checkyield_to_code__ = function(...) return Independent:InjectCheckYieldToCode(...) end
 end
 
 function CodeEnv:InstallCodeBlockAPI()

@@ -20,10 +20,15 @@ GoodsConfig.TIAN_SHU_CAN_JUAN = {
     task_title = "收集天书残卷",
 }
 
+GoodsConfig.LIANG_SHI = {
+    ID = "LIANG_SHI",
+    task_title = "收集粮草",
+}
+
 GoodsConfig.CODE_LINE = {
     ID = "CODE_LINE",
     title = "代码行",
-    task_title = "代码行数少于",
+    task_title = "语句块数少于",
     task_description = nil,
     task_reverse_compare = true,
 }

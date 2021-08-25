@@ -148,21 +148,34 @@ function Level:RunLevelCodeAfter()
 end
 
 function Level:RunCode(code)
-    -- print("=======================Level:RunCode=======================");
-    -- 执行关卡代码前
-    self:RunLevelCodeBefore();
+    self:StopRunCode();
+    self.__co__ = __run__(function()
+        -- print("=======================Level:RunCode=======================");
+        -- 执行关卡代码前
+        self:RunLevelCodeBefore();
 
-    -- 执行关卡代码
-    local code_func, errormsg = loadstring(code, "loadstring:RunCode");
-    if (code_func) then
-        setfenv(code_func, self:GetCodeEnv());
-        code_func();
-    else
-        print("run code error:", code, errormsg);
+        -- 执行关卡代码
+        code = __inject_checkyield_to_code__(code);
+        local code_func, errormsg = loadstring(code, "loadstring:RunCode");
+        if (code_func) then
+            setfenv(code_func, self:GetCodeEnv());
+            code_func();
+        else
+            print("run code error:", code, errormsg);
+        end
+
+        -- 执行关卡代码后
+        self:RunLevelCodeAfter();
+    end);
+end
+
+function Level:StopRunCode()
+    if (not self.__co__) then return end
+    local status = __coroutine_status__(self.__co__);
+    if (status == "normal" or status == "suspended") then 
+        __coroutine_resume__(self.__co__);
+        self.__co__ = nil;
     end
-
-    -- 执行关卡代码后
-    self:RunLevelCodeAfter();
 end
 
 function Level:ShowLevelBlocklyEditor()

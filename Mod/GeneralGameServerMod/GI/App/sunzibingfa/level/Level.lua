@@ -2,13 +2,13 @@
 Title: level
 Author(s):  wxa
 Date: 2021-06-01
-Desc: 关卡模板文件
+Desc: 关卡基类文件
 use the lib:
 ]]
 
 require("../Entity/EntityAPI.lua");
 
-local GoodsConfig = require("./GoodsConfig.lua");
+local GoodsConfig = require("../GoodsConfig.lua");
 local API = require("./API.lua");
 local Task = require("Task");
 local Level = inherit(require("Level"), module()) ;
@@ -73,6 +73,10 @@ end
 
 function Level:AddKillEnemyTask(goal_count, bIsExtraTask)
     self:__AddTaskItem__(bIsExtraTask, GoodsConfig.KILL_ENEMY.ID, goal_count);
+end
+
+function Level:AddLiangShiTask(goal_count, bIsExtraTask)
+    self:__AddTaskItem__(bIsExtraTask, GoodsConfig.LIANG_SHI.ID, goal_count);
 end
 
 function Level:AddAliveTimeTask(goal_count, bIsExtraTask)
@@ -182,9 +186,8 @@ end
 -- 通关
 function Level:PassLevelSuccess()
     if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
-    -- 停止移动
-    if (self.__sunbin__) then self.__sunbin__:StopMove() end 
-
+    self:StopRunCode();
+    if (self.__sunbin__) then self.__sunbin__:SetAnimId(0) end 
     self:SetLevelState(self.STATE.SUCCESS);
     Tip("通过成功");
 end
@@ -192,8 +195,8 @@ end
 -- 通关失败
 function Level:PassLevelFailed()
     if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
-    -- 停止移动
-    if (self.__sunbin__) then self.__sunbin__:StopMove() end 
+    self:StopRunCode();
+    if (self.__sunbin__) then self.__sunbin__:SetAnimId(0) end 
     self:SetLevelState(self.STATE.FAILED);
     Tip("通过失败");
 end
@@ -419,6 +422,12 @@ function Level:CreateCrossFenceEntity(bx, by, bz)
     local fence = CreateCrossFenceEntity(bx, by, bz);
     table.insert(self.__all_entity__, fence);
     return fence;
+end
+
+function Level:CreateLiangShiEntity(bx, by, bz)
+    local liangshi = CreateLiangShiEntity(bx, by, bz);
+    table.insert(self.__all_entity__, liangshi);
+    return liangshi;
 end
 
 Level:InitSingleton();

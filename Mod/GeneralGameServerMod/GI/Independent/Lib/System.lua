@@ -21,9 +21,12 @@ function __run__(callback, ...)
 	end
 	if (type(callback) ~= "function") then return end 
 
-	__coroutine_resume__(__coroutine_create__(function(callback, ...)
+	local co = __coroutine_create__(function(callback, ...)
 		__xpcall__(callback, ...);
-	end), callback, ...);
+	end);
+	__coroutine_resume__(co, callback, ...);
+	
+	return co;
 end
 
 -- 废弃
@@ -80,13 +83,15 @@ function sleep(sleep)
 	-- 注册主线程定时回调, 由主线唤醒当前协程的挂起
 	RegisterTickCallBack(SleepLoopCallBack);
 
+	local isExit = false;
 	while (isSleeping) do 
 		-- 打包返回值
 		local callback = pack(__coroutine_yield__()); 
 		
 		if (type(callback) ~= "function") then
-			-- 激活的不是函数则结束sleep退出
+			-- 激活的不是函数则结束sleep退出当前协程
 			isSleeping = false;
+			isExit = true;
 		else
 			sync_run(unpack());
 			-- 激活的是函数则创建新协程执行
@@ -101,30 +106,8 @@ function sleep(sleep)
 
 	-- 移除定时回调
 	RemoveTickCallBack(SleepLoopCallBack);
-	if (not __is_running__()) then __error__("环境已销毁") end 
-end
-
-function __independent_run__(callback, G)
-	G = G or {};
-	local __all_window__ = {};
-	local __all_entity__ = {};
-	local __all_timer__ = {};
-	G.CreateEntity = function(...)
-		local entity = CreateEntity(...);
-		if (entity) then table.insert(__all_entity__, entity) end
-		return entity;
-	end
-
-	G.ShowWindow = function(...)
-		local window = ShowWindow(...);
-		if (window) then table.insert(__all_window__, window) end
-		return window;
-	end
-
-	G.SetTimeout = function(...)
-		local timer = SetTimeout(...);
-		if (timer) then end
-	end
+	if (not __is_running__()) then __error__("环境已销毁") end
+	if (isExit) then __error__("非函数激活退出") end  
 end
 
 function GetFullPath(path, directory)
@@ -143,4 +126,27 @@ function GetFullPath(path, directory)
 	end
 	local full_path = table.concat(filenames, "/");
 	return ToCanonicalFilePath(full_path);
+end
+
+local __checkyield_key__ = nil;
+local __checkyield_count__ = 0;
+local __checkyield_tick_count__ = 0;
+function __checkyield__()
+	local cur_tick_count = __get_tick_count__();
+	if (__checkyield_tick_count__ == cur_tick_count) then
+		__checkyield_count__ = __checkyield_count__ + 1;
+	else
+		__checkyield_tick_count__ = cur_tick_count;
+		__checkyield_count__ = 0;
+	end
+
+	-- 同一时刻循环1000次 则让出协程
+	if (__checkyield_count__ > 1000) then sleep() end
+end
+
+function __fileline__(filename, line_no, line_text)
+	__current_filename__, __current_line_no__, __current_line_text__ = filename, line_no, line_text;
+	if (__is_debug__) then
+		print("__fileline__", __current_filename__, __current_line_no__, __current_line_text__);
+	end
 end

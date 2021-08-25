@@ -1052,14 +1052,21 @@ function Blockly:EmitUI(eventName, eventData)
 end
 
 function Blockly:GetStatementBlockCount()
-    local count = 0;
-    for _, block in ipairs(self.blocks) do
-        local nextBlock = block;
-        while (nextBlock) do
-            nextBlock = nextBlock:GetNextBlock();
-            count = count + 1;
+    local total_count = 0;
+    local function GetStatementBlockCount(block)
+        if (not block) then return 0 end
+        local count = 1;
+        for _, field in pairs(block.inputFieldMap) do
+            if (field:GetType() == "input_statement") then
+                count = count + GetStatementBlockCount(field:GetInputBlock());
+            end
         end
+        return count + GetStatementBlockCount(block:GetNextBlock());
     end
 
-    return count;
+    for _, block in ipairs(self.blocks) do
+        total_count = total_count + GetStatementBlockCount(block);
+    end
+
+    return total_count;
 end

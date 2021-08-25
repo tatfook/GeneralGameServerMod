@@ -1,4 +1,5 @@
 
+local GoodsConfig = require("../GoodsConfig.lua");
 local EntitySunBin = require("./EntitySunBin.lua");
 local EntityHunter = require("./EntityHunter.lua");
 local EntityWolf = require("./EntityWolf.lua");
@@ -24,6 +25,18 @@ function CreateCrossFenceEntity(bx, by, bz)
     });
 end
 
+function CreateLiangShiEntity(bx, by, bz)
+    return CreateEntity({
+        bx = bx, by = by, bz = bz,
+        name = "liangshi",
+        assetfile = "character/CC/artwar/game/liangshi.x", 
+        destroyBeCollided = true, 
+        goods = {
+            [1] = {gsid = GoodsConfig.LIANG_SHI.ID, transfer = true},
+        }
+    });
+end
+
 -- character/CC/02human/blockman/shanzei.   shanzhui
 -- character/CC/02human/blockman/cunzhang.x
 -- character/CC/codewar/laohu.x
@@ -37,3 +50,5 @@ end
 
 -- <asset filename="character/CC/artwar/game/mumen.x" displayname="木门" name="mumen"/>
 -- <asset filename="character/CC/artwar/game/mumen_poor.x" displayname="破木门" name="mumen_poor"/>
+-- <asset filename="character/CC/artwar/game/liangshi.x" displayname="粮食" name="liangshi"/>
+-- 

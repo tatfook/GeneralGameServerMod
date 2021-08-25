@@ -17,12 +17,20 @@ local API = NPL.export()
 Commands["gi"] = {
 	mode_deny = "",
     name = "gi",
-    quick_ref = "/gi restart",
+    quick_ref = "/gi restart|start|stop",
     desc = [[
 /gi restart 重启GI环境
+/gi start 启动GI环境
+/gi stop 停止GI环境
     ]],
-    handler = function(...)
-        GameLogic.GetCodeGlobal():GetSandboxAPI().API.__restart__();
+    handler = function(cmd_name, cmd_text, cmd_params)
+        local strs = commonlib.split(cmd_text, " ");
+        local subcmd = strs[1];
+        local __code_env__ = GameLogic.GetCodeGlobal():GetSandboxAPI().API;
+
+        if (subcmd == "restart") then return __code_env__.__restart__() end
+        if (subcmd == "start") then return __code_env__.__start__() end
+        if (subcmd == "stop") then return __code_env__.__stop__() end
     end
 };
 
