@@ -115,23 +115,6 @@ function GIBlockly.GetAllCmds()
 	return all_cmds;
 end
 
-
-local __all_env__ = {};
-
-local function GetCodeEnv(codeblock)
-    local bx, by, bz = codeblock:GetBlockPos();
-    local key = string.format("%s_%s_%s", bx, by, bz);
-    if (__all_env__[key]) then return __all_env__[key] end
-    local __env__ = GameLogic.GetCodeGlobal():GetSandboxAPI().API.__get_module_env__();
-
-    __env__.__codeblock__ = codeblock;
-    __env__.__codeblock_env__ = codeblock:GetCodeEnv();
-
-    __all_env__[key] = __env__;
-
-    return __env__;
-end
-
 function GIBlockly.CompileCode(code, filename, codeblock)
     local code_func, errormsg = loadstring(code, filename);
     if(not code_func or errormsg) then
@@ -139,12 +122,18 @@ function GIBlockly.CompileCode(code, filename, codeblock)
         return ;
     end
 
-    local __env__ = GetCodeEnv(codeblock);
+    local __env__ = GameLogic.GetCodeGlobal():GetGI():GetSandboxAPI().__get_module_env__();
+    __env__.__codeblock__ = codeblock;
+    __env__.__codeblock_env__ = codeblock:GetCodeEnv();
+
     setfenv(code_func, __env__);
-    
+
+    -- 环境重新加载
     local __setfenv__ = setfenv;
     local format = string.format;
     return function() 
+        if (not __env__.__is_running__()) then __env__.__restart__() end
+
         local __cur_co__ = __env__.__coroutine_running__();
         __env__.runInGIEnv = function(callback)
             if (type(callback) ~= "function") then return end 
@@ -159,12 +148,13 @@ function GIBlockly.CompileCode(code, filename, codeblock)
         __env__.registerStopEvent = function(callback)
             __env__.RegisterEventCallBack(format("__code_block_stop__%s", __cur_co__), callback);
         end
-
-        code_func();
-
+        __env__.registerCodeBlockStopEvent = __env__.registerStopEvent;
+        
+        __env__.__module__.__reload__ = code_func;
+        __env__.__run__(code_func);
         registerStopEvent(function()
             __env__.TriggerEventCallBack(format("__code_block_stop__%s", __cur_co__));
-            __env__.__clean_coroutine_data__(__cur_co__);
-        end)
+            __env__.__module__.__reload__ = nil;
+        end);
     end
 end

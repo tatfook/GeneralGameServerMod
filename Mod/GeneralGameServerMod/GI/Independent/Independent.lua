@@ -41,6 +41,9 @@ function Independent:Init()
 	-- 加载内置模块
 	self.__files__ = {};
 
+	-- 所有模块环境
+	self.__module_env_list__ = {};
+
 	-- 路径映射
 	self.__alias_path_map__ = {
 		["gi"] = "Mod/GeneralGameServerMod/GI",
@@ -77,39 +80,44 @@ end
 function Independent:GetModuleEnv(__module__)
 	__module__ = __module__ or {};
 
-	local CodeEnv = self:GetCodeEnv();
 	local __default_directory__ = "Mod/GeneralGameServerMod/GI/Independent/Lib"; 
 	local __filename__ = __module__.__filename__ or "";
 	local __directory__ = string.gsub(__filename__, "[^/\\]*$", "");
-	local __env__ = {
+	local __module_env__ = {
 		__module__ = __module__,
 		__filename__ = __filename__,
 		__directory__ = __directory__,
-		module = function() 
-			return __module__.__module__;
-		end,
-		loadfile = function(path)
-			return self:LoadFile(path);
-		end,
-		require = function(path)
-			if (string.match(path, "^[A-Za-z]")) then 
-				path = string.format("%s/%s.lua", __default_directory__, path);
-			else 
-				path = CodeEnv.GetFullPath(path, __directory__);
-			end
-			if (not string.match(path, "%.lua$")) then path = path .. ".lua" end 
-			return self:LoadFile(path);
-		end,
-	};
-	__env__.__env__ = __env__;
-	return setmetatable(__env__, {
+		__code_env__ = self:GetCodeEnv(),
+	}
+	
+	__module_env__.module = function() 
+		return __module__.__module__;
+	end
+	__module_env__.loadfile = function(path)
+		return self:LoadFile(path);
+	end
+	__module_env__.require = function(path)
+		if (string.match(path, "^[A-Za-z]")) then 
+			path = string.format("%s/%s.lua", __default_directory__, path);
+		else 
+			path = __module_env__.__code_env__.GetFullPath(path, __directory__);
+		end
+		if (not string.match(path, "%.lua$")) then path = path .. ".lua" end 
+		return self:LoadFile(path);
+	end
+	
+	__module_env__.__module_env__ = __module_env__;
+	__module__.__module_env__ = __module_env__;
+	table.insert(self.__module_env_list__, __module_env__);
+
+	return setmetatable(__module_env__, {
 		__index = function(t, key) 
 			if (key == "__module__") then return __module__ end 
-			return CodeEnv[key];
+			return __module_env__.__code_env__[key];
 		end,
 		__newindex = function(t, key, val)
 			if (key == "__module__") then return end 
-			CodeEnv[key] = val;
+			__module_env__.__code_env__[key] = val;
 		end
 	});
 end
@@ -204,7 +212,17 @@ function Independent:CallEventCallBack(eventType)
 end
 
 function Independent:Restart()
+	local __module_env_list__ = self.__module_env_list__;
 	self:Reset();
+	local CodeEnv = self:GetCodeEnv();
+	for _, __module_env__ in ipairs(__module_env_list__) do
+		__module_env__.__code_env__ = CodeEnv;
+		local __reload__ = __module_env__.__module__.__reload__;
+		if (type(__reload__) == "function") then 
+			table.insert(self.__module_env_list__, __module_env__);
+			__module_env__.__code_env__.__run__(__reload__);
+		end 
+	end
 end
 
 function Independent:Start(filename)

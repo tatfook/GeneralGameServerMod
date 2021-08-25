@@ -130,63 +130,6 @@ function CodeEnv:InstallLuaAPI()
 	self.__coroutine_resume__ = coroutine.resume;
 	self.__coroutine_yield__ = coroutine.yield;
 	self.__coroutine_status__ = coroutine.status;
-	self.__get_coroutine_data__ = function(__co__)
-		if (self.__is_touch_device__()) then return {__windows__ = {}, __entities__ = {}, __event_callback__ = {}, __clean_callback__ = {}} end 
-
-		__co__ = __co__ or self.__coroutine_running__();
-
-		local __data__ = self.__coroutines__[__co__] or {};
-		self.__coroutines__[__co__] = __data__;
-		__data__.__windows__ = __data__.__windows__ or {};
-		__data__.__entities__ = __data__.__entities__ or {};
-		__data__.__event_callback__ = __data__.__event_callback__ or {};
-		__data__.__clean_callback__ = __data__.__clean_callback__ or {};
-		return __data__;
-	end
-
-	self.__add_clean_coroutine_data_callback__ = function(callback)
-		if (self.__is_touch_device__()) then return end 
-		
-		if (type(callback) ~= "function") then return end
-		self.__get_coroutine_data__().__clean_callback__[callback] = callback;
-	end
-
-	self.__remove_clean_coroutine_data_callback__ = function(callback)
-		if (self.__is_touch_device__()) then return end 
-		
-		if (type(callback) ~= "function") then return end
-		self.__get_coroutine_data__().__clean_callback__[callback] = nil;
-	end
-
-	self.__clean_coroutine_data__ = function(__co__)
-		if (self.__is_touch_device__()) then return end 
-
-		self.TriggerEventCallBack("__clean_coroutine_data__");
-
-		local __data__ = self.__get_coroutine_data__(__co__);
-		for key, window in pairs(__data__.__windows__) do 
-			window:CloseWindow();
-			self.__windows__[key] = nil; 
-		end
-		for key, entity in pairs(__data__.__entities__) do 
-			entity:Destroy();
-			self.__entities__[key] = nil;
-		end 
-		for event_type, callbacks in pairs(__data__.__event_callback__) do
-			for callback in pairs(callbacks) do
-				if (self.__event_callback__[event_type] and self.__event_callback__[event_type][callback]) then 
-					self.__event_callback__[event_type][callback] = nil
-				end
-			end
-		end 
-		for _, clean_callback in pairs(__data__.__clean_callback__) do
-			if (type(clean_callback) == "function") then
-				clean_callback();
-			end
-		end
-	end
-
-	self.__is_touch_device__ = function() return System.os.IsTouchMode() end 
 end
 
 function CodeEnv:InstallIndependentAPI(Independent)

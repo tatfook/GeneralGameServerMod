@@ -128,15 +128,6 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
         end);
     end
 
-    -- 会切换协程需做等待处理
-    -- local __modules__ = {};
-    -- CodeEnv.require = function(name)
-    --     local filename = (string.match(name, "^[%a%d]+$")) and (string.format("Mod/GeneralGameServerMod/GI/Independent/Lib/%s.lua", name)) or name;
-    --     if (__modules__[filename]) then return __modules__[filename] end
-    --     __modules__[filename] = CodeEnv.__loadfile__(filename);
-    --     return __modules__[filename];
-    -- end
-
     CodeEnv.if_else = function(_bool, _true, _false) 
         if (_bool) then return _true end
         return _false;
@@ -145,4 +136,6 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.GetTime = ParaGlobal.timeGetTime;
     CodeEnv.GetTimeStamp = ParaGlobal.timeGetTime;
     CodeEnv.ToolBase = commonlib.gettable("System.Core.ToolBase");
+
+	CodeEnv.__is_touch_device__ = function() return System.os.IsTouchMode() end 
 end});

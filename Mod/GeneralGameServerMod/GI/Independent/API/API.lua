@@ -10,9 +10,21 @@ local API = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/API.lua");
 ]]
 
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
-
+local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local API = NPL.export()
+
+Commands["gi"] = {
+	mode_deny = "",
+    name = "gi",
+    quick_ref = "/gi restart",
+    desc = [[
+/gi restart 重启GI环境
+    ]],
+    handler = function(...)
+        GameLogic.GetCodeGlobal():GetSandboxAPI().API.__restart__();
+    end
+};
 
 local function Tip(text, duration, color, id)
     BroadcastHelper.PushLabel(

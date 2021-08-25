@@ -19,14 +19,14 @@ function SandBox:ctor()
 end
 
 function SandBox:GetAPI()
-	-- print("===========================SandBox:GetAPI==================================");
     self:Start();
+	-- print("===========================SandBox:GetAPI==================================", self:IsRunning());
     return self:GetCodeEnv();
 end
 
 -- 获取代码方块专属API
 function SandBox:GetCodeBlockAPI()
-    if (self.CodeBlockAPI) then return self.CodeBlockAPI end
+    if (self.CodeBlockAPI and self:IsRunning()) then return self.CodeBlockAPI end
 
     local API = self:GetAPI();
     self.CodeBlockAPI = {

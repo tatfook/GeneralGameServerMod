@@ -86,8 +86,8 @@ end
 -- Level14:Load();
 -- Level14:Edit(true);
 
--- Level15:Load();
-Level15:Edit(true);
+Level15:Load();
+-- Level15:Edit(true);
 
 -- local sunbin = CreateSunBinEntity(19197,5,19202);
 -- sunbin:SetCurrentBlood(80)

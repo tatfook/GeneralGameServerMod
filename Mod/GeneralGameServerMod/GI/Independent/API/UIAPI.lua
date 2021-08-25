@@ -42,10 +42,6 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         local window = (not IsDevEnv and windows[key]) and windows[key] or Vue:new();
         windows[key] = window;
 
-        -- 协程数据标记
-        local __data__ = CodeEnv.__get_coroutine_data__();
-        __data__.__windows__[key] = window;
-
         -- 指定默认参数
         params.G = G;
         params.draggable = if_else(params.draggable == nil, false, params.draggable);  -- 默认不支持拖拽
