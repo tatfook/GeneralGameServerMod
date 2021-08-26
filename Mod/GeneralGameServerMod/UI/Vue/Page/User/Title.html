@@ -62,10 +62,14 @@
                 local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
                 local function ChangeAsset(assetfile, skin)
                     local playerEntity = GameLogic.GetPlayerController():GetPlayer();
-                    playerEntity:SetMainAssetPath(assetfile);
+                    if playerEntity then
+                        playerEntity:SetMainAssetPath(assetfile);
+                        playerEntity:SetSkin(skin); 
+                    end
+
                     GameLogic.options:SetMainPlayerAssetName(assetfile);
                     GameLogic.options:SetMainPlayerSkins(skin);
-                    playerEntity:SetSkin(skin);
+                    
                     GlobalScope:Set("AssetSkinGoodsItemId", 0);
                     UpdatePlayerEntityInfo();
                 end
@@ -80,6 +84,7 @@
                         end
                     end
                     CloseWindow();
+                    GameLogic.GetFilters():apply_filters("role_page_close");
                     return ;
                 end 
 
@@ -111,6 +116,8 @@
         else
             CloseWindow();
         end
+
+        GameLogic.GetFilters():apply_filters("role_page_close");
     end
 </script>
 

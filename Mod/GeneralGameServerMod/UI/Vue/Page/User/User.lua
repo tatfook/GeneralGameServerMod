@@ -520,9 +520,9 @@ _G.UpdatePlayerEntityInfo = function()
     local AuthUserId = GlobalScope:Get("AuthUserId");
     -- 更新用户信息
     if (not isAuthUser) then return end
-    local player = GameLogic.GetPlayerController():GetPlayer();
-    local asset = player:GetMainAssetPath();
-    local skin = player:GetSkin();
+    --local player = GameLogic.GetPlayerController():GetPlayer();
+    local asset = MyCompany.Aries.Game.PlayerController:GetMainAssetPath()
+    local skin = MyCompany.Aries.Game.PlayerController:GetSkinTexture()
     local extra = UserDetail.extra or {};
     extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
     extra.ParacraftPlayerEntityInfo.asset = asset;
