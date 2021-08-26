@@ -246,8 +246,7 @@ function AutoUpdater:DownloadFromClient()
     local filesync = FileSyncConnection:new():Init({__nid__ = CommonLib.AddNPLRuntimeAddress(self:GetServerIp(), self:GetServerPort())});
     filesync:Sync({
         local_file_path = self:GetDownloadDirectory(),
-        -- remote_file_path = latest_version_path,
-        remote_file_path = "/mnt/d/ParacraftDev/caches/latest/",
+        remote_file_path = IsDevEnv and "/mnt/d/ParacraftDev/caches/latest/" or latest_version_path,
         finish_callback = function()
             print("===================finish_callback========================")
             self:Download();
