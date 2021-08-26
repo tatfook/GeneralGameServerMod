@@ -188,14 +188,6 @@ function Canvas3D:OnAttrValueChange()
     PlayerAssetFile:Init();
 
     local obj_params = ObjEditor.GetObjectParams(ParaScene.GetPlayer());
-    if (filename) then
-        obj_params.AssetFile = PlayerAssetFile:GetValidAssetByString(filename);
-    end
-
-	if (skin) then
-		obj_params.CustomGeosets = skin;
-	end
-
     NPL.load("(gl)script/apps/Aries/Creator/Game/PlayerController.lua");
     
     if(not obj_params.AssetFile or obj_params.AssetFile == "") then
@@ -206,6 +198,15 @@ function Canvas3D:OnAttrValueChange()
             Attribute = 128,
         };
     end
+
+    if (filename) then
+        obj_params.AssetFile = PlayerAssetFile:GetValidAssetByString(filename);
+    end
+
+	if (skin) then
+		obj_params.CustomGeosets = skin;
+	end
+
 	-- the scene player ID
     obj_params.name = "mc_player";
     self:AutoSetObjectSkin(obj_params)

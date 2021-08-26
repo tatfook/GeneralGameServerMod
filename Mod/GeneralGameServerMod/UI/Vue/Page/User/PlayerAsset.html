@@ -25,25 +25,32 @@ local function ResetAvatarIcons()
 end
 
 local function ChangePlayerAsset(assetfile, skin)
-	assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
-	local playerEntity = GameLogic.GetPlayerController():GetPlayer();
-	if(assetfile and (assetfile~=playerEntity:GetMainAssetPath() or skin ~= playerEntity:GetSkin())) then
-        ResetAvatarIcons();
-		local oldAssetFile = playerEntity:GetMainAssetPath()
-		if(playerEntity.SetModelFile) then
-			playerEntity:SetModelFile(assetfile);
-		else
-			playerEntity:SetMainAssetPath(assetfile);
-        end
-        GameLogic.options:SetMainPlayerAssetName(assetfile);
+    assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
+
+    local curAssetFile = MyCompany.Aries.Game.PlayerController:GetMainAssetPath()
+    local curSkin = MyCompany.Aries.Game.PlayerController:GetSkinTexture()
+    if (assetfile and (assetfile~=curAssetFile or skin ~= curSkin)) then
         GetGlobalScope():Set("MainAsset", assetfile);
-        GameLogic.options:SetMainPlayerSkins(skin);
         GetGlobalScope():Set("MainSkin", skin);
-        playerEntity:SetSkin(skin);
-		if(math.abs(EntityManager.PlayerAssetFile:GetDefaultScale(oldAssetFile) - playerEntity:GetScaling()) < 0.01) then
-			playerEntity:SetScaling(EntityManager.PlayerAssetFile:GetDefaultScale(assetfile))
-		end
-	end
+        ResetAvatarIcons();
+        GameLogic.options:SetMainPlayerAssetName(assetfile);
+        GameLogic.options:SetMainPlayerSkins(skin); 
+
+        local playerEntity = GameLogic.GetPlayerController():GetPlayer();
+        if playerEntity then
+            local oldAssetFile = playerEntity:GetMainAssetPath()
+            if(playerEntity.SetModelFile) then
+                playerEntity:SetModelFile(assetfile);
+            else
+                playerEntity:SetMainAssetPath(assetfile);
+            end
+
+            playerEntity:SetSkin(skin);
+            if(math.abs(EntityManager.PlayerAssetFile:GetDefaultScale(oldAssetFile) - playerEntity:GetScaling()) < 0.01) then
+                playerEntity:SetScaling(EntityManager.PlayerAssetFile:GetDefaultScale(assetfile))
+            end
+        end
+    end 
 end 
 
 function ClickPlayerAsset(asset)
