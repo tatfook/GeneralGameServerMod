@@ -363,27 +363,3 @@ FileSync 同步方式
 综上所述: webserver 问题偏多, 客户端自动更新方案暂定使用FileSync方式实现
 ]]
 
--- 获取文件内容
-function GetFileText(filename)
-    local file = ParaIO.open(filename , "rb");
-	if(file:IsValid()) then
-		local text = file:GetText(0, -1);
-		file:close();
-		return text;
-    else
-        file:close();
-	end	
-end
-
--- 写文件
-function WriteFile(filename, text)
-    local file = ParaIO.open(filename , "wb");
-	if(file:IsValid()) then
-		file:WriteString(text, #text);
-		file:close();
-    else
-        file:close();
-	end	
-end
-
--- WriteFile(latest_version_path .. "readme.txt.p.t", GetFileText(latest_version_path .. "readme.txt.p"));
