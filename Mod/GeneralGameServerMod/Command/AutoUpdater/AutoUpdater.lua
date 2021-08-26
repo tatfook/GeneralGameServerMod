@@ -327,19 +327,13 @@ end
 
 AutoUpdater:InitSingleton():Init();
 
--- print(AutoUpdater:CheckLatestVersion());
--- AutoUpdater:SetInstallDirectory("D:/ParacraftDev/caches/latest/");
-AutoUpdater:SetDownloadFromClient(true);
--- AutoUpdater:SetAutoInstall(true);
-AutoUpdater:CheckInstallVersion();
--- ParaIO.DeleteFile("D:/ParacraftDev/caches/latest/");
-
 --[[
 客户端自动更新逻辑:
 1. 检测caches/latest/本地最新版本文件是否最新, 是最新进入步骤2, 不是最新进行更新进入步骤3
 2. 检测安装版本是否最新, 是最新版本则不进行后续处理, 不是最新进行更新进入步骤3
 3. 检测远程版本是否与本地最新版caches/latest相同, 若相同则拷贝本地最新版到安装缓存目录, 不是则从远程下载置安装缓存目录
-4. 重启完成安装 (launcher 需提供自动更新选项, 以及退出重启示例代码)
+4. 下载完成备份至本地最新版本目录(caches/latest)
+5. 重启完成安装 (launcher 需提供自动更新选项, 以及退出重启示例代码)
 
 引入本地最新caches/latest缓存, 可供其它客户端更新:
 
@@ -360,5 +354,15 @@ FileSync 同步方式
 - 多线支持
 
 综上所述: webserver 问题偏多, 客户端自动更新方案暂定使用FileSync方式实现
+
+测试:
+local AutoUpdater = NPL.load("Mod/GeneralGameServerMod/Command/AutoUpdater/AutoUpdater.lua");
+-- 开启客户单代理
+AutoUpdater:SetDownloadFromClient(true);
+-- 不自动安装
+-- AutoUpdater:SetAutoInstall(true);
+-- AutoUpdater:CheckLatestVersion() -- 检测更新本地最新缓存
+-- 自动更新安装版本
+AutoUpdater:CheckInstallVersion();
 ]]
 
