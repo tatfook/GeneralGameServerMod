@@ -148,6 +148,8 @@ end
 
 function VirtualConnection:CloseConnection()
     if (self:GetConnection()) then self:GetConnection():Close() end 
+    -- 由底层触发调用
+    -- self:Close();
 end
 
 function VirtualConnection:Connect(callback)

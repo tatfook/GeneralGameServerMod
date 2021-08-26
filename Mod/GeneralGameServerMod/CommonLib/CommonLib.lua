@@ -15,6 +15,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Sound/SoundManager.lua");
 NPL.load("(gl)script/ide/AudioEngine/AudioEngine.lua");
 NPL.load("(gl)script/ide/OpenFileDialog.lua");
 
+local lfs = commonlib.Files.GetLuaFileSystem();
 local AudioEngine = commonlib.gettable("AudioEngine");
 local SoundManager = commonlib.gettable("MyCompany.Aries.Game.Sound.SoundManager");
 local HttpFiles = commonlib.gettable("MyCompany.Aries.Game.Common.HttpFiles");
@@ -129,6 +130,17 @@ function CommonLib.GetFileText(filename)
 	end	
 end
 
+-- 写文件
+function CommonLib.WriteFile(filename, text)
+    local file = ParaIO.open(filename , "wb");
+	if(file:IsValid()) then
+		file:WriteString(text, #text);
+		file:close();
+    else
+        file:close();
+	end	
+end
+
 -- 计算文本MD5值
 function CommonLib.MD5(text)
     return ParaMisc.md5(text or "");
@@ -137,6 +149,11 @@ end
 -- 获取文件MD5
 function CommonLib.GetFileMD5(filename)
     return ParaMisc.md5(CommonLib.GetFileText(filename) or "");
+end
+
+-- 获取根目录即安装目录
+function CommonLib.GetRootDirectory()
+    return ParaIO.GetWritablePath();
 end
 
 -- 获取Temp
@@ -152,6 +169,73 @@ function CommonLib.GetWorldDirectory()
     local index = string.find(world_directory, install_directory, 1, true);
     if (index == 1) then return world_directory end
     return CommonLib.ToCanonicalFilePath(install_directory .. "/" .. world_directory);
+end
+
+-- 拷贝目录
+function CommonLib.CopyDirectory(src_dir, dst_dir, recursive)
+    src_dir = CommonLib.ToCanonicalFilePath(src_dir .. "/");
+    dst_dir = CommonLib.ToCanonicalFilePath(dst_dir .. "/");
+    ParaIO.CreateDirectory(dst_dir);
+    for filename in lfs.dir(src_dir) do
+        if (filename ~= "." and filename ~= "..") then
+            local src_file = CommonLib.ToCanonicalFilePath(src_dir .. "/" .. filename);
+            local dst_file = CommonLib.ToCanonicalFilePath(dst_dir .. "/" .. filename);
+            local fileattr = lfs.attributes(src_file);
+            if (fileattr.mode == "directory") then
+                if (recursive) then CommonLib.CopyDirectory(src_file, dst_file, recursive) end
+            else
+                ParaIO.CopyFile(src_file, dst_file, true);
+            end
+        end
+    end
+end
+
+function CommonLib.GetDirectory(filepath)
+    return string.gsub(filepath or "", "([^\\/]*)$", "");
+end
+
+function CommonLib.GetFileName(filepath)
+    return string.match(filepath or "", "([^\\/]*)$");
+end
+
+-- 获取文件
+function CommonLib.GetFileList(directory, md5, recursive)
+    directory = CommonLib.ToCanonicalFilePath(directory);
+    local list = {};
+    local size = string.len(CommonLib.GetDirectory(directory));
+
+    local function GetFileList(directory, md5, recursive)
+        for filename in lfs.dir(directory) do
+            if (filename ~= "." and filename ~= "..") then
+                local file_path = CommonLib.ToCanonicalFilePath(directory .. "/" .. filename);
+                local fileattr = lfs.attributes(file_path);
+                if (fileattr.mode == "directory") then
+                    if (recursive) then GetFileList(file_path, md5, recursive) end
+                else
+                    table.insert(list, #list + 1, {file_path = file_path, file_md5 = md5 and CommonLib.GetFileMD5(file_path)});
+                end
+            end
+        end
+    end
+
+    if (not CommonLib.IsDirectory(directory)) then
+        -- 是文件直接返回
+        table.insert(list, #list + 1, {file_path = directory, file_md5 = md5 and CommonLib.GetFileMD5(directory)});
+    else 
+        -- 是目录 
+        GetFileList(directory, md5, recursive);
+    end
+    
+    for _, item in ipairs(list) do
+        item.file_rel_path = string.sub(item.file_path, size + 1);   -- 相对路径
+    end
+
+    return list;
+end
+
+function CommonLib.IsDirectory(filename)
+    local fileattr = lfs.attributes(filename);
+    return fileattr and fileattr.mode == "directory";
 end
 
 -- 格式化文件名
@@ -172,6 +256,10 @@ function CommonLib.GetFullPath(filename, alias_path_map)
     return CommonLib.ToCanonicalFilePath(path);
 end
 
+-- 下载文件
+function CommonLib.Download(url, path, calback)
+end
+
 -- 添加接口文件
 local PublicFileNo = 500;
 local PublicFiles = {};
@@ -183,9 +271,12 @@ function CommonLib.AddPublicFile(filename, id)
     -- print("AddPublicFile:", filename, id)
     NPL.AddPublicFile(filename, id);
 end
+
+-- 通信文件是根据ID来对应,并不是根据文件路径
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/RPCVirtualConnection.lua");
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/FileSyncConnection.lua");
 
 -- 添加地址
 local __nids__ = {};

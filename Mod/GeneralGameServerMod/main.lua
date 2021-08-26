@@ -46,8 +46,6 @@ function GeneralGameServerMod:init()
 
 	-- 启动插件
 	if (GGS.IsServer) then
-		-- sandbox
-		NPL.load("Mod/GeneralGameServerMod/Server/SandBox/SandBox.lua");
 		-- server
 		local GeneralGameServer = NPL.load("Mod/GeneralGameServerMod/Core/Server/GeneralGameServer.lua");
 		GeneralGameServer:Start();

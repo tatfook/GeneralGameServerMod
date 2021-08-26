@@ -19,6 +19,10 @@ RPCVirtualConnection:Property("LocalNeuronFile", __neuron_file__);        -- 本
 CommonLib.AddPublicFile(__neuron_file__);
 
 local __request_id__ = 0;
+
+RPCVirtualConnection.__rpc_requests__ = {};
+RPCVirtualConnection.__rpc_responses__ = {};
+
 function RPCVirtualConnection:Request(action, data, callback)
     __request_id__ = __request_id__ + 1;
     local __request_event_type__ = string.format("__rpc_%s_%s__", __request_id__, action);
@@ -30,16 +34,25 @@ function RPCVirtualConnection:Request(action, data, callback)
         __response_event_type__ = __response_event_type__,
         __data__ = data,
     }, function()
-        self.__event_emitter__:RegisterOnceEventCallBack(__request_event_type__, function(msg)
-            return type(callback) == "function" and callback(msg.__data__);
-        end);
+        -- 发送成功,注册请求回调
+        self.__rpc_requests__ = rawget(self, "__rpc_requests__") or {};
+        self.__rpc_requests__[__request_event_type__] = function(self, msg)
+            if (type(callback) ~= "function") then return end
+            setfenv(callback, setmetatable({self = self}, {__index = _G}));
+            return  callback(msg.__data__, self);
+        end
+        -- self.__event_emitter__:RegisterOnceEventCallBack(__request_event_type__, self.__rpc_requests__[__request_event_type__]);
     end);
 end
 
 function RPCVirtualConnection:Response(action, callback)
     if (type(callback) ~= "function") then return end
+    self.__rpc_responses__ = rawget(self, "__rpc_responses__") or {};
     local __response_event_type__ = string.format("__rpc_%s__", action);
-    self.__event_emitter__:RegisterEventCallBack(__response_event_type__, function(msg)
+
+    self.__rpc_responses__[__response_event_type__] = function(self, msg)
+        setfenv(callback, setmetatable({self = self}, {__index = _G}));
+        
         local __request_event_type__, __action__ = msg.__request_event_type__, msg.__action__;
         local __data__ = callback(msg.__data__);
         self:SendMsg({
@@ -49,7 +62,8 @@ function RPCVirtualConnection:Response(action, callback)
             __response_event_type__ = __request_event_type__,
             __data__ = __data__,
         });
-    end);
+    end
+    -- self.__event_emitter__:RegisterEventCallBack(__response_event_type__, self.__rpc_responses__[__response_event_type__]);
 end
 
 function RPCVirtualConnection:GetActionEventType(action)
@@ -73,16 +87,27 @@ function RPCVirtualConnection:Call(action, data, callback)
 end
 
 function RPCVirtualConnection:HandleRPC(msg)
-    -- 触发事件
-    if (msg.__response_event_type__) then self.__event_emitter__:TriggerEventCallBack(msg.__response_event_type__, msg) end
-    -- 触发方法
-    if (type(self[msg.__action__]) == "function") then 
-        local __data__ = (self[msg.__action__])(self, msg.__data__);
+    local __request_event_type__, __response_event_type__, __action__, __data__ = msg.__request_event_type__, msg.__response_event_type__, msg.__action__, msg.__data__;
+    if (__response_event_type__) then
+        -- 触发事件
+        local response_callback = self.__rpc_responses__[__response_event_type__];
+        local request_callback = self.__rpc_requests__[__response_event_type__];
+        if (type(response_callback) == "function") then 
+            response_callback(self, msg);
+        elseif (type(request_callback) == "function") then
+            request_callback(self, msg);
+            self.__rpc_requests__[__response_event_type__] = nil;
+        else
+            self.__event_emitter__:TriggerEventCallBack(__response_event_type__, msg)
+        end
+    elseif (__action__ and type(self[__action__]) == "function") then
+        -- 触发方法响应
+        local __data__ = (self[__action__])(self, __data__);
         self:SendMsg({
             __cmd__ = "__rpc__",
-            __action__ = msg.__action__,
-            __request_event_type__ = msg.__response_event_type__,
-            __response_event_type__ = msg.__request_event_type__,
+            __action__ = __action__,
+            __request_event_type__ = __response_event_type__,
+            __response_event_type__ = __request_event_type__,
             __data__ = __data__,
         });
     end

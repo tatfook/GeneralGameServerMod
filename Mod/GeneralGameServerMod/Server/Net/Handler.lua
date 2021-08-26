@@ -20,6 +20,7 @@ function Handler:HandleMsg(msg)
 	if (__cmd__ == "__request_login__") then
 	end
 	
+	print("---------------------------")
 	echo(msg);
 end
 
