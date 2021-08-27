@@ -41,6 +41,18 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         if (windows[key] and windows[key]:GetNativeWindow()) then windows[key]:CloseWindow() end
         local window = (not IsDevEnv and windows[key]) and windows[key] or Vue:new();
         windows[key] = window;
+        
+        -- 协程标记
+        local __data__ = CodeEnv.__get_coroutine_data__();
+        __data__.__windows__[key] = window;
+        
+        local OnClose = rawget(G, "OnClose");
+        G.OnClose = function()
+            if (type(OnClose) == "function") then OnClose(G) end
+            
+            windows[key] = nil;
+            __data__.__windows__[key] = nil;
+        end
 
         -- 指定默认参数
         params.G = G;

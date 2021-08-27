@@ -45,9 +45,9 @@ local function RegisterEventCallBack(__code_env__, eventType, callback)
     __code_env__.__event_callback__[eventType] = __code_env__.__event_callback__[eventType] or {};
     __code_env__.__event_callback__[eventType][tostring(callback)] = callback;
     
-    -- local __data__ = __code_env__.__get_coroutine_data__();
-    -- __data__.__event_callback__[eventType] = __code_env__.__event_callback__[eventType] or {};
-    -- __data__.__event_callback__[eventType][tostring(callback)] = callback;
+    local __data__ = __code_env__.__get_coroutine_data__();
+    __data__.__event_callback__[eventType] = __code_env__.__event_callback__[eventType] or {};
+    __data__.__event_callback__[eventType][tostring(callback)] = callback;
 end
 
 local function RemoveEventCallBack(__code_env__, eventType, callback)
@@ -55,9 +55,9 @@ local function RemoveEventCallBack(__code_env__, eventType, callback)
     __code_env__.__event_callback__[eventType] = __code_env__.__event_callback__[eventType] or {};
     __code_env__.__event_callback__[eventType][tostring(callback)] = nil;
 
-    -- local __data__ = __code_env__.__get_coroutine_data__();
-    -- __data__.__event_callback__[eventType] = __code_env__.__event_callback__[eventType] or {};
-    -- __data__.__event_callback__[eventType][tostring(callback)] = nil;
+    local __data__ = __code_env__.__get_coroutine_data__();
+    __code_env__.__event_callback__[eventType] = __code_env__.__event_callback__[eventType] or {};
+    __code_env__.__event_callback__[eventType][tostring(callback)] = nil;
 end
 
 local function TriggerEventCallBack(__code_env__, eventType, ...)

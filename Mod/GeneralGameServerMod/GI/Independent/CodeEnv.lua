@@ -44,6 +44,9 @@ CodeEnv.pack = CommonLib.pack;
 CodeEnv.unpack = CommonLib.unpack;
 CodeEnv.select = CommonLib.select;
 
+CodeEnv.null_function = function() end 
+
+
 function CodeEnv:ctor()
 	self._G = self;
 	self.__modules__ = {};        -- 模块
@@ -51,7 +54,7 @@ function CodeEnv:ctor()
 	self.__windows__ = {};        -- 窗口
 	self.__entities__ = {};       -- 实例
 	self.__event_callback__ = {}; -- 事件回调
-	self.__coroutines__ = {};     -- 协程资源集
+	self.__all_coroutine_data__ = {};
 
 	-- 循环执行函数
 	self.__loop_function__ = function(...)
@@ -130,6 +133,70 @@ function CodeEnv:InstallLuaAPI()
 	self.__coroutine_resume__ = coroutine.resume;
 	self.__coroutine_yield__ = coroutine.yield;
 	self.__coroutine_status__ = coroutine.status;
+
+	self.__get_coroutine_data__ = function(co)
+		local __co__ = co or self.__coroutine_running__();
+		if (self.__all_coroutine_data__[__co__]) then return self.__all_coroutine_data__[__co__] end
+
+		local __data__ = {};
+		__data__.__windows__ = __data__.__windows__ or {};
+		__data__.__entities__ = __data__.__entities__ or {};
+		__data__.__event_callback__ = __data__.__event_callback__ or {};
+		__data__.__clean_callback__ = __data__.__clean_callback__ or {};
+		__data__.__children_coroutine_data_map__ = {};
+		__data__.__parent_coroutine_data__ = nil;
+		__data__.__coroutine__ = nil;
+		__data__.__independent__ = false;  -- 默认不独立
+		__data__.__co__ = __co__;
+
+		self.__all_coroutine_data__[__co__] = __data__;
+		return __data__;
+	end
+	
+	self.__add_clean_coroutine_data_callback__ = function(callback)
+		if (type(callback) ~= "function") then return end
+		self.__get_coroutine_data__().__clean_callback__[callback] = callback;
+	end
+	
+	self.__remove_clean_coroutine_data_callback__ = function(callback)
+		if (type(callback) ~= "function") then return end
+		self.__get_coroutine_data__().__clean_callback__[callback] = nil;
+	end
+	
+	self.__clean_coroutine_data__ = function(__co__)
+		-- print("========================__clean_coroutine_data__=========================", __co__);
+
+		local __data__ = self.__get_coroutine_data__(__co__);
+		local list = {};
+		for _, window in pairs(__data__.__windows__) do table.insert(list, window) end
+		for i = 1, #list do
+			list[i]:CloseWindow();
+			list[i] = nil;
+		end
+		for _, entity in pairs(__data__.__entities__) do table.insert(list, entity) end 
+		for i = 1, #list do
+			list[i]:Destroy();
+			list[i] = nil;
+		end
+	
+		for event_type, callbacks in pairs(__data__.__event_callback__) do
+			list[event_type] = list[event_type] or {};
+			for callback in pairs(callbacks) do
+				list[event_type][callback] = callback;
+			end
+		end 
+	
+		for event_type, callbacks in pairs(list) do
+			for callback in pairs(callbacks) do
+				self.RemoveEventCallBack(event_type, callback);
+			end
+		end
+	
+		for _, clean_callback in pairs(__data__.__clean_callback__) do clean_callback() end
+		__data__.__clean_callback__ = {};
+		
+		self.__all_coroutine_data__[__data__.__co__] = nil;
+	end
 end
 
 function CodeEnv:InstallIndependentAPI(Independent)

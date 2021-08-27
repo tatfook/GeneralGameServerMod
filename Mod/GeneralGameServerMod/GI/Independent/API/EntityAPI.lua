@@ -142,9 +142,25 @@ setmetatable(
             CodeEnv.__CreateEntityNPC__ = function(...) return  CreateEntityNPC(CodeEnv, ...) end
             CodeEnv.__CreateEntity__ = function(...) return CreateEntity(CodeEnv, ...) end
 
+            local __entity_co_map__ = {};
+
             CodeEnv.__AddEntity__ = function(entity) 
                 CodeEnv.__entities__[entity] = entity;
+            
+                -- 协程标记
+                local __co__ = CodeEnv.__coroutine_running__();
+                __entity_co_map__[entity] = __co__;
+                CodeEnv.__get_coroutine_data__(__co__).__entities__[entity] = entity;
             end
+            
+            CodeEnv.__RemoveEntity__ = function(entity)
+                CodeEnv.__entities__[entity] = nil;
+            
+                -- 协程标记
+                CodeEnv.__get_coroutine_data__(__entity_co_map__[entity]).__entities__[entity] = nil;
+                __entity_co_map__[entity] = nil;
+            end
+
             CodeEnv.__GetAllEntity__ = function() 
                 return CodeEnv.__entities__;
             end
@@ -156,10 +172,6 @@ setmetatable(
                 return __entity_list__;
             end
 
-            CodeEnv.__RemoveEntity__ = function(entity)
-                CodeEnv.__entities__[entity] = nil;
-                entity:Destroy();
-            end
 
             CodeEnv.__ClearAllEntity__ = function()
                 for _, entity in ipairs(CodeEnv.__GetEntityList__()) do

@@ -9,6 +9,7 @@ local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independen
 Independent:Start("%gi%/Independent/Example/Empty.lua");
 ------------------------------------------------------------
 ]]
+
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local CodeEnv = NPL.load("./CodeEnv.lua", IsDevEnv);
 
@@ -64,6 +65,7 @@ function Independent:Reset()
 end
 
 function Independent:LoadInnerModule()
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/Coroutine.lua");
 	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/System.lua");
 	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/Log.lua");
 	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/State.lua");
@@ -186,7 +188,7 @@ function Independent:InjectCheckYieldToCode(code, filename)
 		for i,v in ipairs(inject_map) do
 			line = string.gsub(line, v[1], v[2]);
 		end
-		line = line .. string.format(" __fileline__('%s', %s, '%s');", filename, #lines + 1, old_line);
+		line = line .. string.format(" __fileline__('%s', %s, '%s');", filename, #lines + 1, CommonLib.EncodeBase64(old_line));
 		return line;
 	end
 
@@ -254,7 +256,7 @@ function Independent:Restart()
 		local __reload__ = __module_env__.__module__.__reload__;
 		if (type(__reload__) == "function") then 
 			table.insert(self.__module_env_list__, __module_env__);
-			__module_env__.__code_env__.__run__(__reload__);
+			__reload__();
 		end 
 	end
 end
@@ -328,13 +330,17 @@ function Independent:Stop()
 
 	self:SetRunning(false);
 
+	-- 停止Tick
 	if (self:GetLoopTimer()) then
 		self:GetLoopTimer():Change();
 		self:SetLoopTimer(nil);
 	end
 
-	self:CallEventCallBack(CodeEnv.EventType.CLEAR);
+	-- 唤醒一次所有协程, 让其正常退出
+	self:Tick();
 
+	-- 调用清理函数
+	self:CallEventCallBack(CodeEnv.EventType.CLEAR);
 	if (type(rawget(CodeEnv, "clear")) == "function") then 
 		self:Call(CodeEnv.clear);
 	end

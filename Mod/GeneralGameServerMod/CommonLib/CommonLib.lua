@@ -14,7 +14,8 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Common/HttpFiles.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Sound/SoundManager.lua");
 NPL.load("(gl)script/ide/AudioEngine/AudioEngine.lua");
 NPL.load("(gl)script/ide/OpenFileDialog.lua");
-
+NPL.load("(gl)script/ide/System/Encoding/base64.lua");
+local Encoding = commonlib.gettable("System.Encoding");
 local lfs = commonlib.Files.GetLuaFileSystem();
 local AudioEngine = commonlib.gettable("AudioEngine");
 local SoundManager = commonlib.gettable("MyCompany.Aries.Game.Sound.SoundManager");
@@ -237,6 +238,10 @@ function CommonLib.IsDirectory(filename)
     local fileattr = lfs.attributes(filename);
     return fileattr and fileattr.mode == "directory";
 end
+
+
+CommonLib.EncodeBase64 = Encoding.base64;
+CommonLib.DecodeBase64 = Encoding.unbase64;
 
 -- 格式化文件名
 local AliasPathMap = {};

@@ -166,22 +166,21 @@ function Level:RunLevelCodeAfter()
 end
 
 -- 检测是否通关
--- function Level:CheckPassLevel()
---     if (not self.__sunbin__) then return end
---     if (self:GetLevelState() ~= self.STATE.PLAYING) then return end 
+function Level:CheckPassLevel()
+    if (not self.__sunbin__ or self:GetLevelState() ~= self.STATE.PLAYING) then return end 
     
---     -- 更新任务列表
---     for _, goods in pairs(self.__sunbin__:GetAllGoods()) do
---         self.__task__:SetTaskItemCount(goods:GetGoodsID(), goods:GetStackCount());
---     end
+    -- 更新任务列表
+    for _, goods in pairs(self.__sunbin__:GetAllGoods()) do
+        self.__task__:SetTaskItemCount(goods:GetGoodsID(), goods:GetStackCount());
+    end
     
---     -- TODO 刷新UI
+    -- TODO 刷新UI
 
---     -- 是否到达目标点
---     if (self.__task__:IsFinishGoal()) then
---         self:PassLevelSuccess();
---     end
--- end
+    -- 是否到达目标点
+    if (self.__task__:IsFinishGoal()) then
+        self:PassLevelSuccess();
+    end
+end
 
 -- 通关
 function Level:PassLevelSuccess()
@@ -243,10 +242,7 @@ function Level:CreateSunBinEntity(bx, by, bz)
     local sunbin = CreateSunBinEntity(bx, by, bz);
     sunbin:TurnLeft(90);
     sunbin:SetGoodsChangeCallBack(function()
-        -- 更新任务列表
-        for _, goods in pairs(self.__sunbin__:GetAllGoods()) do
-            self.__task__:SetTaskItemCount(goods:GetGoodsID(), goods:GetStackCount());
-        end
+        self:CheckPassLevel();
     end);
     sunbin:SetDestroyCallBack(function()
         self:PassLevelFailed();

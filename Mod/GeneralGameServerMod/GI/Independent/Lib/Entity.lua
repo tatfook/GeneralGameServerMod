@@ -87,6 +87,7 @@ function Entity:Init(opts)
     -- 获取主玩家位置
     local bx, by, bz = GetPlayer():GetBlockPos();
     self:SetBlockPos(opts.bx or bx or 0, opts.by or by or 0, opts.bz or bz or 0);
+    -- self:SetAssetFile(opts.assetfile or "character/CC/02human/actor/actor.x");
     self:SetAssetFile(opts.assetfile or "character/CC/02human/actor/actor.x");
     self:CreateInnerObject(self:GetMainAssetPath(), true, 0, 1, self:GetSkin());
 	self:RefreshClientModel();

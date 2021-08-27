@@ -35,6 +35,7 @@ function GIBlockly.CompileCode(code, filename, codeblock)
     local code_func, errormsg = loadstring(code, filename);
     if(not code_func or errormsg) then
         LOG.std(nil, "error", "CodeBlock", errormsg);
+        print("================ GIBlockly.CompileCode ===============", code);
         return ;
     end
 
@@ -62,11 +63,15 @@ function GIBlockly.CompileCode(code, filename, codeblock)
         end);
         __rawset__(__env__, "registerCodeBlockStopEvent", __env__.registerStopEvent);
         
-        __env__.__module__.__reload__ = code_func;
-        __env__.__run__(code_func);
+        __env__.__module__.__reload__ = function()
+            __env__.__module__.__run_co__ = __env__.__independent_run__(code_func);
+        end
+        __env__.__module__.__reload__();
         registerStopEvent(function()
             __env__.TriggerEventCallBack(format("__code_block_stop__%s", __cur_co__));
             __env__.__module__.__reload__ = nil;
+            __env__.__coroutine_exit_all__(__env__.__module__.__run_co__, true);
+            __env__.__module__.__run_co__ = nil;
         end);
     end
 end

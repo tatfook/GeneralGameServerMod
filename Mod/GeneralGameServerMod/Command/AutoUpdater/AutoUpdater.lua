@@ -38,7 +38,7 @@ function AutoUpdater:Init(opts)
     opts = opts or {};
 
     self:SetAutoInstall(opts.isAutoInstall);
-    self:SetInstallDirectory(opts.installDirectory or CommonLib.ToCanonicalFilePath(CommonLib.GetTempDirectory() .. "/AutoUpdater/"));
+    self:SetInstallDirectory(opts.installDirectory or (IsDevEnv and CommonLib.ToCanonicalFilePath(CommonLib.GetTempDirectory() .. "/AutoUpdater/") or CommonLib.GetRootDirectory()));
     self:SetConfigFilePath(opts.configFilePath or "config/autoupdater/paracraft_win32.xml");
 
     self.__auto_updater__ = __AutoUpdater__:new();

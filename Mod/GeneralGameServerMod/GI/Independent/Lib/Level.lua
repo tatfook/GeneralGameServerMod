@@ -171,11 +171,8 @@ end
 
 function Level:StopRunCode()
     if (not self.__co__) then return end
-    local status = __coroutine_status__(self.__co__);
-    if (status == "normal" or status == "suspended") then 
-        __coroutine_resume__(self.__co__);
-        self.__co__ = nil;
-    end
+    __coroutine_exit__(self.__co__);
+    self.__co__ = nil;
 end
 
 function Level:ShowLevelBlocklyEditor()

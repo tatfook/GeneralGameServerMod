@@ -18,7 +18,7 @@ function EnableMousePick(bEnable)
     end
 
     if (not MousePickTimer) then
-        MousePickTimer = Timer.Interval(50, MousePickTimerCallBack);
+        MousePickTimer = Timer.Interval(5000, MousePickTimerCallBack);
     end
 end
 
