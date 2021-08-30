@@ -38,10 +38,19 @@ local BuildType = {
 }
 function API.Build(entity_name, build_type)
     local entity = G[entity_name];
-    if (build_type == "bridge" or build_type == "air") then
-        return entity:Build(BuildType[build_type]);
-    end
-    if (build_type == "fence") then
+    local x, y, z = entity:GetBlockPos();
+    local facing = entity:GetFacing();
+    x = x + math.floor(math.cos(facing)+0.5);
+    z = z - math.floor(math.sin(facing)+0.5);
+    if (build_type == "bridge") then
+        SetBlock(x, y - 1, z, 126);
+    elseif (build_type == "air") then
+        local blockId = GetBlockId(x, y - 1, z);
+        if (blockId == 126) then SetBlock(x, y - 1, z, 0) end 
+        for _, fence in pairs(entity:GetAllEntityInBlockIndex(ConvertToBlockIndex(x, y, z))) do
+            if (fence:GetName() == "cross_fence") then fence:Destroy() end 
+        end
+    elseif (build_type == "fence") then
         local x, y, z = entity:GetBlockPos();
         local facing = entity:GetFacing();
         x = x + math.floor(math.cos(facing)+0.5);

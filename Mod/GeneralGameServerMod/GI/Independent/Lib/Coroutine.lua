@@ -10,104 +10,80 @@ local Coroutine = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/Coroutin
 ]]
 
 
-local Coroutine = inherit(ToolBase, module());
-
-Coroutine:Property("CallBack");                         -- 回调函数
-Coroutine:Property("Running", false, "IsRunning");      -- 是否退出
-Coroutine:Property("Exit", false, "IsExit");            -- 是否退出
-
--- 构造函数
-function Coroutine:ctor()
-	self.__co__ = __coroutine_create__(function(...)
-		__xpcall__(self:GetCallBack(), ...);
-        self:Exit();
-    end);
-
-	local __parent_coroutine_data__ = __get_coroutine_data__();
-	local __coroutine_data__ = __get_coroutine_data__(self.__co__);
-
+local function __coroutine_run_before__(__coroutine_data__, __parent_coroutine_data__)
 	if (__parent_coroutine_data__.__independent__) then
 		__coroutine_data__.__parent_coroutine_data__ = __parent_coroutine_data__;
 		__coroutine_data__.__independent__ = true;
 		__parent_coroutine_data__.__children_coroutine_data_map__[__coroutine_data__] = __coroutine_data__;
 	end
-
-	__coroutine_data__.__coroutine__ = self;
-	self.__coroutine_data__ = __coroutine_data__;
+	__coroutine_data__.__exit__ = false;
 end
 
-function Coroutine:Init()
-	return self;
-end
-
--- 运行协程
-function Coroutine:Run(callback, ...)
-    if (self:IsExit() or type(callback) ~= "function") then return end
-    self:SetRunning(true);
-	self:SetExit(false);
-    self:SetCallBack(callback);
-	local __co__ = self.__co__;    -- 先备份 callback 执行完协程可能退出将 __co__ 置空
-	__coroutine_resume__(__co__, ...);
-    return __co__;
-end
-
--- 退出
-function Coroutine:Exit()
-    self:SetRunning(false);
-    self:SetExit(true);
+local function __coroutine_run_after__(__coroutine_data__, __parent_coroutine_data__)
 	-- 不独立数据共享, 只清楚引用
-	if (not self.__coroutine_data__.__independent__) then __all_coroutine_data__[self.__co__] = nil end 
-    self.__co__ = nil;
+	__coroutine_data__.__exit__ = true;
+	if (not __coroutine_data__.__independent__) then __all_coroutine_data__[__coroutine_data__.__co__] = nil end 
 end
 
-function __get_coroutine_by_co__(co)
-	return __get_coroutine_data__(co).__coroutine__;
+function __new_coroutine__(independent)
+	local __parent_coroutine_data__ = __get_coroutine_data__();
+	return __coroutine_create__(function(...)
+		local __coroutine_data__ = __get_coroutine_data__();
+		__coroutine_data__.__independent__ = independent;
+
+		__coroutine_run_before__(__coroutine_data__, __parent_coroutine_data__);
+
+		__xpcall__(...);
+
+		__coroutine_run_after__(__coroutine_data__, __parent_coroutine_data__);
+	end);
 end
 
-function __get_all_coroutine__(co)
-    local __coroutine__ = __get_coroutine_by_co__(co);
-	if (not __coroutine__) then return {} end
+function __get_all_coroutine_data__(co)
+    local __coroutine_data__ = __get_coroutine_data__(co, false);
+	if (not __coroutine_data__) then return {} end
 
 	-- 获取所有关联协程
-	local __coroutines__ = {};
-	local function GetAllCoroutine(__coroutine__)
-		__coroutines__[__coroutine__] = __coroutine__;
-		for _, __coroutine_data__ in pairs(__coroutine__.__coroutine_data__.__children_coroutine_data_map__) do GetAllCoroutine(__coroutine_data__.__coroutine__) end
-		return __coroutines__;
+	local __coroutine_data_list__ = {};
+	local function GetAllCoroutineData(__coroutine_data__)
+		table.insert(__coroutine_data_list__, __coroutine_data__);
+		for _, __children_coroutine_data__ in pairs(__coroutine_data__.__children_coroutine_data_map__) do GetAllCoroutine(__children_coroutine_data__) end
+		return __coroutine_data_list__;
 	end
 
-	return GetAllCoroutine(__coroutine__);
+	return GetAllCoroutineData(__coroutine_data__);
 end
 
 function __coroutine_is_exit__(co)
-    local __coroutine__ = __get_coroutine_by_co__(co);
-    return not __coroutine__ or __coroutine__:IsExit();
+    local __coroutine_data__ = __get_coroutine_data__(co, false);
+    return not __coroutine_data__ or __coroutine_data__.__exit__;
 end
 
 function __coroutine_exit__(co, bAutoCleanCoroutineData) 
-    local __coroutine__ = __get_coroutine_by_co__(co);
-	if (not __coroutine__) then return end
-    __coroutine__:Exit();
-	if (bAutoCleanCoroutineData) then __clean_coroutine_data__(__coroutine__.__co__) end
+    local __coroutine_data__ = __get_coroutine_data__(co, false);
+	if (not __coroutine_data__) then return end
+	__coroutine_data__.__exit__ = true;
+	if (bAutoCleanCoroutineData) then __clean_coroutine_data__(__coroutine_data__.__co__) end
 end
 
 -- 退出所有关协程
 function __coroutine_exit_all__(co, bAutoCleanCoroutineData)
-	for _, __coroutine__ in pairs(__get_all_coroutine__(co)) do 
-		local __coroutine_data__ = __coroutine__.__coroutine_data__;
-		__coroutine__:Exit(); 
+	for _, __coroutine_data__ in pairs(__get_all_coroutine_data__(co)) do 
+		__coroutine_data__.__exit__ = true;
 		if (bAutoCleanCoroutineData) then __clean_coroutine_data__(__coroutine_data__.__co__) end
 	end 
 end
 
 function __independent_run__(...)
-	local __coroutine__ = Coroutine:new():Init();
-	__coroutine__.__coroutine_data__.__independent__ = true;
-	return __coroutine__:Run(...);
+	local __co__ = __new_coroutine__(true);
+	__coroutine_resume__(__co__, ...);
+	return __co__;
 end
 
 function __run__(...)
-    return Coroutine:new():Init():Run(...);
+    local __co__ = __new_coroutine__(false);
+	__coroutine_resume__(__co__, ...);
+	return __co__;
 end
 
 -- 废弃

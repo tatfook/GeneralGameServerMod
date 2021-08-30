@@ -260,6 +260,7 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
         assetfile = "character/CC/05effect/fireglowingcircle.x",
         destroyBeCollided = true,
         hasBlood = false,
+        types = {["sunbin"] = ENTITY_TYPE.COLLIDED_TYPE, [ENTITY_TYPE.COLLIDED_TYPE] = false, [ENTITY_TYPE.COLLIDE_TYPE] = false};
     });
     table.insert(self.__all_entity__, fireglowingcircle);
 
@@ -269,6 +270,7 @@ function Level:CreateTianShuCanJuanEntity(bx, by, bz)
         assetfile = "@/blocktemplates/tianshucanjuan.x",
         hasBlood = false,
         destroyBeCollided = true,
+        types = {["sunbin"] = ENTITY_TYPE.COLLIDED_TYPE, [ENTITY_TYPE.COLLIDED_TYPE] = false, [ENTITY_TYPE.COLLIDE_TYPE] = false};
     });
     table.insert(self.__all_entity__, tianshucanjuan);
     tianshucanjuan:AddGoods(CreateGoods({gsid = GoodsConfig.TIAN_SHU_CAN_JUAN.ID, transfer = true, title = "天书残卷", description = "荣誉物品"}));
@@ -298,6 +300,7 @@ function Level:CreateGoalPointEntity(bx, by, bz)
         -- assetfile = "@/blocktemplates/goalpoint.bmax",
         -- assetfile = "character/CC/05effect/fireglowingcircle.x", 
         assetfile = "character/v5/09effect/TransmittalDoor/TransmittalDoor.x",  
+        types = {["sunbin"] = ENTITY_TYPE.COLLIDED_TYPE, [ENTITY_TYPE.COLLIDED_TYPE] = false, [ENTITY_TYPE.COLLIDE_TYPE] = false};
 
     });
     table.insert(self.__all_entity__, goalpoint);
@@ -312,6 +315,13 @@ function Level:CreateHunterEntity(bx, by, bz)
     return hunter;
 end
 
+-- 创建猎人
+function Level:CreateTigerEntity(bx, by, bz)
+    local tiger = CreateTigerEntity(bx, by, bz);
+    table.insert(self.__all_entity__, tiger);
+    return tiger;
+end
+
 -- 创建狼
 function Level:CreateWolfEntity(bx, by, bz)
     local wolf = CreateWolfEntity(bx, by, bz);
@@ -323,56 +333,9 @@ function Level:CreateWolfEntity(bx, by, bz)
 end
 
 -- 创建箭塔
-function Level:CreateTowerEntity(bx, by, bz)
-    local towerbase = CreateEntity({
-        bx = bx, by = by, bz = bz,
-        name = "towerbase",
-        assetfile = "@/blocktemplates/jiguannu_dipan.x",  
-        hasBlood = false,
-        isCanBeCollided = false,
-    });
-    towerbase:SetAnimId(5);
-    local tower = CreateEntity({
-        bx = bx, by = by, bz = bz,
-        name = "tower",
-        hasBlood = false,
-        isCanBeCollided = false,
-        assetfile = "@/blocktemplates/jiguannu.x",  
-        defaultSkill = CreateSkill({
-            entity_config = {
-                name = "arrow",
-                assetfile = "character/CC/07items/arrow.x", 
-                speed = 5, 
-                hasBlood = false,
-                checkTerrain = false,
-                isCanVisible = false,
-                destroyBeCollided = true,
-                biped = true,
-                goods = {
-                    [1] = {
-                        gsid = GoodsConfig.ARROW.ID,
-                        blood_peer = true,
-                        blood_peer_value = -20, 
-                    }
-                }
-            },
-            skillDistance = 15,
-            skillTime = 0,
-            offsetY = 1,
-            skillInterval = 400,
-        })
-    });
-
-    table.insert(self.__all_entity__, towerbase);
+function Level:CreateArrowTowerEntity(bx, by, bz)
+    local tower = CreateArrowTowerEntity(bx, by, bz);
     table.insert(self.__all_entity__, tower);
-
-    __run__(function()
-        while(self:GetLevelState() == 0 and __is_running__()) do
-            tower:Turn(45);
-            tower:Attack();
-            sleep(500);
-        end
-    end);
     return tower;
 end
 
@@ -384,6 +347,7 @@ function Level:CreateTorchEntity(bx, by, bz)
         destroyBeCollided = true,
         light = true,
         -- scale = 1.5,
+        types = {["sunbin"] = ENTITY_TYPE.COLLIDED_TYPE},
     });
     torch:SetCollidedCallBack(function(self_entity, target_entity)
         target_entity:SetCanLight(true);
@@ -399,6 +363,7 @@ function Level:CreateTrapEntity(bx, by, bz)
         assetfile = "@/blocktemplates/bushoujia.x",  
         destroyBeCollided = true,
         goods = {{dead_peer = true, name = "trap"}},
+        types = {[ENTITY_TYPE.COLLIDED_TYPE] = true},
     });
     table.insert(self.__all_entity__, trap);
     return trap;

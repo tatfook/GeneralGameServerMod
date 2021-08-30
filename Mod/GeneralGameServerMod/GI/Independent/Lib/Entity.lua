@@ -237,6 +237,12 @@ function Entity:UpdatePosition(bForceUpdate)
     self:CheckEntityVisible();
 end
 
+function Entity:GetAllEntityInBlockIndex(block_index)
+    local list = {};
+    for _, entity in pairs(__all_block_index_entity__[block_index] or {}) do table.insert(list, entity) end
+    return list;
+end
+
 function Entity:GetTickCountPerSecond()
     return __get_loop_tick_count__() * self:GetSpeed();           -- 可以乘以倍数
 end
@@ -534,12 +540,14 @@ end
 
 function Entity:Turn(degree)
     self:SetFacingDelta(degree * math.pi / 180);
+    return self;
 end
 
 function Entity:TurnEntity(entity)
     local tx, ty, tz = entity:GetPosition();
     local x, y, z = self:GetPosition();
     self:SetFacing(GetFacingFromOffset(tx - x, ty - y, tz - z));
+    return self;
 end
 
 function Entity:TurnLeft(degree)
@@ -552,6 +560,7 @@ end
 
 function Entity:TurnTo(degree)
     self:SetFacing(mathlib.ToStandardAngle(degree * math.pi / 180));
+    return self;
 end
 
 function Entity:GetGoodsByName(name)
@@ -613,17 +622,19 @@ function Entity:CanCollideWith(entity)
     local types = self:GetTypes();
     for key, val in pairs(entity:GetTypes()) do
         if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.NOT_COLLIDE_TYPE) then return false end 
+        if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.COLLIDE_TYPE) then return true end 
     end
     
-    return true;
+    return types[ENTITY_TYPE.COLLIDE_TYPE];
 end
 
 function Entity:CanBeCollidedWith(entity)
     local types = self:GetTypes();
     for key, val in pairs(entity:GetTypes()) do
         if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.NOT_COLLIDED_TYPE) then return false end 
+        if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.COLLIDED_TYPE) then return true end 
     end
-    return true;
+    return types[ENTITY_TYPE.COLLIDED_TYPE];
 end
 
 function Entity:CheckEntityCollision()
@@ -632,6 +643,13 @@ function Entity:CheckEntityCollision()
     local aabb = self:GetCollisionAABB();
     for _, entity in ipairs(__GetEntityList__()) do
         local entity_aabb = entity:GetCollisionAABB();
+        -- if (self:GetName() == "__arrow_tower_arrow__" and entity:GetName() == "sunbin" and self:CanCollideWith(entity)) then
+        --     print(self:GetBlockPos())
+        --     print(entity:GetBlockPos())
+        --     echo(self:GetTypes(), true);
+        --     echo(entity:GetTypes(), true);
+        -- end
+
         if (aabb and entity_aabb and entity ~= self and self:IsCanBeCollided() and entity:IsCanBeCollided() and aabb:Intersect(entity_aabb)) then
             -- 主动碰撞
             if (self:CanCollideWith(entity)) then
@@ -649,12 +667,6 @@ function Entity:OnCollidedWithEntity(entity)
     for _, goods in ipairs(self:GetGoodsList()) do
         goods:Activate(self, entity);
     end
-
-    -- if (self:GetName() == "hunter_arrow" and entity:GetName() == "sunbin") then
-    --     echo(self:GetTypes(), true);
-    --     echo(entity:GetTypes(), true);
-    --     DebugStack();
-    -- end
 
     if (self:IsDestroyBeCollided()) then
         self:Destroy();

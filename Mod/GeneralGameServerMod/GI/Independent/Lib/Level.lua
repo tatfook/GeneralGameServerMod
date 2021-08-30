@@ -149,7 +149,7 @@ end
 
 function Level:RunCode(code)
     self:StopRunCode();
-    self.__co__ = __run__(function()
+    self.__co__ = __independent_run__(function()
         -- print("=======================Level:RunCode=======================");
         -- 执行关卡代码前
         self:RunLevelCodeBefore();

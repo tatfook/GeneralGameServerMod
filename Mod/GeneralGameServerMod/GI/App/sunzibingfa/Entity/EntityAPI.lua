@@ -3,6 +3,8 @@ local GoodsConfig = require("../GoodsConfig.lua");
 local EntitySunBin = require("./EntitySunBin.lua");
 local EntityHunter = require("./EntityHunter.lua");
 local EntityWolf = require("./EntityWolf.lua");
+local EntityTiger = require("./EntityTiger.lua");
+local EntityArrowTower = require("./EntityArrowTower.lua");
 
 function CreateSunBinEntity(bx, by, bz)
     return EntitySunBin:new():Init(bx, by, bz);
@@ -14,6 +16,10 @@ end
 
 function CreateWolfEntity(bx, by, bz)
     return EntityWolf:new():Init(bx, by, bz);
+end
+
+function CreateTigerEntity(bx, by, bz)
+    return EntityTiger:new():Init(bx, by, bz);
 end
 
 function CreateCrossFenceEntity(bx, by, bz)
@@ -35,6 +41,10 @@ function CreateLiangShiEntity(bx, by, bz)
             [1] = {gsid = GoodsConfig.LIANG_SHI.ID, transfer = true},
         }
     });
+end
+
+function CreateArrowTowerEntity(bx, by, bz)
+    return EntityArrowTower:new():Init(bx, by, bz);
 end
 
 -- character/CC/02human/blockman/shanzei.   shanzhui

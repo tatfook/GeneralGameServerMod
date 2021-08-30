@@ -13,7 +13,7 @@ function EntitySunBin:Init(bx, by, bz)
         name = "sunbin",
         biped = true,
         assetfile = "character/CC/artwar/game/sunbin.x",
-        physicsHeight = 1.765,
+        physicsHeight = 2,
         types = {["human"] = ENTITY_TYPE.DEFAULT_TYPE, ["sunbin"] = ENTITY_TYPE.DEFAULT_TYPE, ["sunbin_not_collide_type"] = ENTITY_TYPE.DEFAULT_TYPE, ["sunbin_not_collided_type"] = ENTITY_TYPE.DEFAULT_TYPE},
         
         defaultSkill = CreateSkill({

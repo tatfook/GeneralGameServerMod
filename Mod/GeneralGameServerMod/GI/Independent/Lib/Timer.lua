@@ -31,6 +31,7 @@ function Timer:Start(delay, interval, callback)
                 __xpcall__(callback, self);
                 __coroutine_yield__();
             end
+            __co__ = nil;
         end);
     end
 

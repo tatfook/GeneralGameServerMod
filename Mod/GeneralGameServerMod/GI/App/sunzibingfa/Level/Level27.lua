@@ -10,7 +10,7 @@ use the lib:
 local Level = inherit(require("./Level.lua"), module());
 
 function Level:ctor()
-    self:SetLevelName("_level24");
+    self:SetLevelName("_level27");
 
     self:SetToolBoxXmlText([[
 <toolbox>
@@ -35,7 +35,7 @@ function Level:LoadLevel()
     Level._super.LoadLevel(self);
 
     -- 摆放角色
-    -- self:CreateSunBinEntity(10083,12,10066); 
+    self:CreateSunBinEntity(10083,12,10066); 
     -- self:CreateTianShuCanJuanEntity(10103,12,10086);
     -- self:CreateGoalPointEntity(10093,12,10086);
 
@@ -45,8 +45,8 @@ function Level:LoadLevel()
     -- self:AddCodeLineTask(1, true);
 
     -- 设置视角
-    -- SetCamera(40, 75, -90);
-    -- SetCameraLookAtBlockPos(10088,12,10076);
+    SetCamera(40, 75, -90);
+    SetCameraLookAtBlockPos(10087,12,10072);
 end
 
 Level:InitSingleton();

@@ -134,9 +134,10 @@ function CodeEnv:InstallLuaAPI()
 	self.__coroutine_yield__ = coroutine.yield;
 	self.__coroutine_status__ = coroutine.status;
 
-	self.__get_coroutine_data__ = function(co)
+	self.__get_coroutine_data__ = function(co, bIsNewNotExist)
 		local __co__ = co or self.__coroutine_running__();
 		if (self.__all_coroutine_data__[__co__]) then return self.__all_coroutine_data__[__co__] end
+		if (bIsNewNotExist == false) then return nil end 
 
 		local __data__ = {};
 		__data__.__windows__ = __data__.__windows__ or {};
@@ -145,7 +146,6 @@ function CodeEnv:InstallLuaAPI()
 		__data__.__clean_callback__ = __data__.__clean_callback__ or {};
 		__data__.__children_coroutine_data_map__ = {};
 		__data__.__parent_coroutine_data__ = nil;
-		__data__.__coroutine__ = nil;
 		__data__.__independent__ = false;  -- 默认不独立
 		__data__.__co__ = __co__;
 
@@ -217,7 +217,7 @@ function CodeEnv:InstallIndependentAPI(Independent)
 	end 
 	self.__loadstring__ = function(...) return Independent:LoadString(...) end
 	self.__get_loop_tick_count__ = function() return Independent:GetLoopTickCount() end 
-	self.__get_ms_per_tick__ = self.__get_loop_tick_count__; -- 每个tick所用时间
+	self.__get_tick_timestamp__ = function() return 1000 / self.__get_loop_tick_count__() end -- 每个tick所用时间
 	self.__is_share_mouse_keyboard_event__ = function() return Independent:IsShareMouseKeyBoard() end 
 	self.__get_tick_count__ = function() return Independent:GetTickCount() end  
 	self.__get_timestamp__ = function() return math.floor(Independent:GetTickCount() * 1000 / Independent:GetLoopTickCount()) end   -- ms
