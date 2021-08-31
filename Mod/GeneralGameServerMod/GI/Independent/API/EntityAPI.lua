@@ -138,7 +138,7 @@ setmetatable(
             CodeEnv.GetAllEntityCode = GetAllEntityCode;
             CodeEnv.SetFocus = SetFocus;
         
-            CodeEnv.CreateEntityPlayer = function(...) return CreateEntityPlayer(CodeEnv, ...) end 
+            -- CodeEnv.CreateEntityPlayer = function(...) return CreateEntityPlayer(CodeEnv, ...) end 
             CodeEnv.__CreateEntityNPC__ = function(...) return  CreateEntityNPC(CodeEnv, ...) end
             CodeEnv.__CreateEntity__ = function(...) return CreateEntity(CodeEnv, ...) end
 

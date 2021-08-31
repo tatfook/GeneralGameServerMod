@@ -54,13 +54,14 @@ end
 
 function RPC:Connect(callback)
     self:SetConnectCallBack(callback);
-    -- print("====================login=======================")
+    print("====================request login=======================")
     RPC_Call("Login", {
         username = GetUserName(),
         worldId = GetWorldId(),
         worldName = "",
         worldKey = GetWorldKey(),
     }, function(data)
+        print("===================response login=======================");
         __share_data__ = data.__share_data__ or {};
         __all_user_data__ = data.__all_user_data__ or {};
         __all_entity_data__ = data.__all_entity_data__ or {};

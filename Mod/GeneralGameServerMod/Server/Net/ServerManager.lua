@@ -135,7 +135,7 @@ local function SelectWorldServerByWorldIdAndName(worldId, worldName)
     -- 最后选择控制服务器
     local server, workerServer, controlServer = nil, nil, nil; -- 设置最大值
     local curTick = os.time();
-    local worldKey, threadName = nil, nil;
+    local selectWorldKey, selectThreadName = nil, nil;
     local clientCountPerRate = 20;                             -- 单个分值对应的世界人数
     local worldRate = -1;                                      -- 世界评分 评分越大优先选取
     for key, svr in pairs(__servers__) do
@@ -146,15 +146,15 @@ local function SelectWorldServerByWorldIdAndName(worldId, worldName)
             for threadName, thread in pairs(svr.__threads__) do
                 if (thread.clientCount < svr.threadMaxClientCount) then
                     for key, world in pairs(thread.__worlds__) do
-                        if (world.worldId == worldId and world.worldName == worldName and world.clientCount < world.maxClientCount) then
+                        if (tostring(world.worldId) == tostring(worldId) and world.worldName == worldName and world.clientCount < world.maxClientCount) then
                             -- 对可选择的世界进行评分
                             local curWorldRate = world.clientCount > (world.maxClientCount - clientCountPerRate) and 0 or math.ceil(world.clientCount / clientCountPerRate);
                             -- 优先选世界人数较多且未进入上限缓冲区的世界    
                             if (worldRate < curWorldRate) then
                                 worldRate = curWorldRate;
                                 server = svr;
-                                worldKey = key;
-                                threadName = threadName;
+                                selectWorldKey = key;
+                                selectThreadName = threadName;
                             end
                         end
                     end
@@ -174,10 +174,10 @@ local function SelectWorldServerByWorldIdAndName(worldId, worldName)
 
     -- 返回查找结果
     return {
-        worldKey = worldKey,
+        worldKey = selectWorldKey,
         ip = server.outerIp,
         port = server.outerPort,
-        threadName = threadName or server.defaultThreadName,
+        threadName = selectThreadName or server.defaultThreadName,
     }
 end
 

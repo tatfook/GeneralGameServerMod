@@ -88,28 +88,26 @@ end
 
 function RPCVirtualConnection:HandleRPC(msg)
     local __request_event_type__, __response_event_type__, __action__, __data__ = msg.__request_event_type__, msg.__response_event_type__, msg.__action__, msg.__data__;
-    if (__response_event_type__) then
-        -- 触发事件
-        local response_callback = self.__rpc_responses__[__response_event_type__];
-        local request_callback = self.__rpc_requests__[__response_event_type__];
-        if (type(response_callback) == "function") then 
-            response_callback(self, msg);
-        elseif (type(request_callback) == "function") then
-            request_callback(self, msg);
-            self.__rpc_requests__[__response_event_type__] = nil;
-        else
-            self.__event_emitter__:TriggerEventCallBack(__response_event_type__, msg)
-        end
-    elseif (__action__ and type(self[__action__]) == "function") then
-        -- 触发方法响应
-        local __data__ = (self[__action__])(self, __data__);
+    -- 触发事件
+    local response_callback = self.__rpc_responses__[__response_event_type__];
+    local request_callback = self.__rpc_requests__[__response_event_type__];
+    local handle_callback = self["Handle" .. __action__];
+    if (type(response_callback) == "function") then 
+        response_callback(self, msg);
+    elseif (type(request_callback) == "function") then
+        request_callback(self, msg);
+        self.__rpc_requests__[__response_event_type__] = nil;
+    elseif (type(handle_callback) == "function") then
+        local __response_data__ = handle_callback(self, __data__);
         self:SendMsg({
             __cmd__ = "__rpc__",
             __action__ = __action__,
             __request_event_type__ = __response_event_type__,
             __response_event_type__ = __request_event_type__,
-            __data__ = __data__,
+            __data__ = __response_data__,
         });
+    else
+        self.__event_emitter__:TriggerEventCallBack(__response_event_type__, msg)
     end
 end
 

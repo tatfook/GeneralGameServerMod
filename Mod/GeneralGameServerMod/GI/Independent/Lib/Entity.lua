@@ -32,7 +32,6 @@ Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否�
 Entity:Property("Focus", false, "IsFocus");                           -- 是否聚焦
 Entity:Property("Speed", 1);                                          -- 移动速度
 Entity:Property("Step", 0.06);                                        -- 步长
-Entity:Property("CanMoving", true, "IsCanMoving");                    -- 是否可以移动
 Entity:Property("HasBlood", true, "IsHasBlood");                     -- 是否有血量
 Entity:Property("Blood", 100);                                        -- 血量
 Entity:Property("TotalBlood", 100);                                   -- 总血量
@@ -46,7 +45,6 @@ Entity:Property("CanAutoAvoid", false, "IsCanAutoAvoid");             -- 是否�
 Entity:Property("DefaultSkill");                                      -- 实体默认技能
 Entity:Property("CanRandomMove", false, "IsCanRandomMove");           -- 是否可以随机移动
 Entity:Property("RandomMoveRange");                                   -- 随机移动范围
-Entity:Property("Moving", false, "IsMoving");                         -- 是否在移动中
 Entity:Property("Obstruction", false, "IsObstruction");               -- 是否是实体
 
 local NID = 0;
@@ -132,7 +130,11 @@ end
 
 function Entity:GetContext()
     local co = __coroutine_running__();
-    self.__contexts__[co] = self.__contexts__[co] or {};
+    self.__contexts__[co] = self.__contexts__[co] or {
+        __co__ = co, 
+        __moving__ = false,                   -- 当前协程是否正在移动
+        __is_can_move__ = true,               -- 当前协程是否可以移动
+    };
     return self.__contexts__[co];
 end
 
@@ -175,6 +177,10 @@ end
 
 function Entity:GetEntityByName(name)
     return __all_name_entity__[name];
+end
+
+function Entity:GetAssetFile()
+    return self:GetMainAssetPath();
 end
 
 function Entity:SetAssetFile(assetfile)
@@ -310,11 +316,33 @@ function Entity:RandomMove()
     end);
 end
 
+function Entity:IsCanMove()
+    return self:GetContext().__is_can_move__;
+end
+
+-- 禁止移动
+function Entity:DisableMove(excludeContext)
+    for _, __context__ in pairs(self.__contexts__) do
+        if (__context__ ~= excludeContext) then
+            __context__.__moving__ = false;            -- 停掉当前运动
+            __context__.__is_can_move__ = false;       -- 禁止再运动
+        end
+    end
+end
+
+-- 开启移动
+function Entity:EnableMove(excludeContext)
+    for _, __context__ in pairs(self.__contexts__) do
+        if (__context__ ~= excludeContext) then
+            __context__.__is_can_move__ = true;       -- 禁止再运动
+        end
+    end
+end
 -- 向前行走, duration 存在则通过时间计算步数, 否则通过单位步长计算步数
 function Entity:MoveForward(dist, duration, bEnableAnim)
-    if (not self:IsCanMoving()) then return sleep() end  -- 不可运动执行运动, 停顿一帧, 避免死循环 
-    self:StopMove();
     local __context__ = self:GetContext();
+    if (not self:IsCanMove()) then return sleep() end
+    self:StopMove();
     local facing = self:GetFacing();
     local distance = (dist or 1) * __BlockSize__;
     local dx, dy, dz = math.cos(facing) * distance, 0, -math.sin(facing) * distance;
@@ -322,9 +350,8 @@ function Entity:MoveForward(dist, duration, bEnableAnim)
     local stepCount = duration and math.ceil(duration * self:GetTickCountPerSecond()) or math.floor(distance / self:GetStepDistance());
     bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
     if (bEnableAnim) then self:SetAnimId(5) end
-    self:SetMoving(true);
-    __context__.moving = true;
-    while(__context__.moving and stepCount > 0 and not self:IsDestory() and self:IsCanMoving()) do
+    __context__.__moving__ = true;
+    while(__context__.__moving__ and stepCount > 0 and not self:IsDestory() and self:IsCanMove()) do
         local stepX, stepY, stepZ = dx / stepCount, dy / stepCount, dz / stepCount;
         x, y, z = x + stepX, y + stepY, z + stepZ;
         if (self:IsStandInPosition(x, y, z)) then
@@ -336,8 +363,7 @@ function Entity:MoveForward(dist, duration, bEnableAnim)
         dx, dy, dz = dx - stepX, dy - stepY, dz - stepZ;
         sleep();
     end
-    __context__.moving = false;
-    self:SetMoving(false);
+    __context__.__moving__ = false;
     if (bEnableAnim) then self:SetAnimId(0) end
 end
 
@@ -443,6 +469,9 @@ function Entity:GetGreedyPaths(tbx, tby, tbz)
 end
 
 function Entity:MoveXYZ(bx, by, bz, bEnableAnim, bEnableDepthSearch)
+    local __context__ = self:GetContext();
+    if (not self:IsCanMove()) then return sleep() end
+
     local paths = bEnableDepthSearch and self:GetDepthSearchPaths(bx, by, bz) or self:GetGreedyPaths(bx, by, bz);
     self:SetAnimId(5);
     bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
@@ -455,14 +484,14 @@ function Entity:MoveXYZ(bx, by, bz, bEnableAnim, bEnableDepthSearch)
 end
 
 function Entity:Move(tx, ty, tz, bEnableAnim)
-    if (not self:IsCanMoving()) then return sleep() end  -- 不可运动执行运动, 停顿一帧, 避免死循环 
+    local __context__ = self:GetContext();
+    if (not self:IsCanMove()) then return sleep() end
+
     self:StopMove();
     bEnableAnim = if_else(bEnableAnim == nil or bEnableAnim, true, false);
     if (bEnableAnim) then self:SetAnimId(5) end
-    local __context__ = self:GetContext();
-    self:SetMoving(true);
-    __context__.moving = true;
-    while (__context__.moving and not self:IsDestory() and self:IsCanMoving()) do
+    __context__.__moving__ = true;
+    while (__context__.__moving__ and not self:IsDestory() and self:IsCanMove()) do
         local x, y, z = self:GetPosition();
         local dx, dy, dz = math.abs(tx - x), math.abs(ty - y), math.abs(tz - z);
         -- local max = math.max(math.max(dx, dy), dz);
@@ -489,14 +518,13 @@ function Entity:Move(tx, ty, tz, bEnableAnim)
         sleep();
         if (stepCount <= 1) then break end 
     end
-    __context__.moving = false;
-    self:SetMoving(false);
+    __context__.__moving__ = false;
     if (bEnableAnim) then self:SetAnimId(0) end
 end
 
 function Entity:StopMove()
     for _, __context__ in pairs(self.__contexts__) do
-        __context__.moving = false;
+        __context__.__moving__ = false;
     end
 end
 
@@ -754,7 +782,7 @@ end
 function Entity:AutoAttackEntity(entity)
     self:SetCanVisible(false);
     self:SetAutoAttacking(true);
-    self:StopMove();
+    self:DisableMove();
 
     entity = self:GetNearestAttackEntity();
     while (not self:IsDestory() and entity and not entity:IsDestory() and self:IsVisibleEntity(entity)) do
@@ -773,8 +801,8 @@ function Entity:AutoAttackEntity(entity)
             entity = self:GetNearestAttackEntity();
         end
     end
-    
     self:SetAnimId(0);
+    self:EnableMove();
     self:SetAutoAttacking(false);
     self:SetCanVisible(true);
 end

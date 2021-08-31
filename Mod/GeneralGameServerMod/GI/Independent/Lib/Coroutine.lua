@@ -149,11 +149,11 @@ function sleep(sleep)
 		else
 			sync_run(unpack());
 			-- 激活的是函数则创建新协程执行
-			if (isSleeping and callback ~= null_function) then
-				async_run(unpack());
-			else
-				sync_run(unpack());
-			end
+			-- if (isSleeping and callback ~= null_function) then
+			-- 	async_run(unpack());
+			-- else
+			-- 	sync_run(unpack());
+			-- end
 		end
 	end
 

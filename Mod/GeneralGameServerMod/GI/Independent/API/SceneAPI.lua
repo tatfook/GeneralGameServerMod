@@ -193,6 +193,10 @@ local function GetCamera()
     return dist, pitch, facing;
 end
 
+local function GetSpawnPoint() 
+    return GameLogic.GetWorld():GetSpawnPoint();
+end
+
 local key_2_code, key_3_code, key_4_code, key_5_code = ParaCamera.GetKeyMap(2), ParaCamera.GetKeyMap(3), ParaCamera.GetKeyMap(4), ParaCamera.GetKeyMap(5);
 
 setmetatable(
@@ -224,7 +228,7 @@ setmetatable(
             CodeEnv.GetCameraFacing = GetCameraFacing
             CodeEnv.GetCamera = GetCamera
             CodeEnv.SetCamera = SetCamera
-
+            CodeEnv.GetSpawnPoint = GetSpawnPoint;
             -- mouse pick
             CodeEnv.HighlightPickBlock = HighlightPickBlock
             CodeEnv.HighlightPickEntity = HighlightPickEntity

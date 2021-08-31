@@ -83,9 +83,24 @@ function Level:LoadLevel()
     end
 
     local tiger = self:CreateTigerEntity(10079,12,10069);
-    tiger:SetVisibleRadius(20);
+    tiger:SetVisibleRadius(5);
     tiger:SetSpeed(1);
-
+    __run__(function()
+        while(self:IsPlaying() and not tiger:IsDestory()) do
+            tiger:MoveXYZ(10079,12,10069);
+            tiger:MoveXYZ(10099,12,10069);
+            tiger:MoveXYZ(10079,12,10069);
+            tiger:MoveXYZ(10079,12,10079);
+            tiger:MoveXYZ(10099,12,10079);
+            tiger:MoveXYZ(10079,12,10079);
+            tiger:MoveXYZ(10079,12,10089);
+            tiger:MoveXYZ(10099,12,10089);
+            tiger:MoveXYZ(10079,12,10089);
+            tiger:MoveXYZ(10079,12,10099);
+            tiger:MoveXYZ(10099,12,10099);
+            tiger:MoveXYZ(10079,12,10099);
+        end
+    end);
     -- 添加任务
     self:AddGoalPointTask(1);
     self:AddTianShuCanJuanTask(2, true);
@@ -97,5 +112,3 @@ function Level:LoadLevel()
 end
 
 Level:InitSingleton();
-
--- 老虎的逻辑怎么写???

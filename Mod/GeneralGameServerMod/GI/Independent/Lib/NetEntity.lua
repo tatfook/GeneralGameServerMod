@@ -9,6 +9,7 @@ local NetEntity = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/NetEntit
 ------------------------------------------------------------
 ]]
 
+local EntityPlayer = require("EntityPlayer");
 local Net = require("Net");
 local NetPlayer = require("NetPlayer");
 local KeyBoard = require("KeyBoard");
@@ -21,15 +22,33 @@ local __player_entity_map__ = {};
 local __cur_main_player_entity__ = GetPlayer();
 local __main_player_entity__ = nil;
 
-Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO = "__set_player_entity_info__";
-Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO = "__set_player_entity_data_info__";
+Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO = "SET_PLAYER_ENTITY_INFO";
+Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO = "SET_PLAYER_ENTITY_DATA_INFO";
+
+local function MoveKeyCallBack(event)
+    if (event.keyname == "DIK_SPACE" or event.keyname == "DIK_F") then return event:accept() end
+end
+
+local function DisableDefaultMoveKey()
+    DisableDefaultWASDKey();
+    RegisterEventCallBack(EventType.KEY, MoveKeyCallBack);
+end
+
+local function EnableDefaultMoveKey()
+    EnableDefaultWASDKey();
+    RemoveEventCallBack(EventType.KEY, MoveKeyCallBack);
+end
+
+local function DefaultCreateEntityPlayer(username)
+    return EntityPlayer:new():Init({name = username});
+end
 
 local function GetPlayerEntity(username)
     username = username or __username__;
     local entity_player = __player_entity_map__[username];
     if (entity_player) then return entity_player end 
 
-    local create_player_entity = CreateEntityPlayer;
+    local create_player_entity = CreateEntityPlayer or DefaultCreateEntityPlayer;
     if (type(__create_player_entity__) == "function") then create_player_entity = __create_player_entity__ end 
 
     entity_player = create_player_entity(username);  
@@ -50,6 +69,7 @@ local function GetPlayerEntityInfo(username)
 
     info.x, info.y, info.z = entity_player:GetPosition();
     info.username = entity_player:GetUserName();
+    info.assetfile = entity_player:GetAssetFile();
     info.watcher_data = entity_player:GetWatcherData();
 
     return info;
@@ -60,6 +80,7 @@ local function SetPlayerEntityInfo(msg)
     if (not username or not info) then return end 
     local entity_player = GetPlayerEntity(username);
     if (info.x) then entity_player:SetPosition(info.x, info.y, info.z) end
+    if (info.assetfile) then entity_player:SetAssetFile(info.assetfile) end
     entity_player:LoadWatcherData(info.watcher_data);
 end
 
@@ -67,21 +88,24 @@ local function SetPlayerEntityDataInfo(msg)
     local username, data = msg.username, msg.data;
     if (not username or not data) then return end
     local entity_player = GetPlayerEntity(username);
+    entity_player:SetPosition(msg.x, msg.y, msg.z);
     entity_player:LoadWatcherData(data);
 end
 
 local function SyncPlayerEntityInfo(username)
     if (username) then
-        Net:SendTo(username, {action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO, data = GetPlayerEntityInfo()});
+        Net:SendTo(username, {action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO, username = __username__, data = GetPlayerEntityInfo()});
     else
-        Net:Send({action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO, data = GetPlayerEntityInfo()});
+        Net:Send({action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO, username = __username__, data = GetPlayerEntityInfo()});
     end
 end
 
 local function SyncPlayerEntityDataInfo(data)
+    local x, y, z = __main_player_entity__:GetPosition();
     Net:Send({
         action = Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO,
         username = __username__,
+        x = x, y = y, z = z, 
         data = data,
     });
 end
@@ -90,11 +114,13 @@ NetPlayer:OnMainPlayerLogin(function(player)
     if (__main_player_entity__) then return end 
 
     __main_player_entity__ = GetPlayerEntity(player.username);
-    __main_player_entity__:SetFocus();
+    __main_player_entity__:SetFocus(true);
+    __main_player_entity__:SetMainAssetPath(GetPlayer():GetMainAssetPath());
+    __main_player_entity__:SetSkin(GetPlayer():GetSkin());
     __main_player_entity__:OnWatcherDataChange(SyncPlayerEntityDataInfo);
     __cur_main_player_entity__:SetVisible(false);
-    DisableDefaultWASDKey();
-
+    -- DisableDefaultWASDKey();
+    DisableDefaultMoveKey();
     -- 主玩家登录给所有其它玩家发送自己的所有信息
     SyncPlayerEntityInfo();
 end);
@@ -113,8 +139,24 @@ NetPlayer:OnMainPlayerLogout(function(player)
     __main_player_entity__ = nil;
     __cur_main_player_entity__:SetVisible(true);
     __cur_main_player_entity__:SetFocus();
-    EnableDefaultWASDKey();
+    -- EnableDefaultWASDKey();
+    EnableDefaultMoveKey();
 end);
+
+-- 收到数据
+Net:OnRecv(function(msg)
+    local action = msg.action;
+    if (action == Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO) then return SetPlayerEntityInfo(msg) end
+    if (action == Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO) then return SetPlayerEntityDataInfo(msg) end 
+end);
+
+Net:OnClosed(function()
+    for _, entity in pairs(__player_entity_map__) do
+        entity:Destroy();
+    end
+    __player_entity_map__ = {};
+end);
+
 
 -- 玩家移动控制
 KeyBoard:OnKeyDown("w", function()
@@ -157,16 +199,22 @@ KeyBoard:OnKeyUp("d", function()
     __main_player_entity__:SetDKeyPressed(false);
 end);
 
--- 收到数据
-Net:OnRecv(function(msg)
-    local action = msg.action;
-    if (action == Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO) then return SetPlayerEntityInfo(msg) end
-    if (action == Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO) then return SetPlayerEntityDataInfo(msg) end 
+KeyBoard:OnKeyDown("f", function()
+    if (not __main_player_entity__) then return end 
+    __main_player_entity__:SetFKeyPressed(true);
 end);
 
-Net:OnClosed(function()
-    for _, entity in pairs(__player_entity_map__) do
-        entity:Destroy();
-    end
-    __player_entity_map__ = {};
+KeyBoard:OnKeyUp("f", function()
+    if (not __main_player_entity__) then return end 
+    __main_player_entity__:SetFKeyPressed(false);
+end);
+
+KeyBoard:OnKeyDown("space", function()
+    if (not __main_player_entity__) then return end 
+    __main_player_entity__:SetSpaceKeyPressed(true);
+end);
+
+KeyBoard:OnKeyUp("space", function()
+    if (not __main_player_entity__) then return end 
+    __main_player_entity__:SetSpaceKeyPressed(false);
 end);

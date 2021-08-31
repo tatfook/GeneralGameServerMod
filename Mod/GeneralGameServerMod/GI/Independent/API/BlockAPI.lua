@@ -59,4 +59,5 @@ setmetatable(BlockAPI, {__call = function(_, CodeEnv)
 
 
     CodeEnv.__BlockSize__ = BlockEngine.blocksize;
+    CodeEnv.__HalfBlockSize__ = BlockEngine.half_blocksize;
 end});

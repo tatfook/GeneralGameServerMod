@@ -27,7 +27,7 @@ Net.EVENT_TYPE = {
 }
 
 local function SelectWorldServer(callback, try_wait_time)
-    print("========================SelectWorldServer=============================");
+    print("========================SelectWorldServer=============================", __coroutine_running__());
 
     try_wait_time = try_wait_time or 10000;
     local function error_handle()
@@ -39,13 +39,13 @@ local function SelectWorldServer(callback, try_wait_time)
 
     GetNetAPI():Get("__server_manager__/__select_world_server__", {
         worldId = GetWorldId(),
-    }):Then(__safe_callback__(function(msg)
+    }):Then(function(msg)
         if (msg.status ~= 200) then return error_handle() end
-        print("==================================server address============================", msg.data.ip, msg.data.port)
+        print("==================================server address============================", msg.data.ip, msg.data.port);
         return type(callback) == "function" and callback(msg.data);
-    end)):Catch(__safe_callback__(function()
+    end):Catch(function()
         error_handle();
-    end));
+    end);
 end
 
 
@@ -153,13 +153,15 @@ function Net:OnShareData(...)
 end
 
 Net:InitSingleton():Connect(function(data)
-    log("=================net connect success=============", data)
+    log("=================net connect success=============")
 end);
 
 Net:OnDisconnected(function() 
     print("========================Net:OnDisconnected========================")
     Net:SetConnected(false);
-    Net:Connect() 
+    if (not Net:IsConnecting()) then
+        Net:Connect() 
+    end
 end);
 
 Net:OnClosed(function()

@@ -22,7 +22,7 @@ RPC:Property("Player");
 RPC:Property("World");
 
 -- 登录
-function RPC:Login(data)
+function RPC:HandleLogin(data)
     local username, worldId, worldName, worldKey, maxClientCount = data.username, data.worldId, data.worldName, data.worldKey, data.maxClientCount;
     local player = Player:GetPlayer(username, true);
     local world = World:GetWorld(worldId, worldName, worldKey, true);
@@ -54,7 +54,7 @@ function RPC:IsValid()
 end
 
 -- 设置用户数据
-function RPC:SetUserData(userdata)
+function RPC:HandleSetUserData(userdata)
     local username = self:GetPlayer():GetUserName();
     userdata.__username__ = username;
     self:GetWorld():SetUserData(username, userdata);
@@ -62,20 +62,20 @@ function RPC:SetUserData(userdata)
 end
 
 -- 设置共享数据
-function RPC:SetShareData(sharedata)
+function RPC:HandleSetShareData(sharedata)
     if (not self:IsValid()) then return end 
     self:GetWorld():SetShareData(sharedata);
     self:GetWorld():SendToAllPlayer("SetShareData", sharedata, self:GetPlayer());
 end
 
 -- 广播给指定用户
-function RPC:BroadcastTo(data)
+function RPC:HandleBroadcastTo(data)
     if (not self:IsValid()) then return end 
     self:GetWorld():SendToPlayer(data.username, "Broadcast", data.data);
 end
 
 -- 转发广播消息
-function RPC:Broadcast(data)
+function RPC:HandleBroadcast(data)
     if (not self:IsValid()) then return end 
     self:GetWorld():SendToAllPlayer("Broadcast", data, self:GetPlayer());
 end

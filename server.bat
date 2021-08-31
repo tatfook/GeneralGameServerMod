@@ -8,3 +8,5 @@ call "D:\ParacraftDev\ParaEngineClient.exe" IsDevEnv="true" servermode="true" Co
 
 
 @REM npl IsDevEnv="true" servermode="true" bootstrapper="Mod/GeneralGameServerMod/main.lua" logfile="server.log" loadpackage="npl_packages/paracraft/"
+@REM npl IsDevEnv="true" servermode="true" bootstrapper="Mod/GeneralGameServerMod/main.lua" logfile="server.log" loadpackage="/mnt/d/workspace/npl/paracraft/"
+
