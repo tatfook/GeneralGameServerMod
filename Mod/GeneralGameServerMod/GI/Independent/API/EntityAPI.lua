@@ -11,67 +11,12 @@ local EntityAPI = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/EntityAP
 NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityMovable.lua");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
-local Entity = NPL.load("../../Game/Entity/Entity.lua", IsDevEnv);
-local EntityNPC = NPL.load("../../Game/Entity/EntityNPC.lua", IsDevEnv);
-local EntityPlayer = NPL.load("../../Game/Entity/EntityPlayer.lua", IsDevEnv);
-
 local EntityAPI = NPL.export()
-
-local function CreateEntity(CodeEnv, opts)
-    local entity = Entity:new():Init(opts);
-    table.insert(CodeEnv.__entities__, entity)
-    return entity;
-end
-
-local function CreateEntityNPC(CodeEnv, opts)
-    local entity = EntityNPC:new():Init(opts);
-    table.insert(CodeEnv.__entities__, entity)
-    return entity;
-end
-
-local function CreateEntityPlayer(CodeEnv, username)
-    local entity = EntityPlayer:new():Init(username);
-    table.insert(CodeEnv.__entities__, entity)
-    return entity;
-end
 
 local function getEntity(id)
     if type(id) == "table" then return id end
     return EntityManager.GetEntityById(id)
 end
-
--- local function SetEntityHeadOnText(id, str, color, font)
---     local e = getEntity(id)
---     if not e or not str then
---         return
---     end
---     local name = e:GetHeadonObject("name")
---     if not name then
---         HeadonUtility.initHeadonObjects(e, {"name"})
---         name = e:GetHeadonObject("name")
---     end
---     name:setText(str)
---     if color then
---         name:setColor(color)
---     end
-
---     if font then
---         name:setFont(font)
---     end
--- end
-
--- local function GetEntityHeadOnObject(id, name)
---     local e = getEntity(id)
---     if not e or not name then
---         return
---     end
---     local o = e:GetHeadonObject(name)
---     if not o then
---         o = HeadonObject:new():init(e:GetInnerObject())
---         e:AddHeadonObject(name, o)
---     end
---     return o
--- end
 
 local function EnableEntityPicked(id, enable)
     local e = getEntity(id)
@@ -138,10 +83,6 @@ setmetatable(
             CodeEnv.GetAllEntityCode = GetAllEntityCode;
             CodeEnv.SetFocus = SetFocus;
         
-            -- CodeEnv.CreateEntityPlayer = function(...) return CreateEntityPlayer(CodeEnv, ...) end 
-            CodeEnv.__CreateEntityNPC__ = function(...) return  CreateEntityNPC(CodeEnv, ...) end
-            CodeEnv.__CreateEntity__ = function(...) return CreateEntity(CodeEnv, ...) end
-
             local __entity_co_map__ = {};
 
             CodeEnv.__AddEntity__ = function(entity) 

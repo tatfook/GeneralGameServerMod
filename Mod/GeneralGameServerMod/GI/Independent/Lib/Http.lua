@@ -78,7 +78,6 @@ function Http:Request(config)
             qs = (method ~= "POST" and method ~= "PUT") and config.data or nil,
         }
         HttpRequest(self:HandleTransformRequest(config, request), function(status, msg, data)
-            -- echo({status, msg, data})  
             local response = self:HandleTransformResponse(config, {status = status, header = msg.header, code = msg.code, data = data});
             if (status < 200 or status >= 300) then return reject(response) end
             resolve(response);

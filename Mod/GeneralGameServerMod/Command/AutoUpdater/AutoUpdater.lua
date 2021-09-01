@@ -8,6 +8,8 @@ use the lib:
 local AutoUpdater = NPL.load("Mod/GeneralGameServerMod/Command/AutoUpdater/AutoUpdater.lua");
 ------------------------------------------------------------
 ]]
+local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
+
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local FileSyncConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/FileSyncConnection.lua", IsDevEnv);
 
@@ -26,9 +28,9 @@ AutoUpdater:Property("InstallDirectory");                             -- 安装�
 AutoUpdater:Property("ConfigFilePath");                               -- 配置文件路径
 AutoUpdater:Property("ProxyURL");                                     -- 代理URL
 
-AutoUpdater:Property("DownloadFromClient", false, "IsDownloadFromClient");  -- 是否通过客户端下载
-AutoUpdater:Property("ServerIp", "127.0.0.1");
-AutoUpdater:Property("ServerPort", "9000");
+-- AutoUpdater:Property("DownloadFromClient", false, "IsDownloadFromClient");  -- 是否通过客户端下载
+AutoUpdater:Property("ServerIp", nil);
+AutoUpdater:Property("ServerPort", nil);
 
 local latest_version_path = CommonLib.ToCanonicalFilePath(ParaIO.GetWritablePath() .. "/caches/latest/");
 local latest_version_tmp_path = CommonLib.ToCanonicalFilePath(ParaIO.GetWritablePath() .. "/caches/latest_tmp/");
@@ -38,7 +40,8 @@ function AutoUpdater:Init(opts)
     opts = opts or {};
 
     self:SetAutoInstall(opts.isAutoInstall);
-    self:SetInstallDirectory(opts.installDirectory or (IsDevEnv and CommonLib.ToCanonicalFilePath(CommonLib.GetTempDirectory() .. "/AutoUpdater/") or CommonLib.GetRootDirectory()));
+    -- self:SetInstallDirectory(opts.installDirectory or (IsDevEnv and CommonLib.ToCanonicalFilePath(CommonLib.GetTempDirectory() .. "/AutoUpdater/") or CommonLib.GetRootDirectory()));
+    self:SetInstallDirectory(opts.installDirectory or CommonLib.GetRootDirectory());
     self:SetConfigFilePath(opts.configFilePath or "config/autoupdater/paracraft_win32.xml");
 
     self.__auto_updater__ = __AutoUpdater__:new();
@@ -80,17 +83,42 @@ function AutoUpdater:StartWebServer(ip, port)
 end
 
 function AutoUpdater:CheckLatestVersion()
+    if (not CommonLib.IsWin32Platform()) then return end 
+
     local oldInstallDirectory = self:GetInstallDirectory();
     local oldDownloadFinishCallBack = self:GetDownloadFinishCallBack();
     local oldDownloadFailedCallBack = self:GetDownloadFailedCallBack();
+    local install_version = self:GetInstallVersion();
 
     self:SetInstallDirectory(latest_version_path);
+    
+    local function InstallLatestVersion()
+        local latest_version = self:GetLatestVersion();
+        if (latest_version ~= install_version) then
+            -- 提示可以升级
+            local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+            Page.ShowMessageBoxPage({
+                text = "最新版本安装文件已准备就绪是否重启程序完成安装?",
+                confirm = function()
+                    self:InstallLatestVersion();
+                end,
+            });
+        else
+            print("安装版本已是最新版");
+        end
+    end
+
     self:Check(nil, function(bNeedUpdate)
-        if (not bNeedUpdate) then return print("已是最新版本无需更新") end
+        if (not bNeedUpdate) then 
+            print("已是最新版本无需更新");
+            self:SetInstallDirectory(oldInstallDirectory);
+            InstallLatestVersion();
+            return ;
+        end
         -- 切换到临时目录下载
         self:SetInstallDirectory(latest_version_tmp_path);
-        -- 创建临时目录
-        ParaIO.DeleteFile(latest_version_tmp_path);
+        -- 删除临时目录
+        CommonLib.DeleteDirectory(latest_version_path);
         -- 创建临时目录
         ParaIO.CreateDirectory(latest_version_tmp_path);
         -- 检测下载
@@ -102,10 +130,10 @@ function AutoUpdater:CheckLatestVersion()
                 self:SetDownloadFailedCallBack(oldDownloadFailedCallBack);
                 -- 最新版下载完成
                 local latest_version = self:GetLatestVersion();
-                local install_version = self:GetInstallVersion();
                 if (latest_version ~= install_version) then
-                    -- 提示可以升级
-                    self:CheckInstallVersion();
+                    InstallLatestVersion();
+                else
+                    print("安装版本已是最新版");
                 end
             end);
             -- 下载失败
@@ -124,6 +152,10 @@ function AutoUpdater:CheckLatestVersion()
     end);
 end
 
+function AutoUpdater:CheckInstallLatestVersion()
+    self:CheckLatestVersion();
+end
+
 function AutoUpdater:CheckInstallVersion()
     self:Check(nil, function(bNeedUpdate)
         if (not bNeedUpdate) then return end 
@@ -133,6 +165,10 @@ function AutoUpdater:CheckInstallVersion()
             self:Download();
         end
     end);
+end
+
+function AutoUpdater:IsDownloadFromClient()
+    return self:GetServerIp() and self:GetServerPort();
 end
 
 function AutoUpdater:AddHost(host, index)
@@ -206,7 +242,7 @@ function AutoUpdater:OnEvent(state, param1, param2)
                 print(tips)
             end
             
-            if(not self:IsDownloading()) then
+            if(not self:IsDownloading() and self.__timer__) then
                 self.__timer__:Change();
                 self.__timer__ = nil;
             end
@@ -248,10 +284,11 @@ function AutoUpdater:DownloadFromClient()
         local_file_path = self:GetDownloadDirectory(),
         remote_file_path = IsDevEnv and "/mnt/d/ParacraftDev/caches/latest/" or latest_version_path,
         finish_callback = function()
-            print("===================finish_callback========================")
+            print("===================finish_callback========================");
             self:Download();
         end,
         failed_callback = function()
+            print("==================Unable to connect to proxy server===================");
             self:Download();
         end,
     });
@@ -269,7 +306,6 @@ function AutoUpdater:Download()
     self:SetDownloading(true);
 
     -- self:AddHost(self:GetProxyURL());
-
     self.__auto_updater__:download();
 end
 
@@ -282,19 +318,21 @@ function AutoUpdater:OnDownloadFinish()
     local download_version_path = CommonLib.ToCanonicalFilePath(self.__auto_updater__._assetsCachesPath .. "/");
     -- print(latest_version_path, download_version_path);
     -- 删除旧最新版本备份
-    ParaIO.DeleteFile(latest_version_path);
+    CommonLib.DeleteDirectory(latest_version_path);
     -- 备份最新版本
     CommonLib.CopyDirectory(download_version_path, latest_version_path, true);
     self:SetDownloading(false);
     self:SetDownloadFinish(true);
+
     self.__auto_updater__:decompress(latest_version_path .. "version.txt.p", latest_version_path .. "version.txt");
 
     local callback = self:GetDownloadFinishCallBack();
     if (type(callback) == "function") then callback() end 
 
-    if (self:IsAutoInstall()) then
-        self.__auto_updater__:apply();
-    end
+    -- if (self:IsAutoInstall()) then
+    --     self:Install();
+    --     -- self.__auto_updater__:apply();
+    -- end
 end
 
 function AutoUpdater:GetDownloadDirectory()
@@ -325,8 +363,49 @@ function AutoUpdater:GetInstallVersion()
     return self:LoadLocalVersion(version_filename);
 end
 
+function AutoUpdater:InstallLatestVersion()
+    local upgrade_filename = CommonLib.ToCanonicalFilePath(CommonLib.GetTempDirectory() .. "/AutoUpgrade.lua");
+    local cmdline_params = string.format([[servermode="true" bootstrapper="%s" latest_directory="%s" install_directory="%s"]], upgrade_filename, latest_version_path, self:GetInstallDirectory());
+    print("AutoUpdater:InstallLatestVersion", cmdline_params);
+    if (IsDevEnv) then cmdline_params = cmdline_params .. [[ logfile="D:\workspace\npl\GeneralGameServerMod\server.log"]] end 
+    if (not ParaIO.CopyFile(CommonLib.ToCanonicalFilePath("Mod/GeneralGameServerMod/Command/AutoUpdater/AutoUpgrade.lua"), upgrade_filename, true)) then 
+        print("Unable to generate upgrade script");
+    else 
+        print("generate auto upgrade file: ", upgrade_filename);
+    end
+    local npl_filename = CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory() .. [[\ParaEngineClient.exe]]);
+    if (not ParaGlobal.ShellExecute("open", npl_filename, cmdline_params, "", 1)) then return end 
+    ParaGlobal.Exit(0);
+    ParaGlobal.Exit(0);
+end
+
 AutoUpdater:InitSingleton():Init();
 
+Commands["autoupdater"] = {
+	mode_deny = "",
+    name = "autoupdater",
+    quick_ref = "/autoupdater 客户端自动更新命令",
+    desc = [[
+示例:         
+/autoupdater 不使用代理服务器, 官方更新
+/autoupdater -severIp=127.0.0.1 -serverPort=9000 代理更新
+/autoupdater -severIp=127.0.0.1 -serverPort=9000 -server=true 开启代理服务器
+选项:
+    -serverIp 代理服务器IP 
+    -serverPort 代理服务器端口 
+    -server 为真则为开启代理服务器 默认为假
+    ]],
+    handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
+        local opts = CommonLib.ParseOptions(cmd_text);
+        if (opts.server) then
+            CommonLib.StartNetServer(opts.serverIp or "0.0.0.0", opts.serverPort or "9000");
+        else
+            if (opts.severIp) then AutoUpdater:SetServerIp(opts.severIp) end
+            if (opts.serverPort) then AutoUpdater:SetServerIp(opts.serverPort) end
+        end
+        AutoUpdater:CheckLatestVersion();
+    end
+}
 --[[
 客户端自动更新逻辑:
 1. 检测caches/latest/本地最新版本文件是否最新, 是最新进入步骤2, 不是最新进行更新进入步骤3
@@ -359,10 +438,13 @@ FileSync 同步方式
 local AutoUpdater = NPL.load("Mod/GeneralGameServerMod/Command/AutoUpdater/AutoUpdater.lua");
 -- 开启客户单代理
 AutoUpdater:SetDownloadFromClient(true);
+AutoUpdater:SetServerIp("127.0.0.1");
+AutoUpdater:SetServerPort("9000");
+AutoUpdater:CheckInstallLatestVersion();
 -- 不自动安装
 -- AutoUpdater:SetAutoInstall(true);
 -- AutoUpdater:CheckLatestVersion() -- 检测更新本地最新缓存
 -- 自动更新安装版本
-AutoUpdater:CheckInstallVersion();
+-- AutoUpdater:CheckInstallVersion();
 ]]
 

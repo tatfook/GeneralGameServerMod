@@ -30,7 +30,9 @@ function GIBlockly.CompileCode(code, filename, codeblock)
     __env__.__codeblock__ = codeblock;
     __env__.__codeblock_env__ = codeblock:GetCodeEnv();
     __env__.__module__.__filename__ = filename;
-
+    __env__.__codeblock_env__.__checkyield__ = function() end 
+    __env__.__codeblock_env__.__fileline__ = function() end 
+    
     code = __env__.__inject_checkyield_to_code__(code);
     local code_func, errormsg = loadstring(code, filename);
     if(not code_func or errormsg) then

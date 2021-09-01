@@ -72,6 +72,9 @@ function CommonLib.ClearTable(t)
     end
 end
 
+function CommonLib.IsWin32Platform()
+    return System.os.GetPlatform() == "win32";
+end
 
 function CommonLib.ToCanonicalFilePath(filename, platform)
     platform = platform or System.os.GetPlatform();
@@ -155,6 +158,10 @@ end
 -- 获取根目录即安装目录
 function CommonLib.GetRootDirectory()
     return ParaIO.GetWritablePath();
+end
+
+function CommonLib.DeleteDirectory(directory)
+    ParaIO.DeleteFile(CommonLib.ToCanonicalFilePath(directory .. "/", "linux"));
 end
 
 -- 获取Temp
@@ -399,3 +406,34 @@ function CommonLib.select(index)
 	index = tonumber(index) or 1;
     return __arguments__[index], __arguments__[index + 1], __arguments__[index + 2], __arguments__[index + 3], __arguments__[index + 4], __arguments__[index + 5], __arguments__[index + 6], __arguments__[index + 7], __arguments__[index + 8], __arguments__[index + 9];
 end
+
+
+local function ParseOption(cmd_text)
+	local value, cmd_text_remain = cmd_text:match("^%s*%-([%w_]+%S+)%s*(.*)$");
+	if(value) then
+		return value, cmd_text_remain;
+	end
+	return nil, cmd_text;
+end
+
+local function ParseOptions(cmd_text)
+	local options = {};
+	local option, cmd_text_remain = nil, cmd_text;
+	while(cmd_text_remain) do
+		option, cmd_text_remain = ParseOption(cmd_text_remain);
+		if(option) then
+			key, value = option:match("([%w_]+)=?(%S*)");
+			if (value == "true" or key == option) then 
+				options[key] = true;
+			elseif (value == "false") then 
+				options[key] = false;
+			else
+				options[key] = value;
+			end
+		else
+			break;
+		end
+	end
+	return options, cmd_text_remain;
+end
+CommonLib.ParseOptions = ParseOptions;

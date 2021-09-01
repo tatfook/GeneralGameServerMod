@@ -23,7 +23,7 @@ local UIAPI = NPL.load("./API/UIAPI.lua", IsDevEnv);
 local EntityAPI = NPL.load("./API/EntityAPI.lua", IsDevEnv);
 local BlockAPI = NPL.load("./API/BlockAPI.lua", IsDevEnv);
 -- local UtilityAPI = NPL.load("./API/UtilityAPI.lua", IsDevEnv);
-local GGSAPI = NPL.load("./API/GGSAPI.lua", IsDevEnv);
+-- local GGSAPI = NPL.load("./API/GGSAPI.lua", IsDevEnv);
 local NetAPI = NPL.load("./API/NetAPI.lua", IsDevEnv);
 local RPCAPI = NPL.load("./API/RPCAPI.lua", IsDevEnv);
 local FileAPI = NPL.load("./API/FileAPI.lua", IsDevEnv);
@@ -246,7 +246,7 @@ function CodeEnv:Init(Independent)
 	EntityAPI(self);
 	BlockAPI(self);
 	-- UtilityAPI(self);
-	GGSAPI(self);
+	-- GGSAPI(self);
 	NetAPI(self);
 	RPCAPI(self);
 	FileAPI(self);

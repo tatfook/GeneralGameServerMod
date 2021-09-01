@@ -32,12 +32,6 @@ local EventType = {
     KEY_UP = "key_up",
 
     MOUSE_KEY = "mouse_key",    -- 鼠标和按键
-
-    -- -- 资源创建事件
-    RESOURCE_WINDOW = "resource_window", 
-    RESOURCE_ENTITY = "resource_entity",
-
-    -- CODE_BLOCK_STOP = "code_block_stop", -- 代码方块停止事件
 }
 
 local function RegisterEventCallBack(__code_env__, eventType, callback)
