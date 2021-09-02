@@ -91,6 +91,9 @@ end
 --- @param skin string: curSkin 试穿skin
 function CheckSkin.InitData(skin)
 
+	if (skin:match("^%d+#")) then
+		skin = CustomCharItems:SkinStringToItemIds(skin);
+	end
 	LOG.std(nil, 'info', 'curSkin', skin);
 	LOG.std(nil, 'info', 'CheckSkin.GetClothesOfServerData()', CheckSkin.GetClothesOfServerData());
 	
