@@ -185,7 +185,7 @@ function CheckSkin.InitData(skin)
 			end);
 	
 			-- 没有替换 & VIP 则直接关闭
-			if(diffSkins == "" or isVip or isDefaultSkin) then
+			if(diffSkins == "" or isVip or isDefaultSkin or (CheckSkin.DS.totalPrice == 0)) then
 				CheckSkin.closeFunc()
 			else
 				CheckSkin.ShowPage()
