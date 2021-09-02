@@ -6,6 +6,7 @@ local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.C
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local Debug = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Debug.lua");
 local Compare = NPL.load("(gl)Mod/WorldShare/service/SyncService/Compare.lua");
+local CheckSkin = NPL.load("(gl)Mod/GeneralGameServerMod/UI/Vue/Page/User/CheckSkin.lua");
 local Encoding = commonlib.gettable("System.Encoding");
 local SelfProjectList = {};
 local AuthUser = KeepWorkItemManager.GetProfile();
@@ -464,6 +465,7 @@ _G.GetAllAssets = function()
     GlobalScope:Set("AllAssets", assets);
     return assets;
 end
+CheckSkin.GetAllAssets = GetAllAssets;
 
 _G.GetUserShowGoods = function()
     local bagNo = 1001;

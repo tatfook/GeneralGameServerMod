@@ -4,7 +4,7 @@
 	Date: 2021/7/19
 	Desc: 玩学课堂选择页
 	Use Lib:
-        local CheckSkin = NPL.load("(gl)Mod\GeneralGameServerMod\UI\Vue\Page\User\CheckSkin.lua");
+        local CheckSkin = NPL.load("(gl)Mod/GeneralGameServerMod/UI/Vue/Page/User/CheckSkin.lua");
         CheckSkin.Show();
         CheckSkin.Hide();
 --]]
@@ -155,8 +155,15 @@ function CheckSkin.InitData(skin)
 					name = data.name,
 				}
 				-- 设置文案
-				if(data.type == CheckSkin.SKIN_ITEM_TYPE.FREE or data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
+				if(data.type == CheckSkin.SKIN_ITEM_TYPE.FREE) then
 					val.price = "免费使用"
+				end
+				if(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
+					if(CheckSkin.IsUserOwnedThisSuitPartTypeSkin(item.itemId)) then
+						val.price = "免费使用"
+					else
+						val.price = "仅VIP可用"
+					end
 				end
 				if(data.type == CheckSkin.SKIN_ITEM_TYPE.VIP) then
 					val.price = "仅VIP可用"
@@ -173,7 +180,7 @@ function CheckSkin.InitData(skin)
 					-- 总金额
 					CheckSkin.DS.totalPrice = CheckSkin.DS.totalPrice+item.payPrice
 				end
-				
+
 				return val;
 			end);
 	
@@ -249,24 +256,29 @@ function CheckSkin.Purchase()
 		return;
 	end
 
-	keepwork.user.buySkinUsingBean({
-		clothes = items,
-		totalPrice = totalPrice
-	},	function(code, msg, data)
-		LOG.std(nil, 'info', 'code', code);
-		LOG.std(nil, 'info', 'msg', msg);
-		LOG.std(nil, 'info', 'data', data);
-
-		-- 购买成功 更新皮肤
-		if code == 200 then
-			-- refresh gs items
-			KeepWorkItemManager.LoadItems(nil, CheckSkin.closeFunc)
-			CheckSkin.Close()
-		else
-			_guihelper.MessageBox("系统异常", CheckSkin.Close);
-			CheckSkin.closeFunc();
-		end
-	end)
+	if(#items > 0) then
+		keepwork.user.buySkinUsingBean({
+			clothes = items,
+			totalPrice = totalPrice
+		},	function(code, msg, data)
+			LOG.std(nil, 'info', 'code', code);
+			LOG.std(nil, 'info', 'msg', msg);
+			LOG.std(nil, 'info', 'data', data);
+	
+			-- 购买成功 更新皮肤
+			if code == 200 then
+				-- refresh user goods
+				KeepWorkItemManager.LoadItems(nil, CheckSkin.closeFunc)
+				CheckSkin.Close()
+			else
+				_guihelper.MessageBox("系统异常", CheckSkin.Close);
+				CheckSkin.closeFunc();
+			end
+		end)
+	else
+		CheckSkin.closeFunc()
+		CheckSkin.Close()
+	end
 end
 
 function CheckSkin.Update()
@@ -310,7 +322,10 @@ function CheckSkin.RemoveAllUnvalidItems(skin)
 
 				-- 套装部件
 				if(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
-					--
+					-- 先查询拥有套装，再查询拥有套装下的皮肤，--
+					if(not CheckSkin.IsUserOwnedThisSuitPartTypeSkin(id)) then
+						currentSkin = CustomCharItems:RemoveItemInSkin(currentSkin, id);
+					end
 				end;
 
 				-- VIP可用
@@ -337,6 +352,30 @@ function CheckSkin.RemoveAllUnvalidItems(skin)
 
 	LOG.std(nil, 'info', 'after skin', currentSkin);
 	return currentSkin;
+end
+
+-- 套装部件的特殊处理
+function CheckSkin.IsUserOwnedThisSuitPartTypeSkin(id)
+	local AllAssets = CheckSkin.GetAllAssets()
+	local ownedAsset = commonlib.filter(AllAssets, function (item)
+		return item.owned
+	end);
+
+	for index, value in ipairs(ownedAsset) do
+		-- 判断是否套装部件
+		local skinStringIds = CustomCharItems.ReplaceableAvatars[value.modelUrl]
+		if(skinStringIds) then
+			local itemIds = commonlib.split(skinStringIds, ";");
+			LOG.std(nil, 'info', 'itemIds', itemIds);
+			for index, skinId in ipairs(itemIds) do
+				if(skinId == tostring(id)) then
+					return true;
+				end
+			end
+		end
+	end
+	
+	return false;
 end
 
 --- 清除未拥有的活动商品
