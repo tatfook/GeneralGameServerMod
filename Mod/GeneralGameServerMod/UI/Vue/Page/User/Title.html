@@ -97,8 +97,12 @@
     end;
 
     function BeforeClose()
-        local currentSkin = GetGlobalScope():Get("MainSkin");
-        CheckSkin.Show(close, currentSkin, CloseWithoutChange);
+        if(isAuthUser) then
+            local currentSkin = GetGlobalScope():Get("MainSkin");
+            CheckSkin.Show(close, currentSkin, CloseWithoutChange);
+        else
+            CloseWithoutChange()
+        end
     end;
 </script>
 
