@@ -99,6 +99,13 @@
     function BeforeClose()
         if(isAuthUser) then
             local currentSkin = GetGlobalScope():Get("MainSkin");
+
+            if(currentSkin == nil or currentSkin == "") then
+                CloseWindow();
+                return;
+            end;
+
+            LOG.std(nil, 'info', 'GetGlobalScope():Get("MainSkin")', currentSkin);
             CheckSkin.Show(close, currentSkin, CloseWithoutChange);
         else
             CloseWithoutChange()
