@@ -25,6 +25,11 @@ local function ResetAvatarIcons()
 end
 
 local function ChangePlayerAsset(assetfile, skin)
+
+    LOG.std(nil, 'info', 'ChangePlayerAsset');
+    LOG.std(nil, 'info', 'assetfile', assetfile);
+    LOG.std(nil, 'info', 'skin', skin);
+
     assetfile = EntityManager.PlayerAssetFile:GetValidAssetByString(assetfile);
 
     local curAssetFile = MyCompany.Aries.Game.PlayerController:GetMainAssetPath()
