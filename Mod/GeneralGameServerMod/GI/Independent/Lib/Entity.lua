@@ -20,7 +20,6 @@ local STOP_MOVE_ANIM_ID = 0;
 
 Entity:Property("DestroyBeCollided", false, "IsDestroyBeCollided");   -- 被碰撞销毁
 Entity:Property("AttackBeCollided", false, "IsAttackBeCollided");     -- 被碰撞攻击
-Entity:Property("Biped", false, "IsBiped");                           -- 是否是两栖动物
 Entity:Property("GoodsChangeCallBack");                               -- 物品变化回调
 Entity:Property("ClickCallBack");                                     -- 物品变化回调
 Entity:Property("PositionChangeCallBack");                            -- 位置变化回调
@@ -96,7 +95,6 @@ function Entity:Init(opts)
     self:SetSkipPicking(false);
     self:SetPhysicsRadius(opts.physicsRadius or 0.5);
     self:SetPhysicsHeight(opts.physicsHeight or 2);
-    self:SetBiped(opts.biped);
     self:SetDestroyBeCollided(opts.destroyBeCollided);
     if (opts.checkTerrain == false) then self:SetCheckTerrain(false) end
     if (opts.isCanVisible == false) then self:SetCanVisible(false) end 
@@ -646,7 +644,6 @@ function Entity:GetAllEntity()
 end
 
 function Entity:CanCollideWith(entity)
-    if (not self:IsBiped()) then return false end
     local types = self:GetTypes();
     for key, val in pairs(entity:GetTypes()) do
         if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.NOT_COLLIDE_TYPE) then return false end 
@@ -666,8 +663,6 @@ function Entity:CanBeCollidedWith(entity)
 end
 
 function Entity:CheckEntityCollision()
-    if (not self:IsBiped()) then return end 
-
     local aabb = self:GetCollisionAABB();
     for _, entity in ipairs(__GetEntityList__()) do
         local entity_aabb = entity:GetCollisionAABB();
@@ -728,7 +723,6 @@ function Entity:IsVisibleEntity(entity)
 end
 
 function Entity:CheckEntityVisible()
-    if (not self:IsBiped()) then return end 
     for _, entity in ipairs(__GetEntityList__()) do
         if (self ~= entity) then
             if (self:IsVisibleEntity(entity)) then
@@ -970,7 +964,6 @@ local __api_list__ = {
     "HasGoods",
     "SetGoodsChangeCallBack",
     "SetFocus",
-    "SetBiped",
     "TurnEntity",
     "Build",
 };

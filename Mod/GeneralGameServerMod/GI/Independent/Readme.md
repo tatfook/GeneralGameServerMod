@@ -154,7 +154,7 @@ require
 module
 GetTime 
 ToolBase
-echo = echo;
+echo
 serialize
 unserialize
 inherit

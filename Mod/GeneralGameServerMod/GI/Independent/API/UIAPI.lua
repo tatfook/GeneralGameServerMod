@@ -14,7 +14,7 @@ NPL.load("(gl)script/ide/System/Scene/Viewports/ViewportManager.lua");
 local Screen = commonlib.gettable("System.Windows.Screen");
 local ViewportManager = commonlib.gettable("System.Scene.Viewports.ViewportManager");
 local SceneViewport = commonlib.gettable("MyCompany.Aries.Game.Common.SceneViewport")
-
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
 
 local UIAPI = NPL.export();
@@ -29,8 +29,7 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         -- 预处理参数
         G = G or {};
         params = params or {};
-        local key = params.__key__ or params.html or params.template or params.url;
-        if (not key) then return end
+        local key = CommonLib.MD5(params.__key__ or params.html or params.template or params.url or "");
         
         setmetatable(G, {__index = CodeEnv});
         
@@ -89,6 +88,8 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         CodeEnv.RemoveEventCallBack("__screen_size_change__", ...);
     end
 
+    local scene_viewport = ViewportManager:GetSceneViewport();
+
     local function OnSceneViewportSizeChange()
         CodeEnv.TriggerEventCallBack("__scece_viewport_size_change__");
         for _, wnd in pairs(windows) do
@@ -99,23 +100,59 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
     local function OnScreenSizeChanged()
         CodeEnv.TriggerEventCallBack("__screen_size_change__");
     end
-
-    local scene_viewport = ViewportManager:GetSceneViewport();
     
+    CodeEnv.SetSceneMargin = function(left, top, right, bottom)
+        scene_viewport:SetLeft(left);
+        scene_viewport:SetTop(top);
+        scene_viewport:SetMarginRight(right);
+        scene_viewport:SetMarginBottom(bottom);
+        OnSceneViewportSizeChange();
+    end
+
+    CodeEnv.GetSceneMargin = function()
+        local left = scene_viewport:GetLeft();
+        local top = scene_viewport:GetTop();
+        local right = scene_viewport:GetMarginRight();
+        local bottom = scene_viewport:GetMarginBottom();
+        return left, top, right, bottom;
+    end
+
+    CodeEnv.GetSceneMarginLeft = function() return scene_viewport:GetLeft() end
+    CodeEnv.GetSceneMarginTop = function() return scene_viewport:GetTop() end
+    CodeEnv.GetSceneMarginRight = function() return scene_viewport:GetMarginRight() end
+    CodeEnv.GetSceneMarginBottom = function() return scene_viewport:GetMarginBottom() end
+
+    CodeEnv.SetSceneWidthHeight = function(width, height)
+        scene_viewport:SetWidth(width);
+        scene_viewport:SetHeight(height);
+        OnSceneViewportSizeChange();
+    end
+
+    CodeEnv.GetSceneWidthHeight = function()
+        local width = scene_viewport:GetWidth();
+        local height = scene_viewport:GetHeight();
+        return width, height;
+    end
+
+    CodeEnv.SetSceneMarginLeft = function(size)
+        scene_viewport:SetLeft(size);
+        OnSceneViewportSizeChange();
+    end
+
+    CodeEnv.SetSceneMarginTop = function(size)
+        scene_viewport:SetTop(size);
+        OnSceneViewportSizeChange();
+    end
+
     CodeEnv.SetSceneMarginRight = function(size) 
-        -- print("==============CodeEnv.SetSceneMarginRight==============", size);
         scene_viewport:SetMarginRight(size);
         OnSceneViewportSizeChange();
     end
-    
-    CodeEnv.GetSceneMarginRight = function() return scene_viewport:GetMarginRight() end
     
     CodeEnv.SetSceneMarginBottom = function(size) 
         scene_viewport:SetMarginBottom(size) 
         OnSceneViewportSizeChange();
     end
-    
-    CodeEnv.GetSceneMarginBottom = function() return scene_viewport:GetMarginBottom() end
     
     scene_viewport:Connect("sizeChanged", nil, OnSceneViewportSizeChange, "UniqueConnection");
     Screen:Connect("sizeChanged", nil, OnScreenSizeChanged, "UniqueConnection");
