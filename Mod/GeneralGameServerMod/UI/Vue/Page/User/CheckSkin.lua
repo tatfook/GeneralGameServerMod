@@ -140,60 +140,65 @@ function CheckSkin.InitData(skin)
 			LOG.std(nil, 'info', 'code', code);
 			LOG.std(nil, 'info', 'msg', msg);
 			LOG.std(nil, 'info', 'data', data);
-			local clothes = data.clothes;
-			local isVip = KeepWorkItemManager.IsVip()
-			local isDefaultSkin = skin == CheckSkin.DEFAULT_SKIN
-			local diffSkins = CheckSkin.DiffFromSkin(skin, originSkin)
 
-			CheckSkin.DS.items = commonlib.map(clothes, function (item)
-				local data = CustomCharItems:GetItemById(tostring(item.itemId));
-				local val = {
-					-- 需要支付的价格
-					price = item.payPrice,
-					remainingdays = item.durability,
-					itemId = item.itemId,
-					category = data.category,
-					icon = data.icon,
-					type = data.type,
-					name = data.name,
-				}
-				-- 设置文案
-				if(data.type == CheckSkin.SKIN_ITEM_TYPE.FREE) then
-					val.price = "免费使用"
-				end
-				if(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
-					if(CheckSkin.IsUserOwnedThisSuitPartTypeSkin(item.itemId)) then
+			if code == 200 then
+				local clothes = data.clothes;
+				local isVip = KeepWorkItemManager.IsVip()
+				local isDefaultSkin = skin == CheckSkin.DEFAULT_SKIN
+				local diffSkins = CheckSkin.DiffFromSkin(skin, originSkin)
+
+				CheckSkin.DS.items = commonlib.map(clothes, function (item)
+					local data = CustomCharItems:GetItemById(tostring(item.itemId));
+					local val = {
+						-- 需要支付的价格
+						price = item.payPrice,
+						remainingdays = item.durability,
+						itemId = item.itemId,
+						category = data.category,
+						icon = data.icon,
+						type = data.type,
+						name = data.name,
+					}
+					-- 设置文案
+					if(data.type == CheckSkin.SKIN_ITEM_TYPE.FREE) then
 						val.price = "免费使用"
-					else
+					end
+					if(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
+						if(CheckSkin.IsUserOwnedThisSuitPartTypeSkin(item.itemId)) then
+							val.price = "免费使用"
+						else
+							val.price = "仅VIP可用"
+						end
+					end
+					if(data.type == CheckSkin.SKIN_ITEM_TYPE.VIP) then
 						val.price = "仅VIP可用"
 					end
-				end
-				if(data.type == CheckSkin.SKIN_ITEM_TYPE.VIP) then
-					val.price = "仅VIP可用"
-				end
-				if(data.type == CheckSkin.SKIN_ITEM_TYPE.ACTIVITY_GOOD) then
-					if (data.gsid and not KeepWorkItemManager.HasGSItem(data.gsid)) then
-						val.price = "需活动获得"
-					else
-						val.price = "免费使用"
-					end;
-				end
+					if(data.type == CheckSkin.SKIN_ITEM_TYPE.ACTIVITY_GOOD) then
+						if (data.gsid and not KeepWorkItemManager.HasGSItem(data.gsid)) then
+							val.price = "需活动获得"
+						else
+							val.price = "免费使用"
+						end;
+					end
 
-				if(data.type == CheckSkin.SKIN_ITEM_TYPE.ONLY_BEANS_CAN_PURCHASE) then
-					-- 总金额
-					CheckSkin.DS.totalPrice = CheckSkin.DS.totalPrice+item.payPrice
-				end
+					if(data.type == CheckSkin.SKIN_ITEM_TYPE.ONLY_BEANS_CAN_PURCHASE) then
+						-- 总金额
+						CheckSkin.DS.totalPrice = CheckSkin.DS.totalPrice+item.payPrice
+					end
 
-				return val;
-			end);
-	
-			-- 没有替换 & VIP 则直接关闭
-			if(diffSkins == "" or isVip or isDefaultSkin or (CheckSkin.DS.totalPrice == 0)) then
-				CheckSkin.closeFunc()
+					return val;
+				end);
+		
+				-- 没有替换 & VIP 则直接关闭
+				if(diffSkins == "" or isVip or isDefaultSkin or (CheckSkin.DS.totalPrice == 0)) then
+					CheckSkin.closeFunc()
+				else
+					CheckSkin.ShowPage()
+					CheckSkin.Update()
+				end;
 			else
-				CheckSkin.ShowPage()
-				CheckSkin.Update()
-			end;
+				GameLogic.AddBBS('channel', '系统异常', 2000)
+			end
 		end)
 	else
 		-- 切换套装时
