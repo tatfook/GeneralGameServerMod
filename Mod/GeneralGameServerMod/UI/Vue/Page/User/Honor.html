@@ -1,4 +1,4 @@
-<template style="display: inline-block; padding: 6px; width: 100%; height: 100%;">
+<template style="display: inline-block; padding: 2px; width: 100%; height: 100%;">
     <div class="scroll" style="width: 100%; height: 100%; overflow-y: auto;">
         <div v-for="honor in HonorList" class="honor" onclick="ClickHonor(honor)">
             <div v-bind:style="HonorStyle(honor)"></div>
@@ -21,11 +21,12 @@ function ClickHonor(honor)
     if (UserDetail.nickname) then username = string.format("%s(%s)", UserDetail.nickname, UserDetail.username) end
 
     ShowWindow({
-        username = username,
-        datetime = os.date("%Y-%m-%d", commonlib.timehelp.GetTimeStampByDateTime(honor.createdAt)),
+        username = honor.has and username or "",
+        datetime = honor.createdAt and os.date("%Y-%m-%d", commonlib.timehelp.GetTimeStampByDateTime(honor.createdAt)),
         certurl = honor.certurl,
     }, {
         url = "%vue%/Page/User/Certificate.html",
+        draggable = false,
     });
 end 
 

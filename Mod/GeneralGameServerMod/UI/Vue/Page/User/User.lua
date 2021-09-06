@@ -232,9 +232,9 @@ end
 
 
 
-local function GetItemIcon(item)
+local function GetItemIcon(item, suffix)
     local icon = item.icon;
-    if(not icon or icon == "" or icon == "0") then icon = string.format("Texture/Aries/Creator/keepwork/items/item_%d_32bits.png", item.gsId) end
+    if(not icon or icon == "" or icon == "0") then icon = string.format("Texture/Aries/Creator/keepwork/items/item_%d%s_32bits.png", item.gsId, suffix or "") end
     return icon;
 end
 
@@ -319,18 +319,42 @@ function LoadUserInfo()
             if (status ~= 200) then return end
             
             local list = data.rows or {};
-            local honors = {};
+            local honors, honor_map = {}, {};
             for _, item in ipairs(list) do
                 local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
                 if (itemTpl) then
+                    local extra = itemTpl.extra or {};
                     table.insert(honors, {
                         gsId = item.gsId,
                         icon = GetItemIcon(itemTpl),
                         name = itemTpl.name,
                         desc = itemTpl.desc,
                         createdAt = item.createdAt,
-                        certurl = (itemTpl.extra or {}).picture,
+                        certurl = extra.picture,
+                        description = extra.description,
+                        worldId = extra.worldId,
+                        has = true,
                     });
+                    honor_map[item.gsId] = honors[#honors];
+                end
+            end
+
+            if (System.User.keepworkUsername == UserDetail.username) then
+                for _, itemTpl in ipairs(KeepWorkItemManager.globalstore) do
+                    if (not honor_map[itemTpl.gsId] and itemTpl.bagNo == 1006) then
+                        local extra = itemTpl.extra or {};
+                        table.insert(honors, {
+                            gsId = itemTpl.gsId,
+                            icon = GetItemIcon(itemTpl, "_gray"),
+                            name = itemTpl.name,
+                            desc = itemTpl.desc,
+                            -- createdAt = item.createdAt,
+                            certurl = extra.picture,
+                            description = extra.description,
+                            worldId = extra.worldId,
+                            has = false,
+                        });
+                    end
                 end
             end
             GlobalScope:Set("HonorList", honors);
@@ -500,7 +524,6 @@ end
 _G.GetUserHonors = function ()
     local bagNo = 1006;
     local honors = {}; 
-    
     for _, item in ipairs(KeepWorkItemManager.items) do
         if (item.bagNo == bagNo) then
             local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
