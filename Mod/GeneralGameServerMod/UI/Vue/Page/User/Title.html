@@ -102,6 +102,7 @@
 
             if(currentSkin == nil or currentSkin == "") then
                 CloseWindow();
+                GameLogic.GetFilters():apply_filters("role_page_close");
                 return;
             end;
 
