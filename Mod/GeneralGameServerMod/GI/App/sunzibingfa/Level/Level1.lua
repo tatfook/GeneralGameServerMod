@@ -37,7 +37,7 @@ function Level:LoadLevel()
     -- 创建角色
     self:CreateSunBinEntity(10090,12,10067); 
     self:CreateTianShuCanJuanEntity(10090,12,10077);
-    self:CreateGoalPointEntity(10090,12,10087);
+    self:CreateGoalPointEntity(10090,12,10087); 
     self:CreatePangJuanEntity(10090,12,10089);
     
     -- 添加任务

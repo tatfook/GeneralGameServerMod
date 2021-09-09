@@ -95,7 +95,8 @@ function ValueList:GetFieldValue()
     local inputValues = self:GetInputValueList();
     local list = {};
     for i, inputValue in ipairs(inputValues) do
-        list[i] = inputValue:GetFieldValue();
+        local value = inputValue:GetFieldValue();
+        if (value ~= "") then table.insert(list, #list + 1, value) end 
     end
     return table.concat(list, option.separator or ",");
 end

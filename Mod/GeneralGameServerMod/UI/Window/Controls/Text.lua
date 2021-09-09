@@ -166,6 +166,7 @@ function Text:OnRender(painter)
 	local fontSize = self:GetFontSize(14)
 	local lineHeight = self:GetLineHeight();
 	local linePadding = (lineHeight - fontSize) / 2 - fontSize / 6;
+	-- local linePadding = (lineHeight - self:GetSingleLineTextHeight()) / 2;
 	local left, top = layout:GetPos();
 
 	painter:SetFont(self:GetFont());

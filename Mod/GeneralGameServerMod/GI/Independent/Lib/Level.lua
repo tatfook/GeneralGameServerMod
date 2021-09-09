@@ -93,8 +93,8 @@ function Level:UnloadMap(level_name)
 end
 
 function Level:Load()
-    self:ClearRegion();
     self:LoadRegion();
+    self:ClearRegion();
     self:LoadMap();
     self:LoadLevel();
     self:ShowLevelBlocklyEditor();

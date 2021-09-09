@@ -1,29 +1,23 @@
 
 
-local str1 = [[
-    function test1 ()
+function test()
+    local i = 1;
+    while (i < 10) do
+        print(i);
+        i = i + 1;
     end
-]]
-
-local str2 = [[
-    function test2()
-    end
-]]
-
-local G = {};
-function exec(str)
-    local func = loadstring(str);
-    setfenv(func, setmetatable({}, {
-        __index = G,
-        __newindex = function(t, key, val)
-            print(t, key, val)
-        end
-    }));
-    func();
 end
-exec(str1)
-exec(str2);
-print(G.test1, G.test2)
+
+__debug_sethook__(function(...)
+    print(...);
+end, "l");
+
+test();
+
+-- CreateEntity({
+--     bx = 19196, by = 5, bz = 19203,
+--     assetfile = "@/blocktemplates/goalpoint.bmax"
+-- })
 
 -- print(GetFullPath("./API.lua"));
 

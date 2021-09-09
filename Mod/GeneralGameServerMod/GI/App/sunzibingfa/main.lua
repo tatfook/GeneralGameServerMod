@@ -57,7 +57,7 @@ end
 -- Level:ClearRegion();
 
 -- Level1:Edit(true)
--- Level1:Load();
+Level1:Load();
 
 -- Level2:Edit();
 -- Level2:Export();

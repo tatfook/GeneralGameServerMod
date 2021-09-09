@@ -284,11 +284,12 @@ function CommonLib.AddPublicFile(filename, id)
     NPL.AddPublicFile(filename, id);
 end
 
--- 通信文件是根据ID来对应,并不是根据文件路径
+-- 通信文件是根据ID来对应, 并不是根据文件路径, 为了兼容不要轻易调整顺序
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/RPCVirtualConnection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/FileSyncConnection.lua");
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/Broadcast.lua");
 
 -- 添加地址
 local __nids__ = {};

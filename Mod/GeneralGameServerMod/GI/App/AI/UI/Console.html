@@ -1,0 +1,56 @@
+<template class="container">
+    <div class="header">
+        <div class="run-btn" onclick=OnClickRun>输出</div>
+        <!-- <div class="close-btn" onclick=CloseWindow></div> -->
+    </div>
+    <div class="body">{{Text}}</div>
+</template>
+
+<script type="text/lua">
+Text = "";
+
+_G.SetText = function(text)
+    Text = text;
+end
+</script>
+
+<style>
+.container {
+    height: 100%; 
+    width: 100%; 
+    background-color: #00000080;
+    color: #ffffff;
+}
+
+.header {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 10px;
+}
+
+.close-btn {
+    width: 22px; 
+    height: 22px; 
+    margin-right: 20px; 
+    background-color: #e6e6e6;
+    background: url(Texture/Aries/Creator/keepwork/ggs/dialog/guanbi_22X22_32bits.png#0 0 22 22);
+}
+
+.close-btn:hover {
+    background-color: #ffffff;
+}
+
+.body {
+    position: absolute; 
+    left: 2px; 
+    right: 2px; 
+    top: 40px; 
+    bottom: 2px;
+    background-color: #00000090;
+    white-space: pre;
+    overflow-y: auto;
+}
+</style>

@@ -183,6 +183,7 @@ function Page.ShowBlocklyFactoryPage()
     params.G = G;
     params.width = params.width or 1200;
     params.height = params.height or 800;
+    params.windowName = "__BlocklyFactory__";
     BlocklyFactoryPage:Show(params);
     return BlocklyFactoryPage;
 end

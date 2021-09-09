@@ -21,9 +21,9 @@ Independent:Property("LoopTimer");                            -- 循环定时器
 Independent:Property("LoopTickCount", 50);                    -- 主循环频率 每秒50帧
 Independent:Property("ErrorExit", true, "IsErrorExit");       -- 出错退出
 Independent:Property("ShareMouseKeyBoard", false, "IsShareMouseKeyBoard");            -- 是否共享鼠标键盘事件
-Independent:Property("MainFileName");                         -- 入口文件
-Independent:Property("TickCount", 0);                         -- tick 次数
-Independent:Property("TickSpeed", 1);                         -- 设置Tick速度
+Independent:Property("MainFileName");                                                 -- 入口文件
+Independent:Property("TickCount", 0);                                                 -- tick 次数
+Independent:Property("TickSpeed", 1);                                                 -- 设置Tick速度
 
 function Independent:ctor()
 	self:SetShareMouseKeyBoard(true);
@@ -188,7 +188,9 @@ function Independent:InjectCheckYieldToCode(code, filename)
 		for i,v in ipairs(inject_map) do
 			line = string.gsub(line, v[1], v[2]);
 		end
-		line = line .. string.format(" __fileline__('%s', %s, '%s');", filename, #lines + 1, CommonLib.EncodeBase64(old_line));
+		if (string.match(line, ";%s*")) then
+			line = line .. string.format(" __fileline__('%s', %s, '%s');", filename, #lines + 1, CommonLib.EncodeBase64(old_line));
+		end
 		return line;
 	end
 

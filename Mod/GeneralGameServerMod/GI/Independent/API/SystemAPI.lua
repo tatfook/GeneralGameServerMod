@@ -100,7 +100,8 @@ setmetatable(SystemAPI, {__call = function(_, CodeEnv)
     CodeEnv.sort = sort;
     CodeEnv.math = math;
     CodeEnv.os = os;
-    
+    CodeEnv.__debug_sethook__ = debug.sethook;
+
     CodeEnv.vector3d = vector3d;
     CodeEnv.utf8string = UTF8String;
     CodeEnv.utf8char = UTF8Char;

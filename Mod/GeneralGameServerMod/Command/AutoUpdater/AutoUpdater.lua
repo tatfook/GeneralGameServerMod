@@ -379,6 +379,13 @@ function AutoUpdater:InstallLatestVersion()
     ParaGlobal.Exit(0);
 end
 
+function AutoUpdater:ShowServerSettingPage()
+    local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+    Page.Show({}, {
+        url = "Mod/GeneralGameServerMod/Command/AutoUpdater/ServerSettting.html",
+    });
+end
+
 AutoUpdater:InitSingleton():Init();
 
 Commands["autoupdater"] = {
@@ -407,6 +414,8 @@ Commands["autoupdater"] = {
     end
 }
 --[[
+NPL.GetExternalIP();
+
 客户端自动更新逻辑:
 1. 检测caches/latest/本地最新版本文件是否最新, 是最新进入步骤2, 不是最新进行更新进入步骤3
 2. 检测安装版本是否最新, 是最新版本则不进行后续处理, 不是最新进行更新进入步骤3
