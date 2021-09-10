@@ -268,8 +268,8 @@ function Compile:Text(element)
     local text = string.gsub(xmlNode, "{{(.-)}}", function(code)
         args = args .. ", " .. code;
         return "%s";
-    end)
-    local code = string.format([[string.format("%s"%s)]], text, args);
+    end);
+    local code = string.format([==[string.format([[%s]]%s)]==], text, args);
     self:ExecCode(code, element, function(value)
         element:SetText(value);
     end, true);
