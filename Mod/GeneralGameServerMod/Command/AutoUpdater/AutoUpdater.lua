@@ -11,7 +11,6 @@ local AutoUpdater = NPL.load("Mod/GeneralGameServerMod/Command/AutoUpdater/AutoU
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/Website/assetserverProxy.lua");
 local assetserverProxy = commonlib.gettable("MyCompany.Aries.Game.assetserverProxy");
-
 local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
@@ -37,8 +36,9 @@ AutoUpdater:Property("ServerIp", nil);
 AutoUpdater:Property("ServerPort", nil);
 
 
-System.LAN_Proxy_Config = System.LAN_Proxy_Config or {};
+local LAN_Proxy_Config = {};
 
+local DefaultPort = "8099";
 local online_asset_server_url = assetserverProxy.GetAssetServerUrl();
 local latest_version_path = CommonLib.ToCanonicalFilePath(ParaIO.GetWritablePath() .. "/caches/latest/");
 local latest_version_tmp_path = CommonLib.ToCanonicalFilePath(ParaIO.GetWritablePath() .. "/caches/latest_tmp/");
@@ -52,6 +52,7 @@ function AutoUpdater:Init(opts)
     self:SetInstallDirectory(opts.installDirectory or CommonLib.GetRootDirectory());
     self:SetConfigFilePath(opts.configFilePath or "config/autoupdater/paracraft_win32.xml");
 
+    print("========================Install Directory====================", CommonLib.GetRootDirectory());
     self.__auto_updater__ = __AutoUpdater__:new();
 
     -- let us skip all dll and exe files
@@ -69,7 +70,6 @@ function AutoUpdater:Init(opts)
 		["database/extendedcost.teen.db.mem.p"] = "Database/extendedcost.teen.db.mem.p",
 		["npl_packages/paracraftbuildinmod.zip.p"] = "npl_packages/ParacraftBuildinMod.zip.p",
 		["config/gameclient.config.xml.p"] = "config/GameClient.config.xml.p",
-		
 	}
 
 	-- fix lower case issues on linux system
@@ -81,25 +81,18 @@ function AutoUpdater:Init(opts)
         self:OnEvent(...);
     end
 
-    if (not IsDevEnv or not _G.LAN_Proxy_Config_Filter_Added) then
-        GameLogic.GetFilters():add_filter("LAN_Proxy_Config", function(lan_proxy_config)
-            self:LanProxyConfigChange(lan_proxy_config);
-            return lan_proxy_config;
-        end);
-        _G.LAN_Proxy_Config_Filter_Added = true;
-    end
-    
     return self;
 end
 
-function AutoUpdater:LanProxyConfigChange(lan_proxy_config)
+function AutoUpdater:OnLanProxyConfigChange(lan_proxy_config)
     -- 开启本地服务器
     if (lan_proxy_config.IsEnableLocalServer) then
         self:StartWebServer();
         self:CheckInstallLatestVersion();
     end
 
-    if (lan_proxy_config.RemoteServerIp and lan_proxy_config.RemoteServerIp ~= self:GetServerIp()) then
+    -- if (lan_proxy_config.RemoteServerIp and lan_proxy_config.RemoteServerIp ~= self:GetServerIp()) then
+    if (lan_proxy_config.RemoteServerIp) then
         self:SetServerIp(lan_proxy_config.RemoteServerIp);
         self:SetServerPort(lan_proxy_config.RemoteServerPort);
         -- 检测心跳
@@ -110,30 +103,45 @@ end
 
 -- 心跳检测
 function AutoUpdater:CheckHeartBeat()
-    local function HeartBeat()
-        local asset_server_url = string.format([[http://%s:%s/assetserver?filename=/]], self:GetServerIp(), self:GetServerPort());
-        if (asset_server_url ~= assetserverProxy.GetAssetServerUrl()) then assetserverProxy.SetAssetServerUrl(asset_server_url) end
+    self.__is_tip_connect_success__ = true;
 
+    local function HeartBeat()
+        local ip, port = self:GetServerIp(), self:GetServerPort();
         -- 发送 http 心跳包
-        local heartbeat_url = string.format([[http://%s:%s/heartbeat]], self:GetServerIp(), self:GetServerPort());
-        System.os.GetUrl(heartbeat_url, function(err, msg, data)
-            if(msg.rcode == 200) then return end
-            self.__heartbeat_timer__:Change();
-            assetserverProxy.SetAssetServerUrl(online_asset_server_url);
+        System.os.GetUrl(string.format([[http://%s:%s/heartbeat]], ip, port), function(err, msg, data)
+            if(msg.rcode == 200) then 
+                assetserverProxy.SetAssetServerUrl(string.format([[http://%s:%s/assetserver?filename=/]], ip, port));
+            else
+                assetserverProxy.SetAssetServerUrl(online_asset_server_url);
+            end
+
+            if (self.__is_tip_connect_success__) then
+                self.__is_tip_connect_success__ = false;
+                if (msg.rcode == 200) then
+                    GameLogic.AddBBS("AutoUpdater", "成功连接代理服务器: " .. ip);
+                else
+                    GameLogic.AddBBS("AutoUpdater", "无法连接代理服务器: " .. ip);
+                end
+            end
+            -- self.__heartbeat_timer__:Change();
         end);
     end
 
-    if (self.__heartbeat_timer__) then return HeartBeat() end 
-    self.__heartbeat_timer__ = CommonLib.SetInterval(20 * 1000, HeartBeat);
+    HeartBeat();
+
+    if (not self.__heartbeat_timer__) then self.__heartbeat_timer__ = CommonLib.SetInterval(20 * 1000, HeartBeat) end 
 end
 
-function AutoUpdater:StartWebServer()
+function AutoUpdater:StartWebServer(ip, port)
     -- CommonLib.StartNetServer(ip, port);
     -- local Http = NPL.load("Mod/GeneralGameServerMod/Server/Http/Http.lua");
     -- Http:AddVirtualDirectory("/coredownload/update/", latest_version_path);
+    ip = ip or "0.0.0.0";
+    port = port or DefaultPort;
     NPL.load("(gl)script/apps/WebServer/WebServer.lua");
-    print(string.format("StartWebServer %s:%s", "0.0.0.0", self:GetServerPort()));
-    WebServer:Start("script/apps/WebServer/admin", "0.0.0.0", self:GetServerPort());
+    print(string.format("StartWebServer %s:%s", ip, port));
+    WebServer:Start("script/apps/WebServer/admin", ip, port);
+    GameLogic.AddBBS("AutoUpdater", "启动代理服务器");
 end
 
 function AutoUpdater:CheckLatestVersion()
@@ -183,12 +191,7 @@ function AutoUpdater:CheckLatestVersion()
                 self:SetDownloadFinishCallBack(oldDownloadFinishCallBack);
                 self:SetDownloadFailedCallBack(oldDownloadFailedCallBack);
                 -- 最新版下载完成
-                local latest_version = self:GetLatestVersion();
-                if (latest_version ~= install_version) then
-                    InstallLatestVersion();
-                else
-                    print("安装版本已是最新版");
-                end
+                InstallLatestVersion();
             end);
             -- 下载失败
             self:SetDownloadFailedCallBack(function()
@@ -334,15 +337,17 @@ end
 
 function AutoUpdater:DownloadFromClient()
     local filesync = FileSyncConnection:new():Init({__nid__ = CommonLib.AddNPLRuntimeAddress(self:GetServerIp(), self:GetServerPort())});
+    print("=======================开始版本文件同步======================");
     filesync:Sync({
         local_file_path = self:GetDownloadDirectory(),
-        remote_file_path = IsDevEnv and "/mnt/d/ParacraftDev/caches/latest/" or latest_version_path,
+        remote_file_path = "/caches/latest/",
+        remote_is_relative_root_directory = true,
         finish_callback = function()
-            print("===================finish_callback========================");
+            print("===================文件同步成功========================");
             self:Download();
         end,
         failed_callback = function()
-            print("==================Unable to connect to proxy server===================");
+            print("===================文件同步失败========================");
             self:Download();
         end,
     });
@@ -382,11 +387,6 @@ function AutoUpdater:OnDownloadFinish()
 
     local callback = self:GetDownloadFinishCallBack();
     if (type(callback) == "function") then callback() end 
-
-    -- if (self:IsAutoInstall()) then
-    --     self:Install();
-    --     -- self.__auto_updater__:apply();
-    -- end
 end
 
 function AutoUpdater:GetDownloadDirectory()
@@ -434,8 +434,13 @@ function AutoUpdater:InstallLatestVersion()
 end
 
 function AutoUpdater:ShowServerSettingPage()
-    local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
-    Page.Show({}, {
+    local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
+    return Page.Show({
+        LANProxyConfig = LAN_Proxy_Config,
+        OnLANProxyConfigChange = function(lan_proxy_config)
+            self:OnLanProxyConfigChange(lan_proxy_config);
+        end,
+    }, {
         url = "Mod/GeneralGameServerMod/Command/AutoUpdater/ServerSetting.html",
         width = 700,
         height = 500,
@@ -450,9 +455,9 @@ Commands["autoupdater"] = {
     quick_ref = "/autoupdater 客户端自动更新命令",
     desc = [[
 示例:         
-/autoupdater 不使用代理服务器, 官方更新
-/autoupdater -severIp=127.0.0.1 -serverPort=9000 代理更新
-/autoupdater -severIp=127.0.0.1 -serverPort=9000 -server=true 开启代理服务器
+/autoupdater 显示服务器设置UI
+/autoupdater -severIp=127.0.0.1 -serverPort=8099 代理更新
+/autoupdater -server=true 开启代理服务器
 选项:
     -serverIp 代理服务器IP 
     -serverPort 代理服务器端口 
@@ -461,12 +466,15 @@ Commands["autoupdater"] = {
     handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
         local opts = CommonLib.ParseOptions(cmd_text);
         if (opts.server) then
-            CommonLib.StartNetServer(opts.serverIp or "0.0.0.0", opts.serverPort or "9000");
-        else
-            if (opts.severIp) then AutoUpdater:SetServerIp(opts.severIp) end
-            if (opts.serverPort) then AutoUpdater:SetServerIp(opts.serverPort) end
+            AutoUpdater:StartWebServer();
+            AutoUpdater:CheckLatestVersion();
+        elseif (opts.serverIp) then
+            AutoUpdater:SetServerIp(opts.severIp);
+            AutoUpdater:SetServerPort(opts.serverPort or DefaultPort);
+            AutoUpdater:CheckLatestVersion();
+        else 
+            AutoUpdater:ShowServerSettingPage();
         end
-        AutoUpdater:CheckLatestVersion();
     end
 }
 --[[

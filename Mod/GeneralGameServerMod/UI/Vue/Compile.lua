@@ -35,6 +35,7 @@ local function ClearDependItemUpdateQueue()
         dependItemCount = dependItemCount + 1;
         DependItemUpdateMap[dependItemCount] = dependItem;
     end
+    -- CompileDebug.Format("需要更新的依赖项数: %s", dependItemCount);
     if (dependItemCount == 0) then return end
 
     -- 清除无效元素监听
@@ -44,6 +45,7 @@ local function ClearDependItemUpdateQueue()
             if (not element:IsValid()) then
                 invalueElementCount = invalueElementCount + 1;
                 ElementListCache[invalueElementCount] = element;
+                -- CompileDebug.Format("无效依赖元素:", element:GetAttr());
             end
         end
         for i = 1, invalueElementCount do
@@ -65,6 +67,7 @@ local function ClearDependItemUpdateQueue()
             for code, watch in pairs(watchs) do
                 callbackFunctionCount = callbackFunctionCount + 1;
                 CallBackFunctionListCache[callbackFunctionCount] = watch;
+                -- CompileDebug.Format("更新回调: %s, %s", code, callbackFunctionCount);
             end
         end
     end
@@ -86,11 +89,9 @@ end
 --     ClearDependItemUpdateQueue();
 -- end});
 
-local ClearDependItemUpdateQueueCount = 0;
 NPL.this(function()
     IsActivedDependItemUpdate = false;
     ClearDependItemUpdateQueue();
-    -- print("清除依赖更新队列 结束: ", ClearDependItemUpdateQueueCount);
 end, {filename = "Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"});
 
 local function GenerateDependItem(obj, key)
@@ -107,16 +108,14 @@ Scope.__set_global_newindex__(function(obj, key, newVal, oldVal)
     local dependItem = GenerateDependItem(obj, key);
     -- CompileDebug.Format("__NewIndex key = %s, dependItem = %s, newVal = %s, oldVal = %s", key, dependItem, newVal, oldVal);
     if (not AllDependItemWatch[dependItem]) then return end
-    -- CompileDebug.Format("__NewIndex key = %s, dependItem = %s, newVal = %s, oldVal = %s", key, dependItem, newVal, oldVal);
+    -- CompileDebug.Format("标记待更新: __NewIndex key = %s, dependItem = %s, newVal = %s, oldVal = %s", key, dependItem, newVal, oldVal);
     DependItemUpdateQueue[dependItem] = true;
-    -- CompileDebug.If(string.match(dependItem, "%[isAuthUser%]"), AllDependItemWatch[dependItem]);
 
     -- 是否已激活更新, 已经激活忽略
     if (IsActivedDependItemUpdate) then return end
     -- 激活更新
     IsActivedDependItemUpdate = true;
-    ClearDependItemUpdateQueueCount = ClearDependItemUpdateQueueCount + 1;
-    -- print("清除依赖更新队列 开始: ", ClearDependItemUpdateQueueCount, key);
+    -- CompileDebug.Format("开始清除依赖更新队列");
     -- ClearDependItemTimer:Change(20);
     NPL.activate("Mod/GeneralGameServerMod/UI/Vue/Compile/DependItemUpdate"); 
 end)
@@ -130,6 +129,7 @@ local function ExecCode(code, func, element, watch)
     end, function() 
         DebugStack();
     end);
+
     if (not ok) then
         GGS.ERROR("===============执行代码出错=============", errinfo, code);
         return nil;
@@ -145,7 +145,6 @@ local function ExecCode(code, func, element, watch)
         end
     end
     -- CompileDebug.If(code == "UserDetail", code, DependItems);
-
     if (element and type(watch) == "function") then
         for dependItem in pairs(DependItems) do
             OldDependItems[dependItem] = true;                                                               -- 备份依赖项 

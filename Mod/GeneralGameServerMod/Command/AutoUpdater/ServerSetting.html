@@ -33,7 +33,7 @@
 
 
 <script type="text/lua">
-local LAN_Proxy_Config = System.LAN_Proxy_Config;
+local LAN_Proxy_Config = LANProxyConfig or {};
 RemoteServerIp = LAN_Proxy_Config.RemoteServerIp or "";
 LocalServerIp = LAN_Proxy_Config.LocalServerIp or NPL.GetExternalIP();
 IsEnableLocalServer = LAN_Proxy_Config.IsEnableLocalServer or false;
@@ -51,7 +51,9 @@ function ClickConfirm()
     LAN_Proxy_Config.RemoteServerIp = remoteServerIp;              -- 代理服务器IP
     LAN_Proxy_Config.RemoteServerPort = remoteServerPort;          -- 代理服务器端口
     LAN_Proxy_Config.IsEnableLocalServer = IsEnableLocalServer;    -- 是否开启本地服务器
-    GameLogic.GetFilters():apply_filters("LAN_Proxy_Config", LAN_Proxy_Config);
+
+    if (type(_G.OnLANProxyConfigChange) == "function") then _G.OnLANProxyConfigChange(LAN_Proxy_Config) end 
+    <!-- GameLogic.GetFilters():apply_filters("LAN_Proxy_Config", LAN_Proxy_Config); -->
     CloseWindow();
 end
 </script>
