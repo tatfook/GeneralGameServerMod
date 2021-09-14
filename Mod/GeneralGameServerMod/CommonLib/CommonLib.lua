@@ -116,10 +116,7 @@ function CommonLib.OpenTextureFileDialog(filters, title, directory)
 end
 
 function CommonLib.IsExistFile(filename)
-    local file = ParaIO.open(filename , "rb");
-    local exist = file:IsValid() and true or false;
-    file:close();
-    return exist;
+    return ParaIO.DoesFileExist(filename, false);
 end
 
 -- 获取文件内容

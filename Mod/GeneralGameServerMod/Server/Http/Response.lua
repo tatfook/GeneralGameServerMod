@@ -153,6 +153,8 @@ function Response:SendFile(filepath, ext)
 	self:SetHeader("Cache-Control", "no-cache, must-revalidate, max-age=0");
 	self:SetHeader("Pragma", "no-cache");
 
+	-- self:SetHeader("Content-Transfer-Encoding", "binary");
+
 	local file = ParaIO.open(filepath, "rb");
     if(not file:IsValid()) then
         file:close();
@@ -165,6 +167,8 @@ function Response:SendFile(filepath, ext)
 	self:SetContentTypeByExt(ext);
 	self:Send(text);
 end
+
+
 
 local PlainTextTypes = {
 	["application/javascript"] = true,

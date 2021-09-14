@@ -9,12 +9,13 @@ local AutoUpdater = NPL.load("Mod/GeneralGameServerMod/Command/AutoUpdater/AutoU
 ------------------------------------------------------------
 ]]
 
-NPL.load("(gl)script/apps/Aries/Creator/Game/Website/assetserverProxy.lua");
-local assetserverProxy = commonlib.gettable("MyCompany.Aries.Game.assetserverProxy");
+
 local Commands = commonlib.gettable("MyCompany.Aries.Game.Commands");
 
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local FileSyncConnection = NPL.load("Mod/GeneralGameServerMod/CommonLib/FileSyncConnection.lua", IsDevEnv);
+
+local ProxyServer = NPL.load("../ProxyServer/ProxyServer.lua", IsDevEnv);
 
 local __AutoUpdater__ = NPL.load("AutoUpdater");
 local __AutoUpdaterState__ = __AutoUpdater__.State;
@@ -39,7 +40,6 @@ AutoUpdater:Property("ServerPort", nil);
 local LAN_Proxy_Config = {};
 
 local DefaultPort = "8099";
-local online_asset_server_url = assetserverProxy.GetAssetServerUrl();
 local latest_version_path = CommonLib.ToCanonicalFilePath(ParaIO.GetWritablePath() .. "/caches/latest/");
 local latest_version_tmp_path = CommonLib.ToCanonicalFilePath(ParaIO.GetWritablePath() .. "/caches/latest_tmp/");
 
@@ -88,7 +88,9 @@ function AutoUpdater:OnLanProxyConfigChange(lan_proxy_config)
     -- 开启本地服务器
     if (lan_proxy_config.IsEnableLocalServer) then
         self:StartWebServer();
-        self:CheckInstallLatestVersion();
+        self:CheckInstallLatestVersion(function()
+            GameLogic.AddBBS("AutoUpdater", "启动代理服务器");
+        end);
     end
 
     -- if (lan_proxy_config.RemoteServerIp and lan_proxy_config.RemoteServerIp ~= self:GetServerIp()) then
@@ -110,9 +112,9 @@ function AutoUpdater:CheckHeartBeat()
         -- 发送 http 心跳包
         System.os.GetUrl(string.format([[http://%s:%s/heartbeat]], ip, port), function(err, msg, data)
             if(msg.rcode == 200) then 
-                assetserverProxy.SetAssetServerUrl(string.format([[http://%s:%s/assetserver?filename=/]], ip, port));
+                ProxyServer:StartProxy(ip, port);
             else
-                assetserverProxy.SetAssetServerUrl(online_asset_server_url);
+                ProxyServer:StopProxy();
             end
 
             if (self.__is_tip_connect_success__) then
@@ -141,10 +143,10 @@ function AutoUpdater:StartWebServer(ip, port)
     NPL.load("(gl)script/apps/WebServer/WebServer.lua");
     print(string.format("StartWebServer %s:%s", ip, port));
     WebServer:Start("script/apps/WebServer/admin", ip, port);
-    GameLogic.AddBBS("AutoUpdater", "启动代理服务器");
+    -- GameLogic.AddBBS("AutoUpdater", "启动代理服务器");
 end
 
-function AutoUpdater:CheckLatestVersion()
+function AutoUpdater:CheckLatestVersion(callback)
     if (not CommonLib.IsWin32Platform()) then return end 
 
     local oldInstallDirectory = self:GetInstallDirectory();
@@ -168,19 +170,20 @@ function AutoUpdater:CheckLatestVersion()
         else
             print("安装版本已是最新版");
         end
+        return type(callback) == "function" and callback();
     end
 
     self:Check(nil, function(bNeedUpdate)
         if (not bNeedUpdate) then 
             print("已是最新版本无需更新");
             self:SetInstallDirectory(oldInstallDirectory);
-            return ;
+            return type(callback) == "function" and callback();
         end
 
         -- 切换到临时目录下载
         self:SetInstallDirectory(latest_version_tmp_path);
         -- 删除临时目录
-        CommonLib.DeleteDirectory(latest_version_path);
+        CommonLib.DeleteDirectory(latest_version_tmp_path);
         -- 创建临时目录
         ParaIO.CreateDirectory(latest_version_tmp_path);
         -- 检测下载
@@ -209,8 +212,8 @@ function AutoUpdater:CheckLatestVersion()
     end);
 end
 
-function AutoUpdater:CheckInstallLatestVersion()
-    self:CheckLatestVersion();
+function AutoUpdater:CheckInstallLatestVersion(calback)
+    self:CheckLatestVersion(calback);
 end
 
 function AutoUpdater:CheckInstallVersion()
@@ -276,6 +279,7 @@ function AutoUpdater:OnEvent(state, param1, param2)
         -- if (self:GetProxyURL()) then
         --     table.insert(self.__auto_updater__.configs.hosts, self.__auto_updater__.validHostIndex, self:GetProxyURL());
         -- end
+
     elseif(state == State.MANIFEST_ERROR)then
         print("无法获取资源列表"); -- error
         self:SetDownloading(false);

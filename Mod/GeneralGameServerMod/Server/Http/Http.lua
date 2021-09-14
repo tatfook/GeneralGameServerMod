@@ -24,6 +24,7 @@ Http:Property("NeuronFile", "Mod/GeneralGameServerMod/Server/Http/Http.lua");
 Http:Property("StaticDirectory");  -- 静态文件目录
 Http:Property("Port", 9000);
 Http:Property("Ip", "0.0.0.0");
+Http:Property("DefaultHandle");    -- 默认处理程序  
 
 function Http:ctor()
     self.middlewares = {};
@@ -31,14 +32,18 @@ function Http:ctor()
 end
 
 function Http:Init()
-    -- 指定Http接口文件
-    NPL.AddPublicFile(self:GetNeuronFile(), -10);
-
     self:UseCors();
+
+    self:SetDefaultHandle(function(ctx)
+        ctx:Send(nil, 204);
+    end);
 end
 
 -- 启动服务器
 function Http:Start()
+    -- 指定Http接口文件
+    NPL.AddPublicFile(self:GetNeuronFile(), -10);
+
     NPL.StartNetServer(self:GetIp(), tostring(self:GetPort()));
 end
 
@@ -95,9 +100,9 @@ function Http:Handle(ctx)
         index = index or 1;
         if (index > #middlewares) then
             -- 中间件处理完成 执行控制器逻辑
-            Router:Handle(ctx);
-            if (not ctx:IsFinished()) then
-                ctx:Send();
+            if (not Router:Handle(ctx)) then
+                local default_handle = self:GetDefaultHandle();
+                return type(default_handle) == "function" and default_handle(ctx);
             end
         else
             -- 执行中间件逻辑
@@ -138,13 +143,13 @@ function Http:UseCors(options)
 end
 
 function Http:OnActivate(msg)
-    if (type(msg) ~= "table") then return end
+    if (type(msg) ~= "table") then return false end
     
     local request = Request:new():Init(msg);
     local response = Response:new():Init(request);
     local context = Context:new():Init(request, response);
 
-	self:Handle(context);
+	return self:Handle(context);
 end
 
 -- 单列模式

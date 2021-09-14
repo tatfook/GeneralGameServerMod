@@ -80,7 +80,8 @@ function Route:GetRouteByPath(path)
 	local int = '([%%d]+)'
 	local number = '([%%d.]+)'
 	local string = '([%%w]+)'
-	local none = '([%%d%%w]+)'
+	-- local none = '([%%d%%w]+)'
+	local none = '([^/]+)'
 	local regpath = ""
 	local argslist = {}
 	local argscount = 1
@@ -96,6 +97,8 @@ function Route:GetRouteByPath(path)
 				word = string.gsub(word, argname, none)
 			elseif argname and regstr then
 				word = string.gsub(word, argname, "")
+			else 
+				word = regstr;
 			end
 			word = string.gsub(word, '(%(int%))', int)
 			word = string.gsub(word, '(%(number%))', number)
@@ -169,14 +172,18 @@ function Router:Handle(ctx)
 	
 	-- 普通完整匹配
 	route = self:GetNormalRoute(path);
-	if (route) then return route:Handle(ctx) end
+	if (route) then 
+		route:Handle(ctx);
+		return true;
+	end
 	
     -- 正则路由
     route = self:GetRegExpRoute(path);
     if (route) then
 		local url_params = {string.match(path, route:GetRegPath())};
         for i, v in ipairs(route:GetArgs()) do params[v] = url_params[i] end
-        return route:Handle(ctx);
+        route:Handle(ctx);
+		return true;
     end
 
     -- 控制器路径匹配
@@ -186,10 +193,11 @@ function Router:Handle(ctx)
 		local id = tonumber(action);
 		if (id) then params[1], action = id, nil end
         route:Handle(ctx, action);
+		return true;
     end
 
-	ctx:Send(nil, 204);
-    return;
+	-- ctx:Send(nil, 204);
+    return false;
 end
 
 -- 单列模式

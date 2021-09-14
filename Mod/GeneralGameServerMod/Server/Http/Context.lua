@@ -21,6 +21,10 @@ function Context:Init(request, response)
     return self;
 end
 
+function Context:GetUrl()
+    return self:GetRequest():GetUrl();
+end
+
 function Context:GetPath()
     return self:GetRequest():GetPath();
 end
