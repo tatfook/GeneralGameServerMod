@@ -120,6 +120,7 @@ Options.actorProperties = function()
         { L"物理半径", "physicsRadius" },
         { L"物理高度", "physicsHeight" },
         { L"是否有物理", "isBlocker" },
+        { L"开启LOD", "isLodEnabled" },
         { L"组Id", "groupId" },
         { L"感知半径", "sentientRadius" },
         { "x", "x" },
@@ -151,6 +152,7 @@ Options.actorProperties = function()
         { L"增加速度", "addVelocity" },
         { L"摩擦系数", "surfaceDecay" },
         { L"空气阻力", "airDecay" },
+        { L"相对位置播放", "isRelativePlay" },
         
         { L"父角色", "parent" },
         { L"父角色位移", "parentOffset" },
@@ -163,7 +165,7 @@ end
 
 Options.keyEventNames = function() 
     return {
-        { L"空格", "space" },{ L"左", "left" },{ L"右", "right" },{ L"上", "up" },{ L"下", "down" }, { "ESC", "escape" },
+        { L"空格", "space" },{ L"任意", "any" },{ L"左", "left" },{ L"右", "right" },{ L"上", "up" },{ L"下", "down" }, { "ESC", "escape" },
         {"a","a"},{"b","b"},{"c","c"},{"d","d"},{"e","e"},{"f","f"},{"g","g"},{"h","h"},
         {"i","i"},{"j","j"},{"k","k"},{"l","l"},{"m","m"},{"n","n"},{"o","o"},{"p","p"},
         {"q","q"},{"r","r"},{"s","s"},{"t","t"},{"u","u"},{"v","v"},{"w","w"},{"x","x"},
