@@ -140,6 +140,7 @@ function UI_Elements.ToCode(block)
     local fieldAttr = block:GetFieldLabel("attr");
     return string.format('<%s %s>\n%s</%s>\n', fieldTag, fieldAttr, fieldContent, fieldTag);
 end
+
 function UI_Elements.OnInit(option)
     UI_Element_Attr_Click_Register(option, "attr");
 end
@@ -155,7 +156,29 @@ function UI_Element_Text.OnInit(option)
     UI_Element_Attr_Click_Register(option, "attr");
 end
 
+local UI_MCML_Element = {};
+function UI_MCML_Element.ToCode(block)
+    local cache = block:GetToCodeCache();
+    local fieldTag = block:GetFieldValue("tag");
+    local fieldAttr = block:GetFieldLabel("attr");
+    return string.format('<%s %s></%s>\n', fieldTag, fieldAttr, fieldTag);
+end
 
+function UI_MCML_Element.OnInit(option)
+    UI_Element_Attr_Click_Register(option, "attr");
+end
+
+local UI_MCML_Elements = {};
+function UI_MCML_Elements.ToCode(block)
+    local fieldTag = block:GetFieldValue("tag");
+    local fieldContent = block:GetValueAsString("content");
+    local fieldAttr = block:GetFieldLabel("attr");
+    return string.format('<%s %s>\n%s</%s>\n', fieldTag, fieldAttr, fieldContent, fieldTag);
+end
+
+function UI_MCML_Elements.OnInit(option)
+    UI_Element_Attr_Click_Register(option, "attr");
+end
 -- local UI_Component_Register = {};
 -- function UI_Component_Register.ToCode(block)
 --     local cache = block:GetToCodeCache();
@@ -214,6 +237,9 @@ function UI_Window_Show_Html.ToCode(block)
     code = code ..string.format('Page.ShowWindow("%s", codeblock)\n', fieldName);
     return code;
 end
+
+UIBlock.UI_MCML_Elements = UI_MCML_Elements;
+UIBlock.UI_MCML_Element = UI_MCML_Element;
 
 UIBlock.UI_Elements = UI_Elements;
 UIBlock.UI_Element = UI_Element;

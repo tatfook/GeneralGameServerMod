@@ -126,8 +126,8 @@ function NplBlockManager.GetMcmlCategoryListAndMap()
     return BlockManager.GetCategoryListAndMapByXmlText([[
 <toolbox>
     <category name="元素" color="#2E9BEF">
-        <block type="UI_Elements"/>
-        <block type="UI_Element"/>
+        <block type="UI_MCML_Elements"/>
+        <block type="UI_MCML_Element"/>
         <block type="UI_Element_Text"/>
     </category>
     <category name="窗口" color="#EC522E">

@@ -33,14 +33,27 @@
 
 
 <script type="text/lua">
-
-RemoteServerIp = "";
-LocalServerIp = NPL.GetExternalIP();
-IsEnableLocalServer = false;
+local LAN_Proxy_Config = LANProxyConfig or {};
+RemoteServerIp = LAN_Proxy_Config.RemoteServerIp or "";
+LocalServerIp = LAN_Proxy_Config.LocalServerIp or NPL.GetExternalIP();
+IsEnableLocalServer = LAN_Proxy_Config.IsEnableLocalServer or false;
 TabIndex = "ConnectServer";  -- CreateServer  ConnectServer
 
 function ClickConfirm()
     print(RemoteServerIp, LocalServerIp)
+    -- 发送局域网配置更新事件
+    local strs = commonlib.split(RemoteServerIp, ":");
+    local remoteServerIp = string.match(strs[1] or "", "(%d+%.%d+%.%d+%.%d+)");
+    local remoteServerPort = (string.match(strs[2] or "", "(%d+)")) or "8099";
+    print(remoteServerIp, remoteServerPort)
+    
+    LAN_Proxy_Config.LocalServerIp = LocalServerIp;                -- 本机IP
+    LAN_Proxy_Config.RemoteServerIp = remoteServerIp;              -- 代理服务器IP
+    LAN_Proxy_Config.RemoteServerPort = remoteServerPort;          -- 代理服务器端口
+    LAN_Proxy_Config.IsEnableLocalServer = IsEnableLocalServer;    -- 是否开启本地服务器
+
+    if (type(_G.OnLANProxyConfigChange) == "function") then _G.OnLANProxyConfigChange(LAN_Proxy_Config) end 
+    <!-- GameLogic.GetFilters():apply_filters("LAN_Proxy_Config", LAN_Proxy_Config); -->
     CloseWindow();
 end
 </script>
