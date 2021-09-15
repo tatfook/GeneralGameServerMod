@@ -55,7 +55,7 @@ GeneralGameClient.options = {
     areaSize = 0,   -- 表示不做限制
 
     -- config
-    defaultWorldId = 10373,
+    defaultWorldId = 0,
     serverIp = IsDevEnv and "127.0.0.1" or "ggs.keepwork.com";
     serverPort = "9000";
 }
@@ -214,10 +214,11 @@ function GeneralGameClient:LoadWorld(opts)
     local options = self:SetOptions(opts);
     -- 设定世界ID 优先取当前世界ID  其次用默认世界ID
     local curWorldId = GameLogic.options:GetProjectId();
-
+    local WorldCommon = commonlib.gettable("MyCompany.Aries.Creator.WorldCommon");
+    local curWorldName = WorldCommon.GetWorldTag("name");
     -- 确定世界ID
     options.worldId = tostring(opts.worldId or curWorldId or options.defaultWorldId);
-    options.worldName = opts.worldName;
+    options.worldName = opts.worldName or curWorldName;
     options.worldKey = opts.worldKey;
     options.username = options.username or self:GetUserInfo().username;
     options.ip = opts.ip;            -- ip port 每次重写
