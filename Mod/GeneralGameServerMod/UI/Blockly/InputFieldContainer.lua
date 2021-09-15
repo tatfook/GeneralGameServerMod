@@ -113,11 +113,20 @@ function InputFieldContainer:UpdateWidthHeightUnitCount()
 
     self:SetWidthHeightUnitCount(widthUnitCount, heightUnitCount);
     self:SetMaxWidthHeightUnitCount(maxWidthUnitCount, maxHeightUnitCount);
-    return maxWidthUnitCount, maxHeightUnitCount, widthUnitCount, heightUnitCount;
+    local offsetX, offsetY = self:GetSelfOffsetXY();
+    return maxWidthUnitCount + offsetX, maxHeightUnitCount + offsetY, widthUnitCount + offsetX, heightUnitCount + offsetY;
+end
+
+function InputFieldContainer:GetSelfOffsetXY()
+    local prevInputFieldContainer, nextInputFieldContainer = self:GetPrevNextInputFieldContainer();
+    if (prevInputFieldContainer and prevInputFieldContainer:IsInputStatementContainer() and nextInputFieldContainer and nextInputFieldContainer:IsInputStatementContainer()) then return 0, -1 end
+    return 0, 0;
 end
 
 function InputFieldContainer:UpdateLeftTopUnitCount()
     local offsetX, offsetY = self:GetLeftTopUnitCount();
+    local selfOffsetX, selfOffsetY = self:GetSelfOffsetXY();
+    offsetX, offsetY = offsetX + selfOffsetX, offsetY + selfOffsetY;
     if (not self:IsInputStatementContainer()) then
         offsetX = offsetX + Const.BlockEdgeWidthUnitCount;
     end

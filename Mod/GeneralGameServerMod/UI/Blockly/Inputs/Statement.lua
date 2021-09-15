@@ -51,8 +51,8 @@ function Statement:UpdateWidthHeightUnitCount()
         self.inputWidthUnitCount, self.inputHeightUnitCount = 0, 10;
     end
     local widthUnitCount, heightUnitCount = StatementWidthUnitCount + self.inputWidthUnitCount, Const.ConnectionHeightUnitCount + Const.BlockEdgeHeightUnitCount * 2 + self.inputHeightUnitCount;
-    local prevInputFieldContainer, nextInputFieldContainer = self:GetInputFieldContainer():GetPrevNextInputFieldContainer();
-    if (nextInputFieldContainer and not nextInputFieldContainer:IsInputStatementContainer()) then heightUnitCount = heightUnitCount - Const.BlockEdgeHeightUnitCount end
+    -- local prevInputFieldContainer, nextInputFieldContainer = self:GetInputFieldContainer():GetPrevNextInputFieldContainer();
+    -- if (nextInputFieldContainer and not nextInputFieldContainer:IsInputStatementContainer()) then heightUnitCount = heightUnitCount - Const.BlockEdgeHeightUnitCount end
     return widthUnitCount, heightUnitCount, StatementWidthUnitCount, heightUnitCount;
 end
 
