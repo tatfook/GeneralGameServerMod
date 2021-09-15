@@ -396,7 +396,7 @@ function BlockInputField:GetTopBlock()
     local prevBlock, nextBlock = self:GetPrevBlock() or self:GetOutputBlock(), self:GetBlock();
     while (prevBlock) do 
         nextBlock = prevBlock;
-        prevBlock = nextBlock:GetPrevBlock();
+        prevBlock = nextBlock:GetPrevBlock() or nextBlock:GetOutputBlock();
     end
     return nextBlock;
 end
