@@ -196,10 +196,11 @@ function Select:Init(xmlNode, window, parent)
         }
     }, window, self);
     local function InputValueFinish(value)
-        if (value ~= self:GetValue() and value ~= self:GetLabel()) then
+        local label = self:GetLabelByValue(value);
+        if (value ~= self:GetValue() or label ~= self:GetLabel()) then
             value = self:GetValueByLabel(value);
             self:SetValue(value);
-            self:SetLabel(self:GetLabelByValue(value));
+            self:SetLabel(label);
             self:CallAttrFunction("onchange", nil, self:GetValue(), self:GetLabel());
             self:CallAttrFunction("onselect", nil, self:GetValue(), self:GetLabel());
         end
