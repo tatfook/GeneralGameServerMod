@@ -46,7 +46,7 @@ local function __System_os_GetUrl_Proxy__(url, callback, option)
     end, option); 
 end
 
-ProxyGetUrl.SetSystemOsGetUrl(_G.__System_os_GetUrl__);
+ProxyGetUrl:SetSystemOsGetUrl(_G.__System_os_GetUrl__);
 AssetServerProxy.SetSystemOsGetUrl(__System_os_GetUrl_Proxy__);
 AutoUpdaterProxy.SetSystemOsGetUrl(__System_os_GetUrl_Proxy__);
 
@@ -60,6 +60,7 @@ function ProxyServer:StartProxy(ip, port)
 
     self.__proxy_host__ = proxy_host;
 
+    ProxyGetUrl:StartProxy();
     AssetServerProxy:StartProxy(ip, port);
     AutoUpdaterProxy:StartProxy(ip, port);
 end
@@ -67,6 +68,7 @@ end
 function ProxyServer:StopProxy()
     AssetServerProxy:StopProxy();
     AutoUpdaterProxy:StopProxy();
+    ProxyGetUrl:StopProxy();
     
     self.__proxy_host__ = nil;
     print("================stop proxy================");

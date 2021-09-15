@@ -11,12 +11,12 @@ local ProxyGetUrl = NPL.load("Mod/GeneralGameServerMod/Command/ProxyServer/Proxy
 
 NPL.load("(gl)script/ide/System/os/GetUrl.lua");
 
-local ProxyGetUrl = NPL.export();
+local ProxyGetUrl =  commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local __System_os_GetUrl__ = System.os.GetUrl;
 local __proxy_handler__ = {};
 
-System.os.GetUrl = function(url, callbackFunc, option)
+function __System_os_GetUrl_Proxy__(url, callbackFunc, option)
     local options = nil;
     if (type(url) == "table") then
         options = url;
@@ -30,7 +30,7 @@ System.os.GetUrl = function(url, callbackFunc, option)
     -- options.headers["X-Server-Type"] = "GGS_HTTP";
 
     -- 只代理Get请求
-    local proxy_options = ProxyGetUrl.GetProxyOptions(options);
+    local proxy_options = ProxyGetUrl:GetProxyOptions(options);
     local is_proxy = proxy_options ~= options;
 
 	LOG.std(nil, "debug", "ProxyGetUrl", options);
@@ -43,19 +43,19 @@ System.os.GetUrl = function(url, callbackFunc, option)
     end, option);
 end
 
-function ProxyGetUrl.RegisterProxyHandler(callback)
+function ProxyGetUrl:RegisterProxyHandler(callback)
     __proxy_handler__[callback] = callback;
 end 
 
-function ProxyGetUrl.RemoveProxyHandler(callback)
+function ProxyGetUrl:RemoveProxyHandler(callback)
     __proxy_handler__[callback] = nil;
 end
 
-function ProxyGetUrl.SetSystemOsGetUrl(geturl)
+function ProxyGetUrl:SetSystemOsGetUrl(geturl)
     __System_os_GetUrl__ = geturl;
 end
 
-function ProxyGetUrl.GetProxyOptions(options)
+function ProxyGetUrl:GetProxyOptions(options)
     local __is_allow_proxy_get_url__ = options.__is_allow_proxy_get_url__ == nil or options.__is_allow_proxy_get_url__ == true;
     options.__is_allow_proxy_get_url__ = nil;
 
@@ -67,6 +67,14 @@ function ProxyGetUrl.GetProxyOptions(options)
     end
 
     return options;
+end
+
+function ProxyGetUrl:StartProxy()
+    System.os.GetUrl = __System_os_GetUrl_Proxy__;
+end
+
+function ProxyGetUrl:StopProxy()
+    System.os.GetUrl = __System_os_GetUrl__;
 end
 
 -- __System_os_GetUrl__({

@@ -50,13 +50,13 @@ function AutoUpdaterProxy:StartProxy(ip, port)
         end
     end
 
-    ProxyGetUrl.RegisterProxyHandler(GetUrlProxy);
+    ProxyGetUrl:RegisterProxyHandler(GetUrlProxy);
     self.__GetUrlProxy__ = GetUrlProxy;
 end
 
 function AutoUpdaterProxy:StopProxy()
     if (not self.__GetUrlProxy__) then return end
-    ProxyGetUrl.RemoveProxyHandler(self.__GetUrlProxy__);
+    ProxyGetUrl:RemoveProxyHandler(self.__GetUrlProxy__);
     self.__GetUrlProxy__ = nil;
 end
 
