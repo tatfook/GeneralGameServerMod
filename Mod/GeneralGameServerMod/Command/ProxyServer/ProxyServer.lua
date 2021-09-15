@@ -35,7 +35,10 @@ local AutoUpdaterProxy = NPL.load("./AutoUpdaterProxy.lua", IsDevEnv);
 
 local __event_emitter__ = EventEmitter:new();
 local __System_os_GetUrl_Requesting__ = {};
-local function __System_os_GetUrl_Proxy__(url, callback, option)
+
+local __Client_System_os_GetUrl_Proxy__ = _G.__System_os_GetUrl__;                -- 客户端不做包装处理
+
+local function __Server_System_os_GetUrl_Proxy__(url, callback, option)           -- 服务端进行请求合并处理
     if (type(url) ~= "string") then return _G.__System_os_GetUrl__(url, callback, option) end
     __event_emitter__:RegisterOnceEventCallBack(url, callback);
     if (__System_os_GetUrl_Requesting__[url]) then return end
@@ -47,8 +50,8 @@ local function __System_os_GetUrl_Proxy__(url, callback, option)
 end
 
 ProxyGetUrl:SetSystemOsGetUrl(_G.__System_os_GetUrl__);
-AssetServerProxy.SetSystemOsGetUrl(__System_os_GetUrl_Proxy__);
-AutoUpdaterProxy.SetSystemOsGetUrl(__System_os_GetUrl_Proxy__);
+AssetServerProxy.SetSystemOsGetUrl(__Server_System_os_GetUrl_Proxy__);
+AutoUpdaterProxy.SetSystemOsGetUrl(__Server_System_os_GetUrl_Proxy__);
 
 local ProxyServer =  commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
