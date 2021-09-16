@@ -158,6 +158,7 @@ function CheckSkin.InitData(skin)
 					icon = data.icon,
 					type = data.type,
 					name = data.name,
+					is_vip_use = false,
 				}
 				-- 设置文案
 				if(data.type == CheckSkin.SKIN_ITEM_TYPE.FREE) then
@@ -168,10 +169,12 @@ function CheckSkin.InitData(skin)
 						val.price = "免费使用"
 					else
 						val.price = "仅VIP可用"
+						val.is_vip_use = true
 					end
 				end
 				if(data.type == CheckSkin.SKIN_ITEM_TYPE.VIP) then
 					val.price = "仅VIP可用"
+					val.is_vip_use = true
 				end
 				if(data.type == CheckSkin.SKIN_ITEM_TYPE.ACTIVITY_GOOD) then
 					if (data.gsid and not KeepWorkItemManager.HasGSItem(data.gsid)) then
