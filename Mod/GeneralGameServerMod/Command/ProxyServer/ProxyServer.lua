@@ -78,6 +78,6 @@ function ProxyServer:StopProxy()
 end
 
 ProxyServer:InitSingleton();
-ProxyServer:StartProxy("127.0.0.1", "8099");
+-- ProxyServer:StartProxy("127.0.0.1", "8099");
 
 
