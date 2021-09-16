@@ -5,7 +5,7 @@
 	Desc: 玩学课堂选择页
 	Use Lib:
         local CheckSkin = NPL.load("(gl)Mod/GeneralGameServerMod/UI/Vue/Page/User/CheckSkin.lua");
-        CheckSkin.Show();
+        CheckSkin.Show(function() end, "80001;84078;81018;88014;85098;", function() end) 
         CheckSkin.Hide();
 --]]
 
@@ -52,11 +52,13 @@ CheckSkin.DEFAULT_SKIN = "80001;81018;88014;";
 function CheckSkin.OnInit()
 	commonlib.echo("OnInit");
 	page = document:GetPageCtrl();
+	page.OnCreate = CheckSkin.OnCreate
 end
 
 function CheckSkin.Show(closeFunc, skin, CloseWithoutChange) 
 	CheckSkin.closeFunc = closeFunc;
 	CheckSkin.CloseWithoutChange = CloseWithoutChange;
+
 	CheckSkin.InitData(skin);
 end;
 
@@ -73,10 +75,10 @@ function CheckSkin.ShowPage()
 		-- app_key = MyCompany.Aries.Creator.Game.Desktop.App.app_key, 
 		directPosition = true,
 		align = "_ct",
-		x = -956/2,
-		y = -675/2,
-		width = 956,
-		height = 675,
+		x = -768/2,
+		y = -470/2,
+		width = 768,
+		height = 470,
 	};
 	System.App.Commands.Call("File.MCMLWindowFrame", params);
 end
@@ -140,65 +142,60 @@ function CheckSkin.InitData(skin)
 			LOG.std(nil, 'info', 'code', code);
 			LOG.std(nil, 'info', 'msg', msg);
 			LOG.std(nil, 'info', 'data', data);
+			local clothes = data.clothes;
+			local isVip = KeepWorkItemManager.IsVip()
+			local isDefaultSkin = skin == CheckSkin.DEFAULT_SKIN
+			local diffSkins = CheckSkin.DiffFromSkin(skin, originSkin)
 
-			if code == 200 then
-				local clothes = data.clothes;
-				local isVip = KeepWorkItemManager.IsVip()
-				local isDefaultSkin = skin == CheckSkin.DEFAULT_SKIN
-				local diffSkins = CheckSkin.DiffFromSkin(skin, originSkin)
-
-				CheckSkin.DS.items = commonlib.map(clothes, function (item)
-					local data = CustomCharItems:GetItemById(tostring(item.itemId));
-					local val = {
-						-- 需要支付的价格
-						price = item.payPrice,
-						remainingdays = item.durability,
-						itemId = item.itemId,
-						category = data.category,
-						icon = data.icon,
-						type = data.type,
-						name = data.name,
-					}
-					-- 设置文案
-					if(data.type == CheckSkin.SKIN_ITEM_TYPE.FREE) then
+			CheckSkin.DS.items = commonlib.map(clothes, function (item)
+				local data = CustomCharItems:GetItemById(tostring(item.itemId));
+				local val = {
+					-- 需要支付的价格
+					price = item.payPrice,
+					remainingdays = item.durability,
+					itemId = item.itemId,
+					category = data.category,
+					icon = data.icon,
+					type = data.type,
+					name = data.name,
+				}
+				-- 设置文案
+				if(data.type == CheckSkin.SKIN_ITEM_TYPE.FREE) then
+					val.price = "免费使用"
+				end
+				if(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
+					if(CheckSkin.IsUserOwnedThisSuitPartTypeSkin(item.itemId)) then
 						val.price = "免费使用"
-					end
-					if(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
-						if(CheckSkin.IsUserOwnedThisSuitPartTypeSkin(item.itemId)) then
-							val.price = "免费使用"
-						else
-							val.price = "仅VIP可用"
-						end
-					end
-					if(data.type == CheckSkin.SKIN_ITEM_TYPE.VIP) then
+					else
 						val.price = "仅VIP可用"
 					end
-					if(data.type == CheckSkin.SKIN_ITEM_TYPE.ACTIVITY_GOOD) then
-						if (data.gsid and not KeepWorkItemManager.HasGSItem(data.gsid)) then
-							val.price = "需活动获得"
-						else
-							val.price = "免费使用"
-						end;
-					end
+				end
+				if(data.type == CheckSkin.SKIN_ITEM_TYPE.VIP) then
+					val.price = "仅VIP可用"
+				end
+				if(data.type == CheckSkin.SKIN_ITEM_TYPE.ACTIVITY_GOOD) then
+					if (data.gsid and not KeepWorkItemManager.HasGSItem(data.gsid)) then
+						val.price = "需活动获得"
+					else
+						val.price = "免费使用"
+					end;
+				end
 
-					if(data.type == CheckSkin.SKIN_ITEM_TYPE.ONLY_BEANS_CAN_PURCHASE) then
-						-- 总金额
-						CheckSkin.DS.totalPrice = CheckSkin.DS.totalPrice+item.payPrice
-					end
+				if(data.type == CheckSkin.SKIN_ITEM_TYPE.ONLY_BEANS_CAN_PURCHASE) then
+					-- 总金额
+					CheckSkin.DS.totalPrice = CheckSkin.DS.totalPrice+item.payPrice
+				end
 
-					return val;
-				end);
-		
-				-- 没有替换 & VIP 则直接关闭
-				if(diffSkins == "" or isVip or isDefaultSkin or (CheckSkin.DS.totalPrice == 0)) then
-					CheckSkin.closeFunc()
-				else
-					CheckSkin.ShowPage()
-					CheckSkin.Update()
-				end;
+				return val;
+			end);
+	
+			-- 没有替换 & VIP 则直接关闭
+			if(diffSkins == "" or isVip or isDefaultSkin or (CheckSkin.DS.totalPrice == 0)) then
+				CheckSkin.closeFunc()
 			else
-				GameLogic.AddBBS('channel', '系统异常', 2000)
-			end
+				CheckSkin.ShowPage()
+				CheckSkin.Update()
+			end;
 		end)
 	else
 		-- 切换套装时
@@ -300,6 +297,8 @@ function CheckSkin.Update()
 		page.name, 
 		CheckSkin.DS.items);
 	pe_gridview.DataBind(rightContainer, page.name, false);
+
+	CheckSkin.RefreshBeanNum()
 end
 
 -- 非VIP的情况，删除未拥有的skin
@@ -425,4 +424,36 @@ end
 function CheckSkin.ClosePage()
 	CheckSkin.Close();
 	CheckSkin.CloseWithoutChange()
+end
+
+function CheckSkin.UpdateTotalPrice()
+	local totalPrice = 0
+	for key, v in pairs(CheckSkin.DS.items) do
+		if(v.type == CheckSkin.SKIN_ITEM_TYPE.ONLY_BEANS_CAN_PURCHASE) then
+			-- 总金额
+			totalPrice = totalPrice+v.price
+		end
+	end
+	CheckSkin.DS.totalPrice = totalPrice
+end
+
+function CheckSkin.DeleteSelf(index)
+	local item = CheckSkin.DS.items[index]
+	if item == nil then
+		return
+	end
+
+	table.remove(CheckSkin.DS.items, index)
+	CheckSkin.UpdateTotalPrice()
+	CheckSkin.Update()
+end
+
+function CheckSkin.OnCreate()
+	CheckSkin.RefreshBeanNum()
+end
+
+function CheckSkin.RefreshBeanNum()
+    local bHas,guid,bagid,copies = KeepWorkItemManager.HasGSItem(CheckSkin.BEAN_GSID)
+    copies = copies or 0;
+	page:SetValue("bean_label", copies)
 end
