@@ -60,9 +60,7 @@ function ProxyServer:StartProxy(ip, port)
     if (self.__proxy_host__ == proxy_host) then return end  
     
     print("================start proxy================", proxy_host);
-
     self.__proxy_host__ = proxy_host;
-
     ProxyGetUrl:StartProxy();
     AssetServerProxy:StartProxy(ip, port);
     AutoUpdaterProxy:StartProxy(ip, port);
