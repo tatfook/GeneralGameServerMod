@@ -724,9 +724,15 @@ local function DefaultToCode(block)
             end
         end 
     end
+    local NEXT_BLOCK_CODE = nil;
     local code = string.gsub(option.code_description or "", "\\n", "\n");
     code = string.gsub(code, "%$%{([%w_]+)%}", args);      -- ${name} 取字段值
     code = string.gsub(code, "%$%(([%w_]+)%)", argStrs);   -- $(name) 取字段字符串值
+    code = string.gsub(code, "%$%{NEXT_BLOCK_CODE%}", function()
+        if (NEXT_BLOCK_CODE) then return NEXT_BLOCK_CODE end 
+        NEXT_BLOCK_CODE = block:GetAllNextCode();
+        return NEXT_BLOCK_CODE;
+    end);     -- ${NEXT_BLOCK_CODE}
     code = string.gsub(code, "[\n]+$", "");
     code = string.gsub(code, "^\n+", "");
     if (not option.output) then code = code .. "\n" end
@@ -761,6 +767,16 @@ function Block:GetCode()
     end
 
     return ToCode and ToCode(self, DefaultToCode) or "";
+end
+
+function Block:GetAllNextCode()
+    local code = "";
+    local nextBlock = self:GetNextBlock();
+    while (nextBlock) do
+        code = code .. nextBlock:GetCode();
+        nextBlock = nextBlock:GetNextBlock();
+    end
+    return code;
 end
 
 -- 获取xmlNode

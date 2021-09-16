@@ -3,7 +3,7 @@
         <div class="run-btn" onclick=OnClickRun>运行</div>
         <div class="close-btn" onclick=CloseWindow></div>
     </div>
-    <Blockly ref="blockly" class="blockly" v-bind:language="language or 'SystemLuaBlock'"></Blockly>
+    <Blockly ref="blockly" class="blockly" v-bind:language="language or 'SystemLuaBlock'" OnlyGenerateStartBlockCode=true></Blockly>
 </template>
 
 <script type="text/lua">
