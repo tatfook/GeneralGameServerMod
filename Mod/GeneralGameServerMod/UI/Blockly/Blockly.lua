@@ -66,7 +66,6 @@ function Blockly:ctor()
     self.BlockMap, self.CategoryList, self.CategoryMap, self.CategoryColor = {}, {}, {}, {};
     self:SetToolBox(ToolBox:new():Init(self));
     self:SetOptionGlobal(BlockOptionGlobal:New());
-    self.__to_code_cache__ = {};
 end
 
 function Blockly:Reset()
@@ -163,6 +162,10 @@ function Blockly:OnToolBoxXmlTextChange(toolboxXmlText)
         self.CategoryColor[category.text or category.name] = category.color;
     end
     self:GetToolBox():SetCategoryList(self.CategoryList);
+end
+
+function Blockly:IsOnlyGenerateStartBlockCode()
+    return self:GetAttrBoolValue("OnlyGenerateStartBlockCode", false);
 end
 
 function Blockly:OnAttrValueChange(attrName, attrValue, oldAttrValue)
@@ -946,7 +949,7 @@ end
 
 -- 获取代码
 function Blockly:GetCode()
-    self.__to_code_cache__ = {};
+    local only_generate_start_block_code = self:IsOnlyGenerateStartBlockCode();
     local blocks, lastStartIndex = {}, 1;
     for _, block in ipairs(self.blocks) do
         if (block:GetType() == "System_Main") then 
@@ -955,7 +958,7 @@ function Blockly:GetCode()
         elseif (not block.previousConnection and block.nextConnection) then
             table.insert(blocks, lastStartIndex, block);
             lastStartIndex = lastStartIndex + 1;
-        elseif (block.previousConnection and block.nextConnection) then
+        elseif (not only_generate_start_block_code and block.previousConnection and block.nextConnection) then
             table.insert(blocks, block);
         else
             -- print("顶层输出块不产生代码");
@@ -963,11 +966,15 @@ function Blockly:GetCode()
     end
     local code = "";
     for _, block in ipairs(blocks) do
-        local nextBlock = block;
         local blockCode = "";
-        while (nextBlock) do
-            blockCode = blockCode .. nextBlock:GetCode();
-            nextBlock = nextBlock:GetNextBlock();
+        local nextBlock = block;
+        if (nextBlock:IsStart()) then
+            blockCode = nextBlock:GetCode();
+        else
+            while (nextBlock) do
+                blockCode = blockCode .. nextBlock:GetCode();
+                nextBlock = nextBlock:GetNextBlock();
+            end
         end
         code = code .. blockCode .. "\n";
     end
