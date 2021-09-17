@@ -1,14 +1,18 @@
 
 
-ShowWindow({
-    __vars__ = {},
-    __var_stack__ = {},
-}, {
-    url = "%gi%/Independent/UI/VariableView.html",
-    alignment = "_lt",
-    x = 0, y = 0, width = 340, height = 320,
-    draggable = true,
-});
+local str = "hello 你好";
+
+print(string.char(string.byte(str, 8, 8)))
+local newstr = "";
+for i = 1, #str do
+    local byte = string.byte(str, i, i);
+    if (byte > 0 and byte < 128) then
+        newstr = newstr .. string.char(byte);
+    else 
+        newstr = newstr .. string.format("_%X", byte)
+    end
+end
+print(newstr)
 
 -- function test()
 --     local i = 1;
