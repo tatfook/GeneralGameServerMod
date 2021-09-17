@@ -130,8 +130,8 @@ function Text:OnUpdateLayout()
 		local textWidth, textHeight = _guihelper.GetTextWidth(text, self:GetFont()), self:GetLineHeight();
 		local textObject = {text = text, x = 0, y = 0, w = textWidth, h = textHeight}
 		table.insert(self.texts, textObject);
-		height = height or textHeight;
-		width = width or textWidth;
+		height = height or parentContentHeight or textHeight;
+		width = width or parentContentWidth or textWidth;
 		if (width < textWidth) then
 			if (parentStyle["text-overflow"] == "ellipsis") then
 				textObject.text = _guihelper.AutoTrimTextByWidth(text, width - 16, self:GetFont()) .. "...";

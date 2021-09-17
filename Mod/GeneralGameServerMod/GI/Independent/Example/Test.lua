@@ -1,18 +1,28 @@
 
 
-function test()
-    local i = 1;
-    while (i < 10) do
-        print(i);
-        i = i + 1;
-    end
-end
+ShowWindow({
+    __vars__ = {},
+    __var_stack__ = {},
+}, {
+    url = "%gi%/Independent/UI/VariableView.html",
+    alignment = "_lt",
+    x = 0, y = 0, width = 340, height = 320,
+    draggable = true,
+});
 
-__debug_sethook__(function(...)
-    print(...);
-end, "l");
+-- function test()
+--     local i = 1;
+--     while (i < 10) do
+--         print(i);
+--         i = i + 1;
+--     end
+-- end
 
-test();
+-- __debug_sethook__(function(...)
+--     print(...);
+-- end, "l");
+
+-- test();
 
 -- CreateEntity({
 --     bx = 19196, by = 5, bz = 19203,

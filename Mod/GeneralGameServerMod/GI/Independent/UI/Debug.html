@@ -1,0 +1,153 @@
+<template class="container">
+    <div class="header">
+        <div onclick=ClickRun class="btn">顺序执行</div>
+        <div onclick=ClickStepRun class="btn">单步执行</div>
+        <div onclick=ClickStop class="btn">停止执行</div>
+    </div>
+    <div style="height: 20px; font-size: 12px; display: flex;">
+        <div>当前变量集: </div>
+        <div class="var-key-item" onclick="ClickVarKey('_G', 0)">_G</div>
+        <div onclick="ClickVarKey(key, index)" v-for="(key, index) in KeyList" style="display: flex;">
+            <div style="padding: 0x 2px;">.</div>
+            <div class="var-key-item">{{key}}</div>
+        </div>
+    </div>
+    <div class="var-list">
+        <div class="var-item">
+            <div class="var-name">变量名</div>
+            <div class="var-value">变量值</div>
+            <div class="var-type">变量类型</div>
+        </div>
+        <div v-for="var in VarList" class="var-item">
+            <div class="var-name">{{var.key}}</div>
+            <div class="var-value">{{var.value}}</div>
+            <div class="var-type">{{var.type}}</div>
+            <div v-if="var.type == 'table'" onclick="ClickVar(var)">→</div>
+        </div>
+    </div>    
+</template>
+
+<script type="text/lua">
+VarList = {};
+KeyList = {};
+
+local vars = __vars__;
+local function GenerateVarList(vars)
+    local list = {};
+    for key, value in pairs(vars) do
+        table.insert(list, {key = key, value = value, type = type(value)});
+    end
+    VarList = list;
+end
+
+local function GenerateKeyList()
+    local list = {};
+    for i = 1, #__var_stack__ do
+        list[i] = __var_stack__[i].key;
+    end
+    KeyList = list;
+end
+
+function ClickRun()
+    __debug_run__();
+end 
+
+function ClickStepRun()
+    __debug_step_run__();
+end
+
+function ClickStop()
+    __debug_stop__();
+end
+
+function ClickVarKey(key, index)
+    local size = #__var_stack__;
+    if (index == size) then return end 
+
+    for i = size, index + 1, -1 do
+        __var_stack__[i] = nil;
+    end 
+    
+    vars = __var_stack__[index] and __var_stack__[index].value or __vars__;
+    GenerateVarList(vars);
+    GenerateKeyList();
+end
+
+function ClickVar(var)
+    vars = vars[var.key];
+    table.insert(__var_stack__, {key = var.key, value = vars});
+    GenerateVarList(vars);    
+    GenerateKeyList();
+end
+
+function OnReady()
+    GenerateVarList(__vars__);
+    GenerateKeyList();
+end
+
+</script>
+
+<style scoped=true>
+.container {
+    height: 100%;
+    width: 100%;
+    background-color: #00000080;
+    color: #ffffff;
+    padding: 10px;
+}
+
+.header {
+    display: flex;
+    height: 40px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.var-key-item {
+    color: #ffffff;
+}
+.var-key-item:hover {
+    color: #cccccc;
+}
+
+.var-list {
+    height: 220px;
+    overflow-y: auto;
+}
+.var-item {
+    display: flex;
+    height: 40px;
+    width: 100%;
+    align-items: center;
+    color: #ffffff;
+    border-bottom: 1px solid #cccccc;
+}
+.var-name {
+    width: 60px;
+}
+.var-type {
+    width: 60px;
+}
+.var-value {
+    width: 180px;
+    text-wrap: none;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+}
+
+.btn {
+    color: #ffffff;
+    font-size: 18px;
+    width: 100px;
+    line-height: 40px;
+    height: 40px;
+    background-color: #00000000;
+}
+
+.btn:hover {
+    color: #cccccc;
+    background-color: #00000000;
+}
+</style>
+
