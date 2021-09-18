@@ -1,8 +1,10 @@
 <template class="container">
     <div class="header">
+        <div onclick=ClickStart class="btn">启动程序</div>
+        <div onclick=ClickDebugStart class="btn">调试启动</div>
         <div onclick=ClickRun class="btn">顺序执行</div>
         <div onclick=ClickStepRun class="btn">单步执行</div>
-        <div onclick=ClickStop class="btn">停止执行</div>
+        <!-- <div onclick=ClickStop class="btn">停止执行</div> -->
     </div>
     <div style="height: 20px; font-size: 12px; display: flex;">
         <div>当前变量集: </div>
@@ -12,17 +14,19 @@
             <div class="var-key-item">{{key}}</div>
         </div>
     </div>
+    <div class="var-item">
+        <div class="var-name">变量名</div>
+        <div class="var-value">变量值</div>
+        <div class="var-type">变量类型</div>
+    </div>
     <div class="var-list">
-        <div class="var-item">
-            <div class="var-name">变量名</div>
-            <div class="var-value">变量值</div>
-            <div class="var-type">变量类型</div>
-        </div>
         <div v-for="var in VarList" class="var-item">
             <div class="var-name">{{var.key}}</div>
             <div class="var-value">{{var.value}}</div>
-            <div class="var-type">{{var.type}}</div>
-            <div v-if="var.type == 'table'" onclick="ClickVar(var)">→</div>
+            <div class="var-type">
+                <div>{{var.type}}</div>
+                <div v-if="var.type == 'table'"  class="var-key-item" style="margin-left: 4px" onclick="ClickVar(var)">→</div>
+            </div>
         </div>
     </div>    
 </template>
@@ -47,9 +51,16 @@ local function GenerateKeyList()
     end
     KeyList = list;
 end
+function ClickStart()
+    __debug_start__(false, false);
+end
+
+function ClickDebugStart()  
+    __debug_start__(true, true);
+end
 
 function ClickRun()
-    __debug_run__();
+    __debug_run__()
 end 
 
 function ClickStepRun()
@@ -85,6 +96,11 @@ function OnReady()
     GenerateKeyList();
 end
 
+function OnRefresh()
+    GenerateVarList(__vars__);
+    GenerateKeyList();
+end
+
 </script>
 
 <style scoped=true>
@@ -112,7 +128,11 @@ end
 }
 
 .var-list {
-    height: 220px;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 110px;
+    bottom: 10px;
     overflow-y: auto;
 }
 .var-item {
@@ -124,13 +144,14 @@ end
     border-bottom: 1px solid #cccccc;
 }
 .var-name {
-    width: 60px;
+    width: 20%;
 }
 .var-type {
-    width: 60px;
+    width: 20%;
+    display: flex;
 }
 .var-value {
-    width: 180px;
+    width: 60%;
     text-wrap: none;
     text-overflow: ellipsis;
     padding-right: 10px;

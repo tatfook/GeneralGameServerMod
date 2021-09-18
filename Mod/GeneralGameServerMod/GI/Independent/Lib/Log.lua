@@ -99,25 +99,25 @@ function set_log_level(level)
     __global_log_level__ = LevelText[upper(level)] or LevelText.INFO;
 end
 
-function debug(...)
+function log_debug(...)
     if (Level[__global_log_level__] > Level[LevelText.DEBUG]) then return end
 
     return __log__(DefaultModuleName, "DEBUG", DefaultDepth, ...);
 end
 
-function info(...)
+function log_info(...)
     if (Level[__global_log_level__] > Level[LevelText.INFO]) then return end
     
     return __log__(DefaultModuleName, "INFO", DefaultDepth, ...);
 end
 
-function warn(...)
+function log_warn(...)
     if (Level[__global_log_level__] > Level[LevelText.WARN]) then return end
     
     return __log__(DefaultModuleName, "WARN", DefaultDepth, ...);
 end
 
-function fatal(...)
+function log_fatal(...)
     if (Level[__global_log_level__] > Level[LevelText.FATAL]) then return end
     
     return __log__(DefaultModuleName, "FATAL", DefaultDepth, ...);

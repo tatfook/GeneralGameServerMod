@@ -288,6 +288,15 @@ function Component:OnAfterCompile()
     end
 end
 
+-- 刷新
+function Component:Refresh()
+    local OnRefresh = self:GetScope():__get_data__()["OnRefresh"];
+    if (type(OnRefresh) == "function") then
+        self:ExecCode([[OnRefresh()]]);
+    end
+    Component._super.Refresh(self);
+end
+
 -- 设置引用元素
 function Component:SetRef(ref, element)
     self.refs[ref] = element;

@@ -537,6 +537,18 @@ function Compile:Compile(compoent)
     -- CompileDebug.Format("=====================end compile component [%s]=================", compoent:GetTagName());
 end
 
+function Compile:RefreshWindow(window)
+    for _, elements in pairs(AllDependItemWatch) do
+        for element, callbacks in pairs(elements) do
+            if (element:GetWindow() == window) then
+                for _, callback in pairs(callbacks) do
+                    callback();
+                end
+            end
+        end
+    end
+end
+
 local metatable = getmetatable(Compile);
 metatable.__call = function(self, ...)
     self:Compile(...);

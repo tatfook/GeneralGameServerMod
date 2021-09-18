@@ -17,6 +17,11 @@ Debug:Property("Running", false, "IsRunning");             -- 是否在运行
 Debug:Property("Coroutine");                               -- 当前协程
 Debug:Property("Suspended", false, "IsSuspended");         -- 是否挂起
 Debug:Property("StepSuspend", false, "IsStepSuspend");     -- 是否单步挂起
+Debug:Property("StartBeforeCallBack");
+Debug:Property("StartAfterCallBack");
+Debug:Property("TrackerCallBack");                         -- 当前执行信息回调 
+Debug:Property("SuspendBeforeCallBack");                   -- 挂起前回调
+Debug:Property("SuspendAfterCallBack");                    -- 挂起后回调
 
 function Debug:ctor()
     self.__vars__ = {};              -- 变量集
@@ -33,12 +38,18 @@ end
 function Debug:Suspend()
     if (not self:IsSuspended() or not self:IsDebug()) then return end 
 
-    self:SetCoroutine(__coroutine_running__());
+    self:RefreshUI();
+    
+    local callback = self:GetSuspendBeforeCallBack();
+    if (type(callback) == "function") then callback() end 
 
-    self:ShowUI();
-    while (self:IsSuspended()) do 
+    self:SetCoroutine(__coroutine_running__());
+    while (self:IsSuspended()) do
         sync_run(__coroutine_yield__());
 	end
+
+    local callback = self:GetSuspendAfterCallBack();
+    if (type(callback) == "function") then callback() end 
 end
 
 function Debug:Continue()
@@ -46,6 +57,13 @@ function Debug:Continue()
     local __co__ = self:GetCoroutine();
     self:SetCoroutine(nil);
     if (__co__) then __coroutine_resume__(__co__, null_function) end 
+end
+
+function Debug:Tracker(...)
+    local callback = self:GetTrackerCallBack();
+    if (type(callback) == "function") then callback(...) end 
+
+    self:StepBreakPoint();
 end
 
 function Debug:StepBreakPoint()
@@ -59,46 +77,55 @@ function Debug:BreakPoint()
 end
 
 function Debug:StepRun()
+    if (not self:IsRunning()) then return end 
+    
     self:SetStepSuspend(true);
     self:Continue();
 end
 
 function Debug:Run()
+    if (not self:IsRunning()) then return end 
+    
     self:SetStepSuspend(false);
     self:Continue();
 end
 
 function Debug:Start(is_debug, is_step_run)
-    self:SetDebug(is_debug);
     self:SetRunning(true);
+    self:SetDebug(is_debug);
+    self:SetCoroutine(nil);
+
     self.__vars__ = {};
     self.__var_stack__ = {};         -- 变量集堆栈
+
+    local callback = self:GetStartBeforeCallBack();
+    if (type(callback) == "function") then callback(is_debug) end 
+
     if (is_step_run) then
         self:StepRun();
     else
         self:Run();
     end
+    
+    local callback = self:GetStartAfterCallBack();
+    if (type(callback) == "function") then callback(is_debug) end 
 end
 
 function Debug:Stop()
     if (not self:IsRunning()) then return end 
 
-    self:CloseUI();
     self:SetDebug(false);
     self:SetRunning(false);
     self:SetStepSuspend(false);
     self:Continue();
-    -- __coroutine_exit__();
-    -- __error__("__debug_stop__");
 end
 
-function Debug:ShowUI(G)
-    if (not self:IsDebug()) then return end 
+function Debug:ShowUI(opts)
+    if (self.__ui__) then return end 
 
-    G = G or {};
-    local x, y, width, height = G.x or 0, G.y or 0, G.width or 340, G.height or 320;
-    if (self.__ui__) then x, y, width, height = self.__ui__:GetNativeWindow():GetAbsPosition() end
-    self:CloseUI();
+    opts = opts or {};
+    local x, y, width, height = opts.x or 0, opts.y or 0, opts.width or 340, opts.height or 320;
+    
     local cur_vars = self.__vars__;
     for index, var in ipairs(self.__var_stack__) do
         if (cur_vars[var.key] ~= var.value) then
@@ -110,6 +137,7 @@ function Debug:ShowUI(G)
             cur_vars = var.value;
         end
     end
+    
     self.__ui__ = ShowWindow({
         __vars__ = self.__vars__,
         __var_stack__ = self.__var_stack__,
@@ -119,11 +147,10 @@ function Debug:ShowUI(G)
         x = x, y = y, width = width, height = height,
         draggable = true,
     });
-    self.__ui__:GetNativeWindow():Reposition("_lt", x, y, width, height);
 end
 
 function Debug:RefreshUI()
-    if (self.__ui__) then self:ShowUI() end 
+    if (self.__ui__) then self.__ui__:Refresh() end 
 end
 
 function Debug:CloseUI()
@@ -132,6 +159,22 @@ function Debug:CloseUI()
 end
 
 Debug:InitSingleton();
+
+function __debug_tracker__(...)
+    Debug:Tracker(...)
+end
+
+function __debug_tracker_callback__(callback)
+    Debug:SetTrackerCallBack(callback);
+end
+
+function __debug_suspend_before_callback__(callback)
+    Debug:SetSuspendBeforeCallBack(callback);
+end
+
+function __debug_suspend_after_callback__(callback)
+    Debug:SetSuspendAfterCallBack(callback);
+end
 
 function __debug_step_break_point__()
     Debug:StepBreakPoint();
@@ -159,4 +202,20 @@ end
 
 function __debug_add_watch_key_value__(key, val)
     Debug:AddWatchKeyValue(key, val);
+end
+
+function __debug_show_ui__(opts)
+    return Debug:ShowUI(opts)
+end
+
+function __debug_close_ui__()
+    Debug:CloseUI();
+end
+
+function __debug_start_before_callback__(callback)
+    Debug:SetStartBeforeCallBack(callback);
+end
+
+function __debug_start_after_callback__(callback)
+    Debug:SetStartAfterCallBack(callback);
 end

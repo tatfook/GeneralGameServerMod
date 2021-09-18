@@ -65,6 +65,7 @@ function Independent:Reset()
 end
 
 function Independent:LoadInnerModule()
+	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/List.lua");
 	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/Coroutine.lua");
 	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/Debug.lua");
 	self:LoadFile("Mod/GeneralGameServerMod/GI/Independent/Lib/System.lua");

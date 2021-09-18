@@ -777,10 +777,10 @@ end
 
 -- 获取块代码
 function Block:GetCode()
+    local blockly = self:GetBlockly();
     local language = self:GetLanguage();
     local option = self:GetOption();
     local ToCode = DefaultToCode;
-
     if (language and type(option["To" .. language]) == "function") then
         ToCode = option["To" .. language];
     elseif (type(option.ToCode) == "function") then
@@ -789,7 +789,12 @@ function Block:GetCode()
         -- print("---------------------图块转换函数不存在---------------------")
     end
 
-    return ToCode and ToCode(self, DefaultToCode) or "";
+    local OnGenerateBlockCodeBefore = blockly:GetAttrFunctionValue("OnGenerateBlockCodeBefore");
+    local beforeBlockCode = OnGenerateBlockCodeBefore and OnGenerateBlockCodeBefore(self) or "";
+    local blockCode = ToCode and ToCode(self, DefaultToCode) or "";
+    local OnGenerateBlockCodeAfter = blockly:GetAttrFunctionValue("OnGenerateBlockCodeAfter");
+    local afterBlockCode = OnGenerateBlockCodeAfter and OnGenerateBlockCodeAfter(self) or "";
+    return beforeBlockCode .. blockCode .. afterBlockCode;
 end
 
 function Block:GetAllNextCode()

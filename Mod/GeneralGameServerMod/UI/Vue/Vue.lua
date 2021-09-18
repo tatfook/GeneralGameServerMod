@@ -68,6 +68,11 @@ function Vue:LoadXmlNodeByTemplate(template)
     }
 end
 
+function Vue:Refresh()
+    Compile:RefreshWindow(self);
+    Vue._super.Refresh(self);
+end
+
 -- 扩展全局方法
 function Vue:ExtendG(G)
     G.ShowWindow = G.ShowWindow or function(G, params)
@@ -83,6 +88,10 @@ function Vue:ExtendG(G)
         page:Show(params);
 
         return page;
+    end
+
+    G.Refresh = function()
+        self:Refresh();
     end
 
     local GlobalScope = rawget(G, "GlobalScope");
