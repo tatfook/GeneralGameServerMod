@@ -115,10 +115,22 @@ end
 							</pe:if>
 							
 							<pe:if condition='<%= Eval("type") ~= "2" %>'>
-								<div style="base-font-size: 20px; font-size: 20px; color: #666666; margin-top:12px;margin-left:10px;">
-									<!-- <%= Eval('name') %> -->
-									永久
-								</div>
+								<pe:if condition='<%= Eval("is_vip_use")%>'>
+									<img style="margin-left: 545px; margin-top: 18px;background: url(Texture\Aries\Creator\keepwork\CheckSkin\V_66x16_32bits.png#0 0 66 16); width:66px; height:16px" />
+									<input
+										onclick="DeleteSelf" 
+										name="<%= Eval('index') %>"
+										type="button" style="float: left; width: 38px; height: 38px; margin-top: 7px; margin-left: 23px;background: url(Texture\Aries\Creator\keepwork\CheckSkin\X_38X38_32bits.png#0 0 38 38);">
+									</input>
+								</pe:if>
+
+								<pe:if condition='<%=not Eval("is_vip_use")%>'>
+									<div style="base-font-size: 20px; font-size: 20px; color: #666666; margin-top:12px;margin-left:10px;">
+										<!-- <%= Eval('name') %> -->
+										永久
+									</div>
+								</pe:if>
+
 							</pe:if>
 						</div>
 					</div>
