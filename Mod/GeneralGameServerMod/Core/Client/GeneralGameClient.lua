@@ -239,7 +239,7 @@ function GeneralGameClient:LoadWorld(opts)
     end
 
     -- 是否加载世界
-    self.IsWorldLoaded = true;
+    self.IsWorldLoaded = false;
 
     -- 以只读方式重新进入
     if (isReloadWorld) then
@@ -253,8 +253,8 @@ end
 -- 世界加载
 function GeneralGameClient:OnWorldLoaded() 
     -- 是否需要替换世界
-    if (not self.IsWorldLoaded) then return end
-    self.IsWorldLoaded = false;
+    if (self.IsWorldLoaded) then return end
+    self.IsWorldLoaded = true;
 
     -- 更新当前世界ID
     local GeneralGameWorldClass = self:GetGeneralGameWorldClass() or GeneralGameWorld;

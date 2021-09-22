@@ -1093,3 +1093,9 @@ end
 -- 事件处理后
 function ElementUI:HandleMouseEventAfter(event)
 end
+
+function ElementUI:Refresh()
+    for _, element in ipairs(self.childrens) do
+        element:Refresh();
+    end
+end

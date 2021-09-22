@@ -137,4 +137,3 @@ function ShowBlocklyFactory()
         url = "%ui%/Blockly/Pages/BlocklyFactory.html",
     });
 end
-

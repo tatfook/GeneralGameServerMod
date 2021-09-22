@@ -711,6 +711,26 @@ function Block:GetInputField(name)
     return self.inputFieldMap[name];
 end
 
+local _Byte = string.byte("_");
+local aByte = string.byte("a");
+local zByte = string.byte("z");
+local AByte = string.byte("A");
+local ZByte = string.byte("Z");
+local _0Byte = string.byte("0");
+local _9Byte = string.byte("9");
+local function ToVarFuncName(str)
+    local newstr = "";
+    for i = 1, #str do
+        local byte = string.byte(str, i, i);
+        if (_Byte == byte or (aByte <= byte and byte <=zByte) or (AByte <= byte and byte <=ZByte) or (_0Byte <= byte and byte <= _9Byte)) then
+            newstr = newstr .. string.char(byte);
+        else 
+            newstr = newstr .. string.format("_%X", byte)
+        end
+    end
+    return newstr;
+end
+
 local function DefaultToCode(block)
     local blockType = block:GetType();
     local option = block:GetOption();
@@ -726,13 +746,16 @@ local function DefaultToCode(block)
     end
     local NEXT_BLOCK_CODE = nil;
     local code = string.gsub(option.code_description or "", "\\n", "\n");
-    code = string.gsub(code, "%$%{([%w_]+)%}", args);      -- ${name} 取字段值
-    code = string.gsub(code, "%$%(([%w_]+)%)", argStrs);   -- $(name) 取字段字符串值
-    code = string.gsub(code, "%$%{NEXT_BLOCK_CODE%}", function()
+    code = string.gsub(code, "%$%{([%w%_]+)%}", args);      -- ${name} 取字段值
+    code = string.gsub(code, "%$%(([%w%_]+)%)", argStrs);   -- $(name) 取字段字符串值
+    code = string.gsub(code, "%$%{NEXT%_BLOCK%_CODE%}", function()
         if (NEXT_BLOCK_CODE) then return NEXT_BLOCK_CODE end 
         NEXT_BLOCK_CODE = block:GetAllNextCode();
         return NEXT_BLOCK_CODE;
     end);     -- ${NEXT_BLOCK_CODE}
+    code = string.gsub(code, "%$VAR%_FUNC%_NAME%(([%w%_]+)%)", function(name)
+        return ToVarFuncName(args[name]);
+    end)
     code = string.gsub(code, "[\n]+$", "");
     code = string.gsub(code, "^\n+", "");
     if (not option.output) then code = code .. "\n" end
@@ -754,10 +777,10 @@ end
 
 -- 获取块代码
 function Block:GetCode()
+    local blockly = self:GetBlockly();
     local language = self:GetLanguage();
     local option = self:GetOption();
     local ToCode = DefaultToCode;
-
     if (language and type(option["To" .. language]) == "function") then
         ToCode = option["To" .. language];
     elseif (type(option.ToCode) == "function") then
@@ -766,7 +789,12 @@ function Block:GetCode()
         -- print("---------------------图块转换函数不存在---------------------")
     end
 
-    return ToCode and ToCode(self, DefaultToCode) or "";
+    local OnGenerateBlockCodeBefore = blockly:GetAttrFunctionValue("OnGenerateBlockCodeBefore");
+    local beforeBlockCode = OnGenerateBlockCodeBefore and OnGenerateBlockCodeBefore(self) or "";
+    local blockCode = ToCode and ToCode(self, DefaultToCode) or "";
+    local OnGenerateBlockCodeAfter = blockly:GetAttrFunctionValue("OnGenerateBlockCodeAfter");
+    local afterBlockCode = OnGenerateBlockCodeAfter and OnGenerateBlockCodeAfter(self) or "";
+    return beforeBlockCode .. blockCode .. afterBlockCode;
 end
 
 function Block:GetAllNextCode()

@@ -174,9 +174,6 @@ function Window:Init()
     self:LoadElement();
 end
 
--- 窗口刷新
-function Window:Refresh()
-end
 -- 窗口显示
 function Window.Show(self, params)
     if (not self or not self.isa or self == Window or not self:isa(Window)) then 

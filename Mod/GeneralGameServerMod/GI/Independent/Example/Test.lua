@@ -1,18 +1,32 @@
 
 
-function test()
-    local i = 1;
-    while (i < 10) do
-        print(i);
-        i = i + 1;
+local str = "hello 你好";
+
+print(string.char(string.byte(str, 8, 8)))
+local newstr = "";
+for i = 1, #str do
+    local byte = string.byte(str, i, i);
+    if (byte > 0 and byte < 128) then
+        newstr = newstr .. string.char(byte);
+    else 
+        newstr = newstr .. string.format("_%X", byte)
     end
 end
+print(newstr)
 
-__debug_sethook__(function(...)
-    print(...);
-end, "l");
+-- function test()
+--     local i = 1;
+--     while (i < 10) do
+--         print(i);
+--         i = i + 1;
+--     end
+-- end
 
-test();
+-- __debug_sethook__(function(...)
+--     print(...);
+-- end, "l");
+
+-- test();
 
 -- CreateEntity({
 --     bx = 19196, by = 5, bz = 19203,
