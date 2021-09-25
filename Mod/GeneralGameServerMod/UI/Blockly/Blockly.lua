@@ -968,7 +968,7 @@ function Blockly:GetCode()
     for _, block in ipairs(blocks) do
         local blockCode = "";
         local nextBlock = block;
-        if (nextBlock:IsStart()) then
+        if (only_generate_start_block_code and nextBlock:IsStart()) then
             blockCode = nextBlock:GetCode();
         else
             while (nextBlock) do
