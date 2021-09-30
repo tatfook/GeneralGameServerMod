@@ -171,3 +171,11 @@ end
 function CreateSkill(opts)
     return GetSkillModule():new():Init(opts);
 end
+
+function GetEntityPlayerModule()
+    return require("EntityPlayer");
+end
+
+function CreateEntityPlayer(opts)
+    return GetEntityPlayerModule():new():Init(opts);
+end

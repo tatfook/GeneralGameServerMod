@@ -72,6 +72,12 @@ local function SaveTemplate(filename, x, y, z, dx, dy, dz)
     cmd("/property UseAsyncLoadWorld true");
 end
 
+local function IsObstructionBlock(bx, by, bz)
+    local block = BlockEngine:GetBlock(bx, by, bz);
+    return block and block.obstruction;
+end
+
+
 setmetatable(BlockAPI, {__call = function(_, CodeEnv)
     CodeEnv.GetBlockId = ParaTerrain.GetBlockTemplateByIdx;
     CodeEnv.GetBlockEntity = EntityManager.GetBlockEntity;
@@ -88,6 +94,8 @@ setmetatable(BlockAPI, {__call = function(_, CodeEnv)
     CodeEnv.LoadTemplate = LoadTemplate;
     CodeEnv.SaveTemplate = SaveTemplate;
 
+    CodeEnv.IsObstructionBlock = IsObstructionBlock;
+    
     CodeEnv.__BlockSize__ = BlockEngine.blocksize;
     CodeEnv.__HalfBlockSize__ = BlockEngine.half_blocksize;
 end});

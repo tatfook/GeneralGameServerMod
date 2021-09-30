@@ -14,24 +14,26 @@ local Entity = inherit(__Entity__, module("Entity"));
 local __all_block_index_entity__ = {};
 local __all_entity__ = {};
 local __all_name_entity__ = {};
+-- local __event_emitter__ = EventEmitter:new();
 
 local MOVE_ANIM_ID = 5;
 local STOP_MOVE_ANIM_ID = 0;
 
+Entity:Property("Name");                                              -- 实体名
+Entity:Property("Label");                                             -- 实体显示名
 Entity:Property("DestroyBeCollided", false, "IsDestroyBeCollided");   -- 被碰撞销毁
 Entity:Property("AttackBeCollided", false, "IsAttackBeCollided");     -- 被碰撞攻击
 Entity:Property("GoodsChangeCallBack");                               -- 物品变化回调
-Entity:Property("ClickCallBack");                                     -- 物品变化回调
+Entity:Property("ClickCallBack");                                     -- 点击回调
 Entity:Property("PositionChangeCallBack");                            -- 位置变化回调
 Entity:Property("CollidedCallBack");                                  -- 碰撞回调
 Entity:Property("DestroyCallBack");                                   -- 消失回调
 Entity:Property("Code");                                              -- 实体代码
 Entity:Property("CodeXmlText");                                       -- 实体代码的XML Text
 Entity:Property("MainPlayer", false, "IsMainPlayer");                 -- 是否是主玩家
-Entity:Property("Focus", false, "IsFocus");                           -- 是否聚焦
 Entity:Property("Speed", 1);                                          -- 移动速度
 Entity:Property("Step", 0.06);                                        -- 步长
-Entity:Property("HasBlood", true, "IsHasBlood");                     -- 是否有血量
+Entity:Property("HasBlood", true, "IsHasBlood");                      -- 是否有血量
 Entity:Property("Blood", 100);                                        -- 血量
 Entity:Property("TotalBlood", 100);                                   -- 总血量
 Entity:Property("CheckTerrain", true, "IsCheckTerrain");              -- 是否需要检测地形
@@ -60,6 +62,17 @@ ENTITY_TYPE = {
     NOT_COLLIDED_TYPE = 8,
 }
 Entity.ENTITY_TYPE = ENTITY_TYPE;
+
+local __focus_entity__ = nil;
+
+function SetFocusEntity(entity)
+    __focus_entity__ = entity;
+end
+
+function GetFocusEntity()
+    return __focus_entity__;
+end
+
 function Entity:ctor()
     NID = NID + 1;
     self.__nid__ = NID;
@@ -79,7 +92,8 @@ function Entity:Init(opts)
 
     opts.name = opts.name or "NPC";
     self:SetName(opts.name);
-
+    self:SetLabel(opts.label);
+    
     if (opts.opacity) then self:SetOpacity(opts.opacity) end
     -- 获取主玩家位置
     local bx, by, bz = GetPlayer():GetBlockPos();
@@ -101,8 +115,10 @@ function Entity:Init(opts)
     if (opts.isCanBeCollided == false) then self:SetCanBeCollided(false) end 
     if (opts.hasBlood == false) then self:SetHasBlood(false) end 
     if (opts.speed) then self:SetSpeed(opts.speed) end
+    if (opts.step) then self:SetStep(opts.step) end
     if (opts.scale) then self:SetScaling(opts.scale) end 
     if (opts.isCanRandomMove == false) then self:SetCanRandomMove(false) end 
+    if (opts.onclick) then self:SetClickCallBack(opts.onclick) end 
     self:SetObstruction(opts.obstruction);
     self:SetRandomMoveRange(opts.randomMoveRange);
     self:SetVisibleRadius(opts.visibleRadius or 1);
@@ -220,8 +236,9 @@ end
 
 function Entity:UpdatePosition(bForceUpdate)
     if (self.__entity_light__) then self.__entity_light__:SetPosition(self:GetPosition()) end
+    
+    if (self == GetFocusEntity()) then SetCameraLookAtPos(self:GetPosition()) end
 
-    if (self:IsFocus()) then SetCameraLookAtPos(self:GetPosition()) end
     self:OnPositionChange();
 
     local new_block_index = self:GetBlockIndex();
@@ -945,6 +962,21 @@ end
 -- 被攻击
 function Entity:Attacked(target_entity)
 end
+
+
+function Entity:OnClick(x,y,z, mouse_button, entity, side)
+    local callback = self:GetClickCallBack();
+    if (type(callback) == "function") then callback(self, mouse_button) end 
+    self:OnClicked(mouse_button);
+    return true;
+end
+
+function Entity:OnClicked(mouse_button)
+end
+
+function Entity:OnActivated()
+end
+
 
 local __api_list__ = {
     "SetName",

@@ -12,7 +12,6 @@ local NetEntity = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/NetEntit
 local EntityPlayer = require("EntityPlayer");
 local Net = require("Net");
 local NetPlayer = require("NetPlayer");
-local KeyBoard = require("KeyBoard");
 
 local NetEntity = inherit(ToolBase, module("NetEntity"));
 NetEntity:InitSingleton();
@@ -24,20 +23,6 @@ local __main_player_entity__ = nil;
 
 Net.EVENT_TYPE.SET_PLAYER_ENTITY_INFO = "SET_PLAYER_ENTITY_INFO";
 Net.EVENT_TYPE.SET_PLAYER_ENTITY_DATA_INFO = "SET_PLAYER_ENTITY_DATA_INFO";
-
-local function MoveKeyCallBack(event)
-    if (event.keyname == "DIK_SPACE" or event.keyname == "DIK_F") then return event:accept() end
-end
-
-local function DisableDefaultMoveKey()
-    DisableDefaultWASDKey();
-    RegisterEventCallBack(EventType.KEY, MoveKeyCallBack);
-end
-
-local function EnableDefaultMoveKey()
-    EnableDefaultWASDKey();
-    RemoveEventCallBack(EventType.KEY, MoveKeyCallBack);
-end
 
 local function DefaultCreateEntityPlayer(username)
     return EntityPlayer:new():Init({name = username});
@@ -158,63 +143,3 @@ Net:OnClosed(function()
 end);
 
 
--- 玩家移动控制
-KeyBoard:OnKeyDown("w", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetWKeyPressed(true);
-end);
-
-KeyBoard:OnKeyUp("w", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetWKeyPressed(false);
-end);
-
-KeyBoard:OnKeyDown("a", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetAKeyPressed(true);
-end);
-
-KeyBoard:OnKeyUp("a", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetAKeyPressed(false);
-end);
-
-KeyBoard:OnKeyDown("s", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetSKeyPressed(true);
-end);
-
-KeyBoard:OnKeyUp("s", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetSKeyPressed(false);
-end);
-
-KeyBoard:OnKeyDown("d", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetDKeyPressed(true);
-end);
-
-KeyBoard:OnKeyUp("d", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetDKeyPressed(false);
-end);
-
-KeyBoard:OnKeyDown("f", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetFKeyPressed(true);
-end);
-
-KeyBoard:OnKeyUp("f", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetFKeyPressed(false);
-end);
-
-KeyBoard:OnKeyDown("space", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetSpaceKeyPressed(true);
-end);
-
-KeyBoard:OnKeyUp("space", function()
-    if (not __main_player_entity__) then return end 
-    __main_player_entity__:SetSpaceKeyPressed(false);
-end);

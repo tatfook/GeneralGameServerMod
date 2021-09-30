@@ -9,6 +9,8 @@ local EntityPlayer = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/Entit
 ------------------------------------------------------------
 ]]
 
+local KeyBoard = require("KeyBoard");
+
 local EntityPlayer = inherit(require("Entity"), module("EntityPlayer"));
 
 EntityPlayer:Property("MainPlayer", false, "IsMainPlayer");   -- 是否是主玩家
@@ -33,12 +35,18 @@ end
 -- @param entityId: this is usually from the server. 
 function EntityPlayer:Init(opts)
     opts = opts or {};
+	opts.step = opts.step or 0.15;
     EntityPlayer._super.Init(self, opts);
 
     if (opts.entityId) then self:SetEntityId(opts.entityId) end 
 	self:SetUserName(opts.username or opts.name);
 	self:SetMainPlayer(opts.isMainPlayer); 
-	self:SetFocus(self:IsMainPlayer());
+
+	if (self:IsMainPlayer()) then
+		SetFocusPlayer(self);
+		self:UpdatePosition();
+	end
+
 	-- 起一个运动协程
 	__run__(function()
 		while (not self:IsDestory()) do
@@ -75,8 +83,7 @@ function EntityPlayer:CheckMotion()
 		if (is_on_ground) then return end ;
 	end 
 
-	local dist = 0.15;
-	-- local dist = 0.05;
+	local dist = self:GetStep() * self:GetSpeed();
     local x, y, z = self:GetPosition();
     local xx, yy, zz = x, y, z;
 	local facing = GetCameraFacing() / 180 * math.pi;
@@ -245,3 +252,93 @@ end
 function EntityPlayer:OnWatcherDataChange(callback)
 	self.__event_emitter__:RegisterEventCallBack("__entity_player_watcher_data_change__", callback);
 end
+
+
+local function MoveKeyCallBack(event)
+    if (event.keyname == "DIK_SPACE" or event.keyname == "DIK_F") then return event:accept() end
+end
+
+local function DisableDefaultMoveKey()
+    DisableDefaultWASDKey();
+    RegisterEventCallBack(EventType.KEY, MoveKeyCallBack);
+end
+
+local function EnableDefaultMoveKey()
+    EnableDefaultWASDKey();
+    RemoveEventCallBack(EventType.KEY, MoveKeyCallBack);
+end
+
+function SetFocusPlayer(player)
+	if (player and not player:IsDestory()) then
+		DisableDefaultMoveKey();
+		SetFocusEntity(player);
+	else
+		EnableDefaultMoveKey();
+		SetFocusPlayer(nil);
+	end
+end
+
+function GetFocusPlayer()
+	return GetFocusEntity();
+end
+
+-- 玩家移动控制
+KeyBoard:OnKeyDown("w", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetWKeyPressed(true);
+end);
+
+KeyBoard:OnKeyUp("w", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetWKeyPressed(false);
+end);
+
+KeyBoard:OnKeyDown("a", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetAKeyPressed(true);
+end);
+
+KeyBoard:OnKeyUp("a", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetAKeyPressed(false);
+end);
+
+KeyBoard:OnKeyDown("s", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetSKeyPressed(true);
+end);
+
+KeyBoard:OnKeyUp("s", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetSKeyPressed(false);
+end);
+
+KeyBoard:OnKeyDown("d", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetDKeyPressed(true);
+end);
+
+KeyBoard:OnKeyUp("d", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetDKeyPressed(false);
+end);
+
+KeyBoard:OnKeyDown("f", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetFKeyPressed(true);
+end);
+
+KeyBoard:OnKeyUp("f", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetFKeyPressed(false);
+end);
+
+KeyBoard:OnKeyDown("space", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetSpaceKeyPressed(true);
+end);
+
+KeyBoard:OnKeyUp("space", function()
+    if (not GetFocusPlayer()) then return end 
+    GetFocusPlayer():SetSpaceKeyPressed(false);
+end);
