@@ -16,9 +16,6 @@ local App = commonlib.inherit(Http, NPL.export());
 
 App:AddVirtualDirectory("/statics", "Mod/GeneralGameServerMod/App/Http/Statics");
 
--- 启用跨域
-App:UseCors();
-
 function App:GetServers()
     return SERVERS;
 end
@@ -34,7 +31,9 @@ end);
 
 App:Get("/test", function(ctx)
     print(os.execute("ls"));
-end)
+end);
+
+App:InitSingleton():Init():Start();
 
 -- print("================================start http server================================", __rts__:GetName())
 -- System.os.run()

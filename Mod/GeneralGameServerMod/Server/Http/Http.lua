@@ -37,14 +37,19 @@ function Http:Init()
     self:SetDefaultHandle(function(ctx)
         ctx:Send(nil, 204);
     end);
+
+    return self;
 end
 
 -- 启动服务器
 function Http:Start()
+    print("=======================================Http:Start=============================================");
     -- 指定Http接口文件
     NPL.AddPublicFile(self:GetNeuronFile(), -10);
 
-    NPL.StartNetServer(self:GetIp(), tostring(self:GetPort()));
+    if (not NPL.GetAttributeObject():GetField("IsServerStarted", false)) then
+        NPL.StartNetServer(self:GetIp(), tostring(self:GetPort()));
+    end
 end
 
 -- 注册路由

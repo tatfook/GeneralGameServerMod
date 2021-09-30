@@ -14,6 +14,7 @@ local Global = inherit(ToolBase, module());
 
 Global:Property("MainPlayerTrash");          -- 主玩家垃圾桶对象
 Global:Property("GarbageCount", 0);          -- 当前垃圾数量
+Global:Property("Mode", "offline");          -- online 联机模式  offline 离线模式
 
 local GarbagePosList = {};
 local GarbageMap = {};
@@ -37,8 +38,11 @@ function Global:Init()
             end
         end
     end
-
     return self;
+end
+
+function Global:IsOnlineMode()
+    return self:GetMode() == "online";
 end
 
 function Global:RandomGarbagePos()
@@ -107,6 +111,9 @@ function Global:CreateMainPlayerTrash(bx, by, bz)
     return trash;
 end
 
+function Global:CreatePlayerTrash(opts)
+    return Trash:new():Init(opts);
+end
 
 -- 全局化
 _G.__global__ = Global;

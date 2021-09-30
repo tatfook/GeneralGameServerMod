@@ -48,7 +48,7 @@ function RegisterNetworkEvent(msgname, callback)
     GetNetModule():On(msgname, callback);
 end
 
-function TriggerNetworkEvent(msgname, msgdata)
+function TriggerNetworkEvent(msgname, msgdata, username)
     GetNetModule():Emit(msgname, msgdata);
 end
 
@@ -58,6 +58,22 @@ end
 
 function GetNetPlayerModule()
     return require("NetPlayer");
+end
+
+function OnNetMainPlayerLogin(callback)
+    GetNetPlayerModule():OnMainPlayerLogin(callback);
+end
+
+function OnNetMainPlayerLogout(callback)
+    GetNetPlayerModule():OnMainPlayerLogout(callback);
+end
+
+function OnNetPlayerLogin(callback)
+    GetNetPlayerModule():OnPlayerLogin(callback);
+end
+
+function OnNetPlayerLogout(callback)
+    GetNetPlayerModule():OnPlayerLogout(callback);
 end
 
 function GetNetRankModule()
@@ -101,6 +117,10 @@ function GetEntityModule()
     return require("Entity");
 end
 
+function GetEntityByKey(key)
+    return GetEntityModule():GetEntityByKey(key);
+end
+
 function GetAllEntity()
     return GetEntityModule():GetAllEntity();
 end
@@ -115,24 +135,24 @@ function DestroyEntityByKey(key)
     entity:Destroy();
 end
 
-function GetEntityByName(name)
-    return GetEntityModule():GetEntityByName(name);
+function GetEntityByUserName(name)
+    return GetEntityModule():GetEntityByUserName(name);
 end
 
 function DestroyEntityByName(name)
-    local entity = GetEntityByName(name);
+    local entity = GetEntityByUserName(name);
     if (not entity) then return end
     entity:Destroy();
 end
 
 function RunForEntity(entity, func)
-    local entity = type(entity) == "table" and entity or GetEntityModule():GetEntityByName(name);
+    local entity = type(entity) == "table" and entity or GetEntityModule():GetEntityByUserName(name);
     if (not entity) then return end
     return entity:Run(func);
 end
 
 function ShowEntityEditor(key)
-    local entity = require("Entity"):GetEntityByKey(key);
+    local entity = GetEntityModule():GetEntityByKey(key);
     if (not entity) then return end 
     local screen_width = GetScreenSize();
     local width = math.floor(screen_width / 2);

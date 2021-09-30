@@ -69,18 +69,24 @@ function NetPlayer:MainPlayerLogout()
     self:RefreshPlayerListUI();
 end
 
-function NetPlayer:OnPlayer(callback)
+function NetPlayer:OnPlayerInfoChange(callback)
     RegisterEventCallBack(Net.EVENT_TYPE.PLAYER_INFO, callback);
 end
 
-function NetPlayer:SetPlayerInfo(player)
+function NetPlayer:SetMainPlayerInfo(player)
+    player.username = __username__;
+    __players__[__username__] = __players__[__username__] or {};
+    partialcopy(__players__[__username__], player);
+    self:RefreshPlayerListUI();
+    Net:Send({action = Net.EVENT_TYPE.PLAYER_INFO, player = __players__[__username__]});
+end
+
+function NetPlayer:SetOtherPlayerInfo(player)
     local username = player and player.username;
     if (not username) then return end
     __players__[username] = __players__[username] or {};
     partialcopy(__players__[username], player);
-
     self:RefreshPlayerListUI();
-
     TriggerEventCallBack(Net.EVENT_TYPE.PLAYER_INFO, __players__[username]);
 end
 
@@ -192,7 +198,7 @@ end);
 Net:OnRecv(function(msg)
     local action = msg.action;
     if (action == Net.EVENT_TYPE.PLAYER_LOGIN) then return NetPlayer:PlayerLogin(msg.player) end
-    if (action == Net.EVENT_TYPE.PLAYER_INFO) then return NetPlayer:SetPlayerInfo(msg.player) end
+    if (action == Net.EVENT_TYPE.PLAYER_INFO) then return NetPlayer:SetOtherPlayerInfo(msg.player) end
 end);
 
 -- 主玩家连接关闭

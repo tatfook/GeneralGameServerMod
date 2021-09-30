@@ -41,5 +41,21 @@
 2. 联机简易模式实现.
 3. 联机高级模式实现.
 
+## 使用
+
+1. 更新 GGS 代码
+2. 世界放置一个代码方块, 方块代码如下:
+
+```lua
+local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
+Independent:Start("%gi%/App/lajifenlei/main.lua");
+registerStopEvent(function()
+    Independent:Stop();
+end)
+
+3. 代码方块旁边放置拉杆, 激活拉杆执行代码方块代码即可.
+```
+
 ## 链接
 
+[实现代码目录](https://gitee.com/__xiaoyao__/GeneralGameServerMod/blob/dev/Mod/GeneralGameServerMod/GI/App/lajifenlei/Readme.md)

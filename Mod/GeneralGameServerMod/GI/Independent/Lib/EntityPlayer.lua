@@ -14,21 +14,22 @@ local KeyBoard = require("KeyBoard");
 local EntityPlayer = inherit(require("Entity"), module("EntityPlayer"));
 
 EntityPlayer:Property("MainPlayer", false, "IsMainPlayer");   -- 是否是主玩家
-EntityPlayer:Property("UserName");
 EntityPlayer:Property("Fly", false, "IsFly");                  -- 是否在飞行
 EntityPlayer:Property("Jump", false, "IsJump");                -- 是否在跳跃
+EntityPlayer:Property("CanFly", false, "IsCanFly");            -- 是否在飞行
+EntityPlayer:Property("CanJump", false, "IsCanJump");          -- 是否在跳跃
 EntityPlayer:Property("JumpTickCount", 0);                     -- 跳跃tick数
 
 function EntityPlayer:ctor()
-	local dataWatcher = self:GetDataWatcher(true);
-	self.dataFieldWKeyPressed = dataWatcher:AddField(nil, nil);
-	self.dataFieldAKeyPressed = dataWatcher:AddField(nil, nil);
-	self.dataFieldSKeyPressed = dataWatcher:AddField(nil, nil);
-	self.dataFieldDKeyPressed = dataWatcher:AddField(nil, nil);
-	self.dataFieldFKeyPressed = dataWatcher:AddField(nil, nil);
-	self.dataFieldSpaceKeyPressed = dataWatcher:AddField(nil, nil);
-	self.dataFieldAssetFile = dataWatcher:AddField(nil, nil);
-
+	local __data_watcher__ = self:GetDataWatcher(true);
+	self.dataFieldWKeyPressed = __data_watcher__:AddField(nil, nil);
+	self.dataFieldAKeyPressed = __data_watcher__:AddField(nil, nil);
+	self.dataFieldSKeyPressed = __data_watcher__:AddField(nil, nil);
+	self.dataFieldDKeyPressed = __data_watcher__:AddField(nil, nil);
+	self.dataFieldFKeyPressed = __data_watcher__:AddField(nil, nil);
+	self.dataFieldSpaceKeyPressed = __data_watcher__:AddField(nil, nil);
+	self.dataFieldAssetFile = __data_watcher__:AddField(nil, nil);
+	self.__data_watcher__ = __data_watcher__;
 	self.__event_emitter__ = EventEmitter:new();
 end
 
@@ -39,7 +40,6 @@ function EntityPlayer:Init(opts)
     EntityPlayer._super.Init(self, opts);
 
     if (opts.entityId) then self:SetEntityId(opts.entityId) end 
-	self:SetUserName(opts.username or opts.name);
 	self:SetMainPlayer(opts.isMainPlayer); 
 
 	if (self:IsMainPlayer()) then
@@ -170,8 +170,9 @@ function EntityPlayer:FaceTarget(x,y,z, isAngle)
 end
 
 function EntityPlayer:SetAssetFile(assetfile)
+	if (self:GetAssetFile() == assetfile) then return end 
 	EntityPlayer._super.SetAssetFile(self, assetfile);
-	self.dataWatcher:SetField(self.dataFieldAssetFile, self:GetAssetFile());
+	self.__data_watcher__:SetField(self.dataFieldAssetFile, self:GetAssetFile());
 end
 
 function EntityPlayer:IsMoveKeyPressed()
@@ -183,76 +184,112 @@ function EntityPlayer:IsWASDKeyPressed()
 end
 
 function EntityPlayer:SetWKeyPressed(is_w_pressed)
-	self.dataWatcher:SetField(self.dataFieldWKeyPressed, is_w_pressed);
+	self.__data_watcher__:SetField(self.dataFieldWKeyPressed, is_w_pressed);
 end
 
 function EntityPlayer:IsWKeyPressed()
-	return self.dataWatcher:GetField(self.dataFieldWKeyPressed);
+	return self.__data_watcher__:GetField(self.dataFieldWKeyPressed);
 end
 
 function EntityPlayer:SetAKeyPressed(is_a_pressed)
-	self.dataWatcher:SetField(self.dataFieldAKeyPressed, is_a_pressed);
+	self.__data_watcher__:SetField(self.dataFieldAKeyPressed, is_a_pressed);
 end
 
 function EntityPlayer:IsAKeyPressed()
-	return self.dataWatcher:GetField(self.dataFieldAKeyPressed);
+	return self.__data_watcher__:GetField(self.dataFieldAKeyPressed);
 end
 
 function EntityPlayer:SetSKeyPressed(is_s_pressed)
-	self.dataWatcher:SetField(self.dataFieldSKeyPressed, is_s_pressed);
+	self.__data_watcher__:SetField(self.dataFieldSKeyPressed, is_s_pressed);
 end
 
 function EntityPlayer:IsSKeyPressed()
-	return self.dataWatcher:GetField(self.dataFieldSKeyPressed);
+	return self.__data_watcher__:GetField(self.dataFieldSKeyPressed);
 end
 
 function EntityPlayer:SetDKeyPressed(is_d_pressed)
-	self.dataWatcher:SetField(self.dataFieldDKeyPressed, is_d_pressed);
+	self.__data_watcher__:SetField(self.dataFieldDKeyPressed, is_d_pressed);
 end
 
 function EntityPlayer:IsDKeyPressed()
-	return self.dataWatcher:GetField(self.dataFieldDKeyPressed);
+	return self.__data_watcher__:GetField(self.dataFieldDKeyPressed);
 end
 
 function EntityPlayer:SetFKeyPressed(is_f_pressed)
-	self.dataWatcher:SetField(self.dataFieldFKeyPressed, is_f_pressed);
+	if (not self:IsCanFly()) then return end 
+	self.__data_watcher__:SetField(self.dataFieldFKeyPressed, is_f_pressed);
 	if (is_f_pressed) then self:SetFly(not self:IsFly()) end 
 end
 
 function EntityPlayer:IsFKeyPressed()
-	return self.dataWatcher:GetField(self.dataFieldFKeyPressed);
+	return self.__data_watcher__:GetField(self.dataFieldFKeyPressed);
 end
 
 function EntityPlayer:SetSpaceKeyPressed(is_space_pressed)
-	self.dataWatcher:SetField(self.dataFieldSpaceKeyPressed, is_space_pressed);
+	if (not self:IsCanJump()) then return end 
+	self.__data_watcher__:SetField(self.dataFieldSpaceKeyPressed, is_space_pressed);
 	-- if (is_space_pressed) then self:SetJump(not self:IsJump()) end 
 end
 
 function EntityPlayer:IsSpaceKeyPressed()
-	return self.dataWatcher:GetField(self.dataFieldSpaceKeyPressed);
+	return self.__data_watcher__:GetField(self.dataFieldSpaceKeyPressed);
 end
 
 function EntityPlayer:CheckWatcherDataChange()
-    if (self.dataWatcher:HasChanges()) then
+    if (self.__data_watcher__:HasChanges()) then
 		self.__event_emitter__:TriggerEventCallBack("__entity_player_watcher_data_change__", self:GetWatcherData());
 	end
+
+	-- 清楚缓存
+	self.__watcher_data__ = nil;
 end
 
 function EntityPlayer:GetWatcherData()
-	local listobj = self.dataWatcher:UnwatchAndReturnAllWatched();
-	return self.dataWatcher.WriteObjectsInListToData(listobj, nil);
+	if (not self.__data_watcher__:HasChanges()) then return self.__watcher_data__ end 
+
+	local listobj = self.__data_watcher__:UnwatchAndReturnAllWatched();
+	self.__watcher_data__ = self.__data_watcher__.WriteObjectsInListToData(listobj, nil);
+	
+	return self.__watcher_data__;
+end
+
+function EntityPlayer:GetAllWatcherData()
+	local listobj = self.__data_watcher__:GetAllObjectList();
+	return self.__data_watcher__.WriteObjectsInListToData(listobj, nil);
 end
 
 function EntityPlayer:LoadWatcherData(data)
 	if (not data) then return end 
-	local listobj = self.dataWatcher.ReadWatchebleObjects(data);
-	self.dataWatcher:UpdateWatchedObjectsFromList(listobj);
+	local listobj = self.__data_watcher__.ReadWatchebleObjects(data);
+	self.__data_watcher__:UpdateWatchedObjectsFromList(listobj);
+
 end
 
 function EntityPlayer:OnWatcherDataChange(callback)
 	self.__event_emitter__:RegisterEventCallBack("__entity_player_watcher_data_change__", callback);
 end
 
+function EntityPlayer:GetSyncData(bAllData)
+	local x, y, z = self:GetPosition();
+    return {
+        __key__ = self:GetKey(),
+		__username__ = self:GetUserName(),
+        x = x, y = y, z = z, 
+        metadata = bAllData and self:GetAllWatcherData() or self:GetWatcherData(),
+    };
+end
+
+function EntityPlayer:SetSyncData(data)
+	if (data.__key__) then self:SetKey(data.__key__) end
+	if (data.__username__) then self:SetUserName(data.__username__) end
+	if (data.x and data.y and data.z) then self:SetPosition(data.x, data.y, data.z) end
+	if (data.metadata) then 
+		local old_assetfile = self:GetAssetFile();
+		self:LoadWatcherData(data.metadata);
+		local new_assetfile = self.__data_watcher__:GetField(self.dataFieldAssetFile);
+		if (old_assetfile ~= new_assetfile) then self:SetAssetFile(new_assetfile) end 
+	end 
+end
 
 local function MoveKeyCallBack(event)
     if (event.keyname == "DIK_SPACE" or event.keyname == "DIK_F") then return event:accept() end

@@ -13,7 +13,7 @@ local Entity = inherit(__Entity__, module("Entity"));
 
 local __all_block_index_entity__ = {};
 local __all_entity__ = {};
-local __all_name_entity__ = {};
+local __all_username_entity__ = {};
 -- local __event_emitter__ = EventEmitter:new();
 
 local MOVE_ANIM_ID = 5;
@@ -48,8 +48,6 @@ Entity:Property("CanRandomMove", false, "IsCanRandomMove");           -- 是否�
 Entity:Property("RandomMoveRange");                                   -- 随机移动范围
 Entity:Property("Obstruction", false, "IsObstruction");               -- 是否是实体
 
-local NID = 0;
-
 ENTITY_TYPE = {
     DEFAULT_TYPE = 0,
     ATTACK_TYPE = 1,
@@ -74,9 +72,8 @@ function GetFocusEntity()
 end
 
 function Entity:ctor()
-    NID = NID + 1;
-    self.__nid__ = NID;
-    self.__key__ = string.format("NPC_%s", self.__nid__);
+    self.__uuid__ = UUID();
+    self.__key__ = string.format("NPC_%s", self.__uuid__);
     self.__name__ = self.__key__;
     self.__scope__ = NewScope();                   -- 响应式变量 
     self.__skills__ = {};                          -- 技能集
@@ -84,7 +81,7 @@ function Entity:ctor()
     self.__types__ = {};                           -- 实体类型   0 -- 实体类型  1 -- 可攻击类型  2  -- 被攻击类型  3 -- 不可攻击类型  4 - 不可被攻击类型 5 -- 可以碰撞  6 - 不可以碰撞  7 可以被碰撞  8 不可以被碰撞
     self.__contexts__ = {};                        -- 协程环境上下文
     __all_entity__[self.__key__] = self;
-    __all_name_entity__[self.__name__] = self;
+    __all_username_entity__[self.__name__] = self;
 end
 
 function Entity:Init(opts)
@@ -94,11 +91,15 @@ function Entity:Init(opts)
     self:SetName(opts.name);
     self:SetLabel(opts.label);
     
+    if (opts.username) then self:SetUserName(opts.username) end 
+    if (opts.key) then self:SetKey(opts.key) end 
+    
     if (opts.opacity) then self:SetOpacity(opts.opacity) end
     -- 获取主玩家位置
     local bx, by, bz = GetPlayer():GetBlockPos();
     self:SetBlockPos(opts.bx or bx or 0, opts.by or by or 0, opts.bz or bz or 0);
-    -- self:SetAssetFile(opts.assetfile or "character/CC/02human/actor/actor.x");
+    if (opts.x and opts.y and opts.z) then self:SetPosition(opts.x, opts.y, opts.z) end 
+
     self:SetAssetFile(opts.assetfile or "character/CC/02human/actor/actor.x");
     self:CreateInnerObject(self:GetMainAssetPath(), true, 0, 1, self:GetSkin());
 	self:RefreshClientModel();
@@ -172,25 +173,31 @@ function Entity:GetKey()
     return self.__key__;
 end
 
+function Entity:SetKey(key) 
+    if (self.__key__ == key) then return end 
+    if (self.__key__) then __all_entity__[self.__key__] = nil end
+    self.__key__ = key;
+    if (self.__key__) then __all_entity__[self.__key__] = self end
+end
+
 function Entity:GetEntityByKey(key)
     return __all_entity__[key];
 end
 
-function Entity:SetName(name) 
-    if (self.__name__) then __all_name_entity__[self.__name__] = nil end
-
-    self.__name__ = name;
-    self.__scope__:Set("username", name);
-
-    if (self.__name__) then __all_name_entity__[self.__name__] = self end
+function Entity:SetUserName(username) 
+    if (self.__username__ == username) then return end 
+    if (self.__username__) then __all_username_entity__[self.__username__] = nil end
+    self.__username__ = username;
+    -- self.__scope__:Set("username", username);
+    if (self.__username__) then __all_username_entity__[self.__username__] = self end
 end
 
-function Entity:GetName() 
-    return self.__name__;
+function Entity:GetUserName() 
+    return self.__username__;
 end
 
-function Entity:GetEntityByName(name)
-    return __all_name_entity__[name];
+function Entity:GetEntityByUserName(username)
+    return username and __all_username_entity__[username];
 end
 
 function Entity:GetAssetFile()
@@ -222,7 +229,6 @@ function Entity:SetBlockPosition(pos)
     local bx, by, bz = tonumber(x), tonumber(y), tonumber(z);
     self:SetBlockPos(bx, by, bz);
 end
-
 
 function Entity:GetBlockIndex()
     local bx, by, bz = self:GetBlockPos();
@@ -562,7 +568,7 @@ function Entity:Destroy()
     self:CloseHeadOnDisplay();
 
     __all_entity__[self.__key__] = nil;
-    if (self.__name__) then __all_name_entity__[self.__name__] = nil end
+    if (self.__name__) then __all_username_entity__[self.__name__] = nil end
 
     Entity._super.Destroy(self);
 
@@ -1025,8 +1031,15 @@ end
 
 -- blockly api
 for _, funcname in ipairs(__api_list__) do
-    _G["Entity" .. funcname] = function(name, ...)
-        local entity = Entity:GetEntityByName(name);
+    _G["Entity" .. funcname] = function(username, ...)
+        local entity = Entity:GetEntityByUserName(username);
         return entity and (entity[funcname])(entity, ...);
     end
+end
+
+
+function Entity:GetSyncData()
+end
+
+function Entity:SetSyncData(data)
 end

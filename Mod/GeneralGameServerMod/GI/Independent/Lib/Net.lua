@@ -16,6 +16,7 @@ Net:Property("Connected", false, "IsConnected");    -- 是否连接成功
 Net:Property("Connecting", false, "IsConnecting");  -- 是否正在连接
 
 local __username__ = GetUserName();
+local __msg_event_emitter__ = EventEmitter:new();
 local __connection__ = RPC;
 local __control_server_ip__ = IsDevEnv and "127.0.0.1" or "ggs.keepwork.com";
 local __control_server_port = IsDevEnv and "9000" or "9000";
@@ -24,10 +25,11 @@ local __worker_server_ip__, __worker_server_ip__ = nil, nil;
 Net.EVENT_TYPE = {
     CONNECTED = "NET_CONNECTED",
     CONNECT_CLOSED = "NET_CONNECT_CLOSED",
+    MSG = "NET_MSG",
 }
 
 local function SelectWorldServer(callback, try_wait_time)
-    print("========================SelectWorldServer=============================", __coroutine_running__());
+    -- print("========================SelectWorldServer=============================", __coroutine_running__());
 
     try_wait_time = try_wait_time or 10000;
     local function error_handle()
@@ -41,7 +43,7 @@ local function SelectWorldServer(callback, try_wait_time)
         worldId = GetWorldId(),
     }):Then(function(msg)
         if (msg.status ~= 200) then return error_handle() end
-        print("==================================server address============================", msg.data.ip, msg.data.port);
+        -- print("==================================server address============================", msg.data.ip, msg.data.port);
         return type(callback) == "function" and callback(msg.data);
     end):Catch(function()
         error_handle();
@@ -102,6 +104,28 @@ function Net:OnRecv(callback)
     __connection__:OnRecv(__safe_callback__(callback));
 end
 
+function Net:On(msgname, callback)
+    __msg_event_emitter__:RegisterEventCallBack(msgname, callback);
+end
+
+function Net:Emit(msgname, msgdata, username)
+    local data = {
+        __action__ = Net.EVENT_TYPE.MSG,
+        __msgname__ = msgname,
+        __msgdata__ = msgdata,
+    }
+
+    if (username) then
+        self:SendTo(username, data);
+    else
+        self:Send(data);
+    end
+end
+
+function Net:Off(msgname, callback)
+    __msg_event_emitter__:RemoveEventCallBack(msgname, callback);
+end
+
 -- 断开
 function Net:OnDisconnected(callback)
     __connection__:OnDisconnected(__safe_callback__(callback))
@@ -152,8 +176,7 @@ function Net:OnShareData(...)
     __connection__:OnShareData(...);
 end
 
-Net:InitSingleton():Connect(function(data)
-    log("=================net connect success=============")
+Net:InitSingleton():Connect(function()
 end);
 
 Net:OnDisconnected(function() 
@@ -166,4 +189,10 @@ end);
 
 Net:OnClosed(function()
     print("========================Net:OnClosed========================")
-end)
+end);
+
+Net:OnRecv(function(data)
+    if (data.__action__ == Net.EVENT_TYPE.MSG) then
+        __msg_event_emitter__:TriggerEventCallBack(data.__msgname__, data.__msgdata__);
+    end
+end);

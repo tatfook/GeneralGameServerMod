@@ -56,6 +56,7 @@ setmetatable(API, {__call = function(_, CodeEnv)
     CodeEnv.MD5 = CommonLib.MD5;
     CodeEnv.EncodeBase64 = CommonLib.EncodeBase64;
     CodeEnv.DecodeBase64 = CommonLib.DecodeBase64;
+    CodeEnv.UUID = System.Encoding.guid.uuid;
 
     CodeEnv.GetWorldId = function() return GameLogic.options:GetProjectId() end 
     CodeEnv.SetWorldKey = function(worldKey) __world_key__ = worldKey end 

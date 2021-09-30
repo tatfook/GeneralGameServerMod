@@ -16,8 +16,9 @@ function Trash:ctor()
     self.__trash_garbage_info_map__ = {};    -- 垃圾列表
 end
 
-
 function Trash:Init(opts)
+    opts = opts or {};
+    
     local category = opts.category or Config.GARBAGE_CATEGORY.QITA;
     local trash_config = Config.TRASH_CFG[category];
     opts.assetfile = opts.assetfile or trash_config.assetfile;
@@ -79,10 +80,10 @@ function Trash:ShowHeadOnDisplay(G, params)
     params.parent = GetRootUIObject();
     params.template = params.template or [[
 <template style="width: 100%; height: 100%;">
-    <div style="color:#cccccc; font-size: 20px; height: 30px; line-height: 30px; text-align: center;">{{username}}</div>
+    <div style="color:#cccccc; font-size: 20px; height: 30px; line-height: 30px; text-align: center;">{{__text__}}</div>
 </template>
     ]]
-    self.__scope__:Set("username", self:GetLabel());
+    self.__scope__:Set("__text__", self:GetLabel());
     self.__head_on_displayer_ui__ = ShowWindow(G, params);
 
     return self.__head_on_displayer_ui__;
