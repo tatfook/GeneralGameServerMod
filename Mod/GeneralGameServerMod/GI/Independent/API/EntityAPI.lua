@@ -113,7 +113,12 @@ setmetatable(
                 return __entity_list__;
             end
 
-
+            CodeEnv.ForEachEntity = function(callback)
+                for _, entity in ipairs(CodeEnv.__GetEntityList__()) do
+                    callback(entity);
+                end
+            end
+            
             CodeEnv.__ClearAllEntity__ = function()
                 for _, entity in ipairs(CodeEnv.__GetEntityList__()) do
                     entity:Destroy();

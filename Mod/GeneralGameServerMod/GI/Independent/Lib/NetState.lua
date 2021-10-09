@@ -11,6 +11,8 @@ local NetState = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/NetState.
 
 require("Net");
 
+local NetState = module();
+
 local __state__ = NewScope();
 
 local SYNC_STATE = "NET_SYNC_STATE";
@@ -19,7 +21,7 @@ local AUTO_SYNC_STATE = "NET_AUTO_SYNC_STATE";
 local __is_enable_auto_sync_state__ = true;
 local __sync_key_val_list__ = {};
 __state__:__set_newindex_callback__(function(scope, key, newval, oldval)
-    if (not Net:IsConnected() or not __is_enable_auto_sync_state__) then return end 
+    if (not __is_enable_auto_sync_state__) then return end 
 
     local keys = scope:__get_keys__(key);
     keys.size = #keys;
@@ -29,7 +31,7 @@ end);
 
 local __cache_list__ = {size = 0};
 RegisterTimerCallBack(function()
-    if (not Net:IsConnected() or not __is_enable_auto_sync_state__) then return end 
+    if (not __is_enable_auto_sync_state__) then return end 
     
     local size = #__sync_key_val_list__;
     local cache_size = #__cache_list__;
@@ -44,7 +46,11 @@ RegisterTimerCallBack(function()
     
     if (size == 0) then return end 
     -- log("同步Net STATE", __cache_list__)
-    NetSend(__cache_list__);
+    
+    local __NetSend__ = NetSend;
+    RPC_Call("SetStateData", __cache_list__, function()
+        __NetSend__(__cache_list__);
+    end);
 end);
 
 local function AutoSyncState(msg)
@@ -74,17 +80,29 @@ local function RecvSyncState(key, value)
             __state__:Set(k, v);
         end
     end
-    NetState:SetAutoSyncState(true);
     __is_enable_auto_sync_state__= true;
 end
 
 local function SendSyncState(key, value)
+    key = key or UUID();
+    value = value == nil and {} or value;
+
     RecvSyncState(key, value);
 
-    NetSend({
-        action = SYNC_STATE,
-        key = key, value = value,
-    });
+    local __NetSend__ = NetSend;
+    RPC_Call("SetStateData", {
+        size = 1,
+        [1] = {
+            [1] = key, 
+            size = 1,
+            value = value,
+        }
+    }, function()
+        __NetSend__({
+            action = SYNC_STATE,
+            key = key, value = value,
+        });
+    end);
 end
 
 -- 收到数据
@@ -94,6 +112,17 @@ NetOnRecv(function(msg)
     if (action == AUTO_SYNC_STATE) then return AutoSyncState(msg) end
 end);
 
+NetConnect(function()
+    local is_sleep = true;
+    RPC_Call("StateData", nil, function(state)
+        __is_enable_auto_sync_state__ = false;
+        for key, val in pairs(state) do __state__:Set(key, val) end 
+        __is_enable_auto_sync_state__ = true;
+        is_sleep = false;
+    end);
+
+    while(is_sleep) do sleep() end 
+end);
 
 -- ==================================================API===============================================
 function NetInitState(key, init_value)

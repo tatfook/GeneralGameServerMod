@@ -21,6 +21,7 @@ function Garbage:Init(opts)
 end
 
 function Garbage:OnClicked()
+    -- __global__:PickUpGarbage(self);
     local __main_player_trash__ = __global__:GetMainPlayerTrash();
     __main_player_trash__:PickUpGarbage(self);
 end

@@ -51,7 +51,7 @@ function NetInitSharedData(init_shared_data)
             local wait_time, wait_total_time = 300, 0;
             while(not __net_shared_data_inited__) do
                 sleep(wait_time);
-                __net_shared_data_inited__ = NetGetSharedData("inited");
+                __net_shared_data_inited__ = NetGetSharedData("__net_shared_data_inited__");
                 wait_total_time = wait_total_time + wait_time;
                 -- 
                 if (wait_total_time > 5000) then

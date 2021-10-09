@@ -29,11 +29,9 @@ Net.EVENT_TYPE = {
 }
 
 local function SelectWorldServer(callback, try_wait_time)
-    -- print("========================SelectWorldServer=============================", __coroutine_running__());
-
-    try_wait_time = try_wait_time or 10000;
+    -- print("========================SelectWorldServer=============================");
+    try_wait_time = try_wait_time or 5000;
     local function error_handle()
-        fatal("Unable to get server address");
         sleep(try_wait_time);
         try_wait_time = try_wait_time + try_wait_time;
         SelectWorldServer(callback, try_wait_time);
@@ -43,7 +41,7 @@ local function SelectWorldServer(callback, try_wait_time)
         worldId = GetWorldId(),
     }):Then(function(msg)
         if (msg.status ~= 200) then return error_handle() end
-        -- print("==================================server address============================", msg.data.ip, msg.data.port);
+        print("==================================server address============================", msg.data.ip, msg.data.port);
         return type(callback) == "function" and callback(msg.data);
     end):Catch(function()
         error_handle();
@@ -92,14 +90,12 @@ end
 -- 发送
 function Net:Send(data)
     if (not self:IsConnected()) then return end 
-
     __connection__:Send(data);
 end
 
 -- 发送指定用户
 function Net:SendTo(username, data)
     if (not self:IsConnected()) then return end 
-    
     __connection__:SendTo(username, data);
 end
 
@@ -181,11 +177,11 @@ function Net:OnShareData(...)
 end
 
 function Net:Lock(...)
-    __connection__:Lock(...);
+    return __connection__:Lock(...);
 end
 
 function Net:Unlock(...)
-    __connection__:Unlock(...);
+    return __connection__:Unlock(...);
 end
 
 function NetSend(...)
@@ -211,7 +207,9 @@ Net:OnDisconnected(function()
     print("========================Net:OnDisconnected========================")
     Net:SetConnected(false);
     if (not Net:IsConnecting()) then
-        Net:Connect() 
+        print("=============================reconnect begin=============================")
+        Net:Connect(); 
+        print("=============================reconnect end=============================")
     end
 end);
 

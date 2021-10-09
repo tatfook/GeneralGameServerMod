@@ -21,15 +21,15 @@ end
 function Net:StartGame()
 end
 
-function Net:Connect()
+function Net:Connect(state)
+    require("NetState");
+
     OnNetMainPlayerLogin(function()
         self:SetConnected(true);
         print("------------OnNetMainPlayerLogin----------")
         __main_player_trash__:SetUserName(GetUserName());
         __main_player_trash__:OnWatcherDataChange(SyncPlayerTrash);
         SyncPlayerTrash(true);
-
-        NetInitSharedData({__init_data__ = })
     end);
 
     OnNetMainPlayerLogout(function()
@@ -52,6 +52,8 @@ function Net:Connect()
         local entity = GetEntityByUserName(data.__username__) or GetEntityByKey(data.__key__) or __global__:CreatePlayerTrash();
         entity:SetSyncData(data);
     end);
+
+    return NetInitState("lajifenlei", state);
 end
 
 Net:InitSingleton();

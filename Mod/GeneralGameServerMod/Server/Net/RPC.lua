@@ -78,6 +78,28 @@ function RPC:HandleSetShareData(sharedata)
     self:GetWorld():SendToAllPlayer("SetShareData", sharedata, self:GetPlayer());
 end
 
+-- 设置状态数据
+function RPC:HandleSetStateData(keys_list)
+    local __state__ = self:GetWorld():GetStateData();
+    local keys_list_size = keys_list.size;
+    for i = 1, keys_list_size do
+        local keys = keys_list[i];
+        local size, value = keys.size, keys.value;
+        local state = __state__;
+        for j = 1, size - 1 do
+            local key = keys[j];
+            if (type(state[key] ~= "table")) then state[key] = {} end 
+            state = state[key];
+        end
+        state[keys[size]] = value;
+    end
+end
+
+-- 获取状态数据
+function RPC:HandleStateData()
+    return self:GetWorld():GetStateData();
+end
+
 -- 广播给指定用户
 function RPC:HandleBroadcastTo(data)
     if (not self:IsValid()) then return end 

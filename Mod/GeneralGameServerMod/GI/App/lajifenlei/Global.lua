@@ -9,6 +9,7 @@ use the lib:
 local Config = require("./Config.lua");
 local Garbage = require("./Garbage.lua");
 local Trash = require("./Trash.lua");
+local Net = require("./Net.lua");
 
 local Global = inherit(ToolBase, module());
 
@@ -38,7 +39,22 @@ function Global:Init()
             end
         end
     end
+
+
     return self;
+end
+
+function Global:Start()
+    if (self:IsOnlineMode()) then
+        self.__state__ = Net:Connect({
+            __garbage_map__ = self:RandomGarbageMap(50),
+        });
+        self.__garbage_map__ = self.__state__.__garbage_map__;
+        self:LoadGarbageMap(self.__garbage_map__);
+        log(self.__garbage_map__);
+    else
+        self:RandomGarbage(50);
+    end
 end
 
 function Global:IsOnlineMode()
@@ -78,10 +94,18 @@ end
 
 function Global:LoadGarbageMap(map)
     self.__garbage_map__ = {};
+    ForEachEntity(function(entity)
+        if (entity:isa(Garbage)) then
+            entity:Destroy();
+        end
+    end);
+
     for block_index, garbage_config_index in pairs(map) do
         local bx, by, bz = ConvertToBlockPositionFromBlockIndex(block_index);
         local garbage_config = Config.GARBAGE_CONFIG_LIST[garbage_config_index];
+        local key = UUID();
         local garbage = Garbage:new():Init({
+            key = key,
             bx = bx, by = by, bz = bz,
             category = garbage_config.category,
             assetfile = garbage_config.assetfile,
@@ -147,6 +171,11 @@ end
 
 function Global:CreatePlayerTrash(opts)
     return Trash:new():Init(opts);
+end
+
+function Global:PickUpGarbage(garbage)
+    -- 发送网络事件
+    -- 检测state变化, 客户端自行处理
 end
 
 -- 全局化

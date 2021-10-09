@@ -46,6 +46,7 @@ function World:ctor()
     self.__all_player__ = {};
     self.__all_user_data__ = {};
     self.__share_data__ = {};
+    self.__state_data__ = {};
 end
 
 function World:Init(worldId, worldName, worldKey)
@@ -113,6 +114,10 @@ function World:GetShareData()
     return self.__share_data__;
 end
 
+function World:GetStateData()
+    return self.__state_data__;
+end
+
 function World:SetShareData(data)
     commonlib.partialcopy(self:GetShareData(), data);
 end
@@ -142,6 +147,7 @@ end
 function World:Lock(username)
     -- 已上锁则返回失败
     if (self.__lock_username__ and username and self.__lock_username__ ~= username) then return false end 
+    print("====================World:Lock Success==================", self:GetWorldKey(), username);
     self.__lock_username__ = username;
     return true;
 end
@@ -149,6 +155,7 @@ end
 function World:Unlock(username)
     -- username = nil 强制解锁
     if (self.__lock_username__ and self.__lock_username__ ~= username) then return false end 
+    print("====================World:Unlock Success==================", self:GetWorldKey(), username);
     self.__lock_username__ = nil;
     return true;
 end

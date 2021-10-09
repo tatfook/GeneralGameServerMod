@@ -50,7 +50,8 @@ end
 
 function Trash:PickUpGarbage(garbage)
     if (garbage:GetCategory() ~= self:GetCategory()) then
-        return Tip("不是同类垃圾, 不可拾取...");
+        Tip("不是同类垃圾, 不可拾取...");
+        return false;
     end
 
     local info = self:GetTrashGarbageInfo(garbage);
@@ -61,7 +62,8 @@ function Trash:PickUpGarbage(garbage)
     __global__:DestroyGarbage(info.blockIndex);
     __global__:RandomGarbage();
 
-    return Tip("成功拾取垃圾: " .. garbage:GetLabel());
+    Tip("成功拾取垃圾: " .. garbage:GetLabel());
+    return true;
 end
 
 function Trash:ShowHeadOnDisplay(G, params)
