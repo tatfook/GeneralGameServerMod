@@ -1,8 +1,5 @@
 local NetState = require("NetState");
 
-local __GGS_ALL_USER_STATE__ = NetState:GetAllUserState();
-local __GGS_USER_STATE__ = NetState:GetUserState();
-
 __GGS_USER_STATE__.ClickCount = __GGS_USER_STATE__.ClickCount or 1;
 
 ShowWindow({

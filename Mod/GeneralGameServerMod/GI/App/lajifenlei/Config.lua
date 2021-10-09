@@ -22,7 +22,7 @@ Config.GARBAGE_CATEGORY = {
 }
 Config.GARBAGE_CATEGORY_SIZE = 4;
 
-Config.TRASH_CFG = {
+Config.TRASH_CONFIG_LIST = {
     [GARBAGE_CATEGORY_CHUYU] = {
         assetfile = "character/CC/keepwork/lajitong/lajitong_chuyu.x",
         name = "chuyu",
@@ -45,7 +45,7 @@ Config.TRASH_CFG = {
     },
 }
 
-Config.CATEGORY_LIST = {
+Config.GARBAGE_CONFIG_LIST = {
     {   
         name = "caiyezi",
         label = "菜叶子",

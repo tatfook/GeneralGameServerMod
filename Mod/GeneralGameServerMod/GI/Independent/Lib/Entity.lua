@@ -82,6 +82,10 @@ function Entity:ctor()
     self.__contexts__ = {};                        -- 协程环境上下文
     __all_entity__[self.__key__] = self;
     __all_username_entity__[self.__name__] = self;
+
+	self.__event_emitter__ = EventEmitter:new();
+    self.__data_watcher__ = self:GetDataWatcher(true);
+	self.dataFieldAssetFile = self.__data_watcher__:AddField(nil, nil);
 end
 
 function Entity:Init(opts)
@@ -133,7 +137,7 @@ function Entity:Init(opts)
             self:AddGoods(CreateGoods(goods_config));
         end
     end
-
+    
     return self;
 end
 
@@ -205,12 +209,17 @@ function Entity:GetAssetFile()
 end
 
 function Entity:SetAssetFile(assetfile)
+	if (self:GetAssetFile() == assetfile) then return end 
+   
     if (assetfile and string.match(assetfile, "^@")) then
         assetfile = string.gsub(assetfile, "@", GetWorldDirectory());
         assetfile = ToCanonicalFilePath(assetfile);
     end
+
     self:SetMainAssetPath(assetfile);
     self:RefreshClientModel();
+
+	self.__data_watcher__:SetField(self.dataFieldAssetFile, self:GetAssetFile());
 end
 
 function Entity:SetPosition(x, y, z)
@@ -1043,3 +1052,45 @@ end
 
 function Entity:SetSyncData(data)
 end
+
+
+-- -------------------------------------------------------net sync-----------------------------------------------------
+function Entity:GetAllWatcherData()
+	local listobj = self.__data_watcher__:GetAllObjectList();
+	return self.__data_watcher__.WriteObjectsInListToData(listobj, nil);
+end
+
+function Entity:LoadWatcherData(data)
+	if (not data) then return end 
+	local listobj = self.__data_watcher__.ReadWatchebleObjects(data);
+	self.__data_watcher__:UpdateWatchedObjectsFromList(listobj);
+
+end
+
+function Entity:OnWatcherDataChange(callback)
+	self.__event_emitter__:RegisterEventCallBack("__entity_player_watcher_data_change__", callback);
+end
+
+function Entity:GetSyncData(bAllData)
+	local x, y, z = self:GetPosition();
+    return {
+        __key__ = self:GetKey(),
+		__username__ = self:GetUserName(),
+        x = x, y = y, z = z, 
+        metadata = bAllData and self:GetAllWatcherData() or self:GetWatcherData(),
+    };
+end
+
+function Entity:SetSyncData(data)
+	if (data.__key__) then self:SetKey(data.__key__) end
+	if (data.__username__) then self:SetUserName(data.__username__) end
+	if (data.x and data.y and data.z) then self:SetPosition(data.x, data.y, data.z) end
+	if (data.metadata) then 
+		local old_assetfile = self:GetAssetFile();
+		self:LoadWatcherData(data.metadata);
+		local new_assetfile = self.__data_watcher__:GetField(self.dataFieldAssetFile);
+		if (old_assetfile ~= new_assetfile) then self:SetAssetFile(new_assetfile) end 
+	end 
+end
+
+-- -------------------------------------------------------net sync-----------------------------------------------------

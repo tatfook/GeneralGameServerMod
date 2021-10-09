@@ -59,12 +59,46 @@ function Global:RandomGarbagePos()
     return  pos;
 end
 
+function Global:DestroyGarbage(blockIndex)
+    self.__garbage_map__[blockIndex] = nil;
+end
+
+function Global:RandomGarbageMap(count)
+    count = count or 1;
+
+    local map = {};
+    for i = 1, count do
+        local pos = self:RandomGarbagePos();
+        local garbage_config_index = math.random(#Config.GARBAGE_CONFIG_LIST);
+        map[pos.blockIndex] = garbage_config_index;
+    end
+
+    return map;
+end
+
+function Global:LoadGarbageMap(map)
+    self.__garbage_map__ = {};
+    for block_index, garbage_config_index in pairs(map) do
+        local bx, by, bz = ConvertToBlockPositionFromBlockIndex(block_index);
+        local garbage_config = Config.GARBAGE_CONFIG_LIST[garbage_config_index];
+        local garbage = Garbage:new():Init({
+            bx = bx, by = by, bz = bz,
+            category = garbage_config.category,
+            assetfile = garbage_config.assetfile,
+            name = garbage_config.name,
+            label = garbage_config.label,
+        });
+        self.__garbage_map__[block_index] = garbage_config_index;
+    end
+end
+
 function Global:RandomGarbage(count)
     count = count or 1;
 
     for i = 1, count do
         local pos = self:RandomGarbagePos();
-        local garbage_config = Config.CATEGORY_LIST[math.random(#Config.CATEGORY_LIST)];
+        local garbage_config_index = math.random(#Config.GARBAGE_CONFIG_LIST);
+        local garbage_config = Config.GARBAGE_CONFIG_LIST[garbage_config_index];
         local garbage = Garbage:new():Init({
             bx = pos.bx, by = pos.by, bz = pos.bz,
             category = garbage_config.category,
@@ -72,7 +106,7 @@ function Global:RandomGarbage(count)
             name = garbage_config.name,
             label = garbage_config.label,
         });
-        self.__garbage_map__[pos.blockIndex] = garbage;
+        self.__garbage_map__[pos.blockIndex] = garbage_config_index;
     end
 end
 

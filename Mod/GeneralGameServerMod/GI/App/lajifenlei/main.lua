@@ -19,4 +19,4 @@ __main_player_trash__:TurnLeft(90);
 Global:RandomGarbage(50);
 
 -- 联机模式执行此行
-Net:Connect();
+-- Net:Connect();

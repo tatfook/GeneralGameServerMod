@@ -20,7 +20,7 @@ function Trash:Init(opts)
     opts = opts or {};
     
     local category = opts.category or Config.GARBAGE_CATEGORY.QITA;
-    local trash_config = Config.TRASH_CFG[category];
+    local trash_config = Config.TRASH_CONFIG_LIST[category];
     opts.assetfile = opts.assetfile or trash_config.assetfile;
     opts.name = opts.name or trash_config.name;
     opts.label = opts.label or trash_config.label;
@@ -37,11 +37,13 @@ end
 function Trash:GetTrashGarbageInfo(garbage, category)
     category = category or self:GetCategory();
     local name = garbage:GetName();
+
     self.__trash_garbage_info_map__[category] = self.__trash_garbage_info_map__[category] or {};
     self.__trash_garbage_info_map__[category][name] = self.__trash_garbage_info_map__[category][name] or {
         name = name,
         label = garbage:GetLabel(),
         count = 0,
+        blockIndex = garbage:GetBlockIndex(),
     };
     return self.__trash_garbage_info_map__[category][name];
 end
@@ -56,6 +58,7 @@ function Trash:PickUpGarbage(garbage)
 
     garbage:Destroy();
 
+    __global__:DestroyGarbage(info.blockIndex);
     __global__:RandomGarbage();
 
     return Tip("成功拾取垃圾: " .. garbage:GetLabel());
@@ -91,12 +94,12 @@ end
 
 
 function Trash:SwitchCategory(category)
-    local trash_config = Config.TRASH_CFG[category];
+    local trash_config = Config.TRASH_CONFIG_LIST[category];
     self:SetCategory(category);
     self:SetName(trash_config.name);
     self:SetLabel(trash_config.label);
     self:SetAssetFile(trash_config.assetfile);
-    self.__scope__:Set("username", self:GetLabel());
+    self.__scope__:Set("__text__", self:GetLabel());
 end
 
 function Trash:OnClicked()

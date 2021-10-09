@@ -106,6 +106,32 @@ function RPC:SetUserData(userdata)
     RPC_Call("SetUserData", userdata);
 end
 
+function RPC:Lock()
+    if (self.__is_locking__) then return false end 
+    self.__is_locking__ = true;
+    local lock_state = nil;
+    RPC_Call("Lock", nil, function(success)
+        lock_state = success;
+    end);
+    while (lock_state == nil) do
+        sleep();
+    end 
+    return lock_state;
+end
+
+function RPC:Unlock()
+    if (self.__is_unlocking__) then return false end 
+    self.__is_unlocking__ = true;
+    local unlock_state = nil;
+    RPC_Call("Unlock", nil, function(success)
+        unlock_state = success;
+    end);
+    while (unlock_state == nil) do
+        sleep();
+    end 
+    return unlock_state;
+end
+
 function RPC:GetUserData(username)
     return GetUserData(username);
 end

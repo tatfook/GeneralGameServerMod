@@ -9,22 +9,17 @@ local NetState = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Lib/NetState.
 ------------------------------------------------------------
 ]]
 
-local Net = require("Net");
-local NetState = inherit(ToolBase, module("NetState"));
+require("Net");
 
-NetState:Property("AutoSyncState", true, "IsAutoSyncState");
+local __state__ = NewScope();
 
-local __username__ = GetUserName();
-local __states__ = NewScope();
-local __state__ = __states__:Get(__username__, {});            -- 用户独立数据 
+local SYNC_STATE = "NET_SYNC_STATE";
+local AUTO_SYNC_STATE = "NET_AUTO_SYNC_STATE";
 
-Net.EVENT_TYPE.REQUEST_SYNC_STATE = "Net_REQUEST_SYNC_STATE";
-Net.EVENT_TYPE.RESPONSE_SYNC_STATE = "Net_RESPONSE_SYNC_STATE";
-Net.EVENT_TYPE.AUTO_SYNC_STATE = "Net_AUTO_SYNC_STATE";
-
+local __is_enable_auto_sync_state__ = true;
 local __sync_key_val_list__ = {};
-__states__:__set_newindex_callback__(function(scope, key, newval, oldval)
-    if (not Net:IsConnected() or not NetState:IsAutoSyncState()) then return end 
+__state__:__set_newindex_callback__(function(scope, key, newval, oldval)
+    if (not Net:IsConnected() or not __is_enable_auto_sync_state__) then return end 
 
     local keys = scope:__get_keys__(key);
     keys.size = #keys;
@@ -34,7 +29,7 @@ end);
 
 local __cache_list__ = {size = 0};
 RegisterTimerCallBack(function()
-    if (not Net:IsConnected() or not NetState:IsAutoSyncState()) then return end 
+    if (not Net:IsConnected() or not __is_enable_auto_sync_state__) then return end 
     
     local size = #__sync_key_val_list__;
     local cache_size = #__cache_list__;
@@ -44,22 +39,22 @@ RegisterTimerCallBack(function()
         __sync_key_val_list__[i] = nil;
     end
 
-    __cache_list__.action = Net.EVENT_TYPE.AUTO_SYNC_STATE;
+    __cache_list__.action = AUTO_SYNC_STATE;
     __cache_list__.size = size;
     
     if (size == 0) then return end 
     -- log("同步Net STATE", __cache_list__)
-    Net:Send(__cache_list__);
+    NetSend(__cache_list__);
 end);
 
 local function AutoSyncState(msg)
-    NetState:SetAutoSyncState(false);
+    __is_enable_auto_sync_state__= false;
     local keys_list = msg;
     local keys_list_size = keys_list.size;
     for i = 1, keys_list_size do
         local keys = keys_list[i];
         local size, value = keys.size, keys.value;
-        local state = __states__;
+        local state = __state__;
         for j = 1, size - 1 do
             local key = keys[j];
             if (not state:__is_scope__(state:Get(key))) then state:Set(key, NewScope()) end
@@ -67,68 +62,65 @@ local function AutoSyncState(msg)
         end
         state:Set(keys[size], value);
     end
-    NetState:SetAutoSyncState(true);
+    __is_enable_auto_sync_state__= true;
 end
 
-local function RequestSyncState(msg)
-    local username, state = msg.username, msg.state;
-
-    NetState:SetAutoSyncState(false);
-    __states__:Set(username, state);
+local function RecvSyncState(key, value)
+    __is_enable_auto_sync_state__= false;
+    if (key) then
+        __state__:Set(key, value);
+    else
+        for k, v in pairs(value) do
+            __state__:Set(k, v);
+        end
+    end
     NetState:SetAutoSyncState(true);
+    __is_enable_auto_sync_state__= true;
+end
 
-    Net:SendTo(username, {
-        action = Net.EVENT_TYPE.RESPONSE_SYNC_STATE,
-        username = __username__,
-        state = __state__:ToPlainObject(),
+local function SendSyncState(key, value)
+    RecvSyncState(key, value);
+
+    NetSend({
+        action = SYNC_STATE,
+        key = key, value = value,
     });
 end
-
-local function ResponseSyncState(msg)
-    local username, state = msg.username, msg.state;
-
-    NetState:SetAutoSyncState(false);
-    __states__:Set(username, state);
-    NetState:SetAutoSyncState(true);
-end
-
-function NetState:Init()
-    return self;
-end
-
-function NetState:GetUserState(username)
-    return (not username or username == __username__) and __state__ or __states__:Get(username, {});
-end
-
-function NetState:GetAllUserState()
-    return __states__;
-end
-
-function NetState:Get(key, default_value)
-    return __state__:Get(key, default_value)
-end
-
-function NetState:Set(key, value)
-    return __state__:Set(key, value)
-end
-
-NetState:InitSingleton():Init();
 
 -- 收到数据
-Net:OnRecv(function(msg)
+NetOnRecv(function(msg)
     local action = msg.action;
-    if (action == Net.EVENT_TYPE.REQUEST_SYNC_STATE) then return RequestSyncState(msg) end
-    if (action == Net.EVENT_TYPE.RESPONSE_SYNC_STATE) then return ResponseSyncState(msg) end
-    if (action == Net.EVENT_TYPE.AUTO_SYNC_STATE) then return AutoSyncState(msg) end
+    if (action == SYNC_STATE) then return RecvSyncState(msg.key, msg.value) end
+    if (action == AUTO_SYNC_STATE) then return AutoSyncState(msg) end
 end);
 
--- 连接
-Net:Connect(function()
-    -- 发送状态
-    Net:Send({
-        action = Net.EVENT_TYPE.REQUEST_SYNC_STATE, 
-        username = __username__,
-        state = __state__:ToPlainObject(),
-    });
-end); 
 
+-- ==================================================API===============================================
+function NetInitState(key, init_value)
+    key = key or UUID();
+    init_value = init_value == nil and {} or init_value;
+
+    local value = __state__:Get(key);
+    -- 已存在值, 表明已初始化
+    if (value ~= nil) then return value end 
+    
+    local wait_time, wait_total_time = 300, nil;
+    while (true) do
+        -- 等待时间过长, 自己尝试上锁
+        if (not wait_total_time or wait_total_time > 5000) then
+            wait_total_time = 0;
+            if (NetLock()) then 
+                SendSyncState(key, init_value);
+                NetUnlock(); 
+            end
+        end
+        
+        value = __state__:Get(key);
+        if (value ~= nil) then return value end 
+
+        sleep(wait_time);
+        wait_total_time = wait_total_time + wait_time;
+    end
+    
+    return value;
+end

@@ -139,3 +139,16 @@ function World:SendToPlayer(username, action, data)
     player:Send(action, data);
 end
 
+function World:Lock(username)
+    -- 已上锁则返回失败
+    if (self.__lock_username__ and username and self.__lock_username__ ~= username) then return false end 
+    self.__lock_username__ = username;
+    return true;
+end
+
+function World:Unlock(username)
+    -- username = nil 强制解锁
+    if (self.__lock_username__ and self.__lock_username__ ~= username) then return false end 
+    self.__lock_username__ = nil;
+    return true;
+end

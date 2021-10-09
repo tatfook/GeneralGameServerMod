@@ -18,6 +18,9 @@ local function SyncPlayerTrash(bAllData, username)
     TriggerNetworkEvent(EntityPlayerSyncMsg, __main_player_trash__:GetSyncData(bAllData), username);
 end
 
+function Net:StartGame()
+end
+
 function Net:Connect()
     OnNetMainPlayerLogin(function()
         self:SetConnected(true);
@@ -25,6 +28,8 @@ function Net:Connect()
         __main_player_trash__:SetUserName(GetUserName());
         __main_player_trash__:OnWatcherDataChange(SyncPlayerTrash);
         SyncPlayerTrash(true);
+
+        NetInitSharedData({__init_data__ = })
     end);
 
     OnNetMainPlayerLogout(function()

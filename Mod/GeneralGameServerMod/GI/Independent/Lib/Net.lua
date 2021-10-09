@@ -91,11 +91,15 @@ end
 
 -- 发送
 function Net:Send(data)
+    if (not self:IsConnected()) then return end 
+
     __connection__:Send(data);
 end
 
 -- 发送指定用户
 function Net:SendTo(username, data)
+    if (not self:IsConnected()) then return end 
+    
     __connection__:SendTo(username, data);
 end
 
@@ -176,8 +180,32 @@ function Net:OnShareData(...)
     __connection__:OnShareData(...);
 end
 
-Net:InitSingleton():Connect(function()
-end);
+function Net:Lock(...)
+    __connection__:Lock(...);
+end
+
+function Net:Unlock(...)
+    __connection__:Unlock(...);
+end
+
+function NetSend(...)
+    return Net:Send(...);
+end
+
+function NetSendTo(...)
+    return Net:SendTo(...);
+end
+
+function NetOnRecv(...)
+    return Net:OnRecv(...);
+end
+
+function NetConnect(...)
+    return Net:Connect(...);
+end
+
+-- Net:InitSingleton():Connect(function()
+-- end);
 
 Net:OnDisconnected(function() 
     print("========================Net:OnDisconnected========================")
@@ -196,3 +224,4 @@ Net:OnRecv(function(data)
         __msg_event_emitter__:TriggerEventCallBack(data.__msgname__, data.__msgdata__);
     end
 end);
+

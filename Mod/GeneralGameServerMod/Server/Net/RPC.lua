@@ -53,6 +53,16 @@ function RPC:IsValid()
     return false;
 end
 
+function RPC:HandleLock()
+    local username = self:GetPlayer():GetUserName();
+    return self:GetWorld():Lock(username);
+end
+
+function RPC:HandleUnlock()
+    local username = self:GetPlayer():GetUserName();
+    return self:GetWorld():Unlock(username);
+end
+
 -- 设置用户数据
 function RPC:HandleSetUserData(userdata)
     local username = self:GetPlayer():GetUserName();
@@ -93,6 +103,9 @@ function RPC:HandleClosed()
     local username = player:GetUserName();
     world:SendToAllPlayer("ConnectClosed", username, nil);
     world:RemovePlayer(player);
+    -- 解锁
+    if (username) then world:Unlock(username) end 
+    
     self:SetWorld(nil);
     self:SetPlayer(nil);
     __all_rpc__[username] = nil;

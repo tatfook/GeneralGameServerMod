@@ -21,16 +21,12 @@ EntityPlayer:Property("CanJump", false, "IsCanJump");          -- 是否在跳�
 EntityPlayer:Property("JumpTickCount", 0);                     -- 跳跃tick数
 
 function EntityPlayer:ctor()
-	local __data_watcher__ = self:GetDataWatcher(true);
-	self.dataFieldWKeyPressed = __data_watcher__:AddField(nil, nil);
-	self.dataFieldAKeyPressed = __data_watcher__:AddField(nil, nil);
-	self.dataFieldSKeyPressed = __data_watcher__:AddField(nil, nil);
-	self.dataFieldDKeyPressed = __data_watcher__:AddField(nil, nil);
-	self.dataFieldFKeyPressed = __data_watcher__:AddField(nil, nil);
-	self.dataFieldSpaceKeyPressed = __data_watcher__:AddField(nil, nil);
-	self.dataFieldAssetFile = __data_watcher__:AddField(nil, nil);
-	self.__data_watcher__ = __data_watcher__;
-	self.__event_emitter__ = EventEmitter:new();
+	self.dataFieldWKeyPressed = self.__data_watcher__:AddField(nil, nil);
+	self.dataFieldAKeyPressed = self.__data_watcher__:AddField(nil, nil);
+	self.dataFieldSKeyPressed = self.__data_watcher__:AddField(nil, nil);
+	self.dataFieldDKeyPressed = self.__data_watcher__:AddField(nil, nil);
+	self.dataFieldFKeyPressed = self.__data_watcher__:AddField(nil, nil);
+	self.dataFieldSpaceKeyPressed = self.__data_watcher__:AddField(nil, nil);
 end
 
 -- @param entityId: this is usually from the server. 
@@ -169,12 +165,6 @@ function EntityPlayer:FaceTarget(x,y,z, isAngle)
 	-- end
 end
 
-function EntityPlayer:SetAssetFile(assetfile)
-	if (self:GetAssetFile() == assetfile) then return end 
-	EntityPlayer._super.SetAssetFile(self, assetfile);
-	self.__data_watcher__:SetField(self.dataFieldAssetFile, self:GetAssetFile());
-end
-
 function EntityPlayer:IsMoveKeyPressed()
 	return self:IsWASDKeyPressed() or self:IsFKeyPressed() or self:IsSpaceKeyPressed();
 end
@@ -251,44 +241,6 @@ function EntityPlayer:GetWatcherData()
 	self.__watcher_data__ = self.__data_watcher__.WriteObjectsInListToData(listobj, nil);
 	
 	return self.__watcher_data__;
-end
-
-function EntityPlayer:GetAllWatcherData()
-	local listobj = self.__data_watcher__:GetAllObjectList();
-	return self.__data_watcher__.WriteObjectsInListToData(listobj, nil);
-end
-
-function EntityPlayer:LoadWatcherData(data)
-	if (not data) then return end 
-	local listobj = self.__data_watcher__.ReadWatchebleObjects(data);
-	self.__data_watcher__:UpdateWatchedObjectsFromList(listobj);
-
-end
-
-function EntityPlayer:OnWatcherDataChange(callback)
-	self.__event_emitter__:RegisterEventCallBack("__entity_player_watcher_data_change__", callback);
-end
-
-function EntityPlayer:GetSyncData(bAllData)
-	local x, y, z = self:GetPosition();
-    return {
-        __key__ = self:GetKey(),
-		__username__ = self:GetUserName(),
-        x = x, y = y, z = z, 
-        metadata = bAllData and self:GetAllWatcherData() or self:GetWatcherData(),
-    };
-end
-
-function EntityPlayer:SetSyncData(data)
-	if (data.__key__) then self:SetKey(data.__key__) end
-	if (data.__username__) then self:SetUserName(data.__username__) end
-	if (data.x and data.y and data.z) then self:SetPosition(data.x, data.y, data.z) end
-	if (data.metadata) then 
-		local old_assetfile = self:GetAssetFile();
-		self:LoadWatcherData(data.metadata);
-		local new_assetfile = self.__data_watcher__:GetField(self.dataFieldAssetFile);
-		if (old_assetfile ~= new_assetfile) then self:SetAssetFile(new_assetfile) end 
-	end 
 end
 
 local function MoveKeyCallBack(event)

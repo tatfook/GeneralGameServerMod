@@ -16,6 +16,57 @@ function GetNetModule()
     return require("Net");
 end
 
+function NetLock(...)
+    return GetNetModule():Lock(...);
+end
+
+function NetUnlock(...)
+    return GetNetModule():Unlock(...);
+end
+
+function NetSetSharedData(key, val)
+    GetNetModule():SetShareData({[key] = val})
+end
+
+function NetGetSharedData(key, default_val)
+    return GetNetModule():GetShareData()[key] or default_val;
+end
+
+function NetInitSharedData(init_shared_data)
+    local __net_shared_data_inited__ = NetGetSharedData("__net_shared_data_inited__");
+    local is_lock = false;
+
+    local function init_shared_data_func()
+        GetNetModule():SetShareData(init_shared_data);
+        NetSetSharedData("__net_shared_data_inited__", true);
+        is_lock = true;
+    end
+
+    if (not __net_shared_data_inited__) then
+        if (NetLock()) then
+            -- 上锁成功 进行初始化操作
+            init_shared_data_func();
+        else 
+            -- 上锁失败 等待玩家初始化
+            local wait_time, wait_total_time = 300, 0;
+            while(not __net_shared_data_inited__) do
+                sleep(wait_time);
+                __net_shared_data_inited__ = NetGetSharedData("inited");
+                wait_total_time = wait_total_time + wait_time;
+                -- 
+                if (wait_total_time > 5000) then
+                    wait_total_time = 0;
+                    if (NetLock()) then 
+                        init_shared_data_func();
+                    end
+                end
+            end
+        end
+    end
+    
+    if (is_lock) then NetUnlock() end 
+end
+
 function SetSharedData(key, val)
     GetNetModule():SetShareData({[key] = val})
 end
