@@ -86,9 +86,14 @@ local function __get_val__(val)
     return Scope:__new__(val);
 end
 
+local function __to_plain_data__(val)
+    if (Scope:__is_scope__(val)) then return val:ToPlainObject() end 
+    return val;
+end
+
 -- 获取值
 Scope.__get_val__ = __get_val__;
-
+Scope.__to_plain_data__ = __to_plain_data__;
 
 -- 设置全局读取回调
 function Scope.__set_global_index__(__index__)

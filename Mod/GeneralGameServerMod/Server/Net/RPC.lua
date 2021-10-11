@@ -88,7 +88,7 @@ function RPC:HandleSetStateData(keys_list)
         local state = __state__;
         for j = 1, size - 1 do
             local key = keys[j];
-            if (type(state[key] ~= "table")) then state[key] = {} end 
+            if (type(state[key]) ~= "table") then state[key] = {} end 
             state = state[key];
         end
         state[keys[size]] = value;

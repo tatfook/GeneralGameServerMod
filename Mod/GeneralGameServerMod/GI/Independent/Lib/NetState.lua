@@ -22,10 +22,9 @@ local __is_enable_auto_sync_state__ = true;
 local __sync_key_val_list__ = {};
 __state__:__set_newindex_callback__(function(scope, key, newval, oldval)
     if (not __is_enable_auto_sync_state__) then return end 
-
     local keys = scope:__get_keys__(key);
     keys.size = #keys;
-    keys.value = newval;
+    keys.value = scope.__to_plain_data__(newval);
     __sync_key_val_list__[#__sync_key_val_list__ + 1] = keys;
 end);
 

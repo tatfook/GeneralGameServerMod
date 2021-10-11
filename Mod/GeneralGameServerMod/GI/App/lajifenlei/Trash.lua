@@ -56,12 +56,8 @@ function Trash:PickUpGarbage(garbage)
 
     local info = self:GetTrashGarbageInfo(garbage);
     info.count = info.count + 1;
-
     garbage:Destroy();
-
-    __global__:DestroyGarbage(info.blockIndex);
-    __global__:RandomGarbage();
-
+    
     Tip("成功拾取垃圾: " .. garbage:GetLabel());
     return true;
 end

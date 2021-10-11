@@ -10,12 +10,13 @@ local Net = inherit(ToolBase, module());
 
 Net:Property("Connected", false, "IsConnected");
 
-
 local EntityPlayerSyncMsg = "EntityPlayerSyncMsg";
+local DestroyGarbageMsg = "DestroyGarbageMsg";
+local CreateGarbageMsg = "CreateGarbageMsg";
 
 local function SyncPlayerTrash(bAllData, username)
     -- print("------------------SyncPlayerTrash------------------------")
-    TriggerNetworkEvent(EntityPlayerSyncMsg, __main_player_trash__:GetSyncData(bAllData), username);
+    TriggerNetworkEvent(EntityPlayerSyncMsg, __global__:GetMainPlayerTrash():GetSyncData(bAllData), username);
 end
 
 function Net:StartGame()
@@ -27,8 +28,9 @@ function Net:Connect(state)
     OnNetMainPlayerLogin(function()
         self:SetConnected(true);
         print("------------OnNetMainPlayerLogin----------")
-        __main_player_trash__:SetUserName(GetUserName());
-        __main_player_trash__:OnWatcherDataChange(SyncPlayerTrash);
+        local mainPlayerTrash = __global__:GetMainPlayerTrash();
+        mainPlayerTrash:SetUserName(GetUserName());
+        mainPlayerTrash:OnWatcherDataChange(SyncPlayerTrash);
         SyncPlayerTrash(true);
     end);
 
@@ -53,7 +55,26 @@ function Net:Connect(state)
         entity:SetSyncData(data);
     end);
 
+    RegisterNetworkEvent(DestroyGarbageMsg, function(data)
+        print("===================RegisterNetworkEvent:DestroyGarbageMsg=============", data.__key__);
+        DestroyEntityByKey(data.__key__);
+    end);
+
+    RegisterNetworkEvent(CreateGarbageMsg, function(data)
+        __global__:LoadGarbageInfo(data);
+    end);
+
     return NetInitState("lajifenlei", state);
+end
+
+function Net:DestroyGarbage(garbage)
+    print("===================TriggerNetworkEvent:DestroyGarbageMsg=============", garbage:GetKey());
+    TriggerNetworkEvent(DestroyGarbageMsg, {__key__ = garbage:GetKey()});
+end
+
+function Net:CreateGarbage(info)
+    print("===================TriggerNetworkEvent:CreateGarbageMsg=============");
+    TriggerNetworkEvent(CreateGarbageMsg, info);
 end
 
 Net:InitSingleton();

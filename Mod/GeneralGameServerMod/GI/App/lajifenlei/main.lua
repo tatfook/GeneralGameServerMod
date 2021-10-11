@@ -9,12 +9,6 @@ use the lib:
 
 local Global = require("./Global.lua");
 
-SetCamera(20, 55, -90);
-SetCameraLookAtBlockPos(19221,12,19185);
-
-_G.__main_player_trash__ = Global:CreateMainPlayerTrash(19221,12,19185);
-__main_player_trash__:TurnLeft(90);
-
--- 联机模式执行此行
-Global:SetMode("online"); -- 默认offline
-Global:Start();
+-- 开始游戏
+-- Global:Start("online");     -- 联机模式
+Global:Start("offline");    -- 单机模式

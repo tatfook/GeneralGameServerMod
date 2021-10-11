@@ -27,6 +27,9 @@ function EntityPlayer:ctor()
 	self.dataFieldDKeyPressed = self.__data_watcher__:AddField(nil, nil);
 	self.dataFieldFKeyPressed = self.__data_watcher__:AddField(nil, nil);
 	self.dataFieldSpaceKeyPressed = self.__data_watcher__:AddField(nil, nil);
+	self.dataFieldCameraFacing = self.__data_watcher__:AddField(nil, nil);
+
+	self.__data_watcher__:SetField(self.dataFieldCameraFacing, GetCameraFacing());
 end
 
 -- @param entityId: this is usually from the server. 
@@ -82,7 +85,15 @@ function EntityPlayer:CheckMotion()
 	local dist = self:GetStep() * self:GetSpeed();
     local x, y, z = self:GetPosition();
     local xx, yy, zz = x, y, z;
-	local facing = GetCameraFacing() / 180 * math.pi;
+	local cameraFacing = GetCameraFacing();
+
+	if (self:IsMainPlayer()) then
+		self.__data_watcher__:SetField(self.dataFieldCameraFacing, cameraFacing);
+	else 
+		cameraFacing = self.__data_watcher__:GetField(self.dataFieldCameraFacing);
+	end
+
+	local facing = cameraFacing / 180 * math.pi;
 
 	if (self:IsWKeyPressed()) then
         xx = xx + dist * math.cos(facing);
