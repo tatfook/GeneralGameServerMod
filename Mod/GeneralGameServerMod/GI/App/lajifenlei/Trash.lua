@@ -90,7 +90,6 @@ function Trash:ShowHeadOnDisplay(G, params)
     return self.__head_on_displayer_ui__;
 end
 
-
 function Trash:SwitchCategory(category)
     local trash_config = Config.TRASH_CONFIG_LIST[category];
     self:SetCategory(category);

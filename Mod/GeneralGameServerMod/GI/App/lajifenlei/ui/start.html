@@ -1,0 +1,37 @@
+<template class="container">
+    <div style="color: #000000; font-size: 22px; text-align: center; margin-top: 20px;">请选择游戏模式:</div>
+    <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 20px;">
+        <div onclick=ClickOfflineModeBtn style="width: 120px; height: 30px; line-height: 30px; display: inline; text-align: center;" class="btn">单机模式</div>
+        <div onclick=ClickOnlineModeBtn style="width: 120px; height: 30px; line-height: 30px; display: inline; text-align: center;" class="btn">联机模式</div>
+    </div>
+</template>
+
+<script type="text/lua">
+
+function ClickOfflineModeBtn()
+    __global__:Start("offline");
+    CloseWindow();
+end 
+
+function ClickOnlineModeBtn()
+    __global__:Start("online");
+    CloseWindow();
+end
+
+</script>
+
+<style scoped=true>
+.container {
+    background-color: #ffffff;
+    height: 100%;
+    width: 100%;
+}    
+
+.btn {
+    background-color: #ffff80;
+}
+
+.btn:hover {
+    background-color: #ff0000;
+}
+</style>
