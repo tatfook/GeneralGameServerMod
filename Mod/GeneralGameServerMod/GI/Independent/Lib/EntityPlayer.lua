@@ -78,7 +78,7 @@ function EntityPlayer:CheckMotion()
 	local is_move_key_pressed = self:IsMoveKeyPressed();
 	local is_on_ground, offset_y = self:IsOnGround();
 	if (not is_move_key_pressed) then 
-		obj:SetField("AnimID", 0);
+		if (self:IsMotionAnimId()) then obj:SetField("AnimID", 0) end 
 		if (is_on_ground) then return end ;
 	end 
 

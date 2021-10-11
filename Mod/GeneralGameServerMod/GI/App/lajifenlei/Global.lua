@@ -32,13 +32,13 @@ function Global:ctor()
         -- 垃圾存放的地图信息  此对象暂时为响应式变量 统一垃圾信息 
         __garbage_map__ = {},
     }
-    -- self.__map_start_bx__, self.__map_start_by__, self.__map_start_bz__ = 19140, 12, 19140;               -- 地图开始坐标  
-    -- self.__map_end_bx__, self.__map_end_by__, self.__map_end_bz__ = 19259, 13, 19259;                     -- 地图结束坐标
+    self.__map_start_bx__, self.__map_start_by__, self.__map_start_bz__ = 19140, 12, 19140;               -- 地图开始坐标  
+    self.__map_end_bx__, self.__map_end_by__, self.__map_end_bz__ = 19259, 13, 19259;                     -- 地图结束坐标
 
     -- debug
-    INIT_GARBAGE_COUNT = 10;
-    self.__map_start_bx__, self.__map_start_by__, self.__map_start_bz__ = 19218,12,19172;               -- 地图开始坐标  
-    self.__map_end_bx__, self.__map_end_by__, self.__map_end_bz__ = 19224,12,19207;                     -- 地图结束坐标
+    -- INIT_GARBAGE_COUNT = 10;
+    -- self.__map_start_bx__, self.__map_start_by__, self.__map_start_bz__ = 19218,12,19172;               -- 地图开始坐标  
+    -- self.__map_end_bx__, self.__map_end_by__, self.__map_end_bz__ = 19224,12,19207;                     -- 地图结束坐标
 end
 
 -- 全局初始化

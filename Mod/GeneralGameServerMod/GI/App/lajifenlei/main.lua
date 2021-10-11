@@ -12,3 +12,5 @@ local Global = require("./Global.lua");
 -- 开始游戏
 -- Global:Start("online");     -- 联机模式
 Global:Start("offline");    -- 单机模式
+
+

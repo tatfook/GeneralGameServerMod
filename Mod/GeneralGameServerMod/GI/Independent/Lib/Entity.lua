@@ -591,9 +591,19 @@ function Entity:Destroy()
     __RemoveEntity__(self);
 end
 
+function Entity:IsMotionAnimId(animId)
+    animId = animId or self:GetAnimId();
+    return animId == 4 or animId == 5 or animId == 38;
+end 
+
 function Entity:SetAnimId(animId)
     if (not self:GetInnerObject()) then return end
     self:GetInnerObject():SetField("AnimID", animId or 0);
+end
+
+function Entity:GetAnimId()
+    if (not self:GetInnerObject()) then return 0 end
+    return self:GetInnerObject():GetField("AnimID", 0);
 end
 
 function Entity:Turn(degree)
