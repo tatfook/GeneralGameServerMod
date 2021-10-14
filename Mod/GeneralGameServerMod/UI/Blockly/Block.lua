@@ -763,7 +763,7 @@ local function DefaultToCode(block)
 end
 
 function Block:GetToCodeCache()
-    return self:GetBlockly().__to_code_cache__;
+    return self:GetBlockly():GetToCodeCache();
 end
 
 function Block:GetAllCode()

@@ -48,6 +48,7 @@ Blockly:Property("ShadowBlock");              -- 占位块
 Blockly:Property("Scale", 1);                 -- 缩放
 Blockly:Property("ReadOnly", false, "IsReadOnly");    -- 只读
 Blockly:Property("OptionGlobal");             -- 选项全局表
+Blockly:Property("ToCodeCache");              -- 生成代码的时缓存对象
 
 function Blockly.PlayCreateBlockSound()
     ConnectionBlockSound:play2d();
@@ -964,6 +965,9 @@ function Blockly:GetCode()
             -- print("顶层输出块不产生代码");
         end
     end
+
+    self:SetToCodeCache({});  -- 设置缓存对象
+
     local code = "";
     for _, block in ipairs(blocks) do
         local blockCode = "";
@@ -979,6 +983,8 @@ function Blockly:GetCode()
         code = code .. blockCode .. "\n";
     end
 
+    self:SetToCodeCache(nil); -- 清除缓存
+    
     return code, self:GetPrettyCode(code);
 end
 
