@@ -85,7 +85,19 @@ end
 
 function ContextMenu:OnMouseDown(event)
     event:Accept();
+    self:CaptureMouse();
+end
+
+function ContextMenu:OnMouseMove(event)
+    event:Accept();
+    self:SelectMenuItem(event);
+end
+
+function ContextMenu:OnMouseUp(event)
+    event:Accept();
     self:Hide();
+    self:ReleaseMouseCapture();
+
     local menuitem = self:GetMenuItem(self:SelectMenuItem(event) + 1);
     if (not menuitem) then return end
     local blockly = self:GetBlockly();
@@ -283,15 +295,6 @@ function ContextMenu:ExportToolboxXmlText()
     local xmlText = Helper.Lua2XmlString(toolbox, true);
     ParaMisc.CopyTextToClipboard(xmlText);
     GameLogic.AddBBS("Blockly", "图块工具栏XML已拷贝至剪切板");
-end
-
-function ContextMenu:OnMouseMove(event)
-    event:Accept();
-    self:SelectMenuItem(event);
-end
-
-function ContextMenu:OnMouseUp(event)
-    event:Accept();
 end
 
 -- 定宽不定高

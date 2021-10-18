@@ -593,7 +593,9 @@ function Blockly:ReleaseMouseCapture()
 end
 
 function Blockly:GetLogicViewPoint(event, screen_x, screen_y)
-    local x, y = Blockly._super.GetRelPoint(self, screen_x or event.x, screen_y or event.y);  -- 相对坐标为窗口的缩放后坐标
+    local x, y = screen_x or (event and event.x), screen_y or (event and event.y);
+    if (not x or not y) then x, y = ParaUI.GetMousePosition() end 
+    x, y = Blockly._super.GetRelPoint(self, x, y);                    -- 相对坐标为窗口的缩放后坐标
     local scale = self:GetScale();                                    -- 获取缩放值
     return math.floor(x / scale + 0.5), math.floor(y / scale + 0.5);  -- 转化为逻辑坐标
 end
@@ -731,11 +733,18 @@ function Blockly:UpdateScale(offset)
     -- end
 end
 
+-- 获取当前鼠标顶点值
+function Blockly:GetMouseLeftTopUnitCount()
+    local x, y = self:GetLogicAbsPoint();
+    local UnitSize = self:GetUnitSize();
+    return math.floor(x / UnitSize), math.floor(y/ UnitSize);
+end
+
 -- 鼠标移动事件
 function Blockly:OnMouseMove(event)
     event:Accept();
     self.mouseMoveX, self.mouseMoveY = Blockly._super.GetRelPoint(self, event.x, event.y);
-    if (not event:IsLeftButton()) then return end
+    if (not event:IsLeftButton() and self:GetMouseCaptureUI() == nil) then return end
 
     local UnitSize = self:GetUnitSize();
     local x, y = self:GetLogicAbsPoint(event);
@@ -887,32 +896,40 @@ function Blockly:handleDelete()
     self:OnChange();
 end
 
+function Blockly:CopyBlock(targetBlock, cloneBlock, isCloneAllBlock)
+    if (not targetBlock) then return end 
+    cloneBlock = targetBlock:Clone(cloneBlock, isCloneAllBlock);
+
+    -- 录制或播放模式走旧逻辑
+    if (BlocklySimulator:IsRecordingOrPlaying()) then
+        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+        cloneBlock:SetLeftTopUnitCount(leftUnitCount + 4, topUnitCount + 4);
+        cloneBlock:UpdateLeftTopUnitCount();
+
+        self:AddBlock(cloneBlock);
+        self:SetCurrentBlock(cloneBlock);
+        self:OnChange();
+    else
+        local leftUnitCount, topUnitCount = self:GetMouseLeftTopUnitCount();
+        cloneBlock:SetLeftTopUnitCount(leftUnitCount - 4, topUnitCount - 4);
+        cloneBlock:UpdateLeftTopUnitCount();
+        cloneBlock:OnMouseDown();
+        cloneBlock:SetDragging(true);
+        self:SetCurrentBlock(cloneBlock);
+        self:CaptureMouse(cloneBlock);
+        self:AddBlock(cloneBlock);
+        self:GetShadowBlock():Shadow(cloneBlock);
+    end
+end
+
 -- 复制当前块
 function Blockly:handlePaste()
-    local block = self:GetCurrentBlock();
-    if (not block) then return end
-    local cloneBlock = block:Clone();
-    local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
-    cloneBlock:SetLeftTopUnitCount(leftUnitCount + 4, topUnitCount + 4);
-    cloneBlock:UpdateLeftTopUnitCount();
-
-    self:AddBlock(cloneBlock);
-    self:SetCurrentBlock(cloneBlock);
-    self:OnChange();
+    self:CopyBlock(self:GetCurrentBlock(), nil, nil);
 end
 
 -- 复制整块
 function Blockly:handleCopyAll()
-    local block = self:GetCurrentBlock();
-    if (not block) then return end
-    local cloneBlock = block:Clone(nil, true);
-    local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
-    cloneBlock:SetLeftTopUnitCount(leftUnitCount + 4, topUnitCount + 4);
-    cloneBlock:UpdateLeftTopUnitCount();
-
-    self:AddBlock(cloneBlock);
-    self:SetCurrentBlock(cloneBlock);
-    self:OnChange();
+    self:CopyBlock(self:GetCurrentBlock(), nil, true);
 end
 
 -- 删除整块

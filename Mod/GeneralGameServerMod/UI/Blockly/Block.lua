@@ -399,6 +399,8 @@ function Block:GetMouseUI(x, y, event)
 end
 
 function Block:OnMouseDown(event)
+    if (self:IsDragging()) then return end 
+
     local blockly = self:GetBlockly();
     self.startX, self.startY = blockly:GetLogicViewPoint(event);
     self.lastMouseMoveX, self.lastMouseMoveY = self.startX, self.startY;
@@ -407,7 +409,7 @@ function Block:OnMouseDown(event)
 end
 
 function Block:OnMouseMove(event)
-    if (not self.isMouseDown or not event:IsLeftButton()) then return end
+    if (not self.isMouseDown or (not event:IsLeftButton() and not self:IsDragging())) then return end
     if (not self:IsDraggable()) then return end
     local x, y = self:GetBlockly():GetLogicViewPoint(event);
     if (x == self.lastMouseMoveX and y == self.lastMouseMoveY) then return end

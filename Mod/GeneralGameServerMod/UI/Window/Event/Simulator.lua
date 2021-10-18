@@ -84,6 +84,10 @@ function Simulator:IsPlaying()
     return Macros:IsPlaying()
 end
 
+function Simulator:IsRecordingOrPlaying()
+    return self:IsRecording() or self:IsPlaying();
+end
+
 function Simulator:SetClickTrigger(mouseX, mouseY, mouseButton, callbackFunction)
     local callback = {};
     MacroPlayer.SetClickTrigger(mouseX, mouseY, mouseButton or "left", function()
