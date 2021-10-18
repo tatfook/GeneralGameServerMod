@@ -77,7 +77,7 @@ function ColorPicker:RenderContent(painter)
     local r, g, b = 255, 0, 0;
 
     painter:SetPen("#000000");
-    painter:DrawText(offsetX + textOffsetX, offsetY, string.format("颜色 %d", self.h * 100));
+    painter:DrawText(offsetX + textOffsetX, offsetY, string.format("颜色 %d", math.floor(self.h * 100)));
     offsetY = offsetY + 30;
     painter:DrawText(offsetX - 14, offsetY, "-");
     for i = 1, 100 do
@@ -91,7 +91,7 @@ function ColorPicker:RenderContent(painter)
 
     offsetY = offsetY + 30;
     painter:SetPen("#000000");
-    painter:DrawText(offsetX + textOffsetX, offsetY, string.format("饱和度 %s", self.s * 100));
+    painter:DrawText(offsetX + textOffsetX, offsetY, string.format("饱和度 %s", math.floor(self.s * 100)));
     offsetY = offsetY + 30;
     painter:DrawText(offsetX - 14, offsetY, "-");
     for i = 1, 100 do
@@ -105,7 +105,7 @@ function ColorPicker:RenderContent(painter)
 
     offsetY = offsetY + 30;
     painter:SetPen("#000000");
-    painter:DrawText(offsetX + textOffsetX, offsetY, string.format("亮度  %s", self.l * 100));
+    painter:DrawText(offsetX + textOffsetX, offsetY, string.format("亮度  %s", math.floor(self.l * 100)));
     offsetY = offsetY + 30;
     painter:DrawText(offsetX - 14, offsetY, "-");
     for i = 1, 100 do
