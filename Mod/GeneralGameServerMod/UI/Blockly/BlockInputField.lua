@@ -671,7 +671,7 @@ end
 
 function BlockInputField:SetFieldValue(value)
     local validator = self:GetValidator();
-    value = tostring(value);
+    value = tostring(value or "");
     if (type(validator) == "function") then value = validator(value) end
     if (type(validator) == "string" and type(Validator[validator]) == "function") then value = (Validator[validator])(value) end
     self:SetValue(value);

@@ -14,6 +14,8 @@ local CodeHelpWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeHelpWin
 
 local GIBlockly = NPL.load("Mod/GeneralGameServerMod/GI/Independent/GIBlockly.lua", IsDevEnv);
 
+local NplBlockMCML = NPL.load("./NplBlockMCML.lua", IsDevEnv);
+
 local NplBlockManager = NPL.export();
 
 local BlockManager = nil;
@@ -40,6 +42,15 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
         CategoryMap[CategoryList[index].name] = CategoryList[index];
     end
     
+    local function format_field_type(args)
+        if (not args) then return end
+        for _, arg in ipairs(args) do
+            if (arg.type == "colour_picker") then arg.type = "field_color" end
+            if (type(arg.shadow) == "table" and arg.shadow.type == "colour_picker") then arg.shadow.type = "field_color" end 
+            if (type(arg.shadow) == "table" and arg.shadow.type == "functionParams") then arg.text, arg.shadow.value = "", "" end 
+        end
+    end
+
     local cmd_count = #all_cmds;
     for i = 1, cmd_count do
         local cmd = all_cmds[i];
@@ -51,7 +62,7 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
             color = category and category.color;
             category = cmd.category;
             message = cmd.message,
-            arg = cmd.arg,
+            arg = commonlib.deepcopy(cmd.arg),
             previousStatement = cmd.previousStatement and true or false,
             nextStatement = cmd.nextStatement and true or false,
             output = cmd.output and true or false,
@@ -79,19 +90,14 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
             hideInToolbox = cmd.hide_in_toolbox,
         } 
         if (block.previousStatement or block.nextStatement) then func_description = func_description .. "\n" end 
-
-        local message, arg = "", {};
+        format_field_type(block.arg);
         for i = 0, 10 do
             local messageName = "message" .. tostring(i);
             local argName = "arg" .. tostring(i);
             if (not cmd[messageName]) then break end
             block[messageName] = cmd[messageName];
             block[argName] = commonlib.deepcopy(cmd[argName]);
-            -- message = message .. " " .. cmd[messageName];
-            -- local cmd_arg = cmd[argName];
-            -- if (type(cmd_arg) == "table") then
-            --     for _, cmd_arg_item in ipairs(cmd_arg) do table.insert(arg, #arg + 1, cmd_arg_item) end 
-            -- end
+            format_field_type(block[argName]);
         end
     
         if (not block.hideInToolbox) then
@@ -119,22 +125,24 @@ function NplBlockManager.IsGILanguage()
 end
 
 function NplBlockManager.GetMcmlBlockMap()
-    return BlockManager.GetLanguageBlockMap("SystemUIBlock");
+    return NplBlockMCML.GetBlockMap();
+    -- return BlockManager.GetLanguageBlockMap("SystemUIBlock");
 end
 
 function NplBlockManager.GetMcmlCategoryListAndMap()
-    return BlockManager.GetCategoryListAndMapByXmlText([[
-<toolbox>
-    <category name="元素" color="#2E9BEF">
-        <block type="UI_MCML_Elements"/>
-        <block type="UI_MCML_Element"/>
-        <block type="UI_Element_Text"/>
-    </category>
-    <category name="窗口" color="#EC522E">
-        <block type="UI_Window_Show_Html"/>
-    </category>
-</toolbox>    
-    ]],"SystemUIBlock");
+    return NplBlockMCML.GetCategoryListAndMap();
+--     return BlockManager.GetCategoryListAndMapByXmlText([[
+-- <toolbox>
+--     <category name="元素" color="#2E9BEF">
+--         <block type="UI_MCML_Elements"/>
+--         <block type="UI_MCML_Element"/>
+--         <block type="UI_Element_Text"/>
+--     </category>
+--     <category name="窗口" color="#EC522E">
+--         <block type="UI_Window_Show_Html"/>
+--     </category>
+-- </toolbox>    
+--     ]],"SystemUIBlock");
 end
 
 function NplBlockManager.GetNplBlockMap()

@@ -9,72 +9,53 @@ local NplBlockDemo = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/NplBlo
 -------------------------------------------------------
 ]]
 
-local MyLanguage = NPL.export();
-local categories = {
-	{name = "Hello", text = "Hello", colour = "#0078d7", },
-	{name = "Control", text = "Control", colour = "#d83b01", },
-};
-local all_cmds = {
------------------------
-{
-	type = "Hello", 
-	message0 = "Hello %1",
-	arg0 = {
-		{
-			name = "text",
-			type = "input_value",
-			shadow = { type = "text", value = L"hello!",},
-			text = L"hello!", 
-		},
-	},
-	category = "Hello", 
-	helpUrl = "", 
-	canRun = true,
-	previousStatement = true,
-	nextStatement = true,
-	func_description = 'Hello(%s)',
-	ToNPL = function(self)
-		return string.format('Hello("%s")\n', self:getFieldValue('text'));
-	end,
-	examples = {{desc = "say hello ", canRun = true, code = [[
-say("Hello!")
-wait(1)
-say("")
-]]}},
-},
------------------------
-{
-	type = "Hello2", 
-	message0 = "Hello2 %1",
-	arg0 = {
-		{
-			name = "text",
-			type = "input_value",
-			shadow = { type = "text", value = L"hello!",},
-			text = L"hello!", 
-		},
-	},
-	category = "Control", 
-	helpUrl = "", 
-	canRun = true,
-	previousStatement = true,
-	nextStatement = true,
-	func_description = 'say(%s)',
-	ToNPL = function(self)
-		return string.format('say("%s")\n', self:getFieldValue('text'));
-	end,
-	examples = {{desc = "say hello ", canRun = true, code = [[
-say("Hello!")
-wait(1)
-say("")
-]]}},
-},
+local NplBlockDemo = NPL.export();
 
-};
+local all_categorie_list = {
+	{
+		name = "xxx",
+		text = "xxx",
+		color = "#000000",
+		blocktypes = {"blocktype", "blocktype"},
+	}
+}
 
-function MyLanguage.GetCategoryButtons()
-	return categories;
+local all_block_list = {
+	{
+		type = "xxx",
+		message = "%1 %2",
+		arg = {
+			{
+				name = "field_name",
+				type = "input_value", -- "input_value_list", "field_input"
+				-- shadowType = ""
+				text = ""
+			}, 
+			{
+
+			}
+		},
+		output = false,
+		previousStatement = true,
+		nextStatement = true,
+		code_description = [[]],
+		-- ToCode = function(block) 
+		-- end
+	}
+}
+
+function NplBlockDemo.GetBlockMap()
+    local all_block_map = {};
+    for _, block in ipairs(all_block_list) do
+        all_block_map[block.type] = block;
+    end
+	return all_block_map;
 end
-function MyLanguage.GetAllCmds()
-	return all_cmds;
+
+function NplBlockDemo.GetCategoryListAndMap()
+    local all_categorie_map = {};
+    for _, category in ipairs(all_categorie_list) do
+        all_categorie_map[category.name] = category;
+    end
+	return all_categorie_list, all_categorie_map;
 end
