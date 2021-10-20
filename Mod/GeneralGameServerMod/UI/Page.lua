@@ -280,6 +280,50 @@ function Page.ShowShenTongBeiPage(G, params)
     return ShenTongBeiPage;
 end
 
+local ShenTongBeiCourePage = Vue:new();
+function Page.ShowShenTongBeiCourePage()
+    __auto_close_pages__[ShenTongBeiCourePage] = ShenTongBeiCourePage;
+    params = params or {};
+    params.url = "%ui%/App/RedSummerCamp/Course.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
+    params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
+    params.fixedRootScreenHeight = params.fixedRootScreenHeight or 720;
+    ShenTongBeiCourePage:Show(params);
+end
+
+local ShenTongBeiConstituionPage = Vue:new();
+function Page.ShowShenTongBeiConstituionPage()
+    print("ShowShenTongBeiConstituionPage")
+    __auto_close_pages__[ShenTongBeiConstituionPage] = ShenTongBeiConstituionPage;
+    params = params or {};
+    params.url = "%ui%/App/RedSummerCamp/Constitution.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
+    params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
+    params.fixedRootScreenHeight = params.fixedRootScreenHeight or 720;
+    ShenTongBeiConstituionPage:Show(params);
+end
+
+local ShenTongBeiCompetitionPage = Vue:new();
+function Page.ShowShenTongBeiCompetitionPage()
+    print("ShenTongBeiCompetitionPage")
+    __auto_close_pages__[ShenTongBeiCompetitionPage] = ShenTongBeiCompetitionPage;
+    params = params or {};
+    params.url = "%ui%/App/RedSummerCamp/Competition.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = params.width or "100%";
+    params.height = params.height or "100%";
+    params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
+    params.fixedRootScreenHeight = params.fixedRootScreenHeight or 720;
+    ShenTongBeiCompetitionPage:Show(params);
+end
+
 local ShenTongBeiZiZhiPage = Vue:new();
 function Page.ShowShenTongBeiZiZhiPage()
     __auto_close_pages__[ShenTongBeiZiZhiPage] = ShenTongBeiZiZhiPage;
