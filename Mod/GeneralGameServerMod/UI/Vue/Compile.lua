@@ -366,7 +366,7 @@ function Compile:VFor(element)
             -- self:UnWatchElement(clone);
             -- 构建scope数据
             local scope = scopes[i] or {};
-            scope[key or "index"] = i;
+            if (val ~= key) then scope[key] = i end 
             if (type(list) == "table") then
                 scope[val] = list[i];
             else

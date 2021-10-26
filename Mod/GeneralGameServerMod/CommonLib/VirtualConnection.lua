@@ -28,40 +28,71 @@ CommonLib.AddPublicFile(__neuron_file__);
 
 local __all_virtual_connection__ = {};
 
+VirtualConnection.RegisterDisconnectedCallBack = Connection.RegisterDisconnectedCallBack;
+VirtualConnection.RemoveDisconnectedCallBack = Connection.RemoveDisconnectedCallBack;
+VirtualConnection.RegisterConnectedCallBack = Connection.RegisterConnectedCallBack;
+VirtualConnection.RemoveConnectedCallBack = Connection.RemoveConnectedCallBack;
+
 function VirtualConnection:ctor()
 end
 
-function VirtualConnection:GetKey(opts)
-    local nid = opts and opts.__nid__ or self:GetNid();
-    local localThreadName = opts and opts.__local_thread_name__ or self:GetLocalThreadName();
-    local localNeuronFile = opts and opts.__local_neuron_file__ or self:GetLocalNeuronFile();
-    local remoteThreadName = opts and opts.__remote_thread_name__ or self:GetRemoteThreadName();
-    local remoteNeuronFile = opts and opts.__remote_neuron_file__ or self:GetRemoteNeuronFile();
+function VirtualConnection:GetKey(address)
+    local nid = address and address.__nid__ or self:GetNid();
+    local localThreadName = address and address.__local_thread_name__ or self:GetLocalThreadName();
+    local localNeuronFile = address and address.__local_neuron_file__ or self:GetLocalNeuronFile();
+    local remoteThreadName = address and address.__remote_thread_name__ or self:GetRemoteThreadName();
+    local remoteNeuronFile = address and address.__remote_neuron_file__ or self:GetRemoteNeuronFile();
     return string.format("%s_%s_%s_%s_%s", nid, localThreadName, localNeuronFile, remoteThreadName, remoteNeuronFile);
 end
 
-function VirtualConnection:New(msg)
-    return self.singletonInited and self:Init(msg) or self:new():Init(msg);
+function VirtualConnection:New(address)
+    return self.singletonInited and self:Init(address) or self:new():Init(address);
 end
 
 function VirtualConnection:Clear()
     __all_virtual_connection__ = {};
 end
 
-function VirtualConnection:IsExist(msg)
-    return __all_virtual_connection__[self:GetKey(msg)] ~= nil;
+function VirtualConnection:IsExist(address)
+    return __all_virtual_connection__[self:GetKey(address)] ~= nil;
 end
 
-function VirtualConnection:GetVirtualConnection(msg)
-    local key = self:GetKey(msg);
+function VirtualConnection:GetVirtualConnection(address)
+    local key = self:GetKey(address);
     if (__all_virtual_connection__[key]) then return __all_virtual_connection__[key] end
-
     -- print("VirtualConnection:GetVirtualConnection", key);
-
-    local virtual_connection = self:New(msg);
+    local virtual_connection = self:New(address);
     __all_virtual_connection__[self:GetKey()] = virtual_connection;
-
     return virtual_connection;
+end
+
+-- 获取网络地址
+function VirtualConnection:GetVirtualAddress()
+    return commonlib.serialize_compact({
+        __local_neuron_file__ = self:GetLocalNeuronFile(),
+        __local_thread_name__ = self:GetLocalThreadName(),
+        __remote_neuron_file__ = self:GetRemoteNeuronFile(),
+        __remote_thread_name__ = self:GetRemoteThreadName(),
+        __nid__ = self:GetNid(),
+    });
+end
+
+-- 设置网络地址
+function VirtualConnection:SetVirtualAddress(address)
+    address = type(address) == "string" and NPL.LoadTableFromString(address) or address;
+
+    if (type(address) ~= "table") then 
+        __all_virtual_connection__[self:GetKey()] = nil;
+        return 
+    end 
+
+    self:SetNid(address and address.__nid__ or self:GetNid());
+    __all_virtual_connection__[self:GetKey()] = nil;
+    self:SetLocalNeuronFile(address and address.__local_neuron_file__ or self:GetLocalNeuronFile());
+    self:SetLocalThreadName(address and address.__local_thread_name__ or self:GetLocalThreadName());
+    self:SetRemoteNeuronFile(address and address.__remote_neuron_file__ or self:GetRemoteNeuronFile());
+    self:SetRemoteThreadName(address and address.__remote_thread_name__ or self:GetRemoteThreadName());
+    __all_virtual_connection__[self:GetKey()] = self;
 end
 
 function VirtualConnection:SetNid(nid)
@@ -72,6 +103,8 @@ function VirtualConnection:SetNid(nid)
         old_connection:OffClosed(self.__closed_callback__, self);
         old_connection:RemoveVirtualConnection(self);
     end 
+    __all_virtual_connection__[self:GetKey()] = nil;             -- 移除旧地址
+
     self.__nid__ = nid;
     local new_connection = self:GetConnection();
     if (new_connection) then 
@@ -79,7 +112,7 @@ function VirtualConnection:SetNid(nid)
         new_connection:OnClosed(self.__closed_callback__, self);
         new_connection:AddVirtualConnection(self);
     end 
-    __all_virtual_connection__[self:GetKey()] = self;
+    __all_virtual_connection__[self:GetKey()] = self;            -- 设置新地址
 end
 
 function VirtualConnection:GetNid()
@@ -93,26 +126,16 @@ end
 
 function VirtualConnection:ctor()
 	self.__event_emitter__ = EventEmitter:new();       -- 事件触发器
-end
-
-function VirtualConnection:Init(opts)
-    opts = opts or {};
-
-    if (opts.__remote_neuron_file__) then self:SetRemoteNeuronFile(opts.__remote_neuron_file__) end
-    if (opts.__local_neuron_file__) then self:SetLocalNeuronFile(opts.__local_neuron_file__) end
-    if (opts.__remote_thread_name__) then self:SetRemoteThreadName(opts.__remote_thread_name__) end
-    if (opts.__local_thread_name__) then self:SetLocalThreadName(opts.__local_thread_name__) end
-
     self.__disconnected_callback__ = function(msg)
         self:HandleDisconnected(msg);
 	end
-
     self.__closed_callback__ = function()
         self:HandleClosed();
     end
+end
 
-    self:SetNid(opts.__nid__);
-
+function VirtualConnection:Init(opts)
+    self:SetVirtualAddress(opts);
     return self;
 end
 
@@ -137,6 +160,7 @@ function VirtualConnection:OffClosed(...)
 end
 
 function VirtualConnection:HandleClosed()
+    self:SetVirtualAddress(nil); 
     self.__event_emitter__:TriggerEventCallBack("__closed__");
 end
 
@@ -175,12 +199,15 @@ end
 
 -- 发送消息无视是否连接
 function VirtualConnection:SendMsg(msg, callback)
-    msg.__local_neuron_file__ = self:GetRemoteNeuronFile();
-    msg.__local_thread_name__ = self:GetRemoteThreadName();
-    msg.__remote_thread_name__ = self:GetLocalThreadName();
-    msg.__remote_neuron_file__ = self:GetLocalNeuronFile();
+    -- 发送前确保当前地址信息
+    msg.__local_neuron_file__ = self:GetLocalNeuronFile();
+    msg.__local_thread_name__ = self:GetLocalThreadName();
+    msg.__remote_neuron_file__ = self:GetRemoteNeuronFile();
+    msg.__remote_thread_name__ = self:GetRemoteThreadName();
+    msg.__nid__ = self:GetNid();
     -- print("VirtualConnection:SendMsg", self:GetRemoteAddress());
-    self:GetConnection():Send(msg, self:GetRemoteThreadName(), self:GetRemoteNeuronFile(), callback);
+    local connection = self:GetConnection();
+    if (connection) then connection:Send(msg, self:GetRemoteThreadName(), self:GetRemoteNeuronFile(), callback) end
 end
 
 function VirtualConnection:Send(data, callback)
@@ -223,14 +250,23 @@ end
 
 function VirtualConnection:OnActivate(msg)
     local __nid__ = msg and (msg.nid or msg.tid);
-    if (type(msg) ~= "table" or not __nid__) then return end
+    if (not __nid__) then return end
+    -- 根据对端地址信息, 构建对应的地址信息
+    local __local_neuron_file__ = msg.__remote_neuron_file__;
+    local __local_thread_name__ = msg.__remote_thread_name__;
+    local __remote_neuron_file__ = msg.__local_neuron_file__;
+    local __remote_thread_name__ = msg.__local_thread_name__;
     msg.__nid__ = __nid__;
+    msg.__local_neuron_file__ = __local_neuron_file__;
+    msg.__local_thread_name__ = __local_thread_name__;
+    msg.__remote_neuron_file__ = __remote_neuron_file__;
+    msg.__remote_thread_name__ = __remote_thread_name__;
+
     local virtual_connection = self:GetVirtualConnection(msg);
     if (not virtual_connection:IsConnected()) then
-        virtual_connection:SetNid(msg.__nid__);
         virtual_connection:SetConnected(true);
         virtual_connection:HandleConnected();
-        virtual_connection:SendMsg({__cmd__ = "__response_connect__"});
+        -- virtual_connection:SendMsg({__cmd__ = "__response_connect__"});
     end
 
     local __cmd__ = msg.__cmd__;
@@ -246,7 +282,5 @@ function VirtualConnection:OnActivate(msg)
 end
 
 NPL.this(function()
-	local nid = msg and (msg.nid or msg.tid);
-    if (not nid) then return end
     VirtualConnection:OnActivate(msg);
 end)

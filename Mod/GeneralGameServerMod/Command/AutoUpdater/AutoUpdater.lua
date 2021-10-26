@@ -36,7 +36,6 @@ AutoUpdater:Property("ProxyURL");                                     -- 代理U
 AutoUpdater:Property("ServerIp", nil);
 AutoUpdater:Property("ServerPort", nil);
 
-
 local LAN_Proxy_Config = {};
 
 local DefaultPort = "8099";
@@ -84,22 +83,36 @@ function AutoUpdater:Init(opts)
     return self;
 end
 
+function AutoUpdater:StartServer()
+    self:StartWebServer();
+    self:CheckInstallLatestVersion(function()
+        GameLogic.AddBBS("AutoUpdater", "启动代理服务器");
+    end);
+end
+
+function AutoUpdater:StopServer()
+end
+
+function AutoUpdater:StartClient(ip, port)
+    self:SetServerIp(ip or lan_proxy_config.RemoteServerIp);
+    self:SetServerPort(port or lan_proxy_config.RemoteServerPort);
+    -- 检测心跳
+    self:CheckHeartBeat();                              
+    self:CheckInstallLatestVersion();
+end
+
+function AutoUpdater:StopClient()
+end
+
 function AutoUpdater:OnLanProxyConfigChange(lan_proxy_config)
     -- 开启本地服务器
     if (lan_proxy_config.IsEnableLocalServer) then
-        self:StartWebServer();
-        self:CheckInstallLatestVersion(function()
-            GameLogic.AddBBS("AutoUpdater", "启动代理服务器");
-        end);
+        self:StartServer();
     end
 
     -- if (lan_proxy_config.RemoteServerIp and lan_proxy_config.RemoteServerIp ~= self:GetServerIp()) then
     if (lan_proxy_config.RemoteServerIp) then
-        self:SetServerIp(lan_proxy_config.RemoteServerIp);
-        self:SetServerPort(lan_proxy_config.RemoteServerPort);
-        -- 检测心跳
-        self:CheckHeartBeat();                              
-        self:CheckInstallLatestVersion();
+        self:StartClient();
     end
 end
 

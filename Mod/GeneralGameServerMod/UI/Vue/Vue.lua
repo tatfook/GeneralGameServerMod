@@ -90,7 +90,7 @@ function Vue:ExtendG(G)
         return page;
     end
 
-    G.Refresh = function()
+    G.RefreshWindow = function()
         self:Refresh();
     end
 

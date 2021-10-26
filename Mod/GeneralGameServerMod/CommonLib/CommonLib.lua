@@ -69,6 +69,7 @@ function CommonLib.ClearTable(t)
 
     for i = 1, size do
         t[temp_keys[i]] = nil;
+        temp_keys[i] = nil;
     end
 end
 
@@ -157,6 +158,13 @@ function CommonLib.GetRootDirectory()
     return ParaIO.GetWritablePath();
 end
 
+-- 创建目录
+function CommonLib.CreateDirectory(directory, bDeleteIfExist)
+    if (bDeleteIfExist) then CommonLib.DeleteDirectory(directory) end 
+    ParaIO.CreateDirectory(directory);
+end
+
+-- 删除目录
 function CommonLib.DeleteDirectory(directory)
     ParaIO.DeleteFile(CommonLib.ToCanonicalFilePath(directory .. "/", "linux"));
 end
@@ -285,6 +293,7 @@ end
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/Connection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/VirtualConnection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/RPCVirtualConnection.lua");
+CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/RPC.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/FileSyncConnection.lua");
 CommonLib.AddPublicFile("Mod/GeneralGameServerMod/CommonLib/Broadcast.lua");
 
@@ -304,12 +313,28 @@ end
 -- 网络事件
 commonlib.setfield("__CommonLib__", CommonLib);
 NPL.RegisterEvent(0, "_n_Connections_network", ";__CommonLib__.__OnNetworkEvent__();");
+-- Lua NetworkEvent
 function CommonLib.OnNetworkEvent(callback)
     __event_emitter__:RegisterEventCallBack("__OnNetworkEvent__", callback);
 end
+-- C++ NetworkEvent
 function CommonLib.__OnNetworkEvent__()
     __event_emitter__:TriggerEventCallBack("__OnNetworkEvent__", msg);
 end
+
+-- Lua Thread NetworkEvent
+function CommonLib.RegisterNetworkEvent(callback)
+	__event_emitter__:RegisterEventCallBack("NetworkEvent", callback);
+end
+
+function CommonLib.RemoveNetworkEvent(callback)
+    __event_emitter__:RemoveEventCallBack("NetworkEvent", callback);
+end
+
+function CommonLib.TriggerNetworkEvent(data)
+    __event_emitter__:TriggerEventCallBack("NetworkEvent", data);
+end
+
 -- NPL_OK = 0, 
 -- NPL_Error = 1, 
 -- NPL_ConnectionNotEstablished = 2,
@@ -379,6 +404,10 @@ end
 -- DateTime
 function CommonLib.GetTimeStampByDateTime(datetime)
     return commonlib.timehelp.GetTimeStampByDateTime(datetime);
+end
+
+function CommonLib.GetTimeStamp()
+    return ParaGlobal.timeGetTime();
 end
 
 -- table.pack table.unpack, select 

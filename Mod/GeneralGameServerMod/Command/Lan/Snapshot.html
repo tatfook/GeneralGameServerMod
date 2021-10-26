@@ -1,0 +1,206 @@
+
+<template class="container">
+    <div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100px;">
+        <div style="width:171px;height:58px;background:url(Texture/Aries/Creator/keepwork/RedSummerCamp/courses/courses_32bits.png#7 248 171 58);">
+            <div onclick=CloseWindow style="width: 45px; height: 38px; margin-left:30px;margin-top:10px; background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/works/works_32bits.png#0 65 45 38);"></div>
+        </div>
+        <div style="position: absolute; top: 10px; right: 40px; width: 300px; height: 100px;">
+            <div style="font-size: 24px; color: #101010; font-weight: bold; text-align: right;">在线人数: {{get_total_user_count()}}</div>
+            <div style="display: flex; justify-content: flex-end; font-size: 18px; color: #101010; margin-top: 8px;">
+                <div style="margin-right: 12px;">刷新速度: </div>
+                <image style="width: 20px; height: 20px; margin: 2px;"  onclick="SwitchFPS('low')" v-bind:src="fps == 'low' and 'Texture/Aries/Creator/keepwork/ggs/lan/icon2_20X20_32bits.png#0 0 20 20' or 'Texture/Aries/Creator/keepwork/ggs/lan/icon1_20X20_32bits.png#0 0 20 20'"></image>
+                <div style="width: 40px;">慢</div>
+                <image style="width: 20px; height: 20px; margin: 2px;" onclick="SwitchFPS('high')" v-bind:src="fps == 'high' and 'Texture/Aries/Creator/keepwork/ggs/lan/icon2_20X20_32bits.png#0 0 20 20' or 'Texture/Aries/Creator/keepwork/ggs/lan/icon1_20X20_32bits.png#0 0 20 20'"></image>
+                <div>快</div>
+            </div>
+        </div>
+    </div>
+    <div style="width: 1280px; height: 720px; padding: 90px;">
+        <div style="width: 100%; height: 600px; overflow-y: auto;" onmousemove="ShowToolTip(nil)"  onmouseleave=CloseToolTip>
+            <div class="item" v-for="key in keys" onmousemove="ShowToolTip(key)">
+                <image style="width: 176px; height: 90px; border-radius: 8px;" v-bind:src="get_snapshot(key)"></image>
+                <div style="font-size: 13px; color: #000000; margin-top: 4px;">
+                    <div style="text-align: center;">{{GetWorldTitle(key)}}</div>
+                    <div style="text-align: center;">{{get_ip(key)}}</div>
+                </div>
+                <div onclick="ClickZoomIn(key)" class="zoom-in"></div>
+            </div>
+        </div>
+        <div ref="tooltip" class="tooltip">
+            <div>昵称: {{get_userinfo(tooltip_key).nickname or ""}}</div>
+            <div>账号: {{get_userinfo(tooltip_key).username or ""}}</div>
+            <div>班级: {{get_userinfo(tooltip_key).classname or ""}}</div>
+            <div>IP 地址: {{get_userinfo(tooltip_key).ip or ""}}</div>
+            <div>访问世界 ID: {{get_userinfo(tooltip_key).worldId or ""}}</div>
+            <div>焦点状态: {{is_focus(tooltip_key) or "激活" or "未激活"}}</div>
+        </div>
+        <div v-if="zoomin_key ~= nil" class="zoomin" onclick="CloseZoomIn">
+            <image style="width: 1094px; height: 510px; border-radius: 8px;" v-bind:src="get_snapshot(zoomin_key)"></image>
+            <div style="font-size: 13px; color: #000000; margin-top: 4px;">
+                <div style="text-align: center; font-size: 30px;">{{GetWorldTitle(zoomin_key)}}</div>
+                <div style="text-align: center; font-size: 30px;">{{get_ip(zoomin_key)}}</div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script type="text/lua">
+local ToolTipEl = nil;
+local active_key = "";
+HIGH_FPS, LOW_FPS = HIGH_FPS or 2, LOW_FPS or 1/5;
+fps="low";
+tooltip_key = nil;
+zoomin_key = nil;
+
+function OnReady()
+    ToolTipEl = GetRef("tooltip");
+    
+    -- 默认低频
+    broadcast_fps({all = true, fps = LOW_FPS});
+end
+
+function CloseToolTip()
+    if (not ToolTipEl) then return end 
+    ToolTipEl:SetVisible(false);
+end
+
+function ActiveKey(key)
+    if (active_key == key) then return end
+    active_key = key;
+    if (fps == "high") then return end 
+    broadcast_fps({key = key, fps = HIGH_FPS, default_fps = fps == "low" and LOW_FPS or HIGH_FPS});
+end
+
+function ShowToolTip(key)
+    local event = GetEvent();
+    event:Accept();
+    
+    if (not ToolTipEl) then return end
+    if (not key) then 
+        ToolTipEl:SetVisible(false);
+        ActiveKey("");
+        return;
+    end 
+
+    local windowX, windowY = event:GetWindowXY();
+    windowX, windowY = windowX + 30, windowY + 30;
+    ToolTipEl:SetStyleValue("left", windowX);
+    ToolTipEl:SetStyleValue("top", windowY);
+    ToolTipEl:SetPosition(windowX, windowY);
+    tooltip_key = key;
+    ToolTipEl:SetVisible(true);
+    ActiveKey(key);
+end
+
+function SwitchFPS(fps_)
+    fps = fps_;
+    broadcast_fps({all = true, fps = fps == "low" and LOW_FPS or HIGH_FPS});
+end
+
+function ClickZoomIn(key)
+    ShowToolTip(nil);
+    zoomin_key = key;
+    broadcast_fps({key = zoomin_key, width = 640, height = 480});
+end 
+
+function CloseZoomIn(key)
+    broadcast_fps({key = zoomin_key, width = 400, height = 300});
+    zoomin_key = nil;
+end
+
+function GetWorldTitle(key)
+    local userinfo = get_userinfo(key);
+    local worldName = userinfo.worldName or "";
+    if (userinfo.worldId) then worldName = worldName .. "#" .. tostring(userinfo.worldId) end 
+    return worldName;
+end 
+
+<!-- keys = 41;
+
+function GetWorldTitle()
+    return "作品名称 #1000"
+end
+
+function broadcast_fps(data) 
+    log(data);
+end
+
+function get_snapshot()
+    return "temp/snapshots/snapshot.jpg"
+end
+
+function get_ip()
+    return "127.0.0.1"
+end
+
+function get_total_user_count()
+    return 11;
+end 
+
+function get_userinfo()
+    return {};
+end -->
+
+</script>
+
+<style scoped=true>
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url(Texture/Aries/Creator/keepwork/RedSummerCamp/works/works_32bits.png#380 247 128 257:1 123 126 123);
+}
+
+.item {
+    width: 196px;
+    height: 150px;
+    padding: 8px 10px;
+    margin: 0px 12px 16px 12px;
+    display: inline-block;
+    background: url(Texture/Aries/Creator/keepwork/ggs/lan/1_32bits.png#160 100 75 75: 20 20 20 20);
+}
+
+.zoom-in {
+    position: absolute; 
+    z-index: 10;
+    top: 10px; 
+    right: 10px; 
+    width: 24px; 
+    height: 24px;
+    /* display: none;  */
+    visibility: hidden;
+    /* background-color: #ffffff; */
+    background: url(Texture/Aries/Creator/keepwork/ggs/lan/icon_24X24_32bits.png#0 0 24 24);
+}
+
+.item:hover .zoom-in {
+    /* display: block; */
+    visibility: visible;
+}
+
+.tooltip {
+    position: fixed;
+    left: -10000px;
+    top: -10000px;
+    z-index: 1;
+    width: 174px; 
+    height: 126px;
+    padding: 16px;
+    color: #ffffff;
+    font-size: 12px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/lan/hei2_32X32_32bits.png#0 0 32 32: 10 10 10 10);
+}
+
+.zoomin {
+    position: absolute;
+    z-index: 10;
+    top: 80px;
+    bottom: 20px;
+    left: 80px;
+    right: 80px;
+    padding: 12px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/lan/1_32bits.png#160 100 75 75: 20 20 20 20);
+}
+</style>

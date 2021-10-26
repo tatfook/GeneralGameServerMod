@@ -20,7 +20,7 @@ local __neuron_file__ = "Mod/GeneralGameServerMod/CommonLib/Connection.lua";
 local __nid_thread_map__ = {};                      -- 连接线程映射表
 local __all_connections__ = {};                     -- 所有连接
 local __main_thread_name__ = "main";                -- 主线程名
--- local __event_emitter__ = EventEmitter:new();       -- 事件触发器
+local __event_emitter__ = EventEmitter:new();       -- 事件触发器
 
 Connection:Property("Nid");                                     -- 连接标识符
 
@@ -163,11 +163,45 @@ function Connection:OnActivate(msg)
 	local __cmd__ = msg and msg.__cmd__;
 	if (__cmd__ == "__connected__") then
 		__nid_thread_map__[msg.__nid__] = msg.__thread_name__; 
+		CommonLib.TriggerNetworkEvent({__nid__ = msg.__nid__, __event_type__ = "__connected__"});
 	elseif (__cmd__ == "__disconnected__") then
 		self:GetConnectionByNid(msg.__nid__):HandleDisconnected(msg);
+		CommonLib.TriggerNetworkEvent({__nid__ = msg.__nid__, __event_type__ = "__disconnected__"});
 	else 
 	end
 end
+
+function Connection.RegisterNetworkEvent(callback)
+	CommonLib.RegisterNetworkEvent(callback);
+end
+
+function Connection.RemoveNetworkEvent(callback)
+	CommonLib.RemoveNetworkEvent(callback);
+end
+
+function Connection.RegisterConnectedCallBack(callback)
+	__event_emitter__:RegisterEventCallBack("__connected__", callback);
+end
+
+function Connection.RemoveConnectedCallBack(callback)
+	__event_emitter__:RemoveEventCallBack("__connected__", callback);
+end
+
+function Connection.RegisterDisconnectedCallBack(callback)
+	__event_emitter__:RegisterEventCallBack("__disconnected__", callback);
+end
+
+function Connection.RemoveDisconnectedCallBack(callback)
+	__event_emitter__:RemoveEventCallBack("__disconnected__", callback);
+end
+
+CommonLib.RegisterNetworkEvent(function(data)
+	if (data.__event_type__ == "__disconnected__") then
+		__event_emitter__:TriggerEventCallBack("__disconnected__", data);
+	elseif (data.__event_type__ == "__connected__") then
+		__event_emitter__:TriggerEventCallBack("__connected__", data);
+	end
+end);
 
 -- 激活函数
 NPL.this(function() 

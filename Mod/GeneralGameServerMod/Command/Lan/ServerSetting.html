@@ -1,0 +1,141 @@
+<template class="container">
+    <div style="width: 614px; height: 386px; padding: 0px 2px; background: url(Texture/Aries/Creator/keepwork/Window/dakuang_32bits.png#0 0 440 93:378 43 33 44);">
+        <div class="header">
+            <div onclick=OnClickRun style="width: 130px; height: 30px; margin-left: 10px; margin-top: 5px; background: url(Texture/Aries/Creator/keepwork/ggs/proxy_server_32bits.png#120 47 130 30);"></div>
+            <div class="close-btn" onclick=CloseWindow></div>
+        </div>
+        <div style="height: 48px; display: flex; background-color: rgb(159,157,157); align-items: center;">
+            <div v-bind:class="TabIndex == 'ConnectServer' and 'tab-index tab-index-active' or 'tab-index tab-index-inactive'" onclick="TabIndex = 'ConnectServer'">连接服务器</div>
+            <div v-bind:class="TabIndex == 'CreateServer' and 'tab-index tab-index-active' or 'tab-index tab-index-inactive'" onclick="TabIndex = 'CreateServer'">创建服务器</div>
+        </div>
+        <div v-if="TabIndex == 'ConnectServer'" style="padding-left: 120px; font-size: 14px; color: #101010; height: 180px;">
+            <div style="margin-top: 40px">设定本地服务器 IP 地址, 本机将会优先从该服务器更新, 下载.</div>
+            <div style="margin-top: 10px;">本机还会连接该服务器的 "共享世界" 服务.</div>
+            <div style="margin-top: 20px;">本地服务器 IP: </div>
+            <input style="width: 370px; height: 40px; margin-top: 10px; color: #ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/proxy_server_32bits.png#134 81 30 30:8 8 8 8);" v-model="RemoteServerIp" placeholder="127.0.0.1"></input>
+        </div>
+
+        <div v-if="TabIndex == 'CreateServer'" style="padding-left: 120px; font-size: 14px; color: #101010; height: 180px;">
+            <div style="margin-top: 20px;">本地服务器 IP: </div>
+            <input style="width: 370px; height: 40px; margin-top: 10px; color: #ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/proxy_server_32bits.png#134 81 30 30:8 8 8 8);" v-model="LocalServerIp" placeholder="127.0.0.1"></input>
+            <div style="display: flex; margin-top: 16px;">
+                <div onclick="IsEnableLocalServer = not IsEnableLocalServer" v-bind:class="IsEnableLocalServer and 'enable-local-server' or 'disable-local-server'"></div>
+                <div style="margin-left: 6px; font-size: 12px; margin-top: -1px;">开启本地服务, 其他电脑可将本机设置为本地服务器</div>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; margin-top: 50px;">
+            <div class="button" onclick=ClickConfirm style="margin-right: 40px; background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 8 16 8);">确定</div>
+            <div class="button" onclick=CloseWindow style="margin-right: 40px; background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huise_32bits.png#0 0 38 64:16 8 16 8);">取消</div>
+        </div>
+    </div>
+</template>
+
+
+<script type="text/lua">
+RemoteServerIp = "";
+LocalServerIp = NPL.GetExternalIP();
+IsEnableLocalServer = false;
+TabIndex = "ConnectServer";  -- CreateServer  ConnectServer
+
+function OnReady()
+    if (__server_setting__) then
+        RemoteServerIp = __server_setting__:GetRemoteServerIp() or RemoteServerIp;
+        LocalServerIp = __server_setting__:GetLocalServerIp() or LocalServerIp;
+        IsEnableLocalServer = __server_setting__:IsEnableLocalServer();
+    end
+end 
+
+function ClickConfirm()
+    print(RemoteServerIp, LocalServerIp)
+    -- 发送局域网配置更新事件
+    local strs = commonlib.split(RemoteServerIp, ":");
+    local remoteServerIp = string.match(strs[1] or "", "(%d+%.%d+%.%d+%.%d+)");
+    local remoteServerPort = (string.match(strs[2] or "", "(%d+)")) or "8099";
+    print(remoteServerIp, remoteServerPort)
+    
+    local strs = commonlib.split(LocalServerIp, ":");
+    local localServerIp = string.match(strs[1] or "", "(%d+%.%d+%.%d+%.%d+)");
+    local localServerPort = (string.match(strs[2] or "", "(%d+)")) or "8099";
+    print(localServerIp, localServerPort, IsEnableLocalServer)
+    
+    if (__server_setting__) then
+        __server_setting__:SetEnableLocalServer(IsEnableLocalServer);
+        __server_setting__:SetLocalServerIp(localServerIp);
+        __server_setting__:SetLocalServerPort(localServerPort);
+        __server_setting__:SetRemoteServerIp(remoteServerIp);
+        __server_setting__:SetRemoteServerPort(remoteServerPort);
+    end
+
+    CloseWindow();
+end
+</script>
+
+<style scoped=true>
+.container {
+    height: 100%; 
+    width: 100%; 
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header {
+    height: 39px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.close-btn {
+    width: 22px; 
+    height: 22px; 
+    margin-top: 10px;
+    margin-right: 20px; 
+    background-color: #ffffff;
+    background: url(Texture/Aries/Creator/keepwork/Window/guanbi_32bits.png#0 0 22 22);
+}
+
+.close-btn:hover {
+    background-color: #e6e6e6;
+}
+
+.tab-index {
+    font-size: 14px; color: #323232; width: 112px; height: 30px; line-height: 30px; text-align: center; margin-left: 16px; 
+}
+.tab-index-active {
+    background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 8 16 8);
+}
+.tab-index-inactive {
+    background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huise_32bits.png#0 0 38 64:16 8 16 8);
+}
+
+.enable-local-server {
+    width: 14px;
+    height: 14px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/proxy_server_32bits.png#68 76 14 14:4 4 4 4);
+}
+
+.disable-local-server {
+    width: 14px;
+    height: 14px;
+    background: url(Texture/Aries/Creator/keepwork/ggs/proxy_server_32bits.png#86 76 14 14:4 4 4 4);
+}
+
+.button {
+    width: 120px;
+    height: 50px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: bold;
+}
+
+.button:hover {
+    background-color: #e6e6e6;
+}
+</style>
