@@ -17,8 +17,8 @@
     </div>
     <div style="width: 1280px; height: 720px; padding: 90px;">
         <div style="width: 100%; height: 600px; overflow-y: auto;" onmousemove="ShowToolTip(nil)"  onmouseleave=CloseToolTip>
-            <div class="item" v-for="key in keys" onmousemove="ShowToolTip(key)">
-                <image style="width: 176px; height: 90px; border-radius: 8px;" v-bind:src="get_snapshot(key)"></image>
+            <div v-for="key in keys" onmousemove="ShowToolTip(key)" v-bind:class="is_focus(key) and 'item' or 'item item-inactive'">
+                <image class="item-image" style="width: 176px; height: 90px; border-radius: 8px;" v-bind:src="get_snapshot(key)"></image>
                 <div style="font-size: 13px; color: #000000; margin-top: 4px;">
                     <div style="text-align: center;">{{GetWorldTitle(key)}}</div>
                     <div style="text-align: center;">{{get_ip(key)}}</div>
@@ -139,8 +139,11 @@ end
 
 function get_userinfo()
     return {};
-end -->
+end
 
+function is_focus()
+    return math.random(1, 10) > 5 and true or false;
+end -->
 </script>
 
 <style scoped=true>
@@ -160,6 +163,14 @@ end -->
     margin: 0px 12px 16px 12px;
     display: inline-block;
     background: url(Texture/Aries/Creator/keepwork/ggs/lan/1_32bits.png#160 100 75 75: 20 20 20 20);
+}
+
+.item-inactive {
+    background: url(Texture/Aries/Creator/keepwork/ggs/lan/1_32bits.png#77 100 75 75: 20 20 20 20);
+}
+
+.item-inactive .item-image {
+    background-color: rgb(232,232,232);
 }
 
 .zoom-in {
