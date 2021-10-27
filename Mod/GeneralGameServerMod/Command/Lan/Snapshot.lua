@@ -121,6 +121,7 @@ function Snapshot:ShowUI()
         url = "Mod/GeneralGameServerMod/Command/Lan/Snapshot.html",
         width = IsDevEnv and 1280 or "100%",
         height = IsDevEnv and 720 or "100%",
+        draggable = false,
     });
 end
 

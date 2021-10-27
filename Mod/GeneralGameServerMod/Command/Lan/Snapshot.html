@@ -32,7 +32,7 @@
             <div>班级: {{get_userinfo(tooltip_key).classname or ""}}</div>
             <div>IP 地址: {{get_userinfo(tooltip_key).ip or ""}}</div>
             <div>访问世界 ID: {{get_userinfo(tooltip_key).worldId or ""}}</div>
-            <div>焦点状态: {{is_focus(tooltip_key) or "激活" or "未激活"}}</div>
+            <div>焦点状态: {{is_focus(tooltip_key) and "激活" or "未激活"}}</div>
         </div>
         <div v-if="zoomin_key ~= nil" class="zoomin" onclick="CloseZoomIn">
             <image style="width: 1094px; height: 510px; border-radius: 8px;" v-bind:src="get_snapshot(zoomin_key)"></image>
