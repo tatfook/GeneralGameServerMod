@@ -126,11 +126,12 @@ end
 function ToolBox:Render(painter)
     local _, _, width, height = self:GetBlockly():GetContentGeometry();
     width = Const.ToolBoxWidth;
+    painter:Save();
+    painter:SetClipRegion(0, 0, width - 10, height);
 
     -- 绘制背景
     painter:SetBrush("#ffffff");
     painter:DrawRectTexture(0, 0, Const.ToolBoxWidth, height, "Texture/Aries/Creator/keepwork/ggs/blockly/toolbox_bj_32X32_32bits.png#0 0 32 32:10 10 10 10");
-
     -- 绘制分类
     self:RenderCategory(painter);
 
@@ -139,8 +140,7 @@ function ToolBox:Render(painter)
 
     local scale = self:GetScale();
     local toolboxHeightUnitCount = math.floor(self.heightUnitCount / scale);
-    painter:Save();
-    painter:SetClipRegion(0, 0, width - 10, height);
+   
     painter:Scale(scale, scale);
     for _, block in ipairs(self.blocks) do
         local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
