@@ -11,6 +11,8 @@ local ElementUI = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/ElementU
 
 NPL.load("(gl)script/ide/System/Windows/Mouse.lua");
 NPL.load("(gl)script/ide/System/Windows/MouseEvent.lua");
+NPL.load("(gl)script/ide/System/Windows/Keyboard.lua");
+local Keyboard = commonlib.gettable("System.Windows.Keyboard");
 local Mouse = commonlib.gettable("System.Windows.Mouse");
 local MouseEvent = commonlib.gettable("System.Windows.MouseEvent");
 local Simulator = NPL.load("./Event/Simulator.lua");
@@ -27,6 +29,7 @@ ElementUI:Property("ZIndex", "");                           -- zindex 序
 ElementUI:Property("CanFocus", false, "IsCanFocus");        -- 是否可以聚焦
 ElementUI:Property("Animation");                            -- 元素动画
 ElementUI:Property("EnableIME", false, "IsEnableIME");      -- 元素动画
+ElementUI:Property("MoveViewWhenAttachWithIME", false, "IsMoveViewWhenAttachWithIME");  -- 是否自动上移
 
 local ElementUIDebug = GGS.Debug.GetModuleDebug("ElementUIDebug");
 local ElementHoverDebug = GGS.Debug.GetModuleDebug("ElementHoverDebug").Disable(); 
@@ -870,13 +873,41 @@ function ElementUI:GetMouseHoverElement(event, zindex, isParentElementHover, isP
     return hoverElement, maxZIndex, zindex;
 end
 
+function ElementUI:AttachWithIME()
+    if (not self:IsTouchMode() or not self:IsEnableIME()) then return end
+	if (self:IsMoveViewWhenAttachWithIME()) then
+		-- local pos = Point:new_from_pool(0, self:y() + self:height());
+		-- pos = self:mapToGlobal(pos);
+		-- Keyboard:attachWithIME(pos:y());
+		Keyboard:attachWithIME(nil);
+	else
+		Keyboard:attachWithIME(nil);
+	end
+end
+
+function ElementUI:DetachWithIME()
+    -- if (self:IsTouchMode() and self:IsEnableIME()) then ParaUI.GetUIObject("root"):GetAttributeObject():SetField("EnableIME", true) end
+    if (not self:IsTouchMode() or not self:IsEnableIME()) then return end
+
+    if (self:IsMoveViewWhenAttachWithIME()) then
+		-- local pos = Point:new_from_pool(0, self:y() + self:height());
+		-- pos = self:mapToGlobal(pos);
+		-- Keyboard:detachWithIME(pos:y());
+		Keyboard:detachWithIME(nil);
+	else
+		Keyboard:detachWithIME(nil);
+	end
+end
+
 function ElementUI:OnFocusOut()
+    self:DetachWithIME();
+    
     local onblur = self:GetAttrFunctionValue("onblur");
 	if (onblur) then onblur(self) end
 end
 
 function ElementUI:OnFocusIn()
-    if (self:IsTouchMode() and self:IsEnableIME()) then ParaUI.GetUIObject("root"):GetAttributeObject():SetField("EnableIME", true) end
+    self:AttachWithIME();
 
     local onfocus = self:GetAttrFunctionValue("onfocus");
 	if (onfocus) then onfocus(self) end
