@@ -16,8 +16,8 @@
         </div>
     </div>
     <div style="width: 1280px; height: 720px; padding: 90px;">
-        <div style="width: 100%; height: 600px; overflow-y: auto;" onmousemove="ShowToolTip(nil)"  onmouseleave=CloseToolTip>
-            <div v-for="key in keys" onmousemove="ShowToolTip(key)" v-bind:class="is_focus(key) and 'item' or 'item item-inactive'">
+        <div id="test" ref="KeysEl" style="width: 100%; height: 600px; overflow-y: auto;" onmousemove="ShowToolTip(nil)"  onmouseleave=CloseToolTip>
+            <div v-for="key in keys" onmousemove="ShowToolTip(key)" v-bind:key="key" v-bind:class="is_focus(key) and 'item' or 'item item-inactive'">
                 <image class="item-image" style="width: 176px; height: 90px; border-radius: 8px;" v-bind:src="get_snapshot(key)"></image>
                 <div style="font-size: 13px; color: #000000; margin-top: 4px;">
                     <div style="text-align: center;">{{GetWorldTitle(key)}}</div>
@@ -46,15 +46,37 @@
 
 <script type="text/lua">
 local ToolTipEl = nil;
+local KeysEl = nil;
 local active_key = "";
 HIGH_FPS, LOW_FPS = HIGH_FPS or 2, LOW_FPS or 1/5;
 fps="low";
 tooltip_key = nil;
 zoomin_key = nil;
 
+_G.GetKeyVisible = function()
+    local key_visible = {};
+    for _, key in ipairs(keys) do key_visible[key] = false end 
+    if (not KeysEl) then return key_visible end 
+    local x, y = KeysEl:GetWindowPos();
+    local w, h = KeysEl:GetWindowSize();
+    for _, children in ipairs(KeysEl.childrens) do
+        local sx, sy = children:GetWindowPos();
+        local sw, sh = children:GetWindowSize();
+        local key = children:GetAttrStringValue("key");
+        if (key) then
+            if ((sx + sw) < x or sx > (x + w) or (sy + sh) < y or sy > (y + h)) then
+                key_visible[key] = false;
+            else 
+                key_visible[key] = true;
+            end
+        end
+    end 
+    return key_visible;
+end 
+
 function OnReady()
     ToolTipEl = GetRef("tooltip");
-    
+    KeysEl = GetRef("KeysEl");
     -- 默认低频
     broadcast_fps({all = true, fps = LOW_FPS});
 end
@@ -114,8 +136,10 @@ function GetWorldTitle(key)
     if (userinfo.worldId) then worldName = worldName .. "#" .. tostring(userinfo.worldId) end 
     return worldName;
 end 
+<!-- 
+keys = {};
 
-<!-- keys = 41;
+for i = 1, 40 do keys[i] = i end 
 
 function GetWorldTitle()
     return "作品名称 #1000"

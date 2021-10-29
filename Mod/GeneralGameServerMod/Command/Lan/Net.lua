@@ -56,10 +56,8 @@ end);
 ----------------------------------------client-------------------------------------
 function Net:Broadcast(action, data, callback)
     for _, connection in pairs(self:GetAllConnection()) do
-        if (connection:GetNid()) then
-            __rpc__:SetVirtualAddress(connection.virtual_address);
-            __rpc__:Call(action, data, callback);
-        end
+        __rpc__:SetVirtualAddress(connection.virtual_address);
+        __rpc__:Call(action, data, callback);
     end
 end
 
@@ -67,6 +65,7 @@ function Net:Login(data, calback)
     -- print("============================user:login===============================");
     __rpc__:Call("Login", self:GetClientUserInfo(), function(key)
         self:SetServerKey(key);
+        print("====================login success=======================", key);
     end);
 end
 
@@ -204,9 +203,8 @@ end
 
 RPC.RegisterDisconnectedCallBack(function(msg)
     local __nid__ = msg.__nid__;
-
+    print("==========================RegisterDisconnectedCallBack==============================", Net:IsServer())
     if (Net:IsServer()) then
-        print("================user offline===============", __nid__);
         local list = {};
         for key, connection in pairs(__all_connections__) do
             if (connection.nid == __nid__) then

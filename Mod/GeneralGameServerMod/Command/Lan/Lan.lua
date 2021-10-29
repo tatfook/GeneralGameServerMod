@@ -49,9 +49,11 @@ function Lan:StartServer()
     local ip, port = "0.0.0.0" or self:GetServerIp(), self:GetServerPort();
     self:StartNetServer(ip, port);
     Net:StartServer();
+    
     print("================StartServer", self:IsEnableSnapshot(), self:IsEnableAutoUpdater());
     if (self:IsEnableSnapshot()) then Snapshot:StartServer() end 
     if (self:IsEnableAutoUpdater()) then AutoUpdater:StartServer() end 
+    self:SetServer(true);
 end
 
 function Lan:StopServer()
@@ -65,6 +67,7 @@ function Lan:StartClient(ip, port)
     print("================StartClient", self:IsEnableSnapshot(), self:IsEnableAutoUpdater());
     if (self:IsEnableSnapshot()) then Snapshot:StartClient(ip, port) end 
     if (self:IsEnableAutoUpdater()) then AutoUpdater:StartClient(ip, port) end 
+    self:SetClient(true);
 end
 
 function Lan:StopClient()
@@ -86,6 +89,9 @@ function Lan:Init()
     self:SetNet(Net);
     self:SetSnapshot(Snapshot);
     self:SetServerSetting(ServerSetting);
+
+    -- 检测服务器
+    self:GetServerSetting():CheckServer();
 
     return self;
 end
@@ -134,16 +140,6 @@ Commands["lan"] = {
     end
 }
 
---[[
-TEST 测试方法:
-
-服务端
-1. 执行命令 /lan -server_setting=true  打开服务器IP设定界面, 启用本地服务器
-2. 执行命令 /lan -snapshot=true 启用监控服务并打开监控UI 
-
-客户端
-1. 执行命令 /lan -server_setting=true  打开服务器IP设定界面, 设置服务器IP 默认会开启客户端监控功能
-]]
 
 -- if (IsDevEnv) then
 --     local IsServer = ParaEngine.GetAppCommandLineByParam("IsServer","false") == "true";
@@ -157,6 +153,17 @@ TEST 测试方法:
 --         Lan:StartClient();
 --     end
 -- end
+
+--[[
+TEST 测试方法:
+
+服务端
+1. 执行命令 /lan -server_setting=true  打开服务器IP设定界面, 启用本地服务器
+2. 执行命令 /lan -snapshot=true 启用监控服务并打开监控UI 
+
+客户端
+1. 执行命令 /lan -server_setting=true  打开服务器IP设定界面, 设置服务器IP 默认会开启客户端监控功能
+]]
 
 --[[
 -- 命令方式 /lan -server=true -snapshot=true

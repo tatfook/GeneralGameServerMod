@@ -30,6 +30,7 @@ function ServerSetting:ShowUI()
         OnClose = function()
             self.__ui__ = nil;
             self:CheckServer();
+            self:SaveConfig();
         end
     }, {
         url = "Mod/GeneralGameServerMod/Command/Lan/ServerSetting.html",
@@ -63,4 +64,29 @@ function ServerSetting:CheckServer()
     end
 end
 
-ServerSetting:InitSingleton();
+
+function ServerSetting:LoadConfig()
+    local config = GameLogic.GetPlayerController():LoadLocalData("__lan_server_setting__", nil, true);
+    if (not config) then return end 
+
+    self:SetEnableLocalServer(config.EnableLocalServer);
+    self:SetRemoteServerIp(config.RemoteServerIp);
+    self:SetRemoteServerPort(config.RemoteServerPort);
+end
+
+function ServerSetting:SaveConfig()
+    local config = {
+        EnableLocalServer = self:IsEnableLocalServer(),
+        RemoteServerIp = self:GetRemoteServerIp(),
+        RemoteServerPort = self:GetRemoteServerPort(),
+    };
+
+    return GameLogic.GetPlayerController():SaveLocalData("__lan_server_setting__", config, true, false);
+end
+
+function ServerSetting:Init()
+    self:LoadConfig();
+    return self;
+end
+
+ServerSetting:InitSingleton():Init();

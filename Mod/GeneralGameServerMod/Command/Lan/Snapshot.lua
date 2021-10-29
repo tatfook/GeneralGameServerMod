@@ -13,10 +13,11 @@ local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Net = NPL.load("./Net.lua");
 local Snapshot =  commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
-Snapshot:Property("Directory");  -- 截图目录
-Snapshot:Property("FilePath");   -- 截图文件路径
+Snapshot:Property("Directory");                                      -- 截图目录
+Snapshot:Property("FilePath");                                       -- 截图文件路径
 Snapshot:Property("EnableServer", false, "IsEnableServer");
 Snapshot:Property("EnableClient", false, "IsEnableClient");
+Snapshot:Property("EnableSnapshotData", true, "IsEnableSnapshotData");
 
 local HIGH_FPS, LOW_FPS = 2, 1/5;
 
@@ -37,6 +38,8 @@ function Snapshot:GetWidthHeight()
 end
 
 function Snapshot:Take()
+    if (not self:IsEnableSnapshotData()) then return end 
+
     local filepath = self:GetFilePath();
     local width, height = self:GetWidthHeight();
     if (not ParaMovie.TakeScreenShot(filepath, width, height)) then
@@ -55,14 +58,25 @@ function Snapshot:StartServer()
     self:SetEnableServer(true);
     self:ShowUI()
     if (not self.__server_tick_timer__) then
-        self.__server_tick_timer__ = CommonLib.SetInterval(1000 * 30, function()
-            self:RefreshUI();
+        self.__server_tick_timer__ = CommonLib.SetInterval(1000 * 15, function()
+            self:ServerTick();
         end);
     end
 end
 
 function Snapshot:StopServer()
     self:SetEnableServer(false);
+end
+
+function Snapshot:ServerTick()
+    self:RefreshUI();
+
+    if (not self:IsShowUI()) then
+        Net:Broadcast("Snapshot_Data_Enable", {all = true, enable = false});
+    else 
+        local keys = self.__ui__:GetG().GetKeyVisible();
+        Net:Broadcast("Snapshot_Data_Enable", {keys});
+    end
 end
 
 function Snapshot:StartClient()
@@ -81,6 +95,10 @@ end
 
 function Snapshot:ClientTick()
     self:Take();
+end
+
+function  Snapshot:IsShowUI()
+    return self.__ui__ ~= nil;
 end
 
 function Snapshot:ShowUI()
@@ -126,6 +144,8 @@ function Snapshot:ShowUI()
 end
 
 function Snapshot:RefreshUI()
+    if (not self.__ui__) then return end 
+
     CommonLib.ClearTable(self.__ui_G__.keys);
     for key, connection in pairs(Net:GetAllConnection()) do
         table.insert(self.__ui_G__.keys, key);
@@ -164,7 +184,7 @@ end
 
 
 function Snapshot:BroadcastFPS(data)
-    Net:Call("Snapshot_FPS", data);
+    Net:Broadcast("Snapshot_FPS", data);
 end
 
 Net:Register("Snapshot_Data", function(data)
@@ -201,6 +221,17 @@ Net:Register("Snapshot_FPS", function(data)
         if (data.width and data.height) then self:SetWidthHeight(data.width, data.height) end
     elseif (data.default_fps) then  -- 用于取消上次激活用户
         Snapshot:SetFPS(data.default_fps)
+    end
+end);
+
+
+-- 截屏数据是否开启
+Net:Register("Snapshot_Data_Enable", function(data)
+    local key = Net:GetServerKey();
+    if (data.all) then
+        Snapshot:SetEnableSnapshotData(data.enable);
+    elseif (data.keys) then
+        Snapshot:SetEnableSnapshotData(data.keys[key]);
     end
 end);
 
