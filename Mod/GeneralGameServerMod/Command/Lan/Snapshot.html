@@ -21,7 +21,7 @@
                 <image class="item-image" style="width: 176px; height: 90px; border-radius: 8px;" v-bind:src="get_snapshot(key)"></image>
                 <div style="font-size: 13px; color: #000000; margin-top: 4px;">
                     <div style="text-align: center;">{{GetWorldTitle(key)}}</div>
-                    <div style="text-align: center;">{{get_ip(key)}}</div>
+                    <div style="text-align: center;">{{get_userinfo(key).username or get_ip(key)}}</div>
                 </div>
                 <div onclick="ClickZoomIn(key)" class="zoom-in"></div>
             </div>

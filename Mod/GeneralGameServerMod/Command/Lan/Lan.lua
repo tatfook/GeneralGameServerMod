@@ -98,7 +98,7 @@ end
 
 function Lan:GetUserInfo()
     return {
-        username = Keepwork:GetUserName(),
+        username = Keepwork:GetUserName() or (IsDevEnv and tostring(ParaGlobal.timeGetTime()) or nil),
         nickname = Keepwork:GetNickName(),
         classname = Keepwork:GetGradeClassName(),
         worldId = Keepwork:GetCurrentWorldID(),

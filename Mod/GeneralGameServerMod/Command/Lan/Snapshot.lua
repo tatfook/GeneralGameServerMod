@@ -147,9 +147,13 @@ function Snapshot:RefreshUI()
     if (not self.__ui__) then return end 
 
     CommonLib.ClearTable(self.__ui_G__.keys);
+    local list = {};
     for key, connection in pairs(Net:GetAllConnection()) do
-        table.insert(self.__ui_G__.keys, key);
+        table.insert(list, {key = key, username = connection.userinfo and connection.userinfo.username or connection.ip});
     end
+    table.sort(list, function(item1, item2) return item1.username < item2.username end);
+    for _, item in ipairs(list) do table.insert(self.__ui_G__.keys, item.key) end
+    
     if (self.__ui__) then self.__ui_G__.RefreshWindow() end
 end
 
