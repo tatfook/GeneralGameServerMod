@@ -73,6 +73,8 @@ function Snapshot:ServerTick()
 
     if (not self:IsShowUI()) then
         Net:Broadcast("Snapshot_Data_Enable", {all = true, enable = false});
+    elseif (#(self.__ui_G__.keys)  < 15) then
+        Net:Broadcast("Snapshot_Data_Enable", {all = true, enable = true});
     else 
         local keys = self.__ui__:GetG().GetKeyVisible();
         Net:Broadcast("Snapshot_Data_Enable", {keys});
@@ -141,6 +143,8 @@ function Snapshot:ShowUI()
         height = IsDevEnv and 720 or "100%",
         draggable = false,
     });
+
+    Net:Broadcast("Snapshot_ShowUI");
 end
 
 function Snapshot:RefreshUI()
@@ -236,6 +240,12 @@ Net:Register("Snapshot_Data_Enable", function(data)
     elseif (data.keys) then
         Snapshot:SetEnableSnapshotData(data.keys[key]);
     end
+end);
+
+-- 截屏数据是否开启
+Net:Register("Snapshot_ShowUI", function()
+    Snapshot:SetEnableSnapshotData(true);
+    Net:ClientTick();
 end);
 
 Snapshot:InitSingleton():Init();

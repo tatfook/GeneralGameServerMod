@@ -36,7 +36,6 @@ end
 function Params:Init(event, window)
     local event_type = event:GetEventType();
     if (event_type == "ondraw") then return end
-
     local last_event_type = self.event_type;
     self.event_type = event_type;
     self.window_name = window:GetWindowName();
@@ -101,6 +100,9 @@ function Params:GetVirtualEventParams()
         params.key_sequence = cache_params.key_sequence;
         params.is_input_method = cache_params.is_input_method;
         params.commit_string = cache_params.commit_string;
+
+        -- 忽略独立的ctrl, shift, alt 按键
+        if (params.keyname == "DIK_LCONTROL" or params.keyname == "DIK_LSHIFT" or params.keyname == "DIK_LALT") then return end 
     end
 
     if (event_type == "onmousewheel") then

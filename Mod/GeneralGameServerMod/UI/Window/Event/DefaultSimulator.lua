@@ -30,7 +30,7 @@ function DefaultSimulator:Simulate(event, window)
     elseif (event_type == "onmousewheel") then
         self:AddVirtualEvent("UIWindowWheelEvent", self:GetVirtualEventParams());
     elseif (event_type == "onkeydown") then 
-        self:AddVirtualEvent("UIWindowKeyBoardEvent" ,self:GetVirtualEventParams());
+        self:AddVirtualEvent("UIWindowKeyBoardEvent", self:GetVirtualEventParams());
     elseif (event_type == "oninputmethod") then 
         self:AddVirtualEvent("UIWindowInputMethodEvent", self:GetVirtualEventParams());
     end

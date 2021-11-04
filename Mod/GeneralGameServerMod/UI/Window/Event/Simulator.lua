@@ -15,7 +15,7 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Macros/MacroPlayer.lua");
 local MacroPlayer = commonlib.gettable("MyCompany.Aries.Game.Tasks.MacroPlayer");
 local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 
-local Params = NPL.load("./Params.lua");
+local Params = NPL.load("./Params.lua", IsDevEnv);
 local Simulator = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 Simulator:Property("SimulatorName", "Simulator");                    -- 模拟器名称
@@ -52,7 +52,7 @@ function Simulator:GetVirtualEventParams()
 end
 
 function Simulator:AddVirtualEvent(virtualEventType, virtualEventParams)
-    if (not self:IsRecording()) then return end 
+    if (not self:IsRecording() or not virtualEventParams) then return end 
     local macroCount = #Macros.macros;
     local lastMacro = Macros.macros[macroCount];
 
