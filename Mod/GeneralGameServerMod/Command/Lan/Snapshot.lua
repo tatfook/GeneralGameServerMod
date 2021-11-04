@@ -153,7 +153,6 @@ function Snapshot:RefreshUI()
     end
     table.sort(list, function(item1, item2) return item1.username < item2.username end);
     for _, item in ipairs(list) do table.insert(self.__ui_G__.keys, item.key) end
-    
     if (self.__ui__) then self.__ui_G__.RefreshWindow() end
 end
 

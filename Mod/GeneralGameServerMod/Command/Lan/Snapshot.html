@@ -30,7 +30,7 @@
             <div>昵称: {{get_userinfo(tooltip_key).nickname or ""}}</div>
             <div>账号: {{get_userinfo(tooltip_key).username or ""}}</div>
             <div>班级: {{get_userinfo(tooltip_key).classname or ""}}</div>
-            <div>IP 地址: {{get_userinfo(tooltip_key).ip or ""}}</div>
+            <div>IP 地址: {{get_ip(tooltip_key) or ""}}</div>
             <div>访问世界 ID: {{get_userinfo(tooltip_key).worldId or ""}}</div>
             <div>焦点状态: {{is_focus(tooltip_key) and "激活" or "未激活"}}</div>
         </div>

@@ -136,6 +136,7 @@ function Net:GetCurrentConnection()
         ip = nid and NPL.GetIP(nid),
         nid = nid,
         appHasFocus = true,
+        userinfo = {},
     };
     
     if (nid) then __all_connections__[key] = connection end 
