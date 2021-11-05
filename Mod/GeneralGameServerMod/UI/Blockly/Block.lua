@@ -760,7 +760,11 @@ local function DefaultToCode(block)
     end)
     code = string.gsub(code, "[\n]+$", "");
     code = string.gsub(code, "^\n+", "");
-    if (not option.output) then code = code .. "\n" end
+    if (not option.output) then 
+        code = code .. "\n" 
+    else
+        code = string.gsub(code, "[;%s]*$", "");
+    end
     return code;
 end
 
