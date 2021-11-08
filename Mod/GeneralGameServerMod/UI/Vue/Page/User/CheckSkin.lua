@@ -186,7 +186,7 @@ function CheckSkin.InitData(skin)
 
 				if(data.type == CheckSkin.SKIN_ITEM_TYPE.ONLY_BEANS_CAN_PURCHASE) then
 					-- 总金额
-					CheckSkin.DS.totalPrice = CheckSkin.DS.totalPrice+item.payPrice
+					CheckSkin.DS.totalPrice = CheckSkin.DS.totalPrice+ (item.payPrice or 0)
 				end
 
 				return val;
