@@ -21,6 +21,7 @@ Net:Property("EnableServer", false, "IsEnableServer");  -- 是否开启服务端
 Net:Property("EnableClient", false, "IsEnableClient");  -- 是否开启客户端功能
 Net:Property("ClientNid");                              -- 客户端NID
 Net:Property("ServerKey");                              -- 客户端存贮服务器KEY
+Net:Property("Connected", false, "IsConnected");        -- 是否已连接
 
 local __rpc__ = RPC:GetModule("Net");           -- Net RPC
 local __all_connections__ = {};                 -- 服务器保存的所有客户端连接
@@ -65,6 +66,7 @@ function Net:Login(data, calback)
     -- print("============================user:login===============================");
     __rpc__:Call("Login", self:GetClientUserInfo(), function(key)
         self:SetServerKey(key);
+        self:SetConnected(true);
         print("====================login success=======================", key);
     end);
 end
@@ -220,6 +222,7 @@ RPC.RegisterDisconnectedCallBack(function(msg)
             -- client offline
             print("============================client offline===========================");
             Net:SetEnableClient(false);
+            Net:SetConnected(false);
         end
     end
 

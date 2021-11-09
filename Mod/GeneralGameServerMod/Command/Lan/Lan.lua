@@ -105,6 +105,10 @@ function Lan:GetUserInfo()
     };
 end
 
+function Lan:IsConnected()
+    return self:GetNet():IsConnected();
+end
+
 Lan:InitSingleton():Init();
 
 Commands["lan"] = {
