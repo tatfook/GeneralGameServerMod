@@ -8,13 +8,14 @@ use the lib:
 local Snapshot = NPL.load("Mod/GeneralGameServerMod/Command/Lan/Snapshot.lua");
 ------------------------------------------------------------
 ]]
-
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Net = NPL.load("./Net.lua");
 local Snapshot =  commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 Snapshot:Property("Directory");                                      -- 截图目录
 Snapshot:Property("FilePath");                                       -- 截图文件路径
+-- Snapshot:Property("LockScreen", false, "IsLockScreen");              -- 是否锁屏
 Snapshot:Property("EnableServer", false, "IsEnableServer");
 Snapshot:Property("EnableClient", false, "IsEnableClient");
 Snapshot:Property("EnableSnapshotData", true, "IsEnableSnapshotData");
@@ -56,7 +57,7 @@ end
 
 function Snapshot:StartServer()
     self:SetEnableServer(true);
-    self:ShowUI()
+    -- self:ShowUI()
     if (not self.__server_tick_timer__) then
         self.__server_tick_timer__ = CommonLib.SetInterval(1000 * 15, function()
             self:ServerTick();
@@ -97,6 +98,12 @@ end
 
 function Snapshot:ClientTick()
     self:Take();
+
+    local __LockScreenData__ = Snapshot.__LockScreenData__;
+    local cur_time = CommonLib.GetTimeStamp();
+    if (__LockScreenData__ and (cur_time - __LockScreenData__.updateAt) > (1000 * 60)) then
+        self:CloseLockScreenUI();
+    end
 end
 
 function  Snapshot:IsShowUI()
@@ -106,7 +113,6 @@ end
 function Snapshot:ShowUI()
     if (self.__ui__) then return end 
 
-    local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
     local all_connections = Net:GetAllConnection();
     self.__ui_G__ = {
         HIGH_FPS = HIGH_FPS, LOW_FPS = LOW_FPS,
@@ -164,6 +170,69 @@ function Snapshot:CloseUI()
     if (not self.__ui__) then return end 
     self.__ui__:CloseWindow();
     self.__ui__ = nil;
+end
+
+function Snapshot:SendLockScreenData()
+    local filepath = self:GetFilePath();
+    if (not ParaMovie.TakeScreenShot(filepath, 1280, 720)) then
+        print("---------------------ParaMovie.TakeScreenShot Failed----------------------");
+        return ;
+    end
+    Net:Broadcast("Snapshot_LockScreenData", CommonLib.GetFileText(filepath));
+end
+
+function Snapshot:ShowLockScreenUI(BackgroundImage)
+    self.__lock_screen_ui_G__ = self.__lock_screen_ui_G__ or {};
+    self.__lock_screen_ui_G__.BackgroundImage = BackgroundImage;
+    if (self.__lock_screen_ui__) then return self.__lock_screen_ui_G__.RefreshWindow() end 
+    self.__lock_screen_ui__ = Page.Show(self.__lock_screen_ui_G__, {
+        url = "Mod/GeneralGameServerMod/Command/Lan/LockScreen.html",
+        width = IsDevEnv and 1280 or "100%",
+        height = IsDevEnv and 720 or "100%",
+        draggable = false,
+    });
+end
+
+function Snapshot:CloseLockScreenUI()
+    if (not self.__lock_screen_ui__) then return end 
+    self.__lock_screen_ui__:CloseWindow();
+    self.__lock_screen_ui__ = nil;
+end
+
+function Snapshot:IsLockScreen()
+    return self.__lock_screen_timer__ ~= nil;
+end
+
+function Snapshot:IsPPTClosed()
+    -- local RedSummerCampPPtPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/RedSummerCamp/RedSummerCampPPtPage.lua");
+    -- RedSummerCampPPtPage.IsClose();
+    return true;
+end
+
+function Snapshot:LockScreen()
+    -- self:SetLockScreen(true);
+    self.__ppt_refresh_at__ = CommonLib.GetTimeStamp();
+    self.__lock_screen_timer__ = CommonLib.SetInterval(1000 * 10, function()
+        -- ppt 是否打开, 如果未打开则解除的锁屏 TODO 
+        local curtime = CommonLib.GetTimeStamp();
+        self:SendLockScreenData();
+        if (self:IsPPTClosed()) then
+            if ((cur_time - self.__ppt_refresh_at__) > 30 * 1000) then
+                -- 关闭时间超过30s, 则自动解除锁屏
+                self:UnlockScreen();
+            end
+        else
+            self.__ppt_refresh_at__ = curtime;
+        end
+    end);
+end
+
+function Snapshot:UnlockScreen()
+    -- self:SetLockScreen(false);
+    if (self.__lock_screen_timer__) then
+        self.__lock_screen_timer__:Change();
+        self.__lock_screen_timer__ = nil;
+    end
 end
 
 function Snapshot:GetInfo()
@@ -246,6 +315,39 @@ end);
 Net:Register("Snapshot_ShowUI", function()
     Snapshot:SetEnableSnapshotData(true);
     Net:ClientTick();
+end);
+
+Net:Register("Snapshot_LockScreenData", function(data)
+    if (not Snapshot.__LockScreenData__) then
+        Snapshot.__LockScreenData__ = {
+            buffers = {},
+            buffer_size = 2,
+            buffer_index = 1,
+            filepath = "",
+        }
+        local filepath = string.format("%s%s_%s.jpg", Snapshot:GetDirectory(), "lockscreen", 1);
+        table.insert(Snapshot.__LockScreenData__.buffers, {filepath = filepath, loading = false, buffer = ParaAsset.LoadTexture("", filepath, 1)});
+        filepath = string.format("%s%s_%s.jpg", Snapshot:GetDirectory(), "lockscreen", 2);
+        table.insert(Snapshot.__LockScreenData__.buffers, {filepath = filepath, loading = false, buffer = ParaAsset.LoadTexture("", filepath, 1)});
+    end
+
+    local __LockScreenData__ = Snapshot.__LockScreenData__;
+    local filepath = __LockScreenData__.buffers[__LockScreenData__.buffer_index].filepath;
+    local buffer = __LockScreenData__.buffers[__LockScreenData__.buffer_index].buffer;
+    if (buffer.loading and buffer:IsLoaded()) then
+        buffer.loading = false;
+        __LockScreenData__.filepath = __LockScreenData__.buffers[__LockScreenData__.buffer_index].filepath;
+        __LockScreenData__.buffer_index = __LockScreenData__.buffer_index == __LockScreenData__.buffer_size and 1 or (__LockScreenData__.buffer_index + 1);
+        -- Snapshot:RefreshUI();
+        filepath = __LockScreenData__.buffers[__LockScreenData__.buffer_index].filepath;
+        buffer = __LockScreenData__.buffers[__LockScreenData__.buffer_index].buffer;
+        Snapshot:ShowLockScreenUI(__LockScreenData__.filepath);
+    end
+    CommonLib.WriteFile(filepath, data);
+    buffer:UnloadAsset();
+    buffer:LoadAsset();
+    buffer.loading = true;
+    __LockScreenData__.updateAt = CommonLib.GetTimeStamp();
 end);
 
 Snapshot:InitSingleton():Init();

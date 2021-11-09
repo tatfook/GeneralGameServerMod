@@ -1,0 +1,19 @@
+<template class="container">
+    <image v-bind:src="BackgroundImage" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; z-index: 1;"></image>
+    <div style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; z-index: 2; background-color:#00000080">
+        <div style="text-align:center;font-size:16px;color:#ff0000;margin-top:100px;">
+            {{LockDesktopText or "请听老师讲解"}}
+        </div>
+    </div>
+</template>
+
+<script type="text/lua">
+
+</script>
+
+<style scoped=true>
+.container {
+    width: 100%;
+    height: 100%;
+}
+</style>

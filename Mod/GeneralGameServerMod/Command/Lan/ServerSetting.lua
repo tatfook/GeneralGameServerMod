@@ -29,13 +29,11 @@ function ServerSetting:ShowUI()
         __server_setting__ = self,
         OnClose = function()
             self.__ui__ = nil;
-            -- self:CheckServer();
+            self:CheckServer();
             self:SaveConfig();
         end
     }, {
         url = "Mod/GeneralGameServerMod/Command/Lan/ServerSetting.html",
-        -- width = IsDevEnv and 1280 or "100%",
-        -- height = IsDevEnv and 720 or "100%",
         width = 700,
         height = 500,
     });

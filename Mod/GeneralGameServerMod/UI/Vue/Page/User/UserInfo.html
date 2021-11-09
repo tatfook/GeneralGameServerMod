@@ -41,25 +41,39 @@
                 <div class="center">
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <!-- 眼睛 -->
-                        <div v-if="IsIconValid(3)" v-on:click="ClickIcon(3)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div v-bind:style="IconStyle(3)"></div>
+                        <div v-if="IsIconValid(1)" v-on:click="ClickIcon(1)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(1)"></div>
                         </div>
-                        <div v-if="not IsIconValid(3)" style="float:left;margin-left:10px;width:50px;height:50px;"></div>
+                        <div v-if="not IsIconValid(1)" style="float:left;margin-left:10px;width:50px;height:50px;"></div>
 
                         <!-- 嘴巴 -->
-                        <div v-if="IsIconValid(4)" v-on:click="ClickIcon(4)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div v-bind:style="IconStyle(4)"></div>
+                        <div v-if="IsIconValid(2)" v-on:click="ClickIcon(2)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(2)"></div>
                         </div>
-                        <div v-if="not IsIconValid(4)" style="float:left;margin-left:212px;width:50px;height:50px;"></div>
+                        <div v-if="not IsIconValid(2)" style="float:left;margin-left:212px;width:50px;height:50px;"></div>
                     </div>
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <!-- 衣服 -->
+                        <div v-if="IsIconValid(3)" v-on:click="ClickIcon(3)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(3)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(3)" style="float:left;margin-left:10px;width:50px;height:50px;">
+                        </div>
+                        <!-- 裤子 -->
+                        <div v-if="IsIconValid(4)" v-on:click="ClickIcon(4)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                            <div v-bind:style="IconStyle(4)"></div>
+                        </div>
+                        <div v-if="not IsIconValid(4)" style="float:left;margin-left:212px;width:50px;height:50px;">
+                        </div>
+                    </div>
+                    <div style="width:334px;height:50px;margin-top:10px;">
+                        <!-- 背带 -->
                         <div v-if="IsIconValid(5)" v-on:click="ClickIcon(5)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(5)"></div>
                         </div>
                         <div v-if="not IsIconValid(5)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
-                        <!-- 裤子 -->
+                        <!-- 手持 -->
                         <div v-if="IsIconValid(6)" v-on:click="ClickIcon(6)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(6)"></div>
                         </div>
@@ -67,31 +81,17 @@
                         </div>
                     </div>
                     <div style="width:334px;height:50px;margin-top:10px;">
-                        <!-- 背带 -->
+                        <!-- 头发 -->
                         <div v-if="IsIconValid(7)" v-on:click="ClickIcon(7)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(7)"></div>
                         </div>
                         <div v-if="not IsIconValid(7)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
-                        <!-- 手持 -->
+                        <!-- 坐骑 -->
                         <div v-if="IsIconValid(8)" v-on:click="ClickIcon(8)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(8)"></div>
                         </div>
                         <div v-if="not IsIconValid(8)" style="float:left;margin-left:212px;width:50px;height:50px;">
-                        </div>
-                    </div>
-                    <div style="width:334px;height:50px;margin-top:10px;">
-                        <!-- 头发 -->
-                        <div v-if="IsIconValid(2)" v-on:click="ClickIcon(2)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div v-bind:style="IconStyle(2)"></div>
-                        </div>
-                        <div v-if="not IsIconValid(2)" style="float:left;margin-left:10px;width:50px;height:50px;">
-                        </div>
-                        <!-- 坐骑 -->
-                        <div v-if="IsIconValid(1)" v-on:click="ClickIcon(1)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
-                            <div v-bind:style="IconStyle(1)"></div>
-                        </div>
-                        <div v-if="not IsIconValid(1)" style="float:left;margin-left:212px;width:50px;height:50px;">
                         </div>
                     </div>
                 </div>

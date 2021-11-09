@@ -44,7 +44,6 @@ function Lan:StartNetServer(ip, port)
 end
 
 function Lan:StartServer()
-
     -- 启动本地服务器只能用本地IP: 0.0.0.0
     local ip, port = "0.0.0.0" or self:GetServerIp(), self:GetServerPort();
     self:StartNetServer(ip, port);
@@ -118,6 +117,7 @@ Commands["lan"] = {
 /lan -server=true 开启服务器  -client=true 是否是客户端
 /lan -snapshot=true 是否启用截屏, 默认关闭. 客户端定时发送Paracraft UI信息到服务器
 /lan -autoupdater=true 是否启用自动更新, 默认关闭
+/lan -lockscreen=true 锁屏|解锁
 /lan -server_setting=true 打开服务器设置
     ]],
     handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
@@ -137,6 +137,16 @@ Commands["lan"] = {
         
         if (Lan:IsServer()) then Lan:StartServer() end 
         if (Lan:IsClient()) then Lan:StartClient() end 
+
+        if (opts.lockscreen ~= nil) then 
+            Lan:SetEnableSnapshot(true);
+            Lan:StartServer();
+            if (opts.lockscreen) then
+                Lan:GetSnapshot():LockScreen();
+            else
+                Lan:GetSnapshot():UnlockScreen();
+            end
+        end
     end
 }
 
@@ -175,9 +185,13 @@ Lan:SetEnableSnapshot(true);
 -- 启动server,   会自动打开监控UI  Lan:GetSnapshow():ShowUI();
 Lan:StartServer();
 -- 打开UI
-Lan:GetSnapshow():ShowUI();
+Lan:GetSnapshot():ShowUI();
 -- 关闭UI
-Lan:GetSnapshow():CloseUI();
+Lan:GetSnapshot():CloseUI();
+-- 锁屏
+Lan:GetSnapshot():LockScreen();
+-- 解锁
+Lan:GetSnapshot():UnlockScreen();
 -- 获取当前连接数(学生数)
 Lan:GetConnectionCount();
 --]]
