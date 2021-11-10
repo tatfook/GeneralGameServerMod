@@ -340,7 +340,8 @@ function BlockInputField:OnMouseUp(event)
 end
 
 function BlockInputField:GetMouseUI(x, y)
-    if (x < self.left or x > (self.left + self.width) or y < self.top or y > (self.top + self.height)) then return end
+    local left, top = self:GetOffset();
+    if (x < left or x > (left + self.width) or y < top or y > (top + self.height)) then return end
     return self;
 end
 

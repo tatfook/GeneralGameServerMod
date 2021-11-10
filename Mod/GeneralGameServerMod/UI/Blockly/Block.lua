@@ -382,7 +382,6 @@ function Block:GetMouseUI(x, y, event)
 
     -- 上下边缘高度
     local height = (not self:IsStatement() and Const.BlockEdgeHeightUnitCount or Const.ConnectionHeightUnitCount) * self:GetUnitSize();
-
     -- 在block上下边缘
     if (self.left < x and x < (self.left + self.width)) then
         if (self.top < y and y < (self.top + height)) then return self end

@@ -148,7 +148,6 @@ end
 function InputFieldContainer:GetMouseUI(x, y, event)
     local blockWidth = self:GetBlock().width;
     if (x < self.left or x > (self.left + self.maxWidth) or y < self.top or y > (self.top + self.maxHeight)) then return end
-
     for _, inputField in ipairs(self.inputFields) do
         local ui = inputField:GetMouseUI(x, y, event);
         if (ui) then return ui end
@@ -160,12 +159,12 @@ function InputFieldContainer:GetMouseUI(x, y, event)
         local left, top, width, height = self.left + offsetX, self.top + offsetY, self.width - offsetX, self.height - offsetY * 2;
         if (left < x and x < (left + width) and top < y and y < (top + height)) then return nil end 
     end
+
     return self;
 end
 
 function InputFieldContainer:Render(painter, offsetXUnitCount, offsetYUnitCount)
     if (not self:IsInputStatementContainer() and self:GetBlock():IsStatement()) then
-        -- Shape:SetBrush("#000000");
         Shape:SetBrush(self:GetBlock():GetBrush());
         Shape:DrawRect(painter, self.widthUnitCount, self.heightUnitCount, self.leftUnitCount, self.topUnitCount);
     else

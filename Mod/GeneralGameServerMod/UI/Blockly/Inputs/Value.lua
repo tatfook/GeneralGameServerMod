@@ -143,7 +143,7 @@ function Value:ConnectionBlock(block)
 end
 
 function Value:GetMouseUI(x, y, event)
-    if (x < self.left or x > (self.left + self.width) or y < self.top or y > (self.top + self.height)) then return end
+    if (not Value._super.GetMouseUI(self, x, y, event)) then return end 
     local inputBlock = self:GetInputBlock();
     if (inputBlock) then return inputBlock:GetMouseUI(x, y, event) end
     return self;
