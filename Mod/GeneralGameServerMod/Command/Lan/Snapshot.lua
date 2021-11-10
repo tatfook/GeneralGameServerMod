@@ -219,7 +219,7 @@ function Snapshot:LockScreen()
         -- ppt 是否打开, 如果未打开则解除的锁屏 TODO 
         local curtime = CommonLib.GetTimeStamp();
         if (self:IsPPTClosed()) then
-            if ((cur_time - self.__ppt_refresh_at__) > 30 * 1000) then
+            if ((curtime - self.__ppt_refresh_at__) > 30 * 1000) then
                 -- 关闭时间超过30s, 则自动解除锁屏
                 print("----------------------------------auto unlock---------------------------------");
                 self:UnlockScreen();
