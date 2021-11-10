@@ -394,11 +394,15 @@ end
 
 -- Timer
 function CommonLib.SetInterval(interval, callback)
-	return commonlib.Timer:new({callbackFunc = callback}):Change(interval, interval);
+    local timer = commonlib.Timer:new({callbackFunc = callback});
+	timer:Change(interval, interval);
+    return timer;
 end
 
 function CommonLib.SetTimeout(timeout, callback)
-	return commonlib.Timer:new({callbackFunc = callback}):Change(timeout);
+	local timer = commonlib.Timer:new({callbackFunc = callback});
+    timer:Change(timeout);
+    return timer;
 end
 
 -- DateTime

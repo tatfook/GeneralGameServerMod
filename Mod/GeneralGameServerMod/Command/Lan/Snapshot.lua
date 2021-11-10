@@ -178,6 +178,7 @@ function Snapshot:SendLockScreenData()
         print("---------------------ParaMovie.TakeScreenShot Failed----------------------");
         return ;
     end
+    if (IsDevEnv) then print("=========================Broadcast Snapshot_LockScreenData==========================") end 
     Net:Broadcast("Snapshot_LockScreenData", CommonLib.GetFileText(filepath));
 end
 
@@ -204,9 +205,8 @@ function Snapshot:IsLockScreen()
 end
 
 function Snapshot:IsPPTClosed()
-    -- local RedSummerCampPPtPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/RedSummerCamp/RedSummerCampPPtPage.lua");
-    -- RedSummerCampPPtPage.IsClose();
-    return true;
+    local RedSummerCampPPtPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/RedSummerCamp/RedSummerCampPPtPage.lua");
+    RedSummerCampPPtPage.IsClose();
 end
 
 function Snapshot:LockScreen()
@@ -219,6 +219,7 @@ function Snapshot:LockScreen()
         if (self:IsPPTClosed()) then
             if ((cur_time - self.__ppt_refresh_at__) > 30 * 1000) then
                 -- 关闭时间超过30s, 则自动解除锁屏
+                print("----------------------------------auto unlock---------------------------------");
                 self:UnlockScreen();
             end
         else
