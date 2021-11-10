@@ -206,7 +206,7 @@ end
 
 function Snapshot:IsPPTClosed()
     local RedSummerCampPPtPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/RedSummerCamp/RedSummerCampPPtPage.lua");
-    RedSummerCampPPtPage.IsClose();
+    return RedSummerCampPPtPage.IsClose();
 end
 
 function Snapshot:LockScreen()
