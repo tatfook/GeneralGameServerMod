@@ -211,11 +211,13 @@ end
 
 function Snapshot:LockScreen()
     -- self:SetLockScreen(true);
+    if (self.__lock_screen_timer__) then return end 
+
     self.__ppt_refresh_at__ = CommonLib.GetTimeStamp();
+    self:SendLockScreenData();
     self.__lock_screen_timer__ = CommonLib.SetInterval(1000 * 10, function()
         -- ppt 是否打开, 如果未打开则解除的锁屏 TODO 
         local curtime = CommonLib.GetTimeStamp();
-        self:SendLockScreenData();
         if (self:IsPPTClosed()) then
             if ((cur_time - self.__ppt_refresh_at__) > 30 * 1000) then
                 -- 关闭时间超过30s, 则自动解除锁屏
@@ -224,8 +226,10 @@ function Snapshot:LockScreen()
             end
         else
             self.__ppt_refresh_at__ = curtime;
+            self:SendLockScreenData();
         end
     end);
+    Net:Broadcast("Snapshot_LockScreen");
 end
 
 function Snapshot:UnlockScreen()
@@ -234,6 +238,7 @@ function Snapshot:UnlockScreen()
         self.__lock_screen_timer__:Change();
         self.__lock_screen_timer__ = nil;
     end
+    Net:Broadcast("Snapshot_UnlockScreen");
 end
 
 function Snapshot:GetInfo()
@@ -351,6 +356,13 @@ Net:Register("Snapshot_LockScreenData", function(data)
     __LockScreenData__.updateAt = CommonLib.GetTimeStamp();
 end);
 
+Net:Register("Snapshot_LockScreen", function()
+    Snapshot:ShowLockScreenUI();
+end);
+
+Net:Register("Snapshot_UnlockScreen", function()
+    Snapshot:CloseLockScreenUI();
+end)
 Snapshot:InitSingleton():Init();
 
 -- Snapshot:Test();
