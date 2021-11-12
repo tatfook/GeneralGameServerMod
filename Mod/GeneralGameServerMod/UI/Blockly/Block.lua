@@ -430,6 +430,7 @@ function Block:OnMouseMove(event)
             clone:SetLeftTopUnitCount(clone.startLeftUnitCount, clone.startTopUnitCount);
             clone:UpdateLayout();
             self:GetBlockly():OnCreateBlock(clone);
+            block.isMouseDown = false;
             block = clone;
         end
         block:SetDragging(true);
