@@ -29,6 +29,7 @@ local all_block_list = {
         {
             name = "attr",
             type = "input_value_list",
+			separator = " ",
         },
 		{
 			name = "code",
@@ -64,6 +65,7 @@ local all_block_list = {
         {
             name = "attr",
             type = "input_value_list",
+			separator = " ",
         },
 	},
 	category = "McmlControls", 
@@ -79,6 +81,7 @@ local all_block_list = {
         {
             name = "attr",
             type = "input_value_list",
+			separator = " ",
         },
 	},
 	category = "McmlControls", 
@@ -94,6 +97,7 @@ local all_block_list = {
         {
             name = "attr",
             type = "input_value_list",
+			separator = " ",
         },
 	},
 	category = "McmlControls", 
@@ -109,6 +113,7 @@ local all_block_list = {
         {
             name = "attr",
             type = "input_value_list",
+			separator = " ",
         },
 	},
 	category = "McmlControls", 
@@ -124,6 +129,7 @@ local all_block_list = {
         {
             name = "attr",
             type = "input_value_list",
+			separator = " ",
         },
 	},
 	category = "McmlControls", 
@@ -139,6 +145,7 @@ local all_block_list = {
         {
             name = "attr",
             type = "input_value_list",
+			separator = " ",
         },
 	},
 	category = "McmlControls", 
@@ -174,6 +181,7 @@ local all_block_list = {
         {
             name = "value",
             type = "input_value_list",
+			separator = ";",
         },
 	},
     output = true,
