@@ -51,6 +51,11 @@ function AppGeneralGameClient:ctor()
         return msg;
     end);
 
+    GameLogic.GetFilters():add_filter("join_school", function()
+        local school = Keepwork:GetUserInfo().school;
+        self.userinfo.school = school and school.name or self.userinfo.school;
+    end);
+
     -- 已经登录直接执行回调
     if (Keepwork:IsLogin()) then AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback() end
 end
