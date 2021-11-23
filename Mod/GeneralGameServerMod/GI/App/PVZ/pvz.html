@@ -1,0 +1,49 @@
+<template class="container">
+    <div>
+        <div>当前太阳数: {{sun_count or 0}}</div>
+        <div style="margin-top: 10px;">
+            <div class="guard-item">
+                <div onclick="ClickGuard('CreateEntityBasicGuard')" style="margin-right: 10px;">基础守卫</div>
+                <div>{{select_guard_type == "CreateEntityBasicGuard" and "待创建" or ""}}</div>
+            </div>
+            <div class="guard-item">
+                <div onclick="ClickGuard('CreateEntitySeniorGuard')" style="margin-right: 10px;">连射守卫</div>
+                <div>{{select_guard_type == "CreateEntitySeniorGuard" and "待创建" or ""}}</div>
+            </div>
+            <div class="guard-item">
+                <div onclick="ClickGuard('CreateEntityIronGuard')" style="margin-right: 10px;">钢铁守卫</div>
+                <div>{{select_guard_type == "CreateEntityIronGuard" and "待创建" or ""}}</div>
+            </div>
+            <div class="guard-item">
+                <div onclick="ClickGuard('CreateEntitySacredGuard')" style="margin-right: 10px;">神圣守卫</div>
+                <div>{{select_guard_type == "CreateEntitySacredGuard" and "待创建" or ""}}</div>
+            </div>
+            <div class="guard-item">
+                <div onclick="ClickGuard('CreateEntityRockGuard')" style="margin-right: 10px;">磐石守卫</div>
+                <div>{{select_guard_type == "CreateEntityRockGuard" and "待创建" or ""}}</div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script type="text/lua">
+
+function ClickGuard(guard_type)
+    _G.select_guard_type = guard_type;
+    RefreshWindow();
+end 
+</script>
+
+<style>
+.container {
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    font-size: 20px;
+    color: #ffffff;
+}
+
+.guard-item {
+    display: flex;
+}
+</style>

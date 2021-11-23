@@ -67,11 +67,13 @@ function CodeEnv:ctor()
 	-- 不可执行阻塞路基, 专用于唤醒协程, 以便均匀分配tick
 	self.__tick_co__ = coroutine.create(self.__loop_function__);
 	self.__is_tick_co_env__ = function()
+		if (not self.__tick_co__) then return end
 		local __cur_co__, __is_main_thread__ = self.__coroutine_running__();
 		local __tick_co_status__ = self.__coroutine_status__(self.__tick_co__);
 		return not __is_main_thread__ and __cur_co__ == self.__tick_co__ and (__tick_co_status__ == "running" or __tick_co_status__ == "normal");
 	end
 	self.__activate_tick_callback__ = function (...)
+		if (not self.__tick_co__) then return end
 		local callback = self.pack(...);
 		if (type(callback) ~= "function") then return end
 		if (self.__is_tick_co_env__()) then
@@ -103,12 +105,14 @@ function CodeEnv:ctor()
 	self.__event_co__ = coroutine.create(self.__loop_function__);
 	
 	self.__is_event_co_env__ = function()
+		if (not self.__event_co__) then return end
 		local __cur_co__, __is_main_thread__ = self.__coroutine_running__();
 		local __event_co_status__ = self.__coroutine_status__(self.__event_co__);
 		return not __is_main_thread__ and __cur_co__ == self.__event_co__ and (__event_co_status__ == "running" or __event_co_status__ == "normal");
 	end
 
 	self.__activate_event_callback__ = function (...)
+		if (not self.__event_co__) then return end
 		local callback = self.pack(...);
 		if (type(callback) ~= "function") then return end
 		if (self.__is_event_co_env__()) then
@@ -265,8 +269,8 @@ function CodeEnv:Clear()
 		entity:Destroy();
 	end
 
-	coroutine.resume(self.__tick_co__);
-	coroutine.resume(self.__event_co__);
+	if (self.__tick_co__) then coroutine.resume(self.__tick_co__) end 
+	if (self.__event_co__) then coroutine.resume(self.__event_co__) end 
 	self.__tick_co__ = nil;
 	self.__event_co__ = nil;
 end

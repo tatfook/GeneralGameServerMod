@@ -19,6 +19,7 @@ local __username__ = GetUserName();
 local __msg_event_emitter__ = EventEmitter:new();
 local __connection__ = RPC;
 local __control_server_ip__ = IsDevEnv and "127.0.0.1" or "ggs.keepwork.com";
+-- local __control_server_ip__ = IsDevEnv and "ggs.keepwork.com" or "ggs.keepwork.com";
 local __control_server_port = IsDevEnv and "9000" or "9000";
 local __worker_server_ip__, __worker_server_ip__ = nil, nil;
 
@@ -37,13 +38,16 @@ local function SelectWorldServer(callback, try_wait_time)
         SelectWorldServer(callback, try_wait_time);
     end
 
+    -- http://ggs.keepwork.com:9000/api/v0/__server_manager__/__select_world_server__?worldId=0
     GetNetAPI():Get("__server_manager__/__select_world_server__", {
         worldId = GetWorldId(),
     }):Then(function(msg)
         if (msg.status ~= 200) then return error_handle() end
         print("==================================server address============================", msg.data.ip, msg.data.port);
         return type(callback) == "function" and callback(msg.data);
-    end):Catch(function()
+    end):Catch(function(msg)
+        print("==================================CURL __server_manager__/__select_world_server__ Failed============================", msg.data.ip, msg.data.port);
+        echo(msg);
         error_handle();
     end);
 end

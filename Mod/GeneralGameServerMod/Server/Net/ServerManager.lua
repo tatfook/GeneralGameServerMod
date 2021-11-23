@@ -197,6 +197,7 @@ local function SelectWorldServer(params)
 
     return worldServer;
 end
+
 Http:Get("/api/v0/__server_manager__/__select_world_server__", function(ctx)
     ctx:Send(SelectWorldServer(ctx:GetParams()));
 end);

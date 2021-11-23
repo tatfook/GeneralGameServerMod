@@ -124,6 +124,9 @@ function Entity:Init(opts)
     if (opts.scale) then self:SetScaling(opts.scale) end 
     if (opts.isCanRandomMove == false) then self:SetCanRandomMove(false) end 
     if (opts.onclick) then self:SetClickCallBack(opts.onclick) end 
+    if (opts.blood) then self:SetBlood(opts.blood) end 
+    if (opts.totalBlood) then self:SetTotalBlood(opts.totalBlood) end 
+    
     self:SetObstruction(opts.obstruction);
     self:SetRandomMoveRange(opts.randomMoveRange);
     self:SetVisibleRadius(opts.visibleRadius or 1);
@@ -708,7 +711,8 @@ function Entity:CheckEntityCollision()
     local aabb = self:GetCollisionAABB();
     for _, entity in ipairs(__GetEntityList__()) do
         local entity_aabb = entity:GetCollisionAABB();
-        -- if (self:GetName() == "__arrow_tower_arrow__" and entity:GetName() == "sunbin" and self:CanCollideWith(entity)) then
+        -- if (self:GetName() == "arrow" and entity:GetName() == "BronzeZombie") then
+        --     print(self:IsCanBeCollided() and entity:IsCanBeCollided(), aabb:Intersect(entity_aabb));
         --     print(self:GetBlockPos())
         --     print(entity:GetBlockPos())
         --     echo(self:GetTypes(), true);

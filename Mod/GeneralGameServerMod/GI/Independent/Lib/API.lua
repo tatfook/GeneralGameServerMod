@@ -158,6 +158,7 @@ function GetNetAPI()
     if (__Net_api__) then return __Net_api__ end 
     __Net_api__ = require("Http"):new():Init({
         baseURL = IsDevEnv and "http://127.0.0.1:9000/api/v0/" or "http://ggs.keepwork.com:9000/api/v0/",
+        -- baseURL = IsDevEnv and "http://ggs.keepwork.com:9000/api/v0/" or "http://ggs.keepwork.com:9000/api/v0/",
         headers = {["content-type"] = "application/json"},
     });
 
