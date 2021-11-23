@@ -356,7 +356,9 @@ function Window:CreateNativeWindow()
         native_window:AttachToRoot();
     end
 	local event_list = { "ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmousewheel", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
-
+	if (self:IsTouchMode()) then
+        event_list = {"ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
+    end
     local function GetHandle(event_type)
         return function()
             -- 鼠标事件
