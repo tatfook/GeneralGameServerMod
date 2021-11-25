@@ -104,12 +104,12 @@ Config.zombie_config = {
 
     ["CreateEntitySpeedZombie"] = {
         -- 移动速度
-        speed = 1,    -- 取1,2,3,4 默认为1
+        speed = 1,                        -- 取1,2,3,4 默认为1
         -- 血量
         blood = 200,
         -- 攻击伤害
         attack_blood = 50,
         -- 攻击频率
-        attack_speed = 500, -- 毫秒每次
+        attack_speed = 500,               -- 毫秒每次
     },
 }

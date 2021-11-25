@@ -68,7 +68,7 @@ async_run(function()
     }
     math.randomseed(__get_timestamp__());
     local zombie_count = 20;
-    while (zombie_count > 0) do
+    while (not Config.__gameover__ and zombie_count > 0) do
         local pos = pos_list[math.random(#pos_list)];
         local zombie = zombie_list[math.random(#zombie_list)];
         sleep(math.random(300, 3000));
