@@ -10,9 +10,12 @@ local __ui_G__ = {
 };
 
 local __ui__ = ShowWindow(__ui_G__, {
+    x = 10, 
+    y = 200,
     width = 300,
     height = 300,
-    url = "@/pvz/pvz.html",
+    -- url = "@/pvz/pvz.html",
+    url = "%gi%/App/PVZ/pvz.html",
     alignment = "_lt",
 });
 
@@ -26,6 +29,7 @@ Entity.CreateEntityRockGuard(19207,12,19209);
 -- Entity.CreateEntityBronzeZombie(19189,12,19217);
 -- Entity.CreateEntitySilverZombie(19189,12,19215);
 -- Entity.CreateEntityGoldZombie(19189,12,19213);
+Entity.CreateEntityBronzeZombie(19189,12,19211);
 -- Entity.CreateEntityDiamondsZombie(19189,12,19211);
 -- Entity.CreateEntitySpeedZombie(19189,12,19209);
 
@@ -34,6 +38,8 @@ Entity.CreateEntityRockGuard(19207,12,19209);
 cmd("/mode game");
 cmd("/clearbag");
 cmd("/hide quickselectbar");
+-- 设置玩家位置
+-- GetPlayer():SetBlockPos(bx, by, bz);
 
 RegisterEventCallBack(EventType.MOUSE_DOWN, function(e)
     if (e.mouse_button ~= "right") then return end 
@@ -54,43 +60,42 @@ SetCamera(30, 75, 90);
 SetCameraLookAtBlockPos(19201,11,19214);
 
 Tip("开始游戏");
-sleep(3000);
+-- sleep(3000);
 
 -- 产生僵尸
-async_run(function()
-    local pos_list = {
-        { 19189,12,19217 },
-        { 19189,12,19215 },
-        { 19189,12,19213 },
-        { 19189,12,19211 },
-        { 19189,12,19209 },
-    }
+-- async_run(function()
+--     local pos_list = {
+--         { 19189,12,19217 },
+--         { 19189,12,19215 },
+--         { 19189,12,19213 },
+--         { 19189,12,19211 },
+--         { 19189,12,19209 },
+--     }
 
-    local zombie_list = {
-        "CreateEntityBronzeZombie",
-        "CreateEntitySilverZombie",
-        "CreateEntityGoldZombie",
-        "CreateEntityDiamondsZombie",
-        "CreateEntitySpeedZombie",
-    }
-    math.randomseed(__get_timestamp__());
+--     local zombie_list = {
+--         "CreateEntityBronzeZombie",
+--         "CreateEntitySilverZombie",
+--         "CreateEntityGoldZombie",
+--         "CreateEntityDiamondsZombie",
+--         "CreateEntitySpeedZombie",
+--     }
+--     math.randomseed(__get_timestamp__());
     
-    local zombie_count = Config.ZombieCountPerBatch;
-    local zombie_size = math.max((#zombie_list) - Config.ZombieBatchCount, 1);
-    for i = 1, Config.ZombieBatchCount do 
-        Tip(string.format("第 %s 批僵尸将在 %s 秒内抵达战场", i, Config.WaitTimeBeforeAppearZombie));
-        sleep(Config.WaitTimeBeforeAppearZombie * 1000);
-        while (not Config.__gameover__ and zombie_count > 0) do
-            local pos = pos_list[math.random(#pos_list)];
-            local zombie = zombie_list[math.random(math.min(#zombie_list, zombie_size + i))];
-            sleep(math.random(300, 3000));
-            (Entity[zombie])(pos[1], pos[2], pos[3]);
-            zombie_count = zombie_count - 1;
-        end
-        if (Config.__gameover__) then break end 
-    end
-end);
-
+--     local zombie_size = math.max((#zombie_list) - Config.ZombieBatchCount, 1);
+--     for i = 1, Config.ZombieBatchCount do 
+--         Tip(string.format("第 %s 批僵尸将在 %s 秒内抵达战场", i, Config.WaitTimeBeforeAppearZombie));
+--         local zombie_count = Config.ZombieCountPerBatch;
+--         sleep(Config.WaitTimeBeforeAppearZombie * 1000);
+--         while (not Config.__gameover__ and zombie_count > 0) do
+--             local pos = pos_list[math.random(#pos_list)];
+--             local zombie = zombie_list[math.random(math.min(#zombie_list, zombie_size + i))];
+--             sleep(math.random(300, 3000));
+--             (Entity[zombie])(pos[1], pos[2], pos[3]);
+--             zombie_count = zombie_count - 1;
+--         end
+--         if (Config.__gameover__) then break end 
+--     end
+-- end);
 
 -- 太阳定时器
 async_run(function()
@@ -109,3 +114,4 @@ end
 
 
 -- 103409
+

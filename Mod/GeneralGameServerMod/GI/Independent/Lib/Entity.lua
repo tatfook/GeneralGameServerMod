@@ -125,7 +125,7 @@ function Entity:Init(opts)
     if (opts.isCanRandomMove == false) then self:SetCanRandomMove(false) end 
     if (opts.onclick) then self:SetClickCallBack(opts.onclick) end 
     if (opts.blood) then self:SetBlood(opts.blood) end 
-    if (opts.totalBlood) then self:SetTotalBlood(opts.totalBlood) end 
+    if (opts.blood or opts.totalBlood) then self:SetTotalBlood(opts.blood or opts.totalBlood) end 
     
     self:SetObstruction(opts.obstruction);
     self:SetRandomMoveRange(opts.randomMoveRange);
@@ -875,7 +875,7 @@ function Entity:SetCurrentBlood(blood)
     if (not self:IsHasBlood()) then return end
     self:SetBlood(blood);
     self.__scope__:Set("blood_strip_percentage", self:GetBlood() * 100 / self:GetTotalBlood());
-    if (blood < 100 and blood > 0) then self:ShowHeadOnDisplay() end 
+    if (blood < self:GetTotalBlood() and blood > 0) then self:ShowHeadOnDisplay() end 
     if (blood <= 0) then self:Destroy() end 
 end
 

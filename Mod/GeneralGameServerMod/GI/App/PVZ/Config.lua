@@ -52,9 +52,9 @@ Config.guard_config = {
         -- 消耗的太阳数
         use_sun_count = 300,
         -- 血量
-        blood = 300,
+        blood = 100,
         -- 攻击伤害
-        attack_blood = 5,
+        attack_blood = 20,
         -- 攻击频率
         attack_speed = 1000, -- 毫秒每次
     },
@@ -77,7 +77,7 @@ Config.zombie_config = {
         -- 血量
         blood = 100,
         -- 攻击伤害
-        attack_blood = 20,
+        attack_blood = 1,
         -- 攻击频率
         attack_speed = 500, -- 毫秒每次
     },
@@ -88,7 +88,7 @@ Config.zombie_config = {
         -- 血量
         blood = 100,
         -- 攻击伤害
-        attack_blood = 50,
+        attack_blood = 1,
         -- 攻击频率
         attack_speed = 500, -- 毫秒每次
     },

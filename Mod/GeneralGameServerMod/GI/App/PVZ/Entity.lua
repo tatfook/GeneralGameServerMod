@@ -11,7 +11,7 @@ function Entity:Init(opts)
     if (opts.isCanAutoAttack == nil) then opts.isCanAutoAttack = false end 
     if (opts.isCanAutoAvoid == nil) then opts.isCanAutoAvoid = false end 
     if (opts.visibleRadius == nil) then opts.visibleRadius = 1 end 
-
+    opts.totalBlood = opts.blood;
     Entity._super.Init(self, opts);
 
     return self;
@@ -236,7 +236,16 @@ function Plant:Init(opts)
     async_run(function()
         while(not __self__:IsDestory()) do
             local skill = __self__:GetSkill();
-            skill:Activate(__self__);
+            local blockindex = __self__:GetBlockIndex();
+            local entities = self:GetAllEntityInBlockIndex(blockindex); 
+            local target_entity = nil;
+            for _, entity in ipairs(entities) do 
+                if (entity ~= __self__ and entity:IsZombie()) then
+                    target_entity = entity;
+                    break;
+                end
+            end
+            skill:Activate(__self__, target_entity);
             sleep(skill:GetNextActivateTimeStamp());
         end
     end);
@@ -343,7 +352,7 @@ function EntityIronGuard:Init(bx, by, bz)
     local cfg = Config.guard_config.CreateEntityIronGuard;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "IronGuard",
+        name = "钢铁守卫",
         assetfile = "character/v5/01human/QianXianHuWei/QianXianHuWei.x",  
         types = {["plant"] = 0, ["zombie"] = 1},
         speed = 0, 
@@ -353,6 +362,7 @@ function EntityIronGuard:Init(bx, by, bz)
             targetBlood = cfg.attack_blood,
             skillInterval = cfg.attack_speed,
             skillTime = 200,
+            animId = 6, 
         }),
     };
 
@@ -371,7 +381,7 @@ function EntitySacredGuard:Init(bx, by, bz)
     local cfg = Config.guard_config.CreateEntitySacredGuard;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "SacredGuard",
+        name = "神圣守卫",
         assetfile = "character/v3/GameNpc/SWZS/SWZS.x",  
         types = {["plant"] = 0, ["zombie"] = 1},
         speed = 0, 
@@ -404,6 +414,7 @@ function EntityRockGuard:Init(bx, by, bz)
         types = {["plant"] = 0, ["zombie"] = 1},
         speed = 0, 
         blood = cfg.blood,
+        -- scale = 0.8,
         defaultSkill = CreateSkill({
             skillRadius = 1,
             targetBlood = cfg.attack_blood,
