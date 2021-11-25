@@ -2,7 +2,20 @@
 local Config = module();
 
 
+-- 游戏结束标志
 Config.__gameover__ = false;
+
+-- 初始化太阳数
+Config.InitSunCount = 100;
+
+-- 僵尸批次数
+Config.ZombieBatchCount = 4;
+
+-- 每批次僵尸数
+Config.ZombieCountPerBatch = 20;
+
+-- 僵尸出现前的等待时间
+Config.WaitTimeBeforeAppearZombie = 10;  -- 秒 
 
 Config.guard_config = {
     ["CreateEntityBasicGuard"] = {

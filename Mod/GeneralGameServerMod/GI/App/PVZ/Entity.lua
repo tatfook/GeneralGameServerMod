@@ -39,7 +39,7 @@ function Zombie:Init(opts)
     local step = 20;
     async_run(function()
         local attacking = false;
-        while(step > 0 and not __self__:IsDestory()) do
+        while(not Config.__gameover__ and step > 0 and not __self__:IsDestory()) do
             step = step - 1;
             if (not attacking) then 
                 __self__:MoveForward(1);

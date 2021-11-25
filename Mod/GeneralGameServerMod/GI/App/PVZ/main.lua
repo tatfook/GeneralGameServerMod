@@ -5,13 +5,14 @@ local Config = require("./Config.lua");
 local Entity = require("./Entity.lua");
 
 local __ui_G__ = {
-    sun_count = 0,
+    sun_count = Config.InitSunCount,
     select_guard_type = "CreateEntityBasicGuard",
 };
+
 local __ui__ = ShowWindow(__ui_G__, {
     width = 300,
     height = 300,
-    url = "%gi%/App/PVZ/pvz.html",
+    url = "@/pvz/pvz.html",
     alignment = "_lt",
 });
 
@@ -49,6 +50,12 @@ RegisterEventCallBack(EventType.MOUSE_DOWN, function(e)
 end);
 
 
+SetCamera(30, 75, 90);
+SetCameraLookAtBlockPos(19201,11,19214);
+
+Tip("开始游戏");
+sleep(3000);
+
 -- 产生僵尸
 async_run(function()
     local pos_list = {
@@ -67,18 +74,23 @@ async_run(function()
         "CreateEntitySpeedZombie",
     }
     math.randomseed(__get_timestamp__());
-    local zombie_count = 20;
-    while (not Config.__gameover__ and zombie_count > 0) do
-        local pos = pos_list[math.random(#pos_list)];
-        local zombie = zombie_list[math.random(#zombie_list)];
-        sleep(math.random(300, 3000));
-        (Entity[zombie])(pos[1], pos[2], pos[3]);
-        zombie_count = zombie_count - 1;
+    
+    local zombie_count = Config.ZombieCountPerBatch;
+    local zombie_size = math.max((#zombie_list) - Config.ZombieBatchCount, 1);
+    for i = 1, Config.ZombieBatchCount do 
+        Tip(string.format("第 %s 批僵尸将在 %s 秒内抵达战场", i, Config.WaitTimeBeforeAppearZombie));
+        sleep(Config.WaitTimeBeforeAppearZombie * 1000);
+        while (not Config.__gameover__ and zombie_count > 0) do
+            local pos = pos_list[math.random(#pos_list)];
+            local zombie = zombie_list[math.random(math.min(#zombie_list, zombie_size + i))];
+            sleep(math.random(300, 3000));
+            (Entity[zombie])(pos[1], pos[2], pos[3]);
+            zombie_count = zombie_count - 1;
+        end
+        if (Config.__gameover__) then break end 
     end
 end);
 
-SetCamera(30, 75, 90);
-SetCameraLookAtBlockPos(19201,11,19214);
 
 -- 太阳定时器
 async_run(function()
@@ -90,7 +102,6 @@ async_run(function()
     Tip("游戏结束");
 end)
 
-Tip("开始游戏");
 
 function clear()
     Config.__gameover__ = true;
