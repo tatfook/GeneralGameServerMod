@@ -646,9 +646,6 @@ function Blockly:OnMouseDown(event)
     event:Accept();
     self.mouseMoveX, self.mouseMoveY = Blockly._super.GetRelPoint(self, event.x, event.y);
     self:GetContextMenu():Hide();
-    if (not event:IsLeftButton()) then return end
-    -- local x, y = self:GetLogicAbsPoint(event);
-    -- local ui = self:GetMouseUI(x, y, event);
     local ui = self:GetMouseDownUI(event);
     
     -- 失去焦点
@@ -657,6 +654,8 @@ function Blockly:OnMouseDown(event)
         focusUI:OnFocusOut();
         self:SetFocusUI(nil);
     end
+
+    if (not event:IsLeftButton()) then return end
 
     self.mouse_down_ui = ui;
     -- 元素被点击 直接返回元素事件处理
