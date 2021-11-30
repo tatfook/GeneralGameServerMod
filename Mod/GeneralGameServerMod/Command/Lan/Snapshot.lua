@@ -56,6 +56,7 @@ function Snapshot:Init()
 end
 
 function Snapshot:StartServer()
+    self:CloseLockScreenUI();
     self:SetEnableServer(true);
     -- self:ShowUI()
     if (not self.__server_tick_timer__) then
@@ -183,6 +184,8 @@ function Snapshot:SendLockScreenData()
 end
 
 function Snapshot:ShowLockScreenUI(BackgroundImage)
+    if (Net:IsServer()) then return end 
+
     self.__lock_screen_ui_G__ = self.__lock_screen_ui_G__ or {};
     self.__lock_screen_ui_G__.BackgroundImage = BackgroundImage;
     if (self.__lock_screen_ui__) then return self.__lock_screen_ui_G__.RefreshWindow() end 
