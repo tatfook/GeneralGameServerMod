@@ -2,7 +2,6 @@
 local Config = require("./Config.lua");
 local Entity = inherit(require("Entity"), module());
 
-
 function Entity:ctor()
 
 end
@@ -61,8 +60,15 @@ function Zombie:Init(opts)
         if (step == 0) then 
             Tip("游戏失败");
             Config.__gameover__ = true;
+            Config.__failed__ = true;
         end
     end);
+
+    Config.CurrentZombieCount = Config.CurrentZombieCount + 1;
+    self:SetDestroyCallBack(function()
+        Config.CurrentZombieCount = Config.CurrentZombieCount - 1;
+    end);
+
     return self;
 end
 
@@ -75,7 +81,7 @@ function EntityBronzeZombie:Init(bx, by, bz)
 
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "BronzeZombie",
+        name = "青铜守卫",
         biped = true,
         assetfile = "character/v5/10mobs/HaqiTown/UndeadMonkey/UndeadMonkey.x",  
         types = {["zombie"] = 0, ["plant"] = 1},
@@ -106,7 +112,7 @@ function EntitySilverZombie:Init(bx, by, bz)
     local cfg = Config.zombie_config.CreateEntitySilverZombie;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "SilverZombie",
+        name = "白银守卫",
         biped = true,
         assetfile = "character/v5/10mobs/HaqiTown/UndeadMonkey_Boss/UndeadMonkey_Boss.x",  
         types = {["zombie"] = 0, ["plant"] = 1},
@@ -137,7 +143,7 @@ function EntityGoldZombie:Init(bx, by, bz)
     local cfg = Config.zombie_config.CreateEntityGoldZombie;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "GoldZombie",
+        name = "黄金守卫",
         biped = true,
         assetfile = "character/v5/10mobs/HaqiTown/UndeadMonkey_Fuben/UndeadMonkey_Fuben.x",  
         types = {["zombie"] = 0, ["plant"] = 1},
@@ -168,7 +174,7 @@ function EntityDiamondsZombie:Init(bx, by, bz)
     local cfg = Config.zombie_config.CreateEntityDiamondsZombie;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "GoldZombie",
+        name = "钻石守卫",
         biped = true,
         assetfile = "character/v5/10mobs/HaqiTown/FireBeatle_Boss/FireBeatle_Boss.x",  
         types = {["zombie"] = 0, ["plant"] = 1},
@@ -199,7 +205,7 @@ function EntitySpeedZombie:Init(bx, by, bz)
     local cfg = Config.zombie_config.CreateEntitySpeedZombie;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "SpeedZombie",
+        name = "极速僵尸",
         biped = true,
         assetfile = "character/v5/10mobs/HaqiTown/DeathSnake_Boss/DeathSnake_Boss.x",  
         types = {["zombie"] = 0, ["plant"] = 1},
@@ -249,6 +255,12 @@ function Plant:Init(opts)
             sleep(skill:GetNextActivateTimeStamp());
         end
     end);
+
+    Config.CurrentPlantCount = Config.CurrentPlantCount + 1;
+    self:SetDestroyCallBack(function()
+        Config.CurrentPlantCount = Config.CurrentPlantCount - 1;
+    end);
+
     return self;
 end
 
@@ -258,7 +270,7 @@ function EntityBasicGuard:Init(bx, by, bz)
     local cfg = Config.guard_config.CreateEntityBasicGuard;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "BasicGuard",
+        name = "基础守卫",
         assetfile = "character/CC/02human/blockman/lan_gongbing.x",  
         types = {["plant"] = 0, ["zombie"] = 1},
         speed = 0, 
@@ -284,7 +296,7 @@ function EntityBasicGuard:Init(bx, by, bz)
                 types = {["arrow"] = ENTITY_TYPE.DEFAULT_TYPE, ["plant"] = ENTITY_TYPE.NOT_COLLIDE_TYPE, ["zombie"] = ENTITY_TYPE.COLLIDE_TYPE},
             },
             moveToTargetEntity = true,
-            skillDistance = 15,
+            skillDistance = 18,
             skillInterval = cfg.attack_speed,
             skillTime = 0,
         }),
@@ -305,7 +317,7 @@ function EntitySeniorGuard:Init(bx, by, bz)
     local cfg = Config.guard_config.CreateEntitySeniorGuard;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "SeniorGuard",
+        name = "连射守卫",
         assetfile = "character/CC/02human/blockman/hong_gongbing.x",  
         types = {["plant"] = 0, ["zombie"] = 1},
         speed = 0, 
@@ -331,7 +343,7 @@ function EntitySeniorGuard:Init(bx, by, bz)
                 types = {["arrow"] = ENTITY_TYPE.DEFAULT_TYPE, ["plant"] = ENTITY_TYPE.NOT_COLLIDE_TYPE, ["zombie"] = ENTITY_TYPE.COLLIDE_TYPE},
             },
             moveToTargetEntity = true,
-            skillDistance = 15,
+            skillDistance = 18,
             skillInterval = cfg.attack_speed,
             skillTime = 0,
         }),
@@ -353,16 +365,17 @@ function EntityIronGuard:Init(bx, by, bz)
     local opts = {
         bx = bx, by = by, bz = bz,
         name = "钢铁守卫",
-        assetfile = "character/v5/01human/QianXianHuWei/QianXianHuWei.x",  
+        assetfile = "character/v6/01human/PaladinBado/PaladinBado.x",  
         types = {["plant"] = 0, ["zombie"] = 1},
         speed = 0, 
         blood = cfg.blood,
+        scale = 0.6,
         defaultSkill = CreateSkill({
             skillRadius = 1,
             targetBlood = cfg.attack_blood,
             skillInterval = cfg.attack_speed,
             skillTime = 200,
-            animId = 6, 
+            animId = 71
         }),
     };
 
@@ -382,15 +395,17 @@ function EntitySacredGuard:Init(bx, by, bz)
     local opts = {
         bx = bx, by = by, bz = bz,
         name = "神圣守卫",
-        assetfile = "character/v3/GameNpc/SWZS/SWZS.x",  
+        assetfile = "character/v3/GameNpc/FCSQ/FCSQ.x",  
         types = {["plant"] = 0, ["zombie"] = 1},
         speed = 0, 
         blood = cfg.blood,
+        scale = 0.6,
         defaultSkill = CreateSkill({
             skillRadius = 1,
             targetBlood = cfg.attack_blood,
             skillInterval = cfg.attack_speed,
             skillTime = 200,
+            animId = 16,
         }),
     };
 
@@ -409,12 +424,11 @@ function EntityRockGuard:Init(bx, by, bz)
     local cfg = Config.guard_config.CreateEntitySacredGuard;
     local opts = {
         bx = bx, by = by, bz = bz,
-        name = "RockGuard",
-        assetfile = "character/v3/GameNpc/FCSQ/FCSQ.x",  
+        name = "磐石守卫",
+        assetfile = "character/v3/GameNpc/SWZS/SWZS.x",  
         types = {["plant"] = 0, ["zombie"] = 1},
         speed = 0, 
         blood = cfg.blood,
-        -- scale = 0.8,
         defaultSkill = CreateSkill({
             skillRadius = 1,
             targetBlood = cfg.attack_blood,

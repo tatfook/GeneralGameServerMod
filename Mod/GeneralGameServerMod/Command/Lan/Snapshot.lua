@@ -324,6 +324,8 @@ Net:Register("Snapshot_ShowUI", function()
 end);
 
 Net:Register("Snapshot_LockScreenData", function(data)
+    if (Net:IsServer()) then return end 
+    
     if (not Snapshot.__LockScreenData__) then
         Snapshot.__LockScreenData__ = {
             buffers = {},
@@ -362,7 +364,8 @@ end);
 
 Net:Register("Snapshot_UnlockScreen", function()
     Snapshot:CloseLockScreenUI();
-end)
+end);
+
 Snapshot:InitSingleton():Init();
 
 -- Snapshot:Test();

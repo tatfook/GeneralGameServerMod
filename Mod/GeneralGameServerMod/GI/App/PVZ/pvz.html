@@ -3,23 +3,23 @@
         <div>当前太阳数: {{sun_count or 0}}</div>
         <div style="margin-top: 10px;">
             <div class="guard-item">
-                <div onclick="ClickGuard('CreateEntityBasicGuard')" style="margin-right: 10px;">基础守卫</div>
+                <div onclick="ClickGuard('CreateEntityBasicGuard')" style="margin-right: 10px;">基础守卫 消耗:{{Config.guard_config.CreateEntityBasicGuard.use_sun_count}}太阳</div>
                 <div>{{select_guard_type == "CreateEntityBasicGuard" and "待创建" or ""}}</div>
             </div>
             <div class="guard-item">
-                <div onclick="ClickGuard('CreateEntitySeniorGuard')" style="margin-right: 10px;">连射守卫</div>
+                <div onclick="ClickGuard('CreateEntitySeniorGuard')" style="margin-right: 10px;">连射守卫 消耗:{{Config.guard_config.CreateEntitySeniorGuard.use_sun_count}}太阳</div>
                 <div>{{select_guard_type == "CreateEntitySeniorGuard" and "待创建" or ""}}</div>
             </div>
             <div class="guard-item">
-                <div onclick="ClickGuard('CreateEntityIronGuard')" style="margin-right: 10px;">钢铁守卫</div>
+                <div onclick="ClickGuard('CreateEntityIronGuard')" style="margin-right: 10px;">钢铁守卫 消耗:{{Config.guard_config.CreateEntityIronGuard.use_sun_count}}太阳</div>
                 <div>{{select_guard_type == "CreateEntityIronGuard" and "待创建" or ""}}</div>
             </div>
             <div class="guard-item">
-                <div onclick="ClickGuard('CreateEntitySacredGuard')" style="margin-right: 10px;">神圣守卫</div>
+                <div onclick="ClickGuard('CreateEntitySacredGuard')" style="margin-right: 10px;">神圣守卫 消耗:{{Config.guard_config.CreateEntitySacredGuard.use_sun_count}}太阳</div>
                 <div>{{select_guard_type == "CreateEntitySacredGuard" and "待创建" or ""}}</div>
             </div>
             <div class="guard-item">
-                <div onclick="ClickGuard('CreateEntityRockGuard')" style="margin-right: 10px;">磐石守卫</div>
+                <div onclick="ClickGuard('CreateEntityRockGuard')" style="margin-right: 10px;">磐石守卫 消耗:{{Config.guard_config.CreateEntityRockGuard.use_sun_count}}太阳</div>
                 <div>{{select_guard_type == "CreateEntityRockGuard" and "待创建" or ""}}</div>
             </div>
         </div>
@@ -40,7 +40,7 @@ end
     height: 100%;
     padding: 20px;
     font-size: 20px;
-    color: #ffffff;
+    color: #000000;
 }
 
 .guard-item {
