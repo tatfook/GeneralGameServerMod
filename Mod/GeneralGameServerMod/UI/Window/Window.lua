@@ -358,7 +358,11 @@ function Window:CreateNativeWindow()
 	local event_list = { "ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmousewheel", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
 	if (self:IsTouchMode()) then
         event_list = {"ondraw", "onsize", "onmousedown", "onmouseup", "onmousemove", "onmouseleave", "onmouseenter", "onkeydown", "onkeyup", "oninputmethod", "onactivate", "onfocusin", "onfocusout", "ondestroy"};
+    else
+        -- note tricky: we will disable mouse wheel emulation in windows' touch devices
+        native_window:SetField("TouchTranslationAtt", 1);
     end
+    
     local function GetHandle(event_type)
         return function()
             -- 鼠标事件
