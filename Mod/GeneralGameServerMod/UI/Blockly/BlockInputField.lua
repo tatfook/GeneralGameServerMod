@@ -482,7 +482,7 @@ function BlockInputField:GetFieldSelectEditElement(parentElement)
     SelectEditElement:SetAttrValue("onchange", function(value)
         if (not isAllowCreate) then return end
         local label = string.gsub(value, "\n", " ");
-        self:SetLabel(label);
+        self:SetLabel(self:GetLabelByValue(label, label));
         self:UpdateEditAreaSize();
     end);
 
