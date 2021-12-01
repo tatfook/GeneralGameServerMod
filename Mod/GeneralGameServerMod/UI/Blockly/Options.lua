@@ -285,9 +285,9 @@ Options.playMusicFileTypes = function()
         {"城镇", "Audio/Haqi/AriesRegionBGMusics/Area_Town.ogg"},
         {"音乐盒-来自舞者", "Audio/Haqi/Homeland/MusicBox_FromDancer.ogg"},
 
-        { L"ogg文件", "filename.ogg" },
-        { L"wav文件", "filename.wav" },
-        { L"mp3文件", "filename.mp3" },
+        -- { L"ogg文件", "filename.ogg" },
+        -- { L"wav文件", "filename.wav" },
+        -- { L"mp3文件", "filename.mp3" },
     }
 end
 
