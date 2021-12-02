@@ -124,8 +124,9 @@ function ToolBox:RenderCategory(painter)
 end
 
 function ToolBox:IsClipToolBox()
+    local mouse_x, mouse_y = ParaUI.GetMousePosition();
     local blockly = self:GetBlockly();
-    local mouseX, mouseY = blockly.mouseMoveX, blockly.mouseMoveY;
+    local mouseX, mouseY = blockly:GetRelPoint(mouse_x, mouse_y);
     local _, _, _, height = self:GetBlockly():GetContentGeometry();
     return not (0 < mouseX and mouseX < Const.ToolBoxWidth and 0 < mouseY and mouseY < height);
 end
@@ -135,7 +136,8 @@ function ToolBox:Render(painter)
     local isClipToolBox = self:IsClipToolBox();
     
     painter:Save();
-    painter:SetClipRegion(0, 0, isClipToolBox and (Const.ToolBoxWidth - 10) or width, height);
+    -- painter:SetClipRegion(0, 0, isClipToolBox and (Const.ToolBoxWidth - 10) or width, height);
+    painter:SetClipRegion(0, 0, isClipToolBox and Const.ToolBoxWidth or width, height);
     
     -- 绘制背景
     painter:SetBrush("#ffffff");
