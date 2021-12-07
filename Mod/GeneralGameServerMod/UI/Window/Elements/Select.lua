@@ -40,8 +40,10 @@ function SelectSimulator:TriggerSelectOption(params, window)
     if (not select) then return end
 
     local sx, sy = select:AutoScrollToValue(value);
+    if (not sx or not sy) then return end 
     return self:SetClickTrigger(sx + 14, sy + 14);
 end
+
 function SelectSimulator:HandlerVirtualEvent(virtualEventType, virtualEventParams, window)
     if (virtualEventType == "SelectOption") then return self:HandlerSelectOption(virtualEventParams, window) end
 end
@@ -359,7 +361,7 @@ end
 function Select:AutoScrollToValue(value)
     local ListBox = self:GetListBoxElement();
     local index = self:GetOptionIndex(value);
-    if (not index) then return end
+    if (not index) then return nil, nil end
     local _, _, _, ListBoxHeight = ListBox:GetContentGeometry();
     local OptionHeight = ListBox.childrens[1]:GetHeight();
     local OptionTotalCount = #ListBox.childrens;
