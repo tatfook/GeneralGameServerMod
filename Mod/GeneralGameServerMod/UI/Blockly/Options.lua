@@ -106,7 +106,7 @@ end
 
 Options.isTouchingOptions = function() 
     local actor_options = GetActorNameOptions();
-    table.insert(actor_options, 1, { L"某个方块id", "62" });
+    table.insert(actor_options, 1, { L"某个方块id", "-1" });
     table.insert(actor_options, 1, { L"附近玩家", "@a" });
     table.insert(actor_options, 1, { L"方块", "block" });
     return actor_options;
