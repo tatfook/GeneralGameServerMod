@@ -143,7 +143,7 @@ function DefaultSimulator:UIWindowKeyBoardTrigger(params, window)
         end
     end
 
-    return self:SetKeyPressTrigger(buttons, targetText);
+    return self:SetKeyPressTrigger(buttons, (params.ctrl_pressed or params.alt_pressed or params.shift_pressed) and "" or targetText);
 end
 
 DefaultSimulator:InitSingleton();

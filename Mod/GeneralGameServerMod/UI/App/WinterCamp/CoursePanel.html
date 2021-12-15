@@ -3,17 +3,16 @@
         <div style="position: absolute; left: 15px; top: -47px; width: 92px; height: 93px; background: url(@/wintercamp/ditu_92x93_32bits.png#0 0 92 93);"></div>
         <div onclick="CloseWindow" style="position: absolute; width: 52px; height: 52px; right: 39px; top: 27px; background: url(@/wintercamp/guanbi_43x43_32bits.png#0 0 43 43);"></div>
         <div style="position: absolute; left: 350px; top: -35px; width: 323px; height: 55px; background: url(@/wintercamp/shouce_323x55_32bits.png#0 0 323 55);"></div>
-        <!-- <div style="position: absolute; left: 720px; top: -20px; width: 131px; height: 29px; background: url(@/wintercamp/jianzao_131x29_32bits.png#0 0 131 29);"></div> -->
-        <!-- <div style="position: absolute; left: 870px; top: -20px; width: 131px; height: 29px; background: url(@/wintercamp/donhua_131x29_32bits.png#0 0 131 29);"></div> -->
 
         <div v-if="CurrentSelect == 'quweibiancheng' or CurrentSelect == 'kuailejianzao' or CurrentSelect == 'jingcaidonghua'" style="width: 100%; height: 100%;">
             <div style="position: absolute; left: 78px; top: 60px; width: 350px; height: 465px;">
                 <div style="width: 349px; height: 218px; background: url(@/wintercamp/heiban_349x218_32bits.png#0 0 349 218);">
+                    <div v-bind:style="CourseCoverStyle()"></div>
                 </div>
                 <div style="margin-top: 12px; margin-left: 115px; width: 114px; height: 29px; background: url(@/wintercamp/dangqian_114x29_32bits.png#0 0 114 29);"></div>
-                <div style="margin-top: 7px; width: 348px; height: 55px; background: url(@/wintercamp/shouce_348x55_32bits.png#0 0 348 55);"></div>
+                <div style="margin-top: 7px; width: 348px; height: 55px; padding-left: 16px; line-height: 55px; color: #333333; font-size: 14px; background: url(@/wintercamp/shouce_348x55_32bits.png#0 0 348 55);">{{GetKeChengTitle()}}</div>
                 <div style="margin-top: 5px; margin-left: 115px; width: 114px; height: 29px; background: url(@/wintercamp/kechen_114x29_32bits.png#0 0 114 29);"></div>
-                <div style="margin-top: 5px; width: 348px; height: 55px; background: url(@/wintercamp/shouce_348x55_32bits.png#0 0 348 55);"></div>
+                <div style="margin-top: 5px; width: 348px; height: 55px; padding-left: 16px; line-height: 55px; color: #333333; font-size: 14px; background: url(@/wintercamp/shouce_348x55_32bits.png#0 0 348 55);">{{GetKeChengSubTitle()}}</div>
                 <div style="margin-top: 7px; margin-left: 115px; width: 87px; height: 36px; background: url(@/wintercamp/shangke_87x36_32bits.png#0 0 87 36);"></div>
             </div>
     
@@ -139,21 +138,61 @@
 </template>
 
 <script type="text/lua">
-CurrentSelect="tiyujinsai";
+CurrentSelect="quweibiancheng";
 MovieIndex=1;
 GameIndex=1;
 TiYuJinDu = {{index = 1, name = "kualan", text="跨栏", state=0}, {index = 2, name = "shejian", text = "射箭", state=0}};
 LaJiFenLei = {{index = 1, text = "电影一", state = 0},{index = 2, text = "电影二", state = 0},{index = 3, text = "电影三", state = 0},{index = 4, text = "电影四", state = 0},{index = 5, text = "电影五", state = 0},{index = 6, text = "电影六", state = 0}};
 KeChengJinDU = {
     ["quweibiancheng"] = {
+        CurrentIndex = 1,
         {index = 1, text = "第一课", state = 0},{index = 2, text = "第二课", state = 0},{index = 3, text = "第三课", state = 0},{index = 4, text = "第四课", state = 0},{index = 5, text = "第五课", state = 0},{index = 6, text = "第六课", state = 0},
         {index = 7, text = "第七课", state = 0},{index = 8, text = "第八课", state = 0},{index = 9, text = "第九课", state = 0},{index = 10, text = "第十课", state = 0},
     },
-    ["kuailejianzao"] = {},
-    ["jingcaidonghua"] = {},
+    ["kuailejianzao"] = {
+        CurrentIndex = 1,
+        {index = 1, text = "第一课", state = 0, title = "建造前的准备", subtitle = "工具栏的相关知识", worldId = 0},
+        {index = 2, text = "第二课", state = 0, title = "清除跑道杂物", subtitle = "删除方块操作", worldId = 0},
+        {index = 3, text = "第三课", state = 0, title = "填补路面空缺", subtitle = "放置方块操作", worldId = 0},
+        {index = 4, text = "第四课", state = 0, title = "修整跳远沙坑", subtitle = "吸取与替换方块操作", worldId = 0},
+        {index = 5, text = "第五课", state = 0, title = "更新滑冰场", subtitle = "选中方块操作", worldId = 0},
+        {index = 6, text = "第六课", state = 0, title = "移动和旋转跳台", subtitle = "移动和旋转操作", worldId = 0},
+        {index = 7, text = "第七课", state = 0, title = "镜像马拉松赛场", subtitle = "镜像的使用方法", worldId = 0},
+        {index = 8, text = "第八课", state = 0, title = "安装休息室灯光", subtitle = "特殊方块的使用", worldId = 0},
+        {index = 9, text = "第九课", state = 0, title = "保存场馆设施", subtitle = "保存模板或模型的方法", worldId = 0},
+        {index = 10, text = "第十课", state = 0,title = "创造地标建筑", subtitle = "常用建造指令的运用", worldId = 0},
+    },
+    ["jingcaidonghua"] = {
+        CurrentIndex = 1,
+        {index = 1, text = "第一课", state = 0},{index = 2, text = "第二课", state = 0},{index = 3, text = "第三课", state = 0},{index = 4, text = "第四课", state = 0},{index = 5, text = "第五课", state = 0},{index = 6, text = "第六课", state = 0},
+        {index = 7, text = "第七课", state = 0},{index = 8, text = "第八课", state = 0},{index = 9, text = "第九课", state = 0},{index = 10, text = "第十课", state = 0},
+    },
 }
-function ClickSelect(select)
-    CurrentSelect = select;
+
+function GetKeChengTitle()
+    if (CurrentSelect == "quweibiancheng" or CurrentSelect == "kuailejianzao" or CurrentSelect == "jingcaidonghua") then
+        return KeChengJinDU[CurrentSelect][KeChengJinDU[CurrentSelect].CurrentIndex].title or "";
+    end
+    return "";
+end
+
+function GetKeChengSubTitle()
+    if (CurrentSelect == "quweibiancheng" or CurrentSelect == "kuailejianzao" or CurrentSelect == "jingcaidonghua") then
+        return KeChengJinDU[CurrentSelect][KeChengJinDU[CurrentSelect].CurrentIndex].subtitle or "";
+    end
+    return "";
+end
+
+function CourseCoverStyle()
+    if (CurrentSelect == "quweibiancheng") then
+        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/biancheng/lp%s_512x256_32bits.png#0 0 349 218);", KeChengJinDU[CurrentSelect].CurrentIndex);
+    elseif (CurrentSelect == "kuailejianzao") then
+        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/jianzao/lp%s_512x256_32bits.png#0 0 349 218);", KeChengJinDU[CurrentSelect].CurrentIndex);
+    elseif (CurrentSelect == "jingcaidonghua") then
+        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/donghua/lp%s_512x256_32bits.png#0 0 349 218);", KeChengJinDU[CurrentSelect].CurrentIndex);
+    else 
+        return "width: 349px; height: 218px; background: url(@/wintercamp/heiban_349x218_32bits.png#0 0 349 218);";
+    end
 end
 
 function TiYuJinDuItemStyle(item)
