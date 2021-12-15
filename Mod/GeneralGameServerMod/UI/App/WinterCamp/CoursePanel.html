@@ -1,11 +1,172 @@
 <template class="container">
-    <div style="width: 1018px; height: 624px; background: url(@/wintercamp/wc_di_1318x924_32bits.png#0 0 1318 924);">
-        <div style="position: absolute; width: 52px; height: 52px; right: 60px; top: 60px; background: url(@/wintercamp/x_64x64_32bits.png#0 0 64 64);"></div>
+    <div style="width: 957px; height: 556px; margin-top: 44px; background: url(@/wintercamp/diban_957x556_32bits.png#0 0 957 556);">
+        <div style="position: absolute; left: 15px; top: -47px; width: 92px; height: 93px; background: url(@/wintercamp/ditu_92x93_32bits.png#0 0 92 93);"></div>
+        <div onclick="CloseWindow" style="position: absolute; width: 52px; height: 52px; right: 39px; top: 27px; background: url(@/wintercamp/guanbi_43x43_32bits.png#0 0 43 43);"></div>
+        <div style="position: absolute; left: 350px; top: -35px; width: 323px; height: 55px; background: url(@/wintercamp/shouce_323x55_32bits.png#0 0 323 55);"></div>
+        <!-- <div style="position: absolute; left: 720px; top: -20px; width: 131px; height: 29px; background: url(@/wintercamp/jianzao_131x29_32bits.png#0 0 131 29);"></div> -->
+        <!-- <div style="position: absolute; left: 870px; top: -20px; width: 131px; height: 29px; background: url(@/wintercamp/donhua_131x29_32bits.png#0 0 131 29);"></div> -->
+
+        <div v-if="CurrentSelect == 'quweibiancheng' or CurrentSelect == 'kuailejianzao' or CurrentSelect == 'jingcaidonghua'" style="width: 100%; height: 100%;">
+            <div style="position: absolute; left: 78px; top: 60px; width: 350px; height: 465px;">
+                <div style="width: 349px; height: 218px; background: url(@/wintercamp/heiban_349x218_32bits.png#0 0 349 218);">
+                </div>
+                <div style="margin-top: 12px; margin-left: 115px; width: 114px; height: 29px; background: url(@/wintercamp/dangqian_114x29_32bits.png#0 0 114 29);"></div>
+                <div style="margin-top: 7px; width: 348px; height: 55px; background: url(@/wintercamp/shouce_348x55_32bits.png#0 0 348 55);"></div>
+                <div style="margin-top: 5px; margin-left: 115px; width: 114px; height: 29px; background: url(@/wintercamp/kechen_114x29_32bits.png#0 0 114 29);"></div>
+                <div style="margin-top: 5px; width: 348px; height: 55px; background: url(@/wintercamp/shouce_348x55_32bits.png#0 0 348 55);"></div>
+                <div style="margin-top: 7px; margin-left: 115px; width: 87px; height: 36px; background: url(@/wintercamp/shangke_87x36_32bits.png#0 0 87 36);"></div>
+            </div>
+    
+            <div style="position: absolute; left: 475px; top: 60px; width: 380px; height: 465px;">
+                <div v-if="CurrentSelect == 'quweibiancheng'" style="width: 131px; height: 29px; background: url(@/wintercamp/bianchen_131x29_32bits.png#0 0 131 29);"></div>
+                <div v-if="CurrentSelect == 'kuailejianzao'" style="width: 131px; height: 29px; background: url(@/wintercamp/jianzao_131x29_32bits.png#0 0 131 29);"></div>
+                <div v-if="CurrentSelect == 'jingcaidonghua'" style="width: 131px; height: 29px; background: url(@/wintercamp/donhua_131x29_32bits.png#0 0 131 29);"></div>
+                <div style="width: 377px; height: 141px; background: url(@/wintercamp/jindu_377x141_32bits.png#0 0 377 141);">
+                    <div v-for="item in KeChengJinDU[CurrentSelect]" style="width: 75px; height: 66px; display: inline-flex; justify-content: center; padding-top: 6px;">
+                        <div v-bind:style="TiYuJinDuItemStyle(item)"></div>
+                        <div style="margin-top: 2px; width: 45px; text-align: center;">{{item.text}}</div>
+                    </div>
+                </div>
+                <div style="margin-left: 30px; margin-top: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
+                <div style="margin-top: 13px; width: 100%; height: 230px;">
+                    <div style="position: absolute; left: 0px; top: 0px; width: 187px; height: 223px; background: url(@/wintercamp/jiangli_187x223_32bits.png#0 0 187 223);"></div>
+                    <div style="position: absolute; left: 193px; top: 0px; width: 186px; height: 109px; background: url(@/wintercamp/jiangli_186x109_32bits.png#0 0 186 109);"></div>
+                    <div style="position: absolute; left: 193px; top: 114px; width: 186px; height: 109px; background: url(@/wintercamp/jiangli_186x109_32bits.png#0 0 186 109);"></div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="CurrentSelect == 'lajifenlei'" style="width: 100%; height: 100%;">
+            <div style="position: absolute; left: 78px; top: 60px; width: 350px; height: 465px;">
+                <div style="width: 349px; height: 218px; background: url(@/wintercamp/heiban_349x218_32bits.png#0 0 349 218);"></div>
+                <div style="margin-top: 20px; width: 100%; height: 170px;">
+                    <div onclick="MovieIndex=1" style="position: absolute; left: 0px; top: 0px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                        <div v-if="MovieIndex==1" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
+                    </div>
+                    <div onclick="MovieIndex=2" style="position: absolute; left: 130px; top: 0px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                        <div v-if="MovieIndex==2" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
+                    </div>
+                    <div onclick="MovieIndex=3" style="position: absolute; left: 260px; top: 0px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                        <div v-if="MovieIndex==3" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
+                    </div>
+                    <div onclick="MovieIndex=4" style="position: absolute; left: 0px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                        <div v-if="MovieIndex==4" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
+                    </div>
+                    <div onclick="MovieIndex=5" style="position: absolute; left: 130px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                        <div v-if="MovieIndex==5" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
+                    </div>
+                    <div onclick="MovieIndex=6" style="position: absolute; left: 260px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                        <div v-if="MovieIndex==6" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
+                    </div>
+                </div>
+                <div style="margin-left: 100px; margin-top: 12px; width: 151px; height: 36px; background: url(@/wintercamp/kandianying_151x36_32bits.png#0 0 151 36);"></div>
+            </div>
+    
+            <div style="position: absolute; left: 475px; top: 60px; width: 380px; height: 465px;">
+                <div style="width: 131px; height: 29px; background: url(@/wintercamp/guankan_131_29_32bits.png#0 0 131 29);"></div>
+                <div style="width: 377px; height: 141px; display: flex; align-items: center; justify-content: center;  background: url(@/wintercamp/jindu_377x141_32bits.png#0 0 377 141);">
+                    <div v-for="item in LaJiFenLei" style="display: inline-block; width: 60px; height: 60px; display: flex; justify-content: center;">
+                        <div v-bind:style="TiYuJinDuItemStyle(item)"></div>
+                        <div style="margin-top: 12px;">{{item.text}}</div>
+                    </div>
+                </div>
+                <div style="margin-left: 30px; margin-top: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
+                <div style="margin-top: 13px; width: 100%; height: 230px;">
+                    <div style="position: absolute; left: 0px; top: 0px; width: 187px; height: 223px; background: url(@/wintercamp/jiangli_187x223_32bits.png#0 0 187 223);"></div>
+                    <div style="position: absolute; left: 193px; top: 0px; width: 186px; height: 109px; background: url(@/wintercamp/jiangli_186x109_32bits.png#0 0 186 109);"></div>
+                    <div style="position: absolute; left: 193px; top: 114px; width: 186px; height: 109px; background: url(@/wintercamp/jiangli_186x109_32bits.png#0 0 186 109);"></div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="CurrentSelect == 'tiyujinsai'" style="width: 100%; height: 100%;">
+            <div style="position: absolute; left: 72px; top: 60px; width: 363px; height: 465px;">
+                <div style="width: 100%;">
+                    <div onclick="GameIndex=1" style="display: inline-block; width: 173px; height: 131px; background: url(@/wintercamp/yundonban_173x131_32bits.png#0 0 173 131);">
+                        <div v-if="GameIndex==1" style="position: absolute; left: 0px; top: 0px; width: 173px; height: 131px; background: url(@/wintercamp/yundonbanhui_173x131_32bits.png#0 0 173 131);"></div>
+                        <div style="position: absolute; left: 110px; top: 6px; font-size: 17px; color: #ffffff;">跨栏</div>
+                        <div style="position: absolute; left: 45px; top: 100px; font-size: 17px; color: #e2a226;">目标: 10.00s</div>
+                        <div style="position: absolute; left: 30px; top: 12px; width: 49px; height: 72px; background: url(@/wintercamp/kualan_49x72_32bits.png#0 0 49 72);"></div>
+                    </div>
+                    <div onclick="GameIndex=2" style="display: inline-block; margin-left: 13px; width: 173px; height: 131px; background: url(@/wintercamp/yundonban_173x131_32bits.png#0 0 173 131);">
+                        <div v-if="GameIndex==2" style="position: absolute; left: 0px; top: 0px; width: 173px; height: 131px; background: url(@/wintercamp/yundonbanhui_173x131_32bits.png#0 0 173 131);"></div>
+                        <div style="position: absolute; left: 110px; top: 6px; font-size: 17px; color: #ffffff;">射箭</div>
+                        <div style="position: absolute; left: 45px; top: 100px; font-size: 17px; color: #e2a226;">目标: 10.00s</div>
+                        <div style="position: absolute; left: 24px; top: 18px; width: 55px; height: 63px; background: url(@/wintercamp/shejian_55x63_32bits.png#0 0 55 63);"></div>
+                    </div>
+                    <div onclick="GameIndex=3" style="display: inline-block; margin-top: 13px; width: 173px; height: 131px; background: url(@/wintercamp/yundonban_173x131_32bits.png#0 0 173 131);">
+                        <div v-if="GameIndex==3" style="position: absolute; left: 0px; top: 0px; width: 173px; height: 131px; background: url(@/wintercamp/yundonbanhui_173x131_32bits.png#0 0 173 131);"></div>
+                    </div>
+                    <div onclick="GameIndex=4" style="display: inline-block; margin-top: 13px; margin-left: 13px; width: 173px; height: 131px; background: url(@/wintercamp/yundonban_173x131_32bits.png#0 0 173 131);">
+                        <div v-if="GameIndex==4" style="position: absolute; left: 0px; top: 0px; width: 173px; height: 131px; background: url(@/wintercamp/yundonbanhui_173x131_32bits.png#0 0 173 131);"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; width: 131px; height: 29px; background: url(@/wintercamp/bisaiguize_131_29_32bits.png#0 0 131 29);"></div>
+                <div style="width: 351px; height: 96px; background: url(@/wintercamp/bisaiguizekuang_351x96_32bits.png#0 0 351 96);"></div>
+                <div style="margin-left: 100px; margin-top: 9px; width: 151px; height: 36px; text-align: center; font-weight: bold; padding-top: 8px; background: url(@/wintercamp/anniudi_151x36_32bits.png#0 0 151 36);">前往 {{TiYuJinDu[GameIndex].text}} 赛场</div>
+            </div>
+    
+            <div style="position: absolute; left: 475px; top: 60px; width: 380px; height: 465px;">
+                <div style="width: 131px; height: 29px; background: url(@/wintercamp/guankan_131_29_32bits.png#0 0 131 29);"></div>
+                <div style="width: 377px; height: 141px; display: flex; align-items: center; justify-content: center; background: url(@/wintercamp/jindu_377x141_32bits.png#0 0 377 141);">
+                    <div v-for="item in TiYuJinDu" style="width: 60px; height: 60px; display: flex; justify-content: center;">
+                        <div v-bind:style="TiYuJinDuItemStyle(item)"></div>
+                        <div style="margin-top: 12px;">{{item.text}}</div>
+                    </div>
+                </div>
+                <div style="margin-left: 30px; margin-top: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
+                <div style="margin-top: 13px; width: 100%; height: 230px;">
+                    <div style="position: absolute; left: 0px; top: 0px; width: 187px; height: 223px; background: url(@/wintercamp/jiangli_187x223_32bits.png#0 0 187 223);"></div>
+                    <div style="position: absolute; left: 193px; top: 0px; width: 186px; height: 109px; background: url(@/wintercamp/jiangli_186x109_32bits.png#0 0 186 109);"></div>
+                    <div style="position: absolute; left: 193px; top: 114px; width: 186px; height: 109px; background: url(@/wintercamp/jiangli_186x109_32bits.png#0 0 186 109);"></div>
+                </div>
+            </div>
+        </div>
+
+        <div style="position: absolute; right: -68px; top: 55px; width: 103px; height: 540px;">
+            <div onclick="CurrentSelect='quweibiancheng'" v-if="CurrentSelect == 'quweibiancheng'" style="width: 100px; height: 100px; background: url(@/wintercamp/quwei_103x103_32bits.png#0 0 103 103);"></div>
+            <div onclick="CurrentSelect='quweibiancheng'" v-if="CurrentSelect ~= 'quweibiancheng'" style="width: 100px; height: 100px; background: url(@/wintercamp/quweihui_97x98_32bit.png#0 0 97 98);"></div>
+            <div onclick="CurrentSelect='kuailejianzao'" v-if="CurrentSelect == 'kuailejianzao'"  style="width: 100px; height: 100px; background: url(@/wintercamp/kuaile_103x103_32bits.png#0 0 103 103);"></div>
+            <div onclick="CurrentSelect='kuailejianzao'" v-if="CurrentSelect ~= 'kuailejianzao'" style="width: 100px; height: 100px; background: url(@/wintercamp/kuailehui_97x98_32bits.png#0 0 97 98);"></div>
+            <div onclick="CurrentSelect='jingcaidonghua'" v-if="CurrentSelect == 'jingcaidonghua'"  style="width: 100px; height: 100px; background: url(@/wintercamp/jinncai_103x103_32bits.png#0 0 103 103);"></div>
+            <div onclick="CurrentSelect='jingcaidonghua'" v-if="CurrentSelect ~= 'jingcaidonghua'" style="width: 100px; height: 100px; background: url(@/wintercamp/jingcai_97x98_32bits.png#0 0 97 98);"></div>
+            <div onclick="CurrentSelect='lajifenlei'" v-if="CurrentSelect == 'lajifenlei'"  style="width: 100px; height: 100px; background: url(@/wintercamp/laji_103x103_32bits.png#0 0 103 103);"></div>
+            <div onclick="CurrentSelect='lajifenlei'" v-if="CurrentSelect ~= 'lajifenlei'" style="width: 100px; height: 100px; background: url(@/wintercamp/lajihui_97x98_32bits.png#0 0 97 98);"></div>
+            <div onclick="CurrentSelect='tiyujinsai'" v-if="CurrentSelect == 'tiyujinsai'"  style="width: 100px; height: 100px; background: url(@/wintercamp/tiyu_103x103_32bits.png#0 0 103 103);"></div>
+            <div onclick="CurrentSelect='tiyujinsai'" v-if="CurrentSelect ~= 'tiyujinsai'" style="width: 100px; height: 100px; background: url(@/wintercamp/tiyuhui_97x98_32bits.png#0 0 97 98);"></div>
+        </div>
     </div>
 </template>
 
 <script type="text/lua">
+CurrentSelect="tiyujinsai";
+MovieIndex=1;
+GameIndex=1;
+TiYuJinDu = {{index = 1, name = "kualan", text="跨栏", state=0}, {index = 2, name = "shejian", text = "射箭", state=0}};
+LaJiFenLei = {{index = 1, text = "电影一", state = 0},{index = 2, text = "电影二", state = 0},{index = 3, text = "电影三", state = 0},{index = 4, text = "电影四", state = 0},{index = 5, text = "电影五", state = 0},{index = 6, text = "电影六", state = 0}};
+KeChengJinDU = {
+    ["quweibiancheng"] = {
+        {index = 1, text = "第一课", state = 0},{index = 2, text = "第二课", state = 0},{index = 3, text = "第三课", state = 0},{index = 4, text = "第四课", state = 0},{index = 5, text = "第五课", state = 0},{index = 6, text = "第六课", state = 0},
+        {index = 7, text = "第七课", state = 0},{index = 8, text = "第八课", state = 0},{index = 9, text = "第九课", state = 0},{index = 10, text = "第十课", state = 0},
+    },
+    ["kuailejianzao"] = {},
+    ["jingcaidonghua"] = {},
+}
+function ClickSelect(select)
+    CurrentSelect = select;
+end
 
+function TiYuJinDuItemStyle(item)
+    local index = item.index % 2;
+    local bgname = "";
+    if (item.state == 0 and index == 1) then bgname = "huishang_45x40_32bits" end 
+    if (item.state == 0 and index == 0) then bgname = "huixia_45x40_32bits" end 
+    if (item.state == 1 and index == 1) then bgname = "lanshang_45x40_32bits" end 
+    if (item.state == 1 and index == 0) then bgname = "lanxia_45x40_32bits" end 
+    if (item.state == 2 and index == 1) then bgname = "lvshang_45x40_32bits" end 
+    if (item.state == 2 and index == 0) then bgname = "lvxia_45x40_32bits" end 
+    return string.format("display: inline-block; width: 45px; height: 40px; background: url(@/wintercamp/%s.png#0 0 45 40);", bgname);
+end
 </script>
 
 <style scoped="true">

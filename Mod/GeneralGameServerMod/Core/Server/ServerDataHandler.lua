@@ -41,6 +41,16 @@ function ServerDataHandler:GetPlayerManager()
     return self:GetNetHandler():GetPlayerManager();
 end
 
+-- 获取所属世界
+function ServerDataHandler:GetWorld()
+    return self:GetNetHandler():GetWorld();
+end
+
+-- 获取世界KEY
+function ServerDataHandler:GetWorldKey()
+    return self:GetWorld():GetWorldKey();
+end
+
 -- 获取玩家
 function ServerDataHandler:GetPlayer(username)
     if (username == nil) then return self:GetCurrentPlayer() end
@@ -49,7 +59,7 @@ end
 
 -- 发送数据给指定玩家
 function ServerDataHandler:SendDataToPlayer(data, player)
-    self:GetNetHandler():GetPlayerManager():SendPacketToPlayer(self:GetDataPacket(data), player);
+    self:GetNetHandler():GetPlayerManager():SendPacketToPlayer(self:GetDataPacket(data), player or self:GetCurrentPlayer());
 end
 
 -- 发送数据给所有玩家

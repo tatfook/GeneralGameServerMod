@@ -34,3 +34,6 @@ function ClientDataHandler:RecvData(data)
     local callback = self:GetRecvDataCallBack();
     if (type(callback) == "function") then callback(data) end
 end
+
+function ClientDataHandler:OnLogin()
+end

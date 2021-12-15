@@ -196,6 +196,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 设置玩家信息
     entityPlayer:SetPlayerInfo(playerInfo);
 
+    self:GetDataHandler():OnLogin();
     return;
 end
 

@@ -16,7 +16,9 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityOtherPlayer.lua");
+NPL.load("Mod/GeneralGameServerMod/App/Client/EntityLiveModelNetProxy.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
+local EntityLiveModelNetProxy = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.EntityLiveModelNetProxy");
 local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local Encoding = commonlib.gettable("System.Encoding");
@@ -133,7 +135,7 @@ end
 function AppGeneralGameClient:GetClientDataHandlerClass()
     return AppClientDataHandler;
 end
-
+-- 获取网络数据处理对象
 function AppGeneralGameClient:GetClientDataHandler()
     local world = self:GetWorld();
     local netHandler = world and world:GetNetHandler();
@@ -224,6 +226,11 @@ function AppGeneralGameClient:IsAnonymousUser()
     if (isAnonymousUser ~= nil) then return isAnonymousUser end
 
     return self:GetOptions().username ~= System.User.keepworkUsername;  -- 匿名用户不支持离线缓存
+end
+
+-- 同步活动模型
+function AppGeneralGameClient:SyncEntityLiveModel(entity)
+    EntityLiveModelNetProxy(entity);
 end
 
 -- 初始化成单列模式

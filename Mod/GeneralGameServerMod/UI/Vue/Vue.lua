@@ -12,10 +12,12 @@ local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua");
 local Window = NPL.load("../Window/Window.lua", IsDevEnv);
 local ElementManager = NPL.load("../Window/ElementManager.lua");
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
-local Scope = NPL.load("./Scope.lua", IsDevEnv);
+-- local Scope = NPL.load("./Scope.lua", IsDevEnv);
+local Scope = NPL.load("./Scope.lua");
 local ComponentScope = NPL.load("./ComponentScope.lua", IsDevEnv);
 local Table = NPL.load("./Table.lua", IsDevEnv);
-local Compile = NPL.load("./Compile.lua", IsDevEnv);
+-- local Compile = NPL.load("./Compile.lua", IsDevEnv);
+local Compile = NPL.load("./Compile.lua");
 local Component = NPL.load("./Component.lua", IsDevEnv);
 local Slot = NPL.load("./Slot.lua", IsDevEnv);
 

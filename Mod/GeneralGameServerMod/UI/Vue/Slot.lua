@@ -9,7 +9,7 @@ local Slot = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Vue/Slot.lua");
 -------------------------------------------------------
 ]]
 
-local Component = NPL.load("./Component.lua", IsDevEnv);
+local Component = NPL.load("./Component.lua");
 
 local Slot = commonlib.inherit(Component, NPL.export());
 
