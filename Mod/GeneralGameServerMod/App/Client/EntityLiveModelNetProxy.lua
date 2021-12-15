@@ -32,6 +32,7 @@ local function SyncEntityLiveModel(entity, action)
     if (not data_handler) then return end 
     local packet = entity:SaveToXMLNode();
     local data = {packet = packet, key = key, cmd = "SyncEntityLiveModel", action = action};
+    -- print("======Send=======", key, action);
     data_handler:SendData(data);
 end
 
@@ -43,10 +44,12 @@ function EntityLiveModelNetProxy:SendData(data)
     data_handler:SendData(data);
 end
 
-function EntityLiveModelNetProxy:HandleSyncEntityLiveModelData(data)
+function EntityLiveModelNetProxy:HandleSyncEntityLiveModelData(data, action)
     local key = data.attr.key;
     local entity = EntityLiveModelMap[key];
-    if (data.action == "delete") then
+
+    -- print("======Recv=======", key, action);
+    if (action == "delete") then
         EntityLiveModelMap[key] = nil;
         if (entity) then
             entity:Destroy();
@@ -87,7 +90,7 @@ end
 function EntityLiveModelNetProxy:OnRecvData(data)
     if (type(data) ~= "table" or data.cmd ~= "SyncEntityLiveModel") then return end 
 
-    if (data.action == "create" or data.action == "update" or data.action == "delete") then return self:HandleSyncEntityLiveModelData(data.packet) end 
+    if (data.action == "create" or data.action == "update" or data.action == "delete") then return self:HandleSyncEntityLiveModelData(data.packet, data.action) end 
 
     if (data.action == "pull_all") then return self:HandleSyncEntityLiveModelListData(data) end 
 
