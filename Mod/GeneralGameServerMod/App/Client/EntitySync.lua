@@ -132,7 +132,7 @@ end
 setmetatable(EntitySync, {
     __call = function(_, entity)
         -- 保证唯一KEY存在
-        entity:SetKey(nil);
+        -- entity:SetKey(nil);
 
         entity:Connect("valueChanged", nil, function()
             AddEntityToSyncQueue(entity);
