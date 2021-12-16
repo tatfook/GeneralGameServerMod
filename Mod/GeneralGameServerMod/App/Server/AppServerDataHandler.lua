@@ -16,7 +16,7 @@ local ServerDataHandler = NPL.load("Mod/GeneralGameServerMod/Core/Server/ServerD
 local AppServerDataHandler = commonlib.inherit(ServerDataHandler, NPL.export());
 
 -- 实体包
-local AllEntityLiveModelMap = {};
+local AllWorldEntityMap = {};
 
 function AppServerDataHandler:Init(netHandler)
 	AppServerDataHandler._super.Init(self, netHandler);
@@ -24,19 +24,23 @@ function AppServerDataHandler:Init(netHandler)
 	return self;
 end
 
+function AppServerDataHandler:GetAllEntityMap(worldKey)
+	worldKey = worldKey or self:GetWorldKey();
+	AllWorldEntityMap[worldKey] = AllWorldEntityMap[worldKey] or {};
+	return AllWorldEntityMap[worldKey];
+end
+
 -- 收到数据处理函数
 function AppServerDataHandler:RecvData(data)
 	if (type(data) == "table" and data.cmd == "SyncEntityLiveModel") then
-		local worldKey = self:GetWorldKey();
-		AllEntityLiveModelMap[worldKey] = AllEntityLiveModelMap[worldKey] or {};
-		local EntityLiveModelMap = AllEntityLiveModelMap[worldKey];
 		if (data.action == "delete") then 
-			EntityLiveModelMap[data.key] = nil; 
+			self:GetAllEntityMap()[data.key] = nil; 
 		elseif (data.action == "pull_all") then
-			data.packet = EntityLiveModelMap;
+			local worldKey = self:GetWorldKey();
+			data.packet = AllWorldEntityMap[worldKey];
 			return self:SendDataToPlayer(data);
 		else 
-			EntityLiveModelMap[data.key] = data.packet;
+			self:GetAllEntityMap()[data.key] = data.packet;
 		end 
 	end
 
@@ -46,9 +50,8 @@ end
 -- 掉线处理
 function AppServerDataHandler:OnDisconnect()
 	local onlinePlayerCount = self:GetWorld():GetOnlineClientCount();
-	print("-------AppServerDataHandler:OnDisconnect---", onlinePlayerCount);
 	if (onlinePlayerCount == 0) then
 		local worldKey = self:GetWorldKey();
-		AllEntityLiveModelMap[worldKey] = nil;
+		AllWorldEntityMap[worldKey] = nil;
 	end
 end

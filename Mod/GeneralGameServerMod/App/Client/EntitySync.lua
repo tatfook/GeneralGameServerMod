@@ -110,7 +110,9 @@ function EntitySync:HandleSyncEntityData(key, packet, action)
 end 
 
 function EntitySync:HandleSyncEntityListData(data)
-    local list = data.packet or {};
+    local list = data.packet;
+    if (not data.packet) then return end 
+    
     local key_map = {};
     for key, packet in pairs(list) do
         key_map[key] = true;
