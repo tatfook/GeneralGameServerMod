@@ -19,6 +19,13 @@ local __all_sync_key_entity_map__ = {};    -- 所有需要同步的实体
 local __is_can_sync_entity_map__  = {};    -- 实体是否可以同步
 local __sync_queue_entity_map__ = {};      -- 待同步的实体集
 
+-- 重置数据
+local function Reset()
+    __all_sync_key_entity_map__ = {};    -- 所有需要同步的实体
+    __is_can_sync_entity_map__  = {};    -- 实体是否可以同步
+    __sync_queue_entity_map__ = {};      -- 待同步的实体集
+end
+
 -- 发送数据
 local function SendData(data)
     local data_handler = AppGeneralGameClient:GetClientDataHandler();
@@ -104,6 +111,7 @@ function EntitySync:HandleSyncEntityListData(data)
 end 
 
 function EntitySync:OnLogin()
+    Reset();
     SendData({action = "pull_all"});
 end
 
