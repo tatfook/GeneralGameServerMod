@@ -26,6 +26,11 @@ local function Reset()
     __sync_queue_entity_map__ = {};      -- 待同步的实体集
 end
 
+-- 加载世界之前清除数据
+GameLogic.GetFilters():add_filter("OnBeforeLoadWorld", function()
+    Reset();
+end);
+
 -- 发送数据
 local function SendData(data)
     local data_handler = AppGeneralGameClient:GetClientDataHandler();
@@ -111,7 +116,6 @@ function EntitySync:HandleSyncEntityListData(data)
 end 
 
 function EntitySync:OnLogin()
-    Reset();
     SendData({action = "pull_all"});
 end
 

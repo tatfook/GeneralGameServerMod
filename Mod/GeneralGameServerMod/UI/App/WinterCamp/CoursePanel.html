@@ -48,14 +48,20 @@
                     <div onclick="MovieIndex=3" style="position: absolute; left: 260px; top: 0px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
                         <div v-if="MovieIndex==3" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
                     </div>
-                    <div onclick="MovieIndex=4" style="position: absolute; left: 0px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                    <div onclick="MovieIndex=4" style="position: absolute; left: 65px; top: 49px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
                         <div v-if="MovieIndex==4" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
                     </div>
-                    <div onclick="MovieIndex=5" style="position: absolute; left: 130px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                    <div onclick="MovieIndex=5" style="position: absolute; left: 195px; top: 49px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
                         <div v-if="MovieIndex==5" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
                     </div>
-                    <div onclick="MovieIndex=6" style="position: absolute; left: 260px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                    <div onclick="MovieIndex=6" style="position: absolute; left: 0px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
                         <div v-if="MovieIndex==6" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
+                    </div>
+                    <div onclick="MovieIndex=7" style="position: absolute; left: 130px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                        <div v-if="MovieIndex==7" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
+                    </div>
+                    <div onclick="MovieIndex=8" style="position: absolute; left: 260px; top: 96px; width: 89px; height: 79px; background: url(@/wintercamp/dianying_89x79_32bits.png#0 0 89 79);">
+                        <div v-if="MovieIndex==8" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
                     </div>
                 </div>
                 <div style="margin-left: 100px; margin-top: 12px; width: 151px; height: 36px; background: url(@/wintercamp/kandianying_151x36_32bits.png#0 0 151 36);"></div>
@@ -63,10 +69,10 @@
     
             <div style="position: absolute; left: 475px; top: 60px; width: 380px; height: 465px;">
                 <div style="width: 131px; height: 29px; background: url(@/wintercamp/guankan_131_29_32bits.png#0 0 131 29);"></div>
-                <div style="width: 377px; height: 141px; display: flex; align-items: center; justify-content: center;  background: url(@/wintercamp/jindu_377x141_32bits.png#0 0 377 141);">
-                    <div v-for="item in LaJiFenLei" style="display: inline-block; width: 60px; height: 60px; display: flex; justify-content: center;">
+                <div style="width: 377px; height: 141px; padding: 10px 80px; display: flex; align-items: center; justify-content: center;  background: url(@/wintercamp/jindu_377x141_32bits.png#0 0 377 141);">
+                    <div v-for="item in LaJiFenLei" style="display: inline-block; width: 50px; height: 60px; display: flex; justify-content: center; align-items: center;">
                         <div v-bind:style="TiYuJinDuItemStyle(item)"></div>
-                        <div style="margin-top: 12px;">{{item.text}}</div>
+                        <!-- <div style="margin-top: 12px;">{{item.text}}</div> -->
                     </div>
                 </div>
                 <div style="margin-left: 30px; margin-top: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
@@ -142,7 +148,16 @@ CurrentSelect="quweibiancheng";
 MovieIndex=1;
 GameIndex=1;
 TiYuJinDu = {{index = 1, name = "kualan", text="跨栏", state=0}, {index = 2, name = "shejian", text = "射箭", state=0}};
-LaJiFenLei = {{index = 1, text = "电影一", state = 0},{index = 2, text = "电影二", state = 0},{index = 3, text = "电影三", state = 0},{index = 4, text = "电影四", state = 0},{index = 5, text = "电影五", state = 0},{index = 6, text = "电影六", state = 0}};
+LaJiFenLei = {
+    {index = 1, text = "电影一", state = 0},
+    {index = 2, text = "电影二", state = 0},
+    {index = 3, text = "电影三", state = 0},
+    {index = 4, text = "电影四", state = 0},
+    {index = 5, text = "电影五", state = 0},
+    {index = 6, text = "电影六", state = 0},
+    {index = 7, text = "电影七", state = 0},
+    {index = 8, text = "电影八", state = 0},
+};
 KeChengJinDU = {
     ["quweibiancheng"] = {
         CurrentIndex = 1,
