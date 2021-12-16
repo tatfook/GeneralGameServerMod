@@ -284,6 +284,12 @@ Options.playMusicFileTypes = function()
         {"阳光海滩1", "Audio/Haqi/AriesRegionBGMusics/Area_SunnyBeach.ogg"},
         {"城镇", "Audio/Haqi/AriesRegionBGMusics/Area_Town.ogg"},
         {"音乐盒-来自舞者", "Audio/Haqi/Homeland/MusicBox_FromDancer.ogg"},
+        {"并行世界", "Audio/Haqi/keepwork/common/bigworld_bgm.ogg"},
+        {"开场引导音", "Audio/Haqi/keepwork/common/guide_bgm.ogg"},
+        {"登录音效", "Audio/Haqi/keepwork/common/login_bgm.ogg"},
+        {"小游戏音效", "Audio/Haqi/keepwork/common/minigame_bgm.ogg"},
+        {"单机音效", "Audio/Haqi/keepwork/common/offline_bgm.ogg"},  
+        {"行星环绕音效", "Audio/Haqi/keepwork/common/planet_bgm.ogg"},
 
         -- { L"ogg文件", "filename.ogg" },
         -- { L"wav文件", "filename.wav" },

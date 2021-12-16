@@ -98,7 +98,8 @@ function EntitySync:HandleSyncEntityData(key, packet, action)
         __is_can_sync_entity_map__[entity] = false;
     end
 
-    entity:LoadFromXMLNode(packet);
+    if (packet) then entity:LoadFromXMLNode(packet) end 
+    
 	local obj = entity:GetInnerObject();
     if(obj) then
         obj:SetPosition(entity:GetPosition());
@@ -110,8 +111,16 @@ end
 
 function EntitySync:HandleSyncEntityListData(data)
     local list = data.packet or {};
+    local key_map = {};
     for key, packet in pairs(list) do
+        key_map[key] = true;
         self:HandleSyncEntityData(key, packet);
+    end
+
+    for key in pairs(__all_sync_key_entity_map__) do
+        if (not key_map[key]) then
+            self:HandleSyncEntityData(key, nil, "delete");
+        end
     end
 end 
 

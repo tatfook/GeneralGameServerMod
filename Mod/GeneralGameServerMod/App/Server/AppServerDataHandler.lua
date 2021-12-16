@@ -45,4 +45,10 @@ end
 
 -- 掉线处理
 function AppServerDataHandler:OnDisconnect()
+	local onlinePlayerCount = self:GetWorld():GetOnlineClientCount();
+	print("-------AppServerDataHandler:OnDisconnect---", onlinePlayerCount);
+	if (onlinePlayerCount == 0) then
+		local worldKey = self:GetWorldKey();
+		AllEntityLiveModelMap[worldKey] = nil;
+	end
 end
