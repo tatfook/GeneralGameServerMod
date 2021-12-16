@@ -16,9 +16,9 @@ NPL.load("Mod/GeneralGameServerMod/Core/Client/GeneralGameClient.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppGeneralGameWorld.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityMainPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityOtherPlayer.lua");
-NPL.load("Mod/GeneralGameServerMod/App/Client/EntityLiveModelNetProxy.lua");
+NPL.load("Mod/GeneralGameServerMod/App/Client/EntitySync.lua");
 NPL.load("Mod/GeneralGameServerMod/Core/Client/AssetsWhiteList.lua");
-local EntityLiveModelNetProxy = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.EntityLiveModelNetProxy");
+local EntitySync = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.EntitySync");
 local AssetsWhiteList = commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.AssetsWhiteList");
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local Encoding = commonlib.gettable("System.Encoding");
@@ -230,7 +230,7 @@ end
 
 -- 同步活动模型
 function AppGeneralGameClient:SyncEntityLiveModel(entity)
-    EntityLiveModelNetProxy(entity);
+    EntitySync(entity);
 end
 
 -- 初始化成单列模式
