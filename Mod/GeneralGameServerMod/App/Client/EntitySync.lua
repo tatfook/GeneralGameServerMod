@@ -102,9 +102,11 @@ function EntitySync:HandleSyncEntityData(key, packet, action)
     
 	local obj = entity:GetInnerObject();
     if(obj) then
+        obj:SetFacing(entity:GetFacing());
         obj:SetPosition(entity:GetPosition());
         obj:UpdateTileContainer();
     end
+    
     __all_sync_key_entity_map__[key] = entity;
     __is_can_sync_entity_map__[entity] = nil;
 end 
@@ -144,6 +146,8 @@ function EntitySync:GetAllEntity()
     return __all_sync_key_entity_map__;
 end
 
+-- function EntitySync:
+
 setmetatable(EntitySync, {
     __call = function(_, entity)
         -- 保证唯一KEY存在
@@ -164,3 +168,23 @@ setmetatable(EntitySync, {
         AddEntityToSyncQueue(entity);
     end
 });
+
+--[[
+Entity 同步逻辑:
+1. 需要同步的Entity, 调用EntitySync绑定数据更新回调事件
+2. Entity 发生变更, 以Entity对象地址为KEY, 加入同步队列(存在覆盖), 激活同步timerout定时器(100ms)
+3. 同步定时器执行同步回调, 打包同步队列里的Entity的信息到服务器缓存并转发至其它玩家
+4. 收到Entity同步事件, 通过Entity Key找到Entity, 禁用当前Entity同步, 加载同步信息, 更新位置, 恢复当前Entity同步
+
+Entity 初始化逻辑:
+1. 加载世界, 清空相关数据集
+2. 注册世界里需要同步的Entity信息变更回调
+3. ggs connect 登录成功回调执行拉取服务器缓存的Entity信息集并同步至场景. (服务器没有缓存信息时, 保留当前世界Entity集, 否则取服务器Entity集)
+
+## TODO
+Entity 数据包未包含类信息, 目前只支持EntityLiveModel(默认类)
+
+主实现文件:
+Client: Mod/GeneralGameServerMod/App/Client/EntitySync.lua
+Server: Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua
+]]
