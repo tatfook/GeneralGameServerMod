@@ -44,7 +44,7 @@ local function SyncEntity(key)
     local entity = __all_sync_key_entity_map__[key];
     local action = entity and "update" or "delete";
     local packet = entity and entity:SaveToXMLNode();
-    print("======Send=======", key, action);
+    -- print("======Send=======", key, action);
     SendData({key = key, cmd = "SyncEntityLiveModel", action = action, packet = packet});
 end
 
@@ -61,7 +61,7 @@ local function AddEntityToSyncQueue(entity, bDelete)
     if (__is_can_sync_entity_map__[entity] == false) then return end 
 
     local key = entity:GetKey();
-    print("---------AddEntityToSyncQueue----------", key)
+    -- print("---------AddEntityToSyncQueue----------", key)
     if (bDelete) then
         __all_sync_key_entity_map__[key] = nil;
         return SyncEntity(key);  -- 删除立即执行
@@ -80,7 +80,7 @@ end
 function EntitySync:HandleSyncEntityData(key, packet, action)
     local entity = __all_sync_key_entity_map__[key];
 
-    print("======Recv=======", key, action);
+    -- print("======Recv=======", key, action);
     if (action == "delete") then
         __all_sync_key_entity_map__[key] = nil;
         if (entity) then
