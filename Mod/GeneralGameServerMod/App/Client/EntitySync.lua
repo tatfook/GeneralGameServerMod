@@ -9,8 +9,8 @@ NPL.load("Mod/GeneralGameServerMod/App/Client/EntitySync.lua");
 local EntitySync = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.EntitySync");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityLiveModel.lua");
-local EntityLiveModel = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityLiveModel");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
+local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 
 local EntitySync = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.EntitySync");
 local AppGeneralGameClient = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppGeneralGameClient");
@@ -93,7 +93,8 @@ function EntitySync:HandleSyncEntityData(key, packet, action)
     end
 
     if (not entity) then
-        entity = EntityLiveModel:new();
+        local EntityClass = EntityManager.GetEntityClass(packet.attr.class);
+        entity = EntityClass:new();
         __is_can_sync_entity_map__[entity] = false;
         entity:init():Attach();
     else 
@@ -173,7 +174,7 @@ setmetatable(EntitySync, {
 Entity 同步逻辑:
 1. 需要同步的Entity, 调用EntitySync绑定数据更新回调事件
 2. Entity 发生变更, 以Entity对象地址为KEY, 加入同步队列(存在覆盖), 激活同步timerout定时器(100ms)
-3. 同步定时器执行同步回调, 打包同步队列里的Entity的信息到服务器缓存并转发至其它玩家
+3. 同步定时器执行同步回调, 打包同步队列里的Entity的信息到服务器缓存并转发至其它玩家, 清空同步队列
 4. 收到Entity同步事件, 通过Entity Key找到Entity, 禁用当前Entity同步, 加载同步信息, 更新位置, 恢复当前Entity同步
 
 Entity 初始化逻辑:
