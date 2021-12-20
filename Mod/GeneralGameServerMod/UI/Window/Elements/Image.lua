@@ -8,7 +8,7 @@ local Image = NPL.load("Mod/GeneralGameServerMod/UI/Window/Elements/Image.lua");
 -------------------------------------------------------
 ]]
 
-
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Element = NPL.load("../Element.lua");
 local Image = commonlib.inherit(Element, NPL.export());
 
@@ -18,5 +18,8 @@ function Image:ctor()
 end
 
 function Image:GetBackground()
-    return self:GetAttrStringValue("src") or Image._super.GetBackground(self);
+    local src = self:GetAttrStringValue("src");
+    if (not src) then return Image._super.GetBackground(self) end 
+
+    return CommonLib.GetFullPath(src);
 end
