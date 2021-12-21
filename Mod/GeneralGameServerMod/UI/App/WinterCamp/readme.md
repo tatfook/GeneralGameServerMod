@@ -8,3 +8,18 @@ local clientData = KeepWorkItemManager.GetClientData(gsid) or {};
 KeepWorkItemManager.SetClientData(gsid, clientData, function()
     ActRedhat.ShowPage();
 end);
+
+character/common/headarrow/headarrow.x"
+
+character/CC/05effect/fireglowingcircle.x
+
+## TODO
+
+[ ] 冬令营
+[ ] win10 触屏无法点击
+[ ] 局域网活动模型同步
+
+
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+
+Page.ShowVueTestPage(nil, {width = 1024, height = 600, url = "%ui%/App/WinterCamp/CoursePanel.html"})

@@ -27,6 +27,7 @@ local block_menus = {
     { text = "复制整块", cmd = "copyAll"},
     { text = "删除整块", cmd = "deleteAll"},
     { text = "添加注释", cmd = "add_note"},
+    { text = "导出图块XML", cmd = "export_block_xml_text"},
 }
 
 local blockly_menus = {
@@ -36,6 +37,7 @@ local blockly_menus = {
     { text = "导出工作区XML", cmd = "export_workspace_xml_text"},
     { text = "导入工作区XML", cmd = "import_workspace_xml_text"},
     { text = "导出工具栏XML", cmd = "export_toolbox_xml_text"},
+    { text = "导入图块XML", cmd = "import_block_xml_text"},
     { text = "生成图块代码", cmd = "export_code"},
     { text = "生成宏示教代码", cmd = "export_macro_code"},
 }
@@ -125,7 +127,44 @@ function ContextMenu:OnMouseUp(event)
         self:ExportMacroCode();
     elseif (menuitem.cmd == "add_note") then
         self:GetBlockly():AddNote();
+    elseif (menuitem.cmd == "export_block_xml_text") then
+        self:ExportBlockXmlText();
+    elseif (menuitem.cmd == "import_block_xml_text") then
+        self:ImportBlockXmlText();
     end 
+end
+
+function ContextMenu:ExportBlockXmlText()
+    local block = self:GetBlockly():GetCurrentBlock();
+    if (not block) then return end 
+    local xmlText = Helper.Lua2XmlString(block:SaveToXmlNode(), true);
+    ParaMisc.CopyTextToClipboard(xmlText);
+    GameLogic.AddBBS("Blockly", "图块 XML 已拷贝至剪切板");
+end
+
+function ContextMenu:ImportBlockXmlText()
+    local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+    Page.Show({
+        title = "请输入图块XML文本",
+        confirm = function(text)
+            local xmlnode = Helper.XmlString2Lua(text);
+            if (not xmlnode or not xmlnode[1]) then return end
+            local block = self:GetBlockly():GetBlockInstanceByXmlNode(xmlnode[1]);
+            if (not xmlnode) then return end
+            local relx, rely = self:GetPosition();
+            local sx, sy = self:GetBlockly():RelativePointToScreenPoint(relx, rely);
+            local lx, ly = self:GetBlockly():GetLogicAbsPoint(nil, sx, sy);
+            local leftUnitCount, topUnitCount = math.floor(lx / Const.UnitSize), math.floor(ly / Const.UnitSize);
+            block:SetLeftTopUnitCount(leftUnitCount, topUnitCount);
+            block:UpdateLayout();
+            self:GetBlockly():AddBlock(block);
+            -- self:GetBlockly():LoadFromXmlNodeText(text);
+        end,
+    }, {
+        url = "%ui%/Blockly/Pages/XmlTextInput.html",
+        width = 500,
+        height = 400,
+    });
 end
 
 function ContextMenu:ExportWorkspaceXmlText()
