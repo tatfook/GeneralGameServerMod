@@ -77,6 +77,7 @@ InitLaJiFenLeiMovieTasks();
 local __winter_camp_ui__ = nil;
 function ShowWinterCampMainWindow()
     if (__winter_camp_ui__) then return end 
+    -- __winter_camp_ui__ = Page.ShowWinterCampPage({
     __winter_camp_ui__ = ShowWindow({
         LaJiFenLeiMovieTasks = LaJiFenLeiMovieTasks, 
         GoLaJiFenLeiMovieTask = function(index)
@@ -85,14 +86,12 @@ function ShowWinterCampMainWindow()
         end,
         OnClose = function() 
             __winter_camp_ui__ = nil;
-            -- SetTimeout(100, function()
-            --     FocusPlayer();
-            -- end)
         end 
     }, {
         width = 1024, 
         height = 600, 
         url = "Mod/GeneralGameServerMod/UI/App/WinterCamp/WinterCamp.html",
+        parent = GetRootUIObject(),
     });
 end
 

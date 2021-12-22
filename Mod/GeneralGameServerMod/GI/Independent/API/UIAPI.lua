@@ -18,7 +18,7 @@ local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
 
 local UIAPI = NPL.export();
-
+local RootUI = ParaUI.GetUIObject("root");
 setmetatable(UIAPI, {__call = function(_, CodeEnv)
     local windows = CodeEnv.__windows__;
     local Scope = Vue.Scope;
@@ -51,6 +51,9 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
             
             windows[key] = nil;
             __data__.__windows__[key] = nil;
+
+            -- 聚焦至主窗口
+            -- if (params.parent and params.parent ~= RootUI and RootUI) then RootUI.Focus() end 
         end
 
         -- 指定默认参数
