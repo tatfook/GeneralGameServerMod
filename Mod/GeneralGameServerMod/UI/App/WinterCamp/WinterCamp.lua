@@ -74,12 +74,31 @@ _G.FinishLaJiFenLeiMovieTask = FinishLaJiFenLeiMovieTask;
 
 InitLaJiFenLeiMovieTasks();
 
+local __winter_camp_map_ui__ = nil;
+function ShowWinterCampMapWindow()
+    if (__winter_camp_map_ui__) then return end 
+    __winter_camp_map_ui__ = ShowWindow({
+        OnClose = function() 
+            __winter_camp_map_ui__ = nil;
+        end 
+    }, {
+        width = 1024, 
+        height = 600, 
+        url = "Mod/GeneralGameServerMod/UI/App/WinterCamp/WinterCampMap.html",
+    })
+end
+
+function CloseWinterCampMapWindow()
+    if (not __winter_camp_map_ui__) then return end 
+end
+
 local __winter_camp_ui__ = nil;
 function ShowWinterCampMainWindow()
     if (__winter_camp_ui__) then return end 
     -- __winter_camp_ui__ = Page.ShowWinterCampPage({
     __winter_camp_ui__ = ShowWindow({
         LaJiFenLeiMovieTasks = LaJiFenLeiMovieTasks, 
+        ShowWinterCampMapWindow = ShowWinterCampMapWindow,
         GoLaJiFenLeiMovieTask = function(index)
             local task = LaJiFenLeiMovieTasks[index];
             cmd(string.format("/goto %s %s %s", task.teleportPos[1], task.teleportPos[2], task.teleportPos[3]));
@@ -101,6 +120,11 @@ function CloseWinterCampMainWindow()
 end
 
 ShowWinterCampMainWindow();
+
+
+
+-- ShowWinterCampMapWindow();
+
 -- FinishLaJiFenLeiMovieTask(1);
 -- function 
 -- "%ui%/App/WinterCamp/WinterCamp.lua"
