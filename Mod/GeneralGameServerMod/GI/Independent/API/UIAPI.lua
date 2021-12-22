@@ -53,7 +53,7 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
             __data__.__windows__[key] = nil;
 
             -- 聚焦至主窗口
-            -- if (params.parent and params.parent ~= RootUI and RootUI) then RootUI.Focus() end 
+            CodeEnv.FocusRootUIObject();
         end
 
         -- 指定默认参数
@@ -70,6 +70,7 @@ setmetatable(UIAPI, {__call = function(_, CodeEnv)
         return window;
 	end
 
+    CodeEnv.FocusRootUIObject = function() ParaUI.GetUIObject("root"):Focus() end 
     CodeEnv.GetRootUIObject = function() return ParaUI.GetUIObject("root") end 
     CodeEnv.GetScreenSize = function() return Screen:GetWidth(), Screen:GetHeight() end 
     CodeEnv.GetScreenWidth = function() return Screen:GetWidth() end

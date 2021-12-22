@@ -91,7 +91,6 @@ function ShowWinterCampMainWindow()
         width = 1024, 
         height = 600, 
         url = "Mod/GeneralGameServerMod/UI/App/WinterCamp/WinterCamp.html",
-        parent = GetRootUIObject(),
     });
 end
 
@@ -105,3 +104,17 @@ ShowWinterCampMainWindow();
 -- FinishLaJiFenLeiMovieTask(1);
 -- function 
 -- "%ui%/App/WinterCamp/WinterCamp.lua"
+-- __ClientData__ = KeepWorkItemManager.GetClientData(40008) or {
+--     -- 垃圾分类数据
+--     refuseClassificationData = {
+--         [1] = 0,  -- 电影一是否完成
+--         [2] = 1,  -- 电影二是否完成
+--     },
+--     -- 游戏数据
+--     GameData = {
+--         ShootData = {state = 0},  -- 射击游戏  state = 0 未完成 1 已完成 2 进行中
+--         RunData = {state = 0},    -- 跨栏游戏  state = 0 未完成 1 已完成 2 进行中
+--         GarbageData = {state},    -- 捡垃圾游戏  state = 0 未完成 1 已完成 2 进行中
+--     },
+--     -- 课程数据
+-- }

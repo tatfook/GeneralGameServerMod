@@ -121,7 +121,10 @@ end
 
 -- 是否鼠标左键按下
 function MouseEvent:IsLeftButton()
-    if (System.os.IsTouchMode()) then
+    -- local isTouchMode = System.os.IsTouchMode();
+    local isTouchMode = GameLogic.options:HasTouchDevice();
+
+    if (isTouchMode) then
         return self.mouse_button == "left";
     else
 	    return self.buttons_state == 1;
@@ -130,7 +133,9 @@ end
 
 -- 是否鼠标右键按下
 function MouseEvent:IsRightButton()
-    if (System.os.IsTouchMode()) then
+    -- local isTouchMode = System.os.IsTouchMode();
+    local isTouchMode = GameLogic.options:HasTouchDevice();
+    if (isTouchMode) then
         return self.mouse_button == "right";
     else
         return self.buttons_state == 2;
