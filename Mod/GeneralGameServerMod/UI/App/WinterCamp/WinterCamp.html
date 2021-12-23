@@ -13,7 +13,7 @@
                 <div style="margin-top: 7px; width: 348px; height: 55px; padding-left: 16px; line-height: 55px; color: #333333; font-size: 14px; background: url(@/wintercamp/shouce_348x55_32bits.png#0 0 348 55);">{{GetKeChengTitle()}}</div>
                 <div style="margin-top: 5px; margin-left: 115px; width: 114px; height: 29px; background: url(@/wintercamp/kechen_114x29_32bits.png#0 0 114 29);"></div>
                 <div style="margin-top: 5px; width: 348px; height: 55px; padding-left: 16px; line-height: 55px; color: #333333; font-size: 14px; background: url(@/wintercamp/shouce_348x55_32bits.png#0 0 348 55);">{{GetKeChengSubTitle()}}</div>
-                <div style="margin-top: 7px; margin-left: 115px; width: 87px; height: 36px; background: url(@/wintercamp/shangke_87x36_32bits.png#0 0 87 36);"></div>
+                <div onclick="GoKeChengPlace" style="margin-top: 7px; margin-left: 115px; width: 87px; height: 36px; background: url(@/wintercamp/shangke_87x36_32bits.png#0 0 87 36);"></div>
             </div>
     
             <div style="position: absolute; left: 475px; top: 60px; width: 380px; height: 465px;">
@@ -74,7 +74,7 @@
                         <div v-if="MovieIndex==8" style="position: absolute; left: 0px; top: 1px; width: 98px; height: 77px; background: url(@/wintercamp/xuankuang_98x77_32bits.png#0 0 98 77);"></div>
                     </div>
                 </div>
-                <div onclick="GoMovieTask" style="margin-left: 100px; margin-top: 12px; width: 151px; height: 36px; background: url(@/wintercamp/kandianying_151x36_32bits.png#0 0 151 36);"></div>
+                <div onclick="GoMoviePlace" style="margin-left: 100px; margin-top: 12px; width: 151px; height: 36px; background: url(@/wintercamp/kandianying_151x36_32bits.png#0 0 151 36);"></div>
             </div>
     
             <div style="position: absolute; left: 475px; top: 60px; width: 380px; height: 465px;">
@@ -118,7 +118,7 @@
                 </div>
                 <div style="margin-top: 12px; width: 131px; height: 29px; background: url(@/wintercamp/bisaiguize_131_29_32bits.png#0 0 131 29);"></div>
                 <div style="width: 351px; height: 96px; background: url(@/wintercamp/bisaiguizekuang_351x96_32bits.png#0 0 351 96);"></div>
-                <div style="margin-left: 100px; margin-top: 9px; width: 151px; height: 36px; text-align: center; font-weight: bold; padding-top: 8px; background: url(@/wintercamp/anniudi_151x36_32bits.png#0 0 151 36);">前往 {{TiYuJinDu[GameIndex].text}} 赛场</div>
+                <div onclick="GoTiYuJingSaiPlace" style="margin-left: 100px; margin-top: 9px; width: 151px; height: 36px; text-align: center; font-weight: bold; padding-top: 8px; background: url(@/wintercamp/anniudi_151x36_32bits.png#0 0 151 36);">前往 {{TiYuJinDu[GameIndex].text}} 赛场</div>
             </div>
     
             <div style="position: absolute; left: 475px; top: 60px; width: 380px; height: 465px;">
@@ -157,7 +157,12 @@
 CurrentSelect="quweibiancheng";
 MovieIndex=1;
 GameIndex=1;
-TiYuJinDu = {{index = 1, name = "kualan", text="跨栏", state=0}, {index = 2, name = "shejian", text = "射箭", state=0}};
+TiYuJinDu = {
+    {index = 1, name = "kualan", text = "跨栏", state = _G.TiYuJingSaiTasks[1].state or 0}, 
+    {index = 2, name = "shejian", text = "射箭", state = _G.TiYuJingSaiTasks[2].state or 0},
+    {index = 3, name = "", text = "", state = _G.TiYuJingSaiTasks[3].state or 0},
+    {index = 4, name = "", text = "", state = _G.TiYuJingSaiTasks[4].state or 0},
+};
 LaJiFenLei = {
     {index = 1, text = "电影一", state = _G.LaJiFenLeiMovieTasks[1].state, cover = "@/wintercamp/moviecover/mc_01_349x218_32bits.png#0 0 349 218"},
     {index = 2, text = "电影二", state = _G.LaJiFenLeiMovieTasks[2].state, cover = "@/wintercamp/moviecover/mc_02_349x218_32bits.png#0 0 349 218"},
@@ -232,9 +237,20 @@ function TiYuJinDuItemStyle(item)
     return string.format("display: inline-block; width: 45px; height: 40px; background: url(@/wintercamp/%s.png#0 0 45 40);", bgname);
 end
 
-function GoMovieTask()
+function GoMoviePlace()
     CloseWindow();
     _G.GoLaJiFenLeiMovieTask(MovieIndex);
+end
+
+function GoTiYuJingSaiPlace()
+    local item = TiYuJingSaiTasks[GameIndex];
+    if (not item) then return end
+    local pos = item.teleportPos;
+    cmd(string.format("/goto %s %s %s", pos[1], pos[2], pos[3]));
+    CloseWindow();
+end
+
+function GoKeChengPlace()
 end
 
 </script>

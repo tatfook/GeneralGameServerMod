@@ -3,6 +3,8 @@ local Enitiy = require("Entity");
 local Movie = require("Movie");
 local __ClientData__ = {};
 
+local __winter_camp__ = {};
+
 -- 垃圾分类任务配置
 local LaJiFenLeiMovieTasks = {
     -- targetPos 电影触发方块坐标   teleportPos 玩家传送方块坐标   moviePos 电影方块坐标 
@@ -14,6 +16,27 @@ local LaJiFenLeiMovieTasks = {
     {targetPos = {18182,12,19189}, teleportPos = {18180,12,19189}, moviePos = {18186,12,19189}, state = 0, title = "其他垃圾介绍"},
     {targetPos = {18182,12,19181}, teleportPos = {18180,12,19181}, moviePos = {18186,12,19181}, state = 0, title = "其他垃圾后续处理"},
     {targetPos = {18182,12,19185}, teleportPos = {18180,12,19185}, moviePos = {18186,12,19185}, state = 0, title = "有害垃圾介绍"},
+}
+
+-- 课程任务配置
+local KeChengTasks = {
+    ["quweibiancheng"] = {
+        {teleportPos = {18182,12,19191}, state = 0, title = "第一课"},
+    }, 
+    ["kuailejianzao"] = {
+
+    },
+    ["jingcaidonghua"] = {
+
+    },
+}
+
+-- 体育竞赛
+local TiYuJingSaiTasks = {
+    {teleportPos = {18315,12,19142}, state = 0, title = "跨栏"},
+    {teleportPos = {18316,12,19314}, state = 0, title = "射箭"},
+    {teleportPos = {18182,12,19191}, state = 0, title = "射箭"},
+    {teleportPos = {18182,12,19191}, state = 0, title = "射箭"},
 }
 
 function InitLaJiFenLeiMovieTasks()
@@ -33,6 +56,12 @@ function InitLaJiFenLeiMovieTasks()
             scale = 1.5,
             assetfile = "character/common/headarrow/headarrow.x",
         });
+    end
+
+    local GameData = __ClientData__.GameData;
+    if (GameData) then
+        TiYuJingSaiTasks[1] = GameData.RunData and GameData.RunData.state or 0;
+        TiYuJingSaiTasks[2] = GameData.ShootData and GameData.ShootData.state or 0;
     end
 
     async_run(function()
@@ -80,6 +109,7 @@ function ShowWinterCampMapWindow()
     __winter_camp_map_ui__ = ShowWindow({
         OnClose = function() 
             __winter_camp_map_ui__ = nil;
+            CloseWinterCampMainWindow();
         end 
     }, {
         width = 1024, 
@@ -90,15 +120,27 @@ end
 
 function CloseWinterCampMapWindow()
     if (not __winter_camp_map_ui__) then return end 
+    __winter_camp_map_ui__:CloseWindow();
+    __winter_camp_map_ui__ = nil;
 end
 
 local __winter_camp_ui__ = nil;
+
+function CloseWinterCampMainWindow()
+    if (not __winter_camp_ui__) then return end 
+    __winter_camp_ui__:CloseWindow();
+    __winter_camp_ui__ = nil;
+end
+
 function ShowWinterCampMainWindow()
     if (__winter_camp_ui__) then return end 
     -- __winter_camp_ui__ = Page.ShowWinterCampPage({
     __winter_camp_ui__ = ShowWindow({
         LaJiFenLeiMovieTasks = LaJiFenLeiMovieTasks, 
+        KeChengTasks = KeChengTasks,
+        TiYuJingSaiTasks = TiYuJingSaiTasks,
         ShowWinterCampMapWindow = ShowWinterCampMapWindow,
+        CloseWinterCampMainWindow = CloseWinterCampMainWindow,
         GoLaJiFenLeiMovieTask = function(index)
             local task = LaJiFenLeiMovieTasks[index];
             cmd(string.format("/goto %s %s %s", task.teleportPos[1], task.teleportPos[2], task.teleportPos[3]));
@@ -113,11 +155,6 @@ function ShowWinterCampMainWindow()
     });
 end
 
-function CloseWinterCampMainWindow()
-    if (not __winter_camp_ui__) then return end 
-    __winter_camp_ui__:CloseWindow();
-    __winter_camp_ui__ = nil;
-end
 
 ShowWinterCampMainWindow();
 
