@@ -159,12 +159,13 @@ function Independent:LoadString(text, filename)
 	-- 等待执行完成
 	while (not __module__.__loaded__) do CodeEnv.sleep() end 	
 	
-	print("========================loadfile=======================", filename);
 	
 	if (filename) then 
+		print("========================loadfile=======================", filename);
 		-- 添加至加载列表
 		self.__files__[filename] = __module__;
 	else
+		-- print("========================exe text code=====================", text);
 		-- 纯代码不保存模块
 		__modules__[__filename__] = nil;
 	end 

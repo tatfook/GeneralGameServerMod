@@ -233,7 +233,7 @@ function AppGeneralGameClient:SyncEntityLiveModel(entity)
     EntitySync(entity, true);
 end
 
--- 同步活动模型
+-- 解除同步活动模型
 function AppGeneralGameClient:UnsyncEntityLiveModel(entity)
     EntitySync(entity, false);
 end
