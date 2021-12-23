@@ -21,15 +21,31 @@ local __sync_queue_entity_map__ = {};      -- 待同步的实体集
 
 -- 重置数据
 local function Reset()
-    __all_sync_key_entity_map__ = {};    -- 所有需要同步的实体
-    __is_can_sync_entity_map__  = {};    -- 实体是否可以同步
-    __sync_queue_entity_map__ = {};      -- 待同步的实体集
+    __all_sync_key_entity_map__ = {};    -- 所有需要同步的实体    键为 key
+    __is_can_sync_entity_map__  = {};    -- 实体是否可以同步      键为 entity or key
+    __sync_queue_entity_map__ = {};      -- 待同步的实体集        键为 entity
 end
 
 -- 加载世界之前清除数据
 GameLogic.GetFilters():add_filter("OnBeforeLoadWorld", function()
     Reset();
 end);
+
+-- 是否可以同步实体
+local function IsCanSyncEntity(entity)
+    if (type(entity) == "string") then return __is_can_sync_entity_map__[entity] ~= false end 
+    return not (__is_can_sync_entity_map__[entity] == false or __is_can_sync_entity_map__[entity:GetKey()] == false)
+end
+
+--  使能实体是否可以同步
+local function EnableCanSyncEntity(entity, bSync)
+    if (bSync) then
+        __is_can_sync_entity_map__[entity] = nil;
+        __is_can_sync_entity_map__[entity:GetKey()] = nil;
+    else
+        __is_can_sync_entity_map__[entity] = false;
+    end
+end
 
 -- 发送数据
 local function SendData(data)
@@ -42,8 +58,9 @@ end
 -- 同步实体
 local function SyncEntity(key)
     local entity = __all_sync_key_entity_map__[key];
+    if (not IsCanSyncEntity(entity or key)) then return end 
+
     local action = entity and "update" or "delete";
-    if (action ~= "delete" and entity == nil) then return end 
     local packet = entity and entity:SaveToXMLNode();
     -- print("======Send=======", key, action);
     SendData({key = key, cmd = "SyncEntityLiveModel", action = action, packet = packet});
@@ -59,7 +76,7 @@ end});
 
 -- 添加到同步队列
 local function AddEntityToSyncQueue(entity, bDelete)
-    if (__is_can_sync_entity_map__[entity] == false) then return end 
+    if (not IsCanSyncEntity(entity)) then return end 
 
     local key = entity:GetKey();
     -- print("---------AddEntityToSyncQueue----------", key)
@@ -80,6 +97,7 @@ end
 
 function EntitySync:HandleSyncEntityData(key, packet, action)
     local entity = __all_sync_key_entity_map__[key];
+    if (not IsCanSyncEntity(entity or key)) then return end 
 
     -- print("======Recv=======", key, action);
     if (action == "delete") then
@@ -163,13 +181,14 @@ setmetatable(EntitySync, {
             entity:Connect("facingChanged", entity, AddEntityToSyncQueue);
             entity:Connect("scalingChanged", entity, AddEntityToSyncQueue);
             entity:Connect("beforeDestroyed", entity, AddEntityToSyncQueue);
+            EnableCanSyncEntity(entity, true);
             AddEntityToSyncQueue(entity);
         else
             entity:Disconnect("valueChanged", entity, AddEntityToSyncQueue);
             entity:Disconnect("facingChanged", entity, AddEntityToSyncQueue);
             entity:Disconnect("scalingChanged", entity, AddEntityToSyncQueue);
             entity:Disconnect("beforeDestroyed", entity, AddEntityToSyncQueue);
-            __all_sync_key_entity_map__[key] = nil;
+            EnableCanSyncEntity(entity, false);
         end
     end
 });
