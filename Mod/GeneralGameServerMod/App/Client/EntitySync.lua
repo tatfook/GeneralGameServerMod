@@ -153,6 +153,8 @@ setmetatable(EntitySync, {
     __call = function(_, entity)
         -- 保证唯一KEY存在
         -- entity:SetKey(nil);
+        local key = entity:GetKey();
+        if (not key or __all_sync_key_entity_map__[key]) then return end 
 
         entity:Connect("valueChanged", nil, function()
             AddEntityToSyncQueue(entity);
