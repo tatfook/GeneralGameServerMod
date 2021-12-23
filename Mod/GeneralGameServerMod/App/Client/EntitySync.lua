@@ -95,6 +95,16 @@ local function AddEntityToSyncQueue(entity, bDelete)
     end
 end
 
+-- 实体更新
+local function OnEntityUpdate(entity)
+    AddEntityToSyncQueue(entity, false);
+end
+
+-- 实体删除
+local function OnEntityDelete(entity)
+    AddEntityToSyncQueue(entity, true);
+end
+
 function EntitySync:HandleSyncEntityData(key, packet, action)
     local entity = __all_sync_key_entity_map__[key];
     if (not IsCanSyncEntity(entity or key)) then return end 
@@ -177,17 +187,17 @@ setmetatable(EntitySync, {
         bSync = bSync == nil and true or bSync;
         if (bSync and __all_sync_key_entity_map__[key]) then return end 
         if (bSync) then
-            entity:Connect("valueChanged", entity, AddEntityToSyncQueue);
-            entity:Connect("facingChanged", entity, AddEntityToSyncQueue);
-            entity:Connect("scalingChanged", entity, AddEntityToSyncQueue);
-            entity:Connect("beforeDestroyed", entity, AddEntityToSyncQueue);
+            entity:Connect("valueChanged", entity, OnEntityUpdate);
+            entity:Connect("facingChanged", entity, OnEntityUpdate);
+            entity:Connect("scalingChanged", entity, OnEntityUpdate);
+            entity:Connect("beforeDestroyed", entity, OnEntityDelete);
             EnableCanSyncEntity(entity, true);
             AddEntityToSyncQueue(entity);
         else
-            entity:Disconnect("valueChanged", entity, AddEntityToSyncQueue);
-            entity:Disconnect("facingChanged", entity, AddEntityToSyncQueue);
-            entity:Disconnect("scalingChanged", entity, AddEntityToSyncQueue);
-            entity:Disconnect("beforeDestroyed", entity, AddEntityToSyncQueue);
+            entity:Disconnect("valueChanged", entity, OnEntityUpdate);
+            entity:Disconnect("facingChanged", entity, OnEntityUpdate);
+            entity:Disconnect("scalingChanged", entity, OnEntityUpdate);
+            entity:Disconnect("beforeDestroyed", entity, OnEntityDelete);
             EnableCanSyncEntity(entity, false);
         end
     end
