@@ -8,6 +8,9 @@ use the lib:
 local API = NPL.load("Mod/GeneralGameServerMod/GI/Independent/API/API.lua");
 ------------------------------------------------------------
 ]]
+
+NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/Quest/QuestAction.lua");
+local QuestAction = commonlib.gettable("MyCompany.Aries.Game.Tasks.Quest.QuestAction");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
@@ -68,4 +71,5 @@ setmetatable(API, {__call = function(_, CodeEnv)
     -- 内部对象导出
     CodeEnv.KeepWorkItemManager = KeepWorkItemManager;
     CodeEnv.Page = Page;
+    CodeEnv.QuestAction = QuestAction;
 end});

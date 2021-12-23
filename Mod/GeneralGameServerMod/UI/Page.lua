@@ -350,3 +350,13 @@ function Page.ShowBigImagePage(G, params)
     BigImagePage:Show(params);
     return BigImagePage;
 end
+
+function Page.ShowWinterCampMainWindow()
+    local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
+
+    Independent:Start("Mod/GeneralGameServerMod/UI/App/WinterCamp/WinterCamp.lua");
+
+    Independent:LoadString([[
+        ShowWinterCampMainWindow();
+    ]]);
+end

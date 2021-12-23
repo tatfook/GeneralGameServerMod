@@ -8,35 +8,65 @@ local __winter_camp__ = {};
 -- 垃圾分类任务配置
 local LaJiFenLeiMovieTasks = {
     -- targetPos 电影触发方块坐标   teleportPos 玩家传送方块坐标   moviePos 电影方块坐标 
-    {targetPos = {18182,12,19191}, teleportPos = {18180,12,19191}, moviePos = {18186,12,19191}, state = 0, title = "厨余垃圾介绍"},
-    {targetPos = {18182,12,19179}, teleportPos = {18180,12,19179}, moviePos = {18186,12,19179}, state = 0, title = "可回收物后续处理"},
-    {targetPos = {18182,12,19187}, teleportPos = {18180,12,19187}, moviePos = {18186,12,19187}, state = 0, title = "可回收物介绍"},
-    {targetPos = {18182,12,19183}, teleportPos = {18180,12,19183}, moviePos = {18186,12,19183}, state = 0, title = "厨余垃圾后续处理"},
-    {targetPos = {18182,12,19177}, teleportPos = {18180,12,19177}, moviePos = {18186,12,19177}, state = 0, title = "有害垃圾后续处理"},
-    {targetPos = {18182,12,19189}, teleportPos = {18180,12,19189}, moviePos = {18186,12,19189}, state = 0, title = "其他垃圾介绍"},
-    {targetPos = {18182,12,19181}, teleportPos = {18180,12,19181}, moviePos = {18186,12,19181}, state = 0, title = "其他垃圾后续处理"},
-    {targetPos = {18182,12,19185}, teleportPos = {18180,12,19185}, moviePos = {18186,12,19185}, state = 0, title = "有害垃圾介绍"},
+    {targetPos = {18182,12,19191}, teleportPos = {18180,12,19191}, moviePos = {18186,12,19191}, state = 0, text = "电影一", title = "厨余垃圾介绍"},
+    {targetPos = {18182,12,19179}, teleportPos = {18180,12,19179}, moviePos = {18186,12,19179}, state = 0, text = "电影二", title = "可回收物后续处理"},
+    {targetPos = {18182,12,19187}, teleportPos = {18180,12,19187}, moviePos = {18186,12,19187}, state = 0, text = "电影三", title = "可回收物介绍"},
+    {targetPos = {18182,12,19183}, teleportPos = {18180,12,19183}, moviePos = {18186,12,19183}, state = 0, text = "电影四", title = "厨余垃圾后续处理"},
+    {targetPos = {18182,12,19177}, teleportPos = {18180,12,19177}, moviePos = {18186,12,19177}, state = 0, text = "电影五", title = "有害垃圾后续处理"},
+    {targetPos = {18182,12,19189}, teleportPos = {18180,12,19189}, moviePos = {18186,12,19189}, state = 0, text = "电影六", title = "其他垃圾介绍"},
+    {targetPos = {18182,12,19181}, teleportPos = {18180,12,19181}, moviePos = {18186,12,19181}, state = 0, text = "电影七", title = "其他垃圾后续处理"},
+    {targetPos = {18182,12,19185}, teleportPos = {18180,12,19185}, moviePos = {18186,12,19185}, state = 0, text = "电影八", title = "有害垃圾介绍"},
 }
 
 -- 课程任务配置
 local KeChengTasks = {
+    -- 趣味编程
     ["quweibiancheng"] = {
-        {teleportPos = {18182,12,19191}, state = 0, title = "第一课"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第一课", title = "建造前的准备", subtitle = "工具栏的相关知识"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第二课", title = "清除跑道杂物", subtitle = "删除方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第三课", title = "填补路面空缺", subtitle = "放置方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第四课", title = "修整跳远沙坑", subtitle = "吸取与替换方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第五课", title = "更新滑冰场", subtitle = "选中方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第六课", title = "移动和旋转跳台", subtitle = "移动和旋转操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第七课", title = "镜像马拉松赛场", subtitle = "镜像的使用方法"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第八课", title = "安装休息室灯光", subtitle = "特殊方块的使用"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第九课", title = "保存场馆设施", subtitle = "保存模板或模型的方法"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第十课", title = "创造地标建筑", subtitle = "常用建造指令的运用"},
     }, 
+    -- 快乐建造
     ["kuailejianzao"] = {
-
+        {teleportPos = {18182,12,19191}, state = 0, text = "第一课", title = "建造前的准备", subtitle = "工具栏的相关知识"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第二课", title = "清除跑道杂物", subtitle = "删除方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第三课", title = "填补路面空缺", subtitle = "放置方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第四课", title = "修整跳远沙坑", subtitle = "吸取与替换方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第五课", title = "更新滑冰场", subtitle = "选中方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第六课", title = "移动和旋转跳台", subtitle = "移动和旋转操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第七课", title = "镜像马拉松赛场", subtitle = "镜像的使用方法"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第八课", title = "安装休息室灯光", subtitle = "特殊方块的使用"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第九课", title = "保存场馆设施", subtitle = "保存模板或模型的方法"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第十课", title = "创造地标建筑", subtitle = "常用建造指令的运用"},
     },
+    -- 精彩动画
     ["jingcaidonghua"] = {
-
+        {teleportPos = {18182,12,19191}, state = 0, text = "第一课", title = "建造前的准备", subtitle = "工具栏的相关知识"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第二课", title = "清除跑道杂物", subtitle = "删除方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第三课", title = "填补路面空缺", subtitle = "放置方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第四课", title = "修整跳远沙坑", subtitle = "吸取与替换方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第五课", title = "更新滑冰场", subtitle = "选中方块操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第六课", title = "移动和旋转跳台", subtitle = "移动和旋转操作"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第七课", title = "镜像马拉松赛场", subtitle = "镜像的使用方法"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第八课", title = "安装休息室灯光", subtitle = "特殊方块的使用"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第九课", title = "保存场馆设施", subtitle = "保存模板或模型的方法"},
+        {teleportPos = {18182,12,19191}, state = 0, text = "第十课", title = "创造地标建筑", subtitle = "常用建造指令的运用"},
     },
 }
 
 -- 体育竞赛
 local TiYuJingSaiTasks = {
-    {teleportPos = {18315,12,19142}, state = 0, title = "跨栏"},
-    {teleportPos = {18316,12,19314}, state = 0, title = "射箭"},
-    {teleportPos = {18182,12,19191}, state = 0, title = "射箭"},
-    {teleportPos = {18182,12,19191}, state = 0, title = "射箭"},
+    {teleportPos = {18315,12,19142}, state = 0, text = "跨栏", description = "跨栏小游戏"},
+    {teleportPos = {18316,12,19314}, state = 0, text = "射箭", description = ""},
+    {teleportPos = {18182,12,19191}, state = 0, text = "", description = ""},
+    {teleportPos = {18182,12,19191}, state = 0, text = "", description = ""},
 }
 
 function InitLaJiFenLeiMovieTasks()
@@ -62,6 +92,13 @@ function InitLaJiFenLeiMovieTasks()
     if (GameData) then
         TiYuJingSaiTasks[1] = GameData.RunData and GameData.RunData.state or 0;
         TiYuJingSaiTasks[2] = GameData.ShootData and GameData.ShootData.state or 0;
+    end
+
+    -- 课程
+    for i = 1, 10 do
+        KeChengTasks["quweibiancheng"][i].state = QuestAction.GetDongaoLessonState("code", i) and 1 or 0;
+        KeChengTasks["kuailejianzao"][i].state = QuestAction.GetDongaoLessonState("build", i) and 1 or 0;
+        KeChengTasks["jingcaidonghua"][i].state = QuestAction.GetDongaoLessonState("anim", i) and 1 or 0;
     end
 
     async_run(function()
