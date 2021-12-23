@@ -43,6 +43,7 @@ end
 local function SyncEntity(key)
     local entity = __all_sync_key_entity_map__[key];
     local action = entity and "update" or "delete";
+    if (action ~= "delete" and entity == nil) then return end 
     local packet = entity and entity:SaveToXMLNode();
     -- print("======Send=======", key, action);
     SendData({key = key, cmd = "SyncEntityLiveModel", action = action, packet = packet});
@@ -150,25 +151,26 @@ function EntitySync:GetAllEntity()
 end
 
 setmetatable(EntitySync, {
-    __call = function(_, entity)
+    __call = function(_, entity, bSync)
         -- 保证唯一KEY存在
         -- entity:SetKey(nil);
         local key = entity:GetKey();
-        if (not key or __all_sync_key_entity_map__[key]) then return end 
-
-        entity:Connect("valueChanged", nil, function()
+        if (not key) then return end 
+        bSync = bSync == nil and true or bSync;
+        if (bSync and __all_sync_key_entity_map__[key]) then return end 
+        if (bSync) then
+            entity:Connect("valueChanged", entity, AddEntityToSyncQueue);
+            entity:Connect("facingChanged", entity, AddEntityToSyncQueue);
+            entity:Connect("scalingChanged", entity, AddEntityToSyncQueue);
+            entity:Connect("beforeDestroyed", entity, AddEntityToSyncQueue);
             AddEntityToSyncQueue(entity);
-        end);
-        entity:Connect("facingChanged", nil, function()
-            AddEntityToSyncQueue(entity);
-        end);
-        entity:Connect("scalingChanged", nil, function()
-            AddEntityToSyncQueue(entity);
-        end);
-        entity:Connect("beforeDestroyed", nil, function()
-            AddEntityToSyncQueue(entity, true);
-        end);
-        AddEntityToSyncQueue(entity);
+        else
+            entity:Disconnect("valueChanged", entity, AddEntityToSyncQueue);
+            entity:Disconnect("facingChanged", entity, AddEntityToSyncQueue);
+            entity:Disconnect("scalingChanged", entity, AddEntityToSyncQueue);
+            entity:Disconnect("beforeDestroyed", entity, AddEntityToSyncQueue);
+            __all_sync_key_entity_map__[key] = nil;
+        end
     end
 });
 

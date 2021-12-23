@@ -230,8 +230,14 @@ end
 
 -- 同步活动模型
 function AppGeneralGameClient:SyncEntityLiveModel(entity)
-    EntitySync(entity);
+    EntitySync(entity, true);
 end
+
+-- 同步活动模型
+function AppGeneralGameClient:UnsyncEntityLiveModel(entity)
+    EntitySync(entity, false);
+end
+
 
 -- 初始化成单列模式
 AppGeneralGameClient:InitSingleton();
