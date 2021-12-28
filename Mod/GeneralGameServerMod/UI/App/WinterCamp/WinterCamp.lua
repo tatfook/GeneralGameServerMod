@@ -194,7 +194,7 @@ function ShowWinterCampMainWindow(defaultTabIndex)
 end
 
 
-ShowWinterCampMainWindow();
+-- ShowWinterCampMainWindow();
 
 
 
