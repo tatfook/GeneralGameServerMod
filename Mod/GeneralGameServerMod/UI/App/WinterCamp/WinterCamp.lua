@@ -169,10 +169,11 @@ function CloseWinterCampMainWindow()
     __winter_camp_ui__ = nil;
 end
 
-function ShowWinterCampMainWindow()
+function ShowWinterCampMainWindow(defaultTabIndex)
     if (__winter_camp_ui__) then return end 
     -- __winter_camp_ui__ = Page.ShowWinterCampPage({
     __winter_camp_ui__ = ShowWindow({
+        DefaultTabIndex = defaultTabIndex,
         LaJiFenLeiMovieTasks = LaJiFenLeiMovieTasks, 
         KeChengTasks = KeChengTasks,
         TiYuJingSaiTasks = TiYuJingSaiTasks,

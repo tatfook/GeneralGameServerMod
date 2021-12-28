@@ -351,12 +351,22 @@ function Page.ShowBigImagePage(G, params)
     return BigImagePage;
 end
 
-function Page.ShowWinterCampMainWindow()
+--[[
+打开冬令营主面板
+defaultTabIndex:
+    "quweibiancheng" 趣味编程
+    "kuailejianzao"  快乐建造
+    "jingcaidonghua" 精彩动画
+    "lajifenlei"     垃圾分类
+    "tiyujinsai"     体育竞赛
+]]  
+function Page.ShowWinterCampMainWindow(defaultTabIndex)
     local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
 
     Independent:Start("Mod/GeneralGameServerMod/UI/App/WinterCamp/WinterCamp.lua");
 
-    Independent:LoadString([[
-        ShowWinterCampMainWindow();
-    ]]);
+    Independent:GetCodeEnv().ShowWinterCampMainWindow(defaultTabIndex);
+    -- Independent:LoadString([[
+    --     ShowWinterCampMainWindow();
+    -- ]]);
 end
