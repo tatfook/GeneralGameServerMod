@@ -69,6 +69,35 @@ local TiYuJingSaiTasks = {
     {teleportPos = {18182,12,19191}, state = 0, text = "", description = ""},
 }
 
+-- 证书配置
+local CertConfig = {
+    ["quweibiancheng"] = {
+        cert_img = "@/wintercamp/certs/biancheng_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "@/wintercamp/certs/biancheng_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "",         -- 套装图片路径
+    },
+    ["kuailejianzao"] = {
+        cert_img = "@/wintercamp/certs/jianzao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "@/wintercamp/certs/jianzao_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "",         -- 套装图片路径
+    },
+    ["jingcaidonghua"] = {
+        cert_img = "@/wintercamp/certs/donghua_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "@/wintercamp/certs/donghua_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "",         -- 套装图片路径
+    },
+    ["lajifenlei"] = {
+        cert_img = "@/wintercamp/certs/huanbao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "@/wintercamp/certs/huanbao_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "",         -- 套装图片路径
+    },
+    ["tiyujinsai"] = {
+        cert_img = "@/wintercamp/certs/tiyu_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "@/wintercamp/certs/tiyu_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "",         -- 套装图片路径
+    },
+}
+
 function InitLaJiFenLeiMovieTasks()
     local refuseClassificationData = __ClientData__.refuseClassificationData or {};
     __ClientData__.refuseClassificationData = refuseClassificationData;
@@ -174,6 +203,7 @@ function ShowWinterCampMainWindow(defaultTabIndex)
     -- __winter_camp_ui__ = Page.ShowWinterCampPage({
     __winter_camp_ui__ = ShowWindow({
         DefaultTabIndex = defaultTabIndex,
+        CertConfig = CertConfig,
         LaJiFenLeiMovieTasks = LaJiFenLeiMovieTasks, 
         KeChengTasks = KeChengTasks,
         TiYuJingSaiTasks = TiYuJingSaiTasks,
@@ -194,7 +224,7 @@ function ShowWinterCampMainWindow(defaultTabIndex)
 end
 
 
--- ShowWinterCampMainWindow();
+ShowWinterCampMainWindow();
 
 
 
