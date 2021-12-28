@@ -65,8 +65,8 @@ local KeChengTasks = {
 local TiYuJingSaiTasks = {
     {teleportPos = {18315,12,19142}, state = 0, text = "跨栏", description = "跨栏小游戏"},
     {teleportPos = {18316,12,19314}, state = 0, text = "射箭", description = ""},
-    {teleportPos = {18182,12,19191}, state = 0, text = "", description = ""},
-    {teleportPos = {18182,12,19191}, state = 0, text = "", description = ""},
+    {teleportPos = {18182,12,19191}, state = 0, text = "卡牌", description = ""},
+    {teleportPos = {18182,12,19191}, state = 0, text = "木头人", description = ""},
 }
 
 -- 证书配置
