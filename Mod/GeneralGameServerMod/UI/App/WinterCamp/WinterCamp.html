@@ -199,11 +199,11 @@ end
 
 function CourseCoverStyle()
     if (CurrentSelect == "quweibiancheng") then
-        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/biancheng/lp%s_512x256_32bits.png#0 0 349 218);", LessonIndex[CurrentSelect]);
+        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/biancheng/lp%s_349x218_32bits.png#0 0 349 218);", LessonIndex[CurrentSelect]);
     elseif (CurrentSelect == "kuailejianzao") then
-        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/jianzao/lp%s_512x256_32bits.png#0 0 349 218);", LessonIndex[CurrentSelect]);
+        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/jianzao/lp%s_349x218_32bits.png#0 0 349 218);", LessonIndex[CurrentSelect]);
     elseif (CurrentSelect == "jingcaidonghua") then
-        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/donghua/lp%s_512x256_32bits.png#0 0 349 218);", LessonIndex[CurrentSelect]);
+        return string.format("width: 349px; height: 218px; background: url(@/wintercamp/donghua/lp%s_349x218_32bits.png#0 0 349 218);", LessonIndex[CurrentSelect]);
     else 
         return "width: 349px; height: 218px; background: url(@/wintercamp/heiban_349x218_32bits.png#0 0 349 218);";
     end
