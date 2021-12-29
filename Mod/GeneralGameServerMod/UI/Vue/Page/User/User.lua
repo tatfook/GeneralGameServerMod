@@ -357,6 +357,8 @@ function LoadUserInfo()
                     end
                 end
             end
+            -- commonlib.echo(honors, true);
+            -- "Texture/Aries/Creator/keepwork/SummerCamp/zhengshu/hongxingshangshang_32bits.png"  "Texture/Aries/Creator/keepwork/items/item_70009_32bits.png"
             GlobalScope:Set("HonorList", honors);
         end);
 
@@ -495,9 +497,6 @@ _G.GetUserShowGoods = function()
     local bagNo = 1001;
     local goods = {}; 
     for _, item in ipairs(KeepWorkItemManager.items) do
-        if (item.gsId == 11001) then
-            echo(item, true);
-        end
         local copies = item.copies or 0;
         if (item.bagNo == bagNo and copies > 0) then
             local itemTpl = KeepWorkItemManager.GetItemTemplate(item.gsId);

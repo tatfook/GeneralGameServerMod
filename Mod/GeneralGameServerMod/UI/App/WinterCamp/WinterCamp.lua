@@ -1,8 +1,6 @@
 
 local Enitiy = require("Entity");
 local Movie = require("Movie");
-local __ClientData__ = {};
-
 local __winter_camp__ = {};
 
 -- 垃圾分类任务配置
@@ -74,43 +72,100 @@ local CertConfig = {
     ["quweibiancheng"] = {
         cert_img = "@/wintercamp/certs/biancheng_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
         reward_img = "@/wintercamp/certs/biancheng_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "",         -- 套装图片路径
+        suit_img = "",                                                                    -- 套装图片路径
+        cert_gsid = "70021",                                                              -- 证书物品ID
+        cert_exid = "30062",                                                              -- 兑换物品ID
+        cert_name = "冬令营-编程小达人证书",
     },
     ["kuailejianzao"] = {
         cert_img = "@/wintercamp/certs/jianzao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
         reward_img = "@/wintercamp/certs/jianzao_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "",         -- 套装图片路径
+        suit_img = "",                                                                    -- 套装图片路径
+        cert_gsid = "70018",                                                              -- 证书物品ID
+        cert_exid = "30059",                                                              -- 兑换物品ID
+        cert_name = "冬令营-优秀建造师证书",
     },
     ["jingcaidonghua"] = {
         cert_img = "@/wintercamp/certs/donghua_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
         reward_img = "@/wintercamp/certs/donghua_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "",         -- 套装图片路径
-    },
+        suit_img = "",                                                                    -- 套装图片路径
+        cert_gsid = "70020",                                                              -- 证书物品ID
+        cert_exid = "30061",                                                              -- 兑换物品ID
+        cert_name = "冬令营-动画小导演证书",
+    }, 
     ["lajifenlei"] = {
         cert_img = "@/wintercamp/certs/huanbao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
         reward_img = "@/wintercamp/certs/huanbao_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "",         -- 套装图片路径
+        suit_img = "",                                                                    -- 套装图片路径
+        cert_gsid = "70017",                                                              -- 证书物品ID
+        cert_exid = "30058",                                                              -- 兑换物品ID
+        cert_name = "冬令营-环保卫士证书",
     },
     ["tiyujinsai"] = {
         cert_img = "@/wintercamp/certs/tiyu_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
         reward_img = "@/wintercamp/certs/tiyu_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "",         -- 套装图片路径
+        suit_img = "",                                                                    -- 套装图片路径
+        cert_gsid = "70019",                                                              -- 证书物品ID
+        cert_exid = "30060",                                                              -- 证书兑换ID
+        cert_name = "冬令营-体育健将证书",
     },
 }
 
-function InitLaJiFenLeiMovieTasks()
+local function GetCert(index)
+    local cfg = CertConfig[index];
+    if (not cfg) then return end 
+    print(string.format("恭喜获得%s证书", cfg.cert_name));
+    local owned = KeepWorkItemManager.HasGSItem(cfg.cert_gsid);
+    if (owned) then return end 
+    KeepWorkItemManager.DoExtendedCost(cfg.cert_exid, function()
+        Tip(string.format("恭喜获得%s证书", cfg.cert_name));
+    end);
+end
+
+local function CheckAndGetCert()
+    local isAllFinish = true;
+    for index, task in ipairs(LaJiFenLeiMovieTasks) do
+        if (task.state == 0) then 
+            isAllFinish = false;
+            break;
+        end 
+    end
+    if (isAllFinish) then GetCert("lajifenlei") end
+    
+    isAllFinish = true;
+    for _, task in ipairs(TiYuJingSaiTasks) do
+        if (task.state == 0) then 
+            isAllFinish = false;
+            break;
+        end
+    end
+    if (isAllFinish) then GetCert("tiyujinsai") end
+
+    for _, index in ipairs({"quweibiancheng", "kuailejianzao", "jingcaidonghua"}) do
+        isAllFinish = true;
+        local tasks = KeChengTasks[index];
+        for _, task in ipairs(tasks) do
+            if (task.state == 0) then 
+                isAllFinish = false;
+                break;
+            end
+        end
+        if (isAllFinish) then GetCert(index) end
+    end
+end
+
+function InitTasks()
+    local __ClientData__ = KeepWorkItemManager.GetClientData(40008) or {};
     local refuseClassificationData = __ClientData__.refuseClassificationData or {};
     __ClientData__.refuseClassificationData = refuseClassificationData;
     for index, task in ipairs(LaJiFenLeiMovieTasks) do
         task.state = refuseClassificationData[index] or 0;
-        task.movie = Movie:new():Init(task.moviePos[1], task.moviePos[2], task.moviePos[3]);
-
-        task.circle = Enitiy:new():Init({
+        task.movie = task.movie or Movie:new():Init(task.moviePos[1], task.moviePos[2], task.moviePos[3]);
+        task.circle = task.circle or Enitiy:new():Init({
             bx = task.targetPos[1], by = task.targetPos[2], bz = task.targetPos[3],
             assetfile = "character/CC/05effect/fireglowingcircle.x",
         });
-        
-        task.arrow = Enitiy:new():Init({
+        task.arrow = task.arrow or Enitiy:new():Init({
             bx = task.targetPos[1], by = task.targetPos[2], bz = task.targetPos[3],
             scale = 1.5,
             assetfile = "character/common/headarrow/headarrow.x",
@@ -119,8 +174,8 @@ function InitLaJiFenLeiMovieTasks()
 
     local GameData = __ClientData__.GameData;
     if (GameData) then
-        TiYuJingSaiTasks[1] = GameData.RunData and GameData.RunData.state or 0;
-        TiYuJingSaiTasks[2] = GameData.ShootData and GameData.ShootData.state or 0;
+        TiYuJingSaiTasks[1].state = GameData.RunData and GameData.RunData.state or 0;
+        TiYuJingSaiTasks[2].state = GameData.ShootData and GameData.ShootData.state or 0;
     end
 
     -- 课程
@@ -130,14 +185,18 @@ function InitLaJiFenLeiMovieTasks()
         KeChengTasks["jingcaidonghua"][i].state = QuestAction.GetDongaoLessonState("anim", i) and 1 or 0;
     end
 
+    -- 检测并领取证书
+    CheckAndGetCert();
+
     async_run(function()
         while(true) do
             local bx, by, bz = GetPlayer():GetBlockPos();
             for index, task in ipairs(LaJiFenLeiMovieTasks) do
                 local pos = task.targetPos;
                 if (bx >= pos[1] - 1 and bx <= pos[1] + 1 and bz >= pos[3] -1 and bz <= pos[3] + 1) then
-                    task.movie:Play();
+                    -- print("===============FinishLaJiFenLeiMovieTask=============", index);
                     _G.FinishLaJiFenLeiMovieTask(index);
+                    task.movie:Play();
                 end
             end
             sleep(100);
@@ -147,9 +206,9 @@ end
 
 local owned = KeepWorkItemManager.HasGSItem(40008);
 if (not owned) then Tip("未登录") end
-__ClientData__ = KeepWorkItemManager.GetClientData(40008) or {};
 
 local function PushClientData(success, fail)
+    local __ClientData__ = KeepWorkItemManager.GetClientData(40008) or {};
     KeepWorkItemManager.SetClientData(40008, __ClientData__, __safe_callback__(function()
         if (type(success) == "function") then success() end 
     end), __safe_callback__(function()
@@ -158,6 +217,7 @@ local function PushClientData(success, fail)
 end
 
 local function FinishLaJiFenLeiMovieTask(index)
+    local __ClientData__ = KeepWorkItemManager.GetClientData(40008) or {};
     local refuseClassificationData = __ClientData__.refuseClassificationData or {};
     __ClientData__.refuseClassificationData = refuseClassificationData;
     refuseClassificationData[index] = 1;
@@ -167,7 +227,7 @@ local function FinishLaJiFenLeiMovieTask(index)
 end
 _G.FinishLaJiFenLeiMovieTask = FinishLaJiFenLeiMovieTask;
 
-InitLaJiFenLeiMovieTasks();
+InitTasks();
 
 local __winter_camp_map_ui__ = nil;
 function ShowWinterCampMapWindow()
@@ -200,6 +260,7 @@ end
 
 function ShowWinterCampMainWindow(defaultTabIndex)
     if (__winter_camp_ui__) then return end 
+    InitTasks();
     -- __winter_camp_ui__ = Page.ShowWinterCampPage({
     __winter_camp_ui__ = ShowWindow({
         DefaultTabIndex = defaultTabIndex,

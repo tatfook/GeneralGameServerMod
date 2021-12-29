@@ -15,6 +15,7 @@ local CodeHelpWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeHelpWin
 local GIBlockly = NPL.load("Mod/GeneralGameServerMod/GI/Independent/GIBlockly.lua", IsDevEnv);
 
 local NplBlockMCML = NPL.load("./NplBlockMCML.lua", IsDevEnv);
+local NplBlockCad = NPL.load("./NplBlockCad.lua", IsDevEnv);
 
 local NplBlockManager = NPL.export();
 
@@ -120,6 +121,10 @@ function NplBlockManager.IsMcmlLanguage()
     return CodeHelpWindow.GetLanguageConfigFile() == "mcml" or CodeHelpWindow.GetLanguageConfigFile() == "html";
 end
 
+function NplBlockManager.IsCadLanguage()
+    return IsDevEnv and string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "npl_cad";
+end
+
 function NplBlockManager.IsGILanguage()
     return CodeHelpWindow.GetLanguageConfigFile() == "game_inventor";
 end
@@ -145,6 +150,14 @@ function NplBlockManager.GetMcmlCategoryListAndMap()
 --     ]],"SystemUIBlock");
 end
 
+function NplBlockManager.GetCadBlockMap()
+    return NplBlockCad.GetBlockMap();
+end
+
+function NplBlockManager.GetCadCategoryListAndMap()
+    return NplBlockCad.GetCategoryListAndMap();
+end
+
 function NplBlockManager.GetNplBlockMap()
     return BlockManager.GetLanguageBlockMap("SystemNplBlock");
 end
@@ -166,6 +179,7 @@ function NplBlockManager.GetBlockMap(blockManager)
     if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplBlockMap() end
     if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlBlockMap() end
     if (NplBlockManager.IsGILanguage()) then return NplBlockManager.GetGIBlockMap() end 
+    if (NplBlockManager.IsCadLanguage()) then return NplBlockManager.GetCadBlockMap() end
    
     local all_cmds = CodeHelpWindow.GetAllCmds();
     local all_categories = CodeHelpWindow.GetCategoryButtons();
@@ -184,6 +198,7 @@ function NplBlockManager.GetCategoryListAndMap(blockManager)
     if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplCategoryListAndMap() end
     if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlCategoryListAndMap() end
     if (NplBlockManager.IsGILanguage()) then return NplBlockManager.GetGICategoryListAndMap() end 
+    if (NplBlockManager.IsCadLanguage()) then return NplBlockManager.GetCadCategoryListAndMap() end
 
     local all_cmds = CodeHelpWindow.GetAllCmds();
     local all_categories = CodeHelpWindow.GetCategoryButtons();
