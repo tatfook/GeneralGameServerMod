@@ -358,7 +358,9 @@ function LoadUserInfo()
                 end
             end
             -- commonlib.echo(honors, true);
-            -- "Texture/Aries/Creator/keepwork/SummerCamp/zhengshu/hongxingshangshang_32bits.png"  "Texture/Aries/Creator/keepwork/items/item_70009_32bits.png"
+            -- "Texture/Aries/Creator/keepwork/SummerCamp/zhengshu/hongxingshangshang_32bits.png"  
+            -- "Texture/Aries/Creator/keepwork/items/item_70009_32bits.png"
+            -- "Texture/Aries/Creator/keepwork/items/item_70009_gray_32bits.png"
             GlobalScope:Set("HonorList", honors);
         end);
 
