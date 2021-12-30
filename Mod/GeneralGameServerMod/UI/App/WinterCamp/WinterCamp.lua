@@ -88,7 +88,6 @@ local CertConfig = {
     ["jingcaidonghua"] = {
         cert_img = "@/wintercamp/certs/donghua_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
         reward_img = "@/wintercamp/certs/donghua_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "",                                                                    -- 套装图片路径
         suit_img = "@/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
         cert_gsid = "70020",                                                              -- 证书物品ID
         cert_exid = "30061",                                                              -- 兑换物品ID

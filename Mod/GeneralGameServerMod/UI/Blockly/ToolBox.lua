@@ -350,4 +350,9 @@ function ToolBox:LoadFromXmlNode(xmlNode)
         block:SetLeftTopUnitCount(blockpos.leftUnitCount, blockpos.topUnitCount - offset);
         block:UpdateLeftTopUnitCount();
     end
+
+    -- 分类不存在
+    if (not self.categoryMap[category]) then
+        self:SwitchCategory(self.categoryList[1] and self.categoryList[1].name);
+    end
 end
