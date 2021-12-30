@@ -189,6 +189,10 @@ LessonIndex = {
     jingcaidonghua = 1,
 }
 
+_G.SelectCurrentTabIndex = function(tabindex)
+    CurrentSelect = tabindex;
+end
+
 function GetKeChengTitle()
     if (CurrentSelect == "quweibiancheng" or CurrentSelect == "kuailejianzao" or CurrentSelect == "jingcaidonghua") then
         return KeChengTasks[CurrentSelect][LessonIndex[CurrentSelect]].title or "";

@@ -259,7 +259,14 @@ function CloseWinterCampMainWindow()
 end
 
 function ShowWinterCampMainWindow(defaultTabIndex)
-    if (__winter_camp_ui__) then return end 
+    if (__winter_camp_ui__) then 
+        local G = __winter_camp_ui__:GetG();
+        if (defaultTabIndex and type(G.SelectCurrentTabIndex) == "function") then
+            G.SelectCurrentTabIndex(defaultTabIndex);
+        end
+        return ;
+    end 
+
     InitTasks();
     -- __winter_camp_ui__ = Page.ShowWinterCampPage({
     __winter_camp_ui__ = ShowWindow({
