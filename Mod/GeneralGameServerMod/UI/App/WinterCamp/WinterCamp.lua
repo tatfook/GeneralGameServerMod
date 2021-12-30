@@ -6,43 +6,43 @@ local __winter_camp__ = {};
 -- 垃圾分类任务配置
 local LaJiFenLeiMovieTasks = {
     -- targetPos 电影触发方块坐标   teleportPos 玩家传送方块坐标   moviePos 电影方块坐标 
-    {targetPos = {18182,12,19191}, teleportPos = {18180,12,19191}, moviePos = {18186,12,19191}, state = 0, text = "电影一", title = "厨余垃圾介绍"},
-    {targetPos = {18182,12,19179}, teleportPos = {18180,12,19179}, moviePos = {18186,12,19179}, state = 0, text = "电影二", title = "可回收物后续处理"},
-    {targetPos = {18182,12,19187}, teleportPos = {18180,12,19187}, moviePos = {18186,12,19187}, state = 0, text = "电影三", title = "可回收物介绍"},
-    {targetPos = {18182,12,19183}, teleportPos = {18180,12,19183}, moviePos = {18186,12,19183}, state = 0, text = "电影四", title = "厨余垃圾后续处理"},
-    {targetPos = {18182,12,19177}, teleportPos = {18180,12,19177}, moviePos = {18186,12,19177}, state = 0, text = "电影五", title = "有害垃圾后续处理"},
-    {targetPos = {18182,12,19189}, teleportPos = {18180,12,19189}, moviePos = {18186,12,19189}, state = 0, text = "电影六", title = "其他垃圾介绍"},
-    {targetPos = {18182,12,19181}, teleportPos = {18180,12,19181}, moviePos = {18186,12,19181}, state = 0, text = "电影七", title = "其他垃圾后续处理"},
-    {targetPos = {18182,12,19185}, teleportPos = {18180,12,19185}, moviePos = {18186,12,19185}, state = 0, text = "电影八", title = "有害垃圾介绍"},
+    {targetPos = {18139,12,18985}, teleportPos = {18141,12,18985}, moviePos = {18165,2,19164}, state = 0, text = "电影一", title = "厨余垃圾介绍"},
+    {targetPos = {18226,12,19010}, teleportPos = {18225,12,19009}, moviePos = {18165,2,19162}, state = 0, text = "电影二", title = "可回收物后续处理"},
+    {targetPos = {18213,12,19015}, teleportPos = {18211,12,19015}, moviePos = {18165,2,19160}, state = 0, text = "电影三", title = "可回收物介绍"},
+    {targetPos = {18075,12,18949}, teleportPos = {18073,12,18949}, moviePos = {18165,2,19158}, state = 0, text = "电影四", title = "厨余垃圾后续处理"},
+    {targetPos = {18245,12,18980}, teleportPos = {18243,12,18980}, moviePos = {18165,2,19156}, state = 0, text = "电影五", title = "有害垃圾后续处理"},
+    {targetPos = {18138,12,19021}, teleportPos = {18142,12,19021}, moviePos = {18165,2,19154}, state = 0, text = "电影六", title = "其他垃圾介绍"},
+    {targetPos = {18088,12,19037}, teleportPos = {18086,12,19037}, moviePos = {18165,2,19152}, state = 0, text = "电影七", title = "其他垃圾后续处理"},
+    {targetPos = {18213,12,18981}, teleportPos = {18211,12,18981}, moviePos = {18165,2,19150}, state = 0, text = "电影八", title = "有害垃圾介绍"},
 }
 
 -- 课程任务配置
 local KeChengTasks = {
     -- 趣味编程
     ["quweibiancheng"] = {
-        {teleportPos = {18182,12,19191}, state = 0, text = "第一课", title = "初级跑步训练", subtitle = "前进与说话"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第二课", title = "跨越障碍", subtitle = "位移"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第三课", title = "初级游泳训练", subtitle = "朝向旋转"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第四课", title = "游泳技巧训练", subtitle = "朝向改变"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第五课", title = "跑步跨栏", subtitle = "做出动作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第六课", title = "高级跑步入门", subtitle = "条件与触碰感知"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第七课", title = "跳远训练", subtitle = "条件与触碰感知"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第八课", title = "体育场馆寻路", subtitle = "高级条件"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第九课", title = "跑步绕圈", subtitle = "循环"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第十课", title = "越野跑步训练", subtitle = "循环与高级条件"},
+        {teleportPos = {18121,21,19427}, state = 0, text = "第一课", title = "初级跑步训练", subtitle = "前进与说话"},
+        {teleportPos = {18117,21,19427}, state = 0, text = "第二课", title = "跨越障碍", subtitle = "位移"},
+        {teleportPos = {18113,21,19427}, state = 0, text = "第三课", title = "初级游泳训练", subtitle = "朝向旋转"},
+        {teleportPos = {18109,21,19427}, state = 0, text = "第四课", title = "游泳技巧训练", subtitle = "朝向改变"},
+        {teleportPos = {18105,21,19427}, state = 0, text = "第五课", title = "跑步跨栏", subtitle = "做出动作"},
+        {teleportPos = {18101,21,19427}, state = 0, text = "第六课", title = "高级跑步入门", subtitle = "条件与触碰感知"},
+        {teleportPos = {18097,21,19427}, state = 0, text = "第七课", title = "跳远训练", subtitle = "条件与触碰感知"},
+        {teleportPos = {18093,21,19427}, state = 0, text = "第八课", title = "体育场馆寻路", subtitle = "高级条件"},
+        {teleportPos = {18089,21,19427}, state = 0, text = "第九课", title = "跑步绕圈", subtitle = "循环"},
+        {teleportPos = {18085,21,19427}, state = 0, text = "第十课", title = "越野跑步训练", subtitle = "循环与高级条件"},
     }, 
     -- 快乐建造
     ["kuailejianzao"] = {
-        {teleportPos = {18182,12,19191}, state = 0, text = "第一课", title = "建造前的准备", subtitle = "工具栏的相关知识"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第二课", title = "清除跑道杂物", subtitle = "删除方块操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第三课", title = "填补路面空缺", subtitle = "放置方块操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第四课", title = "修整跳远沙坑", subtitle = "吸取与替换方块操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第五课", title = "更新滑冰场", subtitle = "选中方块操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第六课", title = "移动和旋转跳台", subtitle = "移动和旋转操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第七课", title = "镜像马拉松赛场", subtitle = "镜像的使用方法"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第八课", title = "安装休息室灯光", subtitle = "特殊方块的使用"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第九课", title = "保存场馆设施", subtitle = "保存模板或模型的方法"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第十课", title = "创造地标建筑", subtitle = "常用建造指令的运用"},
+        {teleportPos = {18122,20,19356}, state = 0, text = "第一课", title = "建造前的准备", subtitle = "工具栏的相关知识"},
+        {teleportPos = {18117,20,19356}, state = 0, text = "第二课", title = "清除跑道杂物", subtitle = "删除方块操作"},
+        {teleportPos = {18113,20,19356}, state = 0, text = "第三课", title = "填补路面空缺", subtitle = "放置方块操作"},
+        {teleportPos = {18109,20,19356}, state = 0, text = "第四课", title = "修整跳远沙坑", subtitle = "吸取与替换方块操作"},
+        {teleportPos = {18105,20,19356}, state = 0, text = "第五课", title = "更新滑冰场", subtitle = "选中方块操作"},
+        {teleportPos = {18101,20,19356}, state = 0, text = "第六课", title = "移动和旋转跳台", subtitle = "移动和旋转操作"},
+        {teleportPos = {18097,20,19356}, state = 0, text = "第七课", title = "镜像马拉松赛场", subtitle = "镜像的使用方法"},
+        {teleportPos = {18093,20,19356}, state = 0, text = "第八课", title = "安装休息室灯光", subtitle = "特殊方块的使用"},
+        {teleportPos = {18089,20,19356}, state = 0, text = "第九课", title = "保存场馆设施", subtitle = "保存模板或模型的方法"},
+        {teleportPos = {18085,20,19356}, state = 0, text = "第十课", title = "创造地标建筑", subtitle = "常用建造指令的运用"},
     },
     -- 精彩动画
     ["jingcaidonghua"] = {
@@ -61,10 +61,10 @@ local KeChengTasks = {
 
 -- 体育竞赛
 local TiYuJingSaiTasks = {
-    {teleportPos = {18315,12,19142}, state = 0, text = "跨栏", description = "跨栏小游戏"},
-    {teleportPos = {18316,12,19314}, state = 0, text = "射箭", description = ""},
-    {teleportPos = {18182,12,19191}, state = 0, text = "卡牌", description = ""},
-    {teleportPos = {18182,12,19191}, state = 0, text = "木头人", description = ""},
+    {teleportPos = {18312,12,19115}, state = 0, text = "跨栏", description = "在撞上栏杆前，按顺序准确输入字母，即可完成跨栏"},
+    {teleportPos = {18310,12,19290}, state = 0, text = "射箭", description = "按下鼠标右键并拖动，瞄准箭靶后，松开右键发射弓箭"},
+    {teleportPos = {18343,12,18980}, state = 0, text = "卡牌", description = ""},
+    {teleportPos = {18383,12,19350}, state = 0, text = "木头人", description = ""},
 }
 
 -- 证书配置
