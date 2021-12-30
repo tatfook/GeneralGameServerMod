@@ -10,6 +10,7 @@ local Style = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Style.lua");
 ]]
 NPL.load("(gl)script/ide/System/Windows/mcml/css/StyleColor.lua");
 NPL.load("(gl)script/ide/System/Windows/mcml/LocalCache.lua");
+local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Files = commonlib.gettable("MyCompany.Aries.Game.Common.Files");
 local LocalCache = commonlib.gettable("System.Windows.mcml.LocalCache");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
@@ -327,23 +328,24 @@ function Style.GetNumberValue(value)
 end
 
 function  Style.FilterImage(filename)
-	if(filename:match("^@")) then
-		filename = string.sub(filename, 2);
-		local filename_, params = filename:match("^([^;#:]+)(.*)$");
-		if(filename_) then
-			local filepath = Files.GetFilePath(filename_);
-			if(filepath) then
-				 if(filepath~=filename_) then
-					filename = filepath..(params or "");
-				 end
-			else
-				-- file not exist, return nil
-				LOG.std(nil, "warn", "Style", "image file not exist %s", filename);
-				return;
-			end
-		end
-	end
-	return filename;
+	return CommonLib.GetFullPath(filename, {});
+	-- if(filename:match("^@")) then
+	-- 	filename = string.sub(filename, 2);
+	-- 	local filename_, params = filename:match("^([^;#:]+)(.*)$");
+	-- 	if(filename_) then
+	-- 		local filepath = Files.GetFilePath(filename_);
+	-- 		if(filepath) then
+	-- 			 if(filepath~=filename_) then
+	-- 				filename = filepath..(params or "");
+	-- 			 end
+	-- 		else
+	-- 			-- file not exist, return nil
+	-- 			LOG.std(nil, "warn", "Style", "image file not exist %s", filename);
+	-- 			return;
+	-- 		end
+	-- 	end
+	-- end
+	-- return filename;
 end
 
 function Style.GetTransformStyleValue(value)
