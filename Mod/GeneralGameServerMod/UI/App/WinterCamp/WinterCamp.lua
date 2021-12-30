@@ -63,8 +63,8 @@ local KeChengTasks = {
 local TiYuJingSaiTasks = {
     {teleportPos = {18312,12,19115}, state = 0, text = "跨栏", description = "在撞上栏杆前，按顺序准确输入字母，即可完成跨栏"},
     {teleportPos = {18310,12,19290}, state = 0, text = "射箭", description = "按下鼠标右键并拖动，瞄准箭靶后，松开右键发射弓箭"},
-    {teleportPos = {18343,12,18980}, state = 0, text = "卡牌", description = ""},
-    {teleportPos = {18383,12,19350}, state = 0, text = "木头人", description = ""},
+    {teleportPos = {18343,12,18980}, state = 0, text = "记忆比拼", description = ""},
+    {teleportPos = {18383,12,19350}, state = 0, text = "短道竞技", description = ""},
 }
 
 -- 证书配置
