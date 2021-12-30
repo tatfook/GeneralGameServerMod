@@ -16,10 +16,13 @@ function Movie:Init(bx, by, bz)
 end
 
 function Movie:Play(timeFrom, timeTo, bLoop)
+    if (self:IsPlaying()) then return end 
+
     self:SetPlaying(true);
     __PlayMovie__(self:GetChannelName(), timeFrom or 0, timeTo or -1, bLoop, __safe_callback__(function()
         self:Stop();
     end));
+    
     while (self:IsPlaying()) do sleep() end 
 end
 

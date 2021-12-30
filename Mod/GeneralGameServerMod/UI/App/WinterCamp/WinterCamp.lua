@@ -193,10 +193,12 @@ function InitTasks()
             local bx, by, bz = GetPlayer():GetBlockPos();
             for index, task in ipairs(LaJiFenLeiMovieTasks) do
                 local pos = task.targetPos;
-                if (bx >= pos[1] - 1 and bx <= pos[1] + 1 and bz >= pos[3] -1 and bz <= pos[3] + 1) then
+                if (not task.movie:IsPlaying() and bx >= pos[1] - 1 and bx <= pos[1] + 1 and bz >= pos[3] -1 and bz <= pos[3] + 1) then
                     -- print("===============FinishLaJiFenLeiMovieTask=============", index);
-                    _G.FinishLaJiFenLeiMovieTask(index);
                     task.movie:Play();
+                    local teleportPos = task.teleportPos;
+                    cmd(string.format("/goto %s %s %s", teleportPos[1], teleportPos[2], teleportPos[3]));
+                    _G.FinishLaJiFenLeiMovieTask(index);
                 end
             end
             sleep(100);
