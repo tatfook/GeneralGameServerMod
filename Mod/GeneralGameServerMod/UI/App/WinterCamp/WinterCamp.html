@@ -221,13 +221,15 @@ end
 
 function TiYuJinDuItemStyle(item, index)
     local bgname = "";
-    index = (index or item.index) % 2;
-    if (item.state == 0 and index == 1) then bgname = "huishang_45x40_32bits" end 
-    if (item.state == 0 and index == 0) then bgname = "huixia_45x40_32bits" end 
-    if (item.state == 2 and index == 1) then bgname = "lanshang_45x40_32bits" end 
-    if (item.state == 2 and index == 0) then bgname = "lanxia_45x40_32bits" end 
-    if (item.state == 1 and index == 1) then bgname = "lvshang_45x40_32bits" end 
-    if (item.state == 1 and index == 0) then bgname = "lvxia_45x40_32bits" end 
+    local Index = {quweibiancheng = LessonIndex.quweibiancheng, kuailejianzao = LessonIndex.kuailejianzao, jingcaidonghua = LessonIndex.jingcaidonghua, lajifenlei = MovieIndex, tiyujinsai = GameIndex};
+    local state = Index[CurrentSelect] == index and 2 or item.state;
+    index = index % 2;
+    if (state == 0 and index == 1) then bgname = "huishang_45x40_32bits" end 
+    if (state == 0 and index == 0) then bgname = "huixia_45x40_32bits" end 
+    if (state == 2 and index == 1) then bgname = "lanshang_45x40_32bits" end 
+    if (state == 2 and index == 0) then bgname = "lanxia_45x40_32bits" end 
+    if (state == 1 and index == 1) then bgname = "lvshang_45x40_32bits" end 
+    if (state == 1 and index == 0) then bgname = "lvxia_45x40_32bits" end 
     return string.format("display: inline-block; width: 45px; height: 40px; background: url(@/wintercamp/%s.png#0 0 45 40);", bgname);
 end
 

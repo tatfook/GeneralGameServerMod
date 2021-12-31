@@ -1,25 +1,32 @@
 
 local Movie = inherit(ToolBase, module("Movie"));
 
-Movie:Property("ChannelName");
 Movie:Property("Playing", false, "IsPlaying");
 
+function Movie:ctor()
+    self.__bx__, self.__by__, self.__bz__ = 0, 0, 0;
+    self.__play_count__ = 0;
+end
+
 function Movie:Init(bx, by, bz)
-    local channelName = string.format("movie_%s_%s_%s", bx, by, bz);
-
-    self:SetChannelName(channelName);
+    self.__bx__, self.__by__, self.__bz__ = bx, by, bz;
     self:SetPlaying(false);
-
-    local channel = __SetMovie__(channelName, bx, by, bz);
-
     return self;
+end
+
+function Movie:GetChannelName()
+    return string.format("movie_%s_%s_%s_%s", self.__bx__, self.__by__, self.__bz__, self.__play_count__);
 end
 
 function Movie:Play(timeFrom, timeTo, bLoop)
     if (self:IsPlaying()) then return end 
 
     self:SetPlaying(true);
-    __PlayMovie__(self:GetChannelName(), timeFrom or 0, timeTo or -1, bLoop, __safe_callback__(function()
+    self.__play_count__ = self.__play_count__ + 1;
+    
+    local channelName = self:GetChannelName();
+    __SetMovie__(channelName, self.__bx__, self.__by__, self.__bz__);
+    __PlayMovie__(channelName, timeFrom or 0, timeTo or -1, bLoop, __safe_callback__(function()
         self:Stop();
     end));
     
