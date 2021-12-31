@@ -209,9 +209,8 @@ end
 local owned = KeepWorkItemManager.HasGSItem(40008);
 if (not owned) then Tip("未登录") end
 
-local function PushClientData(success, fail)
-    local __ClientData__ = KeepWorkItemManager.GetClientData(40008) or {};
-    KeepWorkItemManager.SetClientData(40008, __ClientData__, __safe_callback__(function()
+local function PushClientData(data, success, fail)
+    KeepWorkItemManager.SetClientData(40008, data, __safe_callback__(function()
         if (type(success) == "function") then success() end 
     end), __safe_callback__(function()
         if (type(fail) == "function") then fail() end 
@@ -219,11 +218,10 @@ local function PushClientData(success, fail)
 end
 
 local function FinishLaJiFenLeiMovieTask(index)
-    local __ClientData__ = KeepWorkItemManager.GetClientData(40008) or {};
-    local refuseClassificationData = __ClientData__.refuseClassificationData or {};
-    __ClientData__.refuseClassificationData = refuseClassificationData;
-    refuseClassificationData[index] = 1;
-    PushClientData(function()
+    local data = KeepWorkItemManager.GetClientData(40008) or {};
+    data.refuseClassificationData = data.refuseClassificationData or {};
+    data.refuseClassificationData[index] = 1;
+    PushClientData(data, function()
         Tip(string.format("%s 任务完成", LaJiFenLeiMovieTasks[index].title));
     end)
 end
