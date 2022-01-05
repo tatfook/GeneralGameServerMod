@@ -180,13 +180,13 @@
 </template>
 
 <script type="text/lua">
-CurrentSelect= DefaultTabIndex or "quweibiancheng";
-MovieIndex=1;
-GameIndex=1;
+CurrentSelect = DefaultTabIndex or "quweibiancheng";
+MovieIndex = Index.lajifenlei;
+GameIndex = Index.tiyujinsai;
 LessonIndex = {
-    quweibiancheng = 1,
-    kuailejianzao = 1,
-    jingcaidonghua = 1,
+    quweibiancheng = Index.quweibiancheng,
+    kuailejianzao = Index.kuailejianzao,
+    jingcaidonghua = Index.jingcaidonghua,
 }
 
 _G.SelectCurrentTabIndex = function(tabindex)

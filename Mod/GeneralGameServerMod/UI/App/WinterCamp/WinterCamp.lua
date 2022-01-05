@@ -111,6 +111,8 @@ local CertConfig = {
     },
 }
 
+local Index = { quweibiancheng = 1, kuailejianzao = 1, jingcaidonghua = 1, lajifenlei = 1, tiyujinsai = 1};
+
 local function GetCert(index)
     local cfg = CertConfig[index];
     if (not cfg) then return end 
@@ -123,19 +125,23 @@ local function GetCert(index)
 end
 
 local function CheckAndGetCert()
+    Index = { quweibiancheng = 1, kuailejianzao = 1, jingcaidonghua = 1, lajifenlei = 1, tiyujinsai = 1};
+
     local isAllFinish = true;
     for index, task in ipairs(LaJiFenLeiMovieTasks) do
         if (task.state == 0) then 
             isAllFinish = false;
+            Index.lajifenlei = index;
             break;
         end 
     end
     if (isAllFinish) then GetCert("lajifenlei") end
     
     isAllFinish = true;
-    for _, task in ipairs(TiYuJingSaiTasks) do
+    for index, task in ipairs(TiYuJingSaiTasks) do
         if (task.state == 0) then 
             isAllFinish = false;
+            Index.tiyujinsai = index;
             break;
         end
     end
@@ -144,9 +150,10 @@ local function CheckAndGetCert()
     for _, index in ipairs({"quweibiancheng", "kuailejianzao", "jingcaidonghua"}) do
         isAllFinish = true;
         local tasks = KeChengTasks[index];
-        for _, task in ipairs(tasks) do
+        for i, task in ipairs(tasks) do
             if (task.state == 0) then 
                 isAllFinish = false;
+                Index[index] = i;
                 break;
             end
         end
@@ -271,6 +278,7 @@ function ShowWinterCampMainWindow(defaultTabIndex)
     -- __winter_camp_ui__ = Page.ShowWinterCampPage({
     __winter_camp_ui__ = ShowWindow({
         DefaultTabIndex = defaultTabIndex,
+        Index = Index,
         CertConfig = CertConfig,
         LaJiFenLeiMovieTasks = LaJiFenLeiMovieTasks, 
         KeChengTasks = KeChengTasks,
