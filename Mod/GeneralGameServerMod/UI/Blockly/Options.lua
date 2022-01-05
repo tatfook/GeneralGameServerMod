@@ -153,7 +153,8 @@ Options.actorProperties = function()
         { L"摩擦系数", "surfaceDecay" },
         { L"空气阻力", "airDecay" },
         { L"相对位置播放", "isRelativePlay" },
-        
+        { L"播放时忽略皮肤", "isIgnoreSkinAnim"},
+         
         { L"父角色", "parent" },
         { L"父角色位移", "parentOffset" },
         { L"父角色旋转", "parentRot" },

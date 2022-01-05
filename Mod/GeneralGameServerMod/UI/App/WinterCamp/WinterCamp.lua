@@ -229,7 +229,7 @@ local function FinishLaJiFenLeiMovieTask(index)
     data.refuseClassificationData = data.refuseClassificationData or {};
     data.refuseClassificationData[index] = 1;
     PushClientData(data, function()
-        Tip(string.format("%s 任务完成", LaJiFenLeiMovieTasks[index].title));
+        -- Tip(string.format("%s 任务完成", LaJiFenLeiMovieTasks[index].title));
     end)
 end
 _G.FinishLaJiFenLeiMovieTask = FinishLaJiFenLeiMovieTask;
