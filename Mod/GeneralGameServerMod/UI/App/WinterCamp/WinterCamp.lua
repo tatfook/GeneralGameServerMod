@@ -296,6 +296,9 @@ function ShowWinterCampMainWindow(defaultTabIndex)
         width = 1024, 
         height = 600, 
         url = "Mod/GeneralGameServerMod/UI/App/WinterCamp/WinterCamp.html",
+        zorder = 100,
+        isTopLevel = true,
+        parent = GetRootUIObject(),
     });
 end
 
