@@ -63,8 +63,8 @@ local KeChengTasks = {
 local TiYuJingSaiTasks = {
     {teleportPos = {18312,12,19115}, state = 0, text = "跨栏", description = "在撞上栏杆前，按顺序准确输入字母，即可完成跨栏"},
     {teleportPos = {18310,12,19290}, state = 0, text = "射箭", description = "按下鼠标右键并拖动，瞄准箭靶后，松开右键发射弓箭"},
-    {teleportPos = {18343,12,18980}, state = 0, text = "记忆比拼", description = ""},
-    {teleportPos = {18383,12,19350}, state = 0, text = "短道竞技", description = ""},
+    {teleportPos = {18343,12,18980}, state = 0, text = "记忆比拼", description = "记住每局的卡牌信息，相同卡牌组合即可抵消，快去展示最强记忆吧！"},
+    {teleportPos = {18383,12,19350}, state = 0, text = "短道竞技", description = "绕开教练员的注视，通过按键快速移动抵达终点即可获胜哟！"},
 }
 
 -- 证书配置
@@ -183,6 +183,8 @@ function InitTasks()
     if (GameData) then
         TiYuJingSaiTasks[1].state = GameData.RunData and GameData.RunData.state or 0;
         TiYuJingSaiTasks[2].state = GameData.ShootData and GameData.ShootData.state or 0;
+        TiYuJingSaiTasks[3].state = GameData.BrainData and GameData.BrainData.state or 0;
+        TiYuJingSaiTasks[4].state = GameData.ShortRacesData and GameData.ShortRacesData.state or 0;
     end
 
     -- 课程
