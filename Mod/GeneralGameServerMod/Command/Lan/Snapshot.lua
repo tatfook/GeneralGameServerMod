@@ -48,7 +48,7 @@ function Snapshot:Take()
         return ;
     end
     -- print("generat snapshot:", filepath);
-    Net:Call("Snapshot_Data", CommonLib.GetFileText(filepath));
+    Net:ClientCall("Snapshot_Data", CommonLib.GetFileText(filepath));
 	-- ParaAsset.LoadTexture("", filepath,1):UnloadAsset();
 end
 

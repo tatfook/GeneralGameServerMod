@@ -368,7 +368,7 @@ function CommonLib.GetServerIpAndPort()
     return CommonLib.GetServerIp(), CommonLib.GetServerPort(); 
 end
 
-function CommonLib:StartNetServer(ip, port)
+function CommonLib.StartNetServer(ip, port)
     if (CommonLib.IsServerStarted()) then return end
     
     local att = NPL.GetAttributeObject();

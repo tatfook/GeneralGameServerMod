@@ -64,9 +64,11 @@ end
 
 function Net:Login(data, calback)
     -- print("============================user:login===============================");
+    self:SetConnected(false);
     __rpc__:Call("Login", self:GetClientUserInfo(), function(key)
         self:SetServerKey(key);
         self:SetConnected(true);
+        if (type(callback) == "function") then calback() end 
         print("====================login success=======================", key);
     end);
 end
@@ -77,7 +79,7 @@ end
 
 function Net:ServerTick()
     local cur_timestamp = CommonLib.GetTimeStamp();
-    local offline_timestamp = cur_timestamp - 1000 * 60 * 3;
+    local offline_timestamp = cur_timestamp - 1000 * 60 * 2;
     local offline_list = {};
     local all_connections = self:GetAllConnection();
     local connection_count = 0;
@@ -94,6 +96,7 @@ function Net:ServerTick()
     end
 
     self:SetConnectionCount(connection_count);
+    -- print('---------------------------', connection_count);
 end
 
 function Net:GetClientUserInfo()
@@ -101,7 +104,7 @@ function Net:GetClientUserInfo()
 end
 
 function Net:ClientTick()
-    __rpc__:Call("Tick", {
+    self:ClientCall("Tick", {
         userinfo = self:GetClientUserInfo(),
         appHasFocus = ParaEngine.GetAttributeObject():GetField("AppHasFocus", true),
     });    
@@ -170,6 +173,15 @@ function Net:Call(...)
     return self:GetRPC():Call(...);
 end
 
+function Net:ClientCall(...)
+    if (not self:IsConnected()) then return end 
+    local __rpc_ = self:GetRPC();
+    local old_nid = __rpc__:GetNid();
+    __rpc__:SetNid(self:GetClientNid());
+    __rpc_:Call(...);
+    __rpc__:SetNid(old_nid);
+end
+
 function Net:ctor()
 end
 
@@ -177,11 +189,11 @@ function Net:Init()
 end
 
 function Net:StartServer()
-    -- if (not self.__server_tick_timer__) then
-    --     self.__server_tick_timer__ = CommonLib.SetInterval(1000 * 60, function()
-    --         self:ServerTick();
-    --     end);
-    -- end
+    if (not self.__server_tick_timer__) then
+        self.__server_tick_timer__ = CommonLib.SetInterval(1000 * 60, function()
+            self:ServerTick();
+        end);
+    end
 end
 
 function Net:StopServer()
@@ -189,6 +201,8 @@ function Net:StopServer()
 end
 
 function Net:StartClient(ip, port)
+    if (not ip) then return self:SetConnected(false) end 
+
     self:SetClientNid(CommonLib.AddNPLRuntimeAddress(ip, port));
     __rpc__:SetNid(self:GetClientNid());
 
@@ -206,7 +220,7 @@ end
 
 RPC.RegisterDisconnectedCallBack(function(msg)
     local __nid__ = msg.__nid__;
-    print("==========================RegisterDisconnectedCallBack==============================", Net:IsServer())
+    -- print("==========================RegisterDisconnectedCallBack==============================", Net:IsServer(), Net)
     if (Net:IsServer()) then
         local list = {};
         for key, connection in pairs(__all_connections__) do
@@ -220,7 +234,7 @@ RPC.RegisterDisconnectedCallBack(function(msg)
     else 
         if (__nid__ == Net:GetClientNid()) then
             -- client offline
-            print("============================client offline===========================");
+            -- print("============================client offline===========================", Net, __nid__);
             Net:SetEnableClient(false);
             Net:SetConnected(false);
         end

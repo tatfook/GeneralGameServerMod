@@ -19,12 +19,11 @@ local Net = NPL.load("./Net.lua", IsDevEnv);
 local Snapshot = NPL.load("./Snapshot.lua", IsDevEnv);
 
 local Lan =  commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
-local DefaultPort = IsDevEnv and 9000 or 8099;
 
 Lan:Property("Server", false, "IsServer");
 Lan:Property("Client", false, "IsClient");
 Lan:Property("ServerIp");
-Lan:Property("ServerPort", DefaultPort);
+Lan:Property("ServerPort", 8099);
 Lan:Property("EnableSnapshot", false, "IsEnableSnapshot");
 Lan:Property("EnableAutoUpdater", false, "IsEnableAutoUpdater");
 Lan:Property("Net");
@@ -134,7 +133,6 @@ Commands["lan"] = {
 
         if (opts.serverIp ~= nil) then 
             Lan:SetServerIp(opts.serverIp);
-            Lan:SetServerPort(opts.serverPort or DefaultPort);
         end
         
         if (opts.server_setting) then Lan:GetServerSetting():ShowUI() end 
@@ -170,7 +168,7 @@ Commands["lan"] = {
 
 --[[
 TEST 测试方法:
-
+/lan -serverIp=192.168.249.2 -client=true -snapshot=true
 服务端
 1. 执行命令 /lan -server_setting=true  打开服务器IP设定界面, 启用本地服务器
 2. 执行命令 /lan -snapshot=true 启用监控服务并打开监控UI 
@@ -186,7 +184,7 @@ TEST 测试方法:
 local Lan = NPL.load("Mod/GeneralGameServerMod/Command/Lan/Lan.lua");
 -- 开启快照功能
 Lan:SetEnableSnapshot(true);
--- 启动server,   会自动打开监控UI  Lan:GetSnapshow():ShowUI();
+-- 启动server,   会自动打开监控UI  Lan:GetSnapshot():ShowUI();
 Lan:StartServer();
 -- 打开UI
 Lan:GetSnapshot():ShowUI();
