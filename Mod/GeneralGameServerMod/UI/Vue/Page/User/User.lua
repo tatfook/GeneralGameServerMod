@@ -88,6 +88,7 @@ local function GetProjectListPageFunc()
                 project.isFavorite = false;
                 project.selected = false;
                 project.user = GlobalScope:Get("UserDetail");
+                echo(project);
             end
             if (AuthUserId and AuthUserId > 0) then
                 keepwork.project.favorite_search({

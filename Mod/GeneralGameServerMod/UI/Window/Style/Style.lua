@@ -328,6 +328,7 @@ function Style.GetNumberValue(value)
 end
 
 function  Style.FilterImage(filename)
+	if (filename:match("^http[s]:")) then return filename end 
 	return CommonLib.GetFullPath(filename, {});
 	-- if(filename:match("^@")) then
 	-- 	filename = string.sub(filename, 2);
