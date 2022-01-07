@@ -26,8 +26,9 @@
                         <div style="margin-top: 2px; width: 45px; text-align: center;">{{item.text}}</div>
                     </div>
                 </div>
-                <div style="margin-left: 30px; margin-top: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
-                <div style="margin-top: 13px; width: 100%; height: 230px;">
+                <div v-if="not CertConfig[CurrentSelect].is_finish"  style="margin-left: 30px; margin-top: 13px; margin-bottom: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
+                <div v-if="CertConfig[CurrentSelect].is_finish" style="margin-left: 24px; margin-top: 8px; margin-bottom: 8px; width: 324px; height: 48px; background: url(@/wintercamp/jianglitishi_324x48_32bits.png#0 0 324 48);"></div>
+                <div style="width: 100%; height: 230px;">
                     <div style="position: absolute; left: 0px; top: 0px; width: 187px; height: 223px; padding: 4px 8px 8px 4px; background: url(@/wintercamp/jiangli_187x223_32bits.png#0 0 187 223);">
                         <image v-bind:src="CertConfig[CurrentSelect].suit_img" style="width: 100%; height: 100%"></image>
                     </div>
@@ -93,8 +94,9 @@
                         </div>
                     </div>
                 </div>
-                <div style="margin-left: 30px; margin-top: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
-                <div style="margin-top: 13px; width: 100%; height: 230px;">
+                <div v-if="not CertConfig[CurrentSelect].is_finish"  style="margin-left: 30px; margin-top: 13px; margin-bottom: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
+                <div v-if="CertConfig[CurrentSelect].is_finish" style="margin-left: 24px; margin-top: 8px; margin-bottom: 8px; width: 324px; height: 48px; background: url(@/wintercamp/jianglitishi_324x48_32bits.png#0 0 324 48);"></div>
+                <div style="width: 100%; height: 230px;">
                     <div style="position: absolute; left: 0px; top: 0px; width: 187px; height: 223px; padding: 4px 8px 8px 4px; background: url(@/wintercamp/jiangli_187x223_32bits.png#0 0 187 223);">
                         <image v-bind:src="CertConfig[CurrentSelect].suit_img" style="width: 100%; height: 100%"></image>
                     </div>
@@ -149,8 +151,9 @@
                         <div style="margin-top: 12px;">{{item.text}}</div>
                     </div>
                 </div>
-                <div style="margin-left: 30px; margin-top: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
-                <div style="margin-top: 13px; width: 100%; height: 230px;">
+                <div v-if="not CertConfig[CurrentSelect].is_finish"  style="margin-left: 30px; margin-top: 13px; margin-bottom: 13px; width: 319px; height: 33px; background: url(@/wintercamp/biaoyu_319x33_32bits.png#0 0 319 33);"></div>
+                <div v-if="CertConfig[CurrentSelect].is_finish" style="margin-left: 24px; margin-top: 8px; margin-bottom: 8px; width: 324px; height: 48px; background: url(@/wintercamp/jianglitishi_324x48_32bits.png#0 0 324 48);"></div>
+                <div style="width: 100%; height: 230px;">
                     <div style="position: absolute; left: 0px; top: 0px; width: 187px; height: 223px; padding: 4px 8px 8px 4px; background: url(@/wintercamp/jiangli_187x223_32bits.png#0 0 187 223);">
                         <image v-bind:src="CertConfig[CurrentSelect].suit_img" style="width: 100%; height: 100%"></image>
                     </div>

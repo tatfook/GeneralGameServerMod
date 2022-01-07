@@ -76,6 +76,7 @@ local CertConfig = {
         cert_gsid = "70021",                                                              -- 证书物品ID
         cert_exid = "30062",                                                              -- 兑换物品ID
         cert_name = "冬令营-编程小达人证书",
+        is_finish = false,                                                                -- 是否完成
     },
     ["kuailejianzao"] = {
         cert_img = "@/wintercamp/certs/jianzao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
@@ -84,6 +85,7 @@ local CertConfig = {
         cert_gsid = "70018",                                                              -- 证书物品ID
         cert_exid = "30059",                                                              -- 兑换物品ID
         cert_name = "冬令营-优秀建造师证书",
+        is_finish = false,                                                                -- 是否完成
     },
     ["jingcaidonghua"] = {
         cert_img = "@/wintercamp/certs/donghua_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
@@ -92,6 +94,7 @@ local CertConfig = {
         cert_gsid = "70020",                                                              -- 证书物品ID
         cert_exid = "30061",                                                              -- 兑换物品ID
         cert_name = "冬令营-动画小导演证书",
+        is_finish = false,                                                                -- 是否完成
     }, 
     ["lajifenlei"] = {
         cert_img = "@/wintercamp/certs/huanbao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
@@ -100,6 +103,7 @@ local CertConfig = {
         cert_gsid = "70017",                                                              -- 证书物品ID
         cert_exid = "30058",                                                              -- 兑换物品ID
         cert_name = "冬令营-环保卫士证书",
+        is_finish = false,                                                                -- 是否完成
     },
     ["tiyujinsai"] = {
         cert_img = "@/wintercamp/certs/tiyu_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
@@ -108,6 +112,7 @@ local CertConfig = {
         cert_gsid = "70019",                                                              -- 证书物品ID
         cert_exid = "30060",                                                              -- 证书兑换ID
         cert_name = "冬令营-体育健将证书",
+        is_finish = false,                                                                -- 是否完成
     },
 }
 
@@ -116,6 +121,7 @@ local Index = { quweibiancheng = 1, kuailejianzao = 1, jingcaidonghua = 1, lajif
 local function GetCert(index)
     local cfg = CertConfig[index];
     if (not cfg) then return end 
+    cfg.is_finish = true;
     print(string.format("恭喜获得%s证书", cfg.cert_name));
     local owned = KeepWorkItemManager.HasGSItem(cfg.cert_gsid);
     if (owned) then return end 
