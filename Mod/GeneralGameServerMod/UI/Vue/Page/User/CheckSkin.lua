@@ -113,17 +113,19 @@ function CheckSkin.InitData(skin)
 		local items = {};
 		for _, id in ipairs(itemIds) do
 			local data = CustomCharItems:GetItemById(id);
-			local val = {
-				id = id,
-				icon = data.icon,
-				type = data.type,
-				price = data.price or "0",
-				name = data.name,
-				category = data.category,
-			}
-
-			if(id ~= DEFAULT_HEAD_SKIN) then
-				table.insert( items, val )
+			if (data) then
+				local val = {
+					id = id,
+					icon = data.icon,
+					type = data.type,
+					price = data.price or "0",
+					name = data.name,
+					category = data.category,
+				}
+	
+				if(id ~= DEFAULT_HEAD_SKIN) then
+					table.insert( items, val )
+				end
 			end
 		end
 
