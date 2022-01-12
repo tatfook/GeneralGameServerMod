@@ -276,8 +276,8 @@ local all_block_list = {
 
     {
         type = "cylinder", 
-        message0 = L"%1 柱体 半径 %2 高 %3 %4",
-        arg0 = {
+        message = L"%1 柱体 半径 %2 高 %3 %4",
+        arg = {
             {
                 name = "op",
                 type = "field_dropdown",
@@ -306,7 +306,7 @@ local all_block_list = {
         previousStatement = true,
         nextStatement = true,
         category = "Shapes", 
-        code_description = 'sphere("${op}", ${radius}, ${height}, "${color}")',
+        code_description = 'cylinder("${op}", ${radius}, ${height}, "${color}")',
     },
 
     {
@@ -491,7 +491,7 @@ local all_block_list = {
                 text = 1, 
             },
             {
-                name = "h",
+                name = "y",
                 type = "input_value",
                 shadowType = "math_number",
                 text = 1, 
@@ -1138,7 +1138,7 @@ local all_block_list = {
         category = "ShapeOperators", 
         previousStatement = true,
         nextStatement = true,
-        code_description = 'cloneNode("${op}", "${name}", "${color}")',
+        code_description = 'cloneNode("${op}", "${color}")',
     },
  
     {
@@ -1161,7 +1161,7 @@ local all_block_list = {
     {
         type = "fillet", 
         message0 = L"圆角 %1 半径 %2",
-        arg0 = {
+        arg = {
             {
                 name = "axis_axis_plane",
                 type = "input_value",
@@ -1676,7 +1676,7 @@ local all_block_list = {
     			text = "变量名",
     		},
             {
-                name = "right",
+                name = "value",
                 type = "input_value",
                 text = "1",
             },
