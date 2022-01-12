@@ -1264,8 +1264,8 @@ local all_block_list = {
     
     {
         type = "revolve", 
-        message0 = L"旋转拉伸 %1 角度 %2",
-        arg0 = {
+        message = L"旋转拉伸 %1 角度 %2",
+        arg = {
             {
                 name = "axis",
                 type = "input_value",
