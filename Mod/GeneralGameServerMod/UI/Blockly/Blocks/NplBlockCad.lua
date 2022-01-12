@@ -1291,7 +1291,7 @@ local all_block_list = {
         message = L"镜像 %1 中心点 %2 %3 %4",
         arg = {
             {
-                name = "axis_axis_plane",
+                name = "axis_plane",
                 type = "input_value",
                 shadowType = "field_dropdown",
                 options = axis_axis_plane_options,
@@ -1333,7 +1333,7 @@ local all_block_list = {
                 text = "object",
             },
             {
-                name = "axis_axis_plane",
+                name = "axis_plane",
                 type = "input_value",
                 shadowType = "field_dropdown",
                 options = axis_axis_plane_options,
