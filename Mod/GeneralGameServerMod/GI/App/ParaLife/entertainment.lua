@@ -61,24 +61,24 @@ function delivery_tuopan()
             if (not entertainment.delivery_stop) then
                 local size = #tuopan_list;
                 local count = math.floor(__BlockSize__ / entertainment.delivery_step);
-
+                local direction = entertainment.delivery_direction;
+                local step = entertainment.delivery_step;
+                local speed = entertainment.delivery_speed;
                 while (count > 0) do
                     for i = 1, size do
-                        local direction = entertainment.delivery_direction;
-                        local step = entertainment.delivery_step;
                         local tuopan = tuopan_list[i];
                         local dx, dy, dz = tuopan.dx * direction * step, tuopan.dy * direction * step, tuopan.dz * direction * step;
                         local x, y, z = tuopan.entity:GetPosition();
                         tuopan.entity:SetPosition(x + dx, y + dy, z + dz);
                     end
                     count = count - 1;
-                    sleep(math.floor(20 / entertainment.delivery_speed));
+                    sleep(math.floor(20 / speed));
                 end
 
                 local index = 1;
                 local first_entity = tuopan_list[index].entity;
                 for i = 1, size do
-                    local next_index = index - entertainment.delivery_direction;
+                    local next_index = index - direction;
                     next_index = next_index > size and 1 or (next_index < 1 and size or next_index);
                     local tuopan = tuopan_list[index];
                     local next_tuopan = tuopan_list[next_index];

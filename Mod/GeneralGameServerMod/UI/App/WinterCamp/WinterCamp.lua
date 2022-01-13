@@ -70,45 +70,45 @@ local TiYuJingSaiTasks = {
 -- 证书配置
 local CertConfig = {
     ["quweibiancheng"] = {
-        cert_img = "@/wintercamp/certs/biancheng_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
-        reward_img = "@/wintercamp/certs/biancheng_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "@/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
+        cert_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/biancheng_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/biancheng_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
         cert_gsid = "70021",                                                              -- 证书物品ID
         cert_exid = "30062",                                                              -- 兑换物品ID
         cert_name = "冬令营-编程小达人证书",
         is_finish = false,                                                                -- 是否完成
     },
     ["kuailejianzao"] = {
-        cert_img = "@/wintercamp/certs/jianzao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
-        reward_img = "@/wintercamp/certs/jianzao_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "@/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
+        cert_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/jianzao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/jianzao_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
         cert_gsid = "70018",                                                              -- 证书物品ID
         cert_exid = "30059",                                                              -- 兑换物品ID
         cert_name = "冬令营-优秀建造师证书",
         is_finish = false,                                                                -- 是否完成
     },
     ["jingcaidonghua"] = {
-        cert_img = "@/wintercamp/certs/donghua_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
-        reward_img = "@/wintercamp/certs/donghua_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "@/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
+        cert_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/donghua_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/donghua_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
         cert_gsid = "70020",                                                              -- 证书物品ID
         cert_exid = "30061",                                                              -- 兑换物品ID
         cert_name = "冬令营-动画小导演证书",
         is_finish = false,                                                                -- 是否完成
     }, 
     ["lajifenlei"] = {
-        cert_img = "@/wintercamp/certs/huanbao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
-        reward_img = "@/wintercamp/certs/huanbao_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "@/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
+        cert_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/huanbao_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/huanbao_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
         cert_gsid = "70017",                                                              -- 证书物品ID
         cert_exid = "30058",                                                              -- 兑换物品ID
         cert_name = "冬令营-环保卫士证书",
         is_finish = false,                                                                -- 是否完成
     },
     ["tiyujinsai"] = {
-        cert_img = "@/wintercamp/certs/tiyu_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
-        reward_img = "@/wintercamp/certs/tiyu_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
-        suit_img = "@/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
+        cert_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/tiyu_512x368_32bits.png#0 0 512 368",         -- 证书图片路径
+        reward_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/tiyu_230x128_32bits.png#0 0 230 128",       -- 奖励图片路径
+        suit_img = "Texture/Aries/Creator/keepwork/Activity/wintercamp/certs/suit_175x215_32bits.png#0 0 175 215",              -- 套装图片路径
         cert_gsid = "70019",                                                              -- 证书物品ID
         cert_exid = "30060",                                                              -- 证书兑换ID
         cert_name = "冬令营-体育健将证书",
@@ -334,3 +334,5 @@ ShowWinterCampMainWindow();
 --     },
 --     -- 课程数据
 -- }
+
+-- Texture/Aries/Creator/keepwork/Activity/wintercamp
