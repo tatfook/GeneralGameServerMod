@@ -57,6 +57,16 @@ function Independent:Init()
 	return self;
 end
 
+-- 获取单例
+function Independent:GetSingletonInstance()
+	local __SingletonInstance__ = rawget(self, "__SingletonInstance__");
+	if (not __SingletonInstance__) then 
+		__SingletonInstance__ = self:new():Init();
+		rawset(self, "__SingletonInstance__", __SingletonInstance__);
+	end
+	return __SingletonInstance__; 
+end
+
 -- 重置环境
 function Independent:Reset()
 	self:Stop();
@@ -267,6 +277,7 @@ function Independent:Restart()
 end
 
 function Independent:Start(filename)
+	-- _G.DebugStack();
 	if (self:IsRunning()) then return end
 	print("====================Independent:Start=====================");
 	-- 确保已初始化
@@ -366,4 +377,4 @@ function Independent:OnWorldUnloaded()
     self:Stop();
 end
 
-Independent:InitSingleton();
+-- Independent:InitSingleton();
