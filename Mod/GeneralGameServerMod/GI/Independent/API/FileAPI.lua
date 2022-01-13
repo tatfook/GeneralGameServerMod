@@ -23,6 +23,7 @@ setmetatable(FileAPI, {__call = function(_, CodeEnv)
     CodeEnv.ToCanonicalFilePath = CommonLib.ToCanonicalFilePath;
     CodeEnv.GetTempDirectory = CommonLib.GetTempDirectory;
     CodeEnv.GetWorldDirectory = CommonLib.GetWorldDirectory;
+    CodeEnv.GetFileName = CommonLib.GetFileName;
     CodeEnv.GetFileText = CommonLib.GetFileText;
     CodeEnv.GetFileMD5 = CommonLib.GetFileMD5;
 end});

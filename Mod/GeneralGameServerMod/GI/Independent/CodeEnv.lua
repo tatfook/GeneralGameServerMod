@@ -28,6 +28,7 @@ local MovieAPI = NPL.load("./API/MovieAPI.lua", IsDevEnv);
 local NetAPI = NPL.load("./API/NetAPI.lua", IsDevEnv);
 local RPCAPI = NPL.load("./API/RPCAPI.lua", IsDevEnv);
 local FileAPI = NPL.load("./API/FileAPI.lua", IsDevEnv);
+local CodeBlockAPI = NPL.load("./API/CodeBlockAPI.lua", IsDevEnv);
 
 local CodeEnv = commonlib.inherit(nil, NPL.export());
 
@@ -256,6 +257,7 @@ function CodeEnv:Init(Independent)
 	NetAPI(self);
 	RPCAPI(self);
 	FileAPI(self);
+	CodeBlockAPI(self);
 	
     return self;
 end
