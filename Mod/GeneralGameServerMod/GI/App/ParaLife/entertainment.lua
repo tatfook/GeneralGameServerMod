@@ -10,7 +10,7 @@ entertainment.delivery_stop = false;
 
 function delivery_tuopan()
     local tuopan_list = {};
-    local function add_tuopan_entity(bx, by, bz, dx, dy, dz)
+    local function add_tuopan_entity(bx, by, bz)
         local entities = GetEntitiesInBlock(bx, by, bz);
         if (not entities) then return end 
         for entity in pairs(entities) do
@@ -23,7 +23,6 @@ function delivery_tuopan()
                 local facing = entity:GetFacing();
                 table.insert(tuopan_list, {
                     entity = entity,
-                    dx = dx, dy = dy, dz = dz,
                     bx = bx, by = by, bz = bz,
                     x = x, y = y, z = z,
                     facing = facing,
@@ -50,49 +49,76 @@ function delivery_tuopan()
         local max_dist = math.max(math.abs(dx), math.max(dz));
         dx, dy, dz = dx > 0 and 1 or (dx < 0 and -1 or 0), dy > 0 and 1 or (dy < 0 and -1 or 0),  dz > 0 and 1 or (dz < 0 and -1 or 0);
         for j = 1, max_dist do
-            add_tuopan_entity(pos[1], pos[2], pos[3], dx, dy, dz);
+            add_tuopan_entity(pos[1], pos[2], pos[3]);
             pos[1], pos[2], pos[3] = pos[1] + dx, pos[2] + dy, pos[3] + dz;
         end
     end
-    add_tuopan_entity(pos[1], pos[2], pos[3], dx, dy, dz);
+    add_tuopan_entity(pos[1], pos[2], pos[3]);
 
     async_run(function()
         while(true) do
             if (not entertainment.delivery_stop) then
                 local size = #tuopan_list;
-                local count = math.floor(__BlockSize__ / entertainment.delivery_step);
-                local direction = entertainment.delivery_direction;
-                local step = entertainment.delivery_step;
+                local total_step_count = math.floor(__BlockSize__ / entertainment.delivery_step);
+                local step_count = total_step_count;
+                local delivery_direction = entertainment.delivery_direction;
+                local delivery_step = entertainment.delivery_step;
                 local speed = entertainment.delivery_speed;
-                while (count > 0) do
-                    for i = 1, size do
-                        local tuopan = tuopan_list[i];
-                        local dx, dy, dz = tuopan.dx * direction * step, tuopan.dy * direction * step, tuopan.dz * direction * step;
-                        local x, y, z = tuopan.entity:GetPosition();
-                        tuopan.entity:SetPosition(x + dx, y + dy, z + dz);
+                local is_move = true;
+                while (step_count > 0) do
+                    local step_delivery_direction = entertainment.delivery_direction;
+                    if (is_move and delivery_direction ~= step_delivery_direction) then
+                        step_count = total_step_count - step_count;
+                        is_move = false;
                     end
-                    count = count - 1;
+                    if (not is_move and delivery_direction == step_delivery_direction) then
+                        step_count = total_step_count - step_count;
+                        is_move = true;
+                    end
+                    local index = 1;
+                    local dx, dy, dz = 0, 0, 0;
+                    for i = 1, size do
+                        local next_index = index + step_delivery_direction;
+                        next_index = next_index > size and 1 or (next_index < 1 and size or next_index);
+                        local tuopan = tuopan_list[index];
+                        local next_tuopan = tuopan_list[next_index];
+                        if (delivery_direction > 0 and next_index == 1) then
+                            dx, dy, dz = tuopan_list[index].bx - tuopan_list[index - 1].bx, tuopan_list[index].by - tuopan_list[index - 1].by, tuopan_list[index].bz - tuopan_list[index - 1].bz;
+                        elseif (delivery_direction < 0 and next_index == size) then 
+                            dx, dy, dz = tuopan_list[index + 1].bx - tuopan_list[index].bx, tuopan_list[index + 1].by - tuopan_list[index].by, tuopan_list[index + 1].bz - tuopan_list[index].bz;
+                        elseif (step_delivery_direction == delivery_direction) then 
+                            dx, dy, dz = next_tuopan.bx - tuopan.bx, next_tuopan.by - tuopan.by, next_tuopan.bz - tuopan.bz;
+                        else 
+                            dx, dy, dz = tuopan.bx - next_tuopan.bx, tuopan.by - next_tuopan.by, tuopan.bz - next_tuopan.bz;
+                        end
+                        local x, y, z = tuopan.entity:GetPosition();
+                        tuopan.entity:SetPosition(x + dx * delivery_step, y + dy * delivery_step, z + dz * delivery_step);
+                        index = next_index;
+                    end
+                    step_count = step_count - 1;
                     sleep(math.floor(20 / speed));
                 end
 
-                local index = 1;
-                local first_entity = tuopan_list[index].entity;
-                for i = 1, size do
-                    local next_index = index - direction;
-                    next_index = next_index > size and 1 or (next_index < 1 and size or next_index);
-                    local tuopan = tuopan_list[index];
-                    local next_tuopan = tuopan_list[next_index];
-                    if (next_index == 1) then 
-                        tuopan.entity = first_entity;
-                    else
-                        tuopan.entity = next_tuopan.entity;
-                    end 
-                    tuopan.entity:SetPosition(tuopan.x, tuopan.y, tuopan.z);
-                    tuopan.entity:SetFacing(tuopan.facing);
-                    index = next_index;
+                if (is_move) then
+                    local index = 1;
+                    local first_entity = tuopan_list[index].entity;
+                    for i = 1, size do
+                        local next_index = index - delivery_direction;
+                        next_index = next_index > size and 1 or (next_index < 1 and size or next_index);
+                        local tuopan = tuopan_list[index];
+                        local next_tuopan = tuopan_list[next_index];
+                        if (next_index == 1) then 
+                            tuopan.entity = first_entity;
+                        else
+                            tuopan.entity = next_tuopan.entity;
+                        end 
+                        tuopan.entity:SetPosition(tuopan.x, tuopan.y, tuopan.z);
+                        tuopan.entity:SetFacing(tuopan.facing);
+                        index = next_index;
+                    end
                 end
             else
-                sleep(300);
+                sleep(100);
             end
         end
     end);
