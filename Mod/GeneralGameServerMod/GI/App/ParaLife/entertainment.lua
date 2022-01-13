@@ -4,7 +4,7 @@ print("========entertainment==========");
 entertainment = module();
 
 entertainment.delivery_direction = 1;
-entertainment.delivery_step = 0.01;
+entertainment.delivery_step = 0.1;
 entertainment.delivery_speed = 1;
 entertainment.delivery_stop = false;
 
@@ -63,7 +63,7 @@ function delivery_tuopan()
                 local step_count = total_step_count;
                 local delivery_direction = entertainment.delivery_direction;
                 local delivery_step = entertainment.delivery_step;
-                local speed = entertainment.delivery_speed;
+                local delivery_speed = entertainment.delivery_speed;
                 local is_move = true;
                 while (step_count > 0) do
                     local step_delivery_direction = entertainment.delivery_direction;
@@ -82,21 +82,23 @@ function delivery_tuopan()
                         next_index = next_index > size and 1 or (next_index < 1 and size or next_index);
                         local tuopan = tuopan_list[index];
                         local next_tuopan = tuopan_list[next_index];
-                        if (delivery_direction > 0 and next_index == 1) then
+                        if (delivery_direction > 0 and index == size) then
                             dx, dy, dz = tuopan_list[index].bx - tuopan_list[index - 1].bx, tuopan_list[index].by - tuopan_list[index - 1].by, tuopan_list[index].bz - tuopan_list[index - 1].bz;
-                        elseif (delivery_direction < 0 and next_index == size) then 
-                            dx, dy, dz = tuopan_list[index + 1].bx - tuopan_list[index].bx, tuopan_list[index + 1].by - tuopan_list[index].by, tuopan_list[index + 1].bz - tuopan_list[index].bz;
-                        elseif (step_delivery_direction == delivery_direction) then 
-                            dx, dy, dz = next_tuopan.bx - tuopan.bx, next_tuopan.by - tuopan.by, next_tuopan.bz - tuopan.bz;
+                        elseif (delivery_direction < 0 and index == 1) then 
+                            dx, dy, dz = tuopan_list[index].bx - tuopan_list[index + 1].bx, tuopan_list[index].by - tuopan_list[index + 1].by, tuopan_list[index].bz - tuopan_list[index + 1].bz;
                         else 
-                            dx, dy, dz = tuopan.bx - next_tuopan.bx, tuopan.by - next_tuopan.by, tuopan.bz - next_tuopan.bz;
+                            dx, dy, dz = tuopan_list[index + delivery_direction].bx - tuopan_list[index].bx, tuopan_list[index + delivery_direction].by - tuopan_list[index].by, tuopan_list[index + delivery_direction].bz - tuopan_list[index].bz;
                         end
                         local x, y, z = tuopan.entity:GetPosition();
-                        tuopan.entity:SetPosition(x + dx * delivery_step, y + dy * delivery_step, z + dz * delivery_step);
+                        if (step_delivery_direction == delivery_direction) then
+                            tuopan.entity:SetPosition(x + dx * delivery_step, y + dy * delivery_step, z + dz * delivery_step);
+                        else
+                            tuopan.entity:SetPosition(x - dx * delivery_step, y - dy * delivery_step, z - dz * delivery_step);
+                        end
                         index = next_index;
                     end
                     step_count = step_count - 1;
-                    sleep(math.floor(20 / speed));
+                    sleep(math.floor(100 / entertainment.delivery_speed));
                 end
 
                 if (is_move) then
@@ -147,3 +149,9 @@ RegisterCodeBlockBroadcastEvent("delivery_direction_right", function(msg)
         entertainment.delivery_speed = math.min(entertainment.delivery_speed * 2, 8);
     end
 end);
+
+function clear()
+    for _, tuopan in ipairs(tuopan_list) do
+        tuopan.entity:SetPosition(tuopan.x, tuopan.y, tuopan.z);
+    end
+end
