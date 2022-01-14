@@ -153,7 +153,7 @@ function CodeEnv:InstallLuaAPI()
 		__data__.__children_coroutine_data_map__ = {};
 		__data__.__parent_coroutine_data__ = nil;
 		__data__.__independent__ = false;  -- 默认不独立
-		__data__.__co__ = __co__;
+		__data__.__co__ = __co__ or "__nil__";
 
 		if (__co__ == nil) then
 			print("----------------------------", self.__coroutine_running__());
