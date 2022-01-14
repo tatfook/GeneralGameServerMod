@@ -155,7 +155,12 @@ function CodeEnv:InstallLuaAPI()
 		__data__.__independent__ = false;  -- 默认不独立
 		__data__.__co__ = __co__;
 
-		self.__all_coroutine_data__[__co__] = __data__;
+		if (__co__ == nil) then
+			print("----------------------------", self.__coroutine_running__());
+			print(co or "__nil__", self.__coroutine_running__())
+		end
+
+		self.__all_coroutine_data__[__co__ or "__nil__"] = __data__;
 		return __data__;
 	end
 	
