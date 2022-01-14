@@ -4,7 +4,7 @@ print("========entertainment==========");
 entertainment = module();
 
 entertainment.delivery_direction = 1;
-entertainment.delivery_step = 0.1;
+entertainment.delivery_step = 0.01;
 entertainment.delivery_speed = 1;
 entertainment.delivery_stop = false;
 
@@ -98,7 +98,7 @@ function delivery_tuopan()
                         index = next_index;
                     end
                     step_count = step_count - 1;
-                    sleep(math.floor(100 / entertainment.delivery_speed));
+                    sleep(math.floor(50 / entertainment.delivery_speed));
                 end
 
                 if (is_move) then

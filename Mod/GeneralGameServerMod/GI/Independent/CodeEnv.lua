@@ -141,7 +141,12 @@ function CodeEnv:InstallLuaAPI()
 	self.__coroutine_status__ = coroutine.status;
 
 	self.__get_coroutine_data__ = function(co, bIsNewNotExist)
-		local __co__ = co or self.__coroutine_running__();
+		local __co__ = co or (self.__coroutine_running__());
+		if (__co__ == nil) then
+			__co__ = "__nil__";
+			print("-------------error: __coroutine_running__() == nil---------------", (self.__coroutine_running__()));
+		end
+
 		if (self.__all_coroutine_data__[__co__]) then return self.__all_coroutine_data__[__co__] end
 		if (bIsNewNotExist == false) then return nil end 
 
@@ -153,14 +158,8 @@ function CodeEnv:InstallLuaAPI()
 		__data__.__children_coroutine_data_map__ = {};
 		__data__.__parent_coroutine_data__ = nil;
 		__data__.__independent__ = false;  -- 默认不独立
-		__data__.__co__ = __co__ or "__nil__";
-
-		if (__co__ == nil) then
-			print("----------------------------", self.__coroutine_running__());
-			print(co or "__nil__", self.__coroutine_running__())
-		end
-
-		self.__all_coroutine_data__[__co__ or "__nil__"] = __data__;
+		__data__.__co__ = __co__;
+		self.__all_coroutine_data__[__co__] = __data__;
 		return __data__;
 	end
 	

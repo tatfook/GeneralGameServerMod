@@ -6,7 +6,7 @@ Desc:
 use the lib:
 ------------------------------------------------------------
 local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
-Independent:Start("%gi%/Independent/Example/Empty.lua");
+Independent:GetSingletonInstance():Start("%gi%/Independent/Example/Empty.lua");
 ------------------------------------------------------------
 ]]
 
