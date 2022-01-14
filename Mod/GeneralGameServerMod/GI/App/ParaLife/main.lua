@@ -6,11 +6,11 @@ print("===============main==============")
 
 
 -- local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
--- Independent:Start("Mod/GeneralGameServerMod/GI/App/ParaLife/main.lua");
+-- local independent = Independent:GetSingletonInstance();
+-- independent:Start("Mod/GeneralGameServerMod/GI/App/ParaLife/main.lua");
 -- registerStopEvent(function()
---     Independent:Stop();
+--     independent:Stop();
 -- end)
-
 
 
 -- 118742

@@ -4,7 +4,7 @@ print("========entertainment==========");
 entertainment = module();
 
 entertainment.delivery_direction = 1;
-entertainment.delivery_step = 0.01;
+entertainment.delivery_step = 0.03;
 entertainment.delivery_speed = 1;
 entertainment.delivery_stop = false;
 
@@ -146,7 +146,7 @@ RegisterCodeBlockBroadcastEvent("delivery_direction_right", function(msg)
         entertainment.delivery_direction = -1;
         entertainment.delivery_speed = 1;
     else
-        entertainment.delivery_speed = math.min(entertainment.delivery_speed * 2, 8);
+        entertainment.delivery_speed = math.min(entertainment.delivery_speed * 2, 4);
     end
 end);
 
