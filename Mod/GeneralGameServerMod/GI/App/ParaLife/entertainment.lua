@@ -126,29 +126,99 @@ function delivery_tuopan()
     end);
 end
 
-delivery_tuopan();
+-- delivery_tuopan();
+
+local function GetEntityByMsg(msg)
+    local __commonlib__ = __CodeGlobal__.shared_API.commonlib;
+    local __GameLogic__ = __CodeGlobal__.shared_API.GameLogic;
+    msg = __commonlib__.LoadTableFromString(msg);
+    local entity = __GameLogic__.EntityManager.GetEntity(msg.name);
+    return entity;
+end
 
 RegisterCodeBlockBroadcastEvent("delivery_stop", function(msg)
     entertainment.delivery_stop = not entertainment.delivery_stop;
 end);
 
 RegisterCodeBlockBroadcastEvent("delivery_direction_left", function(msg)
-    if (entertainment.delivery_direction < 0) then
+    local entity = GetEntityByMsg(msg);
+    if (not entity) then return end 
+    local filename = entity:GetModelFile();
+    if (entertainment.delivery_direction ~= 1 or filename == "blocktemplates/qianjin-1.bmax") then
         entertainment.delivery_direction = 1;
         entertainment.delivery_speed = 1;
+        entity:SetModelFile("blocktemplates/qianjin-2.bmax");
     else
-        entertainment.delivery_speed = math.min(entertainment.delivery_speed * 2, 8);
+        entertainment.delivery_direction = 1;
+        entertainment.delivery_speed = 5;
+        entity:SetModelFile("blocktemplates/qianjin-1.bmax");
     end
 end);
 
 RegisterCodeBlockBroadcastEvent("delivery_direction_right", function(msg)
-    if (entertainment.delivery_direction > 0) then
+    local entity = GetEntityByMsg(msg);
+    if (not entity) then return end 
+    local filename = entity:GetModelFile();
+    if (entertainment.delivery_direction ~= -1 or filename == "blocktemplates/houtui-1.bmax") then
         entertainment.delivery_direction = -1;
         entertainment.delivery_speed = 1;
+        entity:SetModelFile("blocktemplates/houtui-2.bmax");
     else
-        entertainment.delivery_speed = math.min(entertainment.delivery_speed * 2, 4);
+        entertainment.delivery_direction = -1;
+        entertainment.delivery_speed = 5;
+        entity:SetModelFile("blocktemplates/houtui-1.bmax");
     end
 end);
+
+-- 点击切换模型做法
+-- 模型实体添加点击事件 click_switch_model
+-- 未点击未激活模型 xxx_off.bmax 点击激活模型名 xxx_on.bmax
+local click_switch_model_config = {
+    ["blocktemplates/pingbang.bmax"] = "blocktemplates/pingbang1.bmax",
+    ["blocktemplates/pingbang1.bmax"] = "blocktemplates/pingbang.bmax",
+    ["blocktemplates/tv.bmax"] = "blocktemplates/tv1.bmax",
+    ["blocktemplates/tv1.bmax"] = "blocktemplates/tv.bmax",
+}
+RegisterCodeBlockBroadcastEvent("click_switch_model", function(msg)
+    local entity = GetEntityByMsg(msg);
+    if (not entity) then return end 
+    local filename = entity:GetModelFile();
+    if (click_switch_model_config[filename]) then 
+        return entity:SetModelFile(click_switch_model_config[filename]);
+    end 
+    if ((string.match(filename, "_on.bmax$"))) then
+        return entity:SetModelFile(string.replace(filename, "_on%.bmax$", "_off.bmax"));
+    end
+    if ((string.match(filename, "_off.bmax$"))) then
+        return entity:SetModelFile(string.replace(filename, "_off%.bmax$", "_on.bmax"));
+    end
+end);
+
+-- 点击绕Z轴左旋转
+RegisterCodeBlockBroadcastEvent("click_rotate_z_left", __safe_callback__(function(msg)
+    local entity = GetEntityByMsg(msg);
+    if (not entity) then return end 
+    local filename = entity:GetModelFile();
+    local facing = entity:GetFacing();
+    local tag = entity:GetTag();
+    local static_tag = entity:GetStaticTag();
+    local direction, angle = string.match("([rxyz]+)%_(%d+)");
+    angle = tonumber(angle)
+    if (not direction or not angle) then return end 
+    if (tag == "open") then
+        for i = 0, 90, 10 do
+            entity:SetFacing(facing - i * math.pi / 180);
+            sleep(10);
+        end
+        entity:SetTag("close");
+    else
+        for i = 0, 90, 10 do
+            entity:SetFacing(facing + i * math.pi / 180);
+            sleep(10);
+        end
+        entity:SetTag("open");
+    end
+end));
 
 function clear()
     for _, tuopan in ipairs(tuopan_list) do

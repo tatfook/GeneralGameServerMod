@@ -82,7 +82,7 @@ setmetatable(
             CodeEnv.FindEntities = FindEntities;
             CodeEnv.GetAllEntityCode = GetAllEntityCode;
             CodeEnv.SetFocus = SetFocus;
-        
+            
             local __entity_co_map__ = {};
 
             CodeEnv.__AddEntity__ = function(entity) 
@@ -127,6 +127,7 @@ setmetatable(
             
             CodeEnv.__Entity__ = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityMovable");
             CodeEnv.__EntityLight__ = commonlib.gettable("MyCompany.Aries.Game.EntityManager.EntityLight");
+            CodeEnv.__EntityManager__ = EntityManager;
         end
     }
 )

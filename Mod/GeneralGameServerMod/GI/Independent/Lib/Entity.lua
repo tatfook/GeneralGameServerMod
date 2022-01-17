@@ -73,6 +73,7 @@ end
 
 function Entity:ctor()
     self.__uuid__ = UUID();
+    self.__is_gi_entity__ = true;
     self.__key__ = string.format("NPC_%s", self.__uuid__);
     self.__name__ = self.__key__;
     self.__scope__ = NewScope();                   -- 响应式变量 
@@ -689,6 +690,8 @@ function Entity:GetAllEntity()
 end
 
 function Entity:CanCollideWith(entity)
+    if (not self.__is_gi_entity__ or not entity or not entity.__is_gi_entity__) then return false end 
+    
     local types = self:GetTypes();
     for key, val in pairs(entity:GetTypes()) do
         if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.NOT_COLLIDE_TYPE) then return false end 
@@ -699,6 +702,8 @@ function Entity:CanCollideWith(entity)
 end
 
 function Entity:CanBeCollidedWith(entity)
+    if (not self.__is_gi_entity__ or not entity or not entity.__is_gi_entity__) then return false end 
+
     local types = self:GetTypes();
     for key, val in pairs(entity:GetTypes()) do
         if (val == ENTITY_TYPE.DEFAULT_TYPE and types[key] == ENTITY_TYPE.NOT_COLLIDED_TYPE) then return false end 
