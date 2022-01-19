@@ -29,7 +29,7 @@ function ServerSetting:ShowUI()
         __server_setting__ = self,
         OnClose = function()
             self.__ui__ = nil;
-            -- self:CheckServer();
+            self:CheckServer();
             self:SaveConfig();
         end
     }, {
