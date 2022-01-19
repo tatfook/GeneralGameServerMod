@@ -13,7 +13,7 @@
             <div style="margin-top: 40px">设定教师服务器 IP 地址, 本机将会优先从该服务器更新, 下载.</div>
             <div style="margin-top: 10px;">本机还会连接该服务器的 "共享世界" 服务.</div>
             <div style="margin-top: 20px;">教师服务器 IP: </div>
-            <input onchange="OnInputRemoteServerIpChange" style="width: 370px; height: 40px; margin-top: 10px; color: #ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/proxy_server_32bits.png#134 81 30 30:8 8 8 8);" placeholder="127.0.0.1"></input>
+            <input onchange="OnInputRemoteServerIpChange" v-bind:value="RemoteServerIp" style="width: 370px; height: 40px; margin-top: 10px; color: #ffffff; background: url(Texture/Aries/Creator/keepwork/ggs/proxy_server_32bits.png#134 81 30 30:8 8 8 8);" placeholder="127.0.0.1"></input>
         </div>
 
         <div v-if="TabIndex == 'CreateServer'" style="padding-left: 120px; font-size: 14px; color: #101010; height: 180px;">
