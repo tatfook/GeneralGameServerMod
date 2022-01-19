@@ -61,6 +61,9 @@ function ClickConfirm()
     local localServerPort = (string.match(strs[2] or "", "(%d+)")) or "8099";
     print(localServerIp, localServerPort, IsEnableLocalServer)
     
+    -- 存在远程服务器IP, 则不启动服务器
+    if (remoteServerIp) then IsEnableLocalServer = false end 
+
     if (__server_setting__) then
         __server_setting__:SetEnableLocalServer(IsEnableLocalServer);
         __server_setting__:SetLocalServerIp(localServerIp);

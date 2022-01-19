@@ -6,7 +6,7 @@ entertainment = module();
 entertainment.delivery_direction = 1;
 entertainment.delivery_step = 0.03;
 entertainment.delivery_speed = 1;
-entertainment.delivery_stop = false;
+entertainment.delivery_stop = true;
 
 function delivery_tuopan()
     local tuopan_list = {};
@@ -21,18 +21,18 @@ function delivery_tuopan()
                 local x, y, z = entity:GetPosition();
                 local bx, by, bz = entity:GetBlockPos();
                 local facing = entity:GetFacing();
+                local _x, _y, _z = ConvertToRealPosition(bx, by, bz);
                 table.insert(tuopan_list, {
                     entity = entity,
                     bx = bx, by = by, bz = bz,
-                    x = x, y = y, z = z,
+                    x = _x, y = _y, z = _z,
                     facing = facing,
                 });
-                -- print(bx, by, bz)
                 return ;
             end
         end
     end
-
+    local facing_map = {dx = {[1] = 180, [-1] = 0}, dz = {[1] = 90, [-1] = -90}};
     local points = {
         {19210,6,19256},
         {19222,6,19256},
@@ -95,6 +95,7 @@ function delivery_tuopan()
                         else
                             tuopan.entity:SetPosition(x - dx * delivery_step, y - dy * delivery_step, z - dz * delivery_step);
                         end
+                        tuopan.entity:SetFacing(dx == 0 and (facing_map.dz[dz] * math.pi / 180) or (facing_map.dx[dx] * math.pi / 180));
                         index = next_index;
                     end
                     step_count = step_count - 1;
@@ -126,7 +127,7 @@ function delivery_tuopan()
     end);
 end
 
--- delivery_tuopan();
+delivery_tuopan();
 
 local function GetEntityByMsg(msg)
     local __commonlib__ = __CodeGlobal__.shared_API.commonlib;
@@ -174,10 +175,10 @@ end);
 -- 模型实体添加点击事件 click_switch_model
 -- 未点击未激活模型 xxx_off.bmax 点击激活模型名 xxx_on.bmax
 local click_switch_model_config = {
-    ["blocktemplates/pingbang.bmax"] = "blocktemplates/pingbang1.bmax",
-    ["blocktemplates/pingbang1.bmax"] = "blocktemplates/pingbang.bmax",
-    ["blocktemplates/tv.bmax"] = "blocktemplates/tv1.bmax",
-    ["blocktemplates/tv1.bmax"] = "blocktemplates/tv.bmax",
+    -- ["blocktemplates/pingbang.bmax"] = "blocktemplates/pingbang1.bmax",
+    -- ["blocktemplates/pingbang1.bmax"] = "blocktemplates/pingbang.bmax",
+    -- ["blocktemplates/tv.bmax"] = "blocktemplates/tv1.bmax",
+    -- ["blocktemplates/tv1.bmax"] = "blocktemplates/tv.bmax",
 }
 RegisterCodeBlockBroadcastEvent("click_switch_model", function(msg)
     local entity = GetEntityByMsg(msg);
@@ -187,38 +188,48 @@ RegisterCodeBlockBroadcastEvent("click_switch_model", function(msg)
         return entity:SetModelFile(click_switch_model_config[filename]);
     end 
     if ((string.match(filename, "_on.bmax$"))) then
-        return entity:SetModelFile(string.replace(filename, "_on%.bmax$", "_off.bmax"));
+        return entity:SetModelFile(string.gsub(filename, "_on%.bmax$", "_off.bmax"));
     end
     if ((string.match(filename, "_off.bmax$"))) then
-        return entity:SetModelFile(string.replace(filename, "_off%.bmax$", "_on.bmax"));
+        return entity:SetModelFile(string.gsub(filename, "_off%.bmax$", "_on.bmax"));
     end
 end);
 
--- 点击绕Z轴左旋转
-RegisterCodeBlockBroadcastEvent("click_rotate_z_left", __safe_callback__(function(msg)
+-- 点击旋转 (绕模型x(红色), y(蓝色), z(绿色)轴旋转, 故注意其位置正确性)
+-- 点击事件名:  click_rotate
+-- 静态标签: 方向轴_角度 ([正则表示: [rxzy]{1,2}_%d+)  示例: z_45(绕Z轴顺时针45度)  rz_45(绕Z轴逆时针45度)
+RegisterCodeBlockBroadcastEvent("click_rotate", __safe_callback__(function(msg)
     local entity = GetEntityByMsg(msg);
     if (not entity) then return end 
     local filename = entity:GetModelFile();
-    local facing = entity:GetFacing();
     local tag = entity:GetTag();
     local static_tag = entity:GetStaticTag();
-    local direction, angle = string.match("([rxyz]+)%_(%d+)");
+    local direction, angle = string.match(string.lower(static_tag), "([rxyz]+)%_(%d+)");
     angle = tonumber(angle)
     if (not direction or not angle) then return end 
-    if (tag == "open") then
-        for i = 0, 90, 10 do
-            entity:SetFacing(facing - i * math.pi / 180);
-            sleep(10);
+    local dir1 = tag == "open" and 1 or -1;
+    local dir2 = (string.find(direction, "r", 1, true)) and -1 or 1;
+    local dir = dir1 * dir2;
+    -- print(dir, dir1, dir2)
+    local facing = entity:GetFacing();
+    local roll = entity:GetRoll();
+    local pitch = entity:GetPitch();
+    for i = 0, angle, 10 do
+        if (string.find(direction, "x", 1, true)) then
+            entity:SetRoll(roll + dir * i * math.pi / 180);
         end
-        entity:SetTag("close");
-    else
-        for i = 0, 90, 10 do
-            entity:SetFacing(facing + i * math.pi / 180);
-            sleep(10);
+        if (string.find(direction, "y", 1, true)) then
+            entity:SetFacing(facing + dir * i * math.pi / 180);
         end
-        entity:SetTag("open");
+        if (string.find(direction, "z", 1, true)) then
+            entity:SetPitch(pitch + dir * i * math.pi / 180);
+        end
+        sleep(10);
     end
+    entity:SetTag(tag == "open" and "close" or "open");
 end));
+
+
 
 function clear()
     for _, tuopan in ipairs(tuopan_list) do
