@@ -46,16 +46,16 @@ local KeChengTasks = {
     },
     -- 精彩动画
     ["jingcaidonghua"] = {
-        {teleportPos = {18182,12,19191}, state = 0, text = "第一课", title = "建造前的准备", subtitle = "工具栏的相关知识"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第二课", title = "清除跑道杂物", subtitle = "删除方块操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第三课", title = "填补路面空缺", subtitle = "放置方块操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第四课", title = "修整跳远沙坑", subtitle = "吸取与替换方块操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第五课", title = "更新滑冰场", subtitle = "选中方块操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第六课", title = "移动和旋转跳台", subtitle = "移动和旋转操作"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第七课", title = "镜像马拉松赛场", subtitle = "镜像的使用方法"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第八课", title = "安装休息室灯光", subtitle = "特殊方块的使用"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第九课", title = "保存场馆设施", subtitle = "保存模板或模型的方法"},
-        {teleportPos = {18182,12,19191}, state = 0, text = "第十课", title = "创造地标建筑", subtitle = "常用建造指令的运用"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第一课", title = "建造前的准备", subtitle = "工具栏的相关知识"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第二课", title = "清除跑道杂物", subtitle = "删除方块操作"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第三课", title = "填补路面空缺", subtitle = "放置方块操作"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第四课", title = "修整跳远沙坑", subtitle = "吸取与替换方块操作"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第五课", title = "更新滑冰场", subtitle = "选中方块操作"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第六课", title = "移动和旋转跳台", subtitle = "移动和旋转操作"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第七课", title = "镜像马拉松赛场", subtitle = "镜像的使用方法"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第八课", title = "安装休息室灯光", subtitle = "特殊方块的使用"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第九课", title = "保存场馆设施", subtitle = "保存模板或模型的方法"},
+        {teleportPos = {18122,19,19392}, state = 0, text = "第十课", title = "创造地标建筑", subtitle = "常用建造指令的运用"},
     },
 }
 
