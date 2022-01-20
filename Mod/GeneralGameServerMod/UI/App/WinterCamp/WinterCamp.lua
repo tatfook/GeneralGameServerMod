@@ -7,7 +7,7 @@ local __winter_camp__ = {};
 local LaJiFenLeiMovieTasks = {
     -- targetPos 电影触发方块坐标   teleportPos 玩家传送方块坐标   moviePos 电影方块坐标 
     {targetPos = {18139,12,18985}, teleportPos = {18141,12,18985}, moviePos = {18165,2,19164}, state = 0, text = "电影一", title = "厨余垃圾介绍"},
-    {targetPos = {18226,12,19010}, teleportPos = {18224,12,19009}, moviePos = {18165,2,19162}, state = 0, text = "电影二", title = "可回收物后续处理"},
+    {targetPos = {18247,12,19020}, teleportPos = {18247,12,19023}, moviePos = {18165,2,19162}, state = 0, text = "电影二", title = "可回收物后续处理"},
     {targetPos = {18213,12,19015}, teleportPos = {18211,12,19015}, moviePos = {18165,2,19160}, state = 0, text = "电影三", title = "可回收物介绍"},
     {targetPos = {18075,12,18949}, teleportPos = {18073,12,18949}, moviePos = {18165,2,19158}, state = 0, text = "电影四", title = "厨余垃圾后续处理"},
     {targetPos = {18245,12,18980}, teleportPos = {18243,12,18980}, moviePos = {18165,2,19156}, state = 0, text = "电影五", title = "有害垃圾后续处理"},
@@ -311,9 +311,6 @@ function ShowWinterCampMainWindow(defaultTabIndex)
 end
 
 -- ShowWinterCampMainWindow();
-
-
-
 -- ShowWinterCampMapWindow();
 
 -- FinishLaJiFenLeiMovieTask(1);
