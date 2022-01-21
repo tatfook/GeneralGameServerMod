@@ -174,8 +174,8 @@ local function CheckAndGetCert()
         end
     end
     if (isAllFinish) then
-        print("=======兑换套装:1651=======")
-        KeepWorkItemManager.DoExtendedCost(1651, function()
+        print("=======兑换套装:30063=======")
+        KeepWorkItemManager.DoExtendedCost(30063, function()
             print("=======兑换套装=======")
         end);
     end
