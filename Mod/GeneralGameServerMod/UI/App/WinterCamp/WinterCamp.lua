@@ -165,6 +165,20 @@ local function CheckAndGetCert()
         end
         if (isAllFinish) then GetCert(index) end
     end
+
+    isAllFinish = true;
+    for _, cert in pairs(CertConfig) do
+        if (not cert.is_finish) then
+            isAllFinish = false;
+            break;
+        end
+    end
+    if (isAllFinish) then
+        print("=======兑换套装:1651=======")
+        KeepWorkItemManager.DoExtendedCost(1651, function()
+            print("=======兑换套装=======")
+        end);
+    end
 end
 
 function InitTasks()
