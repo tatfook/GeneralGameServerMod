@@ -163,7 +163,7 @@ function EntityOtherPlayer:UpdateEntityActionState()
     -- 改写大小同步规则
     local curScale = dataWatcher:GetField(self.dataFieldScale);
     if(curScale and curScale ~= self:GetScaling()) then
-        local newScale = curScale > 1.2 and 1.2 or (curScale < 1 and 1 or curScale);
+        local newScale = curScale > 2 and 2 or (curScale < 1 and 1 or curScale);
         self:SetScaling(newScale);
         dataWatcher:SetField(self.dataFieldScale, newScale);
     end
