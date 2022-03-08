@@ -5,13 +5,14 @@ local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Helper.lua");
 
 BlockManager.SetCurrentLanguage(_G.Language);
 
-local DefaultToolBoxXmlText = BlockManager.GenerateToolBoxXmlText();
+local DefaultToolBoxXmlText = BlockManager.GenerateToolBoxXmlText(nil);
 ContentType = "xmltext"; -- block category
 ToolBoxXmlText = (_G.XmlText and _G.XmlText ~= "") and _G.XmlText  or DefaultToolBoxXmlText;
 ToolBoxBlockList = {};
 ToolBoxCategoryList = {};
 CategoryOptions = {};
 CategoryName = "";
+AllBlockDisabledMode = false;
 local AllCategoryList, AllCategoryMap, AllBlockMap = {}, {}, {};
 -- local AllCategoryList = commonlib.deepcopy(BlockManager.GetLanguageCategoryList());
 -- local AllCategoryMap = commonlib.deepcopy(BlockManager.GetLanguageCategoryMap());
@@ -37,7 +38,7 @@ end
 local function ParseToolBoxXmlText()
     local xmlNode = ParaXML.LuaXML_ParseString(ToolBoxXmlText);
     local toolboxNode = xmlNode and commonlib.XPath.selectNode(xmlNode, "//toolbox");
-    local categorylist, categorymap = {}, {};
+    local categorylist, categorymap, allblockmap = {}, {}, {};
 
     if (not toolboxNode) then return {}, {} end
     local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
@@ -60,8 +61,11 @@ local function ParseToolBoxXmlText()
                 if (blockTypeNode.attr and blockTypeNode.attr.type) then
                     local blocktype = blockTypeNode.attr.type;
                     local hideInToolbox = blockTypeNode.attr.hideInToolbox == "true";
+                    local disabled = blockTypeNode.attr.disabled == "true";
                     if (CategoryAndBlockMap.AllBlockMap[blocktype]) then
-                        table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox});
+                        local block_opt = {blocktype = blocktype, hideInToolbox = hideInToolbox, disabled = disabled};
+                        table.insert(category, block_opt);
+                        allblockmap[blocktype] = block_opt;
                     end
                 end
             end
@@ -75,7 +79,7 @@ local function ParseToolBoxXmlText()
     CategoryOptions = categoryoptions;
     CategoryName = categoryoptions[1] or "";
 
-    return categorylist, categorymap;
+    return categorylist, categorymap, allblockmap;
 end
 
 local function GenerateToolBoxXmlText()
@@ -87,7 +91,16 @@ local function GenerateToolBoxXmlText()
         }
         table.insert(toolbox, #toolbox + 1, category);
         for _, blockItem in ipairs(categoryItem) do 
-            table.insert(category, #category + 1, {name = "block", attr = {type = blockItem.blocktype, hideInToolbox = blockItem.hideInToolbox and "true" or nil}});
+            if (AllBlockDisabledMode or not blockItem.disabled) then
+                table.insert(category, #category + 1, {
+                    name = "block", 
+                    attr = {
+                        type = blockItem.blocktype, 
+                        hideInToolbox = blockItem.hideInToolbox and "true" or nil,
+                        disabled = AllBlockDisabledMode and (blockItem.disabled and "true" or "false") or nil,
+                    },
+                });
+            end
         end
     end
     local xmlText = Helper.Lua2XmlString(toolbox, true);
@@ -96,6 +109,29 @@ end
 
 function ClickResetXmlText()
     ToolBoxXmlText = DefaultToolBoxXmlText;
+end
+
+function ClickDisabledModeXmlText()
+    AllBlockDisabledMode = not AllBlockDisabledMode;
+    AllCategoryList, AllCategoryMap, AllBlockMap = ParseToolBoxXmlText();
+
+    if (AllBlockDisabledMode) then
+        ToolBoxXmlText = DefaultToolBoxXmlText;
+        AllCategoryList, AllCategoryMap = ParseToolBoxXmlText();
+        for _, category in ipairs(AllCategoryList) do
+            for _, block in ipairs(category) do
+                local blocktype = block.blocktype;
+                local custom_block = AllBlockMap[blocktype];
+                if (not custom_block) then
+                    block.disabled = true;
+                else
+                    block.disabled = custom_block.disabled;
+                end
+            end
+        end
+    end
+    
+    ToolBoxXmlText = GenerateToolBoxXmlText();
 end
 
 function OnToolBoxCategoryOrderChange(category)

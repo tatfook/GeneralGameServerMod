@@ -10,6 +10,7 @@
   
     <div v-if="ContentType == 'xmltext'" class="content-container">
         <textarea style="width: 100%; height: 100%;" v-model="ToolBoxXmlText" placeholder="请输入图块工具栏Xml文本..."></textarea>
+        <div onclick=ClickDisabledModeXmlText style="position: absolute; top: 2px; right: 112px; width: 80px; height: 40px; background-color: #cccccc; display: flex; justify-content: center; align-items: center;">{{AllBlockDisabledMode and "精简模式" or "全图块模式"}}</div>
         <div onclick=ClickResetXmlText style="position: absolute; top: 2px; right: 12px; width: 80px; height: 40px; background-color: #cccccc; display: flex; justify-content: center; align-items: center;">重置</div>
     </div>
 

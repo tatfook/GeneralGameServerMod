@@ -887,10 +887,23 @@ function md:render(text)
 end
 
 function md:test()
-	file = io.open("md/text", "r")
-	str = file:read("*a")
-	io.close(file)
-	print(md:render(str))
+	-- file = io.open("md/text", "r")
+	-- str = file:read("*a")
+	-- io.close(file)
+	print(md:render([[
+## Title
+
+hello world
+
+```
+print("this is a test");
+```
+
+[test](http::/www.baidu.com)
+
+![test](http::/www.baidu.com)
+]]))
 end
 
+md:test();
 return md

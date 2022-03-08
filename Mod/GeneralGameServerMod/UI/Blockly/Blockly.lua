@@ -139,8 +139,9 @@ function Blockly:OnToolBoxXmlTextChange(toolboxXmlText)
                 for _, blockTypeNode in ipairs(categoryNode) do
                     if (blockTypeNode.attr and blockTypeNode.attr.type) then
                         local blocktype = blockTypeNode.attr.type;
+                        local disabled = blockTypeNode.attr.disabled == "true";
                         local hideInToolbox = blockTypeNode.attr.hideInToolbox == "true";
-                        table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox});
+                        table.insert(category, {blocktype = blocktype, hideInToolbox = hideInToolbox, disabled = disabled});
                     end
                 end
                 if (not categorymap[category.name]) then

@@ -14,6 +14,7 @@ local Shape = NPL.load("./Shape.lua");
 local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 local categoryFont = "System;12;norm";
+local disabledColor = "#6B6B6B";
 ToolBox:Property("ClassName", "ToolBox");
 ToolBox:Property("Blockly");
 ToolBox:Property("CurrentCategoryName");
@@ -51,6 +52,7 @@ function ToolBox:SetCategoryList(categorylist)
     self.categoryList = {};
     self.blocks, self.blockPosMap, self.categoryMap = {}, {}, {};
     local offsetX, offsetY = 25, 0;
+    local block_opts = {};
     for _, categoryitem in ipairs(categorylist) do
         local category = {name = categoryitem.name, text = categoryitem.text, color = categoryitem.color};
         local blocktypes = categoryitem.blocktypes or {};
@@ -58,6 +60,7 @@ function ToolBox:SetCategoryList(categorylist)
             for _, blockitem in ipairs(categoryitem) do
                 if (not blockitem.hideInToolbox) then
                     table.insert(blocktypes, #blocktypes + 1, blockitem.blocktype);
+                    block_opts[blockitem.blocktype] = blockitem;
                 end
             end
         end
@@ -67,6 +70,11 @@ function ToolBox:SetCategoryList(categorylist)
         for _, blocktype in ipairs(blocktypes) do
             local block = self:GetBlockly():GetBlockInstanceByType(blocktype);
             if (block and not block:IsHideInToolbox()) then
+                local block_opt = block_opts[blocktype];
+                if (block_opt and block_opt.disabled) then
+                    block:SetDraggable(false);
+                    block:SetColor(disabledColor);
+                end
                 block:SetToolBoxBlock(true);
                 offsetY = offsetY + BlockOffset; -- 间隙
                 if (not block.previousConnection and block.nextConnection) then offsetY = offsetY + 4 end 
