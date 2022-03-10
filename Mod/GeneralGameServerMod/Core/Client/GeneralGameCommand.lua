@@ -91,7 +91,7 @@ user 用户命令
 offlineuser 离线用户命令
 	/ggs offlineuser visible    显示离线用户
 	/ggs offlineuser hidden     隐藏离线用户
-setNewLiveModelAutoSync 新增活动模型是否同步
+setNewLiveModelAutoSync 新增活动模型是否同步(默认为 on)
 	/ggs setNewLiveModelAutoSync on    允许新增活动模型同步
 	/ggs setNewLiveModelAutoSync off   禁止新增活动模型同步
 debug 调试命令 

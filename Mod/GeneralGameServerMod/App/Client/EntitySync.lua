@@ -53,6 +53,7 @@ local function SendData(data)
     if (not data_handler) then return end 
     data.cmd = "SyncEntityLiveModel";
     data_handler:SendData(data);
+    -- print("send key", data.key, data.action)
 end
 
 -- 同步实体
@@ -125,6 +126,7 @@ function EntitySync:HandleSyncEntityData(key, packet, action)
         local EntityClass = EntityManager.GetEntityClass(packet.attr.class);
         entity = EntityClass:new();
         __is_can_sync_entity_map__[entity] = false;
+        entity:SetKey(key);
         entity:init():Attach();
     else 
         __is_can_sync_entity_map__[entity] = false;
@@ -185,6 +187,7 @@ setmetatable(EntitySync, {
         local key = entity:GetKey();
         if (not key) then return end 
         bSync = bSync == nil and true or bSync;
+        -- print(key, bSync, __all_sync_key_entity_map__[key], AppGeneralGameClient:IsEnableNewLiveModelAutoSync())
         if (bSync and __all_sync_key_entity_map__[key]) then return end 
         if (bSync and not AppGeneralGameClient:IsEnableNewLiveModelAutoSync()) then return end 
         if (bSync) then
