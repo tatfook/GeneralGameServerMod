@@ -228,7 +228,7 @@ function GeneralGameClient:LoadWorld(opts)
     GGS.INFO(options, opts);
 
     -- only reload world if world id does not match
-    local isReloadWorld = tostring(options.worldId) ~= tostring(curWorldId); 
+    local isReloadWorld = curWorldId and tostring(options.worldId) ~= tostring(curWorldId); 
 
     -- 退出旧世界
     if (self:GetWorld()) then 
@@ -240,7 +240,6 @@ function GeneralGameClient:LoadWorld(opts)
 
     -- 是否加载世界
     self.IsWorldLoaded = false;
-
     -- 以只读方式重新进入
     if (isReloadWorld) then
         self:ReplaceWorld(opts);

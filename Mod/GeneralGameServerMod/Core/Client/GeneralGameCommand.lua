@@ -91,6 +91,9 @@ user 用户命令
 offlineuser 离线用户命令
 	/ggs offlineuser visible    显示离线用户
 	/ggs offlineuser hidden     隐藏离线用户
+setNewLiveModelAutoSync 新增活动模型是否同步
+	/ggs setNewLiveModelAutoSync on    允许新增活动模型同步
+	/ggs setNewLiveModelAutoSync off   禁止新增活动模型同步
 debug 调试命令 
 	/ggs debug [action]
 	/ggs debug debug module 开启或关闭指定客户端模块日志
@@ -122,6 +125,8 @@ developer                    GGS 开发者模式
 				__this__:handleDisconnectCommand(cmd_text);
 			elseif (cmd == "setSyncForceBlock") then
 				__this__:handleSetSyncForceBlockCommand(cmd_text);
+			elseif (cmd == "setNewLiveModelAutoSync") then
+				__this__:handleSetNewLiveModelAutoSync(cmd_text);
 			elseif (cmd == "sync") then
 				-- __this__:handleSyncCommand(cmd_text);
 			elseif (cmd == "filesync") then
@@ -294,10 +299,19 @@ function GeneralGameCommand:handleSetSyncForceBlockCommand(cmd_text)
 	end
 end
 
+-- 新增活动模型是否同步
+function GeneralGameCommand:handleSetNewLiveModelAutoSync(cmd_text)
+	local onOrOff, cmd_text = CmdParser.ParseString(cmd_text);
+	GeneralGameClient.options.isEnableNewLiveModelAutoSync = onOrOff == "on";
+end
+
 -- 世界加载
 function GeneralGameCommand:OnWorldLoaded()
 	GeneralGameClient:GetSyncForceBlockList():clear();
+	GeneralGameClient.options.isEnableNewLiveModelAutoSync = true;  -- 默认为true
 end
+
+
 
 -- 初始化成单列模式
 GeneralGameCommand:InitSingleton();

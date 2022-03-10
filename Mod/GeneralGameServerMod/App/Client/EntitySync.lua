@@ -186,6 +186,7 @@ setmetatable(EntitySync, {
         if (not key) then return end 
         bSync = bSync == nil and true or bSync;
         if (bSync and __all_sync_key_entity_map__[key]) then return end 
+        if (bSync and not AppGeneralGameClient:IsEnableNewLiveModelAutoSync()) then return end 
         if (bSync) then
             entity:Connect("valueChanged", entity, OnEntityUpdate);
             entity:Connect("facingChanged", entity, OnEntityUpdate);

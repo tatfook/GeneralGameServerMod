@@ -7,7 +7,7 @@
 @REM pm2 start --name "GGS" npl -- xxxx
 
 
-@REM npl IsDevEnv="true" servermode="true" bootstrapper="Mod/GeneralGameServerMod/main.lua" logfile="server.log" loadpackage="/mnt/d/workspace/npl/paracraft/"
+@REM npl IsDevEnv="true" servermode="true" bootstrapper="Mod/GeneralGameServerMod/main.lua" logfile="server.log" loadpackage="/mnt/d/workspace/npl/paracraft/,;/mnt/d/workspace/npl/GeneralGameServerMod/"
 
 
 @REM call "D:\ParacraftDev\ParaEngineClient.exe" IsDevEnv="true" servermode="true" bootstrapper="D:\workspace\npl\GeneralGameServerMod\Mod\GeneralGameServerMod\Command\AutoUpdater\Daemon.lua" logfile="D:\workspace\npl\GeneralGameServerMod\server.log" 

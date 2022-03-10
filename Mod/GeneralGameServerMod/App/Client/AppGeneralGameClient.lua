@@ -228,6 +228,11 @@ function AppGeneralGameClient:IsAnonymousUser()
     return self:GetOptions().username ~= System.User.keepworkUsername;  -- 匿名用户不支持离线缓存
 end
 
+-- 新增活动模型是否同步
+function AppGeneralGameClient:IsEnableNewLiveModelAutoSync()
+    return self.options.isEnableNewLiveModelAutoSync;
+end
+
 -- 同步活动模型
 function AppGeneralGameClient:SyncEntityLiveModel(entity)
     EntitySync(entity, true);
