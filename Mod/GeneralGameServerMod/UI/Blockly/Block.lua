@@ -96,6 +96,9 @@ function Block:Clone(clone, isAll)
     for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
         for j, inputField in ipairs(inputFieldContainer.inputFields) do
             local cloneInputField = clone.inputFieldContainerList[i].inputFields[j];
+            if (inputField:GetType() == "input_value" and inputField:IsValueListItem() and cloneInputField and cloneInputField:GetType() == "input_value_list") then
+                cloneInputField = cloneInputField:AddInputValue();
+            end
             if (inputField:IsCanEdit()) then
                 cloneInputField:SetLabel(inputField:GetLabel());
                 cloneInputField:SetValue(inputField:GetValue());
