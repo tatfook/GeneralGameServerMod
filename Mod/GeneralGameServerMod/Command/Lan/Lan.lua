@@ -52,6 +52,17 @@ function Lan:StartServer()
     if (self:IsEnableSnapshot()) then Snapshot:StartServer() end 
     if (self:IsEnableAutoUpdater()) then AutoUpdater:StartServer() end 
     self:SetServer(true);
+
+    if System.options.channelId=="430" then 
+        local Broadcast = NPL.load("Mod/GeneralGameServerMod/CommonLib/Broadcast.lua");
+        local timer = commonlib.Timer:new({callbackFunc = function() --不停的广播告诉局域网内的学生，我是教师服务器，以便学生自动连接
+            if not Lan:IsServer() then
+                return
+            end
+            Broadcast:SendBroadcaseMsg("TeacherSay:IsMe")
+        end});
+        timer:Change(1000*1, 1000*20);
+    end
 end
 
 function Lan:StopServer()
@@ -108,6 +119,36 @@ function Lan:IsConnected()
     return self:GetNet():IsConnected();
 end
 
+function Lan:checkAutoConnectTeacher()
+    local Broadcast = NPL.load("Mod/GeneralGameServerMod/CommonLib/Broadcast.lua");
+    local Lan = NPL.load("Mod/GeneralGameServerMod/Command/Lan/Lan.lua");
+    local __server_setting__ = NPL.load("Mod/GeneralGameServerMod/Command/Lan/ServerSetting.lua");
+
+    local onBroadcast;
+    onBroadcast = function(msg)
+        local ip = msg.ip
+        local port = msg.port
+
+        if __server_setting__:IsEnableLocalServer() then
+            return
+        end
+        
+        local myIp = NPL.GetExternalIP()
+        if Lan:IsClient() and Lan:IsConnected() then
+            print("--------已经作为局域网客户端连接上教师服务器了，不再重新连接")
+            Broadcast:RemoveBroadcaseEvent("TeacherSay:IsMe",onBroadcast)
+            return
+        end
+        GameLogic.AddBBS(nil,L"找到教师服务器:"..ip)
+        print("找到教师服务器:"..ip,Lan:IsClient(),Lan:IsConnected())
+        -- print("---------aaaaaaa1111 收到老师喊话",ip,port)
+        GameLogic.RunCommand(string.format("/lan -serverIp=%s -serverPort=%s -server=false -client=true ",ip,port))-- -autoupdater=true
+    end
+    --接收教师服务器的广播
+    Broadcast:StartUDPServer()
+    Broadcast:RegisterBroadcaseEvent("TeacherSay:IsMe",onBroadcast)
+end
+
 Lan:InitSingleton():Init();
 
 Commands["lan"] = {
@@ -116,12 +157,13 @@ Commands["lan"] = {
     quick_ref = "/lan 局域网命令集",
     desc = [[
 示例:         
-/lan -severIp=127.0.0.1 -serverPort=8099 设定服务器IP和端口, 默认会进行连接(-server=false)
+/lan -serverIp=127.0.0.1 -serverPort=8099 设定服务器IP和端口, 默认会进行连接(-server=false)
 /lan -server=true 开启服务器  -client=true 是否是客户端
 /lan -snapshot=true 是否启用截屏, 默认关闭. 客户端定时发送Paracraft UI信息到服务器
 /lan -autoupdater=true 是否启用自动更新, 默认关闭
 /lan -lockscreen=true 锁屏|解锁
 /lan -server_setting=true 打开服务器设置
+/lan -auto_find_teacher=true 如果不是老师，自动找到老师，然后连接
     ]],
     handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
         local opts = CommonLib.ParseOptions(cmd_text);
@@ -148,6 +190,10 @@ Commands["lan"] = {
             else
                 Lan:GetSnapshot():UnlockScreen();
             end
+        end
+
+        if opts.auto_find_teacher then 
+            Lan:checkAutoConnectTeacher()
         end
     end
 }
