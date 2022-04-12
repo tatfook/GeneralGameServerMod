@@ -9,6 +9,8 @@ use the lib:
 local PluginManager = NPL.load("Mod/GeneralGameServerMod/Command/PluginManager/PluginManager.lua");
 ------------------------------------------------------------
 ]]
+local FileDownloader = commonlib.inherit(nil, commonlib.gettable("MyCompany.Aries.Creator.Game.API.FileDownloader"));
+local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
@@ -80,7 +82,17 @@ end
 
 
 function PluginManager:InstallPlugin(plugin)
-    echo(plugin)
+    local url, key = plugin.url, plugin.key;
+    local modpath = CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory() .. "/Mod/" .. key);
+    ParaIO.DeleteFile(modpath);
+    FileDownloader:new():Init(key, url, modpath, function(bSucceed, filename) 
+        if (bSucceed) then
+            plugin.state = 1;
+            -- self.__ui__:GetG().RefreshWindow();
+        else
+            CommandManager:RunCommand("/tip 无法下载插件: " .. key); 
+        end
+    end);
 end
 
 PluginManager:InitSingleton():Init();
