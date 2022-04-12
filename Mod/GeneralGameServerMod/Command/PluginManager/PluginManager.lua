@@ -9,6 +9,8 @@ use the lib:
 local PluginManager = NPL.load("Mod/GeneralGameServerMod/Command/PluginManager/PluginManager.lua");
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/apps/Aries/Creator/Game/Mod/ModManager.lua");
+local ModManager = commonlib.gettable("Mod.ModManager");
 local FileDownloader = commonlib.inherit(nil, commonlib.gettable("MyCompany.Aries.Creator.Game.API.FileDownloader"));
 local CommandManager = commonlib.gettable("MyCompany.Aries.Game.CommandManager");
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
@@ -22,36 +24,32 @@ PluginManager.PluginList = {
         desc = "支持导入 MineCraft 世界, 以及 Schematics 地图文件",
         url = "https://ghproxy.com/https://github.com/tatfook/mc/releases/download/v1.0.0/MCImporter.zip",
         key = "MCImporter.zip",
-        state = 0,
     },
-    {
-        name = "MineCraft 地图导入导出插件",
-        desc = "支持导入 MineCraft 世界, 以及 Schematics 地图文件",
-        url = "https://ghproxy.com/https://github.com/tatfook/mc/releases/download/v1.0.0/MCImporter.zip",
-        key = "MCImporter.zip",
-        state = 1,
-    },
-    {
-        name = "MineCraft 地图导入导出插件",
-        desc = "支持导入 MineCraft 世界, 以及 Schematics 地图文件",
-        url = "https://ghproxy.com/https://github.com/tatfook/mc/releases/download/v1.0.0/MCImporter.zip",
-        state = 0,
-        key = "mc",
-    }
 }
+
+function PluginManager:GetLoader()
+	return ModManager:GetLoader();
+end
+
 function PluginManager:Init()
-    local xmlRoot = ParaXML.LuaXML_ParseFile(CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory() .. "/Mod/ModsConfig.xml"));
-    local mods = commonlib.XPath.selectNodes(xmlRoot, "/mods/mod") or {};
-    for _, mod in ipairs(mods) do
-        local modname = mod.attr and mod.attr.name;
-        for _, plugin in ipairs(self.PluginList) do
-            if (plugin.key == modname) then
-                if (type(mod[0]) == "table" and mod[0].name == "world" and type(mod[0].attr) == "table" and mod[0].attr.checked) then
-                    plugin.state = 1;
-                end
-            end
-        end
+    for _, plugin in ipairs(self.PluginList) do
+        plugin.path = CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory() .. "/Mod/" .. plugin.key);
+        if (not string.match(plugin.path, "%.zip$")) then plugin.path = plugin.path .. ".zip" end
+        plugin.state = CommonLib.IsExistFile(plugin.path) and 1 or 0;
     end
+
+    -- local xmlRoot = ParaXML.LuaXML_ParseFile(CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory() .. "/Mod/ModsConfig.xml"));
+    -- local mods = commonlib.XPath.selectNodes(xmlRoot, "/mods/mod") or {};
+    -- for _, mod in ipairs(mods) do
+    --     local modname = mod.attr and mod.attr.name;
+    --     for _, plugin in ipairs(self.PluginList) do
+    --         if (plugin.key == modname) then
+    --             if (type(mod[0]) == "table" and mod[0].name == "world" and type(mod[0].attr) == "table" and mod[0].attr.checked) then
+    --                 plugin.state = 1;
+    --             end
+    --         end
+    --     end
+    -- end
 
     return true;
 end
@@ -82,13 +80,14 @@ end
 
 
 function PluginManager:InstallPlugin(plugin)
-    local url, key = plugin.url, plugin.key;
-    local modpath = CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory() .. "/Mod/" .. key);
-    ParaIO.DeleteFile(modpath);
-    FileDownloader:new():Init(key, url, modpath, function(bSucceed, filename) 
+    local url, key, path = plugin.url, plugin.key, plugin.path;
+    ParaIO.DeleteFile(path);
+    FileDownloader:new():Init(key, url, path, function(bSucceed, filename) 
         if (bSucceed) then
             plugin.state = 1;
             -- self.__ui__:GetG().RefreshWindow();
+            self:GetLoader():Refresh();
+            -- self:GetLoader():GetPluginLoader():EnablePlugin(key, true);
         else
             CommandManager:RunCommand("/tip 无法下载插件: " .. key); 
         end

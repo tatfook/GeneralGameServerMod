@@ -8,8 +8,8 @@
         <div v-for="plugin in PluginList" class="plugin-item">
             <div style="display: flex; align-items: center; justify-content: space-between">
                 <div style="font-size: 18px;">{{plugin.name}}</div>
-                <div v-if="plugin.state == 1" class="button" style="background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 8 16 8); background-color: #e6e6e6;">已下载</div>
-                <div v-if="plugin.state == 0" class="button" onclick="ClickInstallPlugin(plugin)" style="background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 8 16 8);">下载</div>
+                <div v-if="plugin.state == 1" class="button" style="background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 8 16 8); background-color: #e6e6e6;">已安装</div>
+                <div v-if="plugin.state == 0" class="button" onclick="ClickInstallPlugin(plugin)" style="background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 8 16 8);">安装</div>
             </div>
             <div>{{plugin.desc}}</div>
         </div>
