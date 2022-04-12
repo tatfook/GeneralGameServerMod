@@ -19,7 +19,7 @@ function ClickHonor(honor)
     if (not honor.has) then return end 
     
     local username = UserDetail.username;
-    if (UserDetail.nickname) then username = string.format("%s(%s)", UserDetail.nickname, UserDetail.username) end
+    <!-- if (UserDetail.nickname) then username = string.format("%s(%s)", UserDetail.nickname, UserDetail.username) end -->
 
     ShowWindow({
         username = honor.has and username or "",
