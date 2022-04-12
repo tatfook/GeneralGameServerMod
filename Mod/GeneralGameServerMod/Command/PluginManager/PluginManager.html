@@ -1,23 +1,36 @@
 
 <template class="container">
     <div class="header">
-        <div onclick=OnClickRun style="width: 130px; height: 30px; padding-left: 20px; padding-top: 8px; font-size: 18px; font-weight: bold; color: #ffffff;">安装新插件</div>
+        <div style="width: 130px; height: 30px; padding-left: 20px; padding-top: 8px; font-size: 18px; font-weight: bold; color: #ffffff;">安装新插件</div>
         <div class="close-btn" onclick=CloseWindow></div>
     </div>
     <div class="plugin-list">
         <div v-for="plugin in PluginList" class="plugin-item">
-            <div style="display: flex; align-items: center; justify-content: space-between">
-                <div style="font-size: 18px;">{{plugin.name}}</div>
-                <div v-if="plugin.state == 1" class="button" style="background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 8 16 8); background-color: #e6e6e6;">已安装</div>
+            <div style="width: 475px;">
+                <div style="display: flex;">
+                    <div style="font-size: 16px;">{{plugin.name}}</div>
+                    <div onclick="OnClickUrl(plugin.project_url)" v-if="plugin.project_url" style="color:#0000ee; padding-left: 10px; font-size: 12px; padding-top: 4px;">插件源</div>
+                </div>
+                <div style="font-size: 12px;">{{plugin.desc}}</div>
+            </div>
+            <div>
+                <div v-if="plugin.state == 1" class="button" style="background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huise_32bits.png#0 0 38 64:16 16 16 16); background-color: #e6e6e6;">已安装</div>
                 <div v-if="plugin.state == 0" class="button" onclick="ClickInstallPlugin(plugin)" style="background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 8 16 8);">安装</div>
             </div>
-            <div>{{plugin.desc}}</div>
         </div>
     </div>
+    <div onclick=OnClickHelp style="position:absolute; left: 0px; bottom: 0x; right: 0px; height: 20px; text-align: center; font-size: 12px; color: #0000ee;">帮助文档</div>
 </template>
 
 <script type="text/lua">
+function OnClickHelp()
+    ParaGlobal.ShellExecute("open", "https://keepwork.com/official/paracraft/config/PluginManager", "", "", 1);
+end 
 
+function OnClickUrl(url)
+    if (not url or url == "") then return end
+    ParaGlobal.ShellExecute("open", url, "", "", 1);
+end
 </script>
 
 <style scoped=true>
@@ -48,8 +61,8 @@
 }
 
 .button {
-    width: 120px;
-    height: 38px;
+    width: 102px;
+    height: 45px;
     font-size: 18px;
     display: flex;
     align-items: center;
@@ -57,6 +70,7 @@
     background-color: #ffffff;
     color: #000000;
     font-weight: bold;
+    margin-right: 20px;
 }
 
 .button:hover {
@@ -66,7 +80,7 @@
 .plugin-list {
     position: absolute;
     top: 40px;
-    bottom: 1px;
+    bottom: 20px;
     left: 1px;
     right: 1px;
     overflow-y: auto;
@@ -74,6 +88,9 @@
 
 .plugin-item {
     padding: 10px;
-    border-bottom: 1px solid #cccccc;
+    border-bottom: 1px solid #cfcfcf;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between
 }
 </style>
