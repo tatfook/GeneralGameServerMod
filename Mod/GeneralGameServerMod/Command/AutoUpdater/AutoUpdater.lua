@@ -430,7 +430,7 @@ function AutoUpdater:GetLocalLatestVersion()
 end
 
 function AutoUpdater:GetInstallVersion()
-    local version_filename = CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory() .. "/version.txt");
+    local version_filename = CommonLib.ToCanonicalFilePath(self:GetInstallDirectory() .. "/version.txt");
     return self:LoadLocalVersion(version_filename);
 end
 

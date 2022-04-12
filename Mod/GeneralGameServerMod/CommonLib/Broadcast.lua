@@ -43,7 +43,10 @@ end
 function Broadcast:Init()
 end
 
-function Broadcast:SendBroadcaseMsg(msg)
+function Broadcast:SendBroadcaseMsg(eventName,msg)
+    if eventName==nil or eventName=="" then 
+        return
+    end
     if (not self:IsUDPServerStarted()) then self:StartUDPServer() end 
 
     local att = NPL.GetAttributeObject();
@@ -62,32 +65,36 @@ function Broadcast:SendBroadcaseMsg(msg)
 		end
 
 		for key, value in pairs(serverAddrList) do
-			-- send udp msg
 			NPL.activate(value, { 
                 __uuid__ = self:GetUUID(),
                 __GGS_UDP_BROADCAST__ = true,  -- 防止其它广播消息干扰
-                __data__ = msg,
+                __data__ = {eventName=eventName,msg=msg},
             }, 1, 2, 0);
 		end
 	end
 end
 
-function Broadcast:SendMsg(msg, ip, port)
-    if (not ip or not port) then return end 
-
-	NPL.activate("(gl)\\\\" .. ip .. " " .. port .. ":Mod/WorldShare/service/SocketService.lua", {
+function Broadcast:SendMsg(eventName,msg, ip, port)
+    if eventName==nil or eventName=="" then 
+        return
+    end
+    if (not ip or not port) then return end
+    local url = string.format("(gl)\\\\%s %d:Mod/GeneralGameServerMod/CommonLib/Broadcast.lua", ip, port)
+	NPL.activate(url, {
         __uuid__ = self:GetUUID(),
         __GGS_UDP_BROADCAST__ = true, 
-        __data__ = msg,
+        __data__ = {eventName=eventName,msg=msg},
     } , 1, 2, 0);
 end
 
 function Broadcast:RecvBroadcaseMsg(msg)
-    if (type(msg) ~= "table" or not msg.__GGS_UDP_BROADCAST__ or msg.__uuid__ == self:GetUUID()) then return end 
+    if (type(msg) ~= "table" or not msg.__GGS_UDP_BROADCAST__ or msg.__uuid__ == self:GetUUID()) then return end --
     local ip, port = string.match(msg.nid, "~udp(.+)_(%d+)");
-    self:TriggerBroadcaseEvent(msg, function(data)
-        self:SendMsg(data, ip, port);
-    end);
+    if msg.__data__.eventName then
+        msg.ip = ip
+        msg.port = port
+        self:TriggerBroadcaseEvent(msg.__data__.eventName, msg);
+    end
 end
 
 function Broadcast:TriggerBroadcaseEvent(...)
