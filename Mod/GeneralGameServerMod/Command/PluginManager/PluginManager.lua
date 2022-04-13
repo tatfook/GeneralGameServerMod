@@ -34,6 +34,12 @@ function PluginManager:GetLoader()
 	return ModManager:GetLoader();
 end
 
+function PluginManager:CheckPluginState()
+    for _, plugin in ipairs(self.PluginList) do
+        plugin.state = CommonLib.IsExistFile(plugin.path) and 1 or 0;
+    end
+end
+
 function PluginManager:LoadDataSource()
     if (self.loaded) then return end;
     self.loaded = true;
@@ -58,7 +64,6 @@ function PluginManager:LoadDataSource()
             plugin.path = CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory() .. "/Mod/" .. plugin.key);
             if (not string.match(plugin.path, "%.zip$")) then plugin.path = plugin.path .. ".zip" end
             plugin.state = CommonLib.IsExistFile(plugin.path) and 1 or 0;
-    
             table.insert(self.PluginList, plugin);
         end
 
@@ -73,6 +78,7 @@ end
 function PluginManager:Show()
     self:Close();
     self:LoadDataSource();
+    self:CheckPluginState();
     self.__ui__ = Page.Show({
         PluginList = self.PluginList,
         ClickInstallPlugin = function(plugin)
