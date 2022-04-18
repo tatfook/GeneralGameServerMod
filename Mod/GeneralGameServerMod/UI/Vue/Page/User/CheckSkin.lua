@@ -50,7 +50,6 @@ CheckSkin.CloseWithoutChange = nil;
 CheckSkin.DEFAULT_SKIN = "80001;81018;88014;";
 
 function CheckSkin.OnInit()
-	commonlib.echo("OnInit");
 	page = document:GetPageCtrl();
 	page.OnCreate = CheckSkin.OnCreate
 end
@@ -58,11 +57,11 @@ end
 function CheckSkin.Show(closeFunc, skin, CloseWithoutChange) 
 	CheckSkin.closeFunc = closeFunc;
 	CheckSkin.CloseWithoutChange = CloseWithoutChange;
-
 	CheckSkin.InitData(skin);
 end;
 
 function CheckSkin.ShowPage()
+
 	local params = {
 		url = "Mod/GeneralGameServerMod/UI/Vue/Page/User/CheckSkin.html",
 		name = "CheckSkin.Show", 
@@ -368,7 +367,7 @@ end
 
 -- 套装部件的特殊处理
 function CheckSkin.IsUserOwnedThisSuitPartTypeSkin(id)
-	local AllAssets = CheckSkin.GetAllAssets()
+	local AllAssets = CheckSkin.GetAllAssetsAndSkin()
 	local ownedAsset = commonlib.filter(AllAssets, function (item)
 		return item.owned
 	end);
@@ -462,3 +461,253 @@ function CheckSkin.RefreshBeanNum()
     copies = copies or 0;
 	page:SetValue("bean_label", copies)
 end
+
+function CheckSkin.CheckUserSkin()
+	local user_skin = GameLogic.GetPlayerController():GetSkinTexture()
+
+	-- 没皮肤的话不检查
+	if not user_skin or user_skin == "" then
+		return
+	end
+
+	-- 默认裸装的皮肤的话不检查
+	local default_skin = CustomCharItems:SkinStringToItemIds(CustomCharItems.defaultSkinString);
+	if user_skin == default_skin then
+		return
+	end
+
+	-- 看看是否vip 是vip的话 只需管活动物品
+	local isVip = KeepWorkItemManager.IsVip()
+	if isVip then
+		user_skin = CheckSkin.RemoveActivityItems(user_skin);
+		return
+	end
+
+	local itemIds = commonlib.split(user_skin, ";");
+	local DEFAULT_HEAD_SKIN = "80001";
+	if (itemIds and #itemIds > 0) then
+		local items = {};
+		
+		for _, id in ipairs(itemIds) do
+			local data = CustomCharItems:GetItemById(id);
+			if (data) then
+				local val = {
+					id = id,
+					icon = data.icon,
+					type = data.type,
+					price = data.price or "0",
+					name = data.name,
+					category = data.category,
+				}
+	
+				if(id ~= DEFAULT_HEAD_SKIN) then
+					table.insert( items, val )
+				end
+			end
+		end
+
+		local req = commonlib.map(items, function (item)
+			return {
+				category = item.category,
+				itemId = item.id,
+				price = item.price,
+			}
+		end)
+
+		-- 获取结算清单明细
+		CheckSkin.GetCheckInfoFromSkin(req, function (code, msg, data)
+			local clothes = data.clothes;
+
+			-- 找出不能使用了的皮肤,替换掉
+			local result_skin = user_skin
+			for index, item in ipairs(clothes) do
+				local data = CustomCharItems:GetItemById(tostring(item.itemId));
+				if(data.type ~= CheckSkin.SKIN_ITEM_TYPE.FREE) then
+					-- val.price = "免费使用"
+					if data.type == CheckSkin.SKIN_ITEM_TYPE.VIP then
+						result_skin = CustomCharItems:RemoveItemInSkin(user_skin, item.itemId)
+					elseif(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
+						-- 不是可免费使用的部件
+						if not CheckSkin.IsUserOwnedThisSuitPartTypeSkin(item.itemId) then
+							result_skin = CustomCharItems:RemoveItemInSkin(user_skin, item.itemId)
+						end
+					elseif(data.type == CheckSkin.SKIN_ITEM_TYPE.ACTIVITY_GOOD) then
+						if (data.gsid and not KeepWorkItemManager.HasGSItem(data.gsid)) then
+							result_skin = CustomCharItems:RemoveItemInSkin(user_skin, item.itemId)
+						end
+					elseif(data.type == CheckSkin.SKIN_ITEM_TYPE.ONLY_BEANS_CAN_PURCHASE) then
+						-- 知识豆购买的 看看是否还有时间
+						if item.durability and item.durability == 0 then
+							result_skin = CustomCharItems:RemoveItemInSkin(user_skin, item.itemId)
+						end
+					end
+				end
+			end
+			if result_skin ~= user_skin then
+				local playerEntity = GameLogic.GetPlayerController():GetPlayer();
+				if playerEntity then
+					playerEntity:SetSkin(result_skin); 
+				end
+				GameLogic.options:SetMainPlayerSkins(result_skin);
+
+				CheckSkin.UpdatePlayerEntityInfo()
+				GameLogic.GetFilters():apply_filters("user_skin_change", result_skin);
+			end
+
+
+			-- local result_items = commonlib.map(clothes, function (item)
+			-- 	local data = CustomCharItems:GetItemById(tostring(item.itemId));
+			-- 	local val = {
+			-- 		-- 需要支付的价格
+			-- 		price = item.payPrice,
+			-- 		remainingdays = item.durability,
+			-- 		itemId = item.itemId,
+			-- 		category = data.category,
+			-- 		icon = data.icon,
+			-- 		type = data.type,
+			-- 		name = data.name,
+			-- 		is_vip_use = false,
+			-- 	}
+			-- 	-- 设置文案
+			-- 	if(data.type == CheckSkin.SKIN_ITEM_TYPE.FREE) then
+			-- 		val.price = "免费使用"
+			-- 	end
+			-- 	if(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
+			-- 		if(CheckSkin.IsUserOwnedThisSuitPartTypeSkin(item.itemId)) then
+			-- 			val.price = "免费使用"
+			-- 		else
+			-- 			val.price = "仅VIP可用"
+			-- 			val.is_vip_use = true
+			-- 		end
+			-- 	end
+			-- 	if(data.type == CheckSkin.SKIN_ITEM_TYPE.VIP) then
+			-- 		val.price = "仅VIP可用"
+			-- 		val.is_vip_use = true
+			-- 	end
+			-- 	if(data.type == CheckSkin.SKIN_ITEM_TYPE.ACTIVITY_GOOD) then
+			-- 		if (data.gsid and not KeepWorkItemManager.HasGSItem(data.gsid)) then
+			-- 			val.price = "需活动获得"
+			-- 		else
+			-- 			val.price = "免费使用"
+			-- 		end;
+			-- 	end
+
+			-- 	return val;
+			-- end);
+
+			-- print("xxxxxxxxxxxxwww")
+			-- echo(result_items, true)
+		end)
+	else
+		-- 切换套装时
+		CheckSkin.closeFunc()
+	end
+end
+
+function CheckSkin.GetAllAssetsAndSkin()
+    local bagId, bagNo = 0, 1007;
+    local assets = {}; 
+    for _, bag in ipairs(KeepWorkItemManager.bags) do
+        if (bagNo == bag.bagNo) then 
+            bagId = bag.id;
+            break;
+        end
+    end
+    
+    local userAssets = CheckSkin.GetUserAssets();
+    local isVip = GameLogic.IsVip()
+
+    -- Log(userinfo)
+
+    local function IsOwned(item)
+        local vip_enabled = (item.extra or {}).vip_enabled;
+        if (isVip and vip_enabled) then return true end
+        for _, asset in ipairs(userAssets) do
+            if (asset.id == item.id) then return true end
+        end
+        return false;
+    end
+
+    for _, tpl in ipairs(KeepWorkItemManager.globalstore) do
+        local extra = tpl.extra or {};
+        -- echo(extra, true)
+        if (tpl.bagId == bagId and extra.modelFrom) then
+            -- 客户端临时处理 下架套装
+            if(tpl.id ~= 5087 and tpl.id ~= 5067 and tpl.id ~= 5090 and tpl.id ~= 5077) then
+                table.insert(assets, {
+                    id = tpl.id,
+                    gsId = tpl.gsId,
+                    modelUrl = tpl.modelUrl,
+                    modelFrom = if_else(not extra.modelFrom or extra.modelFrom == "", nil, extra.modelFrom),
+                    modelOrder = tonumber(extra.modelOrder or 0) or 0,
+                    icon = CheckSkin.GetItemIcon(tpl),
+                    name = tpl.name,
+                    desc = tpl.desc,
+                    owned = IsOwned(tpl),
+                    requireVip = tpl.extra and tpl.extra.vip_enabled,
+                    skin = tpl.extra and tpl.extra.skin;
+                });
+            end
+        end
+    end
+
+    -- assets = PlayerAssetList;
+    -- Log(assets, true);
+
+    table.sort(assets, function(asset1, asset2) 
+        -- return (not asset2.owned and asset1.owned) or asset1.modelOrder < asset2.modelOrder;
+        return asset1.modelOrder < asset2.modelOrder;
+    end);
+    
+    return assets;
+end
+
+function CheckSkin.GetUserAssets()
+    local bagNo = 1007;
+    local assets = {};
+
+    for _, item in ipairs(KeepWorkItemManager.items) do
+        if (item.bagNo == bagNo) then
+            local tpl = KeepWorkItemManager.GetItemTemplate(item.gsId);
+            if (tpl) then
+                table.insert(assets, {
+                    id = tpl.id,
+                    modelUrl = tpl.modelUrl,
+                    icon = CheckSkin.GetItemIcon(tpl),
+                    name = tpl.name,
+                    skin = tpl.extra and tpl.extra.skin;
+            });
+            end
+        end
+    end
+
+    return assets;
+end
+
+function CheckSkin.GetItemIcon(item, suffix)
+    local icon = item.icon;
+    if(not icon or icon == "" or icon == "0") then icon = string.format("Texture/Aries/Creator/keepwork/items/item_%d%s_32bits.png", item.gsId, suffix or "") end
+    return icon;
+end
+
+function CheckSkin.UpdatePlayerEntityInfo()
+	local userinfo = Keepwork:GetUserInfo();
+    local AuthUserId = userinfo.id;
+    -- 更新用户信息
+    --local player = GameLogic.GetPlayerController():GetPlayer();
+    local asset = MyCompany.Aries.Game.PlayerController:GetMainAssetPath()
+    local skin = MyCompany.Aries.Game.PlayerController:GetSkinTexture()
+    local extra = userinfo.extra or {};
+    extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
+    extra.ParacraftPlayerEntityInfo.asset = asset;
+    extra.ParacraftPlayerEntityInfo.skin = skin;
+    -- extra.ParacraftPlayerEntityInfo.assetSkinGoodsItemId = GlobalScope:Get("AssetSkinGoodsItemId");
+    keepwork.user.setinfo({
+        router_params = {id = AuthUserId},
+        extra = extra,
+    }, function(status, msg, data) 
+        if (status < 200 or status >= 300) then return echo("更新玩家实体信息失败") end
+        local userinfo = KeepWorkItemManager.GetProfile();
+        userinfo.extra = extra;
+    end);
+end 
