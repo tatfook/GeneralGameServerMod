@@ -226,7 +226,7 @@ Options.cmdExamples = function()
         { L"关闭自动等待", "/autowait false"},
         { L"隐藏物品栏", "/hide quickselectbar"},
         { L"显示物品栏", "/show quickselectbar"},
-        { L"/activate", "/activate" },
+        { L"激活方块", "/activate" },
     }
 end
 
