@@ -131,9 +131,32 @@ function CommonLib.GetFileText(filename)
         file:close();
 	end	
 end
+-- 获取文件大小
+function CommonLib.GetFileSize(filename)
+    local file = ParaIO.open(filename , "rb");
+	if(file:IsValid()) then
+		local size = file:GetFileSize();
+		file:close();
+		return size;
+    else
+        print("------不可用",filename)
+        file:close();
+	end	
+    return 0
+end
 
 -- 写文件
 function CommonLib.WriteFile(filename, text)
+    local div = CommonLib.IsWin32Platform() and "\\" or "/"
+    local patt = string.format("[^%s]+%s",div,div)
+    local temp = ""
+    for k,v in string.gmatch(filename,patt) do
+        temp = temp .. k
+        if not ParaIO.DoesFileExist(temp) then
+            ParaIO.CreateDirectory(temp);
+        end
+    end
+
     local file = ParaIO.open(filename , "wb");
 	if(file:IsValid()) then
 		file:WriteString(text, #text);
@@ -225,7 +248,7 @@ function CommonLib.GetFileList(directory, md5, recursive)
                 if (fileattr.mode == "directory") then
                     if (recursive) then GetFileList(file_path, md5, recursive) end
                 else
-                    table.insert(list, #list + 1, {file_path = file_path, file_md5 = md5 and CommonLib.GetFileMD5(file_path)});
+                    table.insert(list, #list + 1, {file_path = file_path, file_md5 = md5 and CommonLib.GetFileMD5(file_path),file_size = md5 and CommonLib.GetFileSize(file_path)});
                 end
             end
         end
@@ -233,7 +256,7 @@ function CommonLib.GetFileList(directory, md5, recursive)
 
     if (not CommonLib.IsDirectory(directory)) then
         -- 是文件直接返回
-        table.insert(list, #list + 1, {file_path = directory, file_md5 = md5 and CommonLib.GetFileMD5(directory)});
+        table.insert(list, #list + 1, {file_path = directory, file_md5 = md5 and CommonLib.GetFileMD5(directory),file_size=md5 and CommonLib.GetFileSize(directory)});
     else 
         -- 是目录 
         GetFileList(directory, md5, recursive);
@@ -488,4 +511,29 @@ function CommonLib.ToVarFuncName(str)
         end
     end
     return newstr;
+end
+
+--返回值： ver_1 - ver_2
+function CommonLib.CompareVer(ver_1,ver_2)
+    local function get_versions(version_str)
+        local result = {};
+        for s in string.gfind(version_str or "", "%d+") do
+            table.insert(result, tonumber(s));
+		end
+        while(#result<3)do 
+            table.insert(result,0)
+        end
+        return result;
+    end
+    local list_1 = get_versions(ver_1)
+    local list_2 = get_versions(ver_2)
+    if(list_1[1] == list_2[1])then
+        if(list_1[2] == list_2[2])then
+            return list_1[3] - list_2[3]
+        else
+            return list_1[2] - list_2[2]
+        end
+    else
+        return list_1[1] - list_2[1]
+    end
 end
