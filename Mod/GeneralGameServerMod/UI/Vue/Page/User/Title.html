@@ -21,7 +21,15 @@
         LOG.std(nil, 'info', 'ChangeAsset');
         LOG.std(nil, 'info', 'assetfile', assetfile);
         LOG.std(nil, 'info', 'skin', skin);
+        -- 如果原本就是裸装 那就不让变成裸装了
+        local defaul_skin = CustomCharItems:SkinStringToItemIds(CustomCharItems.defaultSkinString) 
+        local user_skin = MyCompany.Aries.Game.PlayerController:GetSkinTexture()
+        if skin == defaul_skin and (user_skin == "" or user_skin == defaul_skin) then
+            return
+        end
+
         local playerEntity = GameLogic.GetPlayerController():GetPlayer();
+
         if playerEntity then
             playerEntity:SetMainAssetPath(assetfile);
             playerEntity:SetSkin(skin); 
