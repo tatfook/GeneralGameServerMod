@@ -94,6 +94,8 @@ offlineuser 离线用户命令
 setNewLiveModelAutoSync 新增活动模型是否同步(默认为 on)
 	/ggs setNewLiveModelAutoSync on    允许新增活动模型同步
 	/ggs setNewLiveModelAutoSync off   禁止新增活动模型同步
+showuserinfo                     显示用户信息
+	/ggs showuserinfo [username]
 debug 调试命令 
 	/ggs debug [action]
 	/ggs debug debug module 开启或关闭指定客户端模块日志
@@ -151,6 +153,8 @@ developer                    GGS 开发者模式
 				__this__:handleOfflineUserCommand(cmd_text);
 			elseif (cmd == "user") then
 				__this__:handleUserCommand(cmd_text);
+			elseif (cmd == "showuserinfo") then
+				__this__:handleShowUserInfoCommand(cmd_text);
 			end
 		end
 	}
@@ -311,7 +315,12 @@ function GeneralGameCommand:OnWorldLoaded()
 	GeneralGameClient.options.isEnableNewLiveModelAutoSync = true;  -- 默认为true
 end
 
-
+-- 打开用户面板
+function GeneralGameCommand:handleShowUserInfoCommand(cmd_text)
+	local username, cmd_text_remain = CmdParser.ParseString(cmd_text);
+	local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+	Page.ShowUserInfoPage({username=(username and username ~= "") and username or nil});
+end
 
 -- 初始化成单列模式
 GeneralGameCommand:InitSingleton();
