@@ -53,6 +53,10 @@ __rpc__:Register("WriteFile", function(data)
     CommonLib.WriteFile(data.filename, data.text);
 end);
 
+-- 用于判断服务器是否可用
+__rpc__:Register("isAlive", function(data)
+    return true
+end);
 
 ----------------------------------------client-------------------------------------
 function Net:Broadcast(action, data, callback)
@@ -62,19 +66,23 @@ function Net:Broadcast(action, data, callback)
     end
 end
 
-function Net:Login(data, calback)
+function Net:Login(data, callback)
     -- print("============================user:login===============================");
     self:SetConnected(false);
     __rpc__:Call("Login", self:GetClientUserInfo(), function(key)
         self:SetServerKey(key);
         self:SetConnected(true);
-        if (type(callback) == "function") then calback() end 
+        if (type(callback) == "function") then callback() end 
         print("====================login success=======================", key);
     end);
 end
 
 function Net:IsServer()
-    return self:GetLan():IsServer();
+    if self:GetLan() then 
+        return self:GetLan():IsServer();
+    else
+        return self._isServer
+    end
 end
 
 function Net:ServerTick()
@@ -100,7 +108,15 @@ function Net:ServerTick()
 end
 
 function Net:GetClientUserInfo()
-    return self:GetLan():GetUserInfo();
+    -- return self:GetLan():GetUserInfo();
+    local Keepwork = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/Keepwork.lua");
+    return {
+        username = Keepwork:GetUserName() or (IsDevEnv and tostring(ParaGlobal.timeGetTime()) or nil),
+        nickname = Keepwork:GetNickName(),
+        classname = Keepwork:GetGradeClassName(),
+        worldId = Keepwork:GetCurrentWorldID(),
+        worldName = Keepwork:GetCurrentWorldName();
+    };
 end
 
 function Net:ClientTick()
@@ -118,7 +134,10 @@ function Net:CopyFile(src_file, dst_file, calback)
 end
 
 function Net:SetServerIpAndPort(ip, port)
-    __rpc__:SetNid(CommonLib.AddNPLRuntimeAddress(ip, port));
+    local nid = CommonLib.AddNPLRuntimeAddress(ip, port)
+    if __rpc__:GetNid()~=nid then
+        __rpc__:SetNid(nid);
+    end
 end
 
 function Net:IsValidVirtualAddress()
@@ -147,6 +166,27 @@ function Net:GetCurrentConnection()
     if (nid) then __all_connections__[key] = connection end 
 
     return connection;
+end
+
+--作为服务器主动给某个客户端发消息
+function Net:CallClientByKey(key,...)
+    local connection = __all_connections__[key];
+    -- print("----CallClientByKey,key:",key,"connection",connection)
+    -- echo(connection,true)
+    if connection then
+        local __rpc_ = self:GetRPC();
+        local old_nid = __rpc__:GetNid();
+        if old_nid~=connection.nid then
+            __rpc__:SetNid(connection.nid);
+            __rpc_:Call(...);
+            __rpc__:SetNid(old_nid);
+        else
+            __rpc_:Call(...);
+        end
+        return true 
+    else
+        return false
+    end
 end
 
 function Net:GetAllConnection()
@@ -189,6 +229,7 @@ function Net:Init()
 end
 
 function Net:StartServer()
+    self._isServer = true
     if (not self.__server_tick_timer__) then
         self.__server_tick_timer__ = CommonLib.SetInterval(1000 * 60, function()
             self:ServerTick();
@@ -197,16 +238,18 @@ function Net:StartServer()
 end
 
 function Net:StopServer()
+    self._isServer = nil
     -- self.__server_tick_timer__:Change();
 end
 
-function Net:StartClient(ip, port)
+function Net:StartClient(ip, port, callback)
+    self._isClient = true
     if (not ip) then return self:SetConnected(false) end 
 
     self:SetClientNid(CommonLib.AddNPLRuntimeAddress(ip, port));
     __rpc__:SetNid(self:GetClientNid());
 
-    self:Login();
+    self:Login(nil,callback);
 
     if (not self.__client_tick_timer__) then
         self.__client_tick_timer__ = CommonLib.SetInterval(1000 * 60, function()
@@ -216,6 +259,38 @@ function Net:StartClient(ip, port)
 end
 
 function Net:StopClient()
+    self._isClient = nil
+end
+
+function Net:CheckServerAlive(callback,second)
+    second = second or 5
+    local timer = commonlib.TimerManager.SetTimeout(function()
+        if callback then 
+            callback(false)
+        end
+    end,second*1000)
+    __rpc__:Call("isAlive", nil, function(bool)
+        print("--------server isAlive?",bool)
+        callback(true)
+        callback = nil
+        timer:Change()
+    end);
+end
+
+function Net:CheckClientAlive(key,callback,second)
+    second = second or 5
+    local timer = commonlib.TimerManager.SetTimeout(function()
+        print("-----不可用",callback,os.clock())
+        if callback then 
+            callback(false)
+        end
+    end,second*1000)
+    print("second",second,os.clock(),callback)
+    self:CallClientByKey(key,"isAlive", nil, function(bool)
+        print("--------client isAlive?",bool)
+        callback(true)
+        timer:Change()
+    end);
 end
 
 RPC.RegisterDisconnectedCallBack(function(msg)
