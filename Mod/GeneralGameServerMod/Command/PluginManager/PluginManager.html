@@ -1,15 +1,18 @@
 
 <template class="container">
     <div class="header">
-        <div style="width: 130px; height: 30px; padding-left: 20px; padding-top: 8px; font-size: 16px; font-weight: bold; color: #ffffff;">安装新插件</div>
-        <div class="close-btn" onclick=CloseWindow></div>
+        <div style="position: absolute; top: 12px; left: 0px; right: 0px; bottom: 0px; background-color: #000000;"></div>
+        <div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; z-index: 2; display: flex; justify-content: space-between; ">
+            <div style="width: 130px; height: 30px; padding-left: 20px; padding-top: 8px; font-size: 16px; font-weight: bold; color: #ffffff;">安装新插件</div>
+            <div class="close-btn" onclick=CloseWindow></div>
+        </div>
     </div>
     <div class="plugin-list">
         <div v-for="plugin in PluginList" class="plugin-item">
             <div style="width: 475px;">
                 <div style="display: flex;">
                     <div style="font-size: 16px;">{{plugin.name}}</div>
-                    <div onclick="OnClickUrl(plugin.project_url)" v-if="plugin.project_url" style="color:#0000ee; padding-left: 10px; font-size: 12px; padding-top: 4px;">插件源</div>
+                    <div onclick="OnClickUrl(plugin.homepage)" v-if="plugin.project_url" style="color:#0000ee; padding-left: 10px; font-size: 12px; padding-top: 4px;">插件源</div>
                 </div>
                 <div style="font-size: 12px;">{{plugin.desc}}</div>
             </div>
@@ -43,7 +46,9 @@ end
 .container {
     width: 100%;
     height: 100%;
-    background: url(Texture/Aries/Creator/keepwork/Window/dakuang2_32bits.png#0 0 64 69:26 44 24 22);
+    background-color: #ffffff;
+    /* background: url(Texture/Aries/Creator/keepwork/Window/dakuang2_32bits.png#0 0 64 69:26 44 24 22); */
+    border-radius: 15px;
 }
 
 .header {
@@ -51,6 +56,8 @@ end
     width: 100%;
     display: flex;
     justify-content: space-between;
+    background-color: #000000;
+    border-radius: 15px;
 }
 
 .close-btn {

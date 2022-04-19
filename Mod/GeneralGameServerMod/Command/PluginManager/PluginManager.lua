@@ -53,10 +53,11 @@ function PluginManager:LoadDataSource()
             local name = string.match(line, "#name=([^#]+)");
             local desc = string.match(line, "#desc=([^#]+)");
             local key = string.match(line, "#key=([^#]+)");
-            local project_url = string.match(line, "#project_url=([^#]+)");
+            local homepage = string.match(line, "#homepage=([^#]+)");
+            local version = string.match(line, "#version=([^#]+)");
             if (url and key and name) then
                 -- print(url, name, key, desc)
-                plugins[key] = {url = url, name = name, desc = desc or "", key = key, project_url = project_url};
+                plugins[key] = {url = url, name = name, desc = desc or "", key = key, homepage = homepage, version = version};
             end
         end
 
@@ -65,6 +66,7 @@ function PluginManager:LoadDataSource()
             if (not string.match(plugin.path, "%.zip$")) then plugin.path = plugin.path .. ".zip" end
             plugin.state = CommonLib.IsExistFile(plugin.path) and 1 or 0;
             table.insert(self.PluginList, plugin);
+            echo(plugin, true);
         end
 
         if (self.__ui__) then self.__ui__:GetG():RefreshWindow() end 
@@ -109,8 +111,14 @@ function PluginManager:InstallPlugin(plugin)
         if (bSucceed) then
             plugin.state = 1;
             -- self.__ui__:GetG().RefreshWindow();
-            self:GetLoader():Refresh();
+            local pluginConfig = self:GetLoader():GetPluginConfig(key, true);
+            if (plugin.homepage) then pluginConfig:SetAttribute("homepage", plugin.homepage) end 
+            if (plugin.url) then pluginConfig:SetAttribute("url", url) end 
+            if (plugin.version) then pluginConfig:SetAttribute("version", plugin.version) end 
+            if (plugin.name) then pluginConfig:SetAttribute("displayName", plugin.name) end 
             -- self:GetLoader():GetPluginLoader():EnablePlugin(key, true);
+            self:GetLoader():SaveModTableToFile();
+            self:GetLoader():Refresh();
         else
             CommandManager:RunCommand("/tip 无法下载插件: " .. key); 
         end

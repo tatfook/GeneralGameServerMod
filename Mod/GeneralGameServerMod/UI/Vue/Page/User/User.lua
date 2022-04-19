@@ -551,6 +551,8 @@ _G.UpdatePlayerEntityInfo = function()
     --local player = GameLogic.GetPlayerController():GetPlayer();
     local asset = MyCompany.Aries.Game.PlayerController:GetMainAssetPath()
     local skin = MyCompany.Aries.Game.PlayerController:GetSkinTexture()
+    print("asset:" , asset);
+    print("skin:", skin);
     local extra = UserDetail.extra or {};
     extra.ParacraftPlayerEntityInfo = extra.ParacraftPlayerEntityInfo or {};
     extra.ParacraftPlayerEntityInfo.asset = asset;

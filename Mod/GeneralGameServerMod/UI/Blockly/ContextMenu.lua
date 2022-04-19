@@ -227,6 +227,7 @@ function ContextMenu:ExportMacroCode()
             if (code and code ~= "") then 
                 params[#params + 1] = {macroCode = code, blockType = blocktype, isMacroBlock = true}; 
             end
+            ExportBlockMacroCode(nextConnection and nextConnection:GetBlock());
             return;
         end
         if (not isSetBlocklyEnv) then
