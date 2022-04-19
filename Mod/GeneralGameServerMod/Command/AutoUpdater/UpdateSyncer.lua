@@ -690,7 +690,16 @@ function UpdateSyncer:OnDownloadFinish()
         }
         local line = table.concat(tab,"|")
         if ParaIO.DoesFileExist(self:_getDownloadPath(obj.file_name)) then
-            table.insert(arr,line)
+            
+            if obj.file_name==launcherExe then --Launcher直接先复制过去,剩下的文件，再来由launcher复制
+                local targetPath = root..obj.file_name
+                print("-----move launcher to:",targetPath)
+                if(not ParaIO.MoveFile(path, targetPath))then
+                    print("-------move launcher failed")
+                end
+            else
+                table.insert(arr,line)
+            end
         else
             print("-----下载有误",self:_getDownloadPath(obj.file_name))
             self:OnDownloadFailed()
@@ -765,7 +774,9 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
         -- print("--------manifestReq 返回")
         -- echo(msg,true)
     end
+    local _timer;
     local function onLoginSuccess()
+        _timer:Change()
         local nid = self._net:GetClientNid() --当前连接的，服务器的地址
         local key = self._net:GetServerKey() --当前连接的，对于服务器来讲的，我的key
         self._key = key
@@ -795,7 +806,11 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
     end
 
     self._net:StartClient(ip,port,onLoginSuccess) --连接服务器并发起登录
-
+    
+    _timer = commonlib.TimerManager.SetTimeout(function() --连接超时
+        self._downloadState = DownloadState.none
+        Broadcast:RegisterBroadcaseEvent(MSG_SERVER_BROADCAST,self._onBroadcast) --重新注册广播，允许新的服务器介入
+    end,1000*3)
     return true
 end
 
