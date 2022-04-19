@@ -229,6 +229,8 @@ function UpdateSyncer.onBtnApply()
 
     local applyVerFile = storagePath.."lan_applyVer.txt"
     
+    applyManifestFile = commonlib.Encoding.DefaultToUtf8(applyManifestFile) --防止中文路径Launcher识别不到
+    applyVerFile = commonlib.Encoding.DefaultToUtf8(applyVerFile) --防止中文路径Launcher识别不到
     local isFixMode = false
     local cmdStr = string.format("isFixMode=%s justNeedCopy=true applyManifestFile=%s applyVerFile=%s",tostring(isFixMode),applyManifestFile,applyVerFile)
     print("cmdStr",cmdStr)
