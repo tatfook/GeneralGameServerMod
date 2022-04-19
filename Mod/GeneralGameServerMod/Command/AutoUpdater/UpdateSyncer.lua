@@ -68,7 +68,7 @@ function UpdateSyncer:Init()
         self.realLatestVersion = opt.realLatestVersion
         self:getManifestAndDeletelist(function(downloads)
             self.downloadlist = self:getKeyFileList(downloads)
-            print("---------下载清单:")
+            print("2---------下载清单:")
             echo(self.downloadlist)
             self:initServer()
         end)
@@ -263,7 +263,7 @@ function UpdateSyncer:initServer()
     self._type = ConType.server
     self._uploadTaskList = {} --收到的客户端下载请求队列
     self._isUploading = false
-    self._curClientKey = nil; --当前连接的客户端，用于保证每次只向一个客户端上传文件，直至该客户端完成更新
+    self._isFree = true;--当前服务器是否空闲，只有第一个来问的客户端会得到true返回，直至向该客户端推送完成或者中途出错
 
     self:StartWebServer()
 
@@ -291,7 +291,7 @@ function UpdateSyncer:_sendBoradcast()
         -- print("_sendBoradcast return 2")
         return
     end
-    if self._curClientKey ~= nil then
+    if not self._isFree then
         -- print("_sendBoradcast return 3")
         return
     end
@@ -327,16 +327,15 @@ end
 function UpdateSyncer:initMsgBind()
     --被询问是否空闲
     self._net:Register("CheckIsFree",function(msg)
-        local isFree = self._curClientKey==nil
-        if self._curClientKey==nil then
-            self._curClientKey = msg.key
-        end
-        return isFree
+        local ret = self._isFree
+        self._isFree = false
+        print("-----self CheckIsFree",ret)
+        return ret
     end)
     --被当前客户端告知下载完成
     self._net:Register("IsDownloadFinish",function(msg)
-        -- print("-------又空闲了")
-        self._curClientKey = nil
+        print("1-------此服务器又空闲了")
+        self._isFree = true
         self:_sendBoradcast()
         return ret
     end)
@@ -378,8 +377,8 @@ end
 --是否有推送文件任务，有的话执行
 function UpdateSyncer:CheckUploadToClient()
     if #self._uploadTaskList==0 then
-        -- print("--------又空闲了")
-        self._curClientKey = nil
+        print("2--------又空闲了")
+        self._isFree = true
         self:_sendBoradcast()
         return
     end
@@ -428,7 +427,8 @@ end
 
 function UpdateSyncer:onClientError()
     self._isUploading = false
-    self._curClientKey = nil
+    self._isFree = true
+    print("onClientError")
     self:_sendBoradcast()
 end
 
@@ -764,6 +764,7 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
         return false
     end
     self.UpdateProgressText(L"正在连接更新源..")
+    print("ip,port",ip,port)
     local onGetKeyFileManifest;
     onGetKeyFileManifest = function (msg)
         self._allDownloadList = msg.downloadlist
@@ -795,6 +796,9 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
                     else
                         self:checkDownloadingOne()
                     end
+                else
+                    self.UpdateProgressText(L"等待新的更新源...")
+                    Broadcast:RegisterBroadcaseEvent(MSG_SERVER_BROADCAST,self._onBroadcast)
                 end
             end)
         else --正在下载呢
