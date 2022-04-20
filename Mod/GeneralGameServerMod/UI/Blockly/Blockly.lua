@@ -717,6 +717,7 @@ function Blockly:AdjustCenter(targetBlock)
     else
         self.offsetX, self.offsetY = viewLeft - left + Const.ToolBoxWidth, viewTop - top;
     end
+    self:OnOffsetChange();
 end
 
 -- 重新布局
@@ -857,6 +858,9 @@ function Blockly:GetMouseUI(x, y, event)
         ui = self:GetToolBox():GetMouseUI(x + self.offsetX, y + self.offsetY, event);
         return ui or self:GetToolBox();
     end
+
+    if (self.__horizontal_scroll_bar__:GetMouseUI(x, y, event)) then return self.__horizontal_scroll_bar__ end 
+    if (self.__vertical_scroll_bar__:GetMouseUI(x, y, event)) then return self.__vertical_scroll_bar__ end
     
     ui = self:GetXYUI(x, y);
     return ui or self;
