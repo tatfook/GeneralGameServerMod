@@ -525,24 +525,26 @@ function CheckSkin.CheckUserSkin()
 				if(data.type ~= CheckSkin.SKIN_ITEM_TYPE.FREE) then
 					-- val.price = "免费使用"
 					if data.type == CheckSkin.SKIN_ITEM_TYPE.VIP then
-						result_skin = CustomCharItems:RemoveItemInSkin(user_skin, item.itemId)
+						result_skin = CustomCharItems:RemoveItemInSkin(result_skin, item.itemId)
 					elseif(data.type == CheckSkin.SKIN_ITEM_TYPE.SUIT_PART) then
 						-- 不是可免费使用的部件
 						if not CheckSkin.IsUserOwnedThisSuitPartTypeSkin(item.itemId) then
-							result_skin = CustomCharItems:RemoveItemInSkin(user_skin, item.itemId)
+							result_skin = CustomCharItems:RemoveItemInSkin(result_skin, item.itemId)
 						end
 					elseif(data.type == CheckSkin.SKIN_ITEM_TYPE.ACTIVITY_GOOD) then
 						if (data.gsid and not KeepWorkItemManager.HasGSItem(data.gsid)) then
-							result_skin = CustomCharItems:RemoveItemInSkin(user_skin, item.itemId)
+							result_skin = CustomCharItems:RemoveItemInSkin(result_skin, item.itemId)
 						end
 					elseif(data.type == CheckSkin.SKIN_ITEM_TYPE.ONLY_BEANS_CAN_PURCHASE) then
 						-- 知识豆购买的 看看是否还有时间
+						
 						if item.durability and item.durability == 0 then
-							result_skin = CustomCharItems:RemoveItemInSkin(user_skin, item.itemId)
+							result_skin = CustomCharItems:RemoveItemInSkin(result_skin, item.itemId)
 						end
 					end
 				end
 			end
+
 			if result_skin ~= user_skin then
 				local playerEntity = GameLogic.GetPlayerController():GetPlayer();
 				if playerEntity then
