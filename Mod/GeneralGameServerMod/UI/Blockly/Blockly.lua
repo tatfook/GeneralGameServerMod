@@ -28,7 +28,7 @@ local ShadowBlock = NPL.load("./ShadowBlock.lua", IsDevEnv);
 local BlocklyEditor = NPL.load("./BlocklyEditor.lua", IsDevEnv);
 local Note = NPL.load("./Note.lua", IsDevEnv);
 local BlocklySimulator = NPL.load("./BlocklySimulator.lua", IsDevEnv);
-
+local ScrollBar = NPL.load("./ScrollBar.lua", IsDevEnv);
 local Blockly = commonlib.inherit(Element, NPL.export());
 
 local ConnectionBlockSound = BlockSound:new():Init({"cloth1", "cloth2", "cloth3",});
@@ -76,6 +76,10 @@ function Blockly:Reset()
     self.notes = {};
     self.offsetX, self.offsetY = 0, 0;
     self.mouseMoveX, self.mouseMoveY = 0, 0;
+    self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__, self.__content_bottom_unit_count__ = 0, 0, 0, 0;
+    self.__offset_x_unit_count__, self.__offset_y_unit_count__ = 0, 0;
+    self.__horizontal_scroll_bar__ = ScrollBar:new():Init(self, "horizontal");
+    self.__vertical_scroll_bar__ = ScrollBar:new():Init(self, "vertical");
     self:SetScale(1);
 end
 
@@ -116,7 +120,6 @@ function Blockly:Init(xmlNode, window, parent)
     self.isHideToolBox = self:GetAttrBoolValue("isHideToolBox", false);
     self.isHideIcons = self:GetAttrBoolValue("isHideIcons", false);
     self:SetReadOnly(self:GetAttrBoolValue("readonly", false));
-
     return self;
 end
 
@@ -567,6 +570,8 @@ function Blockly:RenderContent(painter)
         end
     end
 
+    self.__horizontal_scroll_bar__:Render(painter);
+    self.__vertical_scroll_bar__:Render(painter);
     painter:Translate(-x, -y);
 end
 
@@ -817,6 +822,24 @@ function Blockly:OnOffsetChange()
     for _, note in ipairs(self.notes) do
         note:UpdateWindowPos();
     end
+
+    local width, height = self:GetSize();
+    local UnitSize = self:GetUnitSize();
+    if (not self.isHideToolBox) then width = width - Const.ToolBoxWidth end
+    self.__width_unit_count__, self.__height_unit_count__ = math.ceil(width / UnitSize), math.ceil(height / UnitSize);
+    self.__offset_x_unit_count__, self.__offset_y_unit_count__ = math.floor(self.offsetX / UnitSize), math.floor(self.offsetY / UnitSize);
+    local left, top, right, bottom = math.min(0, self.__offset_x_unit_count__), math.min(0, self.__offset_y_unit_count__), math.max(self.__offset_x_unit_count__ + self.__width_unit_count__, self.__width_unit_count__), math.max(self.__offset_y_unit_count__ + self.__height_unit_count__, self.__height_unit_count__);
+    for _, block in ipairs(self.blocks) do 
+        local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
+        local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
+        local rightUnitCount, bottomUnitCount = leftUnitCount + widthUnitCount, topUnitCount + heightUnitCount;
+        left = math.min(left, leftUnitCount);
+        top = math.min(top, topUnitCount);
+        right = math.max(right, rightUnitCount);
+        bottom = math.max(bottom, bottomUnitCount);
+    end
+
+    self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__, self.__content_bottom_unit_count__ = left, top, right, bottom;
 end
 
 function Blockly:GetOffset()
@@ -868,6 +891,9 @@ end
 -- 鼠标滚动事件
 function Blockly:OnMouseWheel(event)
     if (self:IsInnerToolBox(event)) then return self:GetToolBox():OnMouseWheel(event) end
+    local delta = event:GetDelta();             -- 1 向上滚动  -1 向下滚动
+    self.offsetY = self.offsetY + delta * 20;
+    self:OnOffsetChange();
 end
 
 -- 键盘事件
