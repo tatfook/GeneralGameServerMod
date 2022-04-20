@@ -201,7 +201,7 @@ function UpdateSyncer.UpdateProgressText(text)
         DownloadWorld.UpdateProgressText(text);
         -- return
     end
-    print(text)
+    LOG.std(nil, "info", "UpdateSyncer", "progressText:%s",text);
     UpdateSyncer.curText = text
 	if(page) then
 		page:SetValue("progressText", text)
@@ -258,7 +258,7 @@ function UpdateSyncer:initServer()
     if self._type==ConType.server then 
         return
     end
-    print("-------开启局域网更新服务器")
+    LOG.std(nil, "info", "UpdateSyncer.s", "开启局域网更新服务器 myIp:%s",NPL.GetExternalIP());
     --服务端初始化参数
     self._type = ConType.server
     self._uploadTaskList = {} --收到的客户端下载请求队列
@@ -292,7 +292,7 @@ function UpdateSyncer:_sendBoradcast()
         return
     end
     if not self._isFree then
-        -- print("_sendBoradcast return 3")
+        -- print("self is not free 不广播")
         return
     end
     
@@ -329,12 +329,12 @@ function UpdateSyncer:initMsgBind()
     self._net:Register("CheckIsFree",function(msg)
         local ret = self._isFree
         self._isFree = false
-        print("-----self CheckIsFree",ret)
+        LOG.std(nil, "info", "UpdateSyncer.s", "self CheckIsFree? %s,clientIp:%s", ret and "true" or "false",msg.myIp);
         return ret
     end)
     --被当前客户端告知下载完成
     self._net:Register("IsDownloadFinish",function(msg)
-        print("1-------此服务器又空闲了")
+        LOG.std(nil, "info", "UpdateSyncer.s", "收到 IsDownloadFinish,变空闲,clientIp:%s",msg.myIp);
         self._isFree = true
         self:_sendBoradcast()
         return ret
@@ -359,13 +359,13 @@ function UpdateSyncer:initMsgBind()
         local ret = {
             taskSize = taskSize
         }
+        self._curLeftNum = obj.leftNum --不算这次这个，当前客户端，还有几个文件需要下载
         -- if taskSize>MAX_UPLOAD_SIZE and not obj.force then --此服务器当前任务量超过最大任务量，就不响应新的下载请求，让客户端另请高明,force表示无论如何要通融一下
         --     ret.access = false
         -- else
             commonlib.TimerManager.SetTimeout(function()
-                -- print("------收到单个下载请求",obj.file_name)
-                -- echo(obj,true)
                 table.insert(self._uploadTaskList,obj)
+                LOG.std(nil, "info", "UpdateSyncer.s", "收到下载请求,name:%s,客户端:%s,当前任务数量:%s", obj.file_name,obj.myIp,self._curLeftNum+1);
                 self:CheckUploadToClient() --延时再开始推送文件
             end,1)
             ret.access = true
@@ -377,11 +377,9 @@ end
 --是否有推送文件任务，有的话执行
 function UpdateSyncer:CheckUploadToClient()
     if #self._uploadTaskList==0 then
-        print("2--------又空闲了")
-        self._isFree = true
-        self:_sendBoradcast()
         return
     end
+    
     if self._isUploading then
         return
     end
@@ -394,13 +392,13 @@ function UpdateSyncer:CheckUploadToClient()
         local file_path = CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory()..obj.file_name)
         obj.file_content = CommonLib.GetFileText(file_path)
         -- print("-------服务器主动推送文件：")echo(obj,true)
-
+        LOG.std(nil, "info", "UpdateSyncer.s", "upload file:%s,clientIp:%s", obj.file_name,obj.myIp);
         local _timer;
         _timer = commonlib.TimerManager.SetTimeout(function()
-            print("-------上传文件超时")
+            LOG.std(nil, "waring", "UpdateSyncer.s", "upload timeout:%s,clientIp:%s", obj.file_name,obj.myIp);
             --上传文件超时
             self._net:CheckClientAlive(key,function(alive)
-                print("------超时，检查客户端可用结果",alive)
+                LOG.std(nil, "waring", "UpdateSyncer.s", "timeout,client is alive? %s", alive and "true" or "false");
                 if alive then
                     _timer = commonlib.TimerManager.SetTimeout(function() --再给1分钟，不行咱就别浪费时间了
                         self:onClientError()
@@ -428,7 +426,7 @@ end
 function UpdateSyncer:onClientError()
     self._isUploading = false
     self._isFree = true
-    print("onClientError")
+    LOG.std(nil, "error", "UpdateSyncer.s", "onClientError wait retry");
     self:_sendBoradcast()
 end
 
@@ -486,7 +484,8 @@ function UpdateSyncer:initClient()
     if self._type==ConType.client then 
         return
     end
-    print("-------初始化局域网更新客户端")
+    self._myIp = NPL.GetExternalIP()
+    LOG.std(nil, "info", "UpdateSyncer", "初始化局域网更新客户端 myIp:%s",self._myIp);
     --客户端初始化参数
     self._type = ConType.client
     self._remoteVer = nil; --远程版本号
@@ -505,9 +504,7 @@ function UpdateSyncer:initClient()
         local data = msg.__data__.msg
         local remoteVer = data.ver
         local taskSize = data.taskSize --发消息这个服务器，当前的下载任务大小（用来排序，选择负担最小的服务器进行下载）
-        
-        local myIp = NPL.GetExternalIP()
-        
+                
         local localVer = self:getVersionByPath(CommonLib.GetRootDirectory())
         if CommonLib.CompareVer(localVer,remoteVer)<0 then --有更新
             self._remoteVer = remoteVer
@@ -603,6 +600,8 @@ function UpdateSyncer:checkDownloadingOne()
     self.UpdateProgressText(string.format(L"正在下载(%d/%d):%s",#self._allDownloadList-#self._downloadingList+1,#self._allDownloadList,self._curDobj.file_name))
     
     self._curDobj.key = self._key --这个key其实是服务器用来标记连接来源客户端的
+    self._curDobj.myIp = self._myIp
+    self._curDobj.leftNum = #self._downloadingList-1 --不算当前这个，剩余任务数量
     
     local filepath = self:_getDownloadPath(self._curDobj.file_name)
     if ParaIO.DoesFileExist(filepath) and CommonLib.GetFileMD5(filepath)==self._curDobj.file_md5 then
@@ -662,8 +661,10 @@ end
 --所有下载完成了，使用launcher应用
 function UpdateSyncer:OnDownloadFinish()
 
-    self._net:Call("IsDownloadFinish",{},function(ret)
-        print("-----已经通知服务器，我下完了")
+    self._net:Call("IsDownloadFinish",{
+        myIp = self._myIp
+    },function(ret)
+        LOG.std(nil, "info", "UpdateSyncer", "已经通知服务器，我下完了 IsDownloadFinish");
     end)
 
     local launcherExe = "ParaCraft.exe"
@@ -739,7 +740,7 @@ function UpdateSyncer:OnDownloadFinish()
         DownloadWorld.Close()
     end
     if self.isAutoInstall then
-        -- self:onBtnApply()
+        self:onBtnApply()
     else
         print("--cmdStr",cmdStr)
     end
@@ -764,7 +765,7 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
         return false
     end
     self.UpdateProgressText(L"正在连接更新源..")
-    print("ip,port",ip,port)
+    LOG.std(nil, "info", "UpdateSyncer", "checkConnectServer,ip:%s,port:%s", ip,port);
     local onGetKeyFileManifest;
     onGetKeyFileManifest = function (msg)
         self._allDownloadList = msg.downloadlist
@@ -776,6 +777,9 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
         self:checkDownloadingOne()
         -- print("--------manifestReq 返回")
         -- echo(msg,true)
+        if UpdateSyncer.needShowDownloadWorldUI then
+            DownloadWorld.ShowPage(L"局域网")
+        end
     end
     local _timer;
     local function onLoginSuccess()
@@ -783,12 +787,12 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
         local nid = self._net:GetClientNid() --当前连接的，服务器的地址
         local key = self._net:GetServerKey() --当前连接的，对于服务器来讲的，我的key
         self._key = key
-        print("------onLoginSuccess self._downloadState",self._downloadState)
+        LOG.std(nil, "info", "UpdateSyncer", "onLoginSuccess self._downloadState:%s", tostring(self._downloadState));
         if self._downloadState == DownloadState.none or self._downloadState == DownloadState.failed then --只有没有开始下载的情况下处理
             self.UpdateProgressText(L"正在检查服务器状态...")
             --检测当前是否在空闲状态，只有第一个收到这条广播的客户端，才能继续往下处理
-            self._net:Call("CheckIsFree",{key=key},function(isFree)
-                print("--------isFree",isFree)
+            self._net:Call("CheckIsFree",{key=key,myIp=self._myIp},function(isFree)
+                LOG.std(nil, "info", "UpdateSyncer", "server isFreee? %s,serverIp:%s", isFree and "true" or "false",ip);
                 if isFree then
                     if self._allDownloadList==nil then
                         self.UpdateProgressText(L"正在获取清单文件...")
@@ -804,7 +808,7 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
         else --正在下载呢
             self._net:CheckServerAlive(function(alive) --有可能原来的服务器挂了,要重新开始连服务器
                 if not alive then
-                    print("------当前服务器不可用,重新开启监听")
+                    LOG.std(nil, "info", "UpdateSyncer", "当前服务器不可用,重新开启监听");
                     self:OnDownloadFailed()
                 end
             end)
