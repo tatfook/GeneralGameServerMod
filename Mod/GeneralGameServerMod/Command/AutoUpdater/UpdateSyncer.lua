@@ -372,6 +372,13 @@ function UpdateSyncer:initMsgBind()
         -- end
         return ret
     end)
+
+    --客户端某个环节下载出错了，收到这个释放当前服务端
+    self._net:Register("downloadError",function(msg)
+        self._isFree = true;
+        LOG.std(nil, "error", "UpdateSyncer.s", "downloadError ,set _isFree=true");
+        self:_sendBoradcast()
+    end)
 end
 
 --是否有推送文件任务，有的话执行
@@ -552,9 +559,12 @@ function UpdateSyncer:_onDownloadRsp(obj)
     if md5==obj.file_md5 then
         self._downloadState = DownloadState.finish_one
     else
+        self._downloadState = DownloadState.finish_one
         print("-------下载的文件md5不对")
+        obj.file_content = nil
         echo(obj,true)
         table.insert(self._downloadFailList,self._curDobj)
+        ParaIO.DeleteFile(filepath)
     end
     self:checkDownloadingOne()
 end
@@ -570,16 +580,8 @@ function UpdateSyncer:checkDownloadingOne()
 
     if #self._downloadingList==0 then --要下载的下载完了
         if #self._downloadFailList>0 then
-            self._retryCount = self._retryCount + 1
-            if self._retryCount>3 then
-                self:OnDownloadFailed()
-                return
-            end
-            self._downloadState = DownloadState.retrying
-            self._downloadingList = self._downloadFailList
-            self._downloadFailList = {} --失败列表
-            
-            self:checkDownloadingOne() --重试
+            self._downloadFailList = {}
+            self:OnDownloadFailed()
         else
             self:OnDownloadFinish()
         end
@@ -757,6 +759,7 @@ function UpdateSyncer:OnDownloadFailed()
         self._downloadingList[k] = v
     end
     Broadcast:RegisterBroadcaseEvent(MSG_SERVER_BROADCAST,self._onBroadcast) --重新注册广播，允许新的服务器介入
+    self._net:Call("downloadError")
 end
 
 --作为客户端，去连接服务器、登录、下载清单文件、开始同步更新
@@ -794,12 +797,8 @@ function UpdateSyncer:checkConnectServer(ip,port,taskSize)
             self._net:Call("CheckIsFree",{key=key,myIp=self._myIp},function(isFree)
                 LOG.std(nil, "info", "UpdateSyncer", "server isFreee? %s,serverIp:%s", isFree and "true" or "false",ip);
                 if isFree then
-                    if self._allDownloadList==nil then
-                        self.UpdateProgressText(L"正在获取清单文件...")
-                        self._net:Call("manifestReq",{},onGetKeyFileManifest)
-                    else
-                        self:checkDownloadingOne()
-                    end
+                    self.UpdateProgressText(L"正在获取清单文件...")
+                    self._net:Call("manifestReq",{},onGetKeyFileManifest)
                 else
                     self.UpdateProgressText(L"等待新的更新源...")
                     Broadcast:RegisterBroadcaseEvent(MSG_SERVER_BROADCAST,self._onBroadcast)
