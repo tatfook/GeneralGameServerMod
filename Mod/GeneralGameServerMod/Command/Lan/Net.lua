@@ -278,17 +278,18 @@ function Net:CheckServerAlive(callback,second)
 end
 
 function Net:CheckClientAlive(key,callback,second)
-    second = second or 5
+    second = second or 30
     local timer = commonlib.TimerManager.SetTimeout(function()
-        print("-----不可用",callback,os.clock())
+        LOG.std(nil, "waring", "UpdateSyncer.s.Net", "2 CheckClientAlive timeout,second:%s", second);
         if callback then 
             callback(false)
         end
     end,second*1000)
-    print("second",second,os.clock(),callback)
+    LOG.std(nil, "waring", "UpdateSyncer.s.Net", "1 CheckClientAlive timeout,second:%s", second);
     self:CallClientByKey(key,"isAlive", nil, function(bool)
-        print("--------client isAlive?",bool)
+        LOG.std(nil, "waring", "UpdateSyncer.s.Net", "3 CheckClientAlive isAlive:%s", bool and "true" or "false");
         callback(true)
+        callback = nil
         timer:Change()
     end);
 end
