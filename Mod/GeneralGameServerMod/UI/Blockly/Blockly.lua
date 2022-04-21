@@ -582,6 +582,7 @@ function Blockly:UpdateWindowPos(forceUpdate)
         block:UpdateLayout();
     end
     self:GetToolBox():UpdateLayout();
+    self:AdjustContentSize();
 end
 
 -- 捕获鼠标
@@ -766,8 +767,15 @@ function Blockly:OnMouseMove(event)
         self.isDragging = true;
         self:CaptureMouse(self);
     end
-    self.offsetX = self.startOffsetX + offsetX;
-    self.offsetY = self.startOffsetY + offsetY;
+    self.__offset_x_unit_count__ = math.floor((self.startOffsetX + offsetX) / UnitSize);
+    self.__offset_y_unit_count__ = math.floor((self.startOffsetY + offsetY) / UnitSize);
+    self.__offset_x_unit_count__ = math.min(math.max(self.__offset_x_unit_count__, self.__min_offset_x_count__), self.__max_offset_x_count__);
+    self.__offset_y_unit_count__ = math.min(math.max(self.__offset_y_unit_count__, self.__min_offset_y_count__), self.__max_offset_y_count__);
+    self.offsetX = self.__offset_x_unit_count__ * UnitSize;
+    self.offsetY = self.__offset_y_unit_count__ * UnitSize;
+    -- print("-------0", self.__offset_x_unit_count__, self.__offset_y_unit_count__, self.__width_unit_count__, self.__height_unit_count__);
+    -- print("-------1", self.__min_offset_x_count__, self.__max_offset_x_count__, self.__min_offset_y_count__, self.__max_offset_y_count__)
+    -- print("-------2", self.__content_left_unit_count__, self.__content_right_unit_count__, self.__content_top_unit_count__, self.__content_bottom_unit_count__)
     self:OnOffsetChange();
 end
 
@@ -819,28 +827,37 @@ function Blockly:OnMouseUp(event)
     end
 end
 
-function Blockly:OnOffsetChange()
-    for _, note in ipairs(self.notes) do
-        note:UpdateWindowPos();
-    end
-
+function Blockly:AdjustContentSize()
     local width, height = self:GetSize();
     local UnitSize = self:GetUnitSize();
-    if (not self.isHideToolBox) then width = width - Const.ToolBoxWidth end
+    self.__toolbox_unit_count__ = self.isHideToolBox and 0 or math.floor(Const.ToolBoxWidth / UnitSize);
     self.__width_unit_count__, self.__height_unit_count__ = math.ceil(width / UnitSize), math.ceil(height / UnitSize);
     self.__offset_x_unit_count__, self.__offset_y_unit_count__ = math.floor(self.offsetX / UnitSize), math.floor(self.offsetY / UnitSize);
-    local left, top, right, bottom = math.min(0, self.__offset_x_unit_count__), math.min(0, self.__offset_y_unit_count__), math.max(self.__offset_x_unit_count__ + self.__width_unit_count__, self.__width_unit_count__), math.max(self.__offset_y_unit_count__ + self.__height_unit_count__, self.__height_unit_count__);
+    local left, top, right, bottom = nil, nil, nil, nil;
+    local content_offset, max_block_width_unit_count, max_block_height_unit_count = -1000, 0, 0;
     for _, block in ipairs(self.blocks) do 
         local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
         local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
         local rightUnitCount, bottomUnitCount = leftUnitCount + widthUnitCount, topUnitCount + heightUnitCount;
-        left = math.min(left, leftUnitCount);
-        top = math.min(top, topUnitCount);
-        right = math.max(right, rightUnitCount);
-        bottom = math.max(bottom, bottomUnitCount);
+        left = left and math.min(left, leftUnitCount) or leftUnitCount;
+        top = top and math.min(top, topUnitCount) or topUnitCount;
+        right = right and math.max(right, rightUnitCount) or rightUnitCount;
+        bottom = bottom and math.max(bottom, bottomUnitCount) or bottomUnitCount;
+        max_block_width_unit_count = math.max(max_block_width_unit_count, widthUnitCount);
+        max_block_height_unit_count = math.max(max_block_height_unit_count, heightUnitCount);
     end
+    max_block_width_unit_count, max_block_height_unit_count = 0, 0; -- 兼容宏示教,  比较好的效果应屏蔽  content_offset = 20
+    self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__, self.__content_bottom_unit_count__ = left or 0, top or 0, right or 0, bottom or 0;
+    self.__min_offset_x_count__ = self.__toolbox_unit_count__ + content_offset + max_block_width_unit_count - self.__content_right_unit_count__;
+    self.__max_offset_x_count__ = self.__width_unit_count__ - content_offset - max_block_width_unit_count - self.__content_left_unit_count__;
+    self.__min_offset_y_count__ = content_offset + max_block_height_unit_count - self.__content_bottom_unit_count__;
+    self.__max_offset_y_count__ = self.__height_unit_count__ - content_offset - max_block_height_unit_count - self.__content_top_unit_count__;
+end
 
-    self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__, self.__content_bottom_unit_count__ = left, top, right, bottom;
+function Blockly:OnOffsetChange()
+    for _, note in ipairs(self.notes) do
+        note:UpdateWindowPos();
+    end
 end
 
 function Blockly:GetOffset()
@@ -896,8 +913,10 @@ end
 function Blockly:OnMouseWheel(event)
     if (self:IsInnerToolBox(event)) then return self:GetToolBox():OnMouseWheel(event) end
     local delta = event:GetDelta();             -- 1 向上滚动  -1 向下滚动
-    self.offsetY = self.offsetY + delta * 20;
-    self:OnOffsetChange();
+    local UnitSize = self:GetUnitSize();
+    self.__offset_y_unit_count__ = math.floor((self.offsetY + delta * 20) / UnitSize);
+    self.__offset_y_unit_count__ = math.min(math.max(self.__offset_y_unit_count__, self.__min_offset_y_count__), self.__max_offset_y_count__);
+    self.offsetY = self.__offset_y_unit_count__ * UnitSize;
 end
 
 -- 键盘事件

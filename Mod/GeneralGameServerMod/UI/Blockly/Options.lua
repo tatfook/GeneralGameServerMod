@@ -8,8 +8,7 @@ use the lib:
 local Options = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Blockly/Options.lua");
 -------------------------------------------------------
 ]]
-NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeBlockWindow.lua");
-local CodeBlockWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeBlockWindow");
+
 
 local Options = NPL.export();
 
@@ -44,6 +43,8 @@ Options.ActorNameOptions = GetActorNameOptions;
 
 local actor_bone_options = {};
 local function GetActorBoneOptions()
+    NPL.load("(gl)script/apps/Aries/Creator/Game/Code/CodeBlockWindow.lua");
+    local CodeBlockWindow = commonlib.gettable("MyCompany.Aries.Game.Code.CodeBlockWindow");
     local codeblock = CodeBlockWindow.GetCodeBlock();
     local codeEnv = codeblock and codeblock:GetCodeEnv();
     local actor = codeEnv and codeEnv.actor;

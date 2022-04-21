@@ -500,6 +500,7 @@ function Block:OnMouseUp(event)
         else
             blockly:Do({action = "MoveBlock", block = self});
         end
+        blockly:AdjustContentSize();
     end
 
     blockly:SetCurrentBlock(self);

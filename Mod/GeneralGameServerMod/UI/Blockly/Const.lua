@@ -35,3 +35,5 @@ Const.ToolBoxCategoryHeight = 60;                 -- 分类高
 
 -- 图块颜色
 Const.Colors = {"#2E9BEF", "#76CE62", "#764BCC", "#EC522E", "#C38A3F", "#69B090", "#569138", "#459197", "#FF8C1A"};
+
+-- Const.SCROLL_BAR_VERSION = 1;
