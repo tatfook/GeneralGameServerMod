@@ -16,6 +16,8 @@ local ScrollBar = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), 
 ScrollBar:Property("Blockly");
 ScrollBar:Property("Direction");  -- 方向        -- horizontal  vertical 
 
+local ScrollBarSize = 2 * Const.UnitSize;
+
 function ScrollBar:ctor()
     self.__track_width__, self.__track_height__ = 0, 0;
 end
@@ -55,19 +57,19 @@ function ScrollBar:Render(painter)
     painter:SetPen("#ffffff");
     -- painter:SetPen("#000000");
     if (self:IsHorizontal()) then
-        self.__width__, self.__height__ = math.floor(width * width / (__content_width_unit_count__ * UnitSize)), UnitSize;
-        self.__offset_x__, self.__offset_y__ = toolboxWidth + math.floor(width * __content_offset_x_unit_count__ / __content_width_unit_count__), height - UnitSize - 1;
+        self.__width__, self.__height__ = math.floor(width * width / (__content_width_unit_count__ * UnitSize)), ScrollBarSize;
+        self.__offset_x__, self.__offset_y__ = toolboxWidth + math.floor(width * __content_offset_x_unit_count__ / __content_width_unit_count__), height - ScrollBarSize - 1;
         -- print(4, self.__offset_x__, self.__offset_y__, self.__width__, self.__height__)
-        painter:DrawRect(toolboxWidth, height - UnitSize - 2, width, UnitSize + 2);
+        painter:DrawRect(toolboxWidth, height - ScrollBarSize - 2, width, ScrollBarSize + 2);
     else
-        self.__width__, self.__height__ = UnitSize, math.floor(height * height / (__content_height_unit_count__ * UnitSize));
-        self.__offset_x__, self.__offset_y__ = toolboxWidth + width - UnitSize - 1, math.floor(height * __content_offset_y_unit_count__ / __content_height_unit_count__);
-        painter:DrawRect(toolboxWidth + width - UnitSize - 2, 0, UnitSize + 2, height);
+        self.__width__, self.__height__ = ScrollBarSize, math.floor(height * height / (__content_height_unit_count__ * UnitSize));
+        self.__offset_x__, self.__offset_y__ = toolboxWidth + width - ScrollBarSize - 1, math.floor(height * __content_offset_y_unit_count__ / __content_height_unit_count__);
+        painter:DrawRect(toolboxWidth + width - ScrollBarSize - 2, 0, ScrollBarSize + 2, height);
         -- print(5, self.__offset_x__, self.__offset_y__, self.__width__, self.__height__)
     end
     -- painter:SetPen("#00000080");
     -- painter:SetPen("#ffffff");
-    painter:SetPen("#000000");
+    painter:SetPen("#cececea0");
     painter:DrawRect(self.__offset_x__, self.__offset_y__, self.__width__, self.__height__);
     -- print(6, width, height, toolboxWidth);
 end
@@ -77,9 +79,9 @@ function ScrollBar:GetMouseUI(x, y, event)
     x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);
     if (x < Const.ToolBoxWidth) then return nil end
     if (self:IsHorizontal()) then
-        if (y < self.__track_height__ and y > (self.__track_height__ - Const.UnitSize - 2)) then return self end 
+        if (y < self.__track_height__ and y > (self.__track_height__ - ScrollBarSize - 2)) then return self end 
     else
-        if (x < self.__track_width__ and x > (self.__track_width__ - Const.UnitSize - 2)) then return self end 
+        if (x < self.__track_width__ and x > (self.__track_width__ - ScrollBarSize - 2)) then return self end 
     end
 
     return nil;
