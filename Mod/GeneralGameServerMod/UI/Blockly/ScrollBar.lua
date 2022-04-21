@@ -68,7 +68,7 @@ function ScrollBar:Render(painter)
         painter:DrawRect(toolboxWidth, height - ScrollBarSize - 2, width, ScrollBarSize + 2);
     else
         self.__width__, self.__height__ = ScrollBarSize, math.floor(height * height / (__content_height_unit_count__ * UnitSize + height));
-        self.__offset_x__, self.__offset_y__ = toolboxWidth + width - ScrollBarSize - 1, math.floor(height * __content_offset_y_unit_count__ * UnitSize / (__content_height_unit_count__ * UnitSize + height));
+        self.__offset_x__, self.__offset_y__ = toolboxWidth + width - ScrollBarSize - 1, math.floor(height * (1 - __content_offset_y_unit_count__ * UnitSize / (__content_height_unit_count__ * UnitSize + height)));
         painter:DrawRect(toolboxWidth + width - ScrollBarSize - 2, 0, ScrollBarSize + 2, height);
         -- print(5, self.__offset_x__, self.__offset_y__, self.__width__, self.__height__)
     end
@@ -120,7 +120,7 @@ function ScrollBar:OnMouseDown(event)
         else
             self.__draging__ = false;
             self.__offset_y__ = y;
-            local __content_offset_y_unit_count__ = (self.__content_height_unit_count__ + self.__view_height_unit_count__) * self.__offset_y__ / (self.__track_height__);
+            local __content_offset_y_unit_count__ = (self.__content_height_unit_count__ + self.__view_height_unit_count__) * (1 - self.__offset_y__ / (self.__track_height__));
             __content_offset_y_unit_count__ = math.max(__content_offset_y_unit_count__, 0);
             __content_offset_y_unit_count__ = math.min(__content_offset_y_unit_count__, self.__content_height_unit_count__);
             local __offset_y_unit_count__ = __content_offset_y_unit_count__ + self.__content_top_unit_count__; 
