@@ -42,34 +42,39 @@ function ScrollBar:Render(painter)
     self.__track_width__, self.__track_height__ = width, height;
     self.__toolbox_width__ = toolboxWidth;
     width = width - toolboxWidth;
-    local __content_left_unit_count__, __content_top_unit_count__, __content_right_unit_count__, __content_bottom_unit_count__ = blockly.__content_left_unit_count__, blockly.__content_top_unit_count__, blockly.__content_right_unit_count__, blockly.__content_bottom_unit_count__;
+
+    local __content_left_unit_count__, __content_top_unit_count__, __content_right_unit_count__, __content_bottom_unit_count__ = blockly.__min_offset_x_count__, blockly.__min_offset_y_count__, blockly.__max_offset_x_count__, blockly.__max_offset_y_count__;
     local __offset_x_unit_count__, __offset_y_unit_count__ = blockly.__offset_x_unit_count__, blockly.__offset_y_unit_count__;
-    if (__content_left_unit_count__ == 0 and __content_top_unit_count__ == 0 and __content_bottom_unit_count__ == 0 and __content_right_unit_count__ == 0) then return end 
+    local __view_width_unit_count__, __view_height_unit_count__ = math.floor(width / UnitSize), blockly.__height_unit_count__; 
+    if (#(blockly.blocks) == 0) then return end 
+
     local __content_width_unit_count__ = __content_right_unit_count__ - __content_left_unit_count__;
     local __content_height_unit_count__ = __content_bottom_unit_count__ - __content_top_unit_count__;
     local __content_offset_x_unit_count__ = __offset_x_unit_count__ - __content_left_unit_count__;
     local __content_offset_y_unit_count__ = __offset_y_unit_count__ - __content_top_unit_count__;
 
+    self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__, self.__content_bottom_unit_count__ = __content_left_unit_count__, __content_top_unit_count__, __content_right_unit_count__, __content_bottom_unit_count__;
     self.__content_width_unit_count__, self.__content_height_unit_count__ = __content_width_unit_count__, __content_height_unit_count__;
+    self.__view_width_unit_count__, self.__view_height_unit_count__ = __view_width_unit_count__, __view_height_unit_count__;
     -- print(1, __content_left_unit_count__, __content_top_unit_count__, __content_right_unit_count__, __content_bottom_unit_count__);
     -- print(2, __offset_x_unit_count__, __offset_y_unit_count__);
     -- print(3, __content_offset_x_unit_count__, __content_offset_y_unit_count__, __content_width_unit_count__, __content_height_unit_count__);
     painter:SetPen("#ffffff");
     -- painter:SetPen("#000000");
     if (self:IsHorizontal()) then
-        self.__width__, self.__height__ = math.floor(width * width / (__content_width_unit_count__ * UnitSize)), ScrollBarSize;
-        self.__offset_x__, self.__offset_y__ = toolboxWidth + math.floor(width * __content_offset_x_unit_count__ / __content_width_unit_count__), height - ScrollBarSize - 1;
+        self.__width__, self.__height__ = math.floor(width * width / (__content_width_unit_count__ * UnitSize + width)), ScrollBarSize;
+        self.__offset_x__, self.__offset_y__ = toolboxWidth + math.floor(width * __content_offset_x_unit_count__ * UnitSize / (__content_width_unit_count__ * UnitSize + width)), height - ScrollBarSize - 1;
         -- print(4, self.__offset_x__, self.__offset_y__, self.__width__, self.__height__)
         painter:DrawRect(toolboxWidth, height - ScrollBarSize - 2, width, ScrollBarSize + 2);
     else
-        self.__width__, self.__height__ = ScrollBarSize, math.floor(height * height / (__content_height_unit_count__ * UnitSize));
-        self.__offset_x__, self.__offset_y__ = toolboxWidth + width - ScrollBarSize - 1, math.floor(height * __content_offset_y_unit_count__ / __content_height_unit_count__);
+        self.__width__, self.__height__ = ScrollBarSize, math.floor(height * height / (__content_height_unit_count__ * UnitSize + height));
+        self.__offset_x__, self.__offset_y__ = toolboxWidth + width - ScrollBarSize - 1, math.floor(height * __content_offset_y_unit_count__ * UnitSize / (__content_height_unit_count__ * UnitSize + height));
         painter:DrawRect(toolboxWidth + width - ScrollBarSize - 2, 0, ScrollBarSize + 2, height);
         -- print(5, self.__offset_x__, self.__offset_y__, self.__width__, self.__height__)
     end
     -- painter:SetPen("#00000080");
     -- painter:SetPen("#ffffff");
-    painter:SetPen("#cececea0");
+    painter:SetPen("#cecece");
     painter:DrawRect(self.__offset_x__, self.__offset_y__, self.__width__, self.__height__);
     -- print(6, width, height, toolboxWidth);
 end
@@ -89,6 +94,7 @@ end
 
 function ScrollBar:OnMouseDown(event)
     local blockly = self:GetBlockly();
+    local UnitSize = blockly:GetUnitSize();
     local x, y = blockly._super.GetRelPoint(blockly, event.x, event.y);         -- 防止减去偏移量
 
     if (self:IsHorizontal()) then
@@ -98,10 +104,11 @@ function ScrollBar:OnMouseDown(event)
             self.__draging__ = true;
         else
             self.__draging__ = false;
-            local __content_offset_x_unit_count__ = self.__content_width_unit_count__ * (x - self.__toolbox_width__) / (self.__track_width__ - self.__toolbox_width__);
+            self.__offset_x__ = x;
+            local __content_offset_x_unit_count__ = (self.__content_width_unit_count__ + self.__view_width_unit_count__) * (self.__offset_x__ - self.__toolbox_width__) / (self.__view_width_unit_count__ * UnitSize);
             __content_offset_x_unit_count__ = math.max(__content_offset_x_unit_count__, 0);
             __content_offset_x_unit_count__ = math.min(__content_offset_x_unit_count__, self.__content_width_unit_count__);
-            local __offset_x_unit_count__ = __content_offset_x_unit_count__ + blockly.__content_left_unit_count__; 
+            local __offset_x_unit_count__ = __content_offset_x_unit_count__ + self.__content_left_unit_count__; 
             blockly.__offset_x_unit_count__ = __offset_x_unit_count__;
             blockly.offsetX = __offset_x_unit_count__ * Const.UnitSize;
         end
@@ -112,10 +119,11 @@ function ScrollBar:OnMouseDown(event)
             self.__draging__ = true;
         else
             self.__draging__ = false;
-            local __content_offset_y_unit_count__ = self.__content_height_unit_count__ * y / self.__track_height__;
+            self.__offset_y__ = y;
+            local __content_offset_y_unit_count__ = (self.__content_height_unit_count__ + self.__view_height_unit_count__) * self.__offset_y__ / (self.__track_height__);
             __content_offset_y_unit_count__ = math.max(__content_offset_y_unit_count__, 0);
             __content_offset_y_unit_count__ = math.min(__content_offset_y_unit_count__, self.__content_height_unit_count__);
-            local __offset_y_unit_count__ = __content_offset_y_unit_count__ + blockly.__content_top_unit_count__; 
+            local __offset_y_unit_count__ = __content_offset_y_unit_count__ + self.__content_top_unit_count__; 
             blockly.__offset_y_unit_count__ = __offset_y_unit_count__;
             blockly.offsetY = __offset_y_unit_count__ * Const.UnitSize;
         end
@@ -127,16 +135,17 @@ end
 function ScrollBar:OnMouseMove(event)
     if (not self.__draging__) then return end
     local blockly = self:GetBlockly();
+    local UnitSize = blockly:GetUnitSize();
     local __drag_mouse_x__, __drag_mouse_y__ = event:GetScreenXY();
     if (self:IsHorizontal()) then
         local __offset_x__ = __drag_mouse_x__ - self.__drag_mouse_x__;
         self.__offset_x__ = self.__draw_offset_x__ + __offset_x__;
         self.__offset_x__ = math.max(self.__toolbox_width__, self.__offset_x__);
         self.__offset_x__ = math.min(self.__offset_x__, self.__track_width__ - self.__width__);
-        __content_offset_x_unit_count__ = (self.__offset_x__ - self.__toolbox_width__) * self.__content_width_unit_count__ / (self.__track_width__ - self.__toolbox_width__);
+        local __content_offset_x_unit_count__ = (self.__content_width_unit_count__ + self.__view_width_unit_count__) * (self.__offset_x__ - self.__toolbox_width__) / (self.__view_width_unit_count__ * UnitSize);
         __content_offset_x_unit_count__ = math.max(__content_offset_x_unit_count__, 0);
         __content_offset_x_unit_count__ = math.min(__content_offset_x_unit_count__, self.__content_width_unit_count__);
-        local __offset_x_unit_count__ = __content_offset_x_unit_count__ + blockly.__content_left_unit_count__; 
+        local __offset_x_unit_count__ = __content_offset_x_unit_count__ + self.__content_left_unit_count__; 
         blockly.__offset_x_unit_count__ = __offset_x_unit_count__;
         blockly.offsetX = __offset_x_unit_count__ * Const.UnitSize;
     else
@@ -144,10 +153,10 @@ function ScrollBar:OnMouseMove(event)
         self.__offset_y__ = self.__drag_offset_y__ + __offset_y__;
         self.__offset_y__ = math.max(0, self.__offset_y__);
         self.__offset_y__ = math.min(self.__offset_y__, self.__track_height__ - self.__height__);
-        local __content_offset_y_unit_count__ = self.__offset_y__ * self.__content_height_unit_count__ / self.__track_height__;
+        local __content_offset_y_unit_count__ = (self.__content_height_unit_count__ + self.__view_height_unit_count__) * self.__offset_y__ / (self.__track_height__);
         __content_offset_y_unit_count__ = math.max(__content_offset_y_unit_count__, 0);
         __content_offset_y_unit_count__ = math.min(__content_offset_y_unit_count__, self.__content_height_unit_count__);
-        local __offset_y_unit_count__ = __content_offset_y_unit_count__ + blockly.__content_top_unit_count__; 
+        local __offset_y_unit_count__ = __content_offset_y_unit_count__ + self.__content_top_unit_count__; 
         blockly.__offset_y_unit_count__ = __offset_y_unit_count__;
         blockly.offsetY = __offset_y_unit_count__ * Const.UnitSize;
     end
