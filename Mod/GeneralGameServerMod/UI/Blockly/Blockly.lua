@@ -834,7 +834,7 @@ function Blockly:AdjustContentSize()
     self.__width_unit_count__, self.__height_unit_count__ = math.ceil(width / UnitSize), math.ceil(height / UnitSize);
     self.__offset_x_unit_count__, self.__offset_y_unit_count__ = math.floor(self.offsetX / UnitSize), math.floor(self.offsetY / UnitSize);
     local left, top, right, bottom = nil, nil, nil, nil;
-    local content_offset, max_block_width_unit_count, max_block_height_unit_count = -10, 0, 0;
+    local content_offset, max_block_width_unit_count, max_block_height_unit_count = 0, 0, 0;
     for _, block in ipairs(self.blocks) do 
         local leftUnitCount, topUnitCount = block:GetLeftTopUnitCount();
         local widthUnitCount, heightUnitCount = block:GetWidthHeightUnitCount();
@@ -846,7 +846,7 @@ function Blockly:AdjustContentSize()
         max_block_width_unit_count = math.max(max_block_width_unit_count, widthUnitCount);
         max_block_height_unit_count = math.max(max_block_height_unit_count, heightUnitCount);
     end
-    max_block_width_unit_count, max_block_height_unit_count = 0, 0; -- 兼容宏示教,  比较好的效果应屏蔽  content_offset = 20
+    -- max_block_width_unit_count, max_block_height_unit_count = 0, 0; -- 兼容宏示教,  比较好的效果应屏蔽  content_offset = 20
     self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__, self.__content_bottom_unit_count__ = left or 0, top or 0, right or 0, bottom or 0;
     self.__min_offset_x_count__ = self.__toolbox_unit_count__ + content_offset + max_block_width_unit_count - self.__content_right_unit_count__;
     self.__max_offset_x_count__ = self.__width_unit_count__ - content_offset - max_block_width_unit_count - self.__content_left_unit_count__;
