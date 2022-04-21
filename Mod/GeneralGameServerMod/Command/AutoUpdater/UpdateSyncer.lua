@@ -697,11 +697,11 @@ function UpdateSyncer:OnDownloadFinish()
         if ParaIO.DoesFileExist(self:_getDownloadPath(obj.file_name)) then
             
             if obj.file_name==launcherExe then --Launcher直接先复制过去,剩下的文件，再来由launcher复制
-                local targetPath = root..obj.file_name
-                print("-----move launcher to:",targetPath)
-                if(not ParaIO.MoveFile(path, targetPath))then
-                    print("-------move launcher failed")
-                end
+                -- local targetPath = root..obj.file_name
+                -- print("-----move launcher to:",targetPath)
+                -- if(not ParaIO.MoveFile(path, targetPath))then
+                --     print("-------move launcher failed")
+                -- end
             else
                 table.insert(arr,line)
             end
