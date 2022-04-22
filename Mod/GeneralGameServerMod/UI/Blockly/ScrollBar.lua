@@ -153,7 +153,7 @@ function ScrollBar:OnMouseMove(event)
         self.__offset_y__ = self.__drag_offset_y__ + __offset_y__;
         self.__offset_y__ = math.max(0, self.__offset_y__);
         self.__offset_y__ = math.min(self.__offset_y__, self.__track_height__ - self.__height__);
-        local __content_offset_y_unit_count__ = (self.__content_height_unit_count__ + self.__view_height_unit_count__) * self.__offset_y__ / (self.__track_height__);
+        local __content_offset_y_unit_count__ = (self.__content_height_unit_count__ + self.__view_height_unit_count__) * (1 - self.__offset_y__ / (self.__track_height__));
         __content_offset_y_unit_count__ = math.max(__content_offset_y_unit_count__, 0);
         __content_offset_y_unit_count__ = math.min(__content_offset_y_unit_count__, self.__content_height_unit_count__);
         local __offset_y_unit_count__ = __content_offset_y_unit_count__ + self.__content_top_unit_count__; 

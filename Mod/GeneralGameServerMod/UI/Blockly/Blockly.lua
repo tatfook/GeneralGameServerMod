@@ -37,6 +37,7 @@ local DestroyBlockSound = BlockSound:new():Init({"break3", "break2", });
 Blockly:Property("Name", "Blockly");  
 Blockly:Property("ClassName", "Blockly");  
 Blockly:Property("EditorElement");            -- 编辑元素 用户输入
+Blockly:Property("Editing", false, "IsEditing");  -- 是否在编辑字段
 Blockly:Property("ContextMenu");              -- 上下文菜单
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 Blockly:Property("FocusUI");                  -- 聚焦UI
@@ -912,6 +913,7 @@ end
 -- 鼠标滚动事件
 function Blockly:OnMouseWheel(event)
     if (self:IsInnerToolBox(event)) then return self:GetToolBox():OnMouseWheel(event) end
+    if (self:IsEditing()) then return end 
     local delta = event:GetDelta();             -- 1 向上滚动  -1 向下滚动
     local UnitSize = self:GetUnitSize();
     self.__offset_y_unit_count__ = math.floor((self.offsetY + delta * 20) / UnitSize);

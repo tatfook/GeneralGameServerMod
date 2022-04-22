@@ -622,10 +622,13 @@ function BlockInputField:BeginEdit()
     fieldEditElement:FocusIn();
     -- 全选
     if (self:GetFieldEditType() == "input") then fieldEditElement:handleSelectAll() end
+
+    self:GetBlock():GetBlockly():SetEditing(true);
 end
 
 function BlockInputField:EndEdit()
     self:SetEdit(false);
+    self:GetBlock():GetBlockly():SetEditing(false);
 
     -- 失焦
     local fieldEditElement = self:GetEditElement();
