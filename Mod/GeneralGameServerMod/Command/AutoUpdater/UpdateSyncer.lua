@@ -47,6 +47,21 @@ function UpdateSyncer:ctor()
     self:Init()
 end
 
+--通过命令行参数确认是否用的最新版launcher
+function UpdateSyncer:checkLauncherIsNew()
+    local launcherVer = ParaEngine.GetAppCommandLineByParam("launcherVer","")
+    print("-----command line launcherVer:",launcherVer)
+    launcherVer = launcherVer:gsub("^[\"\'%s]+", ""):gsub("[\"\'%s]+$", "")--去掉字符串首尾的空格、引号
+    launcherVer = tonumber(launcherVer)
+    print("tonumber(launcherVer)",tonumber(launcherVer))
+    if launcherVer and launcherVer>=3 then
+        print("checkLauncherIsNew true")
+        return true
+    end
+    print("checkLauncherIsNew false")
+    return false
+end
+
 function UpdateSyncer:Init()
     if self._net~=nil then
         return
@@ -63,6 +78,10 @@ function UpdateSyncer:Init()
 
     end);
     GameLogic.GetFilters():add_filter("start_lan_server", function(opt)
+        if not self:checkLauncherIsNew() then
+            LOG.std(nil, "warning", "UpdateSyncer", "launcher版本号过低无法启动服务器");
+            return
+        end
         -- GameLogic.AddBBS(nil,"作为服务器开启了")
         self._updater = opt._updater --下载清单文件用
         self.realLatestVersion = opt.realLatestVersion
@@ -697,11 +716,11 @@ function UpdateSyncer:OnDownloadFinish()
         if ParaIO.DoesFileExist(self:_getDownloadPath(obj.file_name)) then
             
             if obj.file_name==launcherExe then --Launcher直接先复制过去,剩下的文件，再来由launcher复制
-                -- local targetPath = root..obj.file_name
-                -- print("-----move launcher to:",targetPath)
-                -- if(not ParaIO.MoveFile(path, targetPath))then
-                --     print("-------move launcher failed")
-                -- end
+                local targetPath = root..obj.file_name
+                print("-----move launcher to:",targetPath)
+                if(not ParaIO.MoveFile(path, targetPath))then
+                    print("-------move launcher failed")
+                end
             else
                 table.insert(arr,line)
             end
