@@ -116,7 +116,8 @@ function Option:RenderContent(painter)
 
     painter:SetPen(self:GetColor("#000000"));
     painter:SetFont(self:GetFont());
-    painter:DrawText(x, y + (lineHeight - fontSize) / 2 - fontSize / 6, text);
+    painter:DrawText(math.floor(x), math.floor(y + (lineHeight - fontSize) / 2 - fontSize / 6), text);
+    -- print(math.floor(x), math.floor(y + (lineHeight - fontSize) / 2 - fontSize / 6), text)
 end
 
 function Option:OnMouseDown(event)
@@ -435,7 +436,7 @@ function Select:RenderContent(painter)
     end
     local textWidth = self:IsShowArrowIcon() and (w - ArrowAreaSize) or w;
     text = _guihelper.TrimUtf8TextByWidth(text, textWidth, self:GetFont());
-    painter:DrawText(x, y + (h - self:GetSingleLineTextHeight()) / 2, (text or "") .. "");
+    painter:DrawText(math.floor(x), math.floor(y + (h - self:GetSingleLineTextHeight()) / 2), (text or "") .. "");
 end
 
 local ArrowSize = 12;

@@ -560,7 +560,7 @@ function ElementUI:GetScrollPos()
     local scrollX, scrollY = 0, 0;
     if (self.horizontalScrollBar and self.horizontalScrollBar:IsVisible() and self:GetLayout():IsCanScrollX()) then scrollX = self.horizontalScrollBar.scrollLeft end
     if (self.verticalScrollBar and self.verticalScrollBar:IsVisible() and self:GetLayout():IsCanScrollY()) then scrollY = self.verticalScrollBar.scrollTop end
-    return scrollX, scrollY;
+    return math.floor(scrollX), math.floor(scrollY);
 end
 
 -- 是否捕获鼠标
