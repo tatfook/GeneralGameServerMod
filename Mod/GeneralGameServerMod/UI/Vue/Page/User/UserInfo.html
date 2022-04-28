@@ -1,5 +1,5 @@
 <template style="display: inline-block;">
-    <div style="margin-top: 11px; margin-left: 9px; height:569px; width: 339px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwukuang_339X529_32bits.png#0 0 339 529:50 300 50 50);">
+    <div onmousemove="onmousemove" onmouseenter=onmouseenter onmouseleave=onmouseleave style="margin-top: 11px; margin-left: 9px; height:569px; width: 339px; background:url(Texture/Aries/Creator/keepwork/ggs/user/renwukuang_339X529_32bits.png#0 0 339 529:50 300 50 50);">
         <div style="height: 298px; position: relative;">
             <div style="margin-top: 4px;">
                 <div class="center">
@@ -41,26 +41,26 @@
                 <div class="center">
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <!-- 眼睛 -->
-                        <div v-if="IsIconValid(1)" v-on:click="ClickIcon(1)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                        <div v-if="IsIconValid(1)" v-on:click="ClickIcon(1)" onmousemove="OnMouseMoveAvatarItem(1)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(1)"></div>
                         </div>
                         <div v-if="not IsIconValid(1)" style="float:left;margin-left:10px;width:50px;height:50px;"></div>
 
                         <!-- 嘴巴 -->
-                        <div v-if="IsIconValid(2)" v-on:click="ClickIcon(2)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                        <div v-if="IsIconValid(2)" v-on:click="ClickIcon(2)" onmousemove="OnMouseMoveAvatarItem(2)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(2)"></div>
                         </div>
                         <div v-if="not IsIconValid(2)" style="float:left;margin-left:212px;width:50px;height:50px;"></div>
                     </div>
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <!-- 衣服 -->
-                        <div v-if="IsIconValid(3)" v-on:click="ClickIcon(3)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                        <div v-if="IsIconValid(3)" v-on:click="ClickIcon(3)" onmousemove="OnMouseMoveAvatarItem(3)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(3)"></div>
                         </div>
                         <div v-if="not IsIconValid(3)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
                         <!-- 裤子 -->
-                        <div v-if="IsIconValid(4)" v-on:click="ClickIcon(4)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                        <div v-if="IsIconValid(4)" v-on:click="ClickIcon(4)" onmousemove="OnMouseMoveAvatarItem(4)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(4)"></div>
                         </div>
                         <div v-if="not IsIconValid(4)" style="float:left;margin-left:212px;width:50px;height:50px;">
@@ -68,13 +68,13 @@
                     </div>
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <!-- 背带 -->
-                        <div v-if="IsIconValid(5)" v-on:click="ClickIcon(5)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                        <div v-if="IsIconValid(5)" v-on:click="ClickIcon(5)" onmousemove="OnMouseMoveAvatarItem(5)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(5)"></div>
                         </div>
                         <div v-if="not IsIconValid(5)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
                         <!-- 手持 -->
-                        <div v-if="IsIconValid(6)" v-on:click="ClickIcon(6)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                        <div v-if="IsIconValid(6)" v-on:click="ClickIcon(6)" onmousemove="OnMouseMoveAvatarItem(6)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(6)"></div>
                         </div>
                         <div v-if="not IsIconValid(6)" style="float:left;margin-left:212px;width:50px;height:50px;">
@@ -82,13 +82,13 @@
                     </div>
                     <div style="width:334px;height:50px;margin-top:10px;">
                         <!-- 头发 -->
-                        <div v-if="IsIconValid(7)" v-on:click="ClickIcon(7)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                        <div v-if="IsIconValid(7)" v-on:click="ClickIcon(7)" onmousemove="OnMouseMoveAvatarItem(7)" style="float:left;margin-left:10px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(7)"></div>
                         </div>
                         <div v-if="not IsIconValid(7)" style="float:left;margin-left:10px;width:50px;height:50px;">
                         </div>
                         <!-- 坐骑 -->
-                        <div v-if="IsIconValid(8)" v-on:click="ClickIcon(8)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
+                        <div v-if="IsIconValid(8)" v-on:click="ClickIcon(8)" onmousemove="OnMouseMoveAvatarItem(8)" style="float:left;margin-left:212px;width:50px;height:50px;background:url(Texture/Aries/Creator/keepwork/Avatar/kuang2_50X50_32bits.png#0 0 50 50);">
                             <div v-bind:style="IconStyle(8)"></div>
                         </div>
                         <div v-if="not IsIconValid(8)" style="float:left;margin-left:212px;width:50px;height:50px;">
@@ -178,6 +178,11 @@
                 </div>
             </div>
         </div>
+        <div ref="avatarItem" style="position:fixed; left: -100000px; top: -10000px; z-index: 10; width: 142px; height: 140px;">
+            <div v-if="currentHoverItemName ~= ''" style="display: inline-block; line-height: 38px; font-size: 12px; height: 38px; padding: 0px 12px; color: #ffffff; background: url(Texture/Aries/Creator/keepwork/Window/tooltip/tipbj_32bits.png:14 14 14 14);">{{currentHoverItemName}}</div>
+            
+            <!-- <AvatarItem id="test" v-bind:itemid="currentHoverItemId"></AvatarItem> -->
+        </div>
     </div>    
 </template>
 
@@ -187,6 +192,8 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Entity/EntityManager.lua");
 RegisterComponent("ChangeNickName", "%vue%/Page/User/ChangeNickName.html");
 RegisterComponent("Follow", "%vue%/Page/User/Follow.html");
 RegisterComponent("ScaleSlider", "%vue%/Page/User/ScaleSlider.html");
+RegisterComponent("AvatarItem", "%vue%/Page/User/AvatarItem.html");
+
 local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local UniString = commonlib.gettable("System.Core.UniString");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
@@ -211,12 +218,14 @@ local assets = {
 local Grades = {"一年级", "二年级", "三年级", "四年级", "五年级", "六年级", "七年级", "八年级", "九年级", "高一", "高二", "高三", "往届学生", "教师"};
 
 local curAssetIndex = 1;
-
+local avatarItemEl = nil;
 self.isEditNickName = false;
 self.isNeedUpdateRegion = nil;
 self.isShowUpdateRegionTip = true;
 self.isExitPrefectUserInfoItem = Keepwork:IsExitPrefectUserInfoItem();
 self.isPrefectUserInfo = Keepwork:IsPrefectUserInfo();
+self.currentHoverItemId = 0;
+self.currentHoverItemName = "";
 
 function OnAttrValueChange(attrName, attrValue)
     if (attrName == "UserDetail") then
@@ -234,6 +243,8 @@ local function GetGradeClassName(class)
 end 
 
 function OnReady()
+    avatarItemEl = GetRef("avatarItem");
+
     local region = UserDetail.region or {};
     self.bean = tostring(UserDetail.bean or 0);
     self.schoolName = UserDetail.school and UserDetail.school.name or "";
@@ -460,4 +471,38 @@ function ClickIcon(index)
 		end
     end
 end
+
+function OnMouseMoveAvatarItem(index) 
+    local event = GetEvent();
+    event:Accept();
+    if (not avatarItemEl) then return avatarItemEl:SetVisible(false) end 
+    self.currentHoverItemId = 0;
+    self.currentHoverItemName = "";
+    local avatarIcons = GetGlobalScope():Get("AvatarIcons");
+    local avatarIcon = avatarIcons[index];
+    if (not avatarIcon) then return avatarItemEl:SetVisible(false) end 
+
+    local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
+    local itemid = avatarIcon.id;
+    local item = CustomCharItems:GetItemById(itemid);
+    if (not item) then return end
+    self.currentHoverItemId = itemid;
+    self.currentHoverItemName = item.name;
+    local windowX, windowY = event:GetWindowXY();
+    windowX, windowY = windowX + 30, windowY + 30;
+    avatarItemEl:SetStyleValue("left", windowX);
+    avatarItemEl:SetStyleValue("top", windowY);
+    avatarItemEl:SetPosition(windowX, windowY);
+    avatarItemEl:SetVisible(true);
+end
+
+function onmousemove()
+    OnMouseMoveAvatarItem(0);
+end 
+function onmouseenter()
+    OnMouseMoveAvatarItem(0);
+end 
+function onmouseleave()
+    OnMouseMoveAvatarItem(0);
+end 
 </script>

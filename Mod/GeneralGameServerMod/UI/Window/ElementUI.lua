@@ -803,9 +803,10 @@ function ElementUI:Hover(event, isUpdateLayout, zindex, isParentElementHover, is
             local childHoverElement, childMaxZIndex, childZIndex = child:Hover(event, isUpdateLayout and not isChangeHoverState, zindex, isHover, isPositionElement, scrollElement);  -- 若父布局更新, 则子布局无需更新 
             local isChildPositionElement = child:GetLayout():IsPositionElement();
             local isMaxZIndex = if_else(isChildPositionElement, maxChildZIndex < (childZIndex or zindex), maxZIndex < (childMaxZIndex or zindex));
+            
             if (childHoverElement and isMaxZIndex) then
                 hoverElement = childHoverElement;
-                maxZIndex = childZIndex;
+                maxZIndex = childMaxZIndex;
                 maxChildZIndex = childZIndex;
             end
         else 
@@ -863,6 +864,8 @@ function ElementUI:GetMouseHoverElement(event, zindex, isParentElementHover, isP
             local isChildPositionElement = child:GetLayout():IsPositionElement();
             -- 同级定位元素只比较当前层级序否则比价全部层级序
             local isMaxZIndex = if_else(isChildPositionElement, maxChildZIndex < (childZIndex or zindex), maxZIndex < (childMaxZIndex or zindex));
+
+
             if (childHoverElement and isMaxZIndex) then
                 hoverElement = childHoverElement;
                 maxZIndex = childMaxZIndex;

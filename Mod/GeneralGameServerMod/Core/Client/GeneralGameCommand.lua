@@ -139,6 +139,8 @@ developer                    GGS 开发者模式
 				__this__:handleUIEditorCommond(cmd_text)
 			elseif (cmd == "developer") then
 				GGS.IsDeveloper = not GGS.IsDeveloper;
+			elseif (cmd == "showuserinfo") then
+				__this__:handleShowUserInfoCommand(cmd_text);
 			end
 			
 			-- 确保进入联机世界
@@ -153,8 +155,6 @@ developer                    GGS 开发者模式
 				__this__:handleOfflineUserCommand(cmd_text);
 			elseif (cmd == "user") then
 				__this__:handleUserCommand(cmd_text);
-			elseif (cmd == "showuserinfo") then
-				__this__:handleShowUserInfoCommand(cmd_text);
 			end
 		end
 	}
@@ -318,7 +318,7 @@ end
 -- 打开用户面板
 function GeneralGameCommand:handleShowUserInfoCommand(cmd_text)
 	local username, cmd_text_remain = CmdParser.ParseString(cmd_text);
-	local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+	local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
 	Page.ShowUserInfoPage({username=(username and username ~= "") and username or nil});
 end
 

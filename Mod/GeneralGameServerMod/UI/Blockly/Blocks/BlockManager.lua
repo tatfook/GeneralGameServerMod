@@ -165,7 +165,7 @@ end
 
 local function OnWorldLoaded()
     local directory = BlockManager.GetBlocklyDirectory();
-    local filename = CommonLib.ToCanonicalFilePath(directory .. "/CustomBlock");
+    local filename = CommonLib.ToCanonicalFilePath(directory .. "/CustomWorldBlock");
     if (filename == WorldCategoryAndBlockPath) then return end
     WorldCategoryAndBlockDirectory = directory;
     WorldCategoryAndBlockPath = filename;

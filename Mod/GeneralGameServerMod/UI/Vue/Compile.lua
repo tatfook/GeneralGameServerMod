@@ -443,7 +443,7 @@ function Compile:VBind(element)
         local realVal = nil;
         if (realKey and realKey ~= "") then
             self:ExecCode(val, element, function(realVal)
-                -- CompileDebug.If(realKey == "value" and element:GetTagName() == "input", realVal);
+                -- CompileDebug.If(realKey == "itemid", realVal);
                 if (Scope:__is_scope__(realVal)) then realVal = realVal:ToPlainObject() end
                 -- if (type(realVal) == "table" and realVal.ToPlainObject) then realVal = realVal:ToPlainObject() end
                 element:SetAttrValue(realKey, realVal);
