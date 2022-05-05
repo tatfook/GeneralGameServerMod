@@ -95,7 +95,7 @@ function UpdateSyncer:Init()
     GameLogic.GetFilters():add_filter("check_is_downloading_from_lan", function(opt)
         
         local _hasStartDownloaded = self:HasStartDownload()
-        print("_hasStartDownloaded",_hasStartDownloaded,self._downloadState)
+        --print("_hasStartDownloaded",_hasStartDownloaded,self._downloadState)
         
         if opt.needShowDownloadWorldUI then
             self.needShowDownloadWorldUI = true
