@@ -86,8 +86,8 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     if (self:GetUserName() == username) then return end  -- 忽略重连影响
     
     -- 退出回调
-    local callback = self:GetClient():GetDisconnectionCallBack();
-    if (type(callback) == "function") then callback(username) end
+    -- local callback = self:GetClient():GetDisconnectionCallBack();
+    -- if (type(callback) == "function") then callback(username) end
 
     if (not self:GetClient():IsSyncEntityInfo()) then return end
     
@@ -480,10 +480,9 @@ function NetClientHandler:Connect()
         self.isConnecting = false;
         self:Connect();
         -- 最大重连间隔为1分钟
-        self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
-        if (self.reconnectionDelay > 60) then self.reconnectionDelay = 60 end
-        -- 开发环境每次5秒
-        if (GGS.IsDevEnv) then self.reconnectionDelay = 5 end
+        -- self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
+        -- if (self.reconnectionDelay > 60) then self.reconnectionDelay = 60 end
+        self.reconnectionDelay = 5;
     end}):Change(self.reconnectionDelay * 1000, nil);
 end
 

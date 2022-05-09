@@ -108,7 +108,9 @@ function AppGeneralGameClient:Init()
     local function OpenReconnectionUI()
         local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
         __self__.__reconnection_ui__ = Page.Show({OnReconnection = function()
-            __self__:LoadWorld(__self__:GetOptions());
+            if (__self__:IsLogin()) then
+                __self__:LoadWorld(__self__:GetOptions());
+            end
         end}, {template = [[
         <template class="container">
             <div class="btn" onclick="OnGGSReconntion">
@@ -137,7 +139,7 @@ function AppGeneralGameClient:Init()
         ]], alignment = "_lb", width=85, height=81});
     end
 
-    self:SetLogoutCallBack(function() 
+    self:SetDisconnectionCallBack(function() 
         CloseReconnectionUI();
         OpenReconnectionUI();
     end);
