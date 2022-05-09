@@ -134,6 +134,10 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 回调通知
     local callback = self:GetClient():GetConnectionCallBack();
     if (type(callback) == "function") then callback() end
+    
+    -- 世界登录成功回调
+    self:GetWorld():OnLogin();
+
     if (not self:GetClient():IsSyncEntityInfo()) then return end
 
     -- 获取旧当前玩家

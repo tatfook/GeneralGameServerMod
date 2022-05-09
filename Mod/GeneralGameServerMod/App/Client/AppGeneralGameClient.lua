@@ -99,10 +99,15 @@ function AppGeneralGameClient:Init()
 
     -- 用户断开链接回调
     local __self__ = self;
-    self:SetDisconnectionCallBack(function() 
-        -- 重连
+    local function CloseReconnectionUI()
+        if (__self__.__reconnection_ui__) then
+            __self__.__reconnection_ui__:CloseWindow();
+            __self__.__reconnection_ui__ = nil;
+        end
+    end
+    local function OpenReconnectionUI()
         local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
-        Page.Show({OnReconnection = function()
+        __self__.__reconnection_ui__ = Page.Show({OnReconnection = function()
             __self__:LoadWorld(__self__:GetOptions());
         end}, {template = [[
         <template class="container">
@@ -130,6 +135,15 @@ function AppGeneralGameClient:Init()
         }
         </style>
         ]], alignment = "_lb", width=85, height=81});
+    end
+
+    self:SetLogoutCallBack(function() 
+        CloseReconnectionUI();
+        OpenReconnectionUI();
+    end);
+
+    self:SetLoginCallBack(function() 
+        CloseReconnectionUI();
     end);
 
     self.inited = true;

@@ -43,6 +43,8 @@ GeneralGameClient:Property("MainPlayerEntityAsset", nil);  -- 玩家实体模型
 GeneralGameClient:Property("MainPlayerEntitySkin", nil);   -- 玩家实体模型皮肤
 GeneralGameClient:Property("ConnectionCallBack", nil);     -- 连接成功回调
 GeneralGameClient:Property("DisconnectionCallBack", nil);  -- 断开连接成功回调
+GeneralGameClient:Property("LoginCallBack", nil);          -- 接入成功回调
+GeneralGameClient:Property("LogoutCallBack", nil);         -- 断开成功回调
 GeneralGameClient:Property("SyncEntityInfo", true, "IsSyncEntityInfo");                 -- 是否同步实体信息
 GeneralGameClient:Property("EnableAssetsWhiteList", true, "IsEnableAssetsWhiteList");   -- 是否启用样式白名单
 

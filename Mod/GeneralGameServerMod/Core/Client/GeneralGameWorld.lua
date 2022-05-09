@@ -118,6 +118,7 @@ function GeneralGameWorld:Login()
 
 	self.isLogin = true;
 	self:SetWorldId(self:GetClient():GetOptions().worldId);
+
 end
 
 function GeneralGameWorld:Logout() 
@@ -147,6 +148,18 @@ function GeneralGameWorld:Logout()
 	
 	self.isLogin = false;
 	self:SetWorldId(0);
+
+	self:OnLogout();
+end
+
+function GeneralGameWorld:OnLogin()
+    local callback = self:GetClient():GetLoginCallBack();
+    if (type(callback) == "function") then callback() end
+end
+
+function GeneralGameWorld:OnLogout()
+	local callback = self:GetClient():GetLogoutCallBack();
+    if (type(callback) == "function") then callback() end
 end
 
 function GeneralGameWorld:IsLogin()
