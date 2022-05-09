@@ -97,6 +97,41 @@ function AppGeneralGameClient:Init()
         });
     end
 
+    -- 用户断开链接回调
+    local __self__ = self;
+    self:SetDisconnectionCallBack(function() 
+        -- 重连
+        local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+        Page.Show({OnReconnection = function()
+            __self__:LoadWorld(__self__:GetOptions());
+        end}, {template = [[
+        <template class="container">
+            <div class="btn" onclick="OnGGSReconntion">
+            </div>
+        </template>
+        <script type="text/lua">
+        function OnGGSReconntion() 
+            CloseWindow();
+            if (type(_G.OnReconnection) == "function") then
+                _G.OnReconnection();
+            end
+        end
+        </script>
+        <style>
+        .container {
+            width: 100%;
+            height: 100%;
+        }
+        .btn {
+            width: 85px;
+            height: 81px;
+            background-color: #ffffff;
+            background: url(Texture/Aries/Creator/keepwork/ggs/chonglian_85x81_32bits.png#0 0 85 81);
+        }
+        </style>
+        ]], alignment = "_lb", width=85, height=81});
+    end);
+
     self.inited = true;
 end
 

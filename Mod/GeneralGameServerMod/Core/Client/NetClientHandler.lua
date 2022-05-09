@@ -475,9 +475,9 @@ function NetClientHandler:Connect()
     commonlib.Timer:new({callbackFunc = function(timer)
         self.isConnecting = false;
         self:Connect();
-        -- 最大重连间隔为10分钟
+        -- 最大重连间隔为1分钟
         self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
-        if (self.reconnectionDelay > 600) then self.reconnectionDelay = 600 end
+        if (self.reconnectionDelay > 60) then self.reconnectionDelay = 60 end
         -- 开发环境每次5秒
         if (GGS.IsDevEnv) then self.reconnectionDelay = 5 end
     end}):Change(self.reconnectionDelay * 1000, nil);
