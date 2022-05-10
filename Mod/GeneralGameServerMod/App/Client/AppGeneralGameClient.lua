@@ -108,6 +108,10 @@ function AppGeneralGameClient:Init()
     local function OpenReconnectionUI()
         local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
         __self__.__reconnection_ui__ = Page.Show({OnReconnection = function()
+            __self__.__reconnection_ui__ = nil;
+            local world = __self__:GetWorld();
+            local netHandler = world and world:GetNetHandler();
+            if (netHandler) then return netHandler:Reconnect() end
             if (__self__:IsLogin()) then
                 __self__:LoadWorld(__self__:GetOptions());
             end
@@ -140,6 +144,7 @@ function AppGeneralGameClient:Init()
     end
 
     self:SetDisconnectionCallBack(function() 
+        if (__self__.__reconnection_ui__) then return end 
         CloseReconnectionUI();
         OpenReconnectionUI();
     end);

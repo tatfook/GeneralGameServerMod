@@ -25,7 +25,9 @@ function ClientDataHandler:Init(netHandler)
 end
 
 function ClientDataHandler:SendData(data)
-    self:GetConnection():SendData(data);
+    local connection = self:GetConnection();
+    if (not connection) then return end 
+    connection:SendData(data);
 end
 
 -- 重载此函数 处理收到网络数据

@@ -39,6 +39,7 @@ NetClientHandler:Property("BlockManager");   -- 方块管理器
 NetClientHandler:Property("PlayerManager");  -- 玩家管理器
 NetClientHandler:Property("DataHandler");    -- 数据处理
 NetClientHandler:Property("Logout", false, "IsLogout");  -- 是否退出
+NetClientHandler:Property("AutoReconnection", true, "IsAutoReconnection");  -- 是否自动重连
 local PlayerLoginLogoutDebug = GGS.PlayerLoginLogoutDebug;
 
 function NetClientHandler:ctor() 
@@ -82,7 +83,8 @@ function NetClientHandler:handlePlayerLogout(packetPlayerLogout)
     PlayerLoginLogoutDebug.Format("player logout, username: %s, entityId: %s, curEntityId: %s, reason: %s", username, entityId, self:GetEntityId(), reason);
 
     -- 主玩家退出
-    if (self:GetEntityId() == entityId) then return self:GetWorld():Logout() end
+    -- if (self:GetEntityId() == entityId) then return self:GetWorld():Logout() end
+    if (self:GetEntityId() == entityId) then return self:Logout() end
     if (self:GetUserName() == username) then return end  -- 忽略重连影响
     
     -- 退出回调
@@ -455,6 +457,7 @@ end
 -- 与服务器建立链接
 function NetClientHandler:Connect()
     local options = self:GetClient():GetOptions();
+    if (not self:IsAutoReconnection()) then return end 
 
     -- 在连接中直接返回
     if (self.isConnecting or self:IsLogout()) then return end;
@@ -474,16 +477,29 @@ function NetClientHandler:Connect()
         PlayerLoginLogoutDebug("与服务器成功建立链接", options);
         return 
     end
-
+    
     -- 重连
-    commonlib.Timer:new({callbackFunc = function(timer)
-        self.isConnecting = false;
-        self:Connect();
-        -- 最大重连间隔为1分钟
-        -- self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
-        -- if (self.reconnectionDelay > 60) then self.reconnectionDelay = 60 end
-        self.reconnectionDelay = 5;
-    end}):Change(self.reconnectionDelay * 1000, nil);
+    if (self.__reconnect_timer__ == nil) then
+        self.__reconnect_timer__ = commonlib.Timer:new({callbackFunc = function(timer)
+            self.isConnecting = false;
+            self:Connect();
+            -- 最大重连间隔为1分钟
+            -- self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
+            -- if (self.reconnectionDelay > 60) then self.reconnectionDelay = 60 end
+            self.reconnectionDelay = 5;
+        end}):Change(self.reconnectionDelay * 1000, nil);
+    else 
+        self.__reconnect_timer__:Change(self.reconnectionDelay * 1000, nil);
+    end
+end
+
+function NetClientHandler:Reconnect()
+    self.isConnecting = false;
+    self:SetAutoReconnection(true);
+    if (self.__reconnect_timer__) then
+        self.__reconnect_timer__:Change();
+    end
+    self:Connect();
 end
 
 -- 处理错误信息
@@ -499,7 +515,7 @@ function NetClientHandler:handleDisconnection(text)
     if (not self.connection or GameLogic.GetWorld() ~= self:GetWorld()) then return end
 
     -- 第一次重连提醒
-    if (not self.isReconnection) then 
+    if (not self.isReconnection and self:IsAutoReconnection()) then 
         BroadcastHelper.PushLabel({id="NetClientHandler", label = L"与服务器断开连接, 稍后尝试重新连接...", max_duration=6000, color = "177 177 177", scaling=1.1, bold=true, shadow=true,});
         -- 回调通知
         local callback = self:GetClient():GetDisconnectionCallBack();
@@ -553,6 +569,23 @@ function NetClientHandler:Offline()
     </pe:mcml>]], self:GetUserName()))});
 end
 
+function NetClientHandler:Logout() 
+    self:SetAutoReconnection(false);
+    if (self.__reconnect_timer__) then self.__reconnect_timer__:Change() end 
+
+    -- 离线
+    self:Offline();
+
+    -- 退出
+    local callback = self:GetClient():GetDisconnectionCallBack();
+    if (type(callback) == "function") then callback() end 
+
+    -- 关闭连接
+    if (self.connection) then
+        self.connection:CloseConnection();
+        self.connection = nil;
+    end
+end
 
 -- 处理调试信息
 function NetClientHandler:handleGeneral_Debug(packetGeneral)
