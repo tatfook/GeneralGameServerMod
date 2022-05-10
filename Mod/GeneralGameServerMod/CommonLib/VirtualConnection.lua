@@ -42,7 +42,7 @@ function VirtualConnection:GetKey(address)
     local localNeuronFile = address and address.__local_neuron_file__ or self:GetLocalNeuronFile();
     local remoteThreadName = address and address.__remote_thread_name__ or self:GetRemoteThreadName();
     local remoteNeuronFile = address and address.__remote_neuron_file__ or self:GetRemoteNeuronFile();
-    return string.format("%s_%s_%s_%s_%s", nid, localThreadName, localNeuronFile, remoteThreadName, remoteNeuronFile);
+    return string.format("%s_%s_%s_%s_%s", nid or "nil", localThreadName or "nil", localNeuronFile or "nil", remoteThreadName or "nil", remoteNeuronFile or "nil");
 end
 
 function VirtualConnection:New(address)
