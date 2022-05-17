@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: 元素管理器
 use the lib:
 -------------------------------------------------------
-local ElementManager = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/ElementManager.lua");
+local ElementManager = NPL.load("Mod/GeneralGameServerMod/UI/Window/ElementManager.lua");
 -------------------------------------------------------
 ]]
 -- NPL.load("(gl)script/ide/System/Windows/mcml/mcml.lua");

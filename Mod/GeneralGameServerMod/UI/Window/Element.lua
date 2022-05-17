@@ -5,7 +5,7 @@ Date: 2020/6/30
 Desc: 元素类
 use the lib:
 -------------------------------------------------------
-local Element = NPL.load("Mod/GeneralGameServerMod/App/ui/Core/Window/Element.lua");
+local Element = NPL.load("Mod/GeneralGameServerMod/UI/Window/Element.lua");
 -------------------------------------------------------
 ]]
 NPL.load("(gl)script/ide/math/Rect.lua");

@@ -248,6 +248,7 @@ function GenerateBlockOption()
     local prettycode = string.gsub(prettycode, "\t", "    ");
     local G = {message = "", arg = {}, field_count = 0, type="", category = "图块", color = "#2E9BEF", output = false, previousStatement = true, nextStatement = true, connections = {}};
     local func, errmsg = loadstring(prettycode);
+    -- print(prettycode);
     if (not func) then
         print("============================loadstring error==========================", errmsg);
         print(prettycode)
@@ -264,6 +265,7 @@ function GenerateBlockOption()
     end);
     if (isError) then return nil end 
 
+    -- echo(G, true)
     G.message = string.gsub(G.message, "^ ", "");
     
     local connections = G.connections;

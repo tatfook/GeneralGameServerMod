@@ -513,6 +513,34 @@ local AllBlockList = {
         end,
     },
     {
+        type = "set_input_field_option",
+        message = "选项 键 %1 值 %2",
+        arg = {
+            {
+                name = "key",
+                type = "field_dropdown",
+                text = "key",
+                options = {
+                    {"背景颜色", "background-color"},
+                    {"提示文本", "placeholder"},
+                },
+            },
+            {
+                name = "value",
+                type = "field_input",
+                text = "value",
+            }
+        },
+        category = "BlockInputField",
+        previousStatement = true,
+	    nextStatement = true,
+        ToCode = function(block)
+            local key = block:GetFieldValue("key");
+            local value = block:GetFieldValue("value");
+            return string.format('arg[field_count]["%s"] = "%s";\n', key, value);
+        end
+    },
+    {
         type = "set_connection_type",
         message = "连接 %1 类型 %2",
         arg = {
@@ -620,6 +648,12 @@ local AllCategoryList = {
         name = "BlockInput",
         text = "输入",
         color = "#764BCC",
+        blocktypes = {}
+    },
+    {
+        name = "BlockInputField",
+        text = "选项",
+        color = "#FF8C1A",
         blocktypes = {}
     },
     {

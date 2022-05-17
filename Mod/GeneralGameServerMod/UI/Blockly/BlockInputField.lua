@@ -40,6 +40,8 @@ BlockInputField:Property("SelectType");
 BlockInputField:Property("AllowNewSelectOption", false, "IsAllowNewSelectOption");  -- 是否允许新增选项
 BlockInputField:Property("InputFieldContainer");                 -- 所属输入字段容器
 BlockInputField:Property("CanDelete", false, "IsCanDelete");     -- 是否可删除
+BlockInputField:Property("Placeholder", "");
+
 local UnitSize = Const.UnitSize;
 
 function BlockInputField:ctor()
@@ -64,6 +66,13 @@ function BlockInputField:Init(block, option)
     self:SetDefaultLabel(self:GetLabel());
     -- 解析颜色值
 
+    if (option["background-color"]) then 
+        local bgColor = option["background-color"];
+        self:SetBackgroundColor(self:TrimString(bgColor)); 
+    end 
+
+    if (option.placeholder) then self:SetPlaceholder(self:TrimString(option.placeholder)) end 
+
     if (self:IsBlock()) then
         self:SetColor(self:GetCategoryColor());
     else 
@@ -78,6 +87,12 @@ function BlockInputField:Init(block, option)
     
     if (option.name and option.name ~= "") then block.inputFieldMap[option.name] = self end
     return self;
+end
+
+function BlockInputField:TrimString(str)
+    str = string.gsub(str, "^%s*", "");
+    str = string.gsub(str, "%s$*", "");
+    return str;
 end
 
 function BlockInputField:GetCategoryColor()
@@ -438,7 +453,7 @@ function BlockInputField:GetFieldInputEditElement(parentElement)
         name = "input",
         attr = {
             id = "BlocklyFieldInputEditId",
-            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; font-size: %spx; padding-left: %spx', Shape:GetOutputTexture(), self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount),
+            style = string.format('width: 100%%; height: 100%%; border: none; background: %s; background-color: %s; font-size: %spx; padding-left: %spx', Shape:GetOutputTexture(), self:GetBackgroundColor(), self:GetFontSize(), UnitSize * Const.BlockEdgeWidthUnitCount),
             value = self:GetValue(),
             type = (self:GetType() == "field_number" or (self:GetType() == "input_value" and self:IsNumberType(self:GetShadowType()))) and "number" or "text",
         },

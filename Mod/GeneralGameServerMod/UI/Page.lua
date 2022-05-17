@@ -351,6 +351,23 @@ function Page.ShowBigImagePage(G, params)
     return BigImagePage;
 end
 
+local MatataLabPage = Vue:new();
+function Page.ShowMatataLabPage()
+    __auto_close_pages__[MatataLabPage] = MatataLabPage;
+    MatataLabPage:CloseWindow();
+    NPL.load("Mod/GeneralGameServerMod/UI/MatataLab/MatataLab.lua", IsDevEnv);
+    params = params or {};
+    params.url = "%ui%/MatataLab/MatataLab.html";
+    params.draggable = false;
+    params.G = G;
+    params.width = 1280;
+    params.height = 720;
+    -- params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
+    -- params.fixedRootScreenHeight = params.fixedRootScreenHeight or 720;
+    MatataLabPage:Show(params);
+    return MatataLabPage;
+end
+
 --[[
 打开冬令营主面板
 defaultTabIndex:
@@ -369,3 +386,4 @@ function Page.ShowWinterCampMainWindow(defaultTabIndex)
     --     ShowWinterCampMainWindow();
     -- ]]);
 end
+

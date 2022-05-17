@@ -75,11 +75,16 @@ function Value:Render(painter)
         Shape:SetBrush(self:GetValue());
         Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
     else
-        Shape:SetBrush("#ffffff");
+        Shape:SetBrush(self:GetBackgroundColor());
         Shape:DrawInputValue(painter, self.widthUnitCount, self.heightUnitCount);
-        painter:SetPen(self:GetColor());
         painter:SetFont(self:GetFont());
-        painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetShowText());
+        if (self:GetShowText() == "") then
+            painter:SetPen("#66666680");
+            painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetPlaceholder());
+        else
+            painter:SetPen(self:GetColor());
+            painter:DrawText((Const.BlockEdgeWidthUnitCount + TextMarginUnitCount) * UnitSize, (self.height - self:GetSingleLineTextHeight()) / 2, self:GetShowText());
+        end
 
         if (self:IsInputType() and self:GetShowText() ~= "") then
             painter:SetPen("#cccccc");
@@ -107,7 +112,9 @@ function Value:UpdateWidthHeightUnitCount()
         return Const.MinTextShowWidthUnitCount, Const.LineHeightUnitCount;
     end 
 
-    local widthUnitCount = self:GetTextWidthUnitCount(self:GetLabel()) + (TextMarginUnitCount + Const.BlockEdgeWidthUnitCount) * 2;
+    local text = self:GetLabel();
+    if (text == "") then text = self:GetPlaceholder() end 
+    local widthUnitCount = self:GetTextWidthUnitCount(text) + (TextMarginUnitCount + Const.BlockEdgeWidthUnitCount) * 2;
     return math.min(math.max(widthUnitCount, Const.MinTextShowWidthUnitCount), Const.MaxTextShowWidthUnitCount), Const.LineHeightUnitCount;
 end
 
