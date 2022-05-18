@@ -38,11 +38,16 @@ function NumberBlock:GetWorkspace()
 end
 
 function NumberBlock:Render(painter)
-    local matatalab = self:GetMatataLab();
-    painter:SetPen("#cccccc80");
-    painter:DrawRect(self.__x__, self.__y__, self.__width__, self.__height__);
-    painter:SetPen("#000000ff");
-    painter:DrawText(self.__x__, self.__y__, tostring(self:GetNumber()));
+    local icon = self:GetIcon();
+    if (icon) then
+        painter:SetPen("#ffffffff");
+        painter:DrawRectTexture(self.__x__ + 6 - 1, self.__y__ - 12, 69, 40, icon);
+    else
+        painter:SetPen("#cccccc80");
+        painter:DrawRect(self.__x__, self.__y__, self.__width__, self.__height__);
+        painter:SetPen("#000000ff");
+        painter:DrawText(self.__x__, self.__y__, tostring(self:GetNumber()));
+    end
 end
 
 function NumberBlock:OnMouseDown(event)

@@ -50,11 +50,18 @@ end
 
 function Block:Render(painter)
     local matatalab = self:GetMatataLab();
-    painter:SetPen("#cccccc80");
-    painter:DrawRect(self.__x__, self.__y__, self.__width__, self.__height__);
-    painter:SetPen("#000000ff");
-    painter:DrawText(self.__x__, self.__y__, self:GetType());
-
+    local icon = self:GetIcon();
+    local padding = 6;
+    if (icon) then
+        painter:SetPen("#ffffffff");
+        painter:DrawRectTexture(self.__x__ + padding - 1, self.__y__ + padding - 1, 69, 51, icon);
+    else
+        painter:SetPen("#cccccc80");
+        painter:DrawRect(self.__x__, self.__y__, self.__width__, self.__height__);
+        painter:SetPen("#000000ff");
+        painter:DrawText(self.__x__, self.__y__, self:GetType());
+    end
+    
     local number_block = self:GetNumberBlock();
     if (number_block) then number_block:Render(painter) end 
 end
@@ -74,7 +81,8 @@ function Block:OnMouseDown(event)
     block.__x__, block.__y__ = self.__x__, self.__y__;
     block.__is_mouse_down__ = true;
 
-    matatalab:GetWorkspace():SetBlockByXY(x, y);
+    local rel_x, rel_y = matatalab:GetLocalXY(event);
+    matatalab:GetWorkspace():SetBlockByXY(rel_x, rel_y);
     matatalab:SetDraggingBlock(block);
     matatalab:SetMouseCaptureUI(block);
 end

@@ -1,4 +1,5 @@
 
+local Button = NPL.load("./Button.lua", IsDevEnv);
 local Workspace = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 Workspace:Property("MatataLab");         -- 所属mata
@@ -6,9 +7,16 @@ Workspace:Property("RowCount");          -- 行数
 Workspace:Property("ColCount");          -- 列数
 Workspace:Property("UnitWidth");         -- 单元格宽度
 Workspace:Property("UnitHeight");        -- 单元格高度
+Workspace:Property("Title", "月球探索");
+Workspace:Property("Description", "关卡介绍");
+
+local START_BTN_ICON = "kaishi_62x60_32bits.png#0 0 62 60";
+local PAUSE_BTN_ICON = "tingzhi_61x60_32bits.png#0 0 61 60";
+local GO_ON_BTN_ICON = "jinxing_61x63_32bits.png#0 0 61 63";
 
 function Workspace:ctor()
     self.__x__, self.__y__, self.__width__, self.__height__ = 0, 0, 0, 0;
+    self.__padding_left__, self.__padding_top__ = 7, 205 + 7;
     self.__block_list__ = {};
 end
 
@@ -30,16 +38,26 @@ function Workspace:Init(matatalab, opt)
     self:SetUnitWidth(UnitWidth);
     self:SetUnitHeight(UnitHeight);
 
+    self.__state_btn__ = Button:new():Init({icon = matatalab:GetIconPathPrefix() .. START_BTN_ICON});
+    self.__state_btn__:SetPosition(0, 0, 60, 60);
+
     self.__x__, self.__y__, self.__width__, self.__height__ = opt.x or 0, opt.y or 0, ColCount * UnitWidth, RowCount * UnitHeight;
     for i = 1, RowCount do
         self.__block_list__[i] = {};
     end
+
+    self:SetXY(self.__x__, self.__y__);
 
     return self;
 end
 
 function Workspace:SetXY(x, y)
     self.__x__, self.__y__ = x, y;
+    self.__state_btn__:SetPosition(self.__x__ + self.__padding_left__ + 175, self.__y__ + self.__padding_top__ + self:GetRowCount() * self:GetUnitHeight());
+end
+
+function Workspace:GetPosition()
+    return self.__x__, self.__y__, self.__width__, self.__height__;
 end
 
 function Workspace:Render(painter)
@@ -52,31 +70,31 @@ function Workspace:Render(painter)
     local NumberBlockHeight = matatalab:GetNumberBlockHeight();
     local UnitWidth = math.max(BlockWidth, NumberBlockWidth);
     local UnitHeight = BlockHeight + NumberBlockHeight;
+    local IconPathPrefix = matatalab:GetIconPathPrefix();
 
-    painter:SetPen("#00000080");
-    painter:DrawRect(self.__x__, self.__y__, self.__width__, self.__height__, false, true);
-    local line_size = 10;
-    for i = 1, RowCount - 1 do
-        painter:DrawLine(self.__x__, self.__y__ + i * UnitHeight, self.__x__ + self.__width__, self.__y__ + i * UnitHeight);
-    end
-
-    for i = 1, ColCount - 1 do
-        painter:DrawLine(self.__x__ + i * UnitWidth, self.__y__, self.__x__ + i * UnitWidth, self.__y__ + self.__height__);
-    end
-
+    painter:SetPen("#FFFFFF");
+    painter:DrawRectTexture(self.__x__, self.__y__,  414, 205, IconPathPrefix .. "kongzhida_414x205_32bits.png#0 0 414 205");
+    painter:DrawRectTexture(self.__x__, self.__y__ + 205, 414, 517, IconPathPrefix .. "bianchengban_414x517_32bits.png#0 0 414 517");
+    local padding = 6;
     for i = 1, RowCount do
         for j = 1, ColCount do
+            local x = self.__x__ + self.__padding_left__ + (j - 1) * UnitWidth + padding;
+            local y = self.__y__ + self.__padding_top__ + (i - 1) * UnitHeight + padding;
+            painter:SetPen("#FFFFFF");
+            painter:DrawRectTexture(x, y, 68, 78, IconPathPrefix .. "tuoyipos_68x78_32bits.png#0 0 68 78");
             local block = self.__block_list__[i][j];
             if (block) then
                 block:Render(painter) 
             end 
         end
     end
+
+    self.__state_btn__:Render(painter);
 end
 
 function Workspace:XYToRowCol(x, y)
-    x = x - self.__x__;
-    y = y - self.__y__;
+    x = x - self.__x__ - self.__padding_left__;
+    y = y - self.__y__ - self.__padding_top__;
     if (x <= 0 or x > self.__width__ or y <= 0 or y > self.__height__) then return end
     local matatalab = self:GetMatataLab();
     local UnitWidth = self:GetUnitWidth();
@@ -99,7 +117,7 @@ function Workspace:SetBlockByXY(x, y, block)
         local matatalab = self:GetMatataLab();
         local UnitWidth = self:GetUnitWidth();
         local UnitHeight = self:GetUnitHeight();
-        block:SetXY((ColIndex - 1) * UnitWidth + self.__x__, (RowIndex - 1) * UnitHeight + self.__y__);
+        block:SetXY((ColIndex - 1) * UnitWidth + self.__x__ + self.__padding_left__, (RowIndex - 1) * UnitHeight + self.__y__ + self.__padding_top__);
     end
     local old_block = self.__block_list__[RowIndex][ColIndex];
     self.__block_list__[RowIndex][ColIndex] = block;

@@ -5,6 +5,8 @@ local ToolBox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NP
 ToolBox:Property("ExistNumberBlock", false, "IsExistNumberBlock");  -- 是否存在数字块
 ToolBox:Property("MatataLab");                                      -- 所属mata
 
+local NumberBlockMarginTop = 72;
+
 function ToolBox:ctor()
     self.__x__, self.__y__, self.__width__, self.__height__ = 0, 0, 0, 0;
     self.__block_list__ = {};
@@ -27,6 +29,10 @@ function ToolBox:SetXY(x, y)
     self.__x__, self.__y__ = x, y;
 end
 
+function ToolBox:GetXY()
+    return self.__x__, self.__y__;
+end
+
 function ToolBox:SetBlockList(block_list, number_block_list)
     local matatalab = self:GetMatataLab();
     local BlockWidth = matatalab:GetBlockWidth();
@@ -47,7 +53,7 @@ function ToolBox:SetBlockList(block_list, number_block_list)
     for i, block_type in ipairs(number_block_list) do
         local block = matatalab:GetBlockByType(block_type);
         if (block) then
-            block:SetXY(x + (i - 1) * BlockWidth, y + BlockHeight);
+            block:SetXY(x + (i - 1) * BlockWidth, y + NumberBlockMarginTop);
             block:SetToolBoxBlock(true);
             table.insert(self.__number_block_list__, block);
         end
@@ -57,7 +63,17 @@ end
 
 function ToolBox:Render(painter)
     local matatalab = self:GetMatataLab();
-    
+    local IconPathPrefix = matatalab:GetIconPathPrefix();
+    local BlockWidth = matatalab:GetBlockWidth();
+
+    -- painter:SetPen("#000000");
+    -- painter:DrawRect(self.__x__, self.__y__, self.__width__, self.__height__);
+    painter:SetPen("#ffffffff");
+    for i = 1, 9 do
+        painter:DrawRectTexture(self.__x__ + (i - 1) * BlockWidth + 3, self.__y__ + 3, 74, 56, IconPathPrefix .. "shangdi_74x56_32bits.png#0 0 74 56");
+        painter:DrawRectTexture(self.__x__ + (i - 1) * BlockWidth + 3, self.__y__ - 3 + NumberBlockMarginTop - 12, 74, 46, IconPathPrefix .. "xiadi_74x46_32bits.png#0 0 74 46");
+    end
+
     for _, block in ipairs(self.__block_list__) do
         block:Render(painter);
     end
@@ -75,7 +91,7 @@ function ToolBox:GetMouseUI(x, y)
 
     local matatalab = self:GetMatataLab();
     local BlockWidth = matatalab:GetBlockWidth();
-    local BlockHeight = matatalab:GetBlockWidth();
+    local BlockHeight = matatalab:GetBlockHeight();
     local NumberBlockHeight = matatalab:GetNumberBlockHeight();
     local index = math.ceil(x / BlockWidth);
 

@@ -26,6 +26,11 @@ local windows = {};
 if (IsDevEnv) then
     _G.pages = _G.pages or {};
     pages = _G.pages;
+
+    for _, page in pairs(_G.__auto_close_pages__ or {}) do
+        page:CloseWindow();
+    end
+    _G.__auto_close_pages__ = __auto_close_pages__;
 end
 
 -- 世界加载
