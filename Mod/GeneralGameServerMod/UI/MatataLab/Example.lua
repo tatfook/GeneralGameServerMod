@@ -74,5 +74,5 @@ ShowMatataLabPage()
 
 --[[
 -- 代码方块执行如下代码
-NPL.load(GameLogic.GetWorldDirectory() .. "MatataLab/Example.lua", true)
+NPL.load(GameLogic.GetWorldDirectory() .. "MatataLab/Example.lua")
 ]]
