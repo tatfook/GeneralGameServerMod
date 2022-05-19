@@ -7,8 +7,6 @@ Workspace:Property("RowCount");          -- 行数
 Workspace:Property("ColCount");          -- 列数
 Workspace:Property("UnitWidth");         -- 单元格宽度
 Workspace:Property("UnitHeight");        -- 单元格高度
-Workspace:Property("Title", "月球探索");
-Workspace:Property("Description", "关卡介绍");
 
 local START_BTN_ICON = "kaishi_62x60_32bits.png#0 0 62 60";
 local PAUSE_BTN_ICON = "tingzhi_61x60_32bits.png#0 0 61 60";
