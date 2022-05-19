@@ -27,6 +27,17 @@ end
 
 function ToolBox:SetXY(x, y)
     self.__x__, self.__y__ = x, y;
+
+    local matatalab = self:GetMatataLab();
+    local BlockWidth = matatalab:GetBlockWidth();
+    local BlockHeight = matatalab:GetBlockHeight();
+    for i, block in ipairs(self.__block_list__) do
+        block:SetXY(self.__x__ + (i - 1) * BlockWidth, self.__y__);
+    end
+
+    for i, block in ipairs(self.__number_block_list__) do
+        block:SetXY(self.__x__ + (i - 1) * BlockWidth, self.__y__ + NumberBlockMarginTop);
+    end
 end
 
 function ToolBox:GetXY()
@@ -35,30 +46,24 @@ end
 
 function ToolBox:SetBlockList(block_list, number_block_list)
     local matatalab = self:GetMatataLab();
-    local BlockWidth = matatalab:GetBlockWidth();
-    local BlockHeight = matatalab:GetBlockHeight();
-
     local x, y = self.__x__, self.__y__;
     self.__block_list__ = {};
     for i, block_type in ipairs(block_list) do
         local block = matatalab:GetBlockByType(block_type);
         if (block) then
-            block:SetXY(x + (i - 1) * BlockWidth, y);
             block:SetToolBoxBlock(true);
             table.insert(self.__block_list__, block);
         end
     end
-
     self.__number_block_list__ = {};
     for i, block_type in ipairs(number_block_list) do
         local block = matatalab:GetBlockByType(block_type);
         if (block) then
-            block:SetXY(x + (i - 1) * BlockWidth, y + NumberBlockMarginTop);
             block:SetToolBoxBlock(true);
             table.insert(self.__number_block_list__, block);
         end
     end
-
+    self:SetXY(x, y);
 end
 
 function ToolBox:Render(painter)

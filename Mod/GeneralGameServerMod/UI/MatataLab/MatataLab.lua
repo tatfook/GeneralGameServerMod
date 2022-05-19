@@ -22,6 +22,9 @@ MatataLab:Property("ToolBox");
 MatataLab:Property("Workspace");
 MatataLab:Property("MouseCaptureUI");           -- 捕获鼠标UI
 MatataLab:Property("IconPathPrefix", "Texture/Aries/Creator/keepwork/ggs/matatalab/");
+MatataLab:Property("Option");
+MatataLab:Property("ArgName");
+
 local DEFAULT_BLOCK_WIDTH = 80;
 local DEFAULT_BLOCK_HEIGHT = 56;
 local DEFAULT_NUMBER_BLOCK_WIDTH = DEFAULT_BLOCK_WIDTH;
@@ -35,42 +38,17 @@ end
 
 function MatataLab:Init(xmlnode, window, parent)
     MatataLab._super.Init(self, xmlnode, window, parent);
+    local G = window:GetG();
+    local opt = G.matatalab or {};
+    self:SetOption(opt);
 
-    opt = opt or {};
+    G.__matatalab__ = self;
+    
+    local block_option_list = opt.block_option_list or {};
+    local toolbox_block_list = opt.toolbox_block_list or {};
+    local toolbox_number_block_list = opt.toolbox_number_block_list or {};
 
-    local block_option_list = opt.block_option_list or {
-        {
-            type = "上",
-            icon = self:GetIconPathPrefix() .. "shang_68x50_32bits.png#0 0 68 50",
-        }, 
-        {
-            type = "下",
-            icon = self:GetIconPathPrefix() .. "xia_68x50_32bits.png#0 0 68 50",
-        }, 
-        {
-            type = "左",
-            icon = self:GetIconPathPrefix() .. "zuo_68x50_32bits.png#0 0 68 50",
-        }, 
-        {
-            type = "右",
-            icon = self:GetIconPathPrefix() .. "you_68x50_32bits.png#0 0 68 50",
-        }, 
-        {
-            type = "NumberBlock2", 
-            number = 2, 
-            isNumberBlock = true,
-            icon = self:GetIconPathPrefix() .. "2_68x40_32bits.png#0 0 68 40"
-        },
-        {
-            type = "NumberBlock3", 
-            number = 3, 
-            isNumberBlock = true,
-            icon = self:GetIconPathPrefix() .. "3_68x40_32bits.png#0 0 68 40"
-        }, 
-    };
-    local toolbox_block_list = opt.toolbox_block_list or {"上", "右", "下", "左"};
-    local toolbox_number_block_list = opt.toolbox_number_block_list or {"NumberBlock2", "NumberBlock3"};
-
+    self:SetArgName(opt.argname or "__arg__");
     self:SetBlockWidth(opt.block_width or DEFAULT_BLOCK_WIDTH);
     self:SetBlockHeight(opt.block_height or DEFAULT_BLOCK_HEIGHT);
     self:SetNumberBlockWidth(opt.number_block_width or DEFAULT_NUMBER_BLOCK_WIDTH);
@@ -87,7 +65,6 @@ function MatataLab:Init(xmlnode, window, parent)
     local workspace = Workspace:new():Init(self, opt.workspace);
     local toolbox = ToolBox:new():Init(self, opt.toolbox);
 
-    toolbox:SetXY(120, 590);
     toolbox:SetBlockList(toolbox_block_list, toolbox_number_block_list);
 
     self:SetToolBox(toolbox);
@@ -148,7 +125,7 @@ function MatataLab:GetLocalXY(event)
 end
 
 function MatataLab:GetGloablXY(event)
-    return event.x, event.y;
+    return self:ScreenPointToWindowPoint(event.x, event.y);
 end
 
 function MatataLab:OnMouseUp(event)

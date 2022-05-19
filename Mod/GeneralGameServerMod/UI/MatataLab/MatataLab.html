@@ -1,11 +1,14 @@
 <template style="width: 100%; height: 100%; background-color: #ffffff00;">
     <div style="width: 100%; height: 100%;">
         <matatalab  style="width: 100%; height: 100%;"></matatalab>
-        <div class="title">{{title or "月球探索"}}</div>
-        <div class="description">{{description or "关卡介绍"}}</div>
+        <div class="title">{{matatalab.title or "月球探索"}}</div>
+        <div class="description">{{matatalab.description or "关卡介绍"}}</div>
     </div>
 </template>
 
+<script type="text/lua">
+_G.matatalab = _G.matatalab or {};
+</script>
 
 <style scoped="true">
 .title {
@@ -24,7 +27,7 @@
 
 .description {
     position: absolute;
-    right: 70px;
+    right: 60px;
     top: 80px;
     height: 70px;
     width: 280px;
