@@ -1,16 +1,27 @@
 
 
-local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+--[[
+-- 将此文件放置世界根目录的MatataLab目录里 代码方块执行如下代码
+NPL.load(GameLogic.GetWorldDirectory() .. "MatataLab/Example.lua")
+]]
 
-NPL.load(GameLogic.GetWorldDirectory() .. "MatataLab/MatataLab.lua");
+local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
+-- GGS 模块的 MatataLab 目录路径, 使用GGS里的MatataLab实现, 不定制UI
+local MatataLabDirectory = "Mod/GeneralGameServerMod/UI/MatataLab/";
+-- 若需要定制, 将Mod/GeneralGameServerMod/UI/MatataLab拷贝至世界目录, 解除下行注释, 注释上行
+-- local MatataLabDirectory = GameLogic.GetWorldDirectory() .. "MatataLab/";
+
+NPL.load(MatataLabDirectory .. "MatataLab.lua");
 
 function ShowMatataLabPage()
     local params = {};
-    params.url = "%world_directory%/MatataLab/MatataLab.html";
+    params.url = MatataLabDirectory .. "MatataLab.html";
     params.draggable = false;
     params.G = {};
+    -- 固定大小不自动缩放
     params.width = 1280;
     params.height = 720;
+    -- 固定大小随窗口自动缩放, 解除下四行注释, 注释上行
     -- params.width = params.width or "100%";
     -- params.height = params.height or "100%";
     -- params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
@@ -71,8 +82,3 @@ function ShowMatataLabPage()
 end
 
 ShowMatataLabPage()
-
---[[
--- 代码方块执行如下代码
-NPL.load(GameLogic.GetWorldDirectory() .. "MatataLab/Example.lua")
-]]

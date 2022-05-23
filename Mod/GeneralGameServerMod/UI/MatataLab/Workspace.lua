@@ -179,7 +179,11 @@ function Workspace:GetCode()
             local block = self.__block_list__[i][j];
             if (block) then
                 local number_block = block:GetNumberBlock();
-                if (number_block) then codetext = codetext .. argname .. " = " .. number_block:GetCode() .. "\n" end
+                if (number_block) then 
+                    codetext = codetext .. argname .. " = " .. number_block:GetCode() .. "\n";
+                else 
+                    codetext = codetext .. argname .. " = nil\n";
+                end
                 codetext = codetext .. block:GetCode();
             end
         end
