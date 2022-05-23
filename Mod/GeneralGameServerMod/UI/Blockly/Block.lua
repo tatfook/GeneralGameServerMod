@@ -74,7 +74,7 @@ function Block:Init(blockly, opt)
     self:SetDraggable(if_else(opt.isDraggable == false, false, true));
 
     if (opt.id) then self:SetId(opt.id) end
-
+    
     if (opt.output) then self.outputConnection = Connection:new():Init(self, "output_connection", opt.output) end
     if (opt.previousStatement) then self.previousConnection = Connection:new():Init(self, "previous_connection", opt.previousStatement) end
     if (opt.nextStatement) then self.nextConnection = Connection:new():Init(self, "next_connection", opt.nextStatement) end
@@ -804,6 +804,9 @@ function Block:GetCode()
     local blockCode = ToCode and ToCode(self, DefaultToCode) or "";
     local OnGenerateBlockCodeAfter = blockly:GetAttrFunctionValue("OnGenerateBlockCodeAfter");
     local afterBlockCode = OnGenerateBlockCodeAfter and OnGenerateBlockCodeAfter(self) or "";
+
+    blockly.__block_id_map__[self:GetId()] = self;
+
     return beforeBlockCode .. blockCode .. afterBlockCode;
 end
 

@@ -1,7 +1,12 @@
 
 <template class="container">
     <div style="position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px;">
-        <Blockly ref="blockly" v-bind:language="Language or 'SystemNplBlock'" style="width: 100%; height: 100%;" onchange=OnBlocklyChange v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
+        <Blockly ref="blockly" 
+            v-bind:language="Language or 'SystemNplBlock'" 
+            style="width: 100%; height: 100%;" 
+            onchange=OnBlocklyChange
+            v-bind:OnGenerateBlockCodeAfter="OnGenerateBlockCodeAfter" 
+            v-bind:ToolBoxXmlText="ToolBoxXmlText"></Blockly>
     </div>
 </template>
 
@@ -21,6 +26,12 @@ function OnReady()
     _G.GetXml = function()
         local xmlNodeText = BlocklyEl:SaveToXmlNodeText();
         return xmlNodeText;
+    end
+
+    _G.SetRunBlockId = function(blocklyId)
+        if (not BlocklyEl) then return end 
+
+        BlocklyEl:SetRunBlockId(blocklyId);
     end
 
     BlocklyEl:LoadFromXmlNodeText(_G.xmltext);

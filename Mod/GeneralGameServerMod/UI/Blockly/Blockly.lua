@@ -42,6 +42,7 @@ Blockly:Property("ContextMenu");              -- 上下文菜单
 Blockly:Property("MouseCaptureUI");           -- 鼠标捕获UI
 Blockly:Property("FocusUI");                  -- 聚焦UI
 Blockly:Property("CurrentBlock");             -- 当前拽块
+Blockly:Property("RunningBlock");             -- 运行块
 Blockly:Property("Language");                 -- 语言
 Blockly:Property("FileManager");              -- 文件管理器
 Blockly:Property("ToolBox");                  -- 工具栏
@@ -50,6 +51,7 @@ Blockly:Property("Scale", 1);                 -- 缩放
 Blockly:Property("ReadOnly", false, "IsReadOnly");    -- 只读
 Blockly:Property("OptionGlobal");             -- 选项全局表
 Blockly:Property("ToCodeCache");              -- 生成代码的时缓存对象
+Blockly:Property("RunBlockId", 0);            -- 运行块ID
 
 function Blockly.PlayCreateBlockSound()
     ConnectionBlockSound:play2d();
@@ -75,6 +77,7 @@ function Blockly:Reset()
     self.redos = {};
     self.blocks = {};
     self.notes = {};
+    self.__block_id_map__ = {};
     self.offsetX, self.offsetY = 0, 0;
     self.mouseMoveX, self.mouseMoveY = 0, 0;
     self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__, self.__content_bottom_unit_count__ = 0, 0, 0, 0;
@@ -86,7 +89,6 @@ end
 
 function Blockly:Init(xmlNode, window, parent)
     Blockly._super.Init(self, xmlNode, window, parent);
-    
     local blocklyEditor = BlocklyEditor:new():Init({
         name = "BlocklyEditor",
         attr = {
@@ -1018,6 +1020,8 @@ end
 
 -- 获取代码
 function Blockly:GetCode()
+    print("=============GetCode==================")
+    self.__block_id_map__ = {};
     local only_generate_start_block_code = self:IsOnlyGenerateStartBlockCode();
     local blocks, lastStartIndex = {}, 1;
     for _, block in ipairs(self.blocks) do
@@ -1150,4 +1154,9 @@ function Blockly:GetStatementBlockCount()
     end
 
     return total_count;
+end
+
+function Blockly:SetRunBlockId(blocklyid)
+    print("-----------", blocklyid);
+    self:SetRunningBlock(self.__block_id_map__[blocklyid]);
 end
