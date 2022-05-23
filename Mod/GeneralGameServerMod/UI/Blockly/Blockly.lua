@@ -1157,6 +1157,17 @@ function Blockly:GetStatementBlockCount()
 end
 
 function Blockly:SetRunBlockId(blocklyid)
-    print("-----------", blocklyid);
-    self:SetRunningBlock(self.__block_id_map__[blocklyid]);
+    local last_running_block = self:GetRunningBlock();
+    if (last_running_block) then
+        last_running_block.__is_running__ = false;
+        last_running_block.__render_count__ = 0;
+        last_running_block.__is_hide__ = false;
+    end
+    local current_running_block = self.__block_id_map__[blocklyid];
+    if (current_running_block) then
+        current_running_block.__is_running__ = true;
+        current_running_block.__render_count__ = 0;
+        current_running_block.__is_hide__ = false;
+    end
+    self:SetRunningBlock(current_running_block);
 end

@@ -25,7 +25,7 @@ local function ClearBlockPickDisplay()
 end
 
 local function HighlightPickBlock(result)
-	if(last_select_block.blockX ~= result.blockX or last_select_block.blockY ~= result.blockY or last_select_block.blockZ ~= result.blockZ) then
+	if(result.blockX and result.blockY and result.blockZ and last_select_block.blockX ~= result.blockX or last_select_block.blockY ~= result.blockY or last_select_block.blockZ ~= result.blockZ) then
         -- 取消选择
 		if(last_select_block.blockX) then 
             ParaTerrain.SelectBlock(last_select_block.blockX, last_select_block.blockY, last_select_block.blockZ, false, GameLogic.options.wire_frame_group_id);
