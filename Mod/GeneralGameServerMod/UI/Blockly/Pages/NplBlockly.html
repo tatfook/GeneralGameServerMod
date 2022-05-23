@@ -29,10 +29,22 @@ function OnReady()
         return xmlNodeText;
     end
 
-    _G.SetRunBlockId = function(blocklyId)
-        if (not BlocklyEl) then return end 
 
-        BlocklyEl:SetRunBlockId(blocklyId);
+    _G.SetRunBlockId = function(blockid)
+        BlocklyEl:SetRunBlockId(blockid);
+        <!-- if (blockid == 0) then
+            _G.PopRunBlockId();
+        else
+            _G.PushRunBlockId(blockid);
+        end -->
+    end
+    _G.PushRunBlockId = function(blockid)
+        if (not BlocklyEl) then return end 
+        BlocklyEl:SetRunBlockId(BlocklyEl:PushRunBlockId(blockid));
+    end
+    _G.PopRunBlockId = function() 
+        if (not BlocklyEl) then return end 
+        BlocklyEl:SetRunBlockId(BlocklyEl:PopRunBlockId());
     end
 
     BlocklyEl:LoadFromXmlNodeText(_G.xmltext);

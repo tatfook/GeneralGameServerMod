@@ -78,6 +78,7 @@ function Blockly:Reset()
     self.blocks = {};
     self.notes = {};
     self.__block_id_map__ = {};
+    self.__running_block_id_stack__ = {};
     self.offsetX, self.offsetY = 0, 0;
     self.mouseMoveX, self.mouseMoveY = 0, 0;
     self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__, self.__content_bottom_unit_count__ = 0, 0, 0, 0;
@@ -1022,6 +1023,7 @@ end
 function Blockly:GetCode()
     print("=============GetCode==================")
     self.__block_id_map__ = {};
+    self.__running_block_id_stack__ = {};
     local only_generate_start_block_code = self:IsOnlyGenerateStartBlockCode();
     local blocks, lastStartIndex = {}, 1;
     for _, block in ipairs(self.blocks) do
@@ -1156,18 +1158,31 @@ function Blockly:GetStatementBlockCount()
     return total_count;
 end
 
-function Blockly:SetRunBlockId(blocklyid)
+function Blockly:SetRunBlockId(blockid)
     local last_running_block = self:GetRunningBlock();
     if (last_running_block) then
         last_running_block.__is_running__ = false;
         last_running_block.__render_count__ = 0;
         last_running_block.__is_hide__ = false;
     end
-    local current_running_block = self.__block_id_map__[blocklyid];
+    local current_running_block = self.__block_id_map__[blockid or 0];
     if (current_running_block) then
         current_running_block.__is_running__ = true;
         current_running_block.__render_count__ = 0;
         current_running_block.__is_hide__ = false;
     end
     self:SetRunningBlock(current_running_block);
+end
+
+function Blockly:PushRunBlockId(blockid)
+    local stack_top_index = #self.__running_block_id_stack__ + 1;
+    self.__running_block_id_stack__[stack_top_index] = blockid;
+    return self.__running_block_id_stack__[stack_top_index] or 0;
+end
+
+function Blockly:PopRunBlockId()
+    local stack_top_index = #self.__running_block_id_stack__ ;
+    self.__running_block_id_stack__[stack_top_index] = nil;
+    stack_top_index = math.max(stack_top_index - 1, 1);
+    return self.__running_block_id_stack__[stack_top_index] or 0;
 end

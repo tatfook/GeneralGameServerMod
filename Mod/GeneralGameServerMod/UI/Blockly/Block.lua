@@ -258,12 +258,12 @@ function Block:Render(painter)
     if (self.__is_running__) then
         self.__render_count__ = (self.__render_count__ or 0) + 1;
         if (self.__is_hide__) then
-            if (self.__render_count__ > 15) then
+            if (self.__render_count__ > 25) then
                 self.__is_hide__ = false;
                 self.__render_count__ = 0;
             end
         else
-            if (self.__render_count__ > 15) then
+            if (self.__render_count__ > 25) then
                 self.__is_hide__ = true;
                 self.__render_count__ = 0;
             end
@@ -285,10 +285,10 @@ function Block:Render(painter)
             Shape:DrawOutput(painter, self.widthUnitCount, self.heightUnitCount);
         end
         painter:Translate(-self.left, -self.top);
-    
-        -- 绘制输入字段
-        local UnitSize = self:GetUnitSize();
-        for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+    end
+    -- 绘制输入字段
+    for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        if (not self.__is_hide__ or inputFieldContainer:IsInputStatementContainer()) then
             inputFieldContainer:Render(painter);
         end
     end
