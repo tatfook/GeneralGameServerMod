@@ -81,10 +81,10 @@ function ScrollBarThumb:OnAfterUpdateLayout()
     height = if_else(not height or height == 0, self.maxHeight - 2, height);
 
     if (self:GetScrollBar():IsHorizontal()) then
-        self.width, self.height = self.width, math.min(height, self.maxHeight);
+        self.width, self.height = self.width, height;
         self.left, self.top = math.max(0, math.min(self.left, self.maxLeft)), (self.maxHeight - self.height) / 2;
     else
-        self.width, self.height = math.min(width, self.maxWidth), self.height;
+        self.width, self.height = width , self.height;
         self.left, self.top = (self.maxWidth - self.width) / 2, math.max(0, math.min(self.top, self.maxTop));
     end
     local layout = self:GetLayout();
@@ -149,13 +149,13 @@ function ScrollBarThumb:SetThumbWidthHeight(width, height, scrollBarWidth, scrol
     if (self:GetScrollBar():IsHorizontal()) then
         self.width = width;
         self.height = GetPxValue(style["height"]) or (height > 2 and (height - 2) or height);
-        self.maxLeft = math.max(scrollBarWidth - width, 1);
+        self.maxLeft = math.max(scrollBarWidth - self.width, 1);
         self.left = math.min(scrollLeft * self.maxLeft / (scrollBar.scrollWidth - scrollBar.contentWidth), self.maxLeft);
         self.top = (self.maxHeight - self.height) / 2;
     else
         self.width = GetPxValue(style["width"]) or (width > 2 and (width - 2) or width);
-        self.height = height;
-        self.maxTop = math.max(scrollBarHeight - height, 1);
+        self.height = GetPxValue(style["height"]) or height;
+        self.maxTop = math.max(scrollBarHeight - self.height, 1);
         self.left = (self.maxWidth - self.width) / 2;
         self.top = math.min(scrollTop * self.maxTop / (scrollBar.scrollHeight - scrollBar.contentHeight), self.maxTop);
     end
@@ -355,16 +355,16 @@ function ScrollBar:OnMouseWheel(event)
     if (not self:GetVisible()) then return end 
     local delta = event:GetDelta();  -- 1 向上滚动  -1 向下滚动
     if (not self.thumb) then return end
-    self.thumb:ScrollByDelta(delta);
+    -- self.thumb:ScrollByDelta(delta);
+    self:ScrollTo(self.scrollTop - self.height * delta / 10);
 end
 
 -- 鼠标点击事件
 function ScrollBar:OnMouseDown(event)
     local screenX, screenY = event:GetScreenXY();
     local relX, relY = self:GetRelPoint(screenX, screenY);
-    local windowX, windowY = self:GetWindowPos();
     if (not self.thumb) then return end
-    self.thumb:ScrollTo(relX - windowX - self.thumbSize / 2, relY - windowY - self.thumbSize / 2);
+    self.thumb:ScrollTo(relX, relY);
 end
 
 -- 滚动到指定位置
