@@ -20,7 +20,7 @@ function ToolBox:Init(matatalab, opt)
     self:SetMatataLab(matatalab);
 
     self.__x__, self.__y__ = opt.x or 0, opt.y or 0;
-    self.__width__, self.__height__ = opt.width or 8 * matatalab:GetBlockWidth(), opt.height or (matatalab:GetBlockHeight() + matatalab:GetNumberBlockHeight());
+    self.__width__, self.__height__ = opt.width or 9 * matatalab:GetBlockWidth(), opt.height or (matatalab:GetBlockHeight() + matatalab:GetNumberBlockHeight());
 
     return self;
 end

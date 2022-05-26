@@ -416,7 +416,7 @@ function Page.ShowMatataLabPage()
                 code = "5",
             }, 
         },
-        toolbox_block_list = {"上", "右", "下", "左"},   -- toolbox 工具栏块列表
+        toolbox_block_list = {"上", "右", "下", "左", "上", "右", "下", "左", "上"},   -- toolbox 工具栏块列表
         toolbox_number_block_list = {"NumberBlock2", "NumberBlock3", "NumberBlock5"},   -- toolbox 工具栏数字块列表
         OnStart = function(matatalab)             -- 点击运行回调
             local code = matatalab:GetCode();
