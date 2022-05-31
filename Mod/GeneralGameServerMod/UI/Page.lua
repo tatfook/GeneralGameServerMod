@@ -378,6 +378,7 @@ function Page.ShowMatataLabPage()
                 type = "上",
                 icon = "Texture/Aries/Creator/keepwork/ggs/matatalab/shang_68x50_32bits.png#0 0 68 50",
                 code = "MoveUp()",
+                match = "Number0-9"
             }, 
             {
                 type = "下",
@@ -400,6 +401,7 @@ function Page.ShowMatataLabPage()
                 isNumberBlock = true,
                 icon = "Texture/Aries/Creator/keepwork/ggs/matatalab/2_68x40_32bits.png#0 0 68 40",
                 code = "2",
+                match = "Number0-9"
             },
             {
                 type = "NumberBlock3", 
@@ -407,6 +409,7 @@ function Page.ShowMatataLabPage()
                 isNumberBlock = true,
                 icon = "Texture/Aries/Creator/keepwork/ggs/matatalab/3_68x40_32bits.png#0 0 68 40",
                 code = "3",
+                match = "String0-9"
             }, 
             {
                 type = "NumberBlock5", 

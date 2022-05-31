@@ -1,4 +1,6 @@
 
+local Match = NPL.load("./Match.lua");
+
 local Block = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
 
@@ -9,6 +11,7 @@ Block:Property("NumberBlock");  -- 数字块
 Block:Property("Type");         -- 图块类型
 Block:Property("Code");         -- 图块代码
 Block:Property("Icon");         -- 图标
+Block:Property("Match");        -- 匹配类型
 
 function Block:ctor()
     self.__x__, self.__y__, self.__width__, self.__height__ = 0, 0, 0, 0;
@@ -29,6 +32,7 @@ function Block:Init(matatalab, opt)
     self.__width__ = matatalab:GetBlockWidth();
     self.__height__ = matatalab:GetBlockHeight();
 
+    self:SetMatch(Match:new():Init(opt.match));
     return self;
 end
 
