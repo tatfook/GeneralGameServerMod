@@ -36,4 +36,15 @@ Const.ToolBoxCategoryHeight = 60;                 -- 分类高
 -- 图块颜色
 Const.Colors = {"#2E9BEF", "#76CE62", "#764BCC", "#EC522E", "#C38A3F", "#69B090", "#569138", "#459197", "#FF8C1A"};
 
+Const.HighlightColors = {
+    ["#764BCC"] = "#A98AE6",
+    ["#7ABB55"] = "#86DF72",
+    ["#459197"] = "#7DCED4",
+    ["#69B090"] = "#91D3B5",
+    ["#569138"] = "#8FCC70",
+    ["#8F6D40"] = "#C38A3F",
+    ["#0078D7"] = "#2E9BEF",
+    ["#D83B01"] = "#FF7757",
+}
+
 -- Const.SCROLL_BAR_VERSION = 1;

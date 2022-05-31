@@ -249,6 +249,10 @@ function Block:GetBrush()
     local isCurrentBlock = self:GetBlockly():GetCurrentBlock() == self;
     local brush = isCurrentBlock and CurrentBlockBrush or BlockBrush;
     brush.color = self:GetColor();
+    local connectionBlock = self:IsOutput() and self.outputConnection:GetConnectionBlock();
+    if (self.__is_hide__ or (connectionBlock and connectionBlock.__is_hide__)) then
+        brush.color = Const.HighlightColors[brush.color] or brush.color;
+    end
     return brush;
 end
 
@@ -258,39 +262,38 @@ function Block:Render(painter)
     if (self.__is_running__) then
         self.__render_count__ = (self.__render_count__ or 0) + 1;
         if (self.__is_hide__) then
-            if (self.__render_count__ > 25) then
+            if (self.__render_count__ > 20) then
                 self.__is_hide__ = false;
                 self.__render_count__ = 0;
             end
         else
-            if (self.__render_count__ > 25) then
+            if (self.__render_count__ > 20) then
                 self.__is_hide__ = true;
                 self.__render_count__ = 0;
             end
         end
     end
     
-    if (not self.__is_hide__) then
-        Shape:SetBrush(self:GetBrush());
-        painter:Translate(self.left, self.top);
-        -- 绘制上下连接
-        if (self:IsStatement()) then
-            if (self.previousConnection) then
-                Shape:DrawPrevConnection(painter, self.widthUnitCount);
-            else
-                Shape:DrawStartEdge(painter, self.widthUnitCount);
-            end
-            Shape:DrawNextConnection(painter, self.widthUnitCount, 0, self.heightUnitCount - Const.ConnectionHeightUnitCount);
+    Shape:SetBrush(self:GetBrush());
+    painter:Translate(self.left, self.top);
+    -- 绘制上下连接
+    if (self:IsStatement()) then
+        if (self.previousConnection) then
+            Shape:DrawPrevConnection(painter, self.widthUnitCount);
         else
-            Shape:DrawOutput(painter, self.widthUnitCount, self.heightUnitCount);
+            Shape:DrawStartEdge(painter, self.widthUnitCount);
         end
-        painter:Translate(-self.left, -self.top);
+        Shape:DrawNextConnection(painter, self.widthUnitCount, 0, self.heightUnitCount - Const.ConnectionHeightUnitCount);
+    else
+        Shape:DrawOutput(painter, self.widthUnitCount, self.heightUnitCount);
     end
+    painter:Translate(-self.left, -self.top);
+
     -- 绘制输入字段
     for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
-        if (not self.__is_hide__ or inputFieldContainer:IsInputStatementContainer()) then
+        -- if (not self.__is_hide__ or inputFieldContainer:IsInputStatementContainer()) then
             inputFieldContainer:Render(painter);
-        end
+        -- end
     end
 
     local nextBlock = self:GetNextBlock();
