@@ -250,7 +250,7 @@ function Block:GetBrush()
     local brush = isCurrentBlock and CurrentBlockBrush or BlockBrush;
     brush.color = self:GetColor();
     local connectionBlock = self:IsOutput() and self.outputConnection:GetConnectionBlock();
-    if (self.__is_hide__ or (connectionBlock and connectionBlock.__is_hide__)) then
+    if (self.__is_running__ or (connectionBlock and connectionBlock.__is_running__)) then
         brush.color = Const.HighlightColors[brush.color] or brush.color;
     end
     return brush;
