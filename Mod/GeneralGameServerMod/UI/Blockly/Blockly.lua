@@ -52,6 +52,7 @@ Blockly:Property("ReadOnly", false, "IsReadOnly");    -- 只读
 Blockly:Property("OptionGlobal");             -- 选项全局表
 Blockly:Property("ToCodeCache");              -- 生成代码的时缓存对象
 Blockly:Property("RunBlockId", 0);            -- 运行块ID
+Blockly:Property("ShowMiniMap", false, "IsShowMiniMap");  -- 是否显示小地图
 
 function Blockly.PlayCreateBlockSound()
     ConnectionBlockSound:play2d();
@@ -464,6 +465,7 @@ local IconViewWidth, IconViewHeight = 82, 220;
 function Blockly:GetMousePosIndex(mouseMoveX, mouseMoveY)
     local x, y, w, h = self:GetGeometry();
     local mx, my = (mouseMoveX or self.mouseMoveX) - w + IconViewWidth, (mouseMoveY or self.mouseMoveY) - h + IconViewHeight;
+    if (10 <= mx and mx <=42 and -42 <= my and my <= -10) then return -1 end 
     if (10 <= mx and mx <= 42 and 0 <= my and my <= 32) then return 1 end
     if (10 <= mx and mx <= 42 and 42 <= my and my <= 74) then return 2 end
     if (10 <= mx and mx <= 42 and 84 <= my and my <= 116) then return 3 end
@@ -478,6 +480,10 @@ function Blockly:RenderIcons(painter)
     local mousePosIndex = self:GetMousePosIndex();
     
     painter:Translate(offsetX, offsetY);
+    if (mousePosIndex == -1) then painter:SetPen("#ffffffff")
+    else painter:SetPen("#ffffff80") end
+    painter:DrawRectTexture(10, -42, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly/suoluetu_32x30_32bits.png;0 0 32 32");
+
     if (mousePosIndex == 1) then painter:SetPen("#ffffffff")
     else painter:SetPen("#ffffff80") end
     painter:DrawRectTexture(10, 0, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly_icons_128x128_32bit.png;0 64 32 32");
@@ -577,6 +583,38 @@ function Blockly:RenderContent(painter)
     self.__horizontal_scroll_bar__:Render(painter);
     self.__vertical_scroll_bar__:Render(painter);
     painter:Translate(-x, -y);
+
+    if (self:IsShowMiniMap()) then self:RenderMiniMap(painter) end 
+end
+
+function Blockly:RenderMiniMap(painter) 
+    local x, y, w, h = self:GetContentGeometry();
+    local MiniMapWidth, MiniMapHeight = 300, 300;
+    local scale = 0.5;
+    local UnitSize = self:GetUnitSize();
+    painter:Translate(x + w - MiniMapWidth, y);
+    painter:Save();
+    painter:SetClipRegion(0, 0, MiniMapWidth, MiniMapHeight);
+    -- 背景
+    painter:SetPen("#ffffff");
+    painter:DrawRectTexture(0, 0, MiniMapWidth, MiniMapHeight,  "Texture/Aries/Creator/keepwork/ggs/blockly/waikuang_32x32_32bits.png;0 0 32 32:12 12 12 12");
+    
+    if (#self.blocks ~= 0) then 
+        local margin = 40;
+        local left, top, width , height = self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__ - self.__content_left_unit_count__, self.__content_bottom_unit_count__ - self.__content_top_unit_count__;
+        left, top, width, height = left * UnitSize, top * UnitSize, math.max(width * UnitSize + 2 * margin, w), math.max(height * UnitSize + 2 * margin, h);
+        local scale = math.min(MiniMapWidth / width, MiniMapHeight / height);
+        -- print(left, top, width, height, scale)
+        painter:Scale(scale, scale);
+        painter:Translate(-(left - margin), -(top - margin));
+        for _, block in ipairs(self.blocks) do
+            block:Render(painter);
+        end
+        painter:Translate((left - margin), (top - margin));
+        painter:Scale(1 / scale, 1 / scale);
+    end
+    painter:Restore();
+    painter:Translate(-(x + w - MiniMapWidth), -y);
 end
 
 -- 布局Blockly
@@ -675,7 +713,9 @@ function Blockly:OnMouseDown(event)
     end
     
     local mousePosIndex = self:GetMousePosIndex();
-    if (mousePosIndex == 1) then         -- 重置
+    if (mousePosIndex == -1) then
+        self:SetShowMiniMap(not self:IsShowMiniMap());
+    elseif (mousePosIndex == 1) then         -- 重置
         self:UpdateScale();
         local targetBlock, left, top = nil, nil, nil;
         for _, block in ipairs(self.blocks) do
