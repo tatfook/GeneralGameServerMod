@@ -33,13 +33,11 @@ function Statement:Init(block, opt)
 end
 
 function Statement:Render(painter)
-    if (not self:GetBlock().__is_hide__) then
-        local UnitSize = self:GetUnitSize();
-        local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
-        local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
-        Shape:SetBrush(self:GetBlock():GetBrush());
-        Shape:DrawInputStatement(painter, blockWidthUnitCount, math.max(self.heightUnitCount, MinRenderHeightUnitCount), self.leftUnitCount, self.topUnitCount);
-    end
+    local UnitSize = self:GetUnitSize();
+    local widthUnitCount, heightUnitCount = self:GetWidthHeightUnitCount();
+    local blockWidthUnitCount, blockHeightUnitCount = self:GetBlock():GetWidthHeightUnitCount();
+    Shape:SetBrush(self:GetBlock():GetBrush());
+    Shape:DrawInputStatement(painter, blockWidthUnitCount, math.max(self.heightUnitCount, MinRenderHeightUnitCount), self.leftUnitCount, self.topUnitCount);
     local inputBlock = self:GetInputBlock();
     if (not inputBlock) then return end
     inputBlock:Render(painter)

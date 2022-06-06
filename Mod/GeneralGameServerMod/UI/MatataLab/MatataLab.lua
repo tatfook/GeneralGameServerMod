@@ -8,6 +8,7 @@ local MatataLab = commonlib.inherit(Element, NPL.export());
 ElementManager:RegisterByTagName("MatataLab", MatataLab);
 
 
+local Match = NPL.load("./Match.lua", IsDevEnv);
 local Block = NPL.load("./Block.lua", IsDevEnv);
 local NumberBlock = NPL.load("./NumberBlock.lua", IsDevEnv);
 local ToolBox = NPL.load("./ToolBox.lua", IsDevEnv);

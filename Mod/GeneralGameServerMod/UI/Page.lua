@@ -365,12 +365,12 @@ function Page.ShowMatataLabPage()
     params.url = "%ui%/MatataLab/MatataLab.html";
     params.draggable = false;
     params.G = {};
-    -- params.width = 1280;
-    -- params.height = 720;
-    params.width = params.width or "100%";
-    params.height = params.height or "100%";
-    params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
-    params.fixedRootScreenHeight = params.fixedRootScreenHeight or 720;
+    params.width = 1280;
+    params.height = 720;
+    -- params.width = params.width or "100%";
+    -- params.height = params.height or "100%";
+    -- params.fixedRootScreenWidth = params.fixedRootScreenWidth or 1280;
+    -- params.fixedRootScreenHeight = params.fixedRootScreenHeight or 720;
     params.G.matatalab = {
         title = "火星救援", description = "MatataLab 图块编程图块编程图块编程图块编程图块编程",   
         block_option_list = {   -- 块定义
@@ -378,6 +378,7 @@ function Page.ShowMatataLabPage()
                 type = "上",
                 icon = "Texture/Aries/Creator/keepwork/ggs/matatalab/shang_68x50_32bits.png#0 0 68 50",
                 code = "MoveUp()",
+                match = "Number0-9"
             }, 
             {
                 type = "下",
@@ -400,6 +401,7 @@ function Page.ShowMatataLabPage()
                 isNumberBlock = true,
                 icon = "Texture/Aries/Creator/keepwork/ggs/matatalab/2_68x40_32bits.png#0 0 68 40",
                 code = "2",
+                match = "Number0-9"
             },
             {
                 type = "NumberBlock3", 
@@ -407,10 +409,18 @@ function Page.ShowMatataLabPage()
                 isNumberBlock = true,
                 icon = "Texture/Aries/Creator/keepwork/ggs/matatalab/3_68x40_32bits.png#0 0 68 40",
                 code = "3",
+                match = "String0-9"
+            }, 
+            {
+                type = "NumberBlock5", 
+                number = 5, 
+                isNumberBlock = true,
+                icon = GameLogic.GetWorldDirectory() .. "UI/5_68x40_32bits.png#0 0 68 40",
+                code = "5",
             }, 
         },
-        toolbox_block_list = {"上", "右", "下", "左"},   -- toolbox 工具栏块列表
-        toolbox_number_block_list = {"NumberBlock2", "NumberBlock3"},   -- toolbox 工具栏数字块列表
+        toolbox_block_list = {"上", "右", "下", "左", "上", "右", "下", "左", "上"},   -- toolbox 工具栏块列表
+        toolbox_number_block_list = {"NumberBlock2", "NumberBlock3", "NumberBlock5"},   -- toolbox 工具栏数字块列表
         OnStart = function(matatalab)             -- 点击运行回调
             local code = matatalab:GetCode();
             print(code);
