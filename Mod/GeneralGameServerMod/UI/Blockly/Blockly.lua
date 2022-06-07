@@ -482,7 +482,7 @@ function Blockly:RenderIcons(painter)
     painter:Translate(offsetX, offsetY);
     if (mousePosIndex == -1) then painter:SetPen("#ffffffff")
     else painter:SetPen("#ffffff80") end
-    painter:DrawRectTexture(10, -42, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly/suoluetu_32x30_32bits.png;0 0 32 32");
+    painter:DrawRectTexture(10, -42, 32, 32, "Texture/Aries/Creator/keepwork/ggs/blockly/suoluetu_32x26_32bits.png;0 0 32 32");
 
     if (mousePosIndex == 1) then painter:SetPen("#ffffffff")
     else painter:SetPen("#ffffff80") end
@@ -589,7 +589,7 @@ end
 
 function Blockly:RenderMiniMap(painter) 
     local x, y, w, h = self:GetContentGeometry();
-    local MiniMapWidth, MiniMapHeight = 300, 300;
+    local MiniMapWidth, MiniMapHeight = Const.MiniMapWidth, Const.MiniMapHeight;
     local scale = 0.5;
     local UnitSize = self:GetUnitSize();
     painter:Translate(x + w - MiniMapWidth, y);
@@ -600,11 +600,13 @@ function Blockly:RenderMiniMap(painter)
     painter:DrawRectTexture(0, 0, MiniMapWidth, MiniMapHeight,  "Texture/Aries/Creator/keepwork/ggs/blockly/waikuang_32x32_32bits.png;0 0 32 32:12 12 12 12");
     
     if (#self.blocks ~= 0) then 
-        local margin = 40;
+        local margin = Const.MiniMapMargin;
         local left, top, width , height = self.__content_left_unit_count__, self.__content_top_unit_count__, self.__content_right_unit_count__ - self.__content_left_unit_count__, self.__content_bottom_unit_count__ - self.__content_top_unit_count__;
         left, top, width, height = left * UnitSize, top * UnitSize, math.max(width * UnitSize + 2 * margin, w), math.max(height * UnitSize + 2 * margin, h);
         local scale = math.min(MiniMapWidth / width, MiniMapHeight / height);
         -- print(left, top, width, height, scale)
+        self.__minimap_scale__ = scale;
+        self.__minimap_left__, self.__minimap_top__, self.__minimap_width__, self.__minimap_height__ = left, top, width, height;
         painter:Scale(scale, scale);
         painter:Translate(-(left - margin), -(top - margin));
         for _, block in ipairs(self.blocks) do
@@ -710,6 +712,20 @@ function Blockly:OnMouseDown(event)
     -- 元素被点击 直接返回元素事件处理
     if (ui ~= self) then 
         return ui:OnMouseDown(event);
+    end
+
+    -- 点击小地图
+    if (self:IsInnerMiniMap(event)) then
+        if (0 == #self.blocks) then return end 
+        local w, h = self:GetSize();
+        local offsetX, offsetY = self.mouseMoveX - (w - Const.MiniMapWidth), self.mouseMoveY;
+        local centerX, centerY = self.__minimap_left__ + offsetX / self.__minimap_scale__, self.__minimap_top__ + offsetY / self.__minimap_scale__;
+        local centerXUnitSize, centerYUnitSize = math.floor(centerX / Const.UnitSize), math.floor(centerY / Const.UnitSize);
+        self.__offset_x_unit_count__, self.__offset_y_unit_count__ = math.floor(self.__width_unit_count__ / 2) - centerXUnitSize, math.floor(self.__height_unit_count__ / 2) - centerYUnitSize;
+        self.offsetX = self.__offset_x_unit_count__ * Const.UnitSize;
+        self.offsetY = self.__offset_y_unit_count__ * Const.UnitSize;
+        self:OnOffsetChange();
+        return ;
     end
     
     local mousePosIndex = self:GetMousePosIndex();
@@ -915,6 +931,8 @@ function Blockly:GetMouseUI(x, y, event)
     local ui = self:GetMouseCaptureUI();
     if (ui) then return ui end
 
+    if (self:IsInnerMiniMap(event)) then return self end 
+
     if (self:IsInnerToolBox(event)) then
         ui = self:GetToolBox():GetMouseUI(x + self.offsetX, y + self.offsetY, event);
         return ui or self:GetToolBox();
@@ -935,6 +953,14 @@ function Blockly:GetXYUI(x, y)
         ui = block:GetMouseUI(x, y, nil);
         if (ui) then return ui end
     end
+end
+
+function Blockly:IsInnerMiniMap(event)
+    if (not self:IsShowMiniMap()) then return false end
+    local _, _, w, h = self:GetContentGeometry();
+    local x, y = Blockly._super.GetRelPoint(self, event.x, event.y);         -- 防止减去偏移量
+    local MiniMapWidth, MiniMapHeight = Const.MiniMapWidth, Const.MiniMapHeight;
+    return (w - MiniMapWidth) < x and x < w and 0 < y and y < MiniMapHeight; 
 end
 
 function Blockly:IsInnerToolBox(event)
