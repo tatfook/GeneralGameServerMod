@@ -48,7 +48,8 @@ function SelectTab(index)
     	local CustomCharItems = commonlib.gettable("MyCompany.Aries.Game.EntityManager.CustomCharItems");
         local assetfile = GetGlobalScope():Get("MainAsset");
         local skin = GetGlobalScope():Get("MainSkin");
-        if (tabindex == "suit") then
+        --if (tabindex == "suit") then
+        if (true) then
             if (assetfile ~= CustomCharItems.defaultModelFile) then
                 assetfile = CustomCharItems.defaultModelFile;
                 --skin = CustomCharItems:SkinStringToItemIds(CustomCharItems.defaultSkinString);
@@ -68,8 +69,9 @@ function GetClass(index)
 end
 
 GetGlobalScope():Watch("isAuthUser", function(val)
-    SelectTab(val and "suit");
-    SelectTab(val and "hair");
+    if val then
+        SelectTab("hair");
+    end
     if AvatarDefaulIndex then
         SelectTab(AvatarDefaulIndex)
         AvatarDefaulIndex = nil
