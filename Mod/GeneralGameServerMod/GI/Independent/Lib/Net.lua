@@ -204,8 +204,11 @@ function NetConnect(...)
     return Net:Connect(...);
 end
 
--- Net:InitSingleton():Connect(function()
--- end);
+Net:InitSingleton();
+
+Net:Connect(function()
+    print("========================Net:Connected========================")
+end);
 
 Net:OnDisconnected(function() 
     print("========================Net:OnDisconnected========================")
