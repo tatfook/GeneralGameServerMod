@@ -24,29 +24,28 @@
 </template>
 
 <script type="text/lua" src="%vue%/Page/User/User.lua">
-RegisterComponent("Title", "%vue%/Page/User/Title.html");
-RegisterComponent("UserInfo", "%vue%/Page/User/UserInfo.html");
-RegisterComponent("Character", "%vue%/Page/User/Character.html");
-RegisterComponent("Favorite", "%vue%/Page/User/Favorite.html");
-RegisterComponent("Bag", "%vue%/Page/User/Bag.html");
+    RegisterComponent("Title", "%vue%/Page/User/Title.html");
+    RegisterComponent("UserInfo", "%vue%/Page/User/UserInfo.html");
+    RegisterComponent("Character", "%vue%/Page/User/Character.html");
+    RegisterComponent("Favorite", "%vue%/Page/User/Favorite.html");
+    RegisterComponent("Bag", "%vue%/Page/User/Bag.html");
 
-asideTabIndex = AsideTabIndex or "character";
+    asideTabIndex = AsideTabIndex or "character";
 
-function ClickAsideTab(index)
-    if (asideTabIndex == index) then return end
-    asideTabIndex = index;
-    if (index == "character") then
-        SetProjectListType("works");
-    elseif (index == "favorite") then
-        SetProjectListType("favorite");
+    function ClickAsideTab(index)
+        if (asideTabIndex == index) then return end
+        asideTabIndex = index;
+        if (index == "character") then
+            SetProjectListType("works");
+        elseif (index == "favorite") then
+            SetProjectListType("favorite");
+        end
     end
-end
 
-function AsideTabClass(index)
-    local class = asideTabIndex == index and "active" or "inactive";
-    return string.format("tab %s %s", "tab-" .. class, index .. "-" .. class);
-end
-
+    function AsideTabClass(index)
+        local class = asideTabIndex == index and "active" or "inactive";
+        return string.format("tab %s %s", "tab-" .. class, index .. "-" .. class);
+    end
 </script>
 
 <style>

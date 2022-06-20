@@ -65,9 +65,18 @@ function MouseEvent:Init(event_type, window, params)
 
     if (event_type == "onmousedown" or event_type == "onmousemove") then
         self.buttons_state = 0;
-        if(ParaUI.IsMousePressed(0)) then self.buttons_state = self.buttons_state + 1 end
-        if(ParaUI.IsMousePressed(1)) then self.buttons_state = self.buttons_state + 2 end
-        if (event_type == "onmousedown") then self.down_buttons_state = self.buttons_state end       -- 记录按下值 
+
+        if (ParaUI.IsMousePressed(0)) then
+            self.buttons_state = self.buttons_state + 1
+        end
+
+        if (ParaUI.IsMousePressed(1)) then
+            self.buttons_state = self.buttons_state + 2
+        end
+
+        if (event_type == "onmousedown") then
+            self.down_buttons_state = self.buttons_state -- 记录按下值
+        end        
     elseif (event_type == "onmouseup") then
         self.buttons_state = self.down_buttons_state;                                                -- 抬起使用与按下相同的按键状态
     end
@@ -124,7 +133,7 @@ function MouseEvent:IsLeftButton()
     -- local isTouchMode = System.os.IsTouchMode();
     local isTouchMode = GameLogic.options:HasTouchDevice();
 
-    if (isTouchMode or (self.buttons_state ~= 1 and self.buttons_state ~= 2)) then
+    if (isTouchMode) then
         return self.mouse_button == "left";
     else
 	    return self.buttons_state == 1;
@@ -135,7 +144,7 @@ end
 function MouseEvent:IsRightButton()
     -- local isTouchMode = System.os.IsTouchMode();
     local isTouchMode = GameLogic.options:HasTouchDevice();
-    if (isTouchMode or (self.buttons_state ~= 1 and self.buttons_state ~= 2)) then
+    if (isTouchMode) then
         return self.mouse_button == "right";
     else
         return self.buttons_state == 2;

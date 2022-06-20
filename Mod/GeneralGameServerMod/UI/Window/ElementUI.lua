@@ -192,7 +192,10 @@ end
 -- 绘制元素
 function ElementUI:OnRender(painter)
     -- 应用动画
-    self:GetAnimation():FrameMove();
+    if System.os.GetPlatform() ~= 'macos' then
+        self:GetAnimation():FrameMove();
+    end
+
     self:BeginTransform(painter);
     self:RenderOutline(painter);
     self:RenderBackground(painter);

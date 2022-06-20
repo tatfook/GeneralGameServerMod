@@ -603,6 +603,7 @@ function Window:HandleMouseEvent(event)
     -- WindowDebug.FormatIf(eventType == "mousePressEvent", "清除元素列表 耗时 %sms", ParaGlobal.timeGetTime() - BeginTime);
     -- 聚焦目标元素  聚焦与事件是否处理无关
     -- if (event:IsAccepted()) then return end
+
     if((eventType == "mousePressEvent" or eventType == "mouseReleaseEvent") and event:IsLeftButton()) then
         self:SetMouseUpElement(hoverElement);
         if (eventType == "mousePressEvent") then

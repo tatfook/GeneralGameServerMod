@@ -195,9 +195,18 @@ function Select:Init(xmlNode, window, parent)
     local ListBox = ListBox:new():Init({
         name = "ListBox",
         attr = {
-            style = "position: absolute; left: 0px; top: 105%;  min-width: 100%; max-height: 142px; overflow-x: hidden; overflow-y: auto; background-color: #ffffff; border: 1px solid #cccccc;",
+            style = "position: absolute;\
+                     left: 0px;\
+                     top: 105%;\
+                     min-width: 100%;\
+                     max-height: 142px;\
+                     overflow-x: hidden;\
+                     overflow-y: auto;\
+                     background-color: #ffffff;\
+                     border: 1px solid #cccccc;",
         }
     }, window, self);
+
     local function InputValueFinish(value)
         local label = self:GetLabelByValue(value);
         if (value ~= self:GetValue() or label ~= self:GetLabel()) then
@@ -209,32 +218,54 @@ function Select:Init(xmlNode, window, parent)
         end
         self:ReleaseFocus();
     end
+
     -- local listboxAttrStyle = ListBox:GetAttrStyle();
     -- listboxAttrStyle["padding-top"], listboxAttrStyle["padding-right"], listboxAttrStyle["padding-bottom"], listboxAttrStyle["padding-left"] = attrStyle["padding-top"], attrStyle["padding-right"], attrStyle["padding-bottom"], attrStyle["padding-left"];
     local InputBox = InputElement:new():Init({
         name = "input",
         attr = {
-            style = "position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; border: none; background-color: #ffffff00; height: 100%; width: 100%;",
+            style = "position: absolute;\
+                     left: 0px;\
+                     top: 0px;\
+                     right: 0px;\
+                     bottom: 0px;\
+                     border: none;\
+                     background-color: #ffffff00;\
+                     height: 100%;\
+                     width: 100%;",
         }
     }, window, self);
+
     InputBox:SetAttrValue("onblur", function()
         -- self:OnFocusOut();
         InputValueFinish(InputBox:GetValue());
     end);
+
     InputBox:SetAttrValue("onkeydown.enter", function(value)
         InputValueFinish(value);
     end);
+
     InputBox:SetAttrValue("onchange", function(value)
         self:CallAttrFunction("onchange", nil, value);
     end);
+
     local inputAttrStyle = InputBox:GetAttrStyle();
-    inputAttrStyle["padding-top"], inputAttrStyle["padding-right"], inputAttrStyle["padding-bottom"], inputAttrStyle["padding-left"] = attrStyle["padding-top"], attrStyle["padding-right"], attrStyle["padding-bottom"], attrStyle["padding-left"];
+    inputAttrStyle["padding-top"],
+    inputAttrStyle["padding-right"],
+    inputAttrStyle["padding-bottom"],
+    inputAttrStyle["padding-left"] =
+        attrStyle["padding-top"],
+        attrStyle["padding-right"],
+        attrStyle["padding-bottom"],
+        attrStyle["padding-left"];
+
     self:SetListBoxElement(ListBox);
     self:SetInputBoxElement(InputBox);
     self:InsertChildElement(InputBox);
     self:InsertChildElement(ListBox);
 
     local options = self:GetAttrValue("options");
+
     if (options) then
         self:OnOptionsAttrValueChange(options);
     else
@@ -459,6 +490,7 @@ local Points = {
 function Select:IsShowArrowIcon()
     return self:GetAttrBoolValue("isShowArrowIcon", true);
 end
+
 function Select:RenderArrowIcon(painter)
     if (not self:IsShowArrowIcon()) then return end
 

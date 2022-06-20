@@ -585,7 +585,7 @@ function Element:GetAttrNumberValue(attrName, defaultValue)
     return tonumber(self:GetAttrValue(attrName)) or defaultValue;
 end
 
--- 获取数字属性值
+-- 获取字符属性值
 function Element:GetAttrStringValue(attrName, defaultValue)
     local value = self:GetAttrValue(attrName, defaultValue)
     return value ~= nil and tostring(value) or nil;

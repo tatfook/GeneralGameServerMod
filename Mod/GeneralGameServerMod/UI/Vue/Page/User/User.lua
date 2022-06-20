@@ -80,16 +80,16 @@ local function GetProjectListPageFunc()
             local total = tonumber(string.match(msg.header or "", "x-total:%s*(%d+)"));
             local ProjectList = data;
 
-            -- echo(data, true);
             local projectIds, projects = {}, {};
+
             for i, project in ipairs(ProjectList) do
                 projectIds[i] = project.id;
                 projects[project.id] = project;
                 project.isFavorite = false;
                 project.selected = false;
                 project.user = GlobalScope:Get("UserDetail");
-                echo(project);
             end
+
             if (AuthUserId and AuthUserId > 0) then
                 keepwork.project.favorite_search({
                     objectType = 5,
