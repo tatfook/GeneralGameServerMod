@@ -330,6 +330,91 @@ end
 
 -- v-for
 function Compile:VFor(element)
+    if System.os.GetPlatform() == 'mac' then
+        self:VFor_MACOS(element)
+        return
+    end
+
+    local xmlNode = element:GetXmlNode();
+    if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-for"] == nil) then return end
+    local vfor = xmlNode.attr["v-for"];
+
+    local inIndex = string.find(vfor, " in ", 1, true);
+    if (not inIndex) then return end 
+    local keyexp = string.sub(vfor, 1, inIndex -1);
+    local listexp = string.sub(vfor, inIndex + 4);
+
+    local val, key = string.match(keyexp, "(%a%w-)%s*,%s*(%a%w+)");
+    if (not val) then val = string.gsub(keyexp, "[,%s]*$", "") end
+    key = key or "index";
+
+    local lastCount, clones, scopes = 0, {}, {};
+    local parentElement = element:GetParentElement();
+    local pos = parentElement:GetChildElementIndex(element);
+    local forComponent = self:GetComponent();
+    local forScope = self:GetScope();
+    element:SetVisible(false);
+    self:ExecCode(listexp, element, function(list)
+        -- BeginTime();
+        list = type(list) == "function" and list() or list;
+        local count = type(list) == "number" and list or (type(list) == "table" and Table.len(list) or 0);
+        -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s, element = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count, tostring(element));
+        local oldComponent = self:GetComponent();
+        local oldScope = self:GetScope();
+
+        for i = 1, count do
+            -- self:GetComponent():SetCompiled(false);
+            clones[i] = clones[i] or element:Clone();
+            local clone = clones[i];
+            -- 移除监控
+            clone:GetXmlNode().attr["v-for"] = nil;
+            -- self:UnWatchElement(clone);
+            -- 构建scope数据
+            local scope = scopes[i] or {};
+            if (val ~= key) then scope[key] = i end 
+            if (type(list) == "table") then
+                scope[val] = list[i];
+            else
+                scope[val] = i; 
+            end
+            -- 设置起始scope
+            self:SetComponent(forComponent);
+            self:SetScope(forScope);
+            -- 压入新scope
+            scopes[i] = self:PushScope(scope);
+            -- EndTime("复制元素", true)
+            -- 新元素
+            if (i > lastCount) then 
+                -- 编译新元素
+                self:CompileElement(clone);
+                -- EndTime("编译元素", true);
+
+                -- 添加至dom树
+                parentElement:InsertChildElement(pos + i, clone);
+
+                -- EndTime("添加元素", true);
+            end
+            -- 弹出scope栈
+            self:PopScope();
+            self:SetComponent(oldComponent);
+            self:SetScope(oldScope);
+        end
+        -- 移除多余元素
+        for i = count + 1, lastCount do
+            -- self:UnWatchElement(clones[i]);
+            parentElement:RemoveChildElement(clones[i]);
+            clones[i] = nil;
+            scopes[i] = nil;
+        end
+        lastCount = count;
+        if (not xmlNode.compiling) then
+            parentElement:UpdateLayout(true);
+        end
+    end, true);
+    return true;
+end
+
+function Compile:VFor_MACOS(element)
     local xmlNode = element:GetXmlNode();
 
     if (type(xmlNode) ~= "table" or

@@ -192,7 +192,7 @@ end
 -- 绘制元素
 function ElementUI:OnRender(painter)
     -- 应用动画
-    if System.os.GetPlatform() ~= 'macos' then
+    if System.os.GetPlatform() ~= 'mac' then
         self:GetAnimation():FrameMove();
     end
 
