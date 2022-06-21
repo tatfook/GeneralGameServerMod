@@ -78,12 +78,23 @@
         </div>
     </div>
     <div style="margin-top: 16px;">
+        <div onclick=clickCloseAccount
+             class="btn"
+             style="display: inline-block;
+                    text-align: center;
+                    line-height: 40px;
+                    margin-left: 15px;
+                    width: 105px;
+                    height:40px;
+                    font-size: 20px;
+                    color: #000000;
+                    background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huise_32bits.png#0 0 38 64:16 16 16 16);">账号注销</div>
         <div onclick=clickCancel
              class="btn"
              style="display: inline-block;
                     text-align: center;
                     line-height: 40px;
-                    margin-left:110px;
+                    margin-left: 120px;
                     width:120px;
                     height:40px;
                     font-size: 20px;
@@ -94,9 +105,9 @@
              style="display: inline-block;
                     text-align: center;
                     line-height: 40px;
-                    margin-left:50px;
-                    width:120px;
-                    height:40px;
+                    margin-left: 10px;
+                    width: 120px;
+                    height: 40px;
                     font-size: 20px;
                     color: #000000;
                     background: url(Texture/Aries/Creator/keepwork/Window/button/btn_huangse_32bits.png#0 0 38 64:16 16 16 16);">保存</div>
@@ -146,7 +157,20 @@
                 if (type(OnFinish) == "function") then OnFinish() end
             end)
         end);
-    end 
+    end
+
+    function clickCloseAccount()
+        CloseWindow();
+
+        ShowWindow({
+            OnFinish = function()
+                
+            end,
+        }, {
+            url = "%vue%/Page/User/CloseAccount.html",
+            draggable = false,
+        });
+    end
 
     function clickCancel()
         CloseWindow();
