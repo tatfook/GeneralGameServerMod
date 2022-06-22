@@ -115,7 +115,17 @@
 
     function next()
         if agree ~= 'true' then
-            _guihelper.MessageBox('请同意后再点击下一步')
+            _guihelper.MessageBox(
+                '请同意后再点击下一步',
+                nil,
+                nil,
+                {
+                    src = 'Texture/Aries/Creator/keepwork/RedSummerCamp/lessonppt/tishi_70x48_32bits.png#0 0 70 48',
+                    icon_width = 70,
+                    icon_height = 48,
+                }
+            )
+
             return
         end
 
@@ -124,6 +134,23 @@
     end
 
     function confirm()
+        if not pwd or
+           type(pwd) ~= 'string' or
+           pwd == '' then
+           _guihelper.MessageBox(
+                '请输入密码',
+                nil,
+                nil,
+                {
+                    src = 'Texture/Aries/Creator/keepwork/RedSummerCamp/lessonppt/tishi_70x48_32bits.png#0 0 70 48',
+                    icon_width = 70,
+                    icon_height = 48,
+                }
+           )
+
+            return
+        end
+
         Mod.WorldShare.MsgBox:Show(L'正在删除账号，请稍候...', nil, nil, 380, nil, 10, nil, nil, true)
 
         local KeepworkServiceSession = NPL.load('(gl)Mod/WorldShare/service/KeepworkService/Session.lua')
