@@ -875,7 +875,7 @@ function Blockly:OnMouseUp(event)
         local menuType = "block";
         contextmenu:SetStyleValue("left", absX);
         contextmenu:SetStyleValue("top", absY);
-        if (ui:GetClassName() == "Blockly") then 
+        if (ui == self or ui:GetClassName() == "Blockly") then 
             menuType = "blockly";
             self:SetCurrentBlock(nil);
         else 

@@ -516,7 +516,7 @@ function CheckSkin.CheckUserSkin()
 
 		-- 获取结算清单明细
 		CheckSkin.GetCheckInfoFromSkin(req, function (code, msg, data)
-			local clothes = data.clothes;
+			local clothes = data.clothes or {};
 
 			-- 找出不能使用了的皮肤,替换掉
 			local result_skin = user_skin
