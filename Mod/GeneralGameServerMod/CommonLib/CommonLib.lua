@@ -203,6 +203,7 @@ function CommonLib.GetWorldDirectory()
     local world_directory = ParaWorld.GetWorldDirectory();
     if (string.match(world_directory, "^[\\/]")) then return world_directory end 
     local install_directory = ParaIO.GetCurDirectory(0);
+    if (string.find(world_directory, install_directory, 1, true) == 1) then return world_directory end 
     return CommonLib.ToCanonicalFilePath(install_directory .. "/" .. world_directory);
 end
 
