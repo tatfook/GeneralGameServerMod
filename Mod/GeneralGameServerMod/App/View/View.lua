@@ -11,7 +11,7 @@ local View = commonlib.gettable("Mod.GeneralGameServerMod.App.View.View");
 ]]
 
 NPL.load("Mod/GeneralGameServerMod/App/Api/KeepworkApi.lua");
-local KeepworkServiceSession = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/Session.lua")
+local KeepworkServiceSession = NPL.load("(gl)Mod/WorldShare/service/KeepworkService/KeepworkServiceSession.lua")
 local KeepworkApi = commonlib.gettable("Mod.GeneralGameServerMod.App.Api.KeepworkApi");
 local View = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), commonlib.gettable("Mod.GeneralGameServerMod.App.View.View"));
 
