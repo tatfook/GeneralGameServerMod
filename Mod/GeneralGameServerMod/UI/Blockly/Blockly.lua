@@ -318,14 +318,17 @@ function Blockly:Undo()
     local cmd = self.undos[#self.undos];
     if (not cmd) then return end
     table.remove(self.undos, #self.undos);
-    local action, block = cmd.action, cmd.block;
-    local connection = block and block:GetConnection();
-
-    if (connection) then
-        connection:Disconnection();
-        connection:GetBlock():GetTopBlock():UpdateLayout();
+    local action, block, blockCount = cmd.action, cmd.block, cmd.blockCount;
+    local tmpBlock = block;
+    local blocks = {};
+    for i = 1, blockCount do
+        blocks[i] = tmpBlock;
+        tmpBlock = tmpBlock:GetNextBlock();
+        blocks[i]:Disconnection();
+        if (i > 1) then
+            blocks[i-1].nextConnection:Connection(blocks[i].previousConnection);
+        end
     end
-
     if (action == "DeleteBlock" or action == "MoveBlock") then
         self:AddBlock(block);
         block:SetLeftTopUnitCount(cmd.startLeftUnitCount, cmd.startTopUnitCount);

@@ -483,6 +483,7 @@ function Block:OnMouseMove(event)
 end
 
 function Block:OnMouseUp(event)
+    local blockCount = self:GetBlockCount();
     local blockly = self:GetBlockly();
     blockly:GetShadowBlock():Shadow(nil);
 
@@ -493,7 +494,7 @@ function Block:OnMouseUp(event)
         blockly:ReleaseMouseCapture();
         -- 移除块
         if (not self.isNewBlock) then 
-            blockly:Do({action = "DeleteBlock", block = self});
+            blockly:Do({action = "DeleteBlock", block = self, blockCount = blockCount});
             blockly:PlayDestroyBlockSound();
         end
         self:SetDragging(false);
@@ -515,10 +516,10 @@ function Block:OnMouseUp(event)
             end
         end
         if (self.isNewBlock) then 
-            blockly:Do({action = "NewBlock", block = self});
+            blockly:Do({action = "NewBlock", block = self, blockCount = blockCount});
             blockly.PlayCreateBlockSound();
         else
-            blockly:Do({action = "MoveBlock", block = self});
+            blockly:Do({action = "MoveBlock", block = self, blockCount = blockCount});
         end
         blockly:AdjustContentSize();
     end
@@ -544,6 +545,16 @@ function Block:Disconnection()
     end
 
     if (self.outputConnection) then self.outputConnection:Disconnection() end
+end
+
+function Block:GetBlockCount()
+    local block = self;
+    local count = 0;
+    while(block) do
+        count = count + 1;
+        block = block:GetNextBlock();
+    end
+    return count;
 end
 
 function Block:GetConnection()
@@ -596,10 +607,10 @@ function Block:ConnectionBlock(block)
         local nextBlock = self:GetNextBlock();
         return nextBlock and nextBlock:ConnectionBlock(block);
     end
-
+    
     -- 优先匹配上连接
     if (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and 
-        not block.nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
+        not (block.isShadowBlock and block.shadowBlock or block).nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
         local previousConnection = self.previousConnection:Disconnection();
         if (previousConnection) then 
             previousConnection:Connection(block.previousConnection);
