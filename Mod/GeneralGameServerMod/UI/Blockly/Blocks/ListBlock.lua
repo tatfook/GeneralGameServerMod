@@ -51,7 +51,7 @@ function NPL_List_Create.ToCode(block)
     local cache = block:GetToCodeCache();
     local field_list = block:GetFieldValue("LIST");
     
-    local code = string.format("local %s = {}", field_list);
+    local code = string.format("local %s = {}\n", field_list);
 
     if (not cache.isDefineListMethod) then
         cache.isDefineListMethod = true;
