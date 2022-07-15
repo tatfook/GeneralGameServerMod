@@ -82,7 +82,7 @@ function TextArea:Reset()
     self.undoCmds = {};   -- 撤销命令
     self.redoCmds = {};   -- 重做命令
     self.lines = {};      -- 所有文本行
-    self.selectStartAt, self.selectEndAt = nil, nil;  -- 文本选择
+    self.selectStartAt, self.selectEndAt = nil, nil;  -- 文本选择  (左开右闭]
     
     self.text = UniString:new(self:GetAttrStringValue("value", ""));
     self:SetValue(self.text:GetText());
@@ -109,7 +109,8 @@ end
 -- 获取选择的文本
 function TextArea:GetSelectedText()
     if (not self:IsSelected()) then return "" end
-    return self.text:sub(self:GetSelected()):GetText();
+    local startIndex, endIndex = self:GetSelected();
+    return self.text:sub(startIndex + 1, endIndex):GetText();
 end
 
 -- 清除选择
@@ -405,7 +406,7 @@ function TextArea:UpdateLineInfo()
     if (#lines == 0) then table.insert(lines, {line = 1, startAt = 1, endAt = 1}) end
 
     self.lines = lines;
-    TextAreaDebug("UpdateLineInfo", text, lines, self.cursorAt);
+    --TextAreaDebug("UpdateLineInfo", text, lines, self.cursorAt);
 
     if (not self:GetStyle()) then return end
     local LineHeight = self:GetStyle():GetLineHeight(); 
@@ -430,7 +431,7 @@ function TextArea:DeleteSelected()
     local selectStartAt, selectEndAt = self:GetSelected();
     TextAreaDebug.Format("DeleteSelected selectStartAt = %s, selectEndAt = %s", selectStartAt, selectEndAt);
 
-    self:DeleteTextCmd(selectStartAt, selectEndAt - selectStartAt + 1);
+    self:DeleteTextCmd(selectStartAt + 1, selectEndAt - selectStartAt);
     self:ClearSelected();
 end
 
@@ -524,7 +525,8 @@ function TextArea:RenderContent(painter)
         painter:SetPen("#3390ff");
         local function RenderSelectedBG(line, baseAt, startAt, endAt)
             local offsetX = baseAt >= startAt and 0 or (self.text:sub(baseAt == 0 and 1 or baseAt, startAt):GetWidth(self:GetFont()));
-            local width = startAt > endAt and 0 or (self.text:sub(startAt == 0 and 1 or startAt, endAt - 1):GetWidth(self:GetFont()));
+            local width = startAt > endAt and 0 or (self.text:sub(startAt + 1, endAt):GetWidth(self:GetFont()));
+            --print(line, baseAt, startAt, endAt, offsetX, width)
             painter:DrawRectTexture(x + offsetX, y + (line - 1) * LineHeight, width, LineHeight);
         end
         local selectStartAt, selectEndAt = self:GetSelected();
