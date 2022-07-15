@@ -211,11 +211,15 @@ end
 
 -- 断开链接
 function GeneralGameCommand:handleDisconnectCommand(cmd_text)
+	GameLogic.options:SetCommunityWorld(false, true);
+	
 	if (not self:GetGeneralGameClient()) then return end
 	self:GetGeneralGameClient():OnWorldUnloaded();
 end
 
 function GeneralGameCommand:handleConnectCommand(cmd_text)
+	GameLogic.options:SetCommunityWorld(true, true);
+
 	local options, cmd_text = ParseOptions(cmd_text);	
 	local worldId, cmd_text = CmdParser.ParseInt(cmd_text);
 	local worldName, cmd_text = CmdParser.ParseString(cmd_text);
@@ -309,18 +313,25 @@ function GeneralGameCommand:handleSetNewLiveModelAutoSync(cmd_text)
 	GeneralGameClient.options.isEnableNewLiveModelAutoSync = onOrOff == "on";
 end
 
--- 世界加载
-function GeneralGameCommand:OnWorldLoaded()
-	GeneralGameClient:GetSyncForceBlockList():clear();
-	GeneralGameClient.options.isEnableNewLiveModelAutoSync = true;  -- 默认为true
-end
-
 -- 打开用户面板
 function GeneralGameCommand:handleShowUserInfoCommand(cmd_text)
 	local username, cmd_text_remain = CmdParser.ParseString(cmd_text);
 	local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
 	Page.ShowUserInfoPage({username=(username and username ~= "") and username or nil});
 end
+
+-- 世界加载
+function GeneralGameCommand:OnWorldLoaded()
+	GeneralGameClient:GetSyncForceBlockList():clear();
+	GeneralGameClient.options.isEnableNewLiveModelAutoSync = true;  -- 默认为true
+
+	if (System.options.isCodepku) then return end 
+	-- 社区自动启动GGS
+	if (not AppGeneralGameClient:IsEnableGGS() and GameLogic.options:IsCommunityWorld()) then
+		GameLogic.RunCommand("/ggs connect"); 
+	end
+end
+
 
 -- 初始化成单列模式
 GeneralGameCommand:InitSingleton();

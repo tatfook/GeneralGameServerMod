@@ -560,13 +560,21 @@ function NetClientHandler:Offline()
     if (not self:GetPlayer()) then return end;
     
     -- 灰化用户名
-    self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format([[
-    <pe:mcml>
-        <div style="width: 200px; margin-left: -100px; margin-top:-40px;">
-            <div style="text-align:center; color: #b1b1b1; base-font-size:20px; font-size:20px;">%s</div>
-            <div style="text-align:center; color: #ff0000; base-font-size:14px; font-size:14px;">已掉线, 处于离线模式中.</div>
-        </div>
-    </pe:mcml>]], self:GetUserName()))});
+    if (self:GetClient():IsEnableGGS()) then
+        self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format([[
+            <pe:mcml>
+                <div style="width: 200px; margin-left: -100px; margin-top:-40px;">
+                    <div style="text-align:center; color: #b1b1b1; base-font-size:20px; font-size:20px;">%s</div>
+                    <div style="text-align:center; color: #ff0000; base-font-size:14px; font-size:14px;">已掉线, 处于离线模式中.</div>
+                </div>
+            </pe:mcml>]], self:GetUserName()))});
+    else
+        self:GetPlayer():SetHeadOnDisplay({url=ParaXML.LuaXML_ParseString(string.format([[
+            <pe:mcml>
+                <div style="width: 200px; margin-left: -100px; margin-top:-40px;">
+                </div>
+            </pe:mcml>]]))});
+    end
 end
 
 function NetClientHandler:Logout() 

@@ -37,6 +37,7 @@ local GeneralGameClient = commonlib.inherit(commonlib.gettable("System.Core.Tool
 
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
+GeneralGameClient:Property("EnableGGS", false, "IsEnableGGS"); -- 是否开启GGS 忽略是否连接成功
 GeneralGameClient:Property("World", nil);                  -- 当前世界
 GeneralGameClient:Property("MainPlayerEntityScale", nil);  -- 玩家实体大小
 GeneralGameClient:Property("MainPlayerEntityAsset", nil);  -- 玩家实体模型
@@ -242,6 +243,8 @@ function GeneralGameClient:LoadWorld(opts)
 
     -- 是否加载世界
     self.IsWorldLoaded = false;
+    self:SetEnableGGS(true);
+
     -- 以只读方式重新进入
     if (isReloadWorld) then
         self:ReplaceWorld(opts);
@@ -277,6 +280,7 @@ end
 
 -- 世界退出
 function GeneralGameClient:OnWorldUnloaded()
+    self:SetEnableGGS(false);
     if (self:GetWorld()) then
         self:GetWorld():OnExit();
     end

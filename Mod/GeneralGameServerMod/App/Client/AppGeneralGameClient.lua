@@ -61,6 +61,7 @@ function AppGeneralGameClient:ctor()
 
     -- 已经登录直接执行回调
     if (Keepwork:IsLogin()) then AppGeneralGameClient.OnKeepworkLoginLoadedAll_Callback() end
+
 end
 
 function AppGeneralGameClient:UpdatePlayerHeadOnDisplay()
@@ -144,6 +145,7 @@ function AppGeneralGameClient:Init()
     end
 
     self:SetDisconnectionCallBack(function() 
+        if (not __self__:IsEnableGGS()) then return end 
         if (__self__.__reconnection_ui__) then return end 
         CloseReconnectionUI();
         OpenReconnectionUI();
