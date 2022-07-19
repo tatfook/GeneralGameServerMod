@@ -1090,7 +1090,7 @@ end
 
 -- 获取代码
 function Blockly:GetCode()
-    print("=============GetCode==================")
+    -- print("=============GetCode==================")
     self.__block_id_map__ = {};
     self.__running_block_id_stack__ = {};
     local only_generate_start_block_code = self:IsOnlyGenerateStartBlockCode();
