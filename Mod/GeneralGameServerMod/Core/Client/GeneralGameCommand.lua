@@ -211,15 +211,11 @@ end
 
 -- 断开链接
 function GeneralGameCommand:handleDisconnectCommand(cmd_text)
-	GameLogic.options:SetCommunityWorld(false, true);
-	
 	if (not self:GetGeneralGameClient()) then return end
 	self:GetGeneralGameClient():OnWorldUnloaded();
 end
 
 function GeneralGameCommand:handleConnectCommand(cmd_text)
-	GameLogic.options:SetCommunityWorld(true, true);
-
 	local options, cmd_text = ParseOptions(cmd_text);	
 	local worldId, cmd_text = CmdParser.ParseInt(cmd_text);
 	local worldName, cmd_text = CmdParser.ParseString(cmd_text);
