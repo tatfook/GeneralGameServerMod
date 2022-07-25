@@ -147,6 +147,9 @@ end
 
 -- 写文件
 function CommonLib.WriteFile(filename, text)
+    if text==nil or text=="" then
+        return
+    end
     local div = CommonLib.IsWin32Platform() and "\\" or "/"
     local patt = string.format("[^%s]+%s",div,div)
     local temp = ""
