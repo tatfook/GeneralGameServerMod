@@ -46,6 +46,7 @@ Window:Property("Event");                           -- 事件对象
 Window:Property("WindowName");                      -- 窗口名称
 Window:Property("WindowId");                        -- 窗口Id
 Window:Property("3DWindow", false, "Is3DWindow");   -- 是否是3D窗口
+Window:Property("Destroy", false, "IsDestroy");     -- 是否销毁窗口
 Window:Property("EnableMouseWheelSimulate", true, "IsEnableMouseWheelSimulate");         -- 是否开启鼠标滚动模拟
 Window:Property("EnableSimulator", true, "IsEnableSimulator");                           -- 是否开启事件模拟器
 
@@ -185,6 +186,7 @@ function Window.Show(self, params)
     self:Set3DWindow(params.__is_3d_ui__ and true or false);
     self:SetParams(params);
     self:SetNativeWindow(self:Is3DWindow() and self:Create3DNativeWindow() or self:CreateNativeWindow());
+    self:SetDestroy(false);
     -- 初始化
     self:Init();
     -- 文档化
@@ -208,6 +210,7 @@ function Window:CloseWindow()
     ParaUI.Destroy(self:GetNativeWindow().id);
     self:SetNativeWindow(nil);
     self:SetVisible(false);
+    self:SetDestroy(true);
     local G = self:GetG();
     if (type(rawget(G, "OnClose")) == "function") then G.OnClose(G) end
 end

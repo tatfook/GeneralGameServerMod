@@ -12,9 +12,9 @@
     </div>
 
     <div style="height: 540px;">
-        <WorksList id="works" type="works" v-show="tabindex == 'works'"></WorksList>
-        <AvatarTab v-show="tabindex == 'skin'"></AvatarTab>
-        <Honor v-show="tabindex == 'honor'"></Honor>
+        <WorksList id="works" type="works" v-show="CharacterTabIndex == 'works'"></WorksList>
+        <AvatarTab v-show="CharacterTabIndex == 'skin'"></AvatarTab>
+        <Honor v-show="CharacterTabIndex == 'honor'"></Honor>
     </div>
 </template>
 
@@ -23,13 +23,14 @@ RegisterComponent("AvatarTab", "%vue%/Page/User/AvatarTab.html");
 RegisterComponent("Honor", "%vue%/Page/User/Honor.html");
 RegisterComponent("WorksList", "%vue%/Page/User/WorksList.html");
 
-tabindex = HeaderTabIndex or "works";               -- 当前选择项
+local GlobalScope = GetGlobalScope();
 
 function SelectTab(index)
-    tabindex = index;
+    GlobalScope:Set("CharacterTabIndex", index);
 end
 
 function GetClass(index)
+    local tabindex = GlobalScope:Get("CharacterTabIndex");
     return index .. " tab center " .. (tabindex == index and "active" or "");
 end
 

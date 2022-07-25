@@ -133,7 +133,6 @@ end
 local UserInfoPage = Vue:new();
 function Page.ShowUserInfoPage(G, params)
     params = params or {};
-
     params.url = "%vue%/Page/User/User.html";
     params.G = G;
     params.draggable = false;
@@ -142,7 +141,6 @@ function Page.ShowUserInfoPage(G, params)
     params.width = "100%";
     params.height = "100%";
     UserInfoPage:Show(params);
-
     return UserInfoPage;
 end
 

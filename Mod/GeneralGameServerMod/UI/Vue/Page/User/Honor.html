@@ -1,6 +1,6 @@
 <template style="display: inline-block; padding: 2px; width: 100%; height: 100%;">
     <div class="scroll" style="width: 100%; height: 100%; overflow-y: auto;">
-        <div v-for="honor in HonorList" class="honor" onclick="ClickHonor(honor)">
+        <div v-for="honor in honors" class="honor" onclick="ClickHonor(honor)">
             <div v-bind:style="HonorStyle(honor)"></div>
             <div class="center" style="height: 30px; color: #000000; font-size: 12px;">{{honor.name}}</div>
         </div>
@@ -10,6 +10,22 @@
 <script type="text/lua">
 
 <!-- honorlist = _G.GetUserHonors(); -->
+honors = {}
+function UpdateHonorList()
+    if (GlobalScope:Get("CharacterTabIndex") == "honor") then
+        honors = GlobalScope:Get("HonorList");
+    else
+        honors = {};
+    end
+end 
+
+GetGlobalScope():Watch("HonorList", function()
+    UpdateHonorList();
+end);
+
+GetGlobalScope():Watch("CharacterTabIndex", function()
+    UpdateHonorList();
+end);
 
 function OnAttrValueChange()
 end
@@ -37,6 +53,7 @@ function HonorStyle(honor)
 end
 
 function OnReady()
+    UpdateHonorList()
 end 
 
 </script>

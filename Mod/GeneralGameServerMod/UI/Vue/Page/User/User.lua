@@ -30,6 +30,7 @@ GlobalScope:Set("IsFollow", false);
 GlobalScope:Set("HonorList", {});
 GlobalScope:Set("AvatarItems", {});
 GlobalScope:Set("AvatarIcons", {});
+GlobalScope:Set("CharacterTabIndex", HeaderTabIndex or "works"); -- 当前选择项
 
 local ProjectMap = {};
 
@@ -217,7 +218,6 @@ _G.NextPageProjectList = GetProjectListPageFunc();
 _G.SetProjectListType = function(projectListType)
     GlobalScope:Set("ProjectList", {});
     GlobalScope:Set("ProjectListType", projectListType);
-
     if (projectListType == "favorite") then
         _G.NextPageProjectList = GetFavoriteProjectListPageFunc();
     else

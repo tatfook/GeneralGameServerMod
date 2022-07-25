@@ -288,7 +288,7 @@ function Compile:VShow(element)
     self:ExecCode(xmlNode.attr["v-show"], element, function(val)
         element:SetVisible(val and true or false);
         local parentElement = element:GetParentElement();
-        if (not xmlNode.compiling and parentElement) then parentElement:UpdateLayout() end
+        if (not xmlNode.compiling and parentElement and not self:IsRefresh()) then parentElement:UpdateLayout() end
     end, true);
 end
 
@@ -324,16 +324,16 @@ function Compile:VIf(element)
             curElement:SetVisible(false);
         end
         vif = val;
-        if (not xmlNode.compiling and parentElement) then parentElement:UpdateLayout(true) end
+        if (not xmlNode.compiling and parentElement and not self:IsRefresh()) then parentElement:UpdateLayout(true) end
     end, true);
 end
 
 -- v-for
 function Compile:VFor(element)
-    if System.os.GetPlatform() == 'mac' then
-        self:VFor_MACOS(element)
-        return
-    end
+    -- if System.os.GetPlatform() == 'mac' then
+    --     self:VFor_MACOS(element)
+    --     return
+    -- end
 
     local xmlNode = element:GetXmlNode();
     if (type(xmlNode) ~= "table" or not xmlNode.attr or xmlNode.attr["v-for"] == nil) then return end
@@ -353,6 +353,8 @@ function Compile:VFor(element)
     local pos = parentElement:GetChildElementIndex(element);
     local forComponent = self:GetComponent();
     local forScope = self:GetScope();
+    local forTimer = nil; 
+    local forWindow = element:GetWindow();
     element:SetVisible(false);
     self:ExecCode(listexp, element, function(list)
         -- BeginTime();
@@ -361,55 +363,108 @@ function Compile:VFor(element)
         -- CompileDebug.Format("VFor ComponentTagName = %s, ComponentId = %s, key = %s, val = %s, listexp = %s, List Count = %s, element = %s", forComponent:GetTagName(), forComponent:GetAttrValue("id"), key, val, listexp, count, tostring(element));
         local oldComponent = self:GetComponent();
         local oldScope = self:GetScope();
+        local curIndex = 0;
+        if (forTimer) then forTimer:Change(nil, nil) end
+        for _, clone in ipairs(clones) do
+            parentElement:RemoveChildElement(clone);
+        end
+        forTimer = commonlib.Timer:new({callbackFunc = function()
+            if (curIndex >= count or forWindow:IsDestroy()) then
+                forTimer:Change(nil, nil);
+                forTimer = nil;
+                lastCount = count;
+                return;
+            end
+            curIndex = curIndex + 1;
+            local isNeedCompile = false;
+            if (not clones[curIndex]) then
+                clones[curIndex] = element:Clone();
+                isNeedCompile = true;
+            end
 
-        for i = 1, count do
-            -- self:GetComponent():SetCompiled(false);
-            clones[i] = clones[i] or element:Clone();
-            local clone = clones[i];
+            local clone = clones[curIndex];
+            clone:SetVisible(true);
             -- 移除监控
             clone:GetXmlNode().attr["v-for"] = nil;
             -- self:UnWatchElement(clone);
             -- 构建scope数据
-            local scope = scopes[i] or {};
-            if (val ~= key) then scope[key] = i end 
+            local scope = scopes[curIndex] or {};
+            if (val ~= key) then scope[key] = curIndex end 
             if (type(list) == "table") then
-                scope[val] = list[i];
+                scope[val] = list[curIndex];
             else
-                scope[val] = i; 
+                scope[val] = curIndex; 
             end
             -- 设置起始scope
             self:SetComponent(forComponent);
             self:SetScope(forScope);
             -- 压入新scope
-            scopes[i] = self:PushScope(scope);
+            scopes[curIndex] = self:PushScope(scope);
             -- EndTime("复制元素", true)
-            -- 新元素
-            if (i > lastCount) then 
-                -- 编译新元素
+            -- 编译新元素
+            if (isNeedCompile) then
                 self:CompileElement(clone);
-                -- EndTime("编译元素", true);
-
-                -- 添加至dom树
-                parentElement:InsertChildElement(pos + i, clone);
-
-                -- EndTime("添加元素", true);
             end
+            -- EndTime("编译元素", true);
+            -- 添加至dom树
+            parentElement:InsertChildElement(pos + curIndex, clone);
             -- 弹出scope栈
             self:PopScope();
             self:SetComponent(oldComponent);
             self:SetScope(oldScope);
-        end
-        -- 移除多余元素
-        for i = count + 1, lastCount do
-            -- self:UnWatchElement(clones[i]);
-            parentElement:RemoveChildElement(clones[i]);
-            clones[i] = nil;
-            scopes[i] = nil;
-        end
-        lastCount = count;
-        if (not xmlNode.compiling) then
+            -- if ((curIndex % 20) == 0 or curIndex == count) then
             parentElement:UpdateLayout(true);
-        end
+            -- end
+        end});
+        forTimer:Change(0, 20);
+        -- for i = 1, count do
+        --     -- self:GetComponent():SetCompiled(false);
+        --     clones[i] = clones[i] or element:Clone();
+        --     local clone = clones[i];
+        --     -- 移除监控
+        --     clone:GetXmlNode().attr["v-for"] = nil;
+        --     -- self:UnWatchElement(clone);
+        --     -- 构建scope数据
+        --     local scope = scopes[i] or {};
+        --     if (val ~= key) then scope[key] = i end 
+        --     if (type(list) == "table") then
+        --         scope[val] = list[i];
+        --     else
+        --         scope[val] = i; 
+        --     end
+        --     -- 设置起始scope
+        --     self:SetComponent(forComponent);
+        --     self:SetScope(forScope);
+        --     -- 压入新scope
+        --     scopes[i] = self:PushScope(scope);
+        --     -- EndTime("复制元素", true)
+        --     -- 新元素
+        --     if (i > lastCount) then 
+        --         -- 编译新元素
+        --         self:CompileElement(clone);
+        --         -- EndTime("编译元素", true);
+
+        --         -- 添加至dom树
+        --         parentElement:InsertChildElement(pos + i, clone);
+
+        --         -- EndTime("添加元素", true);
+        --     end
+        --     -- 弹出scope栈
+        --     self:PopScope();
+        --     self:SetComponent(oldComponent);
+        --     self:SetScope(oldScope);
+        -- end
+        -- -- 移除多余元素
+        -- for i = count + 1, lastCount do
+        --     -- self:UnWatchElement(clones[i]);
+        --     parentElement:RemoveChildElement(clones[i]);
+        --     clones[i] = nil;
+        --     scopes[i] = nil;
+        -- end
+        -- lastCount = count;
+        -- if (not xmlNode.compiling and not self:IsRefresh()) then
+        --     parentElement:UpdateLayout(true);
+        -- end
     end, true);
     return true;
 end
@@ -675,6 +730,7 @@ function Compile:Compile(compoent)
 end
 
 function Compile:RefreshWindow(window)
+    self:SetRefresh(true);
     for _, elements in pairs(AllDependItemWatch) do
         for element, callbacks in pairs(elements) do
             if (element:GetWindow() == window) then
@@ -684,6 +740,43 @@ function Compile:RefreshWindow(window)
             end
         end
     end
+    self:SetRefresh(false);
+    self:UpdateLayout(true);
+end
+
+function Compile:SetRefresh(bRefresh)
+    self.__is_refresh__ = bRefresh;
+end
+
+function Compile:IsRefresh()
+    return self.__is_refresh__;
+end
+
+function Compile:RefreshElement(element)
+    local all_refresh_element = {};
+
+    local function GetRefreshElement(element) 
+        all_refresh_element[element] = true;
+        for _, child in ipairs(element.childrens) do
+            GetRefreshElement(child);
+        end
+    end
+
+    GetRefreshElement(element);
+
+    self:SetRefresh(true);
+    for _, elements in pairs(AllDependItemWatch) do
+        for element, callbacks in pairs(elements) do
+            if (all_refresh_element[element]) then
+                for _, callback in pairs(callbacks) do
+                    callback();
+                end
+            end
+        end
+    end
+    self:SetRefresh(false);
+
+    element:UpdateLayout(true);
 end
 
 local metatable = getmetatable(Compile);
