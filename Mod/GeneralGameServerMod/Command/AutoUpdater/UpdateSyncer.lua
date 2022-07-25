@@ -86,6 +86,10 @@ function UpdateSyncer:Init()
         self._updater = opt._updater --下载清单文件用
         self.realLatestVersion = opt.realLatestVersion
         self:getManifestAndDeletelist(function(downloads)
+            if downloads==nil or #downloads==0 then
+                LOG.std(nil, "warning", "UpdateSyncer", "清单有误,不能作为更新源");
+                return
+            end
             self.downloadlist = self:getKeyFileList(downloads)
             print("2---------下载清单:")
             echo(self.downloadlist)
@@ -159,16 +163,21 @@ function UpdateSyncer:getManifestAndDeletelist(callback)
                 local content = file:GetText();
                 list_1 = commonlib.split(content,"\r\n")
             else
-                
+                print("======不可用",path_download_list)
+                list_1 = {}
             end
+            file:close()
 
             if _cb then
                 _cb(list_1)
             end
         else
             self._updater:downloadManifest(function(list_1)
+                list_1 = list_1 or {}
                 local str_1 = table.concat(list_1,"\r\n")
-                CommonLib.WriteFile(path_download_list,str_1)
+                if str_1~="" then
+                    CommonLib.WriteFile(path_download_list,str_1)
+                end
 
                 if _cb then
                     _cb(list_1)
