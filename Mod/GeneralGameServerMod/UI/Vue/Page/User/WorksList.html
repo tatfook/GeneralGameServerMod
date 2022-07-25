@@ -57,7 +57,8 @@ Projects = {};
 
 local GlobalScope = GetGlobalScope();
 function UpdateProjectList()
-    if (GetAttrValue("type") == GlobalScope:Get("ProjectListType") and GlobalScope:Get("CharacterTabIndex") == "works") then
+    if (GetAttrValue("type") ~= GlobalScope:Get("ProjectListType")) then return end 
+    if (GlobalScope:Get("CharacterTabIndex") == "works") then
         Projects = GlobalScope:Get("ProjectList");
     else
         Projects = {};

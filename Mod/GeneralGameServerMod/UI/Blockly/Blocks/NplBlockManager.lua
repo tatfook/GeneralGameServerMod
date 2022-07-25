@@ -122,7 +122,7 @@ function NplBlockManager.IsMcmlLanguage()
 end
 
 function NplBlockManager.IsCadLanguage()
-    return string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "cad";
+    return string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "cad"
 end
 
 function NplBlockManager.IsGILanguage()
