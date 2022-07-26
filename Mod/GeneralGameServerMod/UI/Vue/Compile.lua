@@ -364,6 +364,7 @@ function Compile:VFor(element)
         local oldComponent = self:GetComponent();
         local oldScope = self:GetScope();
         local curIndex = 0;
+        local lastShowIndex = 0;
         if (forTimer) then forTimer:Change(nil, nil) end
         for _, clone in ipairs(clones) do
             parentElement:RemoveChildElement(clone);
@@ -408,13 +409,18 @@ function Compile:VFor(element)
             -- EndTime("编译元素", true);
             -- 添加至dom树
             parentElement:InsertChildElement(pos + curIndex, clone);
+            clone:SetVisible(false);
             -- 弹出scope栈
             self:PopScope();
             self:SetComponent(oldComponent);
             self:SetScope(oldScope);
-            -- if ((curIndex % 20) == 0 or curIndex == count) then
-            parentElement:UpdateLayout(true);
-            -- end
+            if ((curIndex % 20) == 0 or curIndex == count) then
+                for i = lastShowIndex + 1, curIndex do
+                    clones[i]:SetVisible(true);
+                end
+                lastShowIndex = curIndex;
+                parentElement:UpdateLayout(true);
+            end
         end});
         forTimer:Change(0, 20);
         -- for i = 1, count do
