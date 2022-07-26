@@ -12,7 +12,7 @@ local SelfProjectList = {};
 local AuthUser = KeepWorkItemManager.GetProfile();
 local player = GameLogic.GetPlayerController():GetPlayer();
 local GlobalScope = GetGlobalScope();
-local PageSize = 400;
+local PageSize = 40;
 
 -- 组件全局变量初始化
 GlobalScope:Set("AuthUsername", AuthUser.username);
