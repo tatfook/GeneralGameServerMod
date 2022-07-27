@@ -30,6 +30,11 @@ local AllBlockMap = {};
 local inited = false;
 local BlockManager = NPL.export();
 
+function BlockManager.IsCustomLanguage(lang)
+    if (lang == "CustomWorldBlock") then return true end 
+    return LanguagePathMap[lang] and true or false;
+end
+
 function BlockManager.GetBlocklyDirectory()
     return CommonLib.ToCanonicalFilePath(CommonLib.GetWorldDirectory() .. "/blockly/");
 end

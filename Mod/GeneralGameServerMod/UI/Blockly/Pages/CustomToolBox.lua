@@ -1,12 +1,17 @@
 
 
 local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/BlockManager.lua");
-local ToolBoxXmlText = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/ToolBoxXmlText.lua");
+local __ToolBoxXmlText__ = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/ToolBoxXmlText.lua");
 local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Helper.lua");
 
+_G.Language = _G.Language == "npl" and "SystemNplBlock" or _G.Language;
+_G.IsCustomLanguage = BlockManager.IsCustomLanguage(_G.Language);
 BlockManager.SetCurrentLanguage(_G.Language);
 
-local DefaultToolBoxXmlText = BlockManager.GenerateToolBoxXmlText(nil);
+-- print(_G.Language, _G.IsCustomLanguage)
+-- print(__ToolBoxXmlText__.GetXmlText(_G.Language))
+
+local DefaultToolBoxXmlText = _G.IsCustomLanguage and BlockManager.GenerateToolBoxXmlText(nil) or __ToolBoxXmlText__.GetXmlText(_G.Language);
 ContentType = "xmltext"; -- block category
 ToolBoxXmlText = (_G.XmlText and _G.XmlText ~= "") and _G.XmlText  or DefaultToolBoxXmlText;
 ToolBoxBlockList = {};
@@ -42,7 +47,7 @@ local function ParseToolBoxXmlText()
     local categorylist, categorymap, allblockmap = {}, {}, {};
 
     if (not toolboxNode) then return {}, {} end
-    local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap(path);
+    local CategoryAndBlockMap = BlockManager.GetCategoryAndBlockMap();
 
     for _, categoryNode in ipairs(toolboxNode) do
         if (categoryNode.attr and categoryNode.attr.name) then

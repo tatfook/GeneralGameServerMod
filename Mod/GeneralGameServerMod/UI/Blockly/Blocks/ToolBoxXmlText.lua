@@ -400,9 +400,9 @@ local __xml_text_map__ = {
 	},
 }
 
-function ToolBoxXmlText:GetXmlText(language, version)
+function ToolBoxXmlText.GetXmlText(language, version)
 	language = string.lower(language or "");
-	version = version or "0.0.0";
+	version = version or "1.0.0";  -- 默认使用最新版本
 	
 	language = language == "npl_cad" and "cad" or language;
 	language = language == "old_cad" and "cad" or language;
