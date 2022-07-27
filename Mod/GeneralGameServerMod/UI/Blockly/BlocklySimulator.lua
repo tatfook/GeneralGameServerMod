@@ -196,3 +196,39 @@ function BlocklySimulator:BeginPlay()
 end
 
 BlocklySimulator:InitSingleton();
+
+
+-- local __npl_blockly_macro_config__ = {};
+
+-- function BlocklySimulator:GetNplBlocklyMacroConfig()
+--     return __npl_blockly_macro_config__;
+-- end
+
+-- function Macros.NplBlocklyMacroConfig(params)
+--     if (type(params) ~= "table") then return end 
+--     -- 版本
+--     __npl_blockly_macro_config__.version = params.version;
+--     -- 语言
+--     __npl_blockly_macro_config__.language = params.language;
+--     -- 工具栏xmltext
+--     -- __npl_blockly_macro_config__.toolbox_xml_text = params.toolbox_xml_text;
+-- end
+
+-- local function MacroBeginRecord()
+--     __npl_blockly_macro_config__ = {};
+-- end
+-- local function MacroEndRecord()
+--     __npl_blockly_macro_config__ = {};
+-- end
+
+-- local function MacroBeginPlay()
+--     __npl_blockly_macro_config__ = {};
+-- end
+
+-- local function MacroEndPlay()
+--     __npl_blockly_macro_config__ = {};
+-- end
+-- GameLogic.GetFilters():add_filter("Macro_BeginRecord", MacroBeginRecord);
+-- GameLogic.GetFilters():add_filter("Macro_EndRecord", MacroEndRecord);
+-- GameLogic.GetFilters():add_filter("Macro_BeginPlay", MacroBeginPlay);
+-- GameLogic.GetFilters():add_filter("Macro_EndPlay", MacroEndPlay);

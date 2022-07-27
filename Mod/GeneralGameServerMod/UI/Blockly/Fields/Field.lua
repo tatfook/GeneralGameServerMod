@@ -132,9 +132,15 @@ end
 
 function Field:LoadFromXmlNode(xmlNode)
     local attr = xmlNode.attr;
+
     self:SetLabel(attr.label);
     self:SetValue(attr.value);
 
+    if (self:IsSelectType()) then
+        self:SetLabel(self:GetLabelByValue(self:GetValue(), self:GetDefaultLabel()));
+        self:SetValue(self:GetValueByLablel(self:GetLabel(), self:GetDefaultValue()));
+    end 
+    
     for _, subXmlNode in ipairs(xmlNode) do
         if (subXmlNode.name == "value") then
             self:SetValue(subXmlNode[1]);

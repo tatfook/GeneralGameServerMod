@@ -326,7 +326,7 @@ function ContextMenu:ExportToolboxXmlText()
         }
         table.insert(toolbox, #toolbox + 1, category);
         for _, blocktype in ipairs(categoryItem.blocktypes) do 
-            if (blockTypeMap[blocktype]) then
+            if (blockTypeMap[blocktype] or (not next(blockTypeMap))) then
                 table.insert(category, #category + 1, {name = "block", attr = {type = blocktype}});
             end
         end
@@ -334,6 +334,7 @@ function ContextMenu:ExportToolboxXmlText()
     end
     local xmlText = Helper.Lua2XmlString(toolbox, true);
     ParaMisc.CopyTextToClipboard(xmlText);
+    print(xmlText)
     GameLogic.AddBBS("Blockly", "图块工具栏XML已拷贝至剪切板");
 end
 

@@ -694,6 +694,10 @@ function BlockToolbox.GetBlockMap()
     return AllBlockMap;
 end
 
+function BlockToolbox.GetCategoryList()
+    return AllCategoryList;
+end
+
 function BlockToolbox.GetCategoryListAndMap()
     return AllCategoryList, AllCategoryMap;
 end

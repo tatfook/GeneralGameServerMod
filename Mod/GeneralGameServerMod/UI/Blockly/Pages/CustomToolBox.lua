@@ -1,6 +1,7 @@
 
 
 local BlockManager = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/BlockManager.lua");
+local ToolBoxXmlText = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Blocks/ToolBoxXmlText.lua");
 local Helper = NPL.load("Mod/GeneralGameServerMod/UI/Blockly/Helper.lua");
 
 BlockManager.SetCurrentLanguage(_G.Language);

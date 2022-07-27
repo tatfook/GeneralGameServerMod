@@ -358,16 +358,29 @@ function BlockManager.GetBlockOption(blockType, lang)
     return nil;
 end
 
+local __npl_language_map__ = {
+    [""]  = true, ["npl"] = true,
+    ["mcml"] = true, ["html"] = true,
+    ["npl_cad"] = true, ["old_cad"] = true, ["cad"] = true, ["old_npl_cad"] = true,
+    ["game_inventor"] = true,
+}
+
 function BlockManager.GetBlockMap(lang)
-    if (lang == "npl") then return NplBlockManager.GetBlockMap(BlockManager) end
+    if (__npl_language_map__[lang]) then return NplBlockManager.GetBlockMap(BlockManager, lang) end
     if (lang == "block") then return BlockBlockManager.GetBlockMap() end
     return AllBlockMap;
     -- if (LanguagePathMap[lang]) then return BlockManager.GetLanguageBlockMap(LanguagePathMap[lang]) end
     -- return BlockManager.GetLanguageBlockMap(WorldCategoryAndBlockPath);
 end
 
+function BlockManager.GetCategoryList(lang)
+    if (__npl_language_map__[lang]) then return NplBlockManager.GetCategoryList(BlockManager, lang) end
+    if (lang == "block") then return BlockBlockManager.GetCategoryList() end
+    return {};
+end
+
 function BlockManager.GetCategoryListAndMap(lang)
-    if (lang == "npl") then return NplBlockManager.GetCategoryListAndMap(BlockManager) end
+    if (__npl_language_map__[lang]) then return NplBlockManager.GetCategoryListAndMap(BlockManager, lang) end
     if (lang == "block") then return BlockBlockManager.GetCategoryListAndMap() end
     if (LanguagePathMap[lang]) then return BlockManager.GetLanguageCategoryListAndMap(LanguagePathMap[lang]) end
     return BlockManager.GetLanguageCategoryListAndMap(WorldCategoryAndBlockPath);

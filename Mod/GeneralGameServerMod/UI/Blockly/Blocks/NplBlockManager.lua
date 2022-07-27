@@ -113,19 +113,21 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
     return AllBlocks, CategoryList, AllBlockMap, CategoryMap;
 end
 
-function NplBlockManager.IsNplLanguage()
+function NplBlockManager.IsNplLanguage(lang)
     return CodeHelpWindow.GetLanguageConfigFile() == "npl" or CodeHelpWindow.GetLanguageConfigFile() == "";
 end
 
-function NplBlockManager.IsMcmlLanguage()
+function NplBlockManager.IsMcmlLanguage(lang)
     return CodeHelpWindow.GetLanguageConfigFile() == "mcml" or CodeHelpWindow.GetLanguageConfigFile() == "html";
 end
 
-function NplBlockManager.IsCadLanguage()
-    return string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "cad"
+function NplBlockManager.IsCadLanguage(lang)
+    if (lang == "old_npl_cad" or lang == "old_cad") then return false end   -- 使用程序自动转换
+    -- return string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "cad";
+    return string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "cad" or string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "npl_cad";
 end
 
-function NplBlockManager.IsGILanguage()
+function NplBlockManager.IsGILanguage(lang)
     return CodeHelpWindow.GetLanguageConfigFile() == "game_inventor";
 end
 
@@ -174,12 +176,12 @@ function NplBlockManager.GetGICategoryListAndMap()
     return BlockManager.GetLanguageCategoryListAndMap("SystemGIBlock");
 end
 
-function NplBlockManager.GetBlockMap(blockManager)
+function NplBlockManager.GetBlockMap(blockManager, lang)
     BlockManager = blockManager;
-    if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplBlockMap() end
-    if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlBlockMap() end
-    if (NplBlockManager.IsGILanguage()) then return NplBlockManager.GetGIBlockMap() end 
-    if (NplBlockManager.IsCadLanguage()) then return NplBlockManager.GetCadBlockMap() end
+    if (NplBlockManager.IsNplLanguage(lang)) then return NplBlockManager.GetNplBlockMap() end
+    if (NplBlockManager.IsMcmlLanguage(lang)) then return NplBlockManager.GetMcmlBlockMap() end
+    if (NplBlockManager.IsGILanguage(lang)) then return NplBlockManager.GetGIBlockMap() end 
+    if (NplBlockManager.IsCadLanguage(lang)) then return NplBlockManager.GetCadBlockMap() end
    
     local all_cmds = CodeHelpWindow.GetAllCmds();
     local all_categories = CodeHelpWindow.GetCategoryButtons();
@@ -193,12 +195,17 @@ function NplBlockManager.GetBlockMap(blockManager)
     return AllBlockMap;
 end
 
-function NplBlockManager.GetCategoryListAndMap(blockManager)
+function NplBlockManager.GetCategoryList(blockManager)
+    local _, AllCategoryList = NplBlockManager.GetCategoryListAndMap(blockManager);
+    return AllCategoryList;
+end
+
+function NplBlockManager.GetCategoryListAndMap(blockManager, lang)
     BlockManager = blockManager;
-    if (NplBlockManager.IsNplLanguage()) then return NplBlockManager.GetNplCategoryListAndMap() end
-    if (NplBlockManager.IsMcmlLanguage()) then return NplBlockManager.GetMcmlCategoryListAndMap() end
-    if (NplBlockManager.IsGILanguage()) then return NplBlockManager.GetGICategoryListAndMap() end 
-    if (NplBlockManager.IsCadLanguage()) then return NplBlockManager.GetCadCategoryListAndMap() end
+    if (NplBlockManager.IsNplLanguage(lang)) then return NplBlockManager.GetNplCategoryListAndMap() end
+    if (NplBlockManager.IsMcmlLanguage(lang)) then return NplBlockManager.GetMcmlCategoryListAndMap() end
+    if (NplBlockManager.IsGILanguage(lang)) then return NplBlockManager.GetGICategoryListAndMap() end 
+    if (NplBlockManager.IsCadLanguage(lang)) then return NplBlockManager.GetCadCategoryListAndMap() end
 
     local all_cmds = CodeHelpWindow.GetAllCmds();
     local all_categories = CodeHelpWindow.GetCategoryButtons();
@@ -211,3 +218,107 @@ function NplBlockManager.GetCategoryListAndMap(blockManager)
     local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(all_cmds, all_categories);
     return CategoryList, AllCategoryMap;
 end
+
+
+--[[
+-- scratch cad block defined
+<toolbox>
+	<category name="Shapes">
+		<block type="createNode"/>
+		<block type="pushNode"/>
+		<block type="pushNodeByName"/>
+		<block type="cube"/>
+		<block type="box"/>
+		<block type="sphere"/>
+		<block type="cylinder"/>
+		<block type="cone"/>
+		<block type="torus"/>
+		<block type="prism"/>
+		<block type="ellipsoid"/>
+		<block type="wedge"/>
+		<block type="trapezoid"/>
+		<block type="importStl"/>
+		<block type="importStl_2"/>
+		<block type="plane"/>
+		<block type="circle"/>
+		<block type="ellipse"/>
+		<block type="regularPolygon"/>
+		<block type="polygon"/>
+		<block type="text3d"/>
+	</category>
+	<category name="ShapeOperators">
+		<block type="move"/>
+		<block type="rotate"/>
+		<block type="rotateFromPivot"/>
+		<block type="moveNode"/>
+		<block type="rotateNode"/>
+		<block type="rotateNodeFromPivot"/>
+		<block type="cloneNodeByName"/>
+		<block type="cloneNode"/>
+		<block type="deleteNode"/>
+		<block type="fillet"/>
+		<block type="getEdgeCount"/>
+		<block type="chamfer"/>
+		<block type="extrude"/>
+		<block type="revolve"/>
+		<block type="mirror"/>
+		<block type="mirrorNode"/>
+		<block type="deflection"/>
+	</category>
+	<category name="Control">
+		<block type="repeat_count"/>
+		<block type="control_if"/>
+		<block type="if_else"/>
+	</category>
+	<category name="Math">
+		<block type="math_op"/>
+		<block type="random"/>
+		<block type="math_compared"/>
+		<block type="not"/>
+		<block type="mod"/>
+		<block type="round"/>
+		<block type="math_oneop"/>
+	</category>
+	<category name="Data">
+		<block type="getLocalVariable"/>
+		<block type="createLocalVariable"/>
+		<block type="assign"/>
+		<block type="getString"/>
+		<block type="getBoolean"/>
+		<block type="getNumber"/>
+		<block type="newEmptyTable"/>
+		<block type="getTableValue"/>
+		<block type="defineFunction"/>
+		<block type="callFunction"/>
+		<block type="code_comment"/>
+		<block type="setMaxTrianglesCnt"/>
+		<block type="jsonToObj"/>
+		<block type="objToJson"/>
+	</category>
+	<category name="Skeleton">
+		<block type="createJointRoot"/>
+		<block type="createJoint"/>
+		<block type="bindNodeByName"/>
+		<block type="boneNames"/>
+		<block type="rotateJoint"/>
+		<block type="startBoneNameConstraint"/>
+		<block type="setBoneConstraint_Name"/>
+		<block type="setBoneConstraint_min"/>
+		<block type="setBoneConstraint_max"/>
+		<block type="setBoneConstraint_offset"/>
+		<block type="setBoneConstraint_2"/>
+		<block type="setBoneConstraint_3"/>
+		<block type="setBoneConstraint_4"/>
+		<block type="setBoneConstraint_5"/>
+		<block type="setBoneConstraint_6"/>
+	</category>
+	<category name="Animation">
+		<block type="createAnimation"/>
+		<block type="addChannel"/>
+		<block type="setAnimationTimeValue_Translate"/>
+		<block type="setAnimationTimeValue_Scale"/>
+		<block type="setAnimationTimeValue_Rotate"/>
+		<block type="animationiNames"/>
+	</category>
+</toolbox>
+]]

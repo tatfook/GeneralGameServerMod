@@ -15,6 +15,7 @@ local BlockSound = commonlib.gettable("MyCompany.Aries.Game.Sound.BlockSound");
 local StyleColor = commonlib.gettable("System.Windows.mcml.css.StyleColor");
 local Helper = NPL.load("./Helper.lua", IsDevEnv);
 local BlockManager = NPL.load("./Blocks/BlockManager.lua", IsDevEnv);
+local ToolBoxXmlText = NPL.load("./Blocks/ToolBoxXmlText.lua", IsDevEnv);
 local BlockOptionGlobal = NPL.load("./Blocks/BlockOptionGlobal.lua", IsDevEnv);
 local Options = NPL.load("./Options.lua", IsDevEnv);
 local Const = NPL.load("./Const.lua", IsDevEnv);
@@ -53,6 +54,7 @@ Blockly:Property("OptionGlobal");             -- 选项全局表
 Blockly:Property("ToCodeCache");              -- 生成代码的时缓存对象
 Blockly:Property("RunBlockId", 0);            -- 运行块ID
 Blockly:Property("ShowMiniMap", false, "IsShowMiniMap");  -- 是否显示小地图
+Blockly:Property("Version", "1.0.0");         -- 当前版本
 
 function Blockly.PlayCreateBlockSound()
     ConnectionBlockSound:play2d();
@@ -125,6 +127,7 @@ function Blockly:Init(xmlNode, window, parent)
     self.isHideToolBox = self:GetAttrBoolValue("isHideToolBox", false);
     self.isHideIcons = self:GetAttrBoolValue("isHideIcons", false);
     self:SetReadOnly(self:GetAttrBoolValue("readonly", false));
+
     return self;
 end
 
