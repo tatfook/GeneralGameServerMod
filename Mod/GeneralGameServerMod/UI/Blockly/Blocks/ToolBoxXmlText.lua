@@ -3,7 +3,6 @@
 local ToolBoxXmlText = NPL.export();
 
 local npl_0_0_0 = [[
-
     <toolbox>
 	<category name="运动">
 		<block type="NPL_moveForward"/>
