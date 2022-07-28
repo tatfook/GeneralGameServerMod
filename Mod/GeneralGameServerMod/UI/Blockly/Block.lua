@@ -609,6 +609,18 @@ function Block:ConnectionBlock(block)
     end
     
     -- 优先匹配上连接
+    if (block:IsStart()) then
+        if (not self.previousConnection or self.previousConnection:IsConnection()) then return end 
+        if (self.topUnitCount > block.topUnitCount and not (block.isShadowBlock and block.shadowBlock or block).nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
+            self:GetBlockly():RemoveBlock(self);
+            self.previousConnection:Connection(block.nextConnection)
+            block:SetLeftTopUnitCount(self.leftUnitCount, self.topUnitCount - block.heightUnitCount);
+            block:GetTopBlock():UpdateLayout();
+            return true;         
+        end
+        return ;
+    end
+
     if (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and 
         not (block.isShadowBlock and block.shadowBlock or block).nextConnection:IsConnection() and self.previousConnection:IsMatch(block.nextConnection)) then
         local previousConnection = self.previousConnection:Disconnection();
