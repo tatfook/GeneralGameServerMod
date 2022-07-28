@@ -38,7 +38,7 @@ function LanguageConfig.IsSupportScratch(lang)
     return lang_name == "npl" or lang_name == "cad" or lang_name == "npl_junior" or lang_name == "mcml" or lang_name == "game_inventor";
 end
 
-function LanguageConfig.GetXmlText(lang, version)
+function LanguageConfig.GetToolBoxXmlText(lang, version)
     local lang_name = LanguageConfig.GetLanguageName(lang);
     return ToolBoxXmlText.GetXmlText(lang, version);
 end
