@@ -114,7 +114,7 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
 end
 
 function NplBlockManager.IsNplLanguage(lang)
-    return CodeHelpWindow.GetLanguageConfigFile() == "npl" or CodeHelpWindow.GetLanguageConfigFile() == "";
+    return CodeHelpWindow.GetLanguageConfigFile() == "npl" or CodeHelpWindow.GetLanguageConfigFile() == "" or CodeHelpWindow.GetLanguageConfigFile() == "npl_junior";
 end
 
 function NplBlockManager.IsMcmlLanguage(lang)
