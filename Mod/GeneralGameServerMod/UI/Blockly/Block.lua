@@ -602,12 +602,6 @@ function Block:ConnectionBlock(block)
     -- 只有顶层块才判定是否在整个区域内
     if ((not self.previousConnection or not self.previousConnection:IsConnection()) and self.nextConnection and not self:IsIntersect(block, false)) then return end
 
-    -- 是否在块区域内
-    if (not self:IsIntersect(block, true)) then
-        local nextBlock = self:GetNextBlock();
-        return nextBlock and nextBlock:ConnectionBlock(block);
-    end
-    
     -- 优先匹配上连接
     if (block:IsStart()) then
         if (not self.previousConnection or self.previousConnection:IsConnection()) then return end 
@@ -619,6 +613,12 @@ function Block:ConnectionBlock(block)
             return true;         
         end
         return ;
+    end
+
+    -- 是否在块区域内
+    if (not self:IsIntersect(block, true)) then
+        local nextBlock = self:GetNextBlock();
+        return nextBlock and nextBlock:ConnectionBlock(block);
     end
 
     if (self.topUnitCount > block.topUnitCount and self.previousConnection and block.nextConnection and 
