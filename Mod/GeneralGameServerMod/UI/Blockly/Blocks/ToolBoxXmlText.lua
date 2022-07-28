@@ -481,10 +481,6 @@ local __xml_text_map__ = {
 function ToolBoxXmlText.GetXmlText(language, version)
 	language = string.lower(language or "");
 	version = version or "1.0.0";  -- 默认使用最新版本
-	
-	language = language == "npl_cad" and "cad" or language;
-	language = language == "old_cad" and "cad" or language;
-
 	local __xml_text_version_map__ = __xml_text_map__[version] or {};
     return __xml_text_version_map__[language] or "";
 end

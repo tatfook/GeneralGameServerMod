@@ -16,6 +16,8 @@ local Helper = NPL.load("../Helper.lua");
 local NplBlockManager = NPL.load("./NplBlockManager.lua", IsDevEnv);
 local BlockBlockManager = NPL.load("./BlockBlockManager.lua", IsDevEnv);
 
+local LanguageConfig = NPL.load("./LanguageConfig.lua", IsDevEnv);
+
 local LanguagePathMap = {
     ["SystemLuaBlock"] = "Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemLuaBlock",
     ["SystemNplBlock"] = "Mod/GeneralGameServerMod/UI/Blockly/Blocks/SystemNplBlock",
@@ -363,15 +365,8 @@ function BlockManager.GetBlockOption(blockType, lang)
     return nil;
 end
 
-local __npl_language_map__ = {
-    [""]  = true, ["npl"] = true,
-    ["mcml"] = true, ["html"] = true,
-    ["npl_cad"] = true, ["old_cad"] = true, ["cad"] = true, ["old_npl_cad"] = true,
-    ["game_inventor"] = true,
-}
-
 function BlockManager.GetBlockMap(lang)
-    if (__npl_language_map__[lang]) then return NplBlockManager.GetBlockMap(BlockManager, lang) end
+    if (LanguageConfig.IsSupportScratch(lang)) then return NplBlockManager.GetBlockMap(BlockManager, lang) end
     if (lang == "block") then return BlockBlockManager.GetBlockMap() end
     return AllBlockMap;
     -- if (LanguagePathMap[lang]) then return BlockManager.GetLanguageBlockMap(LanguagePathMap[lang]) end
@@ -379,13 +374,13 @@ function BlockManager.GetBlockMap(lang)
 end
 
 function BlockManager.GetCategoryList(lang)
-    if (__npl_language_map__[lang]) then return NplBlockManager.GetCategoryList(BlockManager, lang) end
+    if (LanguageConfig.IsSupportScratch(lang)) then return NplBlockManager.GetCategoryList(BlockManager, lang) end
     if (lang == "block") then return BlockBlockManager.GetCategoryList() end
     return {};
 end
 
 function BlockManager.GetCategoryListAndMap(lang)
-    if (__npl_language_map__[lang]) then return NplBlockManager.GetCategoryListAndMap(BlockManager, lang) end
+    if (LanguageConfig.IsSupportScratch(lang)) then return NplBlockManager.GetCategoryListAndMap(BlockManager, lang) end
     if (lang == "block") then return BlockBlockManager.GetCategoryListAndMap() end
     if (LanguagePathMap[lang]) then return BlockManager.GetLanguageCategoryListAndMap(LanguagePathMap[lang]) end
     return BlockManager.GetLanguageCategoryListAndMap(WorldCategoryAndBlockPath);
