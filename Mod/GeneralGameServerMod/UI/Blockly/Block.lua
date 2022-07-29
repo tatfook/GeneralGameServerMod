@@ -65,8 +65,9 @@ function Block:ctor()
     self:SetDragging(false);
 end
 
-function Block:Init(blockly, opt)
+function Block:Init(blockly, opt, isToolBoxBlock)
     self:SetBlockly(blockly);
+    self:SetToolBoxBlock(isToolBoxBlock);
 
     Block._super.Init(self, self, opt);
     
@@ -84,6 +85,11 @@ function Block:Init(blockly, opt)
 end
 
 function Block:OnCreate()
+    for i, inputFieldContainer in ipairs(self.inputFieldContainerList) do
+        for j, inputField in ipairs(inputFieldContainer.inputFields) do
+            inputField:OnCreate();
+        end
+    end 
     local OnCreate = self:GetOption().OnCreate;
     if (type(OnCreate) == "function") then
         OnCreate(self);

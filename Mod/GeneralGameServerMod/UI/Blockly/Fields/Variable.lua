@@ -22,6 +22,22 @@ function Variable:Init(block, option)
     return self;
 end
 
+function Variable:OnCreate()
+    self:UpdateVarOptions();
+    local options = self:GetVarOptions();
+    local varname_map = {};
+    for _, option in ipairs(options) do
+        varname_map[option[1]] = true;
+    end
+    local vartype = self:GetVarType();
+    local varindex = 1;
+    while (varname_map[vartype .. tostring(varindex)]) do
+        varindex = varindex + 1;
+    end
+    self:SetValue(vartype .. tostring(varindex));
+    self:SetLabel(self:GetValue());
+end
+
 function Variable:GetValueAsString()
     return self:GetValue();
 end
@@ -31,6 +47,24 @@ function Variable:GetFieldEditType()
 end
 
 function Variable:OnEndEdit()
+    self:UpdateVarOptions();
+end
+
+function Variable:GetVarOptions()
+    local vartype = self:GetVarType();
+    variable_options[vartype] = variable_options[vartype] or {};
+    return variable_options[vartype];
+end
+
+function Variable:GetVarType()
+    return self:GetOption().vartype or "any";
+end
+
+function Variable:GetOptions()
+    return self:GetVarOptions();
+end
+
+function Variable:UpdateVarOptions()
     local vartype = self:GetVarType();
     local options = self:GetVarOptions();
     local index, size = 1, #options;
@@ -52,18 +86,4 @@ function Variable:OnEndEdit()
     table.sort(options, function(item1, item2)
         return item1[1] < item2[1];
     end);
-end
-
-function Variable:GetVarOptions()
-    local vartype = self:GetVarType();
-    variable_options[vartype] = variable_options[vartype] or {};
-    return variable_options[vartype];
-end
-
-function Variable:GetVarType()
-    return self:GetOption().vartype or "any";
-end
-
-function Variable:GetOptions()
-    return self:GetVarOptions();
 end

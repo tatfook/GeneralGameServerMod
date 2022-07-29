@@ -382,10 +382,10 @@ function Blockly:DefineBlock(block)
 end
 
 -- 获取块
-function Blockly:GetBlockInstanceByType(typ)
+function Blockly:GetBlockInstanceByType(typ, isToolBoxBlock)
     local opts = self.BlockMap[typ] or BlockManager.GetBlockOption(typ, self:GetLanguage());
     if (not opts) then return nil end
-    return Block:new():Init(self, opts);
+    return Block:new():Init(self, opts, isToolBoxBlock);
 end
 
 -- 获取块

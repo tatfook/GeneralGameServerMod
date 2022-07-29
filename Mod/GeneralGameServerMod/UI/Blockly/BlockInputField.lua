@@ -330,6 +330,9 @@ end
 function BlockInputField:OnClick()
 end
 
+function BlockInputField:OnCreate()
+end
+
 function BlockInputField:OnMouseDown(event)
     local block = self:GetBlock();
     local blockly = block:GetBlockly();

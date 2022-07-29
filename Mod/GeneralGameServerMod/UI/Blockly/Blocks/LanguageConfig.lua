@@ -12,7 +12,7 @@ local __language_name_map__ = {
     ["game_inventor"] = "game_inventor",
 }
 function LanguageConfig.GetLanguageName(lang)
-    return __language_name_map__[lang or ""] or "npl"
+    return __language_name_map__[lang or ""] or lang or "";
 end
 
 local __language_type_map__ = {

@@ -389,7 +389,7 @@ local cad_1_0_0 = [[
 
 local npl_junior_1_0_0 = [[
 <toolbox>
-	<category name="运动" color="#7372c2">
+	<category name="运动">
 		<block type="NPL_moveForward"/>
 		<block type="NPL_turn"/>
 		<block type="NPL_turnTo"/>
@@ -399,7 +399,7 @@ local npl_junior_1_0_0 = [[
 		<block type="NPL_getY"/>
 		<block type="NPL_getZ"/>
 	</category>
-	<category name="外观" color="#b3db61">
+	<category name="外观">
 		<block type="NPL_sayAndWait"/>
 		<block type="NPL_tip"/>
 		<block type="NPL_anim"/>
@@ -413,7 +413,7 @@ local npl_junior_1_0_0 = [[
 		<block type="NPL_playMovie"/>
 		<block type="NPL_window"/>
 	</category>
-	<category name="事件" color="#fdae87">
+	<category name="事件">
 		<block type="NPL_registerClickEvent"/>
 		<block type="NPL_registerKeyPressedEvent"/>
 		<block type="NPL_registerBlockClickEvent"/>
@@ -421,7 +421,7 @@ local npl_junior_1_0_0 = [[
 		<block type="NPL_broadcast"/>
 		<block type="NPL_cmd"/>
 	</category>
-	<category name="控制" color="#ec522e">
+	<category name="控制">
 		<block type="NPL_wait"/>
 		<block type="NPL_repeat"/>
 		<block type="NPL_forever"/>
@@ -429,12 +429,12 @@ local npl_junior_1_0_0 = [[
 		<block type="NPL_if_else"/>
 		<block type="NPL_becomeAgent"/>
 	</category>
-	<category name="声音" color="#5d8bd0">
+	<category name="声音">
 		<block type="NPL_playNote"/>
 		<block type="NPL_playSound"/>
 		<block type="NPL_playText"/>
 	</category>
-	<category name="感知" color="#f8a555">
+	<category name="感知">
 		<block type="NPL_isTouching"/>
 		<block type="NPL_askAndWait"/>
 		<block type="NPL_answer"/>
@@ -442,14 +442,14 @@ local npl_junior_1_0_0 = [[
 		<block type="NPL_getBlock"/>
 		<block type="NPL_setBlock"/>
 	</category>
-	<category name="运算" color="#eb4a6c">
+	<category name="运算">
 		<block type="NPL_math_op"/>
 		<block type="NPL_math_op_compare_number"/>
 		<block type="NPL_random"/>
 		<block type="NPL_math_compared"/>
 		<block type="NPL_math_oneop"/>
 	</category>
-	<category name="数据" color="#83c0ff">
+	<category name="数据">
 		<block type="NPL_getLocalVariable"/>
 		<block type="NPL_set"/>
 		<block type="NPL_registerCloneEvent"/>
