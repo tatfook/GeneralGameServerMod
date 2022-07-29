@@ -25,8 +25,9 @@ local all_block_map_cache = {};
 local all_category_list_cache = {};
 local all_category_map_cache = {};
 
-local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
-    if (all_blocks_cache[all_cmds]) then return all_blocks_cache[all_cmds], all_category_list_cache[all_categories], all_block_map_cache[all_cmds], all_category_map_cache[all_categories] end
+local function GetAllBlocksAndCategoryList(all_cmds, all_categories, lang)
+    local key = tostring(lang) .. "_" .. tostring(all_cmds) .. "_" .. tostring(all_categories);
+    if (all_blocks_cache[key]) then return all_blocks_cache[key], all_category_list_cache[key], all_block_map_cache[key], all_category_map_cache[key] end
 
     local CategoryList = {};  -- 分类列表
     local CategoryMap = {};   -- 分类MAP
@@ -60,6 +61,7 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
         local func_description = string.gsub(cmd.func_description or "", "\\n", "\n");
         func_description = string.gsub(func_description, "%%d", "%%s");
         local block = {
+            isScratchBlock = true;
             color = category and category.color;
             category = cmd.category;
             message = cmd.message,
@@ -108,8 +110,8 @@ local function GetAllBlocksAndCategoryList(all_cmds, all_categories)
         AllBlockMap[block.type] = block;
     end
 
-    all_blocks_cache[all_cmds], all_category_list_cache[all_categories] = AllBlocks, CategoryList;
-    all_block_map_cache[all_cmds], all_category_map_cache[all_categories] = AllBlockMap, CategoryMap;
+    all_blocks_cache[key], all_category_list_cache[key] = AllBlocks, CategoryList;
+    all_block_map_cache[key], all_category_map_cache[key] = AllBlockMap, CategoryMap;
     return AllBlocks, CategoryList, AllBlockMap, CategoryMap;
 end
 
@@ -123,7 +125,6 @@ end
 
 function NplBlockManager.IsCadLanguage(lang)
     if (lang == "old_npl_cad" or lang == "old_cad") then return false end   -- 使用程序自动转换
-    -- return string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "cad";
     return string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "cad" or string.lower(CodeHelpWindow.GetLanguageConfigFile()) == "npl_cad";
 end
 
@@ -191,7 +192,7 @@ function NplBlockManager.GetBlockMap(blockManager, lang)
         all_categories = GIBlockly.GetCategoryButtons();
     end
 
-    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(all_cmds, all_categories);
+    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(all_cmds, all_categories, lang);
     return AllBlockMap;
 end
 
@@ -215,7 +216,7 @@ function NplBlockManager.GetCategoryListAndMap(blockManager, lang)
         all_categories = GIBlockly.GetCategoryButtons();
     end
 
-    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(all_cmds, all_categories);
+    local AllBlocks, CategoryList, AllBlockMap, AllCategoryMap = GetAllBlocksAndCategoryList(all_cmds, all_categories, lang);
     return CategoryList, AllCategoryMap;
 end
 

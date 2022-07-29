@@ -199,13 +199,15 @@ function Blockly:LoadBlockMap()
     local G = self:GetOptionGlobal();
     for blockType, blockOption in pairs(BlockMap) do
         local option = commonlib.deepcopy(blockOption);
-        local defaultOption = rawget(G, blockType);
-        if (defaultOption) then
-            for key, val in pairs(defaultOption) do
-                if (option[key] == nil) then option[key] = val end
+        if (not option.isScratchBlock) then
+            local defaultOption = rawget(G, blockType);
+            if (defaultOption) then
+                for key, val in pairs(defaultOption) do
+                    if (option[key] == nil) then option[key] = val end
+                end
             end
         end
-
+        
         G[blockType] = option;
         self.BlockMap[blockType] = option;
 

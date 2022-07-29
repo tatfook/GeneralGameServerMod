@@ -40,5 +40,5 @@ end
 
 function LanguageConfig.GetToolBoxXmlText(lang, version)
     local lang_name = LanguageConfig.GetLanguageName(lang);
-    return ToolBoxXmlText.GetXmlText(lang, version);
+    return ToolBoxXmlText.GetXmlText(lang_name, version);
 end
