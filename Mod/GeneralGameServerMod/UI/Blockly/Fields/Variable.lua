@@ -14,15 +14,19 @@ local Field = NPL.load("./Field.lua", IsDevEnv);
 local Variable = commonlib.inherit(Field, NPL.export());
 local variable_options = {};
 
+Variable:Property("AutoIncrement", false, "IsAutoIncrement");
+
 function Variable:Init(block, option)
     Variable._super.Init(self, block, option);
 
     self:SetAllowNewSelectOption(true);
-
+    self:SetAutoIncrement(option.isAutoIncrement);
+    
     return self;
 end
 
 function Variable:OnCreate()
+    if (not self:IsAutoIncrement()) then return end 
     self:UpdateVarOptions();
     local options = self:GetVarOptions();
     local varname_map = {};

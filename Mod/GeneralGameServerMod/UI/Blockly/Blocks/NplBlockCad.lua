@@ -116,6 +116,7 @@ local all_block_list = {
                 type = "field_variable",
                 vartype = "object",
                 text = "object",
+                isAutoIncrement = true,
             },
             {
                 name = "color",
@@ -152,6 +153,7 @@ local all_block_list = {
                 type = "field_variable",
                 vartype = "object",
                 text = "object",
+                isAutoIncrement = true,
             },
             {
                 name = "color",
