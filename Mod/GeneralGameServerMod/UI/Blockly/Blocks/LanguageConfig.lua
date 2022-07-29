@@ -19,7 +19,8 @@ local __language_type_map__ = {
     ["npl"] = "npl",
     ["mcml"] = "html" ,
 }
-function LanguageConfig.GetLanguageType(lang_name)
+function LanguageConfig.GetLanguageType(lang)
+    local lang_name = LanguageConfig.GetLanguageName(lang);
     return __language_type_map__[lang_name] or "npl";
 end
 
@@ -29,7 +30,8 @@ local __language_version_map__ = {
     ["npl_junior"] = "1.0.0",
 }
 
-function LanguageConfig.GetVersion(lang_name)
+function LanguageConfig.GetVersion(lang)
+    local lang_name = LanguageConfig.GetLanguageName(lang);
     return __language_version_map__[lang_name] or "0.0.0"; 
 end
 
