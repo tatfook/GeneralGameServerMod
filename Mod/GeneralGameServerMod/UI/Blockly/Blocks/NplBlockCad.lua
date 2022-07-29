@@ -203,7 +203,7 @@ local all_block_list = {
         previousStatement = true,
         nextStatement = true,
         category = "Shapes", 
-        code_description = 'cube("%{op}", ${size}, "${color}")',
+        code_description = 'cube("${op}", ${size}, "${color}")',
     },
 
     {
