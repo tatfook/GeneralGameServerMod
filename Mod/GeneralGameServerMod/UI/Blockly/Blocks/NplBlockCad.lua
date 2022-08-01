@@ -349,7 +349,7 @@ local all_block_list = {
         previousStatement = true,
         nextStatement = true,
         category = "Shapes", 
-        code_description = 'cone("${op}", ${radius1}, ${radius1}, ${height}, "${color}")',
+        code_description = 'cone("${op}", ${radius1}, ${radius2}, ${height}, "${color}")',
     },
 
     {
@@ -385,7 +385,7 @@ local all_block_list = {
         previousStatement = true,
         nextStatement = true,
         category = "Shapes", 
-        code_description = 'torus("${op}", ${radius1}, ${radius1}, "${color}")',
+        code_description = 'torus("${op}", ${radius1}, ${radius2}, "${color}")',
     },
 
     {
