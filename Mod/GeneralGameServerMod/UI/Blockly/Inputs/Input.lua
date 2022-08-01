@@ -79,8 +79,8 @@ function Input:LoadFromXmlNode(xmlNode)
     self:SetValue(attr.value);
     
     if (self:IsSelectType()) then
-        self:SetLabel(self:GetLabelByValue(self:GetValue(), self:GetDefaultLabel()));
-        self:SetValue(self:GetValueByLablel(self:GetLabel(), self:GetDefaultValue()));
+        self:SetLabel(self:GetLabelByValue(self:GetValue(), self:GetLabel()));
+        self:SetValue(self:GetValueByLablel(self:GetLabel(), self:GetValue()));
     end 
 
     local inputBlockXmlNode = xmlNode[1];
