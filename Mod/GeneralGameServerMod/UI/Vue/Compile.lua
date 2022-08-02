@@ -747,7 +747,7 @@ function Compile:RefreshWindow(window)
         end
     end
     self:SetRefresh(false);
-    self:UpdateLayout(true);
+    window:UpdateLayout(true);
 end
 
 function Compile:SetRefresh(bRefresh)
