@@ -81,7 +81,7 @@ function Component.Register(tagname, tagclass, ComponentClassMap)
         if (not tagclass) then
             return ComponentClassMap[tagname] or mcml:GetClassByTagName(tagname);
         end
-        echo("register component: " .. tagname);
+        LOG.std(nil, 'info', 'Component', 'register component:  %s', tagname);
         ComponentClassMap[tagname] = tagclass;
         mcml:RegisterPageElement(tagname, tagclass);
 
