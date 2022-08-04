@@ -196,7 +196,7 @@ function ContextMenu:ExportCode()
     GameLogic.AddBBS("Blockly", "图块代码已拷贝至剪切板");
 end
 
-function ContextMenu:ExportMacroCode()
+function ContextMenu:ExportMacroCode(bHideBBS)
     local blockly = self:GetBlockly();
     local toolbox = blockly:GetToolBox();
     local category_list = toolbox:GetCategoryList();
@@ -305,9 +305,13 @@ function ContextMenu:ExportMacroCode()
             end
         end
     end
-    ParaMisc.CopyTextToClipboard(text);
     blockly:LoadFromXmlNodeText(xmlText);
-    GameLogic.AddBBS("Blockly", "示教代码已拷贝至剪切板");
+    if not bHideBBS then
+        ParaMisc.CopyTextToClipboard(text);
+        GameLogic.AddBBS("Blockly", "示教代码已拷贝至剪切板");
+    else
+        return text
+    end
 end
 
 function ContextMenu:ExportToolboxXmlText()
