@@ -154,12 +154,12 @@ function EntitySync:HandleSyncEntityListData(data)
         key_map[key] = true;
         self:HandleSyncEntityData(key, packet);
     end
-
-    for key in pairs(__all_sync_key_entity_map__) do
-        if (not key_map[key]) then
-            self:HandleSyncEntityData(key, nil, "delete");
-        end
-    end
+    -- 不能删除, 服务器数据无法保证正确, 世界模型很多, 模型上传是逐步的, 可能上传一小部分, 就被其它用拉取而删除了剩余模型
+    -- for key in pairs(__all_sync_key_entity_map__) do
+    --     if (not key_map[key]) then
+    --         self:HandleSyncEntityData(key, nil, "delete");
+    --     end
+    -- end
 end 
 
 function EntitySync:OnLogin()
