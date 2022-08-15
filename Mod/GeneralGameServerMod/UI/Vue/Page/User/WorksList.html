@@ -143,6 +143,8 @@ function GetProjectName(text)
         return ''
     end
 
+    text = MyCompany.Aries.Chat.BadWordFilter.FilterString(text)
+
     local utf8Text = UniString:new(text)
 
     if _guihelper.GetTextWidth(text) > 112 then
