@@ -80,7 +80,7 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     if (school ~= "") then school = "&lt;" .. school .. "&gt;" end
     local mcml = string.format([[
 <pe:mcml>
-    <div style="width:200px; margin-left: -100px; margin-top: -30px; color: %s;">
+    <div style="width:200px; margin-left: -100px; margin-top: -60px; color: %s;">
         <div align="center" style="">
             %s
             <div style="float:left; margin-left: 2px; font-weight:bold; font-size: 14px; base-font-size:14px; %s">%s</div>

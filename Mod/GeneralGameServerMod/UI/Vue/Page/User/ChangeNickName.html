@@ -72,7 +72,11 @@ function confirm()
     if (value == self.nickname or value == "") then return cancel() end
     
     -- 客户端处理铭感词
-    value = MyCompany.Aries.Chat.BadWordFilter.FilterString(value);
+    local temp = MyCompany.Aries.Chat.BadWordFilter.FilterString(value);
+    if temp~=value then 
+        ShowResultBox(L"包含敏感词，请重新修改");
+        return
+    end
     
     if (not IsExistNicknameGSItem) then
         return UpdateNickName(value);
