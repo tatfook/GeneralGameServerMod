@@ -10,6 +10,14 @@ local __language_name_map__ = {
     ["old_cad"] = "cad", ["old_npl_cad"] = "cad",
     ["npl_cad"] = "cad", ["cad"] = "cad", 
     ["game_inventor"] = "game_inventor",
+
+    ["CustomWorldBlock"] = "custom_npl", 
+    ["SystemLuaBlock"] = "custom_npl", 
+    ["SystemNplBlock"] = "custom_npl", 
+    ["SystemUIBlock"] = "custom_npl", 
+    ["SystemGIBlock"] = "custom_npl", 
+    ["SystemGIBlock"] = "custom_npl", 
+    ["block"] = "custom_npl", 
 }
 
 function LanguageConfig.GetLanguageName(lang)
@@ -39,8 +47,12 @@ end
 
 function LanguageConfig.IsSupportScratch(lang)
     local lang_name = LanguageConfig.GetLanguageName(lang);
-    -- 不在指定范围内则为代码定制语言如孙子兵法
-    return __language_version_map__[lang or ""] == nil or lang_name == "npl" or lang_name == "cad" or lang_name == "npl_junior" or lang_name == "mcml" or lang_name == "game_inventor";
+    if(lang_name == "npl" or lang_name == "cad" or lang_name == "npl_junior" or lang_name == "mcml" or lang_name == "game_inventor") then return true end
+
+    if (lang_name == "custom_npl") then return false end
+
+    -- 不在指定范围内则为代码定制语言如孙子兵法  所以默认返回true
+    return true;
 end
 
 function LanguageConfig.GetToolBoxXmlText(lang, version)
