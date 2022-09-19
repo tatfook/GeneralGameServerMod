@@ -75,12 +75,12 @@ function UpdateSyncer:Init()
         self.needShowDownloadWorldUI = opt.needShowDownloadWorldUI
         self.onUpdateError = opt.onUpdateError
         self:initClient()
-
+        return opt
     end);
     GameLogic.GetFilters():add_filter("start_lan_server", function(opt)
         if not self:checkLauncherIsNew() then
             LOG.std(nil, "warning", "UpdateSyncer", "launcher版本号过低无法启动服务器");
-            return
+            return opt
         end
         -- GameLogic.AddBBS(nil,"作为服务器开启了")
         self._updater = opt._updater --下载清单文件用
@@ -95,6 +95,7 @@ function UpdateSyncer:Init()
             echo(self.downloadlist)
             self:initServer()
         end)
+        return opt
     end);
     GameLogic.GetFilters():add_filter("check_is_downloading_from_lan", function(opt)
         
@@ -209,7 +210,7 @@ function UpdateSyncer.ShowPage()
 		isShowTitleBar = false,
 		DestroyOnClose = true, 
 		style = CommonCtrl.WindowFrame.ContainerStyle,
-		zorder = 10,
+		zorder = 1000,
 		allowDrag = false,
 		isTopLevel = false,
 		directPosition = true,
