@@ -130,18 +130,23 @@ function Page.Show(G, params, isNew)
 end
 
 -- 显示用户信息
-local UserInfoPage = Vue:new();
+-- local UserInfoPage = Vue:new();
 function Page.ShowUserInfoPage(G, params)
-    params = params or {};
-    params.url = "%vue%/Page/User/User.html";
-    params.G = G;
-    params.draggable = false;
-    -- params.width = params.width or 1025;
-    -- params.height = params.height or 625;
-    params.width = "100%";
-    params.height = "100%";
-    UserInfoPage:Show(params);
-    return UserInfoPage;
+    -- params = params or {};
+    -- params.url = "%vue%/Page/User/User.html";
+    -- params.G = G;
+    -- params.draggable = false;
+    -- -- params.width = params.width or 1025;
+    -- -- params.height = params.height or 625;
+    -- params.width = "100%";
+    -- params.height = "100%";
+    -- UserInfoPage:Show(params);
+    local username = params and params.username or ""
+    local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
+    if UserInfoPage then
+        UserInfoPage.ShowPage(username)
+    end
+    -- return UserInfoPage;
 end
 
 local DebugInfoPage = Vue:new();
