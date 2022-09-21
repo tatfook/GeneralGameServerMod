@@ -141,7 +141,7 @@ function Page.ShowUserInfoPage(G, params)
     -- params.width = "100%";
     -- params.height = "100%";
     -- UserInfoPage:Show(params);
-    local username = params and params.username or ""
+    local username = G and G.username or ""
     local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
     if UserInfoPage then
         UserInfoPage.ShowPage(username)
