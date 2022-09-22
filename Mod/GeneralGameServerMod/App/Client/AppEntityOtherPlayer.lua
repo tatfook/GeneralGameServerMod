@@ -33,10 +33,13 @@ function AppEntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
     if mouse_button == "left" then
         local mainasset = self:GetMainAssetPath();
         local username = self:GetUserName()
-        --page.ShowUserInfoPage({username = username, mainasset = mainasset});
-        local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
-        if UserInfoPage then
-            UserInfoPage.ShowPage(username)
+        if System.options.isDevMode then
+            local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
+            if UserInfoPage then
+                UserInfoPage.ShowPage(username)
+            end
+        else
+            page.ShowUserInfoPage({username = username, mainasset = mainasset});
         end
         -- 阻止默认行为     
         return true;
