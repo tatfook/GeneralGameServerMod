@@ -33,7 +33,7 @@ function AppEntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
     if mouse_button == "left" then
         local mainasset = self:GetMainAssetPath();
         local username = self:GetUserName()
-        if System.options.isDevMode then
+        if true then
             local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
             if UserInfoPage then
                 UserInfoPage.ShowPage(username)

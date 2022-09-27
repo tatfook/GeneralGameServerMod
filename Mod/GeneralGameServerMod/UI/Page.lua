@@ -132,7 +132,7 @@ end
 -- 显示用户信息
 local UserInfoPage = Vue:new();
 function Page.ShowUserInfoPage(G, params)
-    if System.options.isDevMode then
+    if true then
         local username = G and G.username or ""
         local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
         if UserInfoPage then
