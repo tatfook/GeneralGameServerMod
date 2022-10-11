@@ -43,13 +43,22 @@ function Snapshot:Take()
 
     local filepath = self:GetFilePath();
     local width, height = self:GetWidthHeight();
-    if (not ParaMovie.TakeScreenShot(filepath, width, height)) then
-        print("---------------------ParaMovie.TakeScreenShot Failed----------------------");
-        return ;
+    local ShootCB = commonlib.gettable("GeneralGameServerMod.Command.Lan.Snapshot.ShootCB")
+    ShootCB.onCallback = function()
+        local res = msg.res;
+        local sequence = msg.s;
+        local size = msg.size;
+        local base64 = msg.base64;
+        if res~=0 then
+            print("---------------------ParaMovie.TakeScreenShot Failed----------------------");
+            return
+        end
+        -- print("generat snapshot:", filepath);
+        Net:ClientCall("Snapshot_Data", CommonLib.GetFileText(filepath));
+        -- ParaAsset.LoadTexture("", filepath,1):UnloadAsset();
     end
-    -- print("generat snapshot:", filepath);
-    Net:ClientCall("Snapshot_Data", CommonLib.GetFileText(filepath));
-	-- ParaAsset.LoadTexture("", filepath,1):UnloadAsset();
+    ParaMovie.TakeScreenShot_Async(filepath,false, width, height,string.format("GeneralGameServerMod.Command.Lan.Snapshot.ShootCB.onCallback();'%s'",filepath))
+    
 end
 
 function Snapshot:Init()
