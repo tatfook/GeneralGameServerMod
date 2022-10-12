@@ -40,6 +40,7 @@ end
 
 function Snapshot:Take()
     if (not self:IsEnableSnapshotData()) then return end 
+    if (not Net:IsConnected()) then return end 
 
     local filepath = self:GetFilePath();
     local width, height = self:GetWidthHeight();
