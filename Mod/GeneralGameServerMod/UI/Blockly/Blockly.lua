@@ -72,7 +72,7 @@ function Blockly:ctor()
     self:Reset();
     self.BlockMap, self.CategoryList, self.CategoryMap, self.CategoryColor = {}, {}, {}, {};
     self:SetToolBox(ToolBox:new():Init(self));
-    self:SetOptionGlobal(BlockOptionGlobal:New());
+    self:SetOptionGlobal(BlockOptionGlobal:new():Init());
 end
 
 function Blockly:Reset()
@@ -196,25 +196,21 @@ function Blockly:LoadBlockMap()
     local BlockMap = BlockManager.GetBlockMap(self:GetLanguage());
     self.BlockMap = {};
 
-    local G = self:GetOptionGlobal();
+    local optionGlobal = self:GetOptionGlobal();
     for blockType, blockOption in pairs(BlockMap) do
         local option = commonlib.deepcopy(blockOption);
         if (not option.isScratchBlock) then
-            local defaultOption = rawget(G, blockType);
-            if (defaultOption) then
-                for key, val in pairs(defaultOption) do
-                    if (option[key] == nil) then option[key] = val end
-                end
-            end
+            commonlib.mincopy(option, optionGlobal:GetDefaultOption(blockType));
+            commonlib.partialcopy(option, optionGlobal:GetOverWriteOption(blockType));
         end
         
-        G[blockType] = option;
         self.BlockMap[blockType] = option;
+        optionGlobal:DefineGlobalOption(blockType, option);
 
         if (option.code and option.code ~= "") then
             local func, errmsg = loadstring(option.code);
             if (func) then
-                setfenv(func, G);
+                setfenv(func, optionGlobal:GetG());
                 func();
             else
                 print(errmsg);

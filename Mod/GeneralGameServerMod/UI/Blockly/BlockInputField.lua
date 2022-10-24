@@ -81,6 +81,7 @@ function BlockInputField:Init(block, option)
     self:SetColor(string.upper(self:GetColor()));
     
     self:SetAllowNewSelectOption(option.isAllowNewSelectOption == true and true or false);
+
     if (self:IsSelectType()) then
         self:SetLabel(self:GetLabelByValue(self:GetValue(), self:GetDefaultLabel()));
         self:SetValue(self:GetValueByLablel(self:GetLabel(), self:GetDefaultValue()));

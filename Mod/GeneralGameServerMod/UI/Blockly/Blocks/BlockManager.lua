@@ -380,7 +380,6 @@ function BlockManager.GetCategoryList(lang)
 end
 
 function BlockManager.GetCategoryListAndMap(lang)
-    print("==================", lang, LanguageConfig.IsSupportScratch(lang))
     if (LanguageConfig.IsSupportScratch(lang)) then return NplBlockManager.GetCategoryListAndMap(BlockManager, lang) end
     if (lang == "block") then return BlockBlockManager.GetCategoryListAndMap() end
     if (LanguagePathMap[lang]) then return BlockManager.GetLanguageCategoryListAndMap(LanguagePathMap[lang]) end
