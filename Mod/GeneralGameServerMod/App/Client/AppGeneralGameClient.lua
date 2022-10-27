@@ -291,6 +291,10 @@ function AppGeneralGameClient:IsEnableNewLiveModelAutoSync()
     return self.options.isEnableNewLiveModelAutoSync;
 end
 
+function AppGeneralGameClient:IsEnableLiveModelAutoSync()
+    return self.options.isEnableLiveModelAutoSync;
+end
+
 -- 同步活动模型
 function AppGeneralGameClient:SyncEntityLiveModel(entity)
     EntitySync(entity, true);

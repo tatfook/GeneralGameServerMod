@@ -98,11 +98,13 @@ end
 
 -- 实体更新
 local function OnEntityUpdate(entity)
+    if (not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
     AddEntityToSyncQueue(entity, false);
 end
 
 -- 实体删除
 local function OnEntityDelete(entity)
+    if (not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
     AddEntityToSyncQueue(entity, true);
 end
 
@@ -132,7 +134,10 @@ function EntitySync:HandleSyncEntityData(key, packet, action)
         __is_can_sync_entity_map__[entity] = false;
     end
 
-    if (packet) then entity:LoadFromXMLNode(packet) end 
+    if (packet) then 
+        entity:LoadFromXMLNode(packet);
+        entity:SetForceAutoSync(entity:IsForceAutoSync());
+    end 
     
 	local obj = entity:GetInnerObject();
     if(obj) then
@@ -182,6 +187,9 @@ end
 
 setmetatable(EntitySync, {
     __call = function(_, entity, bSync)
+        -- 没有开启同步直接跳出
+        if (not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
+
         -- 保证唯一KEY存在
         -- entity:SetKey(nil);
         local key = entity:GetKey();
@@ -189,7 +197,7 @@ setmetatable(EntitySync, {
         bSync = bSync == nil and true or bSync;
         -- print(key, bSync, __all_sync_key_entity_map__[key], AppGeneralGameClient:IsEnableNewLiveModelAutoSync())
         if (bSync and __all_sync_key_entity_map__[key]) then return end 
-        if (bSync and not AppGeneralGameClient:IsEnableNewLiveModelAutoSync()) then return end 
+        if (not entity:IsForceAutoSync() and bSync and not AppGeneralGameClient:IsEnableNewLiveModelAutoSync()) then return end 
         if (bSync) then
             entity:Connect("valueChanged", entity, OnEntityUpdate);
             entity:Connect("facingChanged", entity, OnEntityUpdate);
@@ -203,6 +211,7 @@ setmetatable(EntitySync, {
             entity:Disconnect("scalingChanged", entity, OnEntityUpdate);
             entity:Disconnect("beforeDestroyed", entity, OnEntityDelete);
             EnableCanSyncEntity(entity, false);
+            __all_sync_key_entity_map__[key] = nil;
         end
     end
 });

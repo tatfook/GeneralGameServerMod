@@ -94,6 +94,9 @@ offlineuser 离线用户命令
 setNewLiveModelAutoSync 新增活动模型是否同步(默认为 on)
 	/ggs setNewLiveModelAutoSync on    允许新增活动模型同步
 	/ggs setNewLiveModelAutoSync off   禁止新增活动模型同步
+setLiveModelAutoSync            所有活动模型是否同步(默认为 on)
+	/ggs setLiveModelAutoSync on    允许活动模型同步
+	/ggs setLiveModelAutoSync off   禁止活动模型同步
 showuserinfo                     显示用户信息
 	/ggs showuserinfo [username]
 debug 调试命令 
@@ -129,6 +132,8 @@ developer                    GGS 开发者模式
 				__this__:handleSetSyncForceBlockCommand(cmd_text);
 			elseif (cmd == "setNewLiveModelAutoSync") then
 				__this__:handleSetNewLiveModelAutoSync(cmd_text);
+			elseif (cmd == "setLiveModelAutoSync") then
+				__this__:handleSetLiveModelAutoSync(cmd_text);
 			elseif (cmd == "sync") then
 				-- __this__:handleSyncCommand(cmd_text);
 			elseif (cmd == "filesync") then
@@ -309,6 +314,12 @@ function GeneralGameCommand:handleSetNewLiveModelAutoSync(cmd_text)
 	GeneralGameClient.options.isEnableNewLiveModelAutoSync = onOrOff == "on";
 end
 
+-- 新增活动模型是否同步
+function GeneralGameCommand:handleSetLiveModelAutoSync(cmd_text)
+	local onOrOff, cmd_text = CmdParser.ParseString(cmd_text);
+	GeneralGameClient.options.isEnableLiveModelAutoSync = onOrOff == "on";
+end
+
 -- 打开用户面板
 function GeneralGameCommand:handleShowUserInfoCommand(cmd_text)
 	local username, cmd_text_remain = CmdParser.ParseString(cmd_text);
@@ -320,6 +331,7 @@ end
 function GeneralGameCommand:OnWorldLoaded()
 	GeneralGameClient:GetSyncForceBlockList():clear();
 	GeneralGameClient.options.isEnableNewLiveModelAutoSync = true;  -- 默认为true
+	GeneralGameClient.options.isEnableLiveModelAutoSync = true;     -- 默认为true
 
 	if (System.options.isCodepku) then return end 
 	-- 社区自动启动GGS
