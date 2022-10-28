@@ -47,6 +47,7 @@ end
 
 function ServerSetting:CheckServer()
     if (self:IsEnableLocalServer()) then
+        self:GetLan():SetEnableSnapshot(true);  -- 服务端默认开启发送截屏功能
         self:GetLan():StartServer(self:GetLocalServerIp(), self:GetLocalServerPort());
         self:GetLan():SetServer(true);
     else 

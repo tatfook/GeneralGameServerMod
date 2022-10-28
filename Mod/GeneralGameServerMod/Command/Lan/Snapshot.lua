@@ -69,6 +69,7 @@ function Snapshot:StartServer()
     self:CloseLockScreenUI();
     self:SetEnableServer(true);
     -- self:ShowUI()
+
     if (not self.__server_tick_timer__) then
         self.__server_tick_timer__ = CommonLib.SetInterval(1000 * 15, function()
             self:ServerTick();

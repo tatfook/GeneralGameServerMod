@@ -234,4 +234,13 @@ Entity 数据包未包含类信息, 目前只支持EntityLiveModel(默认类)
 主实现文件:
 Client: Mod/GeneralGameServerMod/App/Client/EntitySync.lua
 Server: Mod/GeneralGameServerMod/App/Server/AppServerDataHandler.lua
+
+
+
+全局控制
+setLiveModelAutoSync            所有活动模型是否同步(默认为 on)
+  /ggs setLiveModelAutoSync on    允许活动模型同步
+  /ggs setLiveModelAutoSync off   禁止活动模型同步
+11:16
+独立控制 entity:SetForceAutoSync(ture), true 强制同步(忽略全局控制)  false 强制不同步(忽略全局控制)  nil(受全局控制)
 ]]
