@@ -111,9 +111,13 @@ end
 function EntitySync:HandleSyncEntityData(key, packet, action)
     local entity = __all_sync_key_entity_map__[key];
     if (not IsCanSyncEntity(entity or key)) then return end 
-
+    local isAllowSync = AppGeneralGameClient:IsEnableLiveModelAutoSync();
+    local isForceSync = packet and packet.attr and packet.attr.forceAutoSync;
+    if (not isAllowSync and not isForceSync) then return end 
+    
     -- print("======Recv=======", key, action);
     if (action == "delete") then
+
         __all_sync_key_entity_map__[key] = nil;
         if (entity) then
             -- 避免删除触发同步
