@@ -18,6 +18,8 @@ local Macros = commonlib.gettable("MyCompany.Aries.Game.GameLogic.Macros");
 local Params = NPL.load("./Params.lua", IsDevEnv);
 local Simulator = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
+local ConvertToWebMode = NPL.load("(gl)script/apps/Aries/Creator/Game/Macros/ConvertToWebMode/ConvertToWebMode.lua");
+
 Simulator:Property("SimulatorName", "Simulator");                    -- 模拟器名称
 
 local windows = {};
@@ -89,13 +91,56 @@ function Simulator:IsRecordingOrPlaying()
 end
 
 function Simulator:SetClickTrigger(mouseX, mouseY, mouseButton, callbackFunction)
+    if (Macros.GetHelpLevel() == -2) then
+        ConvertToWebMode:StopComputeRecordTime();
+        local macros = Macros.macros[Macros.curLine];
+
+        if (macros) then
+            macros.processTime = ConvertToWebMode.processTime;
+            macros.mouseButton = mouseButton;
+            macros.mousePosition = { mouseX = mouseX, mouseY = mouseY }
+        end
+    end
+
     local callback = {};
     MacroPlayer.SetClickTrigger(mouseX, mouseY, mouseButton or "left", function()
-        if(callback.OnFinish) then
-            callback.OnFinish();
-        end
-        if (type(callbackFunction) == "function") then
-            callbackFunction();
+        if (Macros.GetHelpLevel() == -2) then
+            local nextNextLine = Macros.macros[Macros.curLine + 2];
+
+            if (nextNextLine and
+                nextNextLine.name ~= "Broadcast" and
+                nextNextLine.params ~= "macroFinished") then
+                commonlib.TimerManager.SetTimeout(function()
+                    ConvertToWebMode:StopCapture();
+
+                    ConvertToWebMode:StartComputeRecordTime();
+                    ConvertToWebMode:BeginCapture(function()
+                        if (callback.OnFinish and type(callback.OnFinish) == "function") then
+                            callback.OnFinish();
+                        end
+
+                        if (callbackFunction and type(callbackFunction) == "function") then
+                            callbackFunction();
+                        end
+                    end);
+                end, 4000);
+            else
+                if (callback.OnFinish and type(callback.OnFinish) == "function") then
+                    callback.OnFinish();
+                end
+
+                if (callbackFunction and type(callbackFunction) == "function") then
+                    callbackFunction();
+                end
+            end
+        else
+            if (callback.OnFinish and type(callback.OnFinish) == "function") then
+                callback.OnFinish();
+            end
+
+            if (callbackFunction and type(callbackFunction) == "function") then
+                callbackFunction();
+            end
         end
     end);
     return callback;
