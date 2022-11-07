@@ -98,13 +98,13 @@ end
 
 -- 实体更新
 local function OnEntityUpdate(entity)
-    if (not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
+    if (not entity or not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
     AddEntityToSyncQueue(entity, false);
 end
 
 -- 实体删除
 local function OnEntityDelete(entity)
-    if (not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
+    if (not entity or not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
     AddEntityToSyncQueue(entity, true);
 end
 
@@ -192,7 +192,7 @@ end
 setmetatable(EntitySync, {
     __call = function(_, entity, bSync)
         -- 没有开启同步直接跳出
-        if (not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
+        if (not entity or not entity:IsForceAutoSync() and not AppGeneralGameClient:IsEnableLiveModelAutoSync()) then return end 
 
         -- 保证唯一KEY存在
         -- entity:SetKey(nil);
