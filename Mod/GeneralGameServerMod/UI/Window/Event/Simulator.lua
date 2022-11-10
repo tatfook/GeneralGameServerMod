@@ -157,10 +157,50 @@ function Simulator:SetMouseWheelTrigger(delta, mouseX, mouseY)
 end
 
 function Simulator:SetDragTrigger(startX, startY, endX, endY, mouseButton)
+    if (Macros.GetHelpLevel() == -2) then
+        ConvertToWebMode:StopComputeRecordTime();
+        local macros = Macros.macros[Macros.curLine];
+
+        if (macros) then
+            macros.processTime = ConvertToWebMode.processTime;
+            macros.isDrag = true;
+            macros.mouseButton = mouseButton;
+            macros.mousePosition = {
+                startX = startX,
+                startY = startY,
+                endX = endX,
+                endY = endY,
+            }
+        end
+    end
+
     local callback = {};
     MacroPlayer.SetDragTrigger(startX, startY, endX, endY, mouseButton or "left", function()
-        if(callback.OnFinish) then
-            callback.OnFinish();
+        if (Macros.GetHelpLevel() == -2) then
+            local nextNextLine = Macros.macros[Macros.curLine + 2];
+
+            if (nextNextLine and
+                nextNextLine.name ~= "Broadcast" and
+                nextNextLine.params ~= "macroFinished") then
+                commonlib.TimerManager.SetTimeout(function()
+                    ConvertToWebMode:StopCapture();
+
+                    ConvertToWebMode:StartComputeRecordTime();
+                    ConvertToWebMode:BeginCapture(function()
+                        if (callback.OnFinish and type(callback.OnFinish) == "function") then
+                            callback.OnFinish();
+                        end
+                    end);
+                end, 4000);
+            else
+                if (callback.OnFinish and type(callback.OnFinish) == "function") then
+                    callback.OnFinish();
+                end
+            end
+        else
+            if (callback.OnFinish and type(callback.OnFinish) == "function") then
+                callback.OnFinish();
+            end
         end
     end);
     return callback;
