@@ -468,29 +468,55 @@ function NetClientHandler:Connect()
     self.connection:SetRemoteNeuronFile("Mod/GeneralGameServerMod/Core/Server/NetServerHandler.lua");
 
     GGS.DEBUG.Format(self.connection:GetRemoteAddress());
-    -- 连接成功
-    if (self.connection:Connect() == 0) then 
-        self:Login();
-        self.isConnecting = false;
-        self.isReconnection = false;
-        self.reconnectionDelay = 3;
-        PlayerLoginLogoutDebug("与服务器成功建立链接", options);
-        return 
-    end
-    
-    -- 重连
-    if (self.__reconnect_timer__ == nil) then
-        self.__reconnect_timer__ = commonlib.Timer:new({callbackFunc = function(timer)
+
+    -- 异步链接
+    self.connection:Connect(nil, function(bSuccess)
+        if (bSuccess) then
+            self:Login();
             self.isConnecting = false;
-            self:Connect();
-            -- 最大重连间隔为1分钟
-            -- self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
-            -- if (self.reconnectionDelay > 60) then self.reconnectionDelay = 60 end
-            self.reconnectionDelay = 5;
-        end}):Change(self.reconnectionDelay * 1000, nil);
-    else 
-        self.__reconnect_timer__:Change(self.reconnectionDelay * 1000, nil);
-    end
+            self.isReconnection = false;
+            self.reconnectionDelay = 3;
+            PlayerLoginLogoutDebug("与服务器成功建立链接", options);
+        else
+            -- 重连
+            if (self.__reconnect_timer__ == nil) then
+                self.__reconnect_timer__ = commonlib.Timer:new({callbackFunc = function(timer)
+                    self.isConnecting = false;
+                    self:Connect();
+                    -- 最大重连间隔为1分钟
+                    -- self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
+                    -- if (self.reconnectionDelay > 60) then self.reconnectionDelay = 60 end
+                    self.reconnectionDelay = 5;
+                end}):Change(self.reconnectionDelay * 1000, nil);
+            else 
+                self.__reconnect_timer__:Change(self.reconnectionDelay * 1000, nil);
+            end
+        end
+    end);
+    -- 同步链接重连卡顿
+    -- -- 连接成功
+    -- if (self.connection:Connect() == 0) then 
+    --     self:Login();
+    --     self.isConnecting = false;
+    --     self.isReconnection = false;
+    --     self.reconnectionDelay = 3;
+    --     PlayerLoginLogoutDebug("与服务器成功建立链接", options);
+    --     return 
+    -- end
+    
+    -- -- 重连
+    -- if (self.__reconnect_timer__ == nil) then
+    --     self.__reconnect_timer__ = commonlib.Timer:new({callbackFunc = function(timer)
+    --         self.isConnecting = false;
+    --         self:Connect();
+    --         -- 最大重连间隔为1分钟
+    --         -- self.reconnectionDelay = self.reconnectionDelay + self.reconnectionDelay;
+    --         -- if (self.reconnectionDelay > 60) then self.reconnectionDelay = 60 end
+    --         self.reconnectionDelay = 5;
+    --     end}):Change(self.reconnectionDelay * 1000, nil);
+    -- else 
+    --     self.__reconnect_timer__:Change(self.reconnectionDelay * 1000, nil);
+    -- end
 end
 
 function NetClientHandler:Reconnect()
