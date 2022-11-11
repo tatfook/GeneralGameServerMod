@@ -51,7 +51,9 @@ function PlayerManager:RemovePlayer(entityPlayer)
     if (type(entityPlayer) == "string") then entityPlayer = self.players[entityPlayer] end
     if (not entityPlayer) then return end
     local username = entityPlayer:GetUserName();
+    entityPlayer:SetName(nil);
     entityPlayer:Destroy();
+
     self.players[username] = nil;
 end
 

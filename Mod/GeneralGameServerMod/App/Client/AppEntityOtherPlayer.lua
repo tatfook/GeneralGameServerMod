@@ -65,3 +65,4 @@ end
 function AppEntityOtherPlayer:GetMotionBufferTickCount()
     return 0; -- 30 = 1s
 end
+
