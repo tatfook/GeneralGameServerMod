@@ -135,13 +135,14 @@ function AppGeneralGameClient:Init()
             height: 100%;
         }
         .btn {
+            margin-left: 20px;
             width: 85px;
             height: 81px;
             background-color: #ffffff;
             background: url(Texture/Aries/Creator/keepwork/ggs/chonglian_85x81_32bits.png#0 0 85 81);
         }
         </style>
-        ]], alignment = "_lb", width=85, height=81});
+        ]], alignment = "_lb", width=105, height=101});
     end
 
     self:SetDisconnectionCallBack(function() 
