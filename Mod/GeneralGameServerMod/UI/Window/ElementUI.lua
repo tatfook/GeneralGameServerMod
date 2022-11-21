@@ -1085,8 +1085,8 @@ function ElementUI:HandleMouseBubbleEventBefore(event)
     if (event_type == "onmousemove" and self.MouseWheel.isStartWheel) then
         local x, y = event:GetScreenXY();
         if (y ~= self.MouseWheel.mouseY) then
-            -- local mouse_wheel = y < self.MouseWheel.mouseY and -1 or 1;
-            local mouse_wheel = y >= self.MouseWheel.mouseY and -1 or 1;
+            local mouse_wheel = y < self.MouseWheel.mouseY and -1 or 1;
+            -- local mouse_wheel = y >= self.MouseWheel.mouseY and -1 or 1;
             self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
             event.mouse_wheel = mouse_wheel;
             self.MouseWheel.isClick = false;
