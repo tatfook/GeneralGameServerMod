@@ -107,7 +107,7 @@ function Params:GetVirtualEventParams()
 
     if (event_type == "onmousewheel") then
         params.mouse_window_x, params.mouse_window_y, params.mouse_wheel = cache_params.mouse_window_x, cache_params.mouse_window_y, cache_params.mouse_wheel;
-        if (params.mouse_wheel ~= nil) then params.mouse_wheel_blockly_toolbox = -params.mouse_wheel end 
+        -- if (params.mouse_wheel ~= nil) then params.mouse_wheel_blockly_toolbox = -params.mouse_wheel end 
     end
 
     if (event_type == "oninputmethod") then
