@@ -15,6 +15,7 @@ local MouseEvent = commonlib.inherit(BaseEvent, NPL.export());
 
 MouseEvent:Property("TripleClick", false, "IsTripleClick");
 MouseEvent:Property("DoubleClick", false, "IsDoubleClick");
+MouseEvent:Property("BlocklyMouseWheelDirection", 1);   -- 图块滚轮方向
 
 local firstPressTime, secondPressTime = 0, 0;
 local firstPressPositionX  = 0;
@@ -62,6 +63,7 @@ function MouseEvent:Init(event_type, window, params)
 	self.alt_pressed = ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_LMENU) or ParaUI.IsKeyPressed(DIK_SCANCODE.DIK_RMENU);
     self.mouse_button = mouse_button;
 	self.mouse_wheel = mouse_wheel;
+    if (self.mouse_wheel ~= nil) then self.mouse_wheel_blockly_toolbox = -self.mouse_wheel end
 
     if (event_type == "onmousedown" or event_type == "onmousemove") then
         self.buttons_state = 0;
@@ -84,6 +86,8 @@ function MouseEvent:Init(event_type, window, params)
     if (type(params) == "table") then
         self.x, self.y, self.mouse_button, self.buttons_state, self.mouse_wheel = params.x or params.mouse_x or self.x, params.y or params.mouse_y or self.y, params.mouse_button or self.mouse_button, params.buttons_state or self.buttons_state, params.mouse_wheel or self.mouse_wheel;
         self.shift_pressed, self.ctrl_pressed, self.alt_pressed = params.shift_pressed or self.shift_pressed, params.ctrl_pressed or self.ctrl_pressed, params.alt_pressed or self.alt_pressed;
+        -- params 表明是宏示教  默认同self.mouse_wheel兼容之前错误的方向
+        self.mouse_wheel_blockly_toolbox = params.mouse_wheel_blockly_toolbox or self.mouse_wheel;
     end
 
     if (event_type == "onmousedown") then 
@@ -125,7 +129,11 @@ end
 
 -- 鼠标滚动距离
 function MouseEvent:GetDelta()
-	return self.mouse_wheel or 0;
+    return self.mouse_wheel or 0;
+end
+
+function MouseEvent:GetBlocklyToolBoxDelta()
+    return self.mouse_wheel_blockly_toolbox or 1;  -- 图块专用, 修复方向相反的问题
 end
 
 -- 是否鼠标左键按下
