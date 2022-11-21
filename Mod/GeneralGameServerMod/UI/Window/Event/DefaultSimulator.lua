@@ -88,7 +88,7 @@ end
 -- 鼠标滚动
 function DefaultSimulator:UIWindowWheel(params, window)
     local mouse_x, mouse_y = window:WindowPointToScreenPoint(params.mouse_window_x, params.mouse_window_y);
-    window:OnEvent("onmousewheel", {mouse_x = mouse_x, mouse_y = mouse_y, mouse_wheel = params.mouse_wheel});
+    window:OnEvent("onmousewheel", {mouse_x = mouse_x, mouse_y = mouse_y, mouse_wheel = params.mouse_wheel, version = params.version or 0});
 end
 
 function DefaultSimulator:UIWindowWheelTrigger(params, window)

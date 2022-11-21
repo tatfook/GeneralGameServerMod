@@ -17,7 +17,7 @@ local KeyEvent = commonlib.inherit(BaseEvent, NPL.export());
 -- return current mouse event object. 
 -- @param event_type: "keyDownEvent", "keyPressedEvent", "keyReleaseEvent"
 function KeyEvent:Init(event_type, window, params)
-	KeyEvent._super.Init(self, event_type, window);
+	KeyEvent._super.Init(self, event_type, window, params);
 
 	self.virtual_key = virtual_key;   -- 全局变量
 	self.keyname = VirtualKeyToScaneCodeStr[virtual_key];

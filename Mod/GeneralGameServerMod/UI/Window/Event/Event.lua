@@ -17,6 +17,7 @@ local ActivateEvent = NPL.load("./ActivateEvent.lua", IsDevEnv);
 
 local Event = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());
 
+
 Event.BaseEvent = BaseEvent;
 Event.InputMethodEvent = InputMethodEvent;
 Event.KeyEvent = KeyEvent;
@@ -48,3 +49,4 @@ function Event:Init(event_type, window, event_args)
 
 	return event;
 end
+

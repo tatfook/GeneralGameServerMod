@@ -1063,7 +1063,7 @@ function ElementUI:IsExistMouseEvent()
 end
 
 function ElementUI:IsTouchMode()
-    -- if (IsDevEnv) then return true end 
+    if (IsDevEnv) then return true end 
     return GameLogic.options:HasTouchDevice();
     -- return System.os.IsTouchMode();
 end
@@ -1086,7 +1086,6 @@ function ElementUI:HandleMouseBubbleEventBefore(event)
         local x, y = event:GetScreenXY();
         if (y ~= self.MouseWheel.mouseY) then
             local mouse_wheel = y < self.MouseWheel.mouseY and -1 or 1;
-            -- local mouse_wheel = y >= self.MouseWheel.mouseY and -1 or 1;
             self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
             event.mouse_wheel = mouse_wheel;
             self.MouseWheel.isClick = false;

@@ -230,7 +230,12 @@ function ToolBox:OnMouseMove(event)
     if (self.MouseWheel.isStartWheel) then
         local x, y = event:GetScreenXY();
         if (y ~= self.MouseWheel.mouseY) then
-            local mouse_wheel = y < self.MouseWheel.mouseY and 1 or -1;
+            local mouse_wheel = 0;
+            if (event:GetVersion() < event.Version.BlocklyToolBoxMouseWheelBug) then
+                mouse_wheel = y < self.MouseWheel.mouseY and 1 or -1;
+            else
+                mouse_wheel = y < self.MouseWheel.mouseY and -1 or 1;  -- 正解
+            end
             self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
             event.mouse_wheel = mouse_wheel;
             self:OnMouseWheel(event);
@@ -248,10 +253,6 @@ end
 function ToolBox:OnMouseWheel(event)
     local delta = event:GetDelta();                -- 1 向上滚动  -1 向下滚动
     local dist, offset = 16, 5;                 -- 滚动距离为5 * Const.DefaultUnitSize  
-    
-    -- if (GameLogic.options:HasTouchDevice()) then
-        -- delta = event:GetBlocklyToolBoxDelta();
-    -- end
     
     if (#self.blocks == 0) then return end
     local scale = self:GetScale();

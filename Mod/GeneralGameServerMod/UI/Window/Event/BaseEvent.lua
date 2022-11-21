@@ -13,8 +13,18 @@ local BaseEvent = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), 
 
 BaseEvent:Property("Window");    -- 事件窗口
 BaseEvent:Property("Element");   -- 事件元素
+BaseEvent:Property("Version");
 
-function BaseEvent:Init(event_type, window)
+--[[
+0 -- 默认版本
+1 -- 修复blockly 滚动反向问题
+]]
+BaseEvent.Version = {
+	BlocklyToolBoxMouseWheelBug = 1,
+	CurrentVersion = 1,
+}
+
+function BaseEvent:Init(event_type, window, params)
     self.last_event_type = self.event_type;
     self.event_type = event_type;
     self.accepted = nil;
@@ -22,6 +32,12 @@ function BaseEvent:Init(event_type, window)
     self:SetElement(nil);
     self:SetWindow(window);
 	window:SetEvent(self);
+
+	if (type(params) == "table" and type(params.version) == "number") then
+		self:SetVersion(params.version);
+	else
+		self:SetVersion(self.Version.CurrentVersion);
+	end
 
     return self;
 end

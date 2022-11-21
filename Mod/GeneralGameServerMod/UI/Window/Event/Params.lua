@@ -74,6 +74,7 @@ function Params:Init(event, window)
         cache_params.mouse_x, cache_params.mouse_y = event:GetScreenXY(); 
         cache_params.mouse_window_x, cache_params.mouse_window_y = event:GetWindowXY();   -- 窗口坐标为虚拟的绝对坐标, 不启用窗口自动缩放, 该不会变化
         cache_params.mouse_wheel = event.mouse_wheel;
+        cache_params.version = event:GetVersion();
     end
 end
 
@@ -107,7 +108,7 @@ function Params:GetVirtualEventParams()
 
     if (event_type == "onmousewheel") then
         params.mouse_window_x, params.mouse_window_y, params.mouse_wheel = cache_params.mouse_window_x, cache_params.mouse_window_y, cache_params.mouse_wheel;
-        -- if (params.mouse_wheel ~= nil) then params.mouse_wheel_blockly_toolbox = -params.mouse_wheel end 
+        params.version = cache_params.version;
     end
 
     if (event_type == "oninputmethod") then
