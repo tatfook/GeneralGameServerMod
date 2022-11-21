@@ -1063,7 +1063,7 @@ function ElementUI:IsExistMouseEvent()
 end
 
 function ElementUI:IsTouchMode()
-    if (IsDevEnv) then return true end 
+    -- if (IsDevEnv) then return true end 
     return GameLogic.options:HasTouchDevice();
     -- return System.os.IsTouchMode();
 end
