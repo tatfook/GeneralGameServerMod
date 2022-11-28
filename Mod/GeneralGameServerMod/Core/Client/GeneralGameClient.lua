@@ -221,7 +221,7 @@ function GeneralGameClient:LoadWorld(opts)
     local curWorldName = WorldCommon.GetWorldTag("name");
     -- 确定世界ID
     options.worldId = tostring(opts.worldId or curWorldId or options.defaultWorldId);
-    options.worldName = opts.worldName or curWorldName;
+    options.worldName = (opts.worldName or curWorldName or "") .. "_" .. (tostring(System.User.worldclassid or ""));
     options.worldKey = opts.worldKey;
     options.username = options.username or self:GetUserInfo().username;
     options.ip = opts.ip;            -- ip port 每次重写
