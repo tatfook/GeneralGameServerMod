@@ -151,7 +151,7 @@ developer                    GGS 开发者模式
 			end
 			
 			-- 确保进入联机世界
-			if (not __this__:GetGeneralGameClient() or not __this__:GetGeneralGameClient():IsLogin()) then return end
+			if (not __this__:GetGeneralGameClient() or not __this__:GetGeneralGameClient():GetWorld()) then return end
 
 			-- 联机世界命令
 			if (cmd == "debug") then
