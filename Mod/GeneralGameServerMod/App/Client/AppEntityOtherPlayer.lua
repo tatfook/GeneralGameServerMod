@@ -30,6 +30,9 @@ end
 
 -- 玩家被点击
 function AppEntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
+    local playerManager = self:GetWorld():GetPlayerManager();
+    if (not playerManager:IsCanClickPlayer()) then return end 
+
     if mouse_button == "left" then
         local mainasset = self:GetMainAssetPath();
         local username = self:GetUserName()

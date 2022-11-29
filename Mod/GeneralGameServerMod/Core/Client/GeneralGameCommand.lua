@@ -88,6 +88,8 @@ setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息�
 user 用户命令
 	/ggs user visible           显示所有用户 不包含主玩家
 	/ggs user hidden            隐藏所有用户 不包含主玩家
+	/ggs user enableclick       玩家可点击
+	/ggs user disableclick      玩家不可点击
 offlineuser 离线用户命令
 	/ggs offlineuser visible    显示离线用户
 	/ggs offlineuser hidden     隐藏离线用户
@@ -201,6 +203,10 @@ function GeneralGameCommand:handleUserCommand(cmd_text)
 		playerManager:ShowAllPlayers();
 	elseif (action == "hidden") then
 		playerManager:HideAllPlayers();
+	elseif (action == "enableclick") then
+		playerManager:EnableClickPlayer();
+	elseif (action == "disableclick") then
+		playerManager:DisableClickPlayer();
 	end
 end 
 

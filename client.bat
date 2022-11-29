@@ -24,4 +24,5 @@
 
 
 @REM call "D:\workspace\program\ParacraftDev\ParaEngineClient.exe" mc="true" IsDevEnv="true" logfile="D:\workspace\npl\GeneralGameServerMod\client.log" loadpackage="D:\workspace\npl\paracraft_script/,;D:\workspace\npl\GeneralGameServerMod/,;D:\workspace\npl\WorldShare/,;"
-call "D:\workspace\program\ParacraftDev\ParaEngineClient.exe" mc="true" IsDevEnv="true" logfile="D:\workspace\npl\GeneralGameServerMod\client.log" loadpackage="D:\workspace\npl\paracraft_script/,;D:\workspace\npl\GeneralGameServerMod/,;D:\workspace\npl\WorldShare/,;"
+@REM call "D:\workspace\program\ParacraftDev\ParaEngineClient.exe" mc="true" IsDevEnv="true" logfile="D:\workspace\npl\GeneralGameServerMod\client.log" loadpackage="D:\workspace\npl\paracraft_script/,;D:\workspace\npl\GeneralGameServerMod/,;D:\workspace\npl\WorldShare/,;"
+call "D:\workspace\npl\NPLRuntime_win32\build\ParaEngineClient\Debug\ParaEngineClient_d.exe" mc="true" logfile="D:\workspace\npl\GeneralGameServerMod\client.log" loadpackage="D:\workspace\npl\paracraft_script/,;D:\workspace\npl\GeneralGameServerMod/,;D:\workspace\npl\WorldShare/,;"

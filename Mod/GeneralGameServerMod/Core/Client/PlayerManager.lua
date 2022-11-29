@@ -17,6 +17,7 @@ PlayerManager:Property("MainPlayer");       -- 主玩家
 PlayerManager:Property("AreaSize");         -- 玩家可视区域
 PlayerManager:Property("UserVisible", true, "IsUserVisible");                        -- 玩家是否可见
 PlayerManager:Property("OfflineUserVisible", true, "IsOfflineUserVisible");          -- 离线玩家是否可见   
+PlayerManager:Property("CanClickPlayer", true, "IsCanClickPlayer");
 
 function PlayerManager:ctor()
     self.players = {};   -- 玩家集
@@ -24,6 +25,7 @@ end
 
 function PlayerManager:Init(world)
     self:SetWorld(world);
+    self:SetCanClickPlayer(true);
     return self;
 end
 
@@ -129,4 +131,13 @@ function PlayerManager:ShowAllPlayers()
         player:SetVisible(true);
     end
     self:SetUserVisible(true);
+end
+
+
+function PlayerManager:EnableClickPlayer()
+    self:SetCanClickPlayer(true);
+end
+
+function PlayerManager:DisableClickPlayer()
+    self:SetCanClickPlayer(false);
 end
