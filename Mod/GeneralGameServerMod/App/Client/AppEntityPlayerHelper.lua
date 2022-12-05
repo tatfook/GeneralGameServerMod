@@ -37,7 +37,7 @@ function AppEntityPlayerHelper:SetPlayerInfo(playerInfo)
     
     playerInfo.username = playerInfo.userinfo and playerInfo.userinfo.username or playerInfo.username;
     
-    self.entityPlayer:SetName("__GGS__" .. playerInfo.username);
+    self.entityPlayer:SetName("__GGS__" .. (playerInfo.username or ""));
 
     -- 显示信息是否更改
     local isSetHeadOnDisplay = playerInfo.state and playerInfo.username and (oldPlayerInfo.state ~= playerInfo.state or oldPlayerInfo.username ~= playerInfo.username);
