@@ -133,10 +133,11 @@ end
 local UserInfoPage = Vue:new();
 function Page.ShowUserInfoPage(G, params)
     if true then
+        local userId = G and G.userId 
         local username = G and G.username or ""
         local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
         if UserInfoPage then
-            UserInfoPage.ShowPage(username)
+            UserInfoPage.ShowPage(username,nil,userId)
         end
     else
         params = params or {};
