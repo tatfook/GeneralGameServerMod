@@ -29,6 +29,8 @@ function EntityOtherPlayer:ctor()
     self.playerInfo = {};
     self.packetPlayerEntityInfoQueue = commonlib.Queue:new();  -- 移动队列
     self.motionBufferTickCount = 0;
+    local ids = {0,72}
+    self.offlineAnimId = ids[math.random(1,#ids)]
 end
 
 function EntityOtherPlayer:init(world, username, entityId)
@@ -38,7 +40,6 @@ function EntityOtherPlayer:init(world, username, entityId)
     self:SetSkipPicking(not self:IsCanClick());
     self:SetSyncEntityInfo(self:GetWorld():GetClient():IsSyncEntityInfo());
     self:SetEnableAssetsWhiteList(self:GetWorld():GetClient():IsEnableAssetsWhiteList());
-
     return self;
 end
 
@@ -124,6 +125,11 @@ function EntityOtherPlayer:CheckShowWings()
     PlayerAssetFile:ShowWingAttachment(self:GetInnerObject(), self:GetSkinId(), self:GetAnimId() == 38);
 end
 
+--是否在线
+function EntityOtherPlayer:IsOnline()
+    return self.playerInfo.state == "online"
+end
+
 -- 更改人物外观
 function EntityOtherPlayer:UpdateEntityActionState()
     local curAnimId = self:GetAnimId();
@@ -134,11 +140,15 @@ function EntityOtherPlayer:UpdateEntityActionState()
     if (self.smoothFrames == 0 and (curAnimId == 4 or curAnimId == 5)) then curAnimId = 0 end
 	-- self:CheckShowWings()
 
-	if(self.lastAnimId ~= curAnimId and curAnimId) then
-		self.lastAnimId = curAnimId;
-		if(obj) then
-			obj:SetField("AnimID", curAnimId);
-		end
+    if self:IsOnline() then
+        if(self.lastAnimId ~= curAnimId and curAnimId) then
+            self.lastAnimId = curAnimId;
+            if(obj) then
+                obj:SetField("AnimID", curAnimId);
+            end
+        end
+    else
+        obj:SetField("AnimID", self.offlineAnimId);
     end
     
 	if(self.lastSkinId ~= curSkinId and curSkinId) then
