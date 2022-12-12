@@ -117,7 +117,6 @@ function EntitySync:HandleSyncEntityData(key, packet, action)
     
     -- print("======Recv=======", key, action);
     if (action == "delete") then
-
         __all_sync_key_entity_map__[key] = nil;
         if (entity) then
             -- 避免删除触发同步

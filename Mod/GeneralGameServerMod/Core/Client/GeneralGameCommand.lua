@@ -335,9 +335,10 @@ end
 
 -- 世界加载
 function GeneralGameCommand:OnWorldLoaded()
+    local isReadOnly = GameLogic.IsReadOnly();
 	GeneralGameClient:GetSyncForceBlockList():clear();
-	GeneralGameClient.options.isEnableNewLiveModelAutoSync = true;  -- 默认为true
-	GeneralGameClient.options.isEnableLiveModelAutoSync = true;     -- 默认为true
+	GeneralGameClient.options.isEnableNewLiveModelAutoSync = isReadOnly;  -- 默认为true
+	GeneralGameClient.options.isEnableLiveModelAutoSync = isReadOnly;     -- 默认为true
 
 	if (System.options.isCodepku) then return end 
 	-- 社区自动启动GGS
