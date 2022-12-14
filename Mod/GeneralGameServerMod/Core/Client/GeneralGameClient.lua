@@ -66,6 +66,7 @@ GeneralGameClient.options = {
 function GeneralGameClient:ctor() 
     self.inited = false;
     self.userinfo = {};
+    self.anonymous_user_count = 0;
     self.netCmdList = commonlib.UnorderedArraySet:new();  -- 网络命令列表, 禁止命令重复运行 
 end
 
@@ -208,6 +209,10 @@ function GeneralGameClient:ReplaceWorld(opts)
     GameLogic.RunCommand(string.format("/loadworld %s", opts.worldId)); 
 end
 
+function GeneralGameClient:GetAnonymousUserName()
+    self.anonymous_user_count = self.anonymous_user_count + 1;
+    return "anonymous_user_" .. tostring(self.anonymous_user_count);
+end
 -- 加载世界
 function GeneralGameClient:LoadWorld(opts)
     -- 初始化
@@ -223,7 +228,7 @@ function GeneralGameClient:LoadWorld(opts)
     options.worldId = tostring(opts.worldId or curWorldId or options.defaultWorldId);
     options.worldName = (opts.worldName or curWorldName or "") .. "_" .. (tostring(System.User.worldclassid or ""));
     options.worldKey = opts.worldKey;
-    options.username = options.username or self:GetUserInfo().username;
+    options.username = opts.username or self:GetUserInfo().username or self:GetAnonymousUserName();
     options.ip = opts.ip;            -- ip port 每次重写
     options.port = opts.port;        -- 以便动态获取
   
