@@ -163,15 +163,15 @@ end
 function AppGeneralGameClient:LoadWorld(opts)
     -- opts.worldName = opts.worldName or string.format("school_%s",self.userinfo.schoolId);
     
+    -- 再次更新信息
+    self:CopyKpUserInfo();
+
     AppGeneralGameClient._super.LoadWorld(self, opts);
 
     local options = self:GetOptions();
     self.userinfo.school = options.school or self.userinfo.school;
     self.userinfo.isVip = options.isVip or self.userinfo.isVip;
     self.userinfo.nickname = options.nickname or self.userinfo.nickname;
-
-    -- 再次更新信息
-    self:CopyKpUserInfo();
 end
 
 -- 获取世界类
