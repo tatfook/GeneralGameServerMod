@@ -45,7 +45,7 @@ function OnReady()
         if (not BlocklyEl) then return end 
         BlocklyEl:SetRunBlockId(BlocklyEl:PopRunBlockId());
     end
-
+    BlocklyEl:SetReadOnly((ReadOnly == true or ReadOnly == "true"))
     BlocklyEl:LoadFromXmlNodeText(_G.xmltext);
 end
 
