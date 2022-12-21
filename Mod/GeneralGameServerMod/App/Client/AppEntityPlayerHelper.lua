@@ -33,6 +33,8 @@ function AppEntityPlayerHelper:GetUserInfo()
 end
 
 function AppEntityPlayerHelper:SetPlayerInfo(playerInfo)
+    if (not playerInfo) then return end 
+    
     local oldPlayerInfo = self:GetPlayerInfo();
     
     playerInfo.username = playerInfo.userinfo and playerInfo.userinfo.username or playerInfo.username;

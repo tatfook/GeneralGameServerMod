@@ -322,12 +322,15 @@ function Blockly:Undo()
     local action, block, blockCount = cmd.action, cmd.block, cmd.blockCount;
     local tmpBlock = block;
     local blocks = {};
+    local index = 1;
     for i = 1, blockCount do
-        blocks[i] = tmpBlock;
-        tmpBlock = tmpBlock:GetNextBlock();
-        blocks[i]:Disconnection();
-        if (i > 1) then
-            blocks[i-1].nextConnection:Connection(blocks[i].previousConnection);
+        if (tmpBlock) then
+            blocks[index] = tmpBlock;
+            tmpBlock = tmpBlock:GetNextBlock();
+            blocks[i]:Disconnection();
+            if (index > 1) then
+                blocks[index-1].nextConnection:Connection(blocks[index].previousConnection);
+            end
         end
     end
     if (action == "DeleteBlock" or action == "MoveBlock") then
