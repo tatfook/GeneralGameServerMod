@@ -148,7 +148,9 @@ function EntityOtherPlayer:UpdateEntityActionState()
             end
         end
     else
-        obj:SetField("AnimID", self.offlineAnimId);
+        if (obj) then
+            obj:SetField("AnimID", self.offlineAnimId);
+        end
     end
     
 	if(self.lastSkinId ~= curSkinId and curSkinId) then
