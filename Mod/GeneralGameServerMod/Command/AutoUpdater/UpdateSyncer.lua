@@ -249,7 +249,7 @@ end
 
 --点击应用更新
 function UpdateSyncer.onBtnApply()
-    local launcherExe = "ParaCraft.exe"
+    local launcherExe = System.options.launcherExeName or "ParaCraft.exe"
     local root = CommonLib.GetRootDirectory()
     
     local storagePath = CommonLib.ToCanonicalFilePath(root.."caches/")
@@ -470,7 +470,7 @@ end
 function UpdateSyncer:getKeyFileList(bin_files)
     local root = CommonLib.ToCanonicalFilePath(CommonLib.GetRootDirectory());
     
-    local launcherExe,isContain = "ParaCraft.exe",false
+    local launcherExe,isContain = System.options.launcherExeName or "ParaCraft.exe",false
     for k,v in pairs(bin_files) do
         if v==launcherExe then
             isContain = true
@@ -698,7 +698,7 @@ function UpdateSyncer:OnDownloadFinish()
         LOG.std(nil, "info", "UpdateSyncer", "已经通知服务器，我下完了 IsDownloadFinish");
     end)
 
-    local launcherExe = "ParaCraft.exe"
+    local launcherExe = System.options.launcherExeName or "ParaCraft.exe"
     local root = CommonLib.GetRootDirectory()
     local storagePath = CommonLib.ToCanonicalFilePath(root.."caches/")
     self._downloadState = DownloadState.allFinished
