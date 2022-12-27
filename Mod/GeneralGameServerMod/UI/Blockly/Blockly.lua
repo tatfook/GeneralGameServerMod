@@ -885,9 +885,11 @@ function Blockly:OnMouseUp(event)
         if (ui == self or (type(ui) == "table" and type(ui.GetClassName) == "function" and ui:GetClassName() == "Blockly")) then 
             menuType = "blockly";
             self:SetCurrentBlock(nil);
-        else 
+        elseif (type(ui) == "table" and type(ui.GetBlock) == "function") then
             block = ui:GetBlock();
             self:SetCurrentBlock(block:GetProxyBlock() or block);
+        else
+            return;
         end
         self:GetContextMenu():Show(menuType);
         self.__context_menu_x__, self.__context_menu_y__ = event:GetScreenXY();
