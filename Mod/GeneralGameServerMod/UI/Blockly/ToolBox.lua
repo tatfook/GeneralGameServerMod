@@ -236,9 +236,11 @@ function ToolBox:OnMouseMove(event)
             else
                 mouse_wheel = y < self.MouseWheel.mouseY and -1 or 1;  -- 正解
             end
-            self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
-            event.mouse_wheel = mouse_wheel;
-            self:OnMouseWheel(event);
+            if (math.abs(y - self.MouseWheel.mouseY) > 16) then
+                self.MouseWheel.mouseX, self.MouseWheel.mouseY = x, y;
+                event.mouse_wheel = mouse_wheel;
+                self:OnMouseWheel(event);
+            end
         end
     end
 end
