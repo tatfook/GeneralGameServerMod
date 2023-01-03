@@ -53,7 +53,7 @@ function Lan:StartServer()
     if (self:IsEnableAutoUpdater()) then AutoUpdater:StartServer() end 
     self:SetServer(true);
 
-    if System.options.channelId=="430" then 
+    if System.options.isChannel_430 then 
         local Broadcast = NPL.load("Mod/GeneralGameServerMod/CommonLib/Broadcast.lua");
         local timer = commonlib.Timer:new({callbackFunc = function() --不停的广播告诉局域网内的学生，我是教师服务器，以便学生自动连接
             if not Lan:IsServer() then
