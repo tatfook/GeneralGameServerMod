@@ -20,6 +20,8 @@ local ScrollBarSize = 2 * Const.UnitSize;
 
 function ScrollBar:ctor()
     self.__track_width__, self.__track_height__ = 0, 0;
+    self.__width__, self.__height__ = 0, 0;
+    self.__offset_x__, self.__offset_y__ = 0, 0;
 end
 
 function ScrollBar:Init(blockly, direction)

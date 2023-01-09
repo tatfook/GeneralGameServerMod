@@ -870,7 +870,9 @@ function Blockly:OnMouseUp(event)
                 ui:OnClick();
             end 
             if (focusUI ~= ui) then
-                ui:OnFocusIn(); 
+                if (type(ui.OnFocusIn) == "function") then
+                    ui:OnFocusIn();
+                end 
                 self:SetFocusUI(ui);
             end
         end
