@@ -323,11 +323,12 @@ function Blockly:Undo()
     local tmpBlock = block;
     local blocks = {};
     local index = 1;
-    for i = 1, blockCount do
+    for index = 1, blockCount do
         if (tmpBlock) then
             blocks[index] = tmpBlock;
+            blocks[index]:Disconnection();
+            index = index + 1;
             tmpBlock = tmpBlock:GetNextBlock();
-            blocks[i]:Disconnection();
             if (index > 1) then
                 blocks[index-1].nextConnection:Connection(blocks[index].previousConnection);
             end
