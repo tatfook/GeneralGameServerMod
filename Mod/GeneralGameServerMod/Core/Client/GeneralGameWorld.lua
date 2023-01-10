@@ -101,6 +101,7 @@ end
 function GeneralGameWorld:Tick() 
 	if (self.netHandler) then
 		self.netHandler:SendTick();
+		self:GetPlayerManager():Tick();
 	end
 end
 
@@ -176,3 +177,9 @@ function GeneralGameWorld:GetNetHandler()
 	return self.netHandler;
 end
 
+function GeneralGameWorld:IsWorldOwner()
+	-- local worldinfo = Mod.WorldShare.Store:Get("world/currentEnterWorld");
+	local worldinfo = GameLogic.GetFilters():apply_filters('store_get', 'world/currentWorld');
+	local userinfo = worldinfo and worldinfo.user;
+	return type(userinfo) == "table" and (userinfo.username == System.User.keepworkUsername);
+end

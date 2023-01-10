@@ -93,6 +93,8 @@ user 用户命令
 offlineuser 离线用户命令
 	/ggs offlineuser visible    显示离线用户
 	/ggs offlineuser hidden     隐藏离线用户
+spawnuser 创建用户
+	/ggs spawnuser username1;username2;username3...  
 setNewLiveModelAutoSync 新增活动模型是否同步(默认为 on)
 	/ggs setNewLiveModelAutoSync on    允许新增活动模型同步
 	/ggs setNewLiveModelAutoSync off   禁止新增活动模型同步
@@ -162,6 +164,8 @@ developer                    GGS 开发者模式
 				__this__:handleOfflineUserCommand(cmd_text);
 			elseif (cmd == "user") then
 				__this__:handleUserCommand(cmd_text);
+			elseif (cmd == "spawnuser") then
+				__this__:handleSpawnUser(cmd_text);
 			end
 		end
 	}
@@ -331,6 +335,13 @@ function GeneralGameCommand:handleShowUserInfoCommand(cmd_text)
 	local username, cmd_text_remain = CmdParser.ParseString(cmd_text);
 	local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
 	Page.ShowUserInfoPage({username=(username and username ~= "") and username or nil});
+end
+
+-- 创建离线用户
+function GeneralGameCommand:handleSpawnUser(cmd_text)
+	local usernames = commonlib.split(cmd_text, ";");
+	local playerManager = self:GetGeneralGameClient():GetWorld():GetPlayerManager();
+	playerManager:SpawnPlayers(usernames);
 end
 
 -- 世界加载

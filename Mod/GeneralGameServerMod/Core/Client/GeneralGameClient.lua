@@ -264,6 +264,7 @@ function GeneralGameClient:OnWorldLoaded()
     -- 是否需要替换世界
     if (self.IsWorldLoaded == nil or self.IsWorldLoaded) then return end
     self.IsWorldLoaded = true;
+    self:SetEnableGGS(true);
 
     -- 更新当前世界ID
     local GeneralGameWorldClass = self:GetGeneralGameWorldClass() or GeneralGameWorld;
@@ -290,7 +291,6 @@ function GeneralGameClient:OnWorldUnloaded()
         self:GetWorld():OnExit();
     end
     self:SetWorld(nil);
-    self.IsWorldLoaded = nil;  -- 防止切换世界 又再次加载
 end
 
 -- 用户是否登录

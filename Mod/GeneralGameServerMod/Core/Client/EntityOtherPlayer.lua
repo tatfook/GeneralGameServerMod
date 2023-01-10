@@ -43,6 +43,28 @@ function EntityOtherPlayer:init(world, username, entityId)
     return self;
 end
 
+function EntityOtherPlayer:SyncSpawnEntityInfo()
+    if (not self:IsSpawn()) then return end
+    local world = self:GetWorld();
+    local playerManager = world and world:GetPlayerManager();
+    local username = self:GetUserName();
+    if (playerManager) then
+        playerManager:SendSyncSpawnPlayer({[username] = self});
+    end
+end
+
+function EntityOtherPlayer:SetBlockPos(bx, by, bz)
+    if (self.bx == bx and self.by == by and self.bz == bz) then return end 
+    EntityOtherPlayer._super.SetBlockPos(self, bx, by, bz);
+    self:SyncSpawnEntityInfo();
+end
+
+function EntityOtherPlayer:SetPosition(x, y, z)
+    if (self.x == x and self.y == y and self.z == z) then return end 
+    EntityOtherPlayer._super.SetPosition(self, x, y, z);
+    self:SyncSpawnEntityInfo();
+end
+
 -- 是否可以被点击
 function EntityOtherPlayer:IsCanClick() 
     return true;
@@ -61,6 +83,11 @@ end
 -- 实体玩家是否在家
 function EntityOtherPlayer:IsOnline()
     return self.playerInfo.state == "online";
+end
+
+-- 是否虚拟的玩家
+function EntityOtherPlayer:IsSpawn()
+    return self.playerInfo.state == "spawn";
 end
 
 -- virtual function:
@@ -125,11 +152,6 @@ function EntityOtherPlayer:CheckShowWings()
     PlayerAssetFile:ShowWingAttachment(self:GetInnerObject(), self:GetSkinId(), self:GetAnimId() == 38);
 end
 
---是否在线
-function EntityOtherPlayer:IsOnline()
-    return self.playerInfo.state == "online"
-end
-
 -- 更改人物外观
 function EntityOtherPlayer:UpdateEntityActionState()
     local curAnimId = self:GetAnimId();
@@ -148,8 +170,10 @@ function EntityOtherPlayer:UpdateEntityActionState()
             end
         end
     else
-        if (obj) then
-            obj:SetField("AnimID", self.offlineAnimId);
+        if (not self:IsSpawn()) then
+            if (obj) then
+                obj:SetField("AnimID", self.offlineAnimId);
+            end
         end
     end
     
@@ -256,4 +280,15 @@ end
 -- 压力板同步触发
 function EntityOtherPlayer:doesEntityTriggerPressurePlate()
     return true;
+end
+
+-- 获取实体信息
+function EntityOtherPlayer:GetPacketPlayerEntityInfo()
+    local packet = Packets.PacketPlayerEntityInfo:new():Init({entityId = self.entityId}, self.dataWatcher, true);
+    packet.x, packet.y, packet.z = self.x, self.y, self.z; 
+    packet.facing, packet.pitch = self.facing, self.rotationPitch;
+    packet.headYaw, packet.headPitch = self.rotationHeadYaw, self.rotationHeadPitch;
+    packet.bx, packet.by, packet.bz = self:GetBlockPos();
+    packet.playerInfo = self:GetPlayerInfo();
+    return packet;
 end

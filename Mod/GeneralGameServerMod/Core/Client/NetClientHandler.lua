@@ -195,7 +195,7 @@ function NetClientHandler:handlePlayerLogin(packetPlayerLogin)
     -- 设置主玩家
     entityPlayer:Attach();
     GameLogic.GetPlayerController():SetMainPlayer(entityPlayer);  -- 内部会销毁旧当前玩家
-    self:GetPlayerManager():SetMainPlayer(entityPlayer);
+    self:GetPlayerManager():SetMainEntityPlayer(entityPlayer);
     self:GetPlayerManager():SetAreaSize(areaSize);
     self:SetPlayer(entityPlayer);
 
@@ -209,7 +209,7 @@ end
 -- 获取玩家实体
 function NetClientHandler:GetEntityPlayer(entityId, username)
     local mainPlayer = self:GetPlayer();
-    local otherPlayer = self:GetPlayerManager():GetPlayerByUserName(username) or self:GetPlayerManager():GetPlayerByEntityId(entityId);
+    local otherPlayer = self:GetPlayerManager():GetPlayerByUserName(username, true) or self:GetPlayerManager():GetPlayerByEntityId(entityId, true);
     local world = self:GetWorld();
 
     -- 是否是主玩家
@@ -344,6 +344,8 @@ function NetClientHandler:handleGeneral(packetGeneral)
         self:handleGeneral_Debug(packetGeneral);
     elseif (action == "DATA") then
         self:GetDataHandler():RecvData(packetGeneral.data);
+    elseif (action == "SyncSpawnPlayer") then
+        self:GetPlayerManager():RecvSyncSpawnPlayer(packetGeneral.data);
     end
     -- 直接重新登录
     if (packetGeneral:IsReloginPacket()) then
