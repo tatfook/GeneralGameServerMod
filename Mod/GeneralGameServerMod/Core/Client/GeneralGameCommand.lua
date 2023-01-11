@@ -73,58 +73,66 @@ function GeneralGameCommand:InstallCommand()
 		quick_ref = "/ggs subcmd [options] args...",
 		desc = [[
 subcmd: 
-connect 连接联机世界
+connect                                连接联机世界
 	/ggs connect [options] [worldId] [worldName]
-	/ggs connect -isSyncBlock -isSyncCmd -areaSize=64 -silent -editable 12706
-disconnect 断开连接
+disconnect                             退出联机世界
 	/ggs disconnect
-cmd 执行软件内置命令
+user                                   用户命令
+	/ggs user visible                  显示所有用户 不包含主玩家
+	/ggs user hidden                   隐藏所有用户 不包含主玩家
+	/ggs user enableclick              玩家可点击
+	/ggs user disableclick             玩家不可点击
+offlineuser                            离线用户命令
+	/ggs offlineuser visible           显示离线用户
+	/ggs offlineuser hidden            隐藏离线用户
+spawnuser                              创建用户
+	/ggs spawnuser username1;username2;username3...  
+	示例: /ggs spawnuser xiaoyao;wxatest
+setNewLiveModelAutoSync                新增活动模型是否同步(默认为 on)
+	/ggs setNewLiveModelAutoSync on    允许新增活动模型同步
+	/ggs setNewLiveModelAutoSync off   禁止新增活动模型同步
+setLiveModelAutoSync                   所有活动模型是否同步(默认为 on)
+	/ggs setLiveModelAutoSync on       允许活动模型同步
+	/ggs setLiveModelAutoSync off      禁止活动模型同步
+showuserinfo                           显示用户信息
+	/ggs showuserinfo [username]
+	示例: /ggs showuserinfo xiaoyao
+cmd                                    执行软件内置命令
 	/ggs cmd [options] cmdname cmdtext
-	/ggs cmd tip hello world	
+	示例: /ggs cmd tip hello world	
+	]],
+--[[
+debug 调试命令 
+	/ggs debug [action]
+	/ggs debug debug module            开启或关闭指定客户端模块日志
+	/ggs debug serverdebug module      开启或关闭指定服务端模块日志
+	/ggs debug options                 显示客户端选项信息
+	/ggs debug playerinfo              显示客户端所在世界的玩家信息
+	/ggs debug worldinfo               显示客户端所在世界的信息
+	/ggs debug serverinfo              显示客户端所在服务器信息	
+	/ggs debug serverlist              显示全网服务器列表
+	/ggs debug statistics              显示全网统计信息
+	/ggs debug ping                    验证是否是有效联机玩家
+	/ggs debug syncForceBlockList      显示强制同步块列表
+
 setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息默认是不同步, 可使用该指令强制去同步):
 	/ggs setSyncForceBlock x y z on|off
 	/ggs setSyncForceBlock 19200 5 19200 on   强制同步位置19200 5 19200的方块信息
 	/ggs setSyncForceBlock 19200 5 19200 off  取消强制同步位置19200 5 19200的方块信息
-user 用户命令
-	/ggs user visible           显示所有用户 不包含主玩家
-	/ggs user hidden            隐藏所有用户 不包含主玩家
-	/ggs user enableclick       玩家可点击
-	/ggs user disableclick      玩家不可点击
-offlineuser 离线用户命令
-	/ggs offlineuser visible    显示离线用户
-	/ggs offlineuser hidden     隐藏离线用户
-spawnuser 创建用户
-	/ggs spawnuser username1;username2;username3...  
-setNewLiveModelAutoSync 新增活动模型是否同步(默认为 on)
-	/ggs setNewLiveModelAutoSync on    允许新增活动模型同步
-	/ggs setNewLiveModelAutoSync off   禁止新增活动模型同步
-setLiveModelAutoSync            所有活动模型是否同步(默认为 on)
-	/ggs setLiveModelAutoSync on    允许活动模型同步
-	/ggs setLiveModelAutoSync off   禁止活动模型同步
-showuserinfo                     显示用户信息
-	/ggs showuserinfo [username]
-debug 调试命令 
-	/ggs debug [action]
-	/ggs debug debug module 开启或关闭指定客户端模块日志
-	/ggs debug serverdebug module 开启或关闭指定服务端模块日志
-	/ggs debug options       显示客户端选项信息
-	/ggs debug playerinfo    显示客户端所在世界的玩家信息
-	/ggs debug worldinfo     显示客户端所在世界的信息
-	/ggs debug serverinfo    显示客户端所在服务器信息	
-	/ggs debug serverlist    显示全网服务器列表
-	/ggs debug statistics    显示全网统计信息
-	/ggs debug ping          验证是否是有效联机玩家
-	/ggs debug syncForceBlockList 显示强制同步块列表
+
+	/ggs connect -isSyncBlock -isSyncCmd -areaSize=64 -silent -editable 12706
+
+sync 世界同步
+	/ggs sync -[block|cmd]
+	/ggs sync -block=true  或 /ggs sync -block 开启同步方块  /ggs sync -block=false 禁用方块同步
+	/ggs sync -forceBlock=false        禁用强制同步块的同步, 默认开启
 filesync
-	/ggs filesync            同步所有文件
-	/ggs filesync filepath   同步指定文件
-blockly 图块编程	
-developer                    GGS 开发者模式
-		]],
--- sync 世界同步
--- 	/ggs sync -[block|cmd]
--- 	/ggs sync -block=true  或 /ggs sync -block 开启同步方块  /ggs sync -block=false 禁用方块同步
--- 	/ggs sync -forceBlock=false 禁用强制同步块的同步, 默认开启
+	/ggs filesync                      同步所有文件
+	/ggs filesync filepath             同步指定文件
+blockly                                图块编程	
+developer                              GGS 开发者模式
+]]
+
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
 			GGS.INFO.Format(cmd_name .. " " .. cmd_text);
 			local cmd, cmd_text = CmdParser.ParseString(cmd_text);
@@ -357,7 +365,6 @@ function GeneralGameCommand:OnWorldLoaded()
 		GameLogic.RunCommand("/ggs connect"); 
 	end
 end
-
 
 -- 初始化成单列模式
 GeneralGameCommand:InitSingleton();
