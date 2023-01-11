@@ -100,7 +100,10 @@ showuserinfo                           显示用户信息
 cmd                                    执行软件内置命令
 	/ggs cmd [options] cmdname cmdtext
 	示例: /ggs cmd tip hello world	
+
+相关文档: https://github.com/tatfook/GeneralGameServerMod/blob/master/README.md
 	]],
+
 --[[
 debug 调试命令 
 	/ggs debug [action]
