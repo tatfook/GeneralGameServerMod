@@ -19,7 +19,7 @@ local PlayerManager = commonlib.inherit(commonlib.gettable("System.Core.ToolBase
 PlayerManager:Property("World");            -- 玩家管理器所属世界
 PlayerManager:Property("MainPlayer");       -- 主玩家
 PlayerManager:Property("AreaSize");         -- 玩家可视区域
-PlayerManager:Property("UserVisible", true, "IsUserVisible");                        -- 玩家是否可见
+PlayerManager:Property("UserVisible", true, "IsUserVisible");              -- 玩家是否可见
 PlayerManager:Property("PlayerVisible", true, "IsPlayerVisible");          -- 离线玩家是否可见   
 PlayerManager:Property("CanClickPlayer", true, "IsCanClickPlayer");
 
@@ -91,6 +91,16 @@ function PlayerManager:GetPlayerByEntityId(entityId, bExcludeSpawnPlayer)
             return player;
         end
     end
+end
+
+-- 离线玩家是否可见
+function PlayerManager:IsOfflinePlayerVisible()
+    return self:IsPlayerVisible();
+end
+
+-- 所有玩家是否可见 排除主玩家
+function PlayerManager:IsAllPlayerVisible()
+    return self:IsUserVisible();
 end
 
 -- 是否玩家是否可见

@@ -40,17 +40,23 @@ function EntityOtherPlayer:init(world, username, entityId)
     self:SetSkipPicking(not self:IsCanClick());
     self:SetSyncEntityInfo(self:GetWorld():GetClient():IsSyncEntityInfo());
     self:SetEnableAssetsWhiteList(self:GetWorld():GetClient():IsEnableAssetsWhiteList());
+    self:SetPlayerInfo(self.playerInfo);
+    
     return self;
 end
 
 function EntityOtherPlayer:SyncSpawnEntityInfo()
     if (not self:IsSpawn()) then return end
-    local world = self:GetWorld();
-    local playerManager = world and world:GetPlayerManager();
     local username = self:GetUserName();
+    local playerManager = self:GetPlayerManager();
     if (playerManager) then
         playerManager:SendSyncSpawnPlayer({[username] = self});
     end
+end
+
+function EntityOtherPlayer:GetPlayerManager()
+    local world = self:GetWorld();
+    return world and world:GetPlayerManager();
 end
 
 function EntityOtherPlayer:SetBlockPos(bx, by, bz)
@@ -73,6 +79,15 @@ end
 -- 设置玩家信息
 function EntityOtherPlayer:SetPlayerInfo(playerInfo)
     commonlib.partialcopy(self.playerInfo, playerInfo);
+
+    local playerManager = self:GetPlayerManager();
+    if (playerManager) then
+        if (not self:IsOnline() and not self:IsSpawn()) then
+            self:SetVisible(playerManager:IsOfflinePlayerVisible());
+        else
+            self:SetVisible(playerManager:IsAllPlayerVisible());
+        end
+    end
 end
 
 -- 获取玩家信息
