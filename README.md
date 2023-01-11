@@ -86,4 +86,100 @@ pm2 start npm npl --name "GGS" --  isDevEnv="true" servermode="true" bootstrappe
 [x] 支持平行世界(同一世界多开)  
 [x] 区域化离线人物 ParaWorldMinimapSurface.lua
 
-### 对外接口只有命令
+### 命令
+```
+/ggs subcmd [options] args...
+subcmd: 
+connect                                连接联机世界
+	/ggs connect [options] [worldId] [worldName]
+disconnect                             退出联机世界
+	/ggs disconnect
+user                                   用户命令
+	/ggs user visible                  显示所有用户 不包含主玩家
+	/ggs user hidden                   隐藏所有用户 不包含主玩家
+	/ggs user enableclick              玩家可点击
+	/ggs user disableclick             玩家不可点击
+offlineuser                            离线用户命令
+	/ggs offlineuser visible           显示离线用户
+	/ggs offlineuser hidden            隐藏离线用户
+spawnuser                              创建用户
+	/ggs spawnuser username1;username2;username3...  
+	示例: /ggs spawnuser xiaoyao;wxatest
+setNewLiveModelAutoSync                新增活动模型是否同步(默认为 on)
+	/ggs setNewLiveModelAutoSync on    允许新增活动模型同步
+	/ggs setNewLiveModelAutoSync off   禁止新增活动模型同步
+setLiveModelAutoSync                   所有活动模型是否同步(默认为 on)
+	/ggs setLiveModelAutoSync on       允许活动模型同步
+	/ggs setLiveModelAutoSync off      禁止活动模型同步
+showuserinfo                           显示用户信息
+	/ggs showuserinfo [username]
+	示例: /ggs showuserinfo xiaoyao
+cmd                                    执行软件内置命令
+	/ggs cmd [options] cmdname cmdtext
+	示例: /ggs cmd tip hello world	
+
+-- 辅助测试命令
+debug 调试命令 
+	/ggs debug [action]
+	/ggs debug debug module            开启或关闭指定客户端模块日志
+	/ggs debug serverdebug module      开启或关闭指定服务端模块日志
+	/ggs debug options                 显示客户端选项信息
+	/ggs debug playerinfo              显示客户端所在世界的玩家信息
+	/ggs debug worldinfo               显示客户端所在世界的信息
+	/ggs debug serverinfo              显示客户端所在服务器信息	
+	/ggs debug serverlist              显示全网服务器列表
+	/ggs debug statistics              显示全网统计信息
+	/ggs debug ping                    验证是否是有效联机玩家
+	/ggs debug syncForceBlockList      显示强制同步块列表
+
+setSyncForceBlock 强制同步指定位置方块(机关类方块状态等信息默认是不同步, 可使用该指令强制去同步):
+	/ggs setSyncForceBlock x y z on|off
+	/ggs setSyncForceBlock 19200 5 19200 on   强制同步位置19200 5 19200的方块信息
+	/ggs setSyncForceBlock 19200 5 19200 off  取消强制同步位置19200 5 19200的方块信息
+
+	/ggs connect -isSyncBlock -isSyncCmd -areaSize=64 -silent -editable 12706
+
+sync 世界同步
+	/ggs sync -[block|cmd]
+	/ggs sync -block=true  或 /ggs sync -block 开启同步方块  /ggs sync -block=false 禁用方块同步
+	/ggs sync -forceBlock=false        禁用强制同步块的同步, 默认开启
+filesync
+	/ggs filesync                      同步所有文件
+	/ggs filesync filepath             同步指定文件
+blockly                                图块编程	
+developer                              GGS 开发者模式
+```
+
+## 流量
+### 客户端玩家信息同步大小(512)
+
+GGS 主要工作是同步玩家Entity信息, Entity通过PacketPlayerEntityInfo结构打包序列化字节借助tcp协议发送.
+经测试输出PacketPlayerEntityInfo大小为423, 外加协议包也会占用一定的大小, 故均化为512字节. 也就是一个用户
+一次信息同步会发送512字节大小.
+
+### 客户端玩家信息同步频率
+
+玩家动画帧频率为30fps, 当玩家处于移动状态每秒发送一次同步请求, 玩家发送请求时间成倍增加直到2分钟发送一次.
+每次请求包最大大小为30 * 512 = 15K, 最小大小为512B, 玩家移动时发包频率和大小会比较大, 是占据流量主要操作.
+
+### 心跳包
+
+客户端没2min发送一次心跳包(大小512以内)
+
+### 数据转发
+
+GGS 除了玩家信息同步功能, 另一功能是数据转发. 服务器不维护数据只转发数据. 这种以具体业务而定.
+
+如虚拟玩家同步(/ggs spawnuser username1...)就使用此种方式.
+
+虚拟玩家同步逻辑(与局域网同步逻辑类似):
+1. 世界拥有者创建虚拟玩家, 通过数据转发, 同步所有虚拟玩家给其它真实玩家
+2. 世界有新真实玩家加入, 世界拥有者通过数据转发同步所有虚拟玩家给其它真实玩家
+3. 世界拥有者调用虚拟玩家的(SetBlockPos, SetPosition)方法, 数据转发同步当前虚拟玩家
+4. 心跳同步所有虚拟玩家给真实玩家, 每2min同步一次
+虚拟玩家可以看作世界拥有者的物品, 每次同步最大大小为N * 512(N 为虚拟玩家数量), 同步频率受真实玩家加入和拥有者主动触发影响.
+另虚拟玩家对应真实玩家上线会移除该虚拟玩家. 虚拟玩家由拥有者自行控制其行为.
+
+### 服务器流量
+
+服务器主要做数据转发工作, 维护真实玩家相关信息. 流量消耗为每个玩家流量 * N(真实玩家数) = (U1 + U2 + U3 + ..) * N (UN为玩家流量)
