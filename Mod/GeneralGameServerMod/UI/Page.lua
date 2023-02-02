@@ -12,10 +12,8 @@ Page.ShowUserInfoPage({username="xiaoyao"});
 
 NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
 local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
-
-local MacrosExtend = NPL.load("Mod/GeneralGameServerMod/UI/Page/Macro/MacrosExtend.lua", IsDevEnv);
-
-local Vue = NPL.load("./Vue/Vue.lua", IsDevEnv);
+local MacrosExtend = NPL.load(_G.__GGS_UI__ .. "Page/Macro/MacrosExtend.lua", IsDevEnv);
+local Vue = NPL.load(_G.__GGS_UI__ .. "Vue/Vue.lua", IsDevEnv);
 local Page = NPL.export();
 local pages = {};
 local __auto_close_pages__ = {};
@@ -369,7 +367,7 @@ local MatataLabPage = Vue:new();
 function Page.ShowMatataLabPage()
     __auto_close_pages__[MatataLabPage] = MatataLabPage;
     MatataLabPage:CloseWindow();
-    NPL.load("Mod/GeneralGameServerMod/UI/MatataLab/MatataLab.lua", IsDevEnv);
+    NPL.load(_G.__GGS_UI__ .. "MatataLab/MatataLab.lua", IsDevEnv);
     params = params or {};
     params.url = "%ui%/MatataLab/MatataLab.html";
     params.draggable = false;
@@ -457,7 +455,7 @@ defaultTabIndex:
 function Page.ShowWinterCampMainWindow(defaultTabIndex)
     local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
     local independent = Independent:GetSingletonInstance();
-    independent:Start("Mod/GeneralGameServerMod/UI/App/WinterCamp/WinterCamp.lua");
+    independent:Start(_G.__GGS_UI__ .. "App/WinterCamp/WinterCamp.lua");
     independent:GetCodeEnv().ShowWinterCampMainWindow(defaultTabIndex);
     -- Independent:LoadString([[
     --     ShowWinterCampMainWindow();

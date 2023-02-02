@@ -15,7 +15,7 @@ local Screen = commonlib.gettable("System.Windows.Screen");
 local ViewportManager = commonlib.gettable("System.Scene.Viewports.ViewportManager");
 local SceneViewport = commonlib.gettable("MyCompany.Aries.Game.Common.SceneViewport")
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
-local Vue = NPL.load("Mod/GeneralGameServerMod/UI/Vue/Vue.lua", IsDevEnv);
+local Vue = NPL.load(_G.__GGS_UI__ .. "Vue/Vue.lua", IsDevEnv);
 
 local UIAPI = NPL.export();
 local RootUI = ParaUI.GetUIObject("root");

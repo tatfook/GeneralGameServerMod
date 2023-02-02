@@ -17,6 +17,10 @@ GameLogic.RunCommand("/ggs connect -dev -u=xiaoyao 0");
 GeneralGameServerMod:init();
 ------------------------------------------------------------
 ]]
+
+-- _G.__GGS_UI__ = "Mod/GeneralGameServerMod/UI/";
+_G.__GGS_UI__ = "script/ide/System/UI/";
+
 --  全局变量初始化
 local CommonLib = NPL.load("Mod/GeneralGameServerMod/CommonLib/CommonLib.lua");
 local GGS = NPL.load("Mod/GeneralGameServerMod/Core/Common/GGS.lua");
