@@ -27,7 +27,9 @@ local Packets = NPL.export({
 });
 
 for key, packet in pairs(Packets) do
-    packet:RegisterPacket();
+    if (type(packet) == "table") then
+        packet:RegisterPacket();
+    end
 end
 
 function Packets:GetPacket(packetId)
