@@ -23,9 +23,9 @@ local EntityManager = commonlib.gettable("MyCompany.Aries.Game.EntityManager");
 local KeepWorkItemManager = NPL.load("(gl)script/apps/Aries/Creator/HttpAPI/KeepWorkItemManager.lua");
 local BlockStrategy = NPL.load("./BlockStrategy.lua", IsDevEnv);
 local TutorialContext = NPL.load("./TutorialContext.lua", IsDevEnv);
-local Http = NPL.load(_G.__GGS_UI__ .. "Window/Api/Http.lua", IsDevEnv);
-local Promise = NPL.load(_G.__GGS_UI__ .. "Window/Api/Promise.lua", IsDevEnv);
-local Date = NPL.load(_G.__GGS_UI__ .. "Window/Api/Date.lua");
+local Http = NPL.load("script/ide/System/UI/Window/Api/Http.lua", IsDevEnv);
+local Promise = NPL.load("script/ide/System/UI/Window/Api/Promise.lua", IsDevEnv);
+local Date = NPL.load("script/ide/System/UI/Window/Api/Date.lua");
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua");
 
 local TutorialSandbox = commonlib.inherit(commonlib.gettable("System.Core.ToolBase"), NPL.export());

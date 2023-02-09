@@ -11,7 +11,7 @@ page.ShowUserInfoPage({username="用户名", mainasset="人物模型文件名"})
 ]]
 
 local ui = NPL.load("./ui.lua");
-local vue = NPL.load(_G.__GGS_UI__ .. "Vue/Vue.lua", IsDevEnv);
+local vue = NPL.load("script/ide/System/UI/Vue/Vue.lua", IsDevEnv);
 local Page = NPL.load("Mod/GeneralGameServerMod/UI/Page.lua", IsDevEnv);
 
 local page = NPL.export();
