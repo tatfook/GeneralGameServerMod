@@ -455,7 +455,7 @@ defaultTabIndex:
 function Page.ShowWinterCampMainWindow(defaultTabIndex)
     local Independent = NPL.load("Mod/GeneralGameServerMod/GI/Independent/Independent.lua");
     local independent = Independent:GetSingletonInstance();
-    independent:Start("script/ide/System/UI/App/WinterCamp/WinterCamp.lua");
+    independent:Start("script/ide/System/UI/App/WinterCamp/WinterCamp.lua.html");
     independent:GetCodeEnv().ShowWinterCampMainWindow(defaultTabIndex);
     -- Independent:LoadString([[
     --     ShowWinterCampMainWindow();
