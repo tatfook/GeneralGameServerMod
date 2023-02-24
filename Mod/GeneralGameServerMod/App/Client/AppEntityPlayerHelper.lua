@@ -80,7 +80,7 @@ function AppEntityPlayerHelper:SetHeadOnDisplay()
     local color = self.isMainPlayer and "#ffffff" or "#0cff05";
     local vipIconUrl = state == "online" and "Texture/Aries/Creator/keepwork/UserInfo/V_32bits.png#0 0 18 18" or "Texture/Aries/Creator/keepwork/UserInfo/V_gray_32bits.png#0 0 18 18";
     local playerUsernameStyle = state == "online" and "" or "shadow-quality:8; shadow-color:#2b2b2b;text-shadow:true;";
-    local school = userinfo.school or "";
+    local school = System.options.channelId_431 and "" or (userinfo.school or "");
     if (school ~= "") then school = "&lt;" .. school .. "&gt;" end
     local mcml = string.format([[
 <pe:mcml>
