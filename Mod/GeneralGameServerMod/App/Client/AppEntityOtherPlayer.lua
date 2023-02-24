@@ -11,7 +11,6 @@ local AppEntityOtherPlayer = commonlib.gettable("Mod.GeneralGameServerMod.App.Cl
 ]]
 NPL.load("Mod/GeneralGameServerMod/Core/Client/EntityOtherPlayer.lua");
 NPL.load("Mod/GeneralGameServerMod/App/Client/AppEntityPlayerHelper.lua");
-local page = NPL.load("Mod/GeneralGameServerMod/App/ui/page.lua");
 local AppEntityPlayerHelper = commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityPlayerHelper");
 local AppEntityOtherPlayer = commonlib.inherit(commonlib.gettable("Mod.GeneralGameServerMod.Core.Client.EntityOtherPlayer"), commonlib.gettable("Mod.GeneralGameServerMod.App.Client.AppEntityOtherPlayer"));
 
@@ -36,13 +35,9 @@ function AppEntityOtherPlayer:OnClick(x,y,z, mouse_button,entity,side)
     if mouse_button == "left" then
         local mainasset = self:GetMainAssetPath();
         local username = self:GetUserName()
-        if true then
-            local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
-            if UserInfoPage then
-                UserInfoPage.ShowPage(username)
-            end
-        else
-            page.ShowUserInfoPage({username = username, mainasset = mainasset});
+        local UserInfoPage = NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/User/UserInfoPage.lua");
+        if UserInfoPage then
+            UserInfoPage.ShowPage(username)
         end
         -- 阻止默认行为     
         return true;
