@@ -173,13 +173,14 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
                     and svr.threads[world.threadName].clientCount < svr.threadMaxClientCount) then
                     -- 对可选择的世界进行评分
                     local curWorldRate = world.clientCount > (world.maxClientCount - clientCountPerRate) and 0 or math.ceil(world.clientCount / clientCountPerRate);
-                    -- 优先选世界人数较多且未进入上限缓冲区的世界    
-                    if (worldRate < curWorldRate) then
+                    -- 优先选世界人数较多且未进入上限缓冲区的世界  评分相同优先进世界key小的世界
+                    if (worldRate < curWorldRate or (worldRate == curWorldRate and worldKey > key)) then
                         worldRate = curWorldRate;
                         server = svr;
                         worldKey = key;
                         threadName = world.threadName;
                     end
+
                 end
             end
             -- 选出压力最小的工作主机 
