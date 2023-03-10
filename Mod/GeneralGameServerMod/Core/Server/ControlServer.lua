@@ -159,7 +159,7 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
     -- 最后选择控制服务器
     local server, workerServer, controlServer = nil, nil, nil; -- 设置最大值
     local curTick = os.time();
-    local worldKey, threadName = nil, nil;
+    local worldKey, threadName = "", nil;
     local clientCountPerRate = 20;                             -- 单个分值对应的世界人数
     local worldRate = -1;                                      -- 世界评分 评分越大优先选取
     for key, svr in pairs(servers) do
