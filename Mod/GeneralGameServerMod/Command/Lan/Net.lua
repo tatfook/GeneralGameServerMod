@@ -245,6 +245,12 @@ end
 function Net:StartClient(ip, port, callback)
     self._isClient = true
     if (not ip) then return self:SetConnected(false) end 
+    
+    -- 禁止自己连自己
+    local att = NPL.GetAttributeObject();
+    local ips = att:GetField("ExternalIPList", "");
+    local isExist = string.find(ips, ip, 1, true);
+    if (isExist ~= nil) then return end
 
     self:SetClientNid(CommonLib.AddNPLRuntimeAddress(ip, port));
     __rpc__:SetNid(self:GetClientNid());
