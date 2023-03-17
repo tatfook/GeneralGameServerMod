@@ -242,6 +242,10 @@ function GeneralGameCommand:handleDisconnectCommand(cmd_text)
 end
 
 function GeneralGameCommand:handleConnectCommand(cmd_text)
+	if (System.User.isAnonymousWorld) then return end 
+	NPL.load("(gl)script/ide/System/os/os.lua");
+	if (System.os.IsEmscripten()) then return end 
+	
 	local options, cmd_text = ParseOptions(cmd_text);	
 	local worldId, cmd_text = CmdParser.ParseInt(cmd_text);
 	local worldName, cmd_text = CmdParser.ParseString(cmd_text);
