@@ -137,6 +137,11 @@ developer                              GGS 开发者模式
 ]]
 
 		handler = function(cmd_name, cmd_text, cmd_params, fromEntity)
+			if (System.User.isAnonymousWorld) then
+				LOG.std(nil, "info", "GeneralGameCommand:InstallCommand", "User cannot use ggs.");
+				return;
+			end
+
 			GGS.INFO.Format(cmd_name .. " " .. cmd_text);
 			local cmd, cmd_text = CmdParser.ParseString(cmd_text);
 			if (cmd == "connect") then
