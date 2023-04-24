@@ -159,9 +159,9 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
     -- 最后选择控制服务器
     local server, workerServer, controlServer = nil, nil, nil; -- 设置最大值
     local curTick = os.time();
-    local worldKey, threadName = "", nil;
+    local worldKey, threadName, worldClientCount = "", nil, -1;
     local clientCountPerRate = 20;                             -- 单个分值对应的世界人数
-    local worldRate = -1;                                      -- 世界评分 评分越大优先选取
+    local worldRate = -2;                                      -- 世界评分 评分越大优先选取
     for key, svr in pairs(servers) do
         local isAlive = svr.isControlServer or ((curTick - svr.lastTick) < ServerAliveDuration);   -- 控制节点无需心跳检测
         -- 忽略已挂服务器或超负荷服务器
@@ -172,13 +172,14 @@ function ControlServer:SelectWorldServerByWorldIdAndName(worldId, worldName)
                     and world.clientCount < world.maxClientCount 
                     and svr.threads[world.threadName].clientCount < svr.threadMaxClientCount) then
                     -- 对可选择的世界进行评分
-                    local curWorldRate = world.clientCount > (world.maxClientCount - clientCountPerRate) and 0 or math.ceil(world.clientCount / clientCountPerRate);
-                    -- 优先选世界人数较多且未进入上限缓冲区的世界  评分相同优先进世界key小的世界
-                    if (worldRate < curWorldRate or (worldRate == curWorldRate and worldKey > key)) then
+                    local curWorldRate = world.clientCount > (world.maxClientCount - clientCountPerRate) and -1 or math.ceil(world.clientCount / clientCountPerRate);
+                    -- 优先选世界人数较多且未进入上限缓冲区的世界  评分相同优先进人数较多的世界, 当评分人数相同则优先进入世界key小的世界
+                    if (worldRate < curWorldRate or (worldRate == curWorldRate and (worldClientCount < world.clientCount or (worldClientCount == world.clientCount and worldKey > key)))) then
                         worldRate = curWorldRate;
                         server = svr;
                         worldKey = key;
                         threadName = world.threadName;
+                        worldClientCount = world.clientCount;
                     end
 
                 end
